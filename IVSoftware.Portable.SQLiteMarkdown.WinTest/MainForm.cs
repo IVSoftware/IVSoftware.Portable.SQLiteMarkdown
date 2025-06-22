@@ -1,0 +1,229 @@
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
+using Newtonsoft.Json;
+using OnePageCollectionViewSketchpad;
+using SQLite;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Windows.Forms.VisualStyles;
+
+namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
+{
+    public partial class MainForm : Form
+    {
+        public MainForm()
+        {
+            InitializeComponent();
+            QFSUT = new ObservableQueryFilterSource<SelectableQueryModel>();
+            vcView.ItemsSource = QFSUT;
+            if (vcView.ItemsSource is IObservableQueryFilterSource qfs)
+            {
+                textInputText.TextChanged += (sender, e) =>
+                {
+                    qfs.InputText = textInputText.Text;
+                };
+                textInputText.KeyDown += (sender, e) =>
+                {
+                    switch (e.KeyData)
+                    {
+                        case Keys.Escape:
+                            e.SuppressKeyPress = true;
+                            break;
+                        case Keys.Return:
+                            e.SuppressKeyPress = true;
+                            if (vcView.ItemsSource is IObservableQueryFilterSource qfs)
+                            {
+                                qfs.Commit();
+                            }
+                            break;
+                    }
+                };
+                qfs.MemoryDatabase = CreateDemoDatabase<SelectableQueryModel>();
+                qfs.PropertyChanged += (sender, e) =>
+                {
+                    switch (e.PropertyName)
+                    {
+                        case nameof(qfs.InputText):
+                            textInputText.Text = qfs.InputText;
+                            break;
+                        case nameof(IObservableQueryFilterSource.Busy):
+                            textInputText.Cursor = 
+                                qfs.Busy
+                                ? Cursors.WaitCursor
+                                : Cursors.Default;
+                            break;
+                        case nameof(IObservableQueryFilterSource.FilteringState):
+                            labelSearchIcon.ForeColor = 
+                             qfs.IsFiltering
+                             ? Color.ForestGreen 
+                             : ForeColor;
+                            break;
+                        case nameof(IObservableQueryFilterSource.IsFiltering):
+                            textInputText.PlaceholderText = qfs.Placeholder;
+                            break;
+                    }
+                };
+            }
+            buttonClear.Click += (sender, e) =>
+            {
+                if (vcView.ItemsSource is IObservableQueryFilterSource qfs)
+                {
+                    qfs.Clear();
+                    switch (qfs.FilteringState)
+                    {
+                        case FilteringState.Ineligible:
+                            ActiveControl = null;
+                            break;
+                        case FilteringState.Armed:
+                            break;
+                        case FilteringState.Active:
+                            break;
+                        default:
+                            throw new NotImplementedException($"Bad case: {qfs.FilteringState}");
+                    }
+                }
+            };
+            Disposed += (sender, e) =>
+            {
+                if (vcView.ItemsSource is IObservableQueryFilterSource qfs)
+                {
+                    qfs.MemoryDatabase?.Dispose();
+                }
+            };
+            tsmiQuery.Click += (sender, e) =>
+            {
+                BeginInvoke(() => 
+                { 
+                    if (vcView.ItemsSource is IObservableQueryFilterSource qfs)
+                    {
+                        QFSUT.FilteringStateForTest = FilteringState.Ineligible;
+                        tsmiFilter.Checked = false;
+                    }
+                });
+            };
+            tsmiFilter.Click += (sender, e) =>
+            {
+                BeginInvoke(() =>
+                {
+                    QFSUT.FilteringStateForTest = FilteringState.Active;
+                    tsmiQuery.Checked = false;
+                });
+            };
+            tsmiEvaluate.Click += (sender, e) =>
+            {
+                BeginInvoke(() =>
+                {
+                    MessageBox.Show(QFSUT.InputText.ParseSqlMarkdown<SelectableQueryModel>());
+                });
+            };
+            tsmiCombo.SelectedIndexChanged += (sender, e) =>
+            {
+                BeginInvoke(() =>
+                {
+                    if (tsmiCombo.SelectedItem?.ToString() is { } expr)
+                    {
+                        MessageBox.Show(expr.ParseSqlMarkdown<SelectableQueryModel>());
+                    }
+                });
+            };
+            Extensions.StackPrompt += (sender, e) =>
+            {
+                BeginInvoke(() =>
+                {
+                    MessageBox.Show(sender?.ToString());
+                });
+            };
+            tsmiPromptEachStep.CheckedChanged += (sender, e) =>
+            {
+                BeginInvoke(() =>
+                {
+                    Extensions.PromptEachStep = tsmiPromptEachStep.Checked;
+                });
+            };
+        }
+
+        /// <summary>
+        /// QSF Under Test for ad hoc states and expr evals.
+        /// </summary>
+        private ObservableQueryFilterSource<SelectableQueryModel> QFSUT { get; } 
+
+        public class CardModel : INotifyPropertyChanged
+        {
+            public string Description
+            {
+                get => _description;
+                set
+                {
+                    if (!Equals(_description, value))
+                    {
+                        _description = value;
+                        OnPropertyChanged();
+                    }
+                }
+            }
+            string _description = string.Empty;
+            protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            public event PropertyChangedEventHandler? PropertyChanged;
+            public override string ToString() => Description;
+        }
+
+        private SQLiteConnection CreateDemoDatabase<T>() where T : new()
+        {
+            var imdb = new SQLiteConnection(":memory:");
+            imdb.CreateTable<T>();
+
+            var list = new List<T>();
+
+            void Add(string description, string tags, bool isChecked, List<string> keywords = null)
+            {
+                var instance = new T();
+                typeof(T).GetProperty("Description")?.SetValue(instance, description);
+                typeof(T).GetProperty("Tags")?.SetValue(instance, tags);
+                typeof(T).GetProperty("IsChecked")?.SetValue(instance, isChecked);
+                if (keywords != null)
+                {
+                    var json = JsonConvert.SerializeObject(keywords);
+                    typeof(T).GetProperty("Keywords")?.SetValue(instance, json);
+                }
+                list.Add(instance);
+            }
+
+            Add("Brown Dog", "[canine] [color]", false, new() { "loyal", "friend", "furry" });
+            Add("Green Apple", "[fruit] [color]", false, new() { "tart", "snack", "healthy" });
+            Add("Yellow Banana", "[fruit] [color]", false);
+            Add("Blue Bird", "[bird] [color]", false, new() { "sky", "feathered", "song" });
+            Add("Red Cherry", "[fruit] [color]", false, new() { "sweet", "summer", "dessert" });
+            Add("Black Cat", "[animal] [color]", false);
+            Add("Orange Fox", "[animal] [color]", false);
+            Add("White Rabbit", "[animal] [color]", false, new() { "bunny", "soft", "jump" });
+            Add("Purple Grape", "[fruit] [color]", false);
+            Add("Gray Wolf", "[animal] [color]", false, new() { "pack", "howl", "wild" });
+            Add("Pink Flamingo", "[bird] [color]", false);
+            Add("Golden Lion", "[animal] [color]", false);
+            Add("Brown Bear", "[animal] [color]", false, new() { "strong", "wild", "forest" });
+            Add("Green Pear", "[fruit] [color]", false);
+            Add("Red Strawberry", "[fruit] [color]", false);
+            Add("Black Panther", "[animal] [color]", false, new() { "stealthy", "feline", "night" });
+            Add("Yellow Lemon", "[fruit] [color]", false);
+            Add("White Swan", "[bird] [color]", false);
+            Add("Purple Plum", "[fruit] [color]", false);
+            Add("Blue Whale", "[marine-mammal] [ocean]", false, new() { "ocean", "mammal", "giant" });
+            Add("Elephant", "[animal]", false, new() { "trunk", "herd", "safari" });
+            Add("Pineapple", "[fruit]", false);
+            Add("Shark", "[fish]", false);
+            Add("Owl", "[bird]", false);
+            Add("Giraffe", "[animal]", false);
+            Add("Coconut", "[fruit]", false);
+            Add("Kangaroo", "[animal]", false, new() { "bounce", "outback", "marsupial" });
+            Add("Dragonfruit", "[fruit]", false);
+            Add("Turtle", "[animal]", false);
+            Add("Mango", "[fruit]", false);
+            Add("Should NOT match an expression with an \"animal\" tag.", "[not animal]", false);
+
+            imdb.InsertAll(list);
+            return imdb;
+        }
+    }
+}
