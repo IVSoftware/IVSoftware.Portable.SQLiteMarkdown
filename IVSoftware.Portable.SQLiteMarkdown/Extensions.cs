@@ -365,13 +365,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
         }
 
+        static Dictionary<string, string> Atomics = new Dictionary<string, string>();
         public static string Lint(this string expr, bool trim = false)
         {
             if (string.IsNullOrWhiteSpace(expr))
             {
                 return string.Empty;
             }
-            Dictionary<string, string> atomics = new Dictionary<string, string>();
 #if DEBUG
             var exprOR = expr; // Reporting
 #endif
@@ -447,7 +447,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                             i++;
                                         }
                                     }
-                                    atomics[key] = sbAtomic.ToString();
+                                    Atomics[key] = sbAtomic.ToString();
                                     sbAtomic.Clear();
                                     sbExpr.Append(key);     // Placeholder
 
@@ -455,7 +455,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 }
                                 else
                                 {
-                                    atomics[key] = sbAtomic.ToString();
+                                    Atomics[key] = sbAtomic.ToString();
                                     sbAtomic.Clear();
                                     sbExpr.Append(key);
                                 }
@@ -534,13 +534,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 while (true)
                 {
                     changesMade = false;
-                    foreach (var kvp in atomics.ToArray())
+                    foreach (var kvp in Atomics.ToArray())
                     {
                         var value = kvp.Value.Replace(@"""", "$dquote$");
                         exprB4 = expr;
                         if (!Equals(expr = expr.Replace(kvp.Key, value), exprB4))
                         {
-                            atomics.Remove(kvp.Key);
+                            Atomics.Remove(kvp.Key);
                             changesMade = true;
                         }
                     }
