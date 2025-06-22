@@ -35,34 +35,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
-                Debug.Assert(DateTime.Now.Date == new DateTime(2025, 6, 22).Date, "Don't forget disabled");
-                Query = query ?? throw new ArgumentNullException(nameof(query));
-                Args =
-                    args
-                    ?? new List<KeyValuePair<string, object>>();
-
-                for (int i = 0; i < args.Count; i++) 
+                lock (_lock)
                 {
-                    var kvp = args[i];
-                    if(kvp.Value is string encoded)
+                    Debug.Assert(DateTime.Now.Date == new DateTime(2025, 6, 22).Date, "Don't forget disabled");
+                    Query = query ?? throw new ArgumentNullException(nameof(query));
+                    Args =
+                        args
+                        ?? new List<KeyValuePair<string, object>>();
+
+                    for (int i = 0; i < args.Count; i++)
                     {
-                        var expr = encoded;
-                    restart:
-                        foreach (var decoder in Atomics)
+                        var kvp = args[i];
+                        if (kvp.Value is string encoded)
                         {
-                            var exprB4 = expr;
-                            expr = expr.Replace(decoder.Key, decoder.Value);
-                            if(expr != exprB4)
+                            var expr = encoded;
+                            restart:
+                            foreach (var decoder in Atomics)
                             {
-                                // Atomics is not ordered, so recheck all.
-                                goto restart;
+                                var exprB4 = expr;
+                                expr = expr.Replace(decoder.Key, decoder.Value);
+                                if (expr != exprB4)
+                                {
+                                    // Atomics is not ordered, so recheck all.
+                                    goto restart;
+                                }
                             }
+                            args[i] = new KeyValuePair<string, object>(kvp.Key, expr);
                         }
-                        args[i] = new KeyValuePair<string, object>(kvp.Key, expr);
-                    }    
+                    }
                 }
             }
         }
+        static object _lock = new object();
 
         public static implicit operator string(MarkdownContext context) => context.ToString();
 
