@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
+﻿using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SQLite;
@@ -74,31 +75,34 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             this string expr,
             ref SearchEntryState searchEntryState)
         {
-            ValidationState validationState;
-            switch (searchEntryState)
+            using (DHostAtomic.GetToken())
             {
-                case SearchEntryState.Cleared:
-                    validationState = ValidationState.Empty;
-                    break;
-                case SearchEntryState.QueryEmpty:
-                    validationState = ValidationState.Empty;
-                    break;
-                case SearchEntryState.QueryENB:
-                    validationState = ValidationState.Invalid;
-                    break;
-                case SearchEntryState.QueryEN:
-                    validationState = ValidationState.Valid;
-                    break;
-                case SearchEntryState.QueryCompleteNoResults:
-                    validationState = ValidationState.Valid;
-                    break;
-                case SearchEntryState.QueryCompleteWithResults:
-                    validationState = ValidationState.Valid & ValidationState.DisableMinLength;
-                    break;
-                default:
-                    throw new NotImplementedException("ToDo");
+                ValidationState validationState;
+                switch (searchEntryState)
+                {
+                    case SearchEntryState.Cleared:
+                        validationState = ValidationState.Empty;
+                        break;
+                    case SearchEntryState.QueryEmpty:
+                        validationState = ValidationState.Empty;
+                        break;
+                    case SearchEntryState.QueryENB:
+                        validationState = ValidationState.Invalid;
+                        break;
+                    case SearchEntryState.QueryEN:
+                        validationState = ValidationState.Valid;
+                        break;
+                    case SearchEntryState.QueryCompleteNoResults:
+                        validationState = ValidationState.Valid;
+                        break;
+                    case SearchEntryState.QueryCompleteWithResults:
+                        validationState = ValidationState.Valid & ValidationState.DisableMinLength;
+                        break;
+                    default:
+                        throw new NotImplementedException("ToDo");
+                }
+                return expr.ParseSqlMarkdown<T>(ref validationState, null, 0, IndexingMode.All);
             }
-            return expr.ParseSqlMarkdown<T>(ref validationState, null, 0, IndexingMode.All);
         }
 
         /// <summary>
@@ -366,6 +370,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         static Dictionary<string, string> Atomics = new Dictionary<string, string>();
+        static DisposableHost DHostAtomic
+        {
+            get
+            {
+                if (_dhostAtomic is null)
+                {
+                    _dhostAtomic = new DisposableHost();
+                    _dhostAtomic.FinalDispose += (sender, e) => Atomics.Clear(); 
+                }
+                return _dhostAtomic;
+            }
+        }
+        static DisposableHost _dhostAtomic = null;
+
         public static string Lint(this string expr, bool trim = false)
         {
             if (string.IsNullOrWhiteSpace(expr))
