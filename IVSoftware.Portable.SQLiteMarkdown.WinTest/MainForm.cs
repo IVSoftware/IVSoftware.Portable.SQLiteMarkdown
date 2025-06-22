@@ -54,10 +54,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                                 : Cursors.Default;
                             break;
                         case nameof(IObservableQueryFilterSource.FilteringState):
-                            labelSearchIcon.ForeColor = 
-                             qfs.IsFiltering
-                             ? Color.ForestGreen 
-                             : ForeColor;
+                            switch (qfs.FilteringState)
+                            {
+                                case FilteringState.Ineligible:
+                                    labelSearchIcon.ForeColor = ForeColor;
+                                    break;
+                                case FilteringState.Armed:
+                                    labelSearchIcon.ForeColor = Color.Salmon;
+                                    break;
+                                case FilteringState.Active:
+                                    labelSearchIcon.ForeColor = Color.ForestGreen;
+                                    break;
+                                default:
+                                    throw new NotImplementedException($"Bad case: {qfs.FilteringState}");
+                            }
                             break;
                         case nameof(IObservableQueryFilterSource.IsFiltering):
                             textInputText.PlaceholderText = qfs.Placeholder;
@@ -141,6 +151,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 {
                     Extensions.PromptEachStep = tsmiPromptEachStep.Checked;
                 });
+            };
+            labelSearchIcon.Click += (sender, e) => 
+            {
+                QFSUT.FilteringStateForTest = FilteringState.Ineligible; 
             };
         }
 

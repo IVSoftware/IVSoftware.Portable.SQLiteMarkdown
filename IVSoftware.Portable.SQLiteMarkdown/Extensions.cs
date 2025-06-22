@@ -75,7 +75,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             this string expr,
             ref SearchEntryState searchEntryState)
         {
-            using (DHostAtomic.GetToken())
+            using (MarkdownContext.GetToken())
             {
                 ValidationState validationState;
                 switch (searchEntryState)
@@ -128,19 +128,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             byte minInputLength,
             IndexingMode indexingMode)
         {
-            Type type = typeof(T);
-
-            if (validationState.HasFlag(ValidationState.DisableMinLength))
+            using (MarkdownContext.GetToken())
             {
-                minInputLength = 0;
-            }
+                Type type = typeof(T);
 
-            #region I N P R O G
-            bool hasSelfIndexed =
-                type
-                .GetProperties()
-                .Any(_ => Attribute.IsDefined(_, typeof(SelfIndexedAttribute)));
-            #endregion I N P R O G
+                if (validationState.HasFlag(ValidationState.DisableMinLength))
+                {
+                    minInputLength = 0;
+                }
+
+                #region I N P R O G
+                bool hasSelfIndexed =
+                    type
+                    .GetProperties()
+                    .Any(_ => Attribute.IsDefined(_, typeof(SelfIndexedAttribute)));
+                #endregion I N P R O G
 
 #if false
             if (!_contextCache.TryGetValue(type, out var context))
@@ -150,243 +152,209 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             throw new NotImplementedException();
 #else
-            if (validationPredicate is null)
-            {
-                validationPredicate = Static.DefaultValidationPredicate;
-            }
-            string sql = null;
-            List<KeyValuePair<string, object>> orderedArgs = new List<KeyValuePair<string, object>>();
-            string lint = expr.Lint();
-
-            if (string.IsNullOrWhiteSpace(lint))
-            {
-                validationState = ValidationState.Empty;
-                return new MarkdownContext(string.Empty, orderedArgs); // Empty CommandText for empty input
-            }
-            else
-            {
-                if (lint.TryTokenize(out var astNodes, minInputLength))
+                if (validationPredicate is null)
                 {
-                    validationState = ValidationState.Valid;
-                    sql = localMakeSqlCommand(astNodes);
+                    validationPredicate = Static.DefaultValidationPredicate;
+                }
+                string sql = null;
+                List<KeyValuePair<string, object>> orderedArgs = new List<KeyValuePair<string, object>>();
+                string lint = expr.Lint();
+
+                if (string.IsNullOrWhiteSpace(lint))
+                {
+                    validationState = ValidationState.Empty;
+                    return new MarkdownContext(string.Empty, orderedArgs); // Empty CommandText for empty input
                 }
                 else
                 {
-                    validationState = ValidationState.Invalid;                    
-                    return new MarkdownContext(string.Empty, orderedArgs); // Empty CommandText for invalid input
-                }
-            }
-            return new MarkdownContext(sql, orderedArgs);
-
-            #region Local Methods
-            string localMakeSqlCommand(ASTNode[] astNodes)
-            {
-                int paramIndex = 1;
-
-                string table = type.GetCustomAttribute<TableAttribute>()?.Name ?? type.Name;
-
-                var indexProperties = new HashSet<PropertyInfo>();
-                var termProperties = new List<PropertyInfo>();
-                var tagProperties = new List<PropertyInfo>();
-
-                foreach (var pi in type.GetProperties())
-                {
-                    foreach (var attr in
-                              pi
-                              .GetCustomAttributes<MarkdownTermAttribute>(inherit: true))
+                    if (lint.TryTokenize(out var astNodes, minInputLength))
                     {
-                        if (attr is SqlLikeTermAttribute)
-                        {
-                            indexProperties.Add(pi);
-                            termProperties.Add(pi);
-                        }
-                        else if (attr is FilterContainsTermAttribute)
-                        {
-                            indexProperties.Add(pi);
-                            termProperties.Add(pi);
-                        }
-                        else if (attr is TagMatchTermAttribute)
-                        {
-                            indexProperties.Add(pi);
-                            tagProperties.Add(pi);
-                        }
+                        validationState = ValidationState.Valid;
+                        sql = localMakeSqlCommand(astNodes);
+                    }
+                    else
+                    {
+                        validationState = ValidationState.Invalid;
+                        return new MarkdownContext(string.Empty, orderedArgs); // Empty CommandText for invalid input
                     }
                 }
+                return new MarkdownContext(sql, orderedArgs);
 
-
-                var builder = new List<string>();
-
-                if (indexProperties.Count == 0)
+                #region Local Methods
+                string localMakeSqlCommand(ASTNode[] astNodes)
                 {
-                    builder.Add($"SELECT * FROM {table}");
-                }
-                else
-                {
-                    builder.Add($"SELECT * FROM {table} WHERE");
+                    int paramIndex = 1;
 
-                    var astExpr = localBuildWhere();
-                    if (!string.IsNullOrWhiteSpace(astExpr))
+                    string table = type.GetCustomAttribute<TableAttribute>()?.Name ?? type.Name;
+
+                    var indexProperties = new HashSet<PropertyInfo>();
+                    var termProperties = new List<PropertyInfo>();
+                    var tagProperties = new List<PropertyInfo>();
+
+                    foreach (var pi in type.GetProperties())
                     {
-                        builder.Add(astExpr);
-                    }
-
-
-                    string localBuildWhere()
-                    {
-                        var conditions = new List<string>();
-                        var currentOperator = " AND ";
-                        bool lastWasNot = false;
-
-                        foreach (var node in astNodes)
+                        foreach (var attr in
+                                  pi
+                                  .GetCustomAttributes<MarkdownTermAttribute>(inherit: true))
                         {
-                            switch (node.ASTType)
+                            if (attr is SqlLikeTermAttribute)
                             {
-                                case NodeType.Term:
-                                    var conditionBuilder = new List<string>();
-
-                                    foreach (var pi in termProperties)
-                                    {
-                                        if (localExcludeByFlag(pi))
-                                        {
-                                            continue;
-                                        }
-                                        string paramName = $"@param{paramIndex++}";
-                                        string paramValue = pi.GetCustomAttribute<TagMatchTermAttribute>() is null
-                                            ? $"%{node.Value}%"
-                                            : $"%[{node.Value}]%";
-
-                                        orderedArgs.Add(new KeyValuePair<string, object>(paramName, paramValue));
-                                        conditionBuilder.Add($"{pi.Name} LIKE {paramName}");
-                                    }
-
-                                    var termCondition = $"({string.Join(" OR ", conditionBuilder)})";
-
-                                    if (lastWasNot)
-                                    {
-                                        conditions.Add($"NOT ({termCondition})");
-                                        lastWasNot = false;
-                                    }
-                                    else
-                                    {
-                                        conditions.Add(termCondition);
-                                    }
-                                    break;
-                                case NodeType.Tag:
-                                    var tagConditionBuilder = new List<string>();
-
-                                    foreach (var pi in tagProperties)
-                                    {
-                                        if (localExcludeByFlag(pi))
-                                        {
-                                            continue;
-                                        }
-                                        if (!indexingMode.HasFlag(IndexingMode.TagMatchTerm)) continue;
-
-                                        string paramName = $"@param{paramIndex++}";
-                                        string paramValue = $"%[{node.Value}]%";
-
-                                        orderedArgs.Add(new KeyValuePair<string, object>(paramName, paramValue));
-                                        tagConditionBuilder.Add($"{pi.Name} LIKE {paramName}");
-                                    }
-
-                                    var tagCondition = $"({string.Join(" OR ", tagConditionBuilder)})";
-
-                                    if (lastWasNot)
-                                    {
-                                        conditions.Add($"NOT ({tagCondition})");
-                                        lastWasNot = false;
-                                    }
-                                    else
-                                    {
-                                        conditions.Add(tagCondition);
-                                    }
-                                    break;
-                                case NodeType.And:
-                                    currentOperator = " AND ";
-                                    break;
-                                case NodeType.Or:
-                                    currentOperator = " OR ";
-                                    break;
-                                case NodeType.Not:
-                                    lastWasNot = true;
-                                    break;
-                                case NodeType.Parenthesis:
-                                    break;
-                                default:
-                                    Debug.Fail("ADVISORY - Bad Case.");
-                                    break;
+                                indexProperties.Add(pi);
+                                termProperties.Add(pi);
+                            }
+                            else if (attr is FilterContainsTermAttribute)
+                            {
+                                indexProperties.Add(pi);
+                                termProperties.Add(pi);
+                            }
+                            else if (attr is TagMatchTermAttribute)
+                            {
+                                indexProperties.Add(pi);
+                                tagProperties.Add(pi);
                             }
                         }
-
-                        return string.Join(currentOperator, conditions);
-                        #region L o c a l F x
-
-                        bool localExcludeByFlag(PropertyInfo pi)
-                        {
-                            switch (pi.Name)
-                            {
-                                case nameof(ISelfIndexedMarkdown.LikeTerm):
-                                    return (!indexingMode.HasFlag(IndexingMode.LikeTerm));
-                                case nameof(ISelfIndexedMarkdown.ContainsTerm):
-                                    return (!indexingMode.HasFlag(IndexingMode.ContainsTerm));
-                                case nameof(ISelfIndexedMarkdown.TagMatchTerm):
-                                    return (!indexingMode.HasFlag(IndexingMode.TagMatchTerm));
-                                default: return false;
-                            }
-                        }
-                        #endregion L o c a l F x
-
                     }
 
-#if false
-                    string[] localExtractTagTokens()
+
+                    var builder = new List<string>();
+
+                    if (indexProperties.Count == 0)
                     {
-                        var tokens = new List<string>();
-                        var matches = Regex.Matches(expr, @"\[(.*?)\]");
-                        foreach (Match match in matches)
-                        {
-                            var value = match.Groups[1].Value;
-                            tokens.Add(value);
-                            string tagParam = $"@tag_{value}";
-                            string tagValue = $"%[{value}]%";
-                            orderedArgs.Add(new KeyValuePair<string, object>(tagParam, tagValue));
-                        }
-                        expr = Regex.Replace(expr, @"\[(.*?)\]", string.Empty).Trim();
-                        return tokens.ToArray();
+                        builder.Add($"SELECT * FROM {table}");
                     }
+                    else
+                    {
+                        builder.Add($"SELECT * FROM {table} WHERE");
+
+                        var astExpr = localBuildWhere();
+                        if (!string.IsNullOrWhiteSpace(astExpr))
+                        {
+                            builder.Add(astExpr);
+                        }
+
+                        string localBuildWhere()
+                        {
+                            var conditions = new List<string>();
+                            var currentOperator = " AND ";
+                            bool lastWasNot = false;
+
+                            foreach (var node in astNodes)
+                            {
+                                switch (node.ASTType)
+                                {
+                                    case NodeType.Term:
+                                        var conditionBuilder = new List<string>();
+
+                                        foreach (var pi in termProperties)
+                                        {
+                                            if (localExcludeByFlag(pi))
+                                            {
+                                                continue;
+                                            }
+                                            string paramName = $"@param{paramIndex++}";
+                                            string paramValue = pi.GetCustomAttribute<TagMatchTermAttribute>() is null
+                                                ? $"%{node.Value}%"
+                                                : $"%[{node.Value}]%";
+
+                                            orderedArgs.Add(new KeyValuePair<string, object>(paramName, paramValue));
+                                            conditionBuilder.Add($"{pi.Name} LIKE {paramName}");
+                                        }
+
+                                        var termCondition = $"({string.Join(" OR ", conditionBuilder)})";
+
+                                        if (lastWasNot)
+                                        {
+                                            conditions.Add($"NOT ({termCondition})");
+                                            lastWasNot = false;
+                                        }
+                                        else
+                                        {
+                                            conditions.Add(termCondition);
+                                        }
+                                        break;
+                                    case NodeType.Tag:
+                                        var tagConditionBuilder = new List<string>();
+
+                                        foreach (var pi in tagProperties)
+                                        {
+                                            if (localExcludeByFlag(pi))
+                                            {
+                                                continue;
+                                            }
+                                            if (!indexingMode.HasFlag(IndexingMode.TagMatchTerm)) continue;
+
+                                            string paramName = $"@param{paramIndex++}";
+                                            string paramValue = $"%[{node.Value}]%";
+
+                                            orderedArgs.Add(new KeyValuePair<string, object>(paramName, paramValue));
+                                            tagConditionBuilder.Add($"{pi.Name} LIKE {paramName}");
+                                        }
+
+                                        var tagCondition = $"({string.Join(" OR ", tagConditionBuilder)})";
+
+                                        if (lastWasNot)
+                                        {
+                                            conditions.Add($"NOT ({tagCondition})");
+                                            lastWasNot = false;
+                                        }
+                                        else
+                                        {
+                                            conditions.Add(tagCondition);
+                                        }
+                                        break;
+                                    case NodeType.And:
+                                        currentOperator = " AND ";
+                                        break;
+                                    case NodeType.Or:
+                                        currentOperator = " OR ";
+                                        break;
+                                    case NodeType.Not:
+                                        lastWasNot = true;
+                                        break;
+                                    case NodeType.Parenthesis:
+                                        break;
+                                    default:
+                                        Debug.Fail("ADVISORY - Bad Case.");
+                                        break;
+                                }
+                            }
+                            return string.Join(currentOperator, conditions);
+                            #region L o c a l F x
+
+                            bool localExcludeByFlag(PropertyInfo pi)
+                            {
+                                switch (pi.Name)
+                                {
+                                    case nameof(ISelfIndexedMarkdown.LikeTerm):
+                                        return (!indexingMode.HasFlag(IndexingMode.LikeTerm));
+                                    case nameof(ISelfIndexedMarkdown.ContainsTerm):
+                                        return (!indexingMode.HasFlag(IndexingMode.ContainsTerm));
+                                    case nameof(ISelfIndexedMarkdown.TagMatchTerm):
+                                        return (!indexingMode.HasFlag(IndexingMode.TagMatchTerm));
+                                    default: return false;
+                                }
+                            }
+                            #endregion L o c a l F x
+
+                        }
+                    }
+
+                    if (builder.Count == 3)
+                    {
+                        builder[1] = $"({builder[1]})";
+                        builder[2] = $"({builder[2]})";
+                    }
+
+                    return string.Join(Environment.NewLine, builder);
+                }
+                #endregion Local Methods
 #endif
-                }
-
-                if (builder.Count == 3)
-                {
-                    builder[1] = $"({builder[1]})";
-                    builder[2] = $"({builder[2]})";
-                }
-
-                return string.Join(Environment.NewLine, builder);
-            }
-            #endregion Local Methods
-#endif
-        }
-
-        static Dictionary<string, string> Atomics = new Dictionary<string, string>();
-        static DisposableHost DHostAtomic
-        {
-            get
-            {
-                if (_dhostAtomic is null)
-                {
-                    _dhostAtomic = new DisposableHost();
-                    _dhostAtomic.FinalDispose += (sender, e) => Atomics.Clear(); 
-                }
-                return _dhostAtomic;
             }
         }
-        static DisposableHost _dhostAtomic = null;
 
         public static string Lint(this string expr, bool trim = false)
         {
-            using (DHostAtomic.GetToken())
+            using (MarkdownContext.GetToken())
             {
                 if (string.IsNullOrWhiteSpace(expr))
                 {
@@ -467,7 +435,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                                 i++;
                                             }
                                         }
-                                        Atomics[key] = sbAtomic.ToString();
+                                        MarkdownContext.Atomics[key] = sbAtomic.ToString();
                                         sbAtomic.Clear();
                                         sbExpr.Append(key);     // Placeholder
 
@@ -475,7 +443,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     }
                                     else
                                     {
-                                        Atomics[key] = sbAtomic.ToString();
+                                        MarkdownContext.Atomics[key] = sbAtomic.ToString();
                                         sbAtomic.Clear();
                                         sbExpr.Append(key);
                                     }
@@ -554,13 +522,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     while (true)
                     {
                         changesMade = false;
-                        foreach (var kvp in Atomics.ToArray())
+                        foreach (var kvp in MarkdownContext.Atomics.ToArray())
                         {
                             var value = kvp.Value.Replace(@"""", "$dquote$");
                             exprB4 = expr;
                             if (!Equals(expr = expr.Replace(kvp.Key, value), exprB4))
                             {
-                                Atomics.Remove(kvp.Key);
+                                MarkdownContext.Atomics.Remove(kvp.Key);
                                 changesMade = true;
                             }
                         }
@@ -579,12 +547,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        static string localRestoreAtomicQuoteContent(string expr)
+        static string RestoreAtomicQuoteContent(string expr)
         {
-            foreach (var kvp in Atomics.ToArray())
+            foreach (var kvp in MarkdownContext.Atomics.ToArray())
             {
                 var value = kvp.Value.Replace(@"""", "$dquote$");
-                Atomics.Remove(kvp.Key);
+                expr = expr.Replace(kvp.Key, value);
             }
             return expr;
         }

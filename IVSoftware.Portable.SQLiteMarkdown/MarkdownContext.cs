@@ -4,15 +4,41 @@ using System.IO.Pipes;
 using SQLite;
 using System.Linq;
 using System.Text.RegularExpressions;
+using IVSoftware.Portable.Disposable;
+using System.Diagnostics;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
     public class MarkdownContext
     {
+
+        public static Dictionary<string, string> Atomics = new Dictionary<string, string>();
+        static DisposableHost DHostAtomic
+        {
+            get
+            {
+                if (_dhostAtomic is null)
+                {
+                    _dhostAtomic = new DisposableHost();
+                    _dhostAtomic.FinalDispose += (sender, e) => Atomics.Clear();
+                }
+                return _dhostAtomic;
+            }
+        }
+        static DisposableHost _dhostAtomic = null;
         public MarkdownContext(string query, List<KeyValuePair<string, object>> args)
         {
-            Query = query ?? throw new ArgumentNullException(nameof(query));
-            Args = args ?? new List<KeyValuePair<string, object>>();
+            if (DHostAtomic.IsZero())
+            {
+                Query = query ?? throw new ArgumentNullException(nameof(query));
+                Args = args ?? new List<KeyValuePair<string, object>>();
+            }
+            else
+            {
+                Debug.Assert(DateTime.Now.Date == new DateTime(2025, 6, 22).Date, "Don't forget disabled");
+                Query = query ?? throw new ArgumentNullException(nameof(query));
+                Args = args ?? new List<KeyValuePair<string, object>>();
+            }
         }
 
         public static implicit operator string(MarkdownContext context) => context.ToString();
@@ -40,5 +66,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             return formatted;
         }
+
+        public static IDisposable GetToken() => DHostAtomic.GetToken();
     }
 }
