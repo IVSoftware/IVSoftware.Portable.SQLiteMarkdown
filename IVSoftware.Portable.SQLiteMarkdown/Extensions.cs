@@ -358,45 +358,45 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 return string.Empty;
             }
-            using(MarkdownContext.GetToken())
-            { 
+            using (MarkdownContext.GetToken())
+            {
 #if DEBUG
             var exprOR = expr; // Reporting
 #endif
-            localRunQuoteLinter('"');
-            localRunQuoteLinter('\'');
+                localRunQuoteLinter('"');
+                localRunQuoteLinter('\'');
 
 
-            // Remove unnecessary spaces
-            expr = Regex.Replace(expr, @"\s+", " ");
+                // Remove unnecessary spaces
+                expr = Regex.Replace(expr, @"\s+", " ");
 
-            // Define regex patterns
-            string andPattern = @"[& ]+";
-            string orPattern = @"[| ]+";
-            string notPattern = @"[! ]+";
+                // Define regex patterns
+                string andPattern = @"[& ]+";
+                string orPattern = @"[| ]+";
+                string notPattern = @"[! ]+";
 
-            // Replace and lint the expression
-            expr = LintOperators(expr, andPattern, '&');
-            expr = LintOperators(expr, orPattern, '|');
-            expr = LintOperators(expr, notPattern, '!');
+                // Replace and lint the expression
+                expr = LintOperators(expr, andPattern, '&');
+                expr = LintOperators(expr, orPattern, '|');
+                expr = LintOperators(expr, notPattern, '!');
 
-            // Check for conflicting operators
-            if (Regex.IsMatch(expr, @"[&]{2,}|[|]{2,}|[!]{2,}"))
-            {
-                throw new InvalidOperationException("Consecutive identical operators are not allowed.");
-            }
+                // Check for conflicting operators
+                if (Regex.IsMatch(expr, @"[&]{2,}|[|]{2,}|[!]{2,}"))
+                {
+                    throw new InvalidOperationException("Consecutive identical operators are not allowed.");
+                }
 
-            // Remove redundant operators
-            expr = RemoveRedundantOperators(expr);
+                // Remove redundant operators
+                expr = RemoveRedundantOperators(expr);
 
-            // Restore atomic quote content.
-            localRestoreAtomicQuoteContent();
+                // Restore atomic quote content.
+                localRestoreAtomicQuoteContent();
 
 
-            return trim ? expr.Trim() : expr;
+                return trim ? expr.Trim() : expr;
 
-            #region L o c a l F x
-            void localRunQuoteLinter(char quoteChar)
+                #region L o c a l F x
+                void localRunQuoteLinter(char quoteChar)
                 {
                     lock (_lock)
                     {
@@ -740,7 +740,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 { }
 #endif
             }
-       
+
             void localRestoreAtomicQuoteContent()
             {
                 while (atomicStack.Count > 0)
@@ -766,7 +766,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         private static string DelintLiteral(this string atomic)
         {
-            if(atomic.Contains("&"))
+            if (atomic.Contains("&"))
             {
                 Debug.Fail("ADVISORY - First Time.");
             }
@@ -977,7 +977,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         case NodeType.Tag:
                             // Now that is is an encapsulated term, we can 
                             // restore any literals inside an atomic quote.
-                            token.Value = 
+                            token.Value =
                                 token.Value
                                 .Replace("$dquote$", @"""")
                                 .Replace("$squote$", @"'");
@@ -1237,111 +1237,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public static bool CanParseAsJson(this string @this)
             => Regex.IsMatch(@this, @"^\s*\[\s*(""(?:[^""\\]|\\.)*""\s*,\s*)*(""[^""\\]*""\s*)\]\s*$");
-
-#if false
-        /// <summary>
-        /// Probationary
-        /// </summary>
-
-        public static List<(bool isAtomic, string text)> TokenizeAtomicSegments(this string expr)
-        {
-#if DEBUG
-            var exprIn = expr;
-#endif
-
-            var segments = new List<(bool isAtomic, string text)>();
-            if (string.IsNullOrEmpty(expr)) return segments;
-
-            expr = expr.Replace(@"''", "$squote$");
-            expr = expr.Replace(@"""""", "$dquote$");
-
-            var split = 
-                expr
-                .Split('$').Where(_=>!string.IsNullOrWhiteSpace(_))
-                .ToArray();
-
-            int index = 0;
-            string sub = null, cMe;
-            while (index < split.Length)
-            {
-                sub = split[index];
-                switch (sub)
-                {
-                    case "dquote":
-                        if(localPreviewNext(1) is string next1)
-                        {
-                            switch (next1)
-                            {
-                                case "dquote":
-                                    { }
-                                    throw new NotImplementedException("ToDo");
-                                    break;
-                                case "squote":
-                                    throw new NotImplementedException("ToDo");
-                                    { }
-                                    break;
-                                default:
-                                    if (localPreviewNext(2) is string next2)
-                                    {
-                                        // This is all the look ahead we should need.
-                                        switch (next2)
-                                        {
-                                            case "dquote":
-                                                cMe = $@"""{next1.DelintLiteral()}""";
-                                                segments.Add((true, cMe));
-                                                index+=2;
-                                                break;
-                                            case "squote":
-                                                throw new NotImplementedException("ToDo");
-                                                { }
-                                                break;
-                                            default:
-                                                throw new NotImplementedException("ToDo");
-                                                break;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        cMe = $@"""{next1}";
-                                        segments.Add((false, cMe));
-                                        index++;
-                                    }
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            // Trailing DQuote
-                            segments.Add((false, @""""));
-                        }
-                        break;
-                    case "squote":
-                        { }
-                        break;
-                    default:
-                        cMe = $@"{sub}";
-                        segments.Add((false, cMe));
-                        break;
-                }
-                index++;
-            }
-            return segments;
-            #region L o c a l F x
-		    string localPreviewNext(int offset)
-            {
-                var net = index + offset;
-                if(net < split.Length)
-                {
-                    return split[net];
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            #endregion L o c a l F x
-       
-        }
-#endif
     }
 }

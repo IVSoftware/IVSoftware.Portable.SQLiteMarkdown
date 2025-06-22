@@ -11,21 +11,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 {
     public class MarkdownContext
     {
-
-        public static Dictionary<string, string> Atomics = new Dictionary<string, string>();
-        static DisposableHost DHostAtomic
+        public MarkdownContext(string query, List<KeyValuePair<string, object>> args)
         {
-            get
-            {
-                if (_dhostAtomic is null)
-                {
-                    _dhostAtomic = new DisposableHost();
-                    _dhostAtomic.FinalDispose += (sender, e) => Atomics.Clear();
-                }
-                return _dhostAtomic;
-            }
+            Query = query ?? throw new ArgumentNullException(nameof(query));
+            Args = args ?? new List<KeyValuePair<string, object>>();
         }
-        static DisposableHost _dhostAtomic = null;
+#if false && SAVE
         public MarkdownContext(string query, List<KeyValuePair<string, object>> args)
         {
             if (DHostAtomic.IsZero())
@@ -37,7 +28,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 lock (_lock)
                 {
-                    Debug.Assert(DateTime.Now.Date == new DateTime(2025, 6, 22).Date, "Don't forget disabled");
                     Query = query ?? throw new ArgumentNullException(nameof(query));
                     Args =
                         args
@@ -66,6 +56,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+#endif
+
+        public static Dictionary<string, string> Atomics = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Clear values from the Atomics dictionary when we're done with them.
+        /// </summary>
+        static DisposableHost DHostAtomic
+        {
+            get
+            {
+                if (_dhostAtomic is null)
+                {
+                    _dhostAtomic = new DisposableHost();
+                    _dhostAtomic.FinalDispose += (sender, e) => Atomics.Clear();
+                }
+                return _dhostAtomic;
+            }
+        }
+        static DisposableHost _dhostAtomic = null;
         static object _lock = new object();
 
         public static implicit operator string(MarkdownContext context) => context.ToString();
@@ -79,7 +89,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Args.Select(kvp => kvp.Value).ToArray();
 
         public List<KeyValuePair<string, object>> Args { get; }
-        //public static bool AllowLocalAtomics => DHostAtomic.IsZero();
 
         public override string ToString()
         {
