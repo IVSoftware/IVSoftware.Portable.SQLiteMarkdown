@@ -279,7 +279,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                         if (!indexingMode.HasFlag(IndexingMode.TagMatchTerm)) continue;
 
                                         string paramName = $"@param{paramIndex++}";
-                                        string paramValue = $"%{node.Value}%";
+                                        string paramValue = $"%[{node.Value}]%";
 
                                         orderedArgs.Add(new KeyValuePair<string, object>(paramName, paramValue));
                                         tagConditionBuilder.Add($"{pi.Name} LIKE {paramName}");
@@ -1025,7 +1025,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     distinctTerms.UnionWith(
                         astNodes
                         .Where(node => node.ASTType == NodeType.Tag)
-                        .Select(node => node.Value));
+                        .Select(node => $"[{node.Value}]"));
                     break;
 
                 case NodeTypeFlags.All:
