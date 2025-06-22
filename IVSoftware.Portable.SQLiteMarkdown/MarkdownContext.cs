@@ -37,7 +37,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 Debug.Assert(DateTime.Now.Date == new DateTime(2025, 6, 22).Date, "Don't forget disabled");
                 Query = query ?? throw new ArgumentNullException(nameof(query));
-                Args = args ?? new List<KeyValuePair<string, object>>();
+                Args =
+                    args
+                    ?? new List<KeyValuePair<string, object>>();
+
+                for (int i = 0; i < args.Count; i++) 
+                {
+                    var kvp = args[i];
+                    if(kvp.Value is string encoded)
+                    {
+                        var expr = encoded;
+                    restart:
+                        foreach (var decoder in Atomics)
+                        {
+                            var exprB4 = expr;
+                            expr = expr.Replace(decoder.Key, decoder.Value);
+                            if(expr != exprB4)
+                            {
+                                // Atomics is not ordered, so recheck all.
+                                goto restart;
+                            }
+                        }
+                        args[i] = new KeyValuePair<string, object>(kvp.Key, expr);
+                    }    
+                }
             }
         }
 
@@ -52,6 +75,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Args.Select(kvp => kvp.Value).ToArray();
 
         public List<KeyValuePair<string, object>> Args { get; }
+        public static bool AllowLocalAtomics => DHostAtomic.IsZero();
 
         public override string ToString()
         {
