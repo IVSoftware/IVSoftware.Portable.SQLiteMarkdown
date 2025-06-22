@@ -119,6 +119,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             };
             tsmiCombo.SelectedIndexChanged += (sender, e) =>
             {
+                contextMenuQueryFilter.Close();
                 BeginInvoke(() =>
                 {
                     if (tsmiCombo.SelectedItem?.ToString() is { } expr)

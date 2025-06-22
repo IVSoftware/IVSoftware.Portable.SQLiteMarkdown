@@ -477,7 +477,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     .SerializeObject(items, Formatting.Indented)
                     .Replace(@"\r\n", string.Empty);
                 actual.ToClipboard();
-                actual.ToClipboardAssert();
+                actual.ToClipboardExpected();
                 { }
                 expected = @" 
 [
@@ -489,11 +489,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     ""PrimaryKey"": ""38CFE38E-0D90-4C9F-A4E5-845089CB2BB0"",
     ""LikeTerm"": ""tom~tester"",
     ""ContainsTerm"": ""tom~tester"",
-    ""TagMatchTerm"": ""c#&.net&maui~c#&wpf~c#&winforms"",
+    ""TagMatchTerm"": ""[c#&.net&maui]~[c#&wpf]~[c#&winforms]"",
     ""Properties"": ""{  \""FirstName\"": \""Tom\"",  \""LastName\"": \""Tester\"",  \""Tags\"": \""[c# .net maui][c# wpf][c# winforms]\""}""
   }
-]
-".NormalizeResult();
+]"
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -533,9 +533,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
                 actual = JsonConvert.SerializeObject(retrievedItems, Formatting.Indented);
                 actual.ToClipboard();
-                actual.ToClipboardAssert();
-                { }
 
+                actual.ToClipboardExpected();
+                { }
                 expected = @" 
 [
   {
@@ -546,10 +546,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     ""PrimaryKey"": ""38CFE38E-0D90-4C9F-A4E5-845089CB2BB0"",
     ""LikeTerm"": ""tom~tester"",
     ""ContainsTerm"": ""tom~tester"",
-    ""TagMatchTerm"": ""c#&.net&maui~c#&wpf~c#&winforms"",
+    ""TagMatchTerm"": ""[c#&.net&maui]~[c#&wpf]~[c#&winforms]"",
     ""Properties"": ""{\r\n  \""FirstName\"": \""Tom\"",\r\n  \""LastName\"": \""Tester\"",\r\n  \""Tags\"": \""[c# .net maui][c# wpf][c# winforms]\""\r\n}""
   }
-]".NormalizeResult();
+]"
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -593,8 +594,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 retrievedItems = cnx.Query<SelfIndexedProfile>(query).ToArray();
                 actual = JsonConvert.SerializeObject(retrievedItems, Formatting.Indented);
                 actual.ToClipboard();
-                actual.ToClipboardAssert();
 
+                actual.ToClipboardExpected();
+                { }
                 expected = @" 
 [
   {
@@ -605,10 +607,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     ""PrimaryKey"": ""38CFE38E-0D90-4C9F-A4E5-845089CB2BB0"",
     ""LikeTerm"": ""tom~tester"",
     ""ContainsTerm"": ""tom~tester"",
-    ""TagMatchTerm"": ""c#&.net&maui~c#&wpf~c#&winforms"",
+    ""TagMatchTerm"": ""[c#&.net&maui]~[c#&wpf]~[c#&winforms]"",
     ""Properties"": ""{\r\n  \""FirstName\"": \""Tom\"",\r\n  \""LastName\"": \""Tester\"",\r\n  \""Tags\"": \""[c# .net maui][c# wpf][c# winforms]\""\r\n}""
   }
-]".NormalizeResult();
+]"
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
