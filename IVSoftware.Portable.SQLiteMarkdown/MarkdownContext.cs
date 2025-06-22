@@ -79,7 +79,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Args.Select(kvp => kvp.Value).ToArray();
 
         public List<KeyValuePair<string, object>> Args { get; }
-        public static bool AllowLocalAtomics => DHostAtomic.IsZero();
+        //public static bool AllowLocalAtomics => DHostAtomic.IsZero();
 
         public override string ToString()
         {
