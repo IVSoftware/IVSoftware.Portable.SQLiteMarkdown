@@ -358,74 +358,113 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 return string.Empty;
             }
+            using (MarkdownContext.GetToken())
+            {
 #if DEBUG
             var exprOR = expr; // Reporting
 #endif
-            localRunQuoteLinter('"');
-            localRunQuoteLinter('\'');
+                localRunQuoteLinter('"');
+                localRunQuoteLinter('\'');
 
 
-            // Remove unnecessary spaces
-            expr = Regex.Replace(expr, @"\s+", " ");
+                // Remove unnecessary spaces
+                expr = Regex.Replace(expr, @"\s+", " ");
 
-            // Define regex patterns
-            string andPattern = @"[& ]+";
-            string orPattern = @"[| ]+";
-            string notPattern = @"[! ]+";
+                // Define regex patterns
+                string andPattern = @"[& ]+";
+                string orPattern = @"[| ]+";
+                string notPattern = @"[! ]+";
 
-            // Replace and lint the expression
-            expr = LintOperators(expr, andPattern, '&');
-            expr = LintOperators(expr, orPattern, '|');
-            expr = LintOperators(expr, notPattern, '!');
+                // Replace and lint the expression
+                expr = LintOperators(expr, andPattern, '&');
+                expr = LintOperators(expr, orPattern, '|');
+                expr = LintOperators(expr, notPattern, '!');
 
-            // Check for conflicting operators
-            if (Regex.IsMatch(expr, @"[&]{2,}|[|]{2,}|[!]{2,}"))
-            {
-                throw new InvalidOperationException("Consecutive identical operators are not allowed.");
-            }
-
-            // Remove redundant operators
-            expr = RemoveRedundantOperators(expr);
-
-            // Restore atomic quote content.
-            localRestoreAtomicQuoteContent();
-
-
-            return trim ? expr.Trim() : expr;
-
-            #region L o c a l F x
-            void localRunQuoteLinter(char quoteChar)
-            {
-                lock (_lock)
+                // Check for conflicting operators
+                if (Regex.IsMatch(expr, @"[&]{2,}|[|]{2,}|[!]{2,}"))
                 {
-                    StringBuilder
-                        sbExpr = new StringBuilder(),
-                        sbAtomic = new StringBuilder();
-                    string key;
-                    bool isQuoteOpen = false;
+                    throw new InvalidOperationException("Consecutive identical operators are not allowed.");
+                }
 
-                    for (int i = 0; i < expr.Length; i++)
+                // Remove redundant operators
+                expr = RemoveRedundantOperators(expr);
+
+                // Restore atomic quote content.
+                localRestoreAtomicQuoteContent();
+
+
+                return trim ? expr.Trim() : expr;
+
+                #region L o c a l F x
+                void localRunQuoteLinter(char quoteChar)
+                {
+                    lock (_lock)
                     {
-                        var c = expr[i];
-                        if (c == quoteChar)
-                        {
-                            var run = localGetQuoteRun();
-                            // Toggle
-                            if (isQuoteOpen)
-                            {
-                                if (sbAtomic.Length != 0)
-                                {
-                                    key = "$" + Guid.NewGuid().ToString().ToLower() + "$";
+                        StringBuilder
+                            sbExpr = new StringBuilder(),
+                            sbAtomic = new StringBuilder();
+                        string key;
+                        bool isQuoteOpen = false;
 
+                        for (int i = 0; i < expr.Length; i++)
+                        {
+                            var c = expr[i];
+                            if (c == quoteChar)
+                            {
+                                var run = localGetQuoteRun();
+                                // Toggle
+                                if (isQuoteOpen)
+                                {
+                                    if (sbAtomic.Length != 0)
+                                    {
+                                        key = "$" + Guid.NewGuid().ToString().ToLower() + "$";
+
+                                        if (run > 0)
+                                        {
+                                            if (run % 2 == 0)
+                                            {
+                                                for (int j = 0; j < run; j++)
+                                                {
+                                                    sbAtomic.Append(quoteChar);
+                                                    i++;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                for (int j = 1; j < run; j++)
+                                                {
+                                                    sbAtomic.Append(quoteChar);
+                                                    i++;
+                                                }
+                                            }
+                                            MarkdownContext.Atomics[key] = sbAtomic.ToString();
+                                            sbAtomic.Clear();
+                                            sbExpr.Append(key);     // Placeholder
+
+                                            sbExpr.Append(quoteChar); // END by appending quote to expr at-large.
+                                        }
+                                        else
+                                        {
+                                            MarkdownContext.Atomics[key] = sbAtomic.ToString();
+                                            sbAtomic.Clear();
+                                            sbExpr.Append(key);
+                                        }
+                                    }
+                                    isQuoteOpen = false;
+                                }
+                                else
+                                {
                                     if (run > 0)
                                     {
+                                        sbExpr.Append(quoteChar);
                                         if (run % 2 == 0)
                                         {
-                                            for (int j = 0; j < run; j++)
+                                            for (int j = 1; j < run; j++)
                                             {
-                                                sbAtomic.Append(quoteChar);
+                                                sbExpr.Append(quoteChar);
                                                 i++;
                                             }
+                                            isQuoteOpen = false;
                                         }
                                         else
                                         {
@@ -434,118 +473,65 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                                 sbAtomic.Append(quoteChar);
                                                 i++;
                                             }
+                                            isQuoteOpen = true;
                                         }
-                                        MarkdownContext.Atomics[key] = sbAtomic.ToString();
-                                        sbAtomic.Clear();
-                                        sbExpr.Append(key);     // Placeholder
-
-                                        sbExpr.Append(quoteChar); // END by appending quote to expr at-large.
-                                    }
-                                    else
-                                    {
-                                        MarkdownContext.Atomics[key] = sbAtomic.ToString();
-                                        sbAtomic.Clear();
-                                        sbExpr.Append(key);
                                     }
                                 }
-                                isQuoteOpen = false;
+
+                                int localGetQuoteRun()
+                                {
+                                    int count = 0;
+                                    int lookAhead = i;
+                                    while (lookAhead < expr.Length && expr[lookAhead] == quoteChar)
+                                    {
+                                        count++;
+                                        lookAhead++;
+                                    }
+                                    return count;
+                                }
                             }
                             else
                             {
-                                if (run > 0)
+                                if (isQuoteOpen)
                                 {
-                                    sbExpr.Append(quoteChar);
-                                    if (run % 2 == 0)
-                                    {
-                                        for (int j = 1; j < run; j++)
-                                        {
-                                            sbExpr.Append(quoteChar);
-                                            i++;
-                                        }
-                                        isQuoteOpen = false;
-                                    }
-                                    else
-                                    {
-                                        for (int j = 1; j < run; j++)
-                                        {
-                                            sbAtomic.Append(quoteChar);
-                                            i++;
-                                        }
-                                        isQuoteOpen = true;
-                                    }
+                                    sbAtomic.Append(c);
                                 }
-                            }
-
-                            int localGetQuoteRun()
-                            {
-                                int count = 0;
-                                int lookAhead = i;
-                                while (lookAhead < expr.Length && expr[lookAhead] == quoteChar)
+                                else
                                 {
-                                    count++;
-                                    lookAhead++;
+                                    sbExpr.Append(c);
                                 }
-                                return count;
                             }
                         }
-                        else
+
+                        if (isQuoteOpen)
                         {
-                            if (isQuoteOpen)
-                            {
-                                sbAtomic.Append(c);
-                            }
-                            else
-                            {
-                                sbExpr.Append(c);
-                            }
+                            sbExpr.Append(sbAtomic);
+                            sbAtomic.Clear();
                         }
-                    }
-
-                    if (isQuoteOpen)
-                    {
-                        sbExpr.Append(sbAtomic);
-                        sbAtomic.Clear();
-                    }
-                    expr = sbExpr.ToString();
+                        expr = sbExpr.ToString();
 
 #if DEBUG
-                    Debug.WriteLine($"250619.A");
-                    Debug.WriteLine($"{exprOR,-30} | {expr,-30}");
-                    { }
+                        Debug.WriteLine($"250619.A");
+                        Debug.WriteLine($"{exprOR,-30} | {expr,-30}");
+                        { }
 #endif
+                    }
                 }
             }
 
             void localRestoreAtomicQuoteContent()
             {
-                if (MarkdownContext.AllowLocalAtomics)
+                string exprB4;
+                lock (_lock)
                 {
-                    string exprB4;
-                    bool changesMade;
-                    while (true)
+                    restart:
+                    foreach (var kvp in MarkdownContext.Atomics.ToArray())
                     {
-                        lock (_lock)
+                        var value = kvp.Value.Replace(@"""", "$dquote$");
+                        exprB4 = expr;
+                        if (!Equals(expr = expr.Replace(kvp.Key, value), exprB4))
                         {
-                            changesMade = false;
-                            foreach (var kvp in MarkdownContext.Atomics.ToArray())
-                            {
-                                var value = kvp.Value.Replace(@"""", "$dquote$");
-                                exprB4 = expr;
-                                if (!Equals(expr = expr.Replace(kvp.Key, value), exprB4))
-                                {
-                                    MarkdownContext.Atomics.Remove(kvp.Key);
-                                    changesMade = true;
-                                }
-                            }
-                            // SEE UNIT TEST COVERAGE HERE:
-                            // {93B1FE29-F593-47EC-9CFA-F2706E79AA9E}
-                            // expr = @"'Tom ""safe inner"" Tester'";
-                            // Defensive strategy to prevent looping forever if some
-                            // fault that prevents resonstituting all of the keys.
-                            if (!changesMade)
-                            {
-                                break;
-                            }
+                            goto restart;
                         }
                     }
                 }
@@ -754,7 +740,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 { }
 #endif
             }
-       
+
             void localRestoreAtomicQuoteContent()
             {
                 while (atomicStack.Count > 0)
@@ -780,7 +766,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         private static string DelintLiteral(this string atomic)
         {
-            if(atomic.Contains("&"))
+            if (atomic.Contains("&"))
             {
                 Debug.Fail("ADVISORY - First Time.");
             }
@@ -991,7 +977,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         case NodeType.Tag:
                             // Now that is is an encapsulated term, we can 
                             // restore any literals inside an atomic quote.
-                            token.Value = 
+                            token.Value =
                                 token.Value
                                 .Replace("$dquote$", @"""")
                                 .Replace("$squote$", @"'");
@@ -1251,111 +1237,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public static bool CanParseAsJson(this string @this)
             => Regex.IsMatch(@this, @"^\s*\[\s*(""(?:[^""\\]|\\.)*""\s*,\s*)*(""[^""\\]*""\s*)\]\s*$");
-
-#if false
-        /// <summary>
-        /// Probationary
-        /// </summary>
-
-        public static List<(bool isAtomic, string text)> TokenizeAtomicSegments(this string expr)
-        {
-#if DEBUG
-            var exprIn = expr;
-#endif
-
-            var segments = new List<(bool isAtomic, string text)>();
-            if (string.IsNullOrEmpty(expr)) return segments;
-
-            expr = expr.Replace(@"''", "$squote$");
-            expr = expr.Replace(@"""""", "$dquote$");
-
-            var split = 
-                expr
-                .Split('$').Where(_=>!string.IsNullOrWhiteSpace(_))
-                .ToArray();
-
-            int index = 0;
-            string sub = null, cMe;
-            while (index < split.Length)
-            {
-                sub = split[index];
-                switch (sub)
-                {
-                    case "dquote":
-                        if(localPreviewNext(1) is string next1)
-                        {
-                            switch (next1)
-                            {
-                                case "dquote":
-                                    { }
-                                    throw new NotImplementedException("ToDo");
-                                    break;
-                                case "squote":
-                                    throw new NotImplementedException("ToDo");
-                                    { }
-                                    break;
-                                default:
-                                    if (localPreviewNext(2) is string next2)
-                                    {
-                                        // This is all the look ahead we should need.
-                                        switch (next2)
-                                        {
-                                            case "dquote":
-                                                cMe = $@"""{next1.DelintLiteral()}""";
-                                                segments.Add((true, cMe));
-                                                index+=2;
-                                                break;
-                                            case "squote":
-                                                throw new NotImplementedException("ToDo");
-                                                { }
-                                                break;
-                                            default:
-                                                throw new NotImplementedException("ToDo");
-                                                break;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        cMe = $@"""{next1}";
-                                        segments.Add((false, cMe));
-                                        index++;
-                                    }
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            // Trailing DQuote
-                            segments.Add((false, @""""));
-                        }
-                        break;
-                    case "squote":
-                        { }
-                        break;
-                    default:
-                        cMe = $@"{sub}";
-                        segments.Add((false, cMe));
-                        break;
-                }
-                index++;
-            }
-            return segments;
-            #region L o c a l F x
-		    string localPreviewNext(int offset)
-            {
-                var net = index + offset;
-                if(net < split.Length)
-                {
-                    return split[net];
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            #endregion L o c a l F x
-       
-        }
-#endif
     }
 }
