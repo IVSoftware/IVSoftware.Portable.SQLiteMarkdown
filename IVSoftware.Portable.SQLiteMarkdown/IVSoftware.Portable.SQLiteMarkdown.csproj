@@ -34,12 +34,15 @@
 			- The interface is becoming stable but until an RC version posts the interface contract should be considered probationary.
 			- For the adventurous, the intent is starting to be clear enough to be potentially useful.
 			- ADVISORY: Unit Testing is clean in DEBUG mode but the atomic string parsing fails two tests in release mode. Avoid atomic string parsing for now.
+			Beta Release + 1
+			- ADVISORY: This is 'not' a released bundle.
+			- Unit Tests @ 16 are passing handily now in RELEASE mode. (A critical expr assignment was being done inside a #DEBUG block.)
 		</PackageReleaseNotes>
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
 		<BaseVersion>1.0.0</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-beta</VersionPrefix>
+		<VersionPrefix>$(BaseVersion)-beta1</VersionPrefix>
 	</PropertyGroup>
 
 	<ItemGroup>
