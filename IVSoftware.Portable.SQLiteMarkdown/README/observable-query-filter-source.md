@@ -137,8 +137,27 @@ This avoids accidental result loss while giving the user clear control over when
 
 ### Benefits
 
-- Integrates with any data backend (SQLite, MySQL, EF, Web API)
-- Requires no subclassing or boilerplate
-- Filtering logic is declarative via simple attributes
-- No UI framework dependency
-- UI elements can subscribe to state changes for visual feedback
+- Fully decoupled from UI frameworks — works with MAUI, WPF, Blazor, etc.
+- Compatible with any data backend — SQLite, MySQL, Entity Framework, REST API
+- No subclassing required — filtering logic is declared with simple attributes
+- Query and filter expression are stored as part of internal state
+- Seamless integration with app navigation — persistent search state per collection view
+- UI can observe state transitions (e.g., filtering armed vs active) for visual feedback
+- Debounced filtering with developer-defined timing
+
+___
+
+### Common Pattern: Shared NavSearchBar
+
+In many apps, a shared `NavSearchBar` (NSB) is used to support multiple collection views, each activated through navigation.
+
+Each view typically owns its own view model, and that view model contains an instance of `ObservableQueryFilterSource<T>` (OQFS) for its dataset.
+
+While the view model could track the active expression and filtering state explicitly, `OQFS` already maintains the current input expression and state internally. This allows the NSB to be easily reconfigured when returning to a given view — no need for separate state plumbing.
+
+This pattern supports:
+
+- A one-to-many relationship between a shared NSB and multiple views
+- Automatic restoration of the correct input expression for each dataset
+- Consistent and predictable UX across navigable data contexts
+

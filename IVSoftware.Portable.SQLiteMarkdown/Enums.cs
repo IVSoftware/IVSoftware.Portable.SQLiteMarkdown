@@ -124,4 +124,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         QueryCompleteWithResults,
         #endregion Q U E R Y
     }
+
+    [Flags]
+    public enum QueryFilterMode
+    {
+        QueryAndFilter = QueryOnly | FilterOnly,
+        QueryOnly = 0x01,
+        FilterOnly = 0x02,
+    }
 }

@@ -116,6 +116,104 @@ ___
 By following these rules, expressions can be parsed flexibly and safely—even while a user is still typing.
 
 ___
+
+## Expression to SQL Translation
+
+Once your model is decorated with `[SqlLikeTerm]` or related attributes, parsed expressions are converted into SQL using the attribute definitions. Each term is matched across **all decorated fields**, joined with `OR`.
+
+For example:
+
+```csharp
+public class Contact
+{
+    [SqlLikeTerm]
+    public string Name { get; set; }
+
+    [SqlLikeTerm]
+    public string Email { get; set; }
+}
+```
+
+Input like `"foo"` will match:
+
+```sql
+(Name LIKE '%foo%' OR Email LIKE '%foo%')
+```
+
+Here are more examples:
+
+| Input Expression       | SQL Translation (simplified)                                                                 | Description                         |
+|------------------------|----------------------------------------------------------------------------------------------|-------------------------------------|
+| `a b`                  | `(Name LIKE '%a%' OR Email LIKE '%a%') AND (Name LIKE '%b%' OR Email LIKE '%b%')`           | Implicit AND                        |
+| `a | b`                | `(Name LIKE '%a%' OR Email LIKE '%a%') OR (Name LIKE '%b%' OR Email LIKE '%b%')`           | OR operator                         |
+| `a !b`                 | `(Name LIKE '%a%' OR Email LIKE '%a%') AND NOT (Name LIKE '%b%' OR Email LIKE '%b%')`       | AND with NOT                        |
+| `!a`                   | `NOT (Name LIKE '%a%' OR Email LIKE '%a%')`                                                 | Single NOT                          |
+| `'exact phrase'`       | `(Name LIKE '%exact phrase%' OR Email LIKE '%exact phrase%')`                               | Exact match using single quotes     |
+| `"exact phrase"`       | `(Name LIKE '%exact phrase%' OR Email LIKE '%exact phrase%')`                               | Exact match using double quotes     |
+| `!(a | b)`             | `NOT ((Name LIKE '%a%' OR Email LIKE '%a%') OR (Name LIKE '%b%' OR Email LIKE '%b%'))`     | Negated group                       |
+| `a & b`                | `(Name LIKE '%a%' OR Email LIKE '%a%') AND (Name LIKE '%b%' OR Email LIKE '%b%')`           | Explicit AND                        |
+| `a &&& b`              | `(Name LIKE '%a%' OR Email LIKE '%a%') AND (Name LIKE '%b%' OR Email LIKE '%b%')`           | Redundant AND syntax normalized     |
+| `a || b`               | `(Name LIKE '%a%' OR Email LIKE '%a%') OR (Name LIKE '%b%' OR Email LIKE '%b%')`           | Redundant OR syntax normalized      |
+| `\!a`                  | `(Name LIKE '%!a%' OR Email LIKE '%!a%')`                                                   | Escaped NOT — treated as literal    |
+| `\[bracket\]`          | `(Name LIKE '%[bracket]%' OR Email LIKE '%[bracket]%')`                                     | Escaped brackets                    |
+
+> Matching is case-insensitive by default unless configured via `StringCasing`.
+
+---
+
+## Query Templates for Expression Parsing
+
+In many scenarios, you already have a dataset — for example:
+
+- An `ObservableCollection<T>` that will be filtered in-memory, or
+- A SQLite table or IQueryable source populated with records of type `T`
+
+But you may want to control **how the search expression is parsed and translated into SQL** — independently of how your data is shaped or persisted.
+
+To support this, the parser treats `T` as a **query template**, not necessarily the literal payload type.
+
+You can define a proxy class with:
+
+- The same property names as your real data
+- The same `[Table]` mapping (optional, but recommended for SQLite)
+- Different `[MarkdownTerm]` attributes to control which fields participate in the expression
+
+```csharp
+[Table("Contact")]
+public class ContactStrictIndex
+{
+    [SqlLikeTerm]
+    public string Name { get; set; }
+}
+
+[Table("Contact")]
+public class ContactWideIndex
+{
+    [SqlLikeTerm]
+    public string Name { get; set; }
+
+    [SqlLikeTerm]
+    public string Email { get; set; }
+}
+```
+
+You can then parse the same input using different templates:
+
+```csharp
+var strictSql = "foo bar".ParseSqlMarkdown<ContactStrictIndex>();
+var wideSql = "foo bar".ParseSqlMarkdown<ContactWideIndex>();
+```
+
+This pattern allows you to:
+
+- Apply different query behaviors for different views, roles, or modes
+- Avoid annotating your core domain model with filter-specific concerns
+- Cleanly separate indexing logic from data logic
+
+> Query templates are lightweight and composable — think of them as named filter contracts for how a user’s input should be interpreted.
+
+---
+
 ## ObservableQueryFilterSource
 
 Drop-in replacement for ObservableCollection&lt;T&gt; with built-in support for both Query and Query-then-Filter workflows. It exposes a declarative interface for managing collection state while tracking query/filter intent via an internal FSM (QueryFilterStateTracker). Though UI-agnostic, the class anticipates integration with a navigation search bar, where queries are externally applied and subsequent in-memory filtering is handled via an embedded SQLite store. This enables persistent introspection of the original query, filtered/unfiltered results, and search metadata—all without any UI dependencies.
