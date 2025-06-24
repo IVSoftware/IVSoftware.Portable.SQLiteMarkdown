@@ -4,17 +4,6 @@ using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public enum ClearMode
-    {
-        // The clear action affects the search
-        // term and the collection it serves.
-        SingleTap,
-
-        // When the serves collection is 'not' empty,
-        // the first tap clears only the search term.
-        DoubleTap,
-    }
-
     /// <summary>
     /// This is marked as a [Flags] enum in spite of the inference that
     /// the Invalid and Valid could be combined, which of course they can't.
