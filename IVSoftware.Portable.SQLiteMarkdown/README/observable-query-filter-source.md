@@ -10,9 +10,9 @@ Although it's essentially a query-then-filter state machine, it can be freely us
 
 `ObservableQueryFilterSource<T>` manages a seamless **query-then-filter** workflow using a built-in state machine. It allows flexible integration with any UI while letting you keep full control over when and how remote queries are executed.
 
-### Step 1: Model Decoration
+### Step 1: Model Setup
 
-Filtering behavior is driven by simple attribute annotations on your model properties — no subclassing required.
+Filtering is driven by lightweight attribute decoration on your model properties:
 
 ```csharp
 public class Contact
@@ -28,40 +28,7 @@ public class Contact
 }
 ```
 
-This enables SQL-style parsing for:
-- Logical operators: AND, OR, NOT
-- Tag expressions: [tag]
-- Exact matches with quotes
-- Escaped characters and unmatched bracket handling
-- Partial or imbalanced input during typing
-
-Additional attribute types like `[FilterContainsTerm]` and `[TagMatchTerm]` are available for alternative filtering strategies.
-
-### Example Expressions
-
-Once decorated, your model participates in expression parsing using a SQLite-Markdown-style language.
-
-> In the example model above, both `Name` and `Email` are marked with `[SqlLikeTerm]`.  
-> That means each search term is matched against **both** fields, joined with `OR`.
-
-Here are some examples of input expressions and how they are translated:
-
-| Input Expression       | SQL Translation (simplified)                                                                 | Description                         |
-|------------------------|----------------------------------------------------------------------------------------------|-------------------------------------|
-| `a b`                  | `(Name LIKE '%a%' OR Email LIKE '%a%') AND (Name LIKE '%b%' OR Email LIKE '%b%')`           | Implicit AND                        |
-| `a | b`                | `(Name LIKE '%a%' OR Email LIKE '%a%') OR (Name LIKE '%b%' OR Email LIKE '%b%')`           | OR operator                         |
-| `a !b`                 | `(Name LIKE '%a%' OR Email LIKE '%a%') AND NOT (Name LIKE '%b%' OR Email LIKE '%b%')`       | AND with NOT                        |
-| `!a`                   | `NOT (Name LIKE '%a%' OR Email LIKE '%a%')`                                                 | Single NOT                          |
-| `'exact phrase'`       | `(Name LIKE '%exact phrase%' OR Email LIKE '%exact phrase%')`                               | Exact match using single quotes     |
-| `"exact phrase"`       | `(Name LIKE '%exact phrase%' OR Email LIKE '%exact phrase%')`                               | Exact match using double quotes     |
-| `!(a | b)`             | `NOT ((Name LIKE '%a%' OR Email LIKE '%a%') OR (Name LIKE '%b%' OR Email LIKE '%b%'))`     | Negated group                       |
-| `a & b`                | `(Name LIKE '%a%' OR Email LIKE '%a%') AND (Name LIKE '%b%' OR Email LIKE '%b%')`           | Explicit AND                        |
-| `a &&& b`              | `(Name LIKE '%a%' OR Email LIKE '%a%') AND (Name LIKE '%b%' OR Email LIKE '%b%')`           | Redundant AND syntax normalized     |
-| `a || b`               | `(Name LIKE '%a%' OR Email LIKE '%a%') OR (Name LIKE '%b%' OR Email LIKE '%b%')`           | Redundant OR syntax normalized      |
-| `\!a`                  | `(Name LIKE '%!a%' OR Email LIKE '%!a%')`                                                   | Escaped NOT — treated as literal    |
-| `\[bracket\]`          | `(Name LIKE '%[bracket]%' OR Email LIKE '%[bracket]%')`                                     | Escaped brackets                    |
-
-> All matching is case-insensitive by default unless overridden with `StringCasing` options in the attribute.
+> For full details on supported syntax and query translation, see [Expression Parsing & SQL Translation](./SQLiteMarkdown.md).
 
 ---
 
@@ -103,8 +70,7 @@ These expose signals you can use for UI feedback (e.g., icons, colors, messages)
   - The list is filtered in memory using the parsed expression
   - `FilteringState` transitions to `Active`
 
-Filtering is implicitly just works (IJW) — no manual trigger is required.  
-The debounce delay can be customized, but filtering is always asynchronous and deliberate.
+Filtering works implicitly — no manual action is required (IJW) — no manual trigger is required. The debounce delay can be customized, but filtering is always asynchronous and deliberate.
 
 #### FilteringState.Ineligible
 
