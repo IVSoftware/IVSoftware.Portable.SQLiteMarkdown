@@ -37,6 +37,11 @@
 			Beta Release + 1
 			- ADVISORY: This is 'not' a released bundle.
 			- Unit Tests @ 16 are passing handily now in RELEASE mode. (A critical expr assignment was being done inside a #DEBUG block.)
+			Beta Release + 2
+			- ADVISORY: This is 'not' a released bundle.
+			- The FilterValue property has been entirely removed from iterfaces, classed, MSTest data.
+			- Going forward, the QueryTemplate and FilterTemplate properties will express differences between terms to be considered in the respective states.
+			
 		</PackageReleaseNotes>
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>

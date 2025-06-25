@@ -1,14 +1,17 @@
-﻿using Newtonsoft.Json;
-using SQLite;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
-using System.Xml.Linq;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using SQLite;
 
-namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
+namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB
 {
     [DebuggerDisplay("{Description}")]
     [Table("items")]
-    public class SelectableQueryModel : SelfIndexed, ISelectableQueryFilterItem
+    public class StrictTagQueryModel : SelfIndexed, ISelectableQueryFilterItem
     {
         [PrimaryKey]
         public override string Id { get; set; } = Guid.NewGuid().ToString();
@@ -45,9 +48,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
 
         public string KeywordsDisplay => Keywords.Trim('[', ']');
 
-        [SelfIndexed(
-            IndexingMode.LikeTerm |         // Responds to non-bracketed tokens as if they were bracketed, but not the other way around.
-            IndexingMode.TagMatchTerm )]    // Responds to strict bracketed terms
+        [SelfIndexed(IndexingMode.TagMatchTerm)]    // Responds to strict bracketed terms only
         public string Tags
         {
             get => _tags;

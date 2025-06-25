@@ -39,7 +39,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     public interface ISelectableQueryFilterItem
         : ISelfIndexedMarkdown
     {
-        IComparable FilterValue { get; }
         OnePageItemSelection Selection { get; set; }
     }
 }

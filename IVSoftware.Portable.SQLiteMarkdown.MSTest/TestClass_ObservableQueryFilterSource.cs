@@ -1,6 +1,7 @@
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.DemoDB;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
+using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
@@ -21,131 +22,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     // Namespace with test-only classes.
     namespace DemoDB
     {
-        [DebuggerDisplay("{Description}")]
-        [Table("items")]
-        public class StrictTagQueryModel : SelfIndexed, ISelectableQueryFilterItem
-        {
-            [PrimaryKey]
-            public override string Id { get; set; } = Guid.NewGuid().ToString();
-
-            [SelfIndexed]
-            public string Description
-            {
-                get => _description;
-                set
-                {
-                    if (!Equals(_description, value))
-                    {
-                        _description = value;
-                        OnPropertyChanged();
-                    }
-                }
-            }
-            string _description = "New Item";
-
-            [SelfIndexed]
-            public string Keywords
-            {
-                get => _keywords;
-                set
-                {
-                    if (!Equals(_keywords, value))
-                    {
-                        _keywords = value;
-                        OnPropertyChanged();
-                    }
-                }
-            }
-            private string _keywords = JsonConvert.SerializeObject(new List<string>());
-
-            public string KeywordsDisplay => Keywords.Trim('[', ']');
-
-            [SelfIndexed(IndexingMode.TagMatchTerm)]    // Responds to strict bracketed terms only
-            public string Tags
-            {
-                get => _tags;
-                set
-                {
-                    if (!Equals(_tags, value))
-                    {
-                        _tags = value;
-                        OnPropertyChanged();
-                    }
-                }
-            }
-            private string _tags = string.Empty;
-
-            public string TagsDisplay => Tags;
-
-
-            public bool IsChecked
-            {
-                get => _isChecked;
-                set
-                {
-                    if (!Equals(_isChecked, value))
-                    {
-                        _isChecked = value;
-                        OnPropertyChanged();
-                    }
-                }
-            }
-            bool _isChecked = default;
-
-            [Obsolete("Use IndexingMode attribute to declare terms to be considered in the filter query.")]
-            public IComparable FilterValue => Description;
-
-            public OnePageItemSelection Selection
-            {
-                get => _selection;
-                set
-                {
-                    if (!Equals(_selection, value))
-                    {
-                        _selection = value;
-                        OnPropertyChanged();
-                    }
-                }
-            }
-            private OnePageItemSelection _selection = OnePageItemSelection.None;
-
-            public override string ToString() => $"{Description} {KeywordsDisplay} {TagsDisplay}".Trim();
-
-            public string Report()
-            {
-                var builder = new List<string>();
-                var type = GetType();
-
-                foreach (var pi in type.GetProperties())
-                {
-                    // Skip the guid, which is new everytime.
-
-                    switch (pi.Name)
-                    {
-                        case nameof(Id):
-                        case nameof(PrimaryKey):
-                            continue;
-                        default:
-                            break;
-                    }
-                    if (pi.Name == nameof(Id)) continue;
-
-                    var value = pi.GetValue(this);
-                    builder.Add($@"{pi.Name,-15}=""{value}""");
-                }
-                return string.Join(Environment.NewLine, builder);
-            }
-        }
-
-        [DebuggerDisplay("{Description}")]
-        [Table("items")]
-        public class AtomicQuoteTestModel : SelfIndexed, ISelectableQueryFilterItem
-        {
-            public IComparable FilterValue => throw new NotImplementedException();
-
-            public OnePageItemSelection Selection { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        }
-
         public class NavSearchBar : INotifyPropertyChanged
         {
             public IList<SelectableQueryModel>? ItemsSource
@@ -546,6 +422,7 @@ SELECT * FROM items WHERE
 
                     actual = joined;
                     actual.ToClipboardExpected();
+                    { }
                     expected = @" 
 Description    =""Brown Dog""
 Keywords       =""[""loyal"",""friend"",""furry""]""
@@ -553,7 +430,6 @@ KeywordsDisplay=""""loyal"",""friend"",""furry""""
 Tags           =""[canine] [color]""
 TagsDisplay    =""[canine] [color]""
 IsChecked      =""False""
-FilterValue    =""Brown Dog""
 Selection      =""None""
 LikeTerm       =""brown~dog~loyal~friend~furry~canine~color""
 ContainsTerm   =""brown~dog~loyal~friend~furry""
@@ -689,7 +565,8 @@ Properties     =""{
                 var joined = string.Join(Environment.NewLine, builder);
 
                 actual = joined;
-                actual.ToClipboard();
+                actual.ToClipboardExpected();
+                { }
                 expected = @" 
 Description    =""Brown Dog""
 Keywords       =""[""loyal"",""friend"",""furry""]""
@@ -697,7 +574,6 @@ KeywordsDisplay=""""loyal"",""friend"",""furry""""
 Tags           =""[canine] [color]""
 TagsDisplay    =""[canine] [color]""
 IsChecked      =""False""
-FilterValue    =""Brown Dog""
 Selection      =""None""
 LikeTerm       =""brown~dog~loyal~friend~furry~canine~color""
 ContainsTerm   =""brown~dog~loyal~friend~furry""
@@ -714,7 +590,6 @@ KeywordsDisplay=""""tart"",""snack"",""healthy""""
 Tags           =""[fruit] [color]""
 TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
-FilterValue    =""Green Apple""
 Selection      =""None""
 LikeTerm       =""green~apple~tart~snack~healthy~fruit~color""
 ContainsTerm   =""green~apple~tart~snack~healthy""
@@ -731,7 +606,6 @@ KeywordsDisplay=""""
 Tags           =""[fruit] [color]""
 TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
-FilterValue    =""Yellow Banana""
 Selection      =""None""
 LikeTerm       =""yellow~banana~~fruit~color""
 ContainsTerm   =""yellow~banana""
@@ -747,7 +621,6 @@ KeywordsDisplay=""""sky"",""feathered"",""song""""
 Tags           =""[bird] [color]""
 TagsDisplay    =""[bird] [color]""
 IsChecked      =""False""
-FilterValue    =""Blue Bird""
 Selection      =""None""
 LikeTerm       =""blue~bird~sky~feathered~song~bird~color""
 ContainsTerm   =""blue~bird~sky~feathered~song""
@@ -764,7 +637,6 @@ KeywordsDisplay=""""sweet"",""summer"",""dessert""""
 Tags           =""[fruit] [color]""
 TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
-FilterValue    =""Red Cherry""
 Selection      =""None""
 LikeTerm       =""red~cherry~sweet~summer~dessert~fruit~color""
 ContainsTerm   =""red~cherry~sweet~summer~dessert""
@@ -781,7 +653,6 @@ KeywordsDisplay=""""
 Tags           =""[animal] [color]""
 TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
-FilterValue    =""Black Cat""
 Selection      =""None""
 LikeTerm       =""black~cat~~animal~color""
 ContainsTerm   =""black~cat""
@@ -797,7 +668,6 @@ KeywordsDisplay=""""
 Tags           =""[animal] [color]""
 TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
-FilterValue    =""Orange Fox""
 Selection      =""None""
 LikeTerm       =""orange~fox~~animal~color""
 ContainsTerm   =""orange~fox""
@@ -813,7 +683,6 @@ KeywordsDisplay=""""bunny"",""soft"",""jump""""
 Tags           =""[animal] [color]""
 TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
-FilterValue    =""White Rabbit""
 Selection      =""None""
 LikeTerm       =""white~rabbit~bunny~soft~jump~animal~color""
 ContainsTerm   =""white~rabbit~bunny~soft~jump""
@@ -830,7 +699,6 @@ KeywordsDisplay=""""
 Tags           =""[fruit] [color]""
 TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
-FilterValue    =""Purple Grape""
 Selection      =""None""
 LikeTerm       =""purple~grape~~fruit~color""
 ContainsTerm   =""purple~grape""
@@ -846,7 +714,6 @@ KeywordsDisplay=""""pack"",""howl"",""wild""""
 Tags           =""[animal] [color]""
 TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
-FilterValue    =""Gray Wolf""
 Selection      =""None""
 LikeTerm       =""gray~wolf~pack~howl~wild~animal~color""
 ContainsTerm   =""gray~wolf~pack~howl~wild""
@@ -863,7 +730,6 @@ KeywordsDisplay=""""
 Tags           =""[bird] [color]""
 TagsDisplay    =""[bird] [color]""
 IsChecked      =""False""
-FilterValue    =""Pink Flamingo""
 Selection      =""None""
 LikeTerm       =""pink~flamingo~~bird~color""
 ContainsTerm   =""pink~flamingo""
@@ -879,7 +745,6 @@ KeywordsDisplay=""""
 Tags           =""[animal] [color]""
 TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
-FilterValue    =""Golden Lion""
 Selection      =""None""
 LikeTerm       =""golden~lion~~animal~color""
 ContainsTerm   =""golden~lion""
@@ -895,7 +760,6 @@ KeywordsDisplay=""""strong"",""wild"",""forest""""
 Tags           =""[animal] [color]""
 TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
-FilterValue    =""Brown Bear""
 Selection      =""None""
 LikeTerm       =""brown~bear~strong~wild~forest~animal~color""
 ContainsTerm   =""brown~bear~strong~wild~forest""
@@ -912,7 +776,6 @@ KeywordsDisplay=""""
 Tags           =""[fruit] [color]""
 TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
-FilterValue    =""Green Pear""
 Selection      =""None""
 LikeTerm       =""green~pear~~fruit~color""
 ContainsTerm   =""green~pear""
@@ -928,7 +791,6 @@ KeywordsDisplay=""""
 Tags           =""[fruit] [color]""
 TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
-FilterValue    =""Red Strawberry""
 Selection      =""None""
 LikeTerm       =""red~strawberry~~fruit~color""
 ContainsTerm   =""red~strawberry""
@@ -944,7 +806,6 @@ KeywordsDisplay=""""stealthy"",""feline"",""night""""
 Tags           =""[animal] [color]""
 TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
-FilterValue    =""Black Panther""
 Selection      =""None""
 LikeTerm       =""black~panther~stealthy~feline~night~animal~color""
 ContainsTerm   =""black~panther~stealthy~feline~night""
@@ -961,7 +822,6 @@ KeywordsDisplay=""""
 Tags           =""[fruit] [color]""
 TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
-FilterValue    =""Yellow Lemon""
 Selection      =""None""
 LikeTerm       =""yellow~lemon~~fruit~color""
 ContainsTerm   =""yellow~lemon""
@@ -977,7 +837,6 @@ KeywordsDisplay=""""
 Tags           =""[bird] [color]""
 TagsDisplay    =""[bird] [color]""
 IsChecked      =""False""
-FilterValue    =""White Swan""
 Selection      =""None""
 LikeTerm       =""white~swan~~bird~color""
 ContainsTerm   =""white~swan""
@@ -993,7 +852,6 @@ KeywordsDisplay=""""
 Tags           =""[fruit] [color]""
 TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
-FilterValue    =""Purple Plum""
 Selection      =""None""
 LikeTerm       =""purple~plum~~fruit~color""
 ContainsTerm   =""purple~plum""
@@ -1009,7 +867,6 @@ KeywordsDisplay=""""ocean"",""mammal"",""giant""""
 Tags           =""[marine-mammal] [ocean]""
 TagsDisplay    =""[marine-mammal] [ocean]""
 IsChecked      =""False""
-FilterValue    =""Blue Whale""
 Selection      =""None""
 LikeTerm       =""blue~whale~ocean~mammal~giant~marine-mammal""
 ContainsTerm   =""blue~whale~ocean~mammal~giant""
@@ -1026,7 +883,6 @@ KeywordsDisplay=""""trunk"",""herd"",""safari""""
 Tags           =""[animal]""
 TagsDisplay    =""[animal]""
 IsChecked      =""False""
-FilterValue    =""Elephant""
 Selection      =""None""
 LikeTerm       =""elephant~trunk~herd~safari~animal""
 ContainsTerm   =""elephant~trunk~herd~safari""
@@ -1043,7 +899,6 @@ KeywordsDisplay=""""
 Tags           =""[fruit]""
 TagsDisplay    =""[fruit]""
 IsChecked      =""False""
-FilterValue    =""Pineapple""
 Selection      =""None""
 LikeTerm       =""pineapple~~fruit""
 ContainsTerm   =""pineapple""
@@ -1059,7 +914,6 @@ KeywordsDisplay=""""
 Tags           =""[fish]""
 TagsDisplay    =""[fish]""
 IsChecked      =""False""
-FilterValue    =""Shark""
 Selection      =""None""
 LikeTerm       =""shark~~fish""
 ContainsTerm   =""shark""
@@ -1075,7 +929,6 @@ KeywordsDisplay=""""
 Tags           =""[bird]""
 TagsDisplay    =""[bird]""
 IsChecked      =""False""
-FilterValue    =""Owl""
 Selection      =""None""
 LikeTerm       =""owl~~bird""
 ContainsTerm   =""owl""
@@ -1091,7 +944,6 @@ KeywordsDisplay=""""
 Tags           =""[animal]""
 TagsDisplay    =""[animal]""
 IsChecked      =""False""
-FilterValue    =""Giraffe""
 Selection      =""None""
 LikeTerm       =""giraffe~~animal""
 ContainsTerm   =""giraffe""
@@ -1107,7 +959,6 @@ KeywordsDisplay=""""
 Tags           =""[fruit]""
 TagsDisplay    =""[fruit]""
 IsChecked      =""False""
-FilterValue    =""Coconut""
 Selection      =""None""
 LikeTerm       =""coconut~~fruit""
 ContainsTerm   =""coconut""
@@ -1123,7 +974,6 @@ KeywordsDisplay=""""bounce"",""outback"",""marsupial""""
 Tags           =""[animal]""
 TagsDisplay    =""[animal]""
 IsChecked      =""False""
-FilterValue    =""Kangaroo""
 Selection      =""None""
 LikeTerm       =""kangaroo~bounce~outback~marsupial~animal""
 ContainsTerm   =""kangaroo~bounce~outback~marsupial""
@@ -1140,7 +990,6 @@ KeywordsDisplay=""""
 Tags           =""[fruit]""
 TagsDisplay    =""[fruit]""
 IsChecked      =""False""
-FilterValue    =""Dragonfruit""
 Selection      =""None""
 LikeTerm       =""dragonfruit~~fruit""
 ContainsTerm   =""dragonfruit""
@@ -1156,7 +1005,6 @@ KeywordsDisplay=""""
 Tags           =""[animal]""
 TagsDisplay    =""[animal]""
 IsChecked      =""False""
-FilterValue    =""Turtle""
 Selection      =""None""
 LikeTerm       =""turtle~~animal""
 ContainsTerm   =""turtle""
@@ -1172,7 +1020,6 @@ KeywordsDisplay=""""
 Tags           =""[fruit]""
 TagsDisplay    =""[fruit]""
 IsChecked      =""False""
-FilterValue    =""Mango""
 Selection      =""None""
 LikeTerm       =""mango~~fruit""
 ContainsTerm   =""mango""
@@ -1188,7 +1035,6 @@ KeywordsDisplay=""""
 Tags           =""[not animal]""
 TagsDisplay    =""[not animal]""
 IsChecked      =""False""
-FilterValue    =""Should NOT match an expression with an ""animal"" tag.""
 Selection      =""None""
 LikeTerm       =""should~not~match~an~expression~with~animal~tag.~~not&animal""
 ContainsTerm   =""should~not~match~an~expression~with~animal~tag.""
@@ -1897,7 +1743,6 @@ KeywordsDisplay=""""loyal"",""friend"",""furry""""
 Tags           =""[canine] [color]""
 TagsDisplay    =""[canine] [color]""
 IsChecked      =""False""
-FilterValue    =""Brown Dog""
 Selection      =""None""
 LikeTerm       =""brown~dog~loyal~friend~furry""
 ContainsTerm   =""brown~dog~loyal~friend~furry""
