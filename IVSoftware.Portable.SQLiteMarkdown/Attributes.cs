@@ -18,7 +18,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// This attribute, along with its derived types, can only be applied to properties and is 
     /// inherited by derived classes, enabling seamless discovery in subclasses as well.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
     public abstract class MarkdownTermAttribute : Attribute
     {
         /// <summary>
@@ -38,6 +38,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Derived attribute for properties that should participate in "Contains" search functionality.
     /// </summary>
+    [Obsolete("Specify QueryTemplate and FilterTemplate properties instead")]
     public class FilterContainsTermAttribute : MarkdownTermAttribute
     {
     }

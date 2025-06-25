@@ -126,11 +126,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             ref ValidationState validationState,
             Predicate<string> validationPredicate,
             byte minInputLength,
+            IndexingMode indexingMode) =>
+            ParseSqlMarkdown(
+                expr,
+                typeof(T), 
+                ref validationState, 
+                validationPredicate, 
+                minInputLength, 
+                indexingMode);
+
+        private static MarkdownContext ParseSqlMarkdown(
+            this string expr,
+            Type type,
+            ref ValidationState validationState,
+            Predicate<string> validationPredicate,
+            byte minInputLength,
             IndexingMode indexingMode)
         {
             using (MarkdownContext.GetToken())
             {
-                Type type = typeof(T);
 
                 if (validationState.HasFlag(ValidationState.DisableMinLength))
                 {
