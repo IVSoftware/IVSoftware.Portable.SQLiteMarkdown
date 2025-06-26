@@ -25,11 +25,11 @@ public class TestClass_PropertiesForQueryClassAndFilterClass
             DoubleQuotedPhrase();
 
             // Currently failing
-            EscapedBrackets();
             ExplicitOr();
             RedundantOr();
             GroupedNegation();
             EscapedNot();
+            EscapedBrackets();
 
             #region S U B T E S T S
 
@@ -57,27 +57,6 @@ AND (Name LIKE '%dog%' OR Species LIKE '%dog%')";
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Implicit AND failed."
-                );
-            }
-
-            void ExplicitOr()
-            {
-                actual = "cat | dog".ParseSqlMarkdown<PetProfile>();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-SELECT * FROM pets WHERE
-(Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')"
-                ;
-
-                expected = @"
-SELECT * FROM pets WHERE
-(Name LIKE '%cat%' OR Species LIKE '%cat%')
-OR (Name LIKE '%dog%' OR Species LIKE '%dog%')";
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Explicit OR failed."
                 );
             }
 
@@ -125,26 +104,6 @@ SELECT * FROM pets WHERE
                 );
             }
 
-            void GroupedNegation()
-            {
-                actual = "!(cat | dog)".ParseSqlMarkdown<PetProfile>();
-                actual.ToClipboardExpected();
-                { }
-
-                expected = @" 
-SELECT * FROM pets WHERE
-NOT ((Name LIKE '%cat%' OR Species LIKE '%cat%')) AND (Name LIKE '%dog%' OR Species LIKE '%dog%')"
-                ;
-                expected = @"
-SELECT * FROM pets WHERE
-NOT ((Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%'))";
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Grouped negation failed."
-                );
-            }
-
             void ExplicitAnd()
             {
                 actual = "cat & dog".ParseSqlMarkdown<PetProfile>();
@@ -173,6 +132,28 @@ AND (Name LIKE '%dog%' OR Species LIKE '%dog%')";
                 );
             }
 
+
+            void ExplicitOr()
+            {
+                actual = "cat | dog".ParseSqlMarkdown<PetProfile>();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+SELECT * FROM pets WHERE
+(Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')"
+                ;
+
+                expected = @"
+SELECT * FROM pets WHERE
+(Name LIKE '%cat%' OR Species LIKE '%cat%')
+OR (Name LIKE '%dog%' OR Species LIKE '%dog%')";
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Explicit OR failed."
+                );
+            }
+
             void RedundantOr()
             {
                 actual = "cat || dog".ParseSqlMarkdown<PetProfile>();
@@ -191,6 +172,26 @@ OR (Name LIKE '%dog%' OR Species LIKE '%dog%')";
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Redundant OR syntax failed."
+                );
+            }
+
+            void GroupedNegation()
+            {
+                actual = "!(cat | dog)".ParseSqlMarkdown<PetProfile>();
+                actual.ToClipboardExpected();
+                { }
+
+                expected = @" 
+SELECT * FROM pets WHERE
+NOT ((Name LIKE '%cat%' OR Species LIKE '%cat%')) AND (Name LIKE '%dog%' OR Species LIKE '%dog%')"
+                ;
+                expected = @"
+SELECT * FROM pets WHERE
+NOT ((Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%'))";
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Grouped negation failed."
                 );
             }
 
