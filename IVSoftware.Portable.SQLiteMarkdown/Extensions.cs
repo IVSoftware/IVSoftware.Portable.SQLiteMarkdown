@@ -381,27 +381,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 localRunQuoteLinter('\'');
 
 
-                // Remove unnecessary spaces
+                // Collapse multiple spaces to a single space
                 expr = Regex.Replace(expr, @"\s+", " ");
 
-                // Define regex patterns
-                string andPattern = @"[& ]+";
-                string orPattern = @"[| ]+";
-                string notPattern = @"[! ]+";
+                // Normalize operators with proper spacing
+                expr = Regex.Replace(expr, @"\s*\|\s*", "|");
+                expr = Regex.Replace(expr, @"\s*&\s*", "&");
+                expr = Regex.Replace(expr, @"\s*!\s*", "!");
 
-                // Replace and lint the expression
-                expr = LintOperators(expr, andPattern, '&');
-                expr = LintOperators(expr, orPattern, '|');
-                expr = LintOperators(expr, notPattern, '!');
+                // Normalize repeated operators
+                expr = Regex.Replace(expr, @"[&]{2,}", "&");
+                expr = Regex.Replace(expr, @"[|]{2,}", "|");
+                expr = Regex.Replace(expr, @"[!]{2,}", "!");
 
-                // Check for conflicting operators
-                if (Regex.IsMatch(expr, @"[&]{2,}|[|]{2,}|[!]{2,}"))
+                // Throw only on conflicting adjacent operators
+                if (Regex.IsMatch(expr, @"(&\||\|&|!\||\|!|&!|!&)"))
                 {
-                    throw new InvalidOperationException("Consecutive identical operators are not allowed.");
+                    throw new InvalidOperationException("Conflicting adjacent logical operators are not allowed.");
                 }
 
-                // Remove redundant operators
-                expr = RemoveRedundantOperators(expr);
+                // Convert remaining space between words into implicit AND
+                expr = Regex.Replace(expr, @"(?<=\w) (?=\w)", "&");
 
                 // Restore atomic quote content.
                 localRestoreAtomicQuoteContent();
@@ -592,24 +592,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             localRunQuoteLinter('\'');
 
 
-            // Remove unnecessary spaces
+            // Collapse multiple spaces to a single space
             expr = Regex.Replace(expr, @"\s+", " ");
 
-            // Define regex patterns
-            string andPattern = @"[& ]+";
-            string orPattern = @"[| ]+";
-            string notPattern = @"[! ]+";
+            // Normalize operators with proper spacing
+            expr = Regex.Replace(expr, @"\s*\|\s*", "|");
+            expr = Regex.Replace(expr, @"\s*&\s*", "&");
+            expr = Regex.Replace(expr, @"\s*!\s*", "!");
 
-            // Replace and lint the expression
-            expr = LintOperators(expr, andPattern, '&');
-            expr = LintOperators(expr, orPattern, '|');
-            expr = LintOperators(expr, notPattern, '!');
-
-            // Check for conflicting operators
-            if (Regex.IsMatch(expr, @"[&]{2,}|[|]{2,}|[!]{2,}"))
-            {
-                throw new InvalidOperationException("Consecutive identical operators are not allowed.");
-            }
+            // Convert remaining space between words into implicit AND
+            expr = Regex.Replace(expr, @"(?<=\w) (?=\w)", "&");
 
             // Remove redundant operators
             expr = RemoveRedundantOperators(expr);

@@ -28,8 +28,8 @@ public class TestClass_PropertiesForQueryClassAndFilterClass
 
                 // Currently failing
                 ExplicitOr();
-                // RedundantOr();
-                // GroupedNegation();
+                RedundantOr();
+                GroupedNegation();
                 // EscapedNot();
                 // EscapedBrackets();
             }
@@ -154,12 +154,6 @@ cat&dog"
                 actual = "cat | dog".Lint();
                 actual.ToClipboardExpected();
                 { }
-#if false // This erroneous limit is being generated
-                expected = @" 
-cat&|&dog"
-                ;
-
-#endif
                 expected = @" 
 cat|dog"
                 ;
@@ -175,11 +169,6 @@ cat|dog"
                 actual = "cat || dog".Lint();
                 actual.ToClipboardExpected();
                 { }
-#if false // This erroneous limit is being generated
-                expected = @" 
-cat&|&dog"
-                ;
-#endif
                 expected = @" 
 cat|dog"
                 ;
@@ -194,12 +183,6 @@ cat|dog"
             {
                 actual = "!(cat | dog)".Lint();
                 actual.ToClipboardExpected();
-                { }
-#if false // This erroneous limit is being generated
-                expected = @" 
-!(cat&|&dog)"
-                ;
-#endif
 
                 expected = @" 
 !(cat|dog)"
