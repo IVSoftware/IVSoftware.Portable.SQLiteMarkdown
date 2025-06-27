@@ -554,16 +554,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         static object _lock = new object();
 
-        static string RestoreAtomicQuoteContent(string expr)
-        {
-            foreach (var kvp in MarkdownContext.Atomics.ToArray())
-            {
-                var value = kvp.Value.Replace(@"""", "$dquote$");
-                expr = expr.Replace(kvp.Key, value);
-            }
-            return expr;
-        }
-
         public static bool PromptEachStep { get; set; }
         public static event EventHandler StackPrompt;
         class AtomicStack : Stack<KeyValuePair<string, string>>
