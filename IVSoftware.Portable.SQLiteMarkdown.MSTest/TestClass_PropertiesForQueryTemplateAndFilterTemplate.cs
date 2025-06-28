@@ -30,6 +30,7 @@ public class TestClass_PropertiesForQueryClassAndFilterClass
                 ExplicitOr();
                 RedundantOr();
                 GroupedNegation();
+
                 // EscapedNot();
                 // EscapedBrackets();
             }
@@ -394,14 +395,26 @@ OR (Name LIKE '%dog%' OR Species LIKE '%dog%')";
 
             void GroupedNegation()
             {
+                actual = "!(cat | dog)".Lint();
+                expected = @" 
+!(cat|dog)";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting spaces before and after operator are removed."
+                );
+
                 actual = "!(cat | dog)".ParseSqlMarkdown<PetProfile>();
                 actual.ToClipboardExpected();
                 { }
-
+// WRONG. But is the actual result at present.
                 expected = @" 
 SELECT * FROM pets WHERE
 NOT ((Name LIKE '%cat%' OR Species LIKE '%cat%')) AND (Name LIKE '%dog%' OR Species LIKE '%dog%')"
                 ;
+
+// CORRECT but failing.
                 expected = @"
 SELECT * FROM pets WHERE
 NOT ((Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%'))";

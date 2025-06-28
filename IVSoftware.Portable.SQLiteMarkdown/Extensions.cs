@@ -375,8 +375,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             using (MarkdownContext.GetToken())
             {
 #if DEBUG
-            var exprOR = expr; // Reporting
+                var exprOR = expr; // Reporting
 #endif
+                expr = expr.Trim();
                 localRunQuoteLinter('"');
                 localRunQuoteLinter('\'');
 
@@ -394,17 +395,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 expr = Regex.Replace(expr, @"[|]{2,}", "|");
                 expr = Regex.Replace(expr, @"[!]{2,}", "!");
 
+                // Convert remaining space between words into implicit AND
+                expr = expr.Replace(' ', '&');
+
+                // Restore atomic quote content.
+                localRestoreAtomicQuoteContent();
+
+
                 // Throw only on conflicting adjacent operators
                 if (Regex.IsMatch(expr, @"(&\||\|&|!\||\|!|&!|!&)"))
                 {
                     throw new InvalidOperationException("Conflicting adjacent logical operators are not allowed.");
                 }
-
-                // Convert remaining space between words into implicit AND
-                expr = Regex.Replace(expr, @"(?<=\w) (?=\w)", "&");
-
-                // Restore atomic quote content.
-                localRestoreAtomicQuoteContent();
 
 
                 return trim ? expr.Trim() : expr;

@@ -61,16 +61,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     // Class representing a node in the AST
     public class ASTNode
     {
-        public NodeType ASTType { get; set; }
-        public string Value { get; set; }
-        public List<ASTNode> Children { get; set; } = new List<ASTNode>();
-
         public ASTNode(NodeType type, string value)
         {
             ASTType = type;
             Value = value;
         }
 
+        public NodeType ASTType { get; set; }
+        public string Value { get; set; }
+        public List<ASTNode> Children { get; set; } = new List<ASTNode>();
         public override string ToString()
         {
             return Value;
