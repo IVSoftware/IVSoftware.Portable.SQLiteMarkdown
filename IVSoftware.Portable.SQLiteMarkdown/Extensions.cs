@@ -1322,20 +1322,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Non-breaking compatible filter term attribute getter.
         /// </summary>
-        public static MarkdownTermAttribute GetQueryTermAttribute(this Type type)
+        public static MarkdownTermAttribute GetQueryTermAttribute(this PropertyInfo pi)
             =>
-            type.GetCustomAttribute<QueryLikeTermAttribute>() is QueryLikeTermAttribute qlt
+            pi.GetCustomAttribute<QueryLikeTermAttribute>() is QueryLikeTermAttribute qlt
             ? qlt
-            : type.GetCustomAttribute<SqlLikeTermAttribute>();
+            : pi.GetCustomAttribute<SqlLikeTermAttribute>();
 
         /// <summary>
         /// Non-breaking compatible filter term attribute getter.
         /// </summary>
-        public static MarkdownTermAttribute GetFilterTermAttribute(this Type type)
+        public static MarkdownTermAttribute GetFilterTermAttribute(this PropertyInfo pi)
             => 
-            type.GetCustomAttribute<FilterLikeTermAttribute>() is FilterLikeTermAttribute flt
+            pi.GetCustomAttribute<FilterLikeTermAttribute>() is FilterLikeTermAttribute flt
             ? flt
-            : type.GetCustomAttribute<FilterContainsTermAttribute>();
+            : pi.GetCustomAttribute<FilterContainsTermAttribute>();
+
+
+        /// <summary>
+        /// Non-breaking compatible filter term attribute getter.
+        /// </summary>
+        public static bool IsQueryTermAttribute(this MarkdownTermAttribute mta)
+            => typeof(QueryLikeTermAttribute).IsAssignableFrom(mta.GetType());
+
+        /// <summary>
+        /// Non-breaking compatible filter term attribute getter.
+        /// </summary>
+        public static bool IsFilterTermAttribute(this MarkdownTermAttribute mta)
+            => typeof(FilterLikeTermAttribute).IsAssignableFrom(mta.GetType());
     }
     #endregion V E R S I O N    1 . 0
 }

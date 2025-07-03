@@ -718,8 +718,8 @@ QueryTerm";
             likeTerms = type
                 .GetProperties()
                 .Where(_ =>
-                    (qfMode == QueryFilterMode.Query && _.GetCustomAttribute<SqlLikeTermAttribute>() != null) ||
-                    (qfMode == QueryFilterMode.Filter && _.GetCustomAttribute<FilterContainsTermAttribute>() != null))
+                    (qfMode == QueryFilterMode.Query && _.GetQueryTermAttribute() != null) ||
+                    (qfMode == QueryFilterMode.Filter && _.GetFilterTermAttribute() != null))
                 .ToArray();
 
             actual = likeTerms.Single().Name;
