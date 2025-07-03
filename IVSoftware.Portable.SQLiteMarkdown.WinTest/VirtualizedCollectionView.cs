@@ -23,6 +23,8 @@ namespace OnePageCollectionViewSketchpad
         : DataGridView
         , INotifyPropertyChanged
     {
+
+        const int MIN_ROW_HEIGHT = 60;
         public VirtualizedCollectionView() : this(default) { }
         public VirtualizedCollectionView(XElement? xop)
         {
@@ -53,12 +55,6 @@ namespace OnePageCollectionViewSketchpad
                     }
                     View? view = null;
                     var row = Rows[e.RowIndex];
-                    const int ROW_HEIGHT = 60;
-                    if (row.Height != ROW_HEIGHT)
-                    {
-                        row.Height = ROW_HEIGHT;
-                        return;
-                    }
 
                     var mod = e.RowIndex % _templateCount;
                     if (!_recycledViews.TryGetValue(mod, out view))
@@ -66,6 +62,13 @@ namespace OnePageCollectionViewSketchpad
                         view = (View)Activator.CreateInstance(DataTemplate.Type)!;
                         _recycledViews[mod] = view;
                         Controls.Add(view);
+                    }
+
+                    int desiredHeight = Math.Max(view.PreferredSize.Height, MIN_ROW_HEIGHT);
+                    if (row.Height != desiredHeight)
+                    {
+                        row.Height = desiredHeight;
+                        return;
                     }
                     view.DataContext = ItemsSource[mod];
                     view.Visible = true;

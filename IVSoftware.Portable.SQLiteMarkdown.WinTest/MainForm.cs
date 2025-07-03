@@ -18,7 +18,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             InitializeComponent();
             QFSUT = new ObservableQueryFilterSource<SelectableQFModel>();
             vcView.ItemsSource = QFSUT;
-            vcView.DataTemplate = new CollectionViewDataTemplate<CustomCollectionViewCard>();
+            vcView.DataTemplate = new CollectionViewDataTemplate<SelectableQFViewCard>();
             if (vcView.ItemsSource is IObservableQueryFilterSource qfs)
             {
                 textInputText.TextChanged += (sender, e) =>
