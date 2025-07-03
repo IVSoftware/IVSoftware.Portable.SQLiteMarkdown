@@ -73,14 +73,6 @@ namespace OnePageCollectionViewSketchpad
                     view.DataContext = ItemsSource[mod];
                     view.Visible = true;
                     view.Bounds  = GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
-#if DEBUG
-                    //if(view is DefaultCollectionViewCard card)
-                    //{
-                    //    if(card.Text.StartsWith("Brown Dog"))
-                    //    { }
-                    //}
-                    Debug.WriteLine($@"250621.A ROWINDEX=""{e.RowIndex}"" MOD=""{mod}"" NTEMPLATES=""{_templateCount}""" );
-#endif
                 }
                 e.Handled = true;
                 return;

@@ -17,9 +17,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         }
         private void InitializeComponent()
         {
+            Font = new Font(Font.FontFamily, 12);
             AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            Padding = new Padding(4);
+            Padding = new Padding(2);
             Margin = new Padding(2);
             BorderStyle = BorderStyle.FixedSingle;
             ColumnCount = 2;
@@ -37,7 +38,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 ColumnCount = 2,
                 RowCount = 1,
                 Dock = DockStyle.Fill,
-                BackColor = Color.Red,
 
             };
             gridKeywordsAndTags.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -48,6 +48,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
 
             Controls.Add(gridKeywordsAndTags, 0, 1);
             SetColumnSpan(gridKeywordsAndTags, 2);
+            _labelKeywords.Font = new Font(Font.FontFamily, Font.Size - 1F);
+            _labelTags.Font = new Font(Font.FontFamily, Font.Size - 2F);
         }
 
 
@@ -95,7 +97,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                         _labelDescription.Text = DataContext?.Description ?? string.Empty;
                         break;
                     case nameof(SelectableQFModel.Keywords):
-                        _labelKeywords.Text = DataContext?.Keywords ?? string.Empty;
+                        _labelKeywords.Text = DataContext?.KeywordsDisplay ?? string.Empty;
                         break;
                     case nameof(SelectableQFModel.Tags):
                         _labelTags.Text = DataContext?.Tags ?? string.Empty;
@@ -113,7 +115,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             AutoSize = true,
             TextAlign = ContentAlignment.MiddleLeft,
             Dock = DockStyle.Fill,
-            BackColor = Color.LightBlue,
         };
 
         private Label _labelKeywords = new Label
@@ -122,14 +123,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             Text = "Marklar",
             AutoSize = true,
             Anchor = (AnchorStyles)0xf,
-            BackColor = Color.MediumPurple,
         };
 
         private Label _labelTags = new Label
         {
             Name = nameof(_labelTags),
             Anchor = (AnchorStyles)0xf,
-            BackColor = Color.Green,
             Dock = DockStyle.Fill,
         };
     }
