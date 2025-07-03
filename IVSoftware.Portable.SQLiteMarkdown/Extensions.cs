@@ -1318,6 +1318,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             => new MarkdownContext().ParseSqlMarkdown(@this, type, qfMode, out xast);
         public static string ParseSqlMarkdown(this MarkdownContext @this, string expr, Type type, QueryFilterMode qfMode, out XElement xast)
             => @this.ParseSqlMarkdown(expr, type, qfMode, out xast);
+
+        /// <summary>
+        /// Non-breaking compatible filter term attribute getter.
+        /// </summary>
+        public static MarkdownTermAttribute GetQueryTermAttribute(this Type type)
+            =>
+            type.GetCustomAttribute<QueryLikeTermAttribute>() is QueryLikeTermAttribute qlt
+            ? qlt
+            : type.GetCustomAttribute<SqlLikeTermAttribute>();
+
+        /// <summary>
+        /// Non-breaking compatible filter term attribute getter.
+        /// </summary>
+        public static MarkdownTermAttribute GetFilterTermAttribute(this Type type)
+            => 
+            type.GetCustomAttribute<FilterLikeTermAttribute>() is FilterLikeTermAttribute flt
+            ? flt
+            : type.GetCustomAttribute<FilterContainsTermAttribute>();
     }
     #endregion V E R S I O N    1 . 0
 }
