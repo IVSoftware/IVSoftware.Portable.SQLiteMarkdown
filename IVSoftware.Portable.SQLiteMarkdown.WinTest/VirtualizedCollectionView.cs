@@ -114,8 +114,6 @@ namespace OnePageCollectionViewSketchpad
                     Invalidate();
                 }
             };
-            // Dev bootstrap artifact...but this "should" still work?
-            ItemsSource = new[] { "Dogs", "Cats", "Pets" };
         }
         Dictionary<int, View> _recycledViews = new();
 

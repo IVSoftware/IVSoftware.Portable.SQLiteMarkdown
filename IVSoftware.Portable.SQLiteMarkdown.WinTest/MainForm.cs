@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms.VisualStyles;
+using static OnePageCollectionViewSketchpad.VirtualizedCollectionView;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
 {
@@ -17,6 +18,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             InitializeComponent();
             QFSUT = new ObservableQueryFilterSource<SelectableQueryModel>();
             vcView.ItemsSource = QFSUT;
+            vcView.DataTemplate = new CollectionViewDataTemplate<CustomCollectionViewCard>();
             if (vcView.ItemsSource is IObservableQueryFilterSource qfs)
             {
                 textInputText.TextChanged += (sender, e) =>
@@ -162,27 +164,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         /// QSF Under Test for ad hoc states and expr evals.
         /// </summary>
         private ObservableQueryFilterSource<SelectableQueryModel> QFSUT { get; } 
-
-        public class CardModel : INotifyPropertyChanged
-        {
-            public string Description
-            {
-                get => _description;
-                set
-                {
-                    if (!Equals(_description, value))
-                    {
-                        _description = value;
-                        OnPropertyChanged();
-                    }
-                }
-            }
-            string _description = string.Empty;
-            protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            public event PropertyChangedEventHandler? PropertyChanged;
-            public override string ToString() => Description;
-        }
 
         private SQLiteConnection CreateDemoDatabase<T>() where T : new()
         {
