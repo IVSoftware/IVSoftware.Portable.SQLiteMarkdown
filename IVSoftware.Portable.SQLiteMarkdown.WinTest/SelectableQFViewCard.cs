@@ -28,17 +28,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             RowStyles.Add(new RowStyle(SizeType.Percent, 50));
             RowStyles.Add(new RowStyle(SizeType.Percent, 50));
-
-            var labelDescription = new Label
-            {
-                Name = "labelDescription",
-                AutoSize = true,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Dock = DockStyle.Fill,
-                BackColor = Color.LightBlue,
-            };
-            Controls.Add(labelDescription, 0, 0);
-            SetColumnSpan(labelDescription, 2);
+            Controls.Add(_labelDescription, 0, 0);
+            SetColumnSpan(_labelDescription, 2);
 
             var gridKeywordsAndTags = new TableLayoutPanel
             {
@@ -52,24 +43,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             gridKeywordsAndTags.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             gridKeywordsAndTags.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
 
-            var labelLeft = new Label
-            {
-                Name = "labelKeywords",
-                Text = "Marklar",
-                AutoSize = true,
-                Anchor = (AnchorStyles)0xf,
-                BackColor = Color.MediumPurple,
-            };
-            var labelRight = new Label
-            {
-                Name = "labelKeywords",
-                Anchor = (AnchorStyles)0xf,
-                BackColor = Color.Green,
-                Dock = DockStyle.Fill,
-            };
-
-            gridKeywordsAndTags.Controls.Add(labelLeft, 0, 0);
-            gridKeywordsAndTags.Controls.Add(labelRight, 1, 0);
+            gridKeywordsAndTags.Controls.Add(_labelKeywords, 0, 0);
+            gridKeywordsAndTags.Controls.Add(_labelTags, 1, 0);
 
             Controls.Add(gridKeywordsAndTags, 0, 1);
             SetColumnSpan(gridKeywordsAndTags, 2);
@@ -88,69 +63,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 base.DataContext = value;
                 if(DataContext is not null)
                 {
-                    DataContext.PropertyChanged -= OnPropertyChanged;
+                    DataContext.PropertyChanged += OnPropertyChanged;
                 }
-            }
-        }
-
-        private void OnBoundPropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(DataContext.Description):
-                    break;
             }
         }
 
         protected override void OnDataContextChanged(EventArgs e)
         {
             base.OnDataContextChanged(e);
-            Description = DataContext?.Description ?? string.Empty;
-            Keywords = DataContext?.Keywords ?? string.Empty;
-            Tags = DataContext?.Tags ?? string.Empty;
-        }
-
-        public string Description
-        {
-            get => _description;
-            set
+            foreach (var pi in DataContext?.GetType().GetProperties() ?? [])
             {
-                if (!Equals(_description, value))
-                {
-                    _description = value;
-                    OnPropertyChanged();
-                }
+                OnPropertyChanged(DataContext, new PropertyChangedEventArgs(pi.Name));
             }
         }
-        string _description = string.Empty;
-
-        public string Keywords
-        {
-            get => _keywords;
-            set
-            {
-                if (!Equals(_keywords, value))
-                {
-                    _keywords = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        string _keywords = string.Empty;
-
-        public string Tags
-        {
-            get => _Tags;
-            set
-            {
-                if (!Equals(_Tags, value))
-                {
-                    _Tags = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        string _Tags = string.Empty;
 
         public override Size GetPreferredSize(Size proposedSize)
             => new Size(Size.Width, 80);
@@ -160,7 +85,52 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         protected virtual void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             PropertyChanged?.Invoke(sender, e);
+            if(ReferenceEquals(sender, this))
+            { }
+            else if (ReferenceEquals(sender, DataContext))
+            {
+                switch (e.PropertyName)
+                {
+                    case nameof(SelectableQFModel.Description):
+                        _labelDescription.Text = DataContext?.Description ?? string.Empty;
+                        break;
+                    case nameof(SelectableQFModel.Keywords):
+                        _labelKeywords.Text = DataContext?.Keywords ?? string.Empty;
+                        break;
+                    case nameof(SelectableQFModel.Tags):
+                        _labelTags.Text = DataContext?.Tags ?? string.Empty;
+                        break;
+                }
+            }
         }
         public event PropertyChangedEventHandler? PropertyChanged;
+
+
+
+        private Label _labelDescription = new Label
+        {
+            Name = nameof(_labelDescription),
+            AutoSize = true,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Dock = DockStyle.Fill,
+            BackColor = Color.LightBlue,
+        };
+
+        private Label _labelKeywords = new Label
+        {
+            Name = nameof(_labelKeywords),
+            Text = "Marklar",
+            AutoSize = true,
+            Anchor = (AnchorStyles)0xf,
+            BackColor = Color.MediumPurple,
+        };
+
+        private Label _labelTags = new Label
+        {
+            Name = nameof(_labelTags),
+            Anchor = (AnchorStyles)0xf,
+            BackColor = Color.Green,
+            Dock = DockStyle.Fill,
+        };
     }
 }
