@@ -1,0 +1,72 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Title>IVSoftware.Portable.SQLiteMarkdown</Title>
+		<Description>Lightweight expression-to-SQL parser for interactive search over markdown-bound objects stored in SQLite. Translates intuitive syntax into full WHERE clauses.</Description>
+		<PackageTags>portable;net;sqlite;markdown</PackageTags>
+		<RepositoryUrl>https://github.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown.git</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown.git</PackageProjectUrl>
+		<RootNamespace>IVSoftware.Portable.SQLiteMarkdown</RootNamespace>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Author>Thomas C. Gregor</Author>
+		<Owner>IVSoftware LLC</Owner>
+		<Copyright>Copyright © 2023-2025 IVSoftware LLC</Copyright>
+		<FileVersion>$(AssemblyVersion)</FileVersion>
+		<Version>$(AssemblyVersion)</Version>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageReleaseNotes>
+			Initial alpha release 1.0.0:
+			- Includes markdown serialization and binding to SQLite via sqlite-net-pcl.
+			- Supports IVSoftware.Portable.Threading and XBoundObject integration.
+			- Includes support for both Newtonsoft.Json and System.Text.Json.
+			Initial alpha1 release 1.0.0:
+			- Unit Testing
+			- Atomic single and double quotes now fully supported.
+			Initial alpha2 release 1.0.0:
+			- ObservableQueryFilterSource preliminary Unit Testing
+			- FSOL ApplyFilter using memory SQLITE scheme.
+			- IObservableQueryFilterSource integration of [Obsolete] IQueryFilterStateTracker is complete and functional.
+			Upgraded to beta release 1.0.0:
+			- The GitHub repo is public now with a preliminary WinForms example.
+			- The interface is becoming stable but until an RC version posts the interface contract should be considered probationary.
+			- For the adventurous, the intent is starting to be clear enough to be potentially useful.
+			- ADVISORY: Unit Testing is clean in DEBUG mode but the atomic string parsing fails two tests in release mode. Avoid atomic string parsing for now.
+			Beta Release + 1
+			- ADVISORY: This is 'not' a released bundle.
+			- Unit Tests @ 16 are passing handily now in RELEASE mode. (A critical expr assignment was being done inside a #DEBUG block.)
+			Beta Release + 2
+			- ADVISORY: This is 'not' a released bundle.
+			- The FilterValue property has been entirely removed from iterfaces, classed, MSTest data.
+			- Going forward, the QueryTemplate and FilterTemplate properties will express differences between terms to be considered in the respective states.
+			
+		</PackageReleaseNotes>
+		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
+		<DebugType>embedded</DebugType>
+		<BaseVersion>1.0.0</BaseVersion>
+		<VersionPrefix>$(BaseVersion)-beta1</VersionPrefix>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<SignAssembly>True</SignAssembly>
+	</PropertyGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="IVSoftware.Portable.Threading" Version="1.3.1" />
+		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="2.0.3-prerelease" />
+		<PackageReference Include="Newtonsoft.Json" Version="*" />
+		<PackageReference Include="sqlite-net-pcl" Version="*" />
+		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="*-*" />
+		<PackageReference Include="System.Text.Json" Version="6.0.11" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+</Project>
