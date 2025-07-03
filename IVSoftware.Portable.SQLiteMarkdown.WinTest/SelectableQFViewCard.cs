@@ -55,24 +55,42 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             _labelDescription.Click += OnAnyClicked;
             _labelKeywords.Click += OnAnyClicked;
             _labelTags.Click += OnAnyClicked;
+
+            _labelDescription.MouseEnter += OnAnyMouseEnter;
+            _labelKeywords.MouseEnter += OnAnyMouseEnter;
+            _labelTags.MouseEnter += OnAnyMouseEnter;
+        }
+
+        private void OnAnyMouseEnter(object? sender, EventArgs e)
+        {
+            if (sender is Control control)
+            {
+                BeginInvoke(() =>
+                {
+                    control.Focus();
+                });
+            }
         }
 
         private void OnAnyClicked(object? sender, EventArgs e)
         {
-            switch (DataContext!.Selection)
+            BeginInvoke(() =>
             {
-                case ItemSelection.None:
-                    DataContext!.Selection = ItemSelection.Exclusive;
-                    break;
-                case ItemSelection.Exclusive:
-                    DataContext!.Selection = ItemSelection.None;
-                    break;
-                case ItemSelection.Multi:
-                case ItemSelection.Primary:
-                default:
-                    // N O O P for now
-                    break;
-            }
+                switch (DataContext!.Selection)
+                {
+                    case ItemSelection.None:
+                        DataContext!.Selection = ItemSelection.Exclusive;
+                        break;
+                    case ItemSelection.Exclusive:
+                        DataContext!.Selection = ItemSelection.None;
+                        break;
+                    case ItemSelection.Multi:
+                    case ItemSelection.Primary:
+                    default:
+                        // N O O P for now
+                        break;
+                }
+            });
         }
 
         public new SelectableQFModel? DataContext => (SelectableQFModel?)base.DataContext;

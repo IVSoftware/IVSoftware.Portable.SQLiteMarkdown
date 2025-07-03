@@ -16,7 +16,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         public MainForm()
         {
             InitializeComponent();
-            QFSUT = new ObservableQueryFilterSource<SelectableQFModel>();
+            QFSUT = new ObservableQueryFilterSource<SelectableQFModel>
+            {
+                SelectionMode = SelectionMode.Single,
+            };
             vcView.ItemsSource = QFSUT;
             vcView.DataTemplate = new CollectionViewDataTemplate<SelectableQFViewCard>();
             if (vcView.ItemsSource is IObservableQueryFilterSource qfs)

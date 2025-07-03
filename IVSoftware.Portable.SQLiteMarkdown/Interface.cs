@@ -113,6 +113,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Primary = 0x6,
     }
 
+    public enum SelectionMode
+    {
+        /// <summary>
+        /// Selection not allowed.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// One-hot selection.
+        /// </summary>
+        Single,
+
+        /// <summary>
+        /// Multiple selection allowed.
+        /// </summary>
+        Multiple
+    }
+
     public interface ISelectableQueryFilterItem
     {
         ItemSelection Selection { get; set; }

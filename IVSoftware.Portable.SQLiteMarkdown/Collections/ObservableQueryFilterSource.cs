@@ -56,7 +56,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             };
         }
 
-        private void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+        protected virtual void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
@@ -66,10 +66,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         switch (selectable.Selection)
                         {
                             case ItemSelection.None:
-                                SelectedItemsInternal.Remove(selectable);
+                                SelectedItems.Remove(selectable);
                                 break;
                             case ItemSelection.Exclusive:
-                                SelectedItemsInternal.Add(selectable);
+                                SelectedItems.Add(selectable);
                                 break;
                         }
                     }
@@ -78,23 +78,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         private INotifyPropertyChanged[] _unsubscribeItems = new INotifyPropertyChanged[] { };
 
-
-
-        protected ObservableHashSet<ISelectableQueryFilterItem> SelectedItemsInternal
+        public ObservableSelectionHashSet<ISelectableQueryFilterItem> SelectedItems
         {
             get
             {
                 if (_selectedItems is null)
                 {
-                    _selectedItems = new ObservableHashSet<ISelectableQueryFilterItem>();
-                    _selectedItems.CollectionChanged += (sender, e) =>
+                    _selectedItems = new ObservableSelectionHashSet<ISelectableQueryFilterItem>();
+                    _selectedItems.PropertyChanged += (sender, e) =>
                     {
                     };
                 }
                 return _selectedItems;
             }
         }
-        ObservableHashSet<ISelectableQueryFilterItem> _selectedItems = null;
+        ObservableSelectionHashSet<ISelectableQueryFilterItem> _selectedItems = null;
+
+        public SelectionMode SelectionMode
+        {
+            get => SelectedItems.SelectionMode;
+            set
+            {
+                SelectedItems.SelectionMode = value;
+            }
+        }
 
 
         private readonly ObservableCollection<T> _filteredItems = new ObservableCollection<T>();
