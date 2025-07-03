@@ -18,9 +18,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             Margin = new Padding(2);
             BorderStyle = BorderStyle.FixedSingle;
         }
-        public new SelectableQueryModel? DataContext
+        public new SelectableQFModel? DataContext
         {
-            get => (SelectableQueryModel?)base.DataContext;
+            get => (SelectableQFModel?)base.DataContext;
             set => base.DataContext = value;
         }
         protected override void OnDataContextChanged(EventArgs e)
@@ -73,6 +73,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         }
         string _Tags = string.Empty;
 
+        public int HeightRequest
+        {
+            get => _heightRequest;
+            set
+            {
+                if (!Equals(_heightRequest, value))
+                {
+                    _heightRequest = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        int _heightRequest = 200;
 
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>

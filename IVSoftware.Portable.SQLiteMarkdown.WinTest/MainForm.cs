@@ -16,7 +16,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         public MainForm()
         {
             InitializeComponent();
-            QFSUT = new ObservableQueryFilterSource<SelectableQueryModel>();
+            QFSUT = new ObservableQueryFilterSource<SelectableQFModel>();
             vcView.ItemsSource = QFSUT;
             vcView.DataTemplate = new CollectionViewDataTemplate<CustomCollectionViewCard>();
             if (vcView.ItemsSource is IObservableQueryFilterSource qfs)
@@ -41,7 +41,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                             break;
                     }
                 };
-                qfs.MemoryDatabase = CreateDemoDatabase<SelectableQueryModel>();
+                qfs.MemoryDatabase = CreateDemoDatabase<SelectableQFModel>();
                 qfs.PropertyChanged += (sender, e) =>
                 {
                     switch (e.PropertyName)
@@ -126,7 +126,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             {
                 BeginInvoke(() =>
                 {
-                    MessageBox.Show(QFSUT.InputText.ParseSqlMarkdown<SelectableQueryModel>());
+                    MessageBox.Show(QFSUT.InputText.ParseSqlMarkdown<SelectableQFModel>());
                 });
             };
             tsmiCombo.SelectedIndexChanged += (sender, e) =>
@@ -136,7 +136,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 {
                     if (tsmiCombo.SelectedItem?.ToString() is { } expr)
                     {
-                        MessageBox.Show(expr.ParseSqlMarkdown<SelectableQueryModel>());
+                        MessageBox.Show(expr.ParseSqlMarkdown<SelectableQFModel>());
                     }
                 });
             };
@@ -163,7 +163,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         /// <summary>
         /// QSF Under Test for ad hoc states and expr evals.
         /// </summary>
-        private ObservableQueryFilterSource<SelectableQueryModel> QFSUT { get; } 
+        private ObservableQueryFilterSource<SelectableQFModel> QFSUT { get; } 
 
         private SQLiteConnection CreateDemoDatabase<T>() where T : new()
         {

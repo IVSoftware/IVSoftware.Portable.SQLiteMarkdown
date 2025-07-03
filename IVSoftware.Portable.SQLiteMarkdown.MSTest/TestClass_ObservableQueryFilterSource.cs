@@ -31,7 +31,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     {
         public class NavSearchBar : INotifyPropertyChanged
         {
-            public IList<SelectableQueryModel>? ItemsSource
+            public IList<SelectableQFModel>? ItemsSource
             {
                 get => _itemsSource;
                 set
@@ -111,7 +111,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 throw new NotImplementedException();
             }
 
-            IList<SelectableQueryModel>? _itemsSource = null;
+            IList<SelectableQFModel>? _itemsSource = null;
             protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
             OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             protected virtual void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -137,9 +137,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     {
         private SQLiteConnection InitializeInMemoryDatabaseSingle()
         {
-            var items = new List<SelectableQueryModel>
+            var items = new List<SelectableQFModel>
             {
-                new SelectableQueryModel
+                new SelectableQFModel
                 {
                     Description = "Brown Dog",
                     Tags = "[canine] [color]",
@@ -148,114 +148,114 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 },
             };
             var imdb = new SQLiteConnection(":memory:");
-            imdb.CreateTable<SelectableQueryModel>();
+            imdb.CreateTable<SelectableQFModel>();
             imdb.InsertAll(items);
             return imdb;
         }
         private SQLiteConnection InitializeInMemoryDatabase()
         {
-            var items = new List<SelectableQueryModel>
+            var items = new List<SelectableQFModel>
             {
-                new SelectableQueryModel
+                new SelectableQFModel
                 {
                     Description = "Brown Dog",
                     Tags = "[canine] [color]",
                     IsChecked = false,
                     Keywords = JsonConvert.SerializeObject(new List<string> { "loyal", "friend", "furry" })
                 },
-                new SelectableQueryModel
+                new SelectableQFModel
                 {
                     Description = "Green Apple",
                     Tags = "[fruit] [color]",
                     IsChecked = false,
                     Keywords = JsonConvert.SerializeObject(new List<string> { "tart", "snack", "healthy" })
                 },
-                new SelectableQueryModel { Description = "Yellow Banana", Tags = "[fruit] [color]", IsChecked = false },
-                new SelectableQueryModel
+                new SelectableQFModel { Description = "Yellow Banana", Tags = "[fruit] [color]", IsChecked = false },
+                new SelectableQFModel
                 {
                     Description = "Blue Bird",
                     Tags = "[bird] [color]",
                     IsChecked = false,
                     Keywords = JsonConvert.SerializeObject(new List<string> { "sky", "feathered", "song" })
                 },
-                new SelectableQueryModel
+                new SelectableQFModel
                 {
                     Description = "Red Cherry",
                     Tags = "[fruit] [color]",
                     IsChecked = false,
                     Keywords = JsonConvert.SerializeObject(new List<string> { "sweet", "summer", "dessert" })
                 },
-                new SelectableQueryModel { Description = "Black Cat", Tags = "[animal] [color]", IsChecked = false },
-                new SelectableQueryModel { Description = "Orange Fox", Tags = "[animal] [color]", IsChecked = false },
-                new SelectableQueryModel
+                new SelectableQFModel { Description = "Black Cat", Tags = "[animal] [color]", IsChecked = false },
+                new SelectableQFModel { Description = "Orange Fox", Tags = "[animal] [color]", IsChecked = false },
+                new SelectableQFModel
                 {
                     Description = "White Rabbit",
                     Tags = "[animal] [color]",
                     IsChecked = false,
                     Keywords = JsonConvert.SerializeObject(new List<string> { "bunny", "soft", "jump" })
                 },
-                new SelectableQueryModel { Description = "Purple Grape", Tags = "[fruit] [color]", IsChecked = false },
-                new SelectableQueryModel
+                new SelectableQFModel { Description = "Purple Grape", Tags = "[fruit] [color]", IsChecked = false },
+                new SelectableQFModel
                 {
                     Description = "Gray Wolf",
                     Tags = "[animal] [color]",
                     IsChecked = false,
                     Keywords = JsonConvert.SerializeObject(new List<string> { "pack", "howl", "wild" })
                 },
-                new SelectableQueryModel { Description = "Pink Flamingo", Tags = "[bird] [color]", IsChecked = false },
-                new SelectableQueryModel { Description = "Golden Lion", Tags = "[animal] [color]", IsChecked = false },
-                new SelectableQueryModel
+                new SelectableQFModel { Description = "Pink Flamingo", Tags = "[bird] [color]", IsChecked = false },
+                new SelectableQFModel { Description = "Golden Lion", Tags = "[animal] [color]", IsChecked = false },
+                new SelectableQFModel
                 {
                     Description = "Brown Bear",
                     Tags = "[animal] [color]",
                     IsChecked = false,
                     Keywords = JsonConvert.SerializeObject(new List<string> { "strong", "wild", "forest" })
                 },
-                new SelectableQueryModel { Description = "Green Pear", Tags = "[fruit] [color]", IsChecked = false },
-                new SelectableQueryModel { Description = "Red Strawberry", Tags = "[fruit] [color]", IsChecked = false },
-                new SelectableQueryModel
+                new SelectableQFModel { Description = "Green Pear", Tags = "[fruit] [color]", IsChecked = false },
+                new SelectableQFModel { Description = "Red Strawberry", Tags = "[fruit] [color]", IsChecked = false },
+                new SelectableQFModel
                 {
                     Description = "Black Panther",
                     Tags = "[animal] [color]",
                     IsChecked = false,
                     Keywords = JsonConvert.SerializeObject(new List<string> { "stealthy", "feline", "night" })
                 },
-                new SelectableQueryModel { Description = "Yellow Lemon", Tags = "[fruit] [color]", IsChecked = false },
-                new SelectableQueryModel { Description = "White Swan", Tags = "[bird] [color]", IsChecked = false },
-                new SelectableQueryModel { Description = "Purple Plum", Tags = "[fruit] [color]", IsChecked = false },
-                new SelectableQueryModel
+                new SelectableQFModel { Description = "Yellow Lemon", Tags = "[fruit] [color]", IsChecked = false },
+                new SelectableQFModel { Description = "White Swan", Tags = "[bird] [color]", IsChecked = false },
+                new SelectableQFModel { Description = "Purple Plum", Tags = "[fruit] [color]", IsChecked = false },
+                new SelectableQFModel
                 {
                     Description = "Blue Whale",
                     Tags = "[marine-mammal] [ocean]",
                     IsChecked = false,
                     Keywords = JsonConvert.SerializeObject(new List<string> { "ocean", "mammal", "giant" })
                 },
-                new SelectableQueryModel
+                new SelectableQFModel
                 {
                     Description = "Elephant",
                     Tags = "[animal]",
                     IsChecked = false,
                     Keywords = JsonConvert.SerializeObject(new List<string> { "trunk", "herd", "safari" })
                 },
-                new SelectableQueryModel { Description = "Pineapple", Tags = "[fruit]", IsChecked = false },
-                new SelectableQueryModel { Description = "Shark", Tags = "[fish]", IsChecked = false },
-                new SelectableQueryModel { Description = "Owl", Tags = "[bird]", IsChecked = false },
-                new SelectableQueryModel { Description = "Giraffe", Tags = "[animal]", IsChecked = false },
-                new SelectableQueryModel { Description = "Coconut", Tags = "[fruit]", IsChecked = false },
-                new SelectableQueryModel
+                new SelectableQFModel { Description = "Pineapple", Tags = "[fruit]", IsChecked = false },
+                new SelectableQFModel { Description = "Shark", Tags = "[fish]", IsChecked = false },
+                new SelectableQFModel { Description = "Owl", Tags = "[bird]", IsChecked = false },
+                new SelectableQFModel { Description = "Giraffe", Tags = "[animal]", IsChecked = false },
+                new SelectableQFModel { Description = "Coconut", Tags = "[fruit]", IsChecked = false },
+                new SelectableQFModel
                 {
                     Description = "Kangaroo",
                     Tags = "[animal]",
                     IsChecked = false,
                     Keywords = JsonConvert.SerializeObject(new List<string> { "bounce", "outback", "marsupial" })
                 },
-                new SelectableQueryModel { Description = "Dragonfruit", Tags = "[fruit]", IsChecked = false },
-                new SelectableQueryModel { Description = "Turtle", Tags = "[animal]", IsChecked = false },
-                new SelectableQueryModel { Description = "Mango", Tags = "[fruit]", IsChecked = false },
-                new SelectableQueryModel { Description = "Should NOT match an expression with an \"animal\" tag.", Tags = "[not animal]", IsChecked = false }
+                new SelectableQFModel { Description = "Dragonfruit", Tags = "[fruit]", IsChecked = false },
+                new SelectableQFModel { Description = "Turtle", Tags = "[animal]", IsChecked = false },
+                new SelectableQFModel { Description = "Mango", Tags = "[fruit]", IsChecked = false },
+                new SelectableQFModel { Description = "Should NOT match an expression with an \"animal\" tag.", Tags = "[not animal]", IsChecked = false }
             };
             var imdb = new SQLiteConnection(":memory:");
-            imdb.CreateTable<SelectableQueryModel>();
+            imdb.CreateTable<SelectableQFModel>();
             imdb.InsertAll(items);
             return imdb;
         }
@@ -318,11 +318,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
         private SQLiteConnection InitializeInMemoryDatabaseAtomicQuotes()
         {
-            var items = new List<SelectableQueryModel>
+            var items = new List<SelectableQFModel>
             {
             };
             var imdb = new SQLiteConnection(":memory:");
-            imdb.CreateTable<SelectableQueryModel>();
+            imdb.CreateTable<SelectableQFModel>();
             imdb.InsertAll(items);
             return imdb;
         }
@@ -333,7 +333,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             string actual, expected;
             using (var cnx = InitializeInMemoryDatabase())
             {
-                var allRecords = cnx.Query<SelectableQueryModel>("Select * from items");
+                var allRecords = cnx.Query<SelectableQFModel>("Select * from items");
                 actual = string.Join(Environment.NewLine, allRecords.Select(_ => _.ToString()));
                 actual.ToClipboard();
                 actual.ToClipboardExpected();
@@ -384,10 +384,10 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
         public async Task Test_ApplyExprManuallySingle()
         {
             string actual, expected;
-            List<SelectableQueryModel> results;
+            List<SelectableQFModel> results;
             var builder = new List<string>();
-            List<SelectableQueryModel> unfiltered = new List<SelectableQueryModel>();
-            List<SelectableQueryModel> filtered = new List<SelectableQueryModel>();
+            List<SelectableQFModel> unfiltered = new List<SelectableQFModel>();
+            List<SelectableQFModel> filtered = new List<SelectableQFModel>();
             MarkdownContextOR context;
             ValidationState state;
             using (var cnx = InitializeInMemoryDatabaseSingle())
@@ -401,7 +401,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 #region S U B T E S T S
                 void subtestExpr()
                 {
-                    actual = "animal".ParseSqlMarkdown<SelectableQueryModel>();
+                    actual = "animal".ParseSqlMarkdown<SelectableQFModel>();
 					expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%animal%')"
 					;
@@ -412,7 +412,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%animal%')"
                         "Expecting query mode expression with QueryTerm indexed only."
                     );
 
-					actual = "animal".ParseSqlMarkdown<SelectableQueryModel>(QueryFilterMode.Filter);
+					actual = "animal".ParseSqlMarkdown<SelectableQFModel>(QueryFilterMode.Filter);
 					expected = @" 
 SELECT * FROM items WHERE (FilterTerm LIKE '%animal%')"
 					;
@@ -426,7 +426,7 @@ SELECT * FROM items WHERE (FilterTerm LIKE '%animal%')"
 				}
                 async Task subtestReport()
                 {
-                    unfiltered = cnx.Query<SelectableQueryModel>("Select * from items");
+                    unfiltered = cnx.Query<SelectableQFModel>("Select * from items");
                     await Task.Delay(TimeSpan.FromSeconds(0.5));
                     foreach (var item in unfiltered)
                     {
@@ -467,7 +467,7 @@ Properties     =""{
                 // "Might" need await...
                 void subtestMoreExprs()
                 {
-                    actual = "bro".ParseSqlMarkdown<SelectableQueryModel>();
+                    actual = "bro".ParseSqlMarkdown<SelectableQFModel>();
 					expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%bro%')"
 					;
@@ -477,31 +477,31 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%bro%')"
                         actual.NormalizeResult(),
                         "Expecting correct expr"
                     );
-                    Assert.IsNotNull(cnx.Query<SelectableQueryModel>(actual).SingleOrDefault());
+                    Assert.IsNotNull(cnx.Query<SelectableQFModel>(actual).SingleOrDefault());
 
-                    actual = "bro dog".ParseSqlMarkdown<SelectableQueryModel>();
-                    Assert.IsNotNull(cnx.Query<SelectableQueryModel>(actual).SingleOrDefault());
+                    actual = "bro dog".ParseSqlMarkdown<SelectableQFModel>();
+                    Assert.IsNotNull(cnx.Query<SelectableQFModel>(actual).SingleOrDefault());
 
-                    actual = "brown furry".ParseSqlMarkdown<SelectableQueryModel>();
+                    actual = "brown furry".ParseSqlMarkdown<SelectableQFModel>();
 					expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%brown%') AND (QueryTerm LIKE '%furry%')"
 					;
-                    Assert.IsNotNull(cnx.Query<SelectableQueryModel>(actual).SingleOrDefault());
-                    actual = "brown !dog".ParseSqlMarkdown<SelectableQueryModel>();
+                    Assert.IsNotNull(cnx.Query<SelectableQFModel>(actual).SingleOrDefault());
+                    actual = "brown !dog".ParseSqlMarkdown<SelectableQFModel>();
                     
                     actual.ToClipboardExpected();
                     // IS null
-                    Assert.IsNull(cnx.Query<SelectableQueryModel>(actual).SingleOrDefault());
+                    Assert.IsNull(cnx.Query<SelectableQFModel>(actual).SingleOrDefault());
                 }
                 void subtestApplyFilter()
                 {
                     using (var subcnx = new SQLiteConnection(":memory:"))
                     {
-                        subcnx.CreateTable<SelectableQueryModel>();
+                        subcnx.CreateTable<SelectableQFModel>();
                         subcnx.InsertAll(unfiltered);
                         builder.Clear();
 
-                        actual = "brown furry".ParseSqlMarkdown<SelectableQueryModel>(QueryFilterMode.Filter);
+                        actual = "brown furry".ParseSqlMarkdown<SelectableQFModel>(QueryFilterMode.Filter);
                         actual.ToClipboardExpected();
                         { }
 						expected = @" 
@@ -514,11 +514,11 @@ SELECT * FROM items WHERE
                             actual.NormalizeResult(),
                             "Expecting correct expr."
                         );
-                        filtered = subcnx.Query<SelectableQueryModel>(actual);
+                        filtered = subcnx.Query<SelectableQFModel>(actual);
 
                         Assert.IsNotNull(filtered.SingleOrDefault());
-                        actual = "brown canine".ParseSqlMarkdown<SelectableQueryModel>(QueryFilterMode.Filter);
-                        filtered = subcnx.Query<SelectableQueryModel>(actual);
+                        actual = "brown canine".ParseSqlMarkdown<SelectableQFModel>(QueryFilterMode.Filter);
+                        filtered = subcnx.Query<SelectableQFModel>(actual);
                         // IS null...
                         Assert.IsNull(filtered.SingleOrDefault());
                     }
@@ -552,7 +552,7 @@ Properties     =""{
         public void Test_ApplyExprManually()
         {
             string actual, expected, sql;
-            List<SelectableQueryModel> results;
+            List<SelectableQFModel> results;
             MarkdownContextOR context;
             ValidationState state;
 
@@ -564,7 +564,7 @@ Properties     =""{
                 var builder = new List<string>();
                 using (var cnx = InitializeInMemoryDatabase())
                 {
-                    var allRecords = cnx.Query<SelectableQueryModel>("Select * from items");
+                    var allRecords = cnx.Query<SelectableQFModel>("Select * from items");
                     foreach (var item in allRecords)
                     {
                         builder.Add(item.Report());
@@ -1069,7 +1069,7 @@ Properties     =""{
         public void Test_DefaultExpressions()
         {
             string actual, expected, sql;
-            List<SelectableQueryModel> results;
+            List<SelectableQFModel> results;
             MarkdownContextOR context;
             ValidationState state;
             using (var cnx = InitializeInMemoryDatabase())
@@ -1080,7 +1080,7 @@ Properties     =""{
                 #region S U B T E S T S
                 void subtestBasicQueryAnimal()
                 {
-                    sql = "animal".ParseSqlMarkdown<SelectableQueryModel>();
+                    sql = "animal".ParseSqlMarkdown<SelectableQFModel>();
 
                     actual = sql;
 					expected = @" 
@@ -1093,7 +1093,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%animal%')"
                         "Expecting expr does not include a Tag term"
                     );
 
-                    results = cnx.Query<SelectableQueryModel>(sql);
+                    results = cnx.Query<SelectableQFModel>(sql);
 
                     actual = string.Join(Environment.NewLine, results.Select(_ => _.ToString()));
                     expected = @" 
@@ -1121,11 +1121,11 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 {
                     sql =
                         "animals"
-                        .ParseSqlMarkdown<SelectableQueryModel>();
+                        .ParseSqlMarkdown<SelectableQFModel>();
 
                     sql = sql.ToFuzzyQuery();
 
-                    results = cnx.Query<SelectableQueryModel>(sql);
+                    results = cnx.Query<SelectableQFModel>(sql);
 
                     actual = string.Join(Environment.NewLine, results.Select(_ => _.ToString()));
 					expected = @" 
@@ -1159,8 +1159,8 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             SenderEventPair sep;
             NotifyCollectionChangedEventArgs ecc;
             Queue<SenderEventPair> eventQueue = new();
-            List<SelectableQueryModel> results;
-            var itemsSource = new ObservableQueryFilterSource<SelectableQueryModel>();
+            List<SelectableQFModel> results;
+            var itemsSource = new ObservableQueryFilterSource<SelectableQFModel>();
             void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
             {
                 eventQueue.Enqueue((sender, e));
@@ -1173,8 +1173,8 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 #region S U B T E S T S
                 void subtestBasicQueryAnimal()
                 {
-                    sql = "animal".ParseSqlMarkdown<SelectableQueryModel>();
-                    results = cnx.Query<SelectableQueryModel>(sql);
+                    sql = "animal".ParseSqlMarkdown<SelectableQFModel>();
+                    results = cnx.Query<SelectableQFModel>(sql);
                     itemsSource.ReplaceItems(results);
                     actual = string.Join(Environment.NewLine, itemsSource.Select(_ => _.ToString()));
                     expected = @" 
@@ -1203,8 +1203,8 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     try
                     {
                         itemsSource.CollectionChanged += localOnCollectionChanged;
-                        sql = "animal".ParseSqlMarkdown<SelectableQueryModel>();
-                        results = cnx.Query<SelectableQueryModel>(sql);
+                        sql = "animal".ParseSqlMarkdown<SelectableQFModel>();
+                        results = cnx.Query<SelectableQFModel>(sql);
                         itemsSource.ReplaceItems(results);
 
                         actual =
@@ -1230,7 +1230,7 @@ Add"
                         actual = string.Join(
                             Environment.NewLine,
                             ecc
-                            .NewItems?.OfType<SelectableQueryModel>()
+                            .NewItems?.OfType<SelectableQFModel>()
                             .Select(_ => _.ToString()) ?? []);
 
                         expected = @" 
@@ -1397,7 +1397,7 @@ InputText";
                         "Expecting specific state UNCHANGED."
                     );
                     // Based on UI interaction like return key pressed
-                    sql = items.InputText.ParseSqlMarkdown<SelectableQueryModel>();
+                    sql = items.InputText.ParseSqlMarkdown<SelectableQFModel>();
                     recordset = cnx.Query<SelectableQueryModelOR>(sql);
                     items.ReplaceItems(recordset);
 
@@ -1529,7 +1529,7 @@ Kangaroo ""bounce"",""outback"",""marsupial"" [animal]";
         public void Test_FuzzyPlural()
         {
             string actual, expected, sql;
-            List<SelectableQueryModel> recordset;
+            List<SelectableQFModel> recordset;
             using (var cnx = InitializeInMemoryDatabase())
             {
                 subtestBasicQueryAnimal();
@@ -1538,7 +1538,7 @@ Kangaroo ""bounce"",""outback"",""marsupial"" [animal]";
                 #region S U B T E S T S
                 void subtestBasicQueryAnimal()
                 {
-                    sql = "animal".ParseSqlMarkdown<SelectableQueryModel>();
+                    sql = "animal".ParseSqlMarkdown<SelectableQFModel>();
 
                     actual = sql;
 					expected = @" 
@@ -1551,7 +1551,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%animal%')"
                         "Expecting expr does not include a Tag term"
                     );
 
-                    recordset = cnx.Query<SelectableQueryModel>(sql);
+                    recordset = cnx.Query<SelectableQFModel>(sql);
 
                     actual = string.Join(Environment.NewLine, recordset.Select(_ => _.ToString()));
                     expected = @" 
@@ -1579,11 +1579,11 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 {
                     sql =
                         "animals"
-                        .ParseSqlMarkdown<SelectableQueryModel>();
+                        .ParseSqlMarkdown<SelectableQFModel>();
 
                     sql = sql.ToFuzzyQuery();
 
-                    recordset = cnx.Query<SelectableQueryModel>(sql);
+                    recordset = cnx.Query<SelectableQFModel>(sql);
 
                     actual = string.Join(Environment.NewLine, recordset.Select(_ => _.ToString()));
                     expected = @" 
@@ -1776,7 +1776,7 @@ SELECT * FROM items WHERE
             #region S U B T E S T S
             void subtestSimpleAnd()
             {
-                actual = "brown dog".ParseSqlMarkdown<SelectableQueryModel>(QueryFilterMode.Query, out xast);
+                actual = "brown dog".ParseSqlMarkdown<SelectableQFModel>(QueryFilterMode.Query, out xast);
                 expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%brown%') AND (QueryTerm LIKE '%dog%')";
                 Assert.AreEqual(
@@ -1821,7 +1821,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE @param0000) AND (QueryTerm LIKE @param
 
             void subtestUnaryNegation()
             {
-                actual = "!cat".ParseSqlMarkdown<SelectableQueryModel>(QueryFilterMode.Query, out xast);
+                actual = "!cat".ParseSqlMarkdown<SelectableQFModel>(QueryFilterMode.Query, out xast);
                 expected = "SELECT * FROM items WHERE (NOT (QueryTerm LIKE '%cat%'))";
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult());
 
@@ -1841,7 +1841,7 @@ SELECT * FROM items WHERE (NOT (QueryTerm LIKE @param0000))"
 
             void subtestUnaryNegationTwoTerms()
             {
-                actual = "!cat dog".ParseSqlMarkdown<SelectableQueryModel>(QueryFilterMode.Query, out xast);
+                actual = "!cat dog".ParseSqlMarkdown<SelectableQFModel>(QueryFilterMode.Query, out xast);
                 expected = @" 
 SELECT * FROM items WHERE (NOT (QueryTerm LIKE '%cat%')) AND (QueryTerm LIKE '%dog%')";
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult());
@@ -1863,7 +1863,7 @@ SELECT * FROM items WHERE (NOT (QueryTerm LIKE @param0000)) AND (QueryTerm LIKE 
 
             void subtestUnarySubNegation()
             {
-                actual = "!(cat|dog)".ParseSqlMarkdown<SelectableQueryModel>(QueryFilterMode.Query, out xast); 
+                actual = "!(cat|dog)".ParseSqlMarkdown<SelectableQFModel>(QueryFilterMode.Query, out xast); 
                 actual.ToClipboardExpected();
                 expected = @" 
 SELECT * FROM items WHERE 
@@ -1889,7 +1889,7 @@ SELECT * FROM items WHERE (NOT ((QueryTerm LIKE @param0000) OR (QueryTerm LIKE @
 
             void subtestUnaryComplexNegation()
             {
-                actual = "pet!(cat|dog)".ParseSqlMarkdown<SelectableQueryModel>(QueryFilterMode.Query, out xast);
+                actual = "pet!(cat|dog)".ParseSqlMarkdown<SelectableQFModel>(QueryFilterMode.Query, out xast);
                 expected = "SELECT * FROM pets WHERE (Name LIKE '%pet%') AND (NOT ((Name LIKE '%cat%') OR (Name LIKE '%dog%')))";
             }
             #endregion S U B T E S T S
@@ -1902,15 +1902,15 @@ SELECT * FROM items WHERE (NOT ((QueryTerm LIKE @param0000) OR (QueryTerm LIKE @
             string actual, expected, stringFirst;
             MarkdownContext mc;
             SQLiteCommand cmd;
-            List<SelectableQueryModel> recordset;
+            List<SelectableQFModel> recordset;
             int countManual;
             using (var cnx = InitializeInMemoryDatabase())
             {
-                actual = "b".ParseSqlMarkdown<SelectableQueryModel>();
+                actual = "b".ParseSqlMarkdown<SelectableQFModel>();
                 Assert.AreEqual(string.Empty, actual);
 
                 // Specify minimum length via helper.
-                actual = "b".ParseSqlMarkdown<SelectableQueryModel>(minInputLength: 0);
+                actual = "b".ParseSqlMarkdown<SelectableQFModel>(minInputLength: 0);
                 // Returns QueryTerm
                 expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%b%')"
@@ -1922,7 +1922,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%b%')"
                 );
 
                 // Specify minimum length via state.
-                actual = "b".ParseSqlMarkdown<SelectableQueryModel>(QueryFilterMode.Filter, out xast);
+                actual = "b".ParseSqlMarkdown<SelectableQFModel>(QueryFilterMode.Filter, out xast);
                 // Returns FilterTerm // <= Different!
                 expected = @" 
 SELECT * FROM items WHERE (FilterTerm LIKE '%b%')"
@@ -1936,7 +1936,7 @@ SELECT * FROM items WHERE (FilterTerm LIKE '%b%')"
 
                 Assert.IsNotNull((mc = xast.To<MarkdownContext>()));
 
-                actual = mc.ParseSqlMarkdown<SelectableQueryModel>("b", QueryFilterMode.Filter);
+                actual = mc.ParseSqlMarkdown<SelectableQFModel>("b", QueryFilterMode.Filter);
                 expected = @" 
 SELECT * FROM items WHERE 
 (FilterTerm LIKE '%b%')"
@@ -2000,7 +2000,7 @@ SELECT * FROM items WHERE (FilterTerm LIKE ?)"
                 void subtestFormNamedCommand()
                 {
                     // Valid (query)
-                    stringFirst = mc.ParseSqlMarkdown<SelectableQueryModel>("animal b");
+                    stringFirst = mc.ParseSqlMarkdown<SelectableQFModel>("animal b");
                     actual = stringFirst;
                     expected = @" 
 SELECT * FROM items WHERE 
@@ -2023,7 +2023,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE @param0000) AND (QueryTerm LIKE @param
                         "Expecting match."
                     );
 
-                    recordset = cnx.Query<SelectableQueryModel>(
+                    recordset = cnx.Query<SelectableQFModel>(
                         @"SELECT * FROM items WHERE (QueryTerm LIKE '%animal%') AND (QueryTerm LIKE '%b%')");
                     countManual = recordset.Count();
 
@@ -2042,7 +2042,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE @param0000) AND (QueryTerm LIKE @param
                         "Expecting match."
                     );
 
-                    recordset = cmd.ExecuteQuery<SelectableQueryModel>();
+                    recordset = cmd.ExecuteQuery<SelectableQFModel>();
                     Assert.AreEqual(
                         countManual, 
                         recordset.Count(),
@@ -2051,7 +2051,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE @param0000) AND (QueryTerm LIKE @param
                 }
                 void subtestFormPositionalCommand()
                 {
-                    stringFirst = mc.ParseSqlMarkdown<SelectableQueryModel>("animal b");
+                    stringFirst = mc.ParseSqlMarkdown<SelectableQFModel>("animal b");
                     actual = stringFirst;
                     expected = @" 
 SELECT * FROM items WHERE 
@@ -2082,7 +2082,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE ?) AND (QueryTerm LIKE ?)
                         actual.NormalizeResult(),
                         "Expecting positional command is properly ordered."
                     );
-                    recordset = cmd.ExecuteQuery<SelectableQueryModel>();                
+                    recordset = cmd.ExecuteQuery<SelectableQFModel>();                
                     Assert.AreEqual(countManual, recordset.Count());
                 }
                 #endregion S U B T E S T S
@@ -2178,47 +2178,47 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%[canine]%' OR TagMatchTerm LIKE '%[c
         public void Test_AtomicDQuotes()
         {
             string actual, expected;
-            List<SelectableQueryModel> recordset;
+            List<SelectableQFModel> recordset;
             MarkdownContextOR context;
             ValidationState validationState = ValidationState.Valid;
 
-            actual = "Tom Tester".ParseSqlMarkdown<SelectableQueryModel>();
+            actual = "Tom Tester".ParseSqlMarkdown<SelectableQFModel>();
 			expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%Tom%') AND (QueryTerm LIKE '%Tester%')"
 			;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting unquoted term behavior.");
 
-            actual = "Tom Tester'".ParseSqlMarkdown<SelectableQueryModel>();
+            actual = "Tom Tester'".ParseSqlMarkdown<SelectableQFModel>();
 			expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%Tom%') AND (QueryTerm LIKE '%Tester''%')"
 			;
 			Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting trailing single quote is escaped.");
 
-            actual = "Tom Tester's".ParseSqlMarkdown<SelectableQueryModel>();
+            actual = "Tom Tester's".ParseSqlMarkdown<SelectableQFModel>();
 			expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%Tom%') AND (QueryTerm LIKE '%Tester''s%')"
 			;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting single quote is escaped.");
 
-            actual = @"""Tom Tester".ParseSqlMarkdown<SelectableQueryModel>();
+            actual = @"""Tom Tester".ParseSqlMarkdown<SelectableQFModel>();
 			expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%""Tom%') AND (QueryTerm LIKE '%Tester%')"
 			;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting unclosed double quote treated as literal.");
 
-            actual = @"""Tom Tester'".ParseSqlMarkdown<SelectableQueryModel>();
+            actual = @"""Tom Tester'".ParseSqlMarkdown<SelectableQFModel>();
 			expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%""Tom%') AND (QueryTerm LIKE '%Tester''%')"
 			;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting inner single quote escaped within unmatched double quote.");
 
-            actual = @"""Tom Tester's".ParseSqlMarkdown<SelectableQueryModel>();
+            actual = @"""Tom Tester's".ParseSqlMarkdown<SelectableQFModel>();
 			expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%""Tom%') AND (QueryTerm LIKE '%Tester''s%')"
 			;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting unclosed double quote with inner apostrophe.");
 
-            actual = @"""Tom Tester's""".ParseSqlMarkdown<SelectableQueryModel>();
+            actual = @"""Tom Tester's""".ParseSqlMarkdown<SelectableQFModel>();
 			expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%Tom Tester''s%')"
 			;
@@ -2227,7 +2227,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%Tom Tester''s%')"
             // We successfully have made an atomic term, and it is NOT QUOTED in the query.
             // Now, can you surround that atomic term with quotes?
 
-            actual = @"""""""Tom Tester's""""""".ParseSqlMarkdown<SelectableQueryModel>();
+            actual = @"""""""Tom Tester's""""""".ParseSqlMarkdown<SelectableQFModel>();
 			expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%""""Tom Tester''s""""%')"
 			;
@@ -2239,31 +2239,31 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%""""Tom Tester''s""""%')"
             );
             #endregion V A R I A N T
 
-            actual = @"You said, """.ParseSqlMarkdown<SelectableQueryModel>();
+            actual = @"You said, """.ParseSqlMarkdown<SelectableQFModel>();
 			expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%You%') AND (QueryTerm LIKE '%said,%') AND (QueryTerm LIKE '%""%')"
 			;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting unmatched double quote treated as literal.");
 
-            actual = @"You said, """"".ParseSqlMarkdown<SelectableQueryModel>();
+            actual = @"You said, """"".ParseSqlMarkdown<SelectableQFModel>();
 			expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%You%') AND (QueryTerm LIKE '%said,%') AND (QueryTerm LIKE '%""%')"
 			;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting escaped double quote treated as literal.");
 
-            actual = @"You said, """"H".ParseSqlMarkdown<SelectableQueryModel>();
+            actual = @"You said, """"H".ParseSqlMarkdown<SelectableQFModel>();
 			expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%You%') AND (QueryTerm LIKE '%said,%') AND (QueryTerm LIKE '%""H%')"
 			;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting escaped quote followed by text.");
 
-            actual = @"You said, """"Hello""".ParseSqlMarkdown<SelectableQueryModel>();
+            actual = @"You said, """"Hello""".ParseSqlMarkdown<SelectableQFModel>();
 			expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%You%') AND (QueryTerm LIKE '%said,%') AND (QueryTerm LIKE '%""Hello""%')"
 			;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "SUBTLE! Expecting escaped double quote + Unmatched quote at end is literal.");
 
-            actual = @"You said, """"Hello"""".".ParseSqlMarkdown<SelectableQueryModel>();
+            actual = @"You said, """"Hello"""".".ParseSqlMarkdown<SelectableQFModel>();
 			expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%You%') AND (QueryTerm LIKE '%said,%') AND (QueryTerm LIKE '%""Hello"".%')"
 			;
@@ -2275,12 +2275,12 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%You%') AND (QueryTerm LIKE '%said,%'
         {
             string actual, expected;
             string sql;
-            List<SelectableQueryModel> recordset;
+            List<SelectableQFModel> recordset;
             MarkdownContextOR context;
             ValidationState validationState = ValidationState.Valid;
 
 
-            sql = @"'Tom Tester'".ParseSqlMarkdown<SelectableQueryModel>();
+            sql = @"'Tom Tester'".ParseSqlMarkdown<SelectableQFModel>();
 
             actual = sql;
 			expected = @" 
@@ -2292,7 +2292,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%Tom Tester%')";
 				"Expecting term between squotes is insulated from linting."
 			);
 
-            sql = @"'Tom ""safe inner"" Tester'".ParseSqlMarkdown<SelectableQueryModel>();
+            sql = @"'Tom ""safe inner"" Tester'".ParseSqlMarkdown<SelectableQFModel>();
 
             // {93B1FE29-F593-47EC-9CFA-F2706E79AA9E}
             actual = sql;
@@ -2305,7 +2305,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%Tom safe inner Tester%')";
 				"SUBTLE: The dquote linter runs before the squote linter so both have had an effect."
 			);
 
-			sql = @"'Tom """"safe inner"""" Tester'".ParseSqlMarkdown<SelectableQueryModel>();
+			sql = @"'Tom """"safe inner"""" Tester'".ParseSqlMarkdown<SelectableQFModel>();
 
 			// {93B1FE29-F593-47EC-9CFA-F2706E79AA9E}
 			actual = sql;
@@ -2363,11 +2363,11 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%Tom ""safe inner"" Tester%')"
                     }
                 );
 
-                var recordset = cnx.Query<SelectableQueryModel>(
+                var recordset = cnx.Query<SelectableQFModel>(
                     $@"
 Select *
 From items 
-Where PropertyValue({nameof(SelectableQueryModel.Properties)}, '{nameof(SelectableQueryModel.Description)}') LIKE '%brown dog%'");
+Where PropertyValue({nameof(SelectableQFModel.Properties)}, '{nameof(SelectableQFModel.Description)}') LIKE '%brown dog%'");
                 { }
             }
         }
@@ -2378,16 +2378,16 @@ Where PropertyValue({nameof(SelectableQueryModel.Properties)}, '{nameof(Selectab
             using (var cnx = InitializeInMemoryDatabase())
             {
                 string actual, expected, sql;
-                List<SelectableQueryModel> recordset;
-                SelectableQueryModel[] itemsArray;
+                List<SelectableQFModel> recordset;
+                SelectableQFModel[] itemsArray;
                 MarkdownContextOR context;
                 ValidationState state;
                 SenderEventPair sep;
                 NotifyCollectionChangedEventArgs? ecc;
-                SelectableQueryModel[] newItems = [];
+                SelectableQFModel[] newItems = [];
                 Queue<SenderEventPair> eventQueue = new();
 
-                var items = new ObservableQueryFilterSource<SelectableQueryModel>();
+                var items = new ObservableQueryFilterSource<SelectableQFModel>();
                 NavSearchBar nsb = new NavSearchBar
                 {
                     // NavSearchBar UI controls are designed
@@ -2410,8 +2410,8 @@ Where PropertyValue({nameof(SelectableQueryModel.Properties)}, '{nameof(Selectab
                                 // Client is responsible for the query at large because
                                 // only they know what the data connection is. Once QFS
                                 // has the recordset, it can filter it using SQLite.
-                                sql = qfs.InputText.ParseSqlMarkdown<SelectableQueryModel>();
-                                recordset = cnx.Query<SelectableQueryModel>(sql);
+                                sql = qfs.InputText.ParseSqlMarkdown<SelectableQFModel>();
+                                recordset = cnx.Query<SelectableQFModel>(sql);
                                 items.ReplaceItems(recordset);
                                 break;
                             case SearchEntryState.QueryCompleteNoResults:
@@ -2465,7 +2465,7 @@ Where PropertyValue({nameof(SelectableQueryModel.Properties)}, '{nameof(Selectab
                             newItems =
                                 ecc
                                 .NewItems
-                                ?.OfType<SelectableQueryModel>()
+                                ?.OfType<SelectableQFModel>()
                                 .ToArray() ?? [];
                             Assert.AreEqual(12, newItems.Length);
                             break;
