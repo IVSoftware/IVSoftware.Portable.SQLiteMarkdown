@@ -124,12 +124,12 @@ Once your model is decorated with `[SqlLikeTerm]` or related attributes, parsed 
 For example:
 
 ```csharp
-public class PetProfileOR
+public class PetProfile
 {
-    [SqlLikeTerm]
+    [QueryLikeTerm]
     public string Name { get; set; }
 
-    [SqlLikeTerm]
+    [QueryLikeTerm]
     public string Species { get; set; }
 }
 ```

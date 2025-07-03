@@ -2,8 +2,11 @@
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.QFTemplates
 {
+    /// <summary>
+    /// Base target for Split Contract testing.
+    /// </summary>
     [Table("pets")]
-    class PetProfile
+    class PetProfileSC
     {
         [PrimaryKey]
         public string Id { get; set; } = Guid.NewGuid().ToString();
@@ -15,7 +18,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.QFTemplates
     /// <summary>
     /// Name only, Query only.
     /// </summary>
-    class PetProfileN : PetProfile
+    class PetProfileN : PetProfileSC
     {
         [QueryLikeTerm]
         public new string Name
@@ -28,7 +31,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.QFTemplates
     /// <summary>
     /// Name and Species, Query only.
     /// </summary>
-    class PetProfileNS : PetProfile
+    class PetProfileNS : PetProfileSC
     {
         [QueryLikeTerm]
         public new string Name
@@ -48,7 +51,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.QFTemplates
     /// <summary>
     /// Query on Name and Species; Filter on Name only.
     /// </summary>
-    class PetProfileNS_N : PetProfile
+    class PetProfileNS_N : PetProfileSC
     {
 
         [QueryLikeTerm, FilterLikeTerm]
@@ -69,7 +72,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.QFTemplates
     /// <summary>
     /// Name only, Query only, Strict Tag Match mode
     /// </summary>
-    class PetProfileN_N_T : PetProfile
+    class PetProfileN_N_T : PetProfileSC
     {
         [QueryLikeTerm, FilterLikeTerm]
         public new string Name
@@ -89,7 +92,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.QFTemplates
     /// <summary>
     /// Name only, Query only, Soft Tag Match mode
     /// </summary>
-    class PetProfileN_NT_T : PetProfile
+    class PetProfileN_NT_T : PetProfileSC
     {
         [QueryLikeTerm, FilterLikeTerm]
         public new string Name
@@ -109,7 +112,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.QFTemplates
     /// <summary>
     /// A generous filter with broad reach.
     /// </summary>
-    class PetProfileN_NST_T : PetProfile
+    class PetProfileN_NST_T : PetProfileSC
     {
         [QueryLikeTerm, FilterLikeTerm]
         public new string Name

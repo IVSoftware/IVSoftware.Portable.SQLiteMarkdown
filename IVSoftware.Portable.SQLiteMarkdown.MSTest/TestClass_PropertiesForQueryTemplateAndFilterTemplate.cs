@@ -257,7 +257,7 @@ $bracket$bracket$bracket$"
 
             void SimpleTerm()
             {
-                actual = "pet".ParseSqlMarkdown<PetProfileOR>();
+                actual = "pet".ParseSqlMarkdown<PetProfile>();
                 expected = @"
 SELECT * FROM pets WHERE
 (Name LIKE '%pet%' OR Species LIKE '%pet%')";
@@ -270,7 +270,7 @@ SELECT * FROM pets WHERE
 
             void ImplicitAnd()
             {
-                actual = "cat dog".ParseSqlMarkdown<PetProfileOR>();
+                actual = "cat dog".ParseSqlMarkdown<PetProfile>();
                 expected = @"
 SELECT * FROM pets WHERE
 (Name LIKE '%cat%' OR Species LIKE '%cat%')
@@ -284,7 +284,7 @@ AND (Name LIKE '%dog%' OR Species LIKE '%dog%')";
 
             void AndNot()
             {
-                actual = "cat !dog".ParseSqlMarkdown<PetProfileOR>();
+                actual = "cat !dog".ParseSqlMarkdown<PetProfile>();
                 expected = @" 
 SELECT * FROM pets WHERE
 (Name LIKE '%cat%' OR Species LIKE '%cat%') AND NOT ((Name LIKE '%dog%' OR Species LIKE '%dog%'))"
@@ -293,7 +293,7 @@ SELECT * FROM pets WHERE
 
             void NotOperator()
             {
-                actual = "!cat".ParseSqlMarkdown<PetProfileOR>();
+                actual = "!cat".ParseSqlMarkdown<PetProfile>();
                 expected = @" 
 SELECT * FROM pets WHERE
 NOT ((Name LIKE '%cat%' OR Species LIKE '%cat%'))"
@@ -302,7 +302,7 @@ NOT ((Name LIKE '%cat%' OR Species LIKE '%cat%'))"
 
             void SingleQuotedPhrase()
             {
-                actual = "'exact phrase'".ParseSqlMarkdown<PetProfileOR>();
+                actual = "'exact phrase'".ParseSqlMarkdown<PetProfile>();
                 expected = @"
 SELECT * FROM pets WHERE
 (Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')";
@@ -315,7 +315,7 @@ SELECT * FROM pets WHERE
 
             void DoubleQuotedPhrase()
             {
-                actual = "\"exact phrase\"".ParseSqlMarkdown<PetProfileOR>();
+                actual = "\"exact phrase\"".ParseSqlMarkdown<PetProfile>();
                 expected = @"
 SELECT * FROM pets WHERE
 (Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')";
@@ -328,7 +328,7 @@ SELECT * FROM pets WHERE
 
             void ExplicitAnd()
             {
-                actual = "cat & dog".ParseSqlMarkdown<PetProfileOR>();
+                actual = "cat & dog".ParseSqlMarkdown<PetProfile>();
                 expected = @"
 SELECT * FROM pets WHERE
 (Name LIKE '%cat%' OR Species LIKE '%cat%')
@@ -342,7 +342,7 @@ AND (Name LIKE '%dog%' OR Species LIKE '%dog%')";
 
             void RedundantAnd()
             {
-                actual = "cat &&& dog".ParseSqlMarkdown<PetProfileOR>();
+                actual = "cat &&& dog".ParseSqlMarkdown<PetProfile>();
                 expected = @"
 SELECT * FROM pets WHERE
 (Name LIKE '%cat%' OR Species LIKE '%cat%')
@@ -357,7 +357,7 @@ AND (Name LIKE '%dog%' OR Species LIKE '%dog%')";
 
             void ExplicitOr()
             {
-                actual = "cat | dog".ParseSqlMarkdown<PetProfileOR>();
+                actual = "cat | dog".ParseSqlMarkdown<PetProfile>();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -378,7 +378,7 @@ OR (Name LIKE '%dog%' OR Species LIKE '%dog%')";
 
             void RedundantOr()
             {
-                actual = "cat || dog".ParseSqlMarkdown<PetProfileOR>();
+                actual = "cat || dog".ParseSqlMarkdown<PetProfile>();
                 actual.ToClipboardExpected();
                 { }
 
@@ -409,7 +409,7 @@ OR (Name LIKE '%dog%' OR Species LIKE '%dog%')";
                     "Expecting spaces before and after operator are removed."
                 );
 
-                actual = "!(cat | dog)".ParseSqlMarkdown<PetProfileOR>();
+                actual = "!(cat | dog)".ParseSqlMarkdown<PetProfile>();
                 actual.ToClipboardExpected();
                 { }
 
@@ -425,7 +425,7 @@ SELECT * FROM pets WHERE (NOT ((Name LIKE '%cat%' OR Species LIKE '%cat%') OR (N
 
             void EscapedNot()
             {
-                actual = "\\!cat".ParseSqlMarkdown<PetProfileOR>();
+                actual = "\\!cat".ParseSqlMarkdown<PetProfile>();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -447,7 +447,7 @@ SELECT * FROM pets WHERE
 
             void EscapedBrackets()
             {
-                actual = "\\[bracket\\]".ParseSqlMarkdown<PetProfileOR>();
+                actual = "\\[bracket\\]".ParseSqlMarkdown<PetProfile>();
                 actual.ToClipboardExpected();
                 { }
 

@@ -41,12 +41,16 @@
 			- ADVISORY: This is 'not' a released bundle.
 			- The FilterValue property has been entirely removed from iterfaces, classed, MSTest data.
 			- Going forward, the QueryTemplate and FilterTemplate properties will express differences between terms to be considered in the respective states.
-			
+			Beta Release + 3
+			- [Obsolete] SqlLikeTerm		-> QueryLikeTerm
+			- [Obsolete] FilterContainsTerm -> FilterLikeTerm
+			- The obsolete attributes are aliased to the new ones so as not to break early adopter builds.
+
 		</PackageReleaseNotes>
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
 		<BaseVersion>1.0.0</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-beta1</VersionPrefix>
+		<VersionPrefix>$(BaseVersion)-beta3</VersionPrefix>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<SignAssembly>True</SignAssembly>

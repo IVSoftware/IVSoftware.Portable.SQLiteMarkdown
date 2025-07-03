@@ -107,6 +107,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.XBO
         [TestMethod]
         public void Test_TransformWithEscapedCharacters()
         {
+            // See also: {7E8A9B6F-5AED-48CB-9EB8-EF72D22B9970}
             var id1 = Thread.CurrentThread.ManagedThreadId;
             string actual, expected;
 
@@ -601,11 +602,11 @@ SELECT * FROM pets WHERE (Name LIKE '%match%' OR Tags LIKE '%match%')";
         public void Test_SplitContract()
         {
             string actual, expected;
-            List<PetProfile> recordset;
+            List<PetProfileSC> recordset;
             int autoIncrement = 0;
             using (var cnx = new SQLiteConnection(":memory:"))
             {
-                cnx.CreateTable<PetProfile>(); cnx.InsertAll(new PetProfile[]
+                cnx.CreateTable<PetProfileSC>(); cnx.InsertAll(new PetProfileSC[]
                 {
                     new() { Id = $"{autoIncrement++:D4}", Name = "Whiskers", Species = "Cat", Tags = "[indoor],[pet]" },
                     new() { Id = $"{autoIncrement++:D4}", Name = "Rover", Species = "Dog", Tags = "[outdoor],[pet]" },
@@ -628,7 +629,7 @@ SELECT * FROM pets WHERE (Name LIKE '%Whiskers%' OR Species LIKE '%Whiskers%' OR
                     "Expecting full SQL expr, not just a clause."
                 );
 
-                recordset = cnx.Query<PetProfile>("Whiskers".ParseSqlMarkdown<PetProfileN_NST_T>());
+                recordset = cnx.Query<PetProfileSC>("Whiskers".ParseSqlMarkdown<PetProfileN_NST_T>());
                 actual = string.Join(Environment.NewLine, recordset.Select(_ => JsonConvert.SerializeObject(_, Formatting.Indented)));
                 expected = @" 
 {
@@ -645,7 +646,7 @@ SELECT * FROM pets WHERE (Name LIKE '%Whiskers%' OR Species LIKE '%Whiskers%' OR
                 );
 
                 // Species match via split contract
-                recordset = cnx.Query<PetProfile>("cat".ParseSqlMarkdown<PetProfileNS>());
+                recordset = cnx.Query<PetProfileSC>("cat".ParseSqlMarkdown<PetProfileNS>());
                 actual = string.Join(Environment.NewLine, recordset.Select(r => r.Id));
                 expected = string.Join(Environment.NewLine, new[] { "0000", "0003" });
                 Assert.AreEqual(
@@ -655,7 +656,7 @@ SELECT * FROM pets WHERE (Name LIKE '%Whiskers%' OR Species LIKE '%Whiskers%' OR
                 );
 
                 // Exact name match
-                recordset = cnx.Query<PetProfile>("Rover".ParseSqlMarkdown<PetProfileN_NST_T>());
+                recordset = cnx.Query<PetProfileSC>("Rover".ParseSqlMarkdown<PetProfileN_NST_T>());
                 actual = string.Join(Environment.NewLine, recordset.Select(r => r.Id));
                 expected = string.Join(Environment.NewLine, new[] { "0001" });
                 Assert.AreEqual(
@@ -665,7 +666,7 @@ SELECT * FROM pets WHERE (Name LIKE '%Whiskers%' OR Species LIKE '%Whiskers%' OR
                 );
 
                 // Strict tag match
-                recordset = cnx.Query<PetProfile>("[pet]".ParseSqlMarkdown<PetProfileN_NST_T>());
+                recordset = cnx.Query<PetProfileSC>("[pet]".ParseSqlMarkdown<PetProfileN_NST_T>());
                 actual = string.Join(Environment.NewLine, recordset.Select(r => r.Id));
                 expected = string.Join(Environment.NewLine, new[] { "0000", "0001", "0002" });
                 Assert.AreEqual(
@@ -675,7 +676,7 @@ SELECT * FROM pets WHERE (Name LIKE '%Whiskers%' OR Species LIKE '%Whiskers%' OR
                 );
 
                 // Soft tag match
-                recordset = cnx.Query<PetProfile>("pet".ParseSqlMarkdown<PetProfileN_NST_T>());
+                recordset = cnx.Query<PetProfileSC>("pet".ParseSqlMarkdown<PetProfileN_NST_T>());
                 actual = string.Join(Environment.NewLine, recordset.Select(r => r.Id));
                 expected = string.Join(Environment.NewLine, new[] { "0000", "0001", "0002" });
                 Assert.AreEqual(
@@ -685,7 +686,7 @@ SELECT * FROM pets WHERE (Name LIKE '%Whiskers%' OR Species LIKE '%Whiskers%' OR
                 );
 
                 // Combined name and tag match
-                recordset = cnx.Query<PetProfile>("whiskers [pet]".ParseSqlMarkdown<PetProfileN_NST_T>());
+                recordset = cnx.Query<PetProfileSC>("whiskers [pet]".ParseSqlMarkdown<PetProfileN_NST_T>());
                 actual = string.Join(Environment.NewLine, recordset.Select(r => r.Id));
                 expected = string.Join(Environment.NewLine, new[] { "0000" });
                 Assert.AreEqual(
@@ -695,7 +696,7 @@ SELECT * FROM pets WHERE (Name LIKE '%Whiskers%' OR Species LIKE '%Whiskers%' OR
                 );
 
                 // Negated tag
-                recordset = cnx.Query<PetProfile>("![shy]".ParseSqlMarkdown<PetProfileN_NST_T>());
+                recordset = cnx.Query<PetProfileSC>("![shy]".ParseSqlMarkdown<PetProfileN_NST_T>());
                 actual = string.Join(Environment.NewLine, recordset.Select(r => r.Id));
                 expected = string.Join(Environment.NewLine, new[] { "0000", "0001", "0002", "0004", "0005" });
                 Assert.AreEqual(
@@ -705,7 +706,7 @@ SELECT * FROM pets WHERE (Name LIKE '%Whiskers%' OR Species LIKE '%Whiskers%' OR
                 );
 
                 // OR logic
-                recordset = cnx.Query<PetProfile>("rabbit | [indoor]".ParseSqlMarkdown<PetProfileN_NST_T>());
+                recordset = cnx.Query<PetProfileSC>("rabbit | [indoor]".ParseSqlMarkdown<PetProfileN_NST_T>());
                 actual = string.Join(Environment.NewLine, recordset.Select(r => r.Id));
                 expected = string.Join(Environment.NewLine, new[] { "0000", "0002", "0003" });
                 Assert.AreEqual(
@@ -715,7 +716,7 @@ SELECT * FROM pets WHERE (Name LIKE '%Whiskers%' OR Species LIKE '%Whiskers%' OR
                 );
 
                 // Name match
-                recordset = cnx.Query<PetProfile>("mystery".ParseSqlMarkdown<PetProfileN_NST_T>());
+                recordset = cnx.Query<PetProfileSC>("mystery".ParseSqlMarkdown<PetProfileN_NST_T>());
                 actual = string.Join(Environment.NewLine, recordset.Select(r => r.Id));
                 expected = string.Join(Environment.NewLine, new[] { "0005" });
                 Assert.AreEqual(

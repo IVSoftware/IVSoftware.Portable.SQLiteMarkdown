@@ -8,12 +8,12 @@ using SQLite;
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.QFTemplates
 {
     [Table("pets")]
-    public class PetProfileOR
+    public class PetProfile
     {
-        [SqlLikeTerm]
+        [QueryLikeTerm]
         public string? Name { get; set; }
 
-        [SqlLikeTerm]
+        [QueryLikeTerm]
         public string? Species { get; set; }
     }
 }
