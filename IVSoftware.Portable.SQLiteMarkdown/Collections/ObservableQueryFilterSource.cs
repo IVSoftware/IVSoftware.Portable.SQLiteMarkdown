@@ -58,8 +58,44 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         private void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            switch (e.PropertyName)
+            {
+                case nameof(ISelectableQueryFilterItem.Selection):
+                    if(sender is ISelectableQueryFilterItem selectable)
+                    {
+                        switch (selectable.Selection)
+                        {
+                            case ItemSelection.None:
+                                SelectedItemsInternal.Remove(selectable);
+                                break;
+                            case ItemSelection.Exclusive:
+                                SelectedItemsInternal.Add(selectable);
+                                break;
+                        }
+                    }
+                    break;
+            }
         }
         private INotifyPropertyChanged[] _unsubscribeItems = new INotifyPropertyChanged[] { };
+
+
+
+        protected ObservableHashSet<ISelectableQueryFilterItem> SelectedItemsInternal
+        {
+            get
+            {
+                if (_selectedItems is null)
+                {
+                    _selectedItems = new ObservableHashSet<ISelectableQueryFilterItem>();
+                    _selectedItems.CollectionChanged += (sender, e) =>
+                    {
+                    };
+                }
+                return _selectedItems;
+            }
+        }
+        ObservableHashSet<ISelectableQueryFilterItem> _selectedItems = null;
+
 
         private readonly ObservableCollection<T> _filteredItems = new ObservableCollection<T>();
         private readonly ObservableCollection<T> _unfilteredItems = new ObservableCollection<T>();

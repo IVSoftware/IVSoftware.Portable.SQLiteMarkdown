@@ -61,14 +61,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         {
             switch (DataContext!.Selection)
             {
-                case MSTest.ItemSelection.None:
-                    DataContext!.Selection = MSTest.ItemSelection.Exclusive;
+                case ItemSelection.None:
+                    DataContext!.Selection = ItemSelection.Exclusive;
                     break;
-                case MSTest.ItemSelection.Exclusive:
-                    DataContext!.Selection = MSTest.ItemSelection.None;
+                case ItemSelection.Exclusive:
+                    DataContext!.Selection = ItemSelection.None;
                     break;
-                case MSTest.ItemSelection.Multi:
-                case MSTest.ItemSelection.Primary:
+                case ItemSelection.Multi:
+                case ItemSelection.Primary:
                 default:
                     // N O O P for now
                     break;
@@ -93,7 +93,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             _dataContext = DataContext;
             if (_dataContext is not null)
             {
-                _dataContext.Selection = MSTest.ItemSelection.None;
+                _dataContext.Selection = ItemSelection.None;
                 _dataContext.PropertyChanged += OnPropertyChanged;
             }
             foreach (var pi in DataContext?.GetType().GetProperties() ?? [])
@@ -153,11 +153,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                     case nameof(DataContext.Selection):
                         switch (DataContext?.Selection)
                         {
-                            case MSTest.ItemSelection.None:
+                            case ItemSelection.None:
                                 BackColor = Color.Empty;
                                 ForeColor = Color.Empty;
                                 break;
-                            case MSTest.ItemSelection.Exclusive:
+                            case ItemSelection.Exclusive:
                                 BackColor = Color.CornflowerBlue;
                                 ForeColor = Color.White;
                                 break;
