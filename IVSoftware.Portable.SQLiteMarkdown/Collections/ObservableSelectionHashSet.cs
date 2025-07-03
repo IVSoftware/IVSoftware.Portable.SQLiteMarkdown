@@ -58,7 +58,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected override void ClearItems()
         {
-            foreach (var item in _set)
+            foreach (var item in _set.ToArray())
             {
                 if(item is INotifyPropertyChanged inpc)
                 {
@@ -110,6 +110,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 if (!Equals(_selectionMode, value))
                 {
                     _selectionMode = value;
+                    OnPropertyChanged();
                 }
             }
         }
@@ -120,7 +121,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public new event PropertyChangedEventHandler PropertyChanged
         {
             add => base.PropertyChanged += value;
-            remove => base.PropertyChanged += value;
+            remove => base.PropertyChanged -= value;
         }
     }
 }
