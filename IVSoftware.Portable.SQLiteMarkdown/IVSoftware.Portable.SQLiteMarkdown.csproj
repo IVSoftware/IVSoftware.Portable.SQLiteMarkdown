@@ -42,8 +42,8 @@
 			- The FilterValue property has been entirely removed from iterfaces, classed, MSTest data.
 			- Going forward, the QueryTemplate and FilterTemplate properties will express differences between terms to be considered in the respective states.
 			Beta Release + 3
-			- [Obsolete] SqlLikeTerm		-> QueryLikeTerm
-			- [Obsolete] FilterContainsTerm -> FilterLikeTerm
+			- [Obsolete] SqlLikeTerm		-&gt; QueryLikeTerm
+			- [Obsolete] FilterContainsTerm -&gt; FilterLikeTerm
 			- The obsolete attributes are aliased to the new ones so as not to break early adopter builds.
 
 		</PackageReleaseNotes>
@@ -71,6 +71,10 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="README\img\" />
 	</ItemGroup>
 
 </Project>

@@ -16,7 +16,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
         [PrimaryKey]
         public override string Id { get; set; } = "38CFE38E-0D90-4C9F-A4E5-845089CB2BB0";
 
-        [SelfIndexed(IndexingMode.LikeOrContains, PersistenceMode.Json)]
+        [SelfIndexed(IndexingMode.QueryOrFilter)]
         public string FirstName
         {
             get => _firstName;

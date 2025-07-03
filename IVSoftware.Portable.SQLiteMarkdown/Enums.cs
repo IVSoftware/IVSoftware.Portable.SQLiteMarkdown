@@ -55,28 +55,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public enum IndexingMode
     {
         /// <summary>
-        /// Participates in the **database query phase** using SQLite LIKE expressions.
-        /// For example, a search for "book" could match "notebook" or "booking."
+        /// Participates in the JSON blob for Query mode SQL where: LIKE '%value"%'.
         /// </summary>
-        LikeTerm = 0x01,
+        QueryLikeTerm = 0x01,
 
         /// <summary>
-        /// Participates in the  **filter phase** which reduces a query to a subset.
+        /// Participates in the JSON blob for Query mode SQL where: LIKE '%value"%'.
         /// </summary>
-        ContainsTerm = 0x02,
+        FilterLikeTerm = 0x02,
 
         /// <summary>
-        /// Supports exact matches for terms enclosed in square brackets (e.g., "[tag]") to retrieve specific
-        /// values or tags during the query phase. Note: First, Trim() is applied to the string within the 
-        /// square brackets, then any remaining internal whitespace is normalized to a single space character.
+        /// Participates in the JSON blob for explicit tag queries SQL where values are 
+        /// surrounded by square brackets and searched: LIKE '%[value]"%'.
         /// </summary>
         TagMatchTerm = 0x04,
 
         /// <summary>
-        /// Combines both LIKE (query phase) and Contains (filter phase) matching, enabling the property
-        /// to support both partial retrieval from the database and broad in-memory search functionality.
+        /// Combines both query phase and filter phase matching, enabling the property to
+        /// support both partial retrieval from the database and broad in-memory search functionality.
         /// </summary>
-        LikeOrContains = 0x03,
+        QueryOrFilter = 0x03,
 
         All = 0x7,
     }

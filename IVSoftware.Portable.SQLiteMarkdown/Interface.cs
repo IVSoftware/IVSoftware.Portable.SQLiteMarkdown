@@ -21,8 +21,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     ///   the indexed terms and the Values backing store.
     /// - Most queries operate on the exposed indexed values, reducing the need for each property to consume 
     ///   individual columns (e.g., in an SQLite schema).
-    /// - The [SelfIndexedIgnore] attribute, inheriting from [SQLite.Ignore], instructs the implementing class 
-    ///   to update the Values store without serializing changes in marked properties directly.
     /// </remarks>
     public interface ISelfIndexedMarkdown : INotifyPropertyChanged
     {

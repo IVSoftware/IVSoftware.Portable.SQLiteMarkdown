@@ -376,9 +376,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 switch (pi.Name)
                                 {
                                     case nameof(ISelfIndexedMarkdown.QueryTerm):
-                                        return (!indexingMode.HasFlag(IndexingMode.LikeTerm));
+                                        return (!indexingMode.HasFlag(IndexingMode.QueryLikeTerm));
                                     case nameof(ISelfIndexedMarkdown.FilterTerm):
-                                        return (!indexingMode.HasFlag(IndexingMode.ContainsTerm));
+                                        return (!indexingMode.HasFlag(IndexingMode.FilterLikeTerm));
                                     case nameof(ISelfIndexedMarkdown.TagMatchTerm):
                                         return (!indexingMode.HasFlag(IndexingMode.TagMatchTerm));
                                     default: return false;

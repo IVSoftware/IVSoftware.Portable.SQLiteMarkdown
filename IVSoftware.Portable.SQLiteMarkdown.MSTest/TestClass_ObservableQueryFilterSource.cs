@@ -1620,7 +1620,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             {
                 #region S U B T E S T S
 
-                context = "color".ParseSqlMarkdown<SelectableQueryModel>(IndexingMode.LikeTerm, ref validationState);
+                context = "color".ParseSqlMarkdown<SelectableQueryModel>(IndexingMode.QueryLikeTerm, ref validationState);
                 Assert.AreEqual(ValidationState.Valid, validationState);
                 //sql = context.ToString();
                 recordset = cnx.Query<SelectableQueryModel>(context.ToString());
@@ -1637,7 +1637,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 // WORKS
                 var (query, args) =
                     "color"
-                    .ParseSqlMarkdown<SelectableQueryModel>(IndexingMode.LikeTerm, ref validationState)
+                    .ParseSqlMarkdown<SelectableQueryModel>(IndexingMode.QueryLikeTerm, ref validationState)
                     .ToPositional();
                 recordset = cnx.Query<SelectableQueryModel>(query, args);
                 Assert.AreEqual(19, recordset.Count);
@@ -1645,7 +1645,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
 
                 (query, args) =
                     "animal"
-                    .ParseSqlMarkdown<SelectableQueryModel>(IndexingMode.LikeTerm, ref validationState)
+                    .ParseSqlMarkdown<SelectableQueryModel>(IndexingMode.QueryLikeTerm, ref validationState)
                     .ToPositional();
                 recordset = cnx.Query<SelectableQueryModel>(query, args);
                 Assert.AreEqual(12, recordset.Count);

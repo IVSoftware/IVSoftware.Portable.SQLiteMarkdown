@@ -245,21 +245,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                     if (!sval.TryTokenize(out astNodeArray)) continue;
 
-                    if (attr.IndexingMode.HasFlag(IndexingMode.LikeTerm) ||
-                        attr.IndexingMode.HasFlag(IndexingMode.ContainsTerm))
+                    if (attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm) ||
+                        attr.IndexingMode.HasFlag(IndexingMode.FilterLikeTerm))
                     {
                         for (int j = 0; j < astNodeArray.Length; j++)
                         {
                             var node = astNodeArray[j];
                             if (node.ASTType == NodeType.Term)
                             {
-                                if (attr.IndexingMode.HasFlag(IndexingMode.LikeTerm))
+                                if (attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm))
                                     likeNodes.Add(node);
-                                if (attr.IndexingMode.HasFlag(IndexingMode.ContainsTerm))
+                                if (attr.IndexingMode.HasFlag(IndexingMode.FilterLikeTerm))
                                     containsNodes.Add(node);
                             }
                             else if (node.ASTType == NodeType.Tag &&
-                                     attr.IndexingMode.HasFlag(IndexingMode.LikeTerm))
+                                     attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm))
                             {
                                 // Tags treated as terms when LikeTerm is also set
                                 likeNodes.Add(new ASTNode(NodeType.Term, node.Value));
@@ -360,8 +360,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (_indexedProperties == null)
                 {
                     _indexedProperties = new Dictionary<IndexingMode, List<PropertyInfo>>();
-                    _indexedProperties[IndexingMode.LikeTerm] = new List<PropertyInfo>();
-                    _indexedProperties[IndexingMode.ContainsTerm] = new List<PropertyInfo>();
+                    _indexedProperties[IndexingMode.QueryLikeTerm] = new List<PropertyInfo>();
+                    _indexedProperties[IndexingMode.FilterLikeTerm] = new List<PropertyInfo>();
                     _indexedProperties[IndexingMode.TagMatchTerm] = new List<PropertyInfo>();
 
                     var props = GetType().GetProperties();
@@ -377,7 +377,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             if (isIgnored && !isPersisted)
                                 continue;
 
-                            foreach (var mode in new[] { IndexingMode.LikeTerm, IndexingMode.ContainsTerm, IndexingMode.TagMatchTerm })
+                            foreach (var mode in new[] { IndexingMode.QueryLikeTerm, IndexingMode.FilterLikeTerm, IndexingMode.TagMatchTerm })
                             {
                                 if ((attr.IndexingMode & mode) == mode)
                                     _indexedProperties[mode].Add(pi);
