@@ -121,7 +121,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
             }
         }
-        bool _isReadOnly = default;
+        bool _isReadOnly = true;
 
         public bool IsFixedSize => ((IList)_unfilteredItems).IsFixedSize;
 

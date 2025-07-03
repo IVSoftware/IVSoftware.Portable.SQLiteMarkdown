@@ -10,12 +10,11 @@ using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
 {
-    class SelectableQFViewCard : TableLayoutPanel, INotifyPropertyChanged
+    class SelectableQFViewCard
+        : TableLayoutPanel
+        , INotifyPropertyChanged
     {
-        public SelectableQFViewCard()
-        {
-            InitializeComponent();
-        }
+        public SelectableQFViewCard() =>  InitializeComponent();
         private void InitializeComponent()
         {
             Font = new Font(Font.FontFamily, 12);
@@ -51,22 +50,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             SetColumnSpan(gridKeywordsAndTags, 2);
             _labelKeywords.Font = new Font(Font.FontFamily, Font.Size - 1F);
             _labelTags.Font = new Font(Font.FontFamily, Font.Size - 2F);
-
-            _labelDescription.MouseUp += OnAnyMouseUp;
-            _labelKeywords.MouseUp += OnAnyMouseUp;
-            _labelTags.MouseUp += OnAnyMouseUp;
-
-            _labelDescription.MouseUp += OnAnyMouseEnter;
-            _labelKeywords.MouseEnter += OnAnyMouseEnter;
-            _labelTags.MouseEnter += OnAnyMouseEnter;
-        }
-
-        private void OnAnyMouseEnter(object? sender, EventArgs e)
-        {
-            if (sender is Control control)
-            {
-                control.Focus();
-            }
         }
 
         private void OnAnyMouseUp(object? sender, EventArgs e)
@@ -142,6 +125,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             Dock = DockStyle.Fill,
         };
 
+
+
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
             OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         protected virtual void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -178,6 +163,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 }
             }
         }
+
         public event PropertyChangedEventHandler? PropertyChanged;
     }
 }

@@ -22,6 +22,7 @@ namespace OnePageCollectionViewSketchpad
     public class VirtualizedCollectionView 
         : DataGridView
         , INotifyPropertyChanged
+        , IMessageFilter
     {
 
         const int MIN_ROW_HEIGHT = 60;
@@ -29,8 +30,9 @@ namespace OnePageCollectionViewSketchpad
         public VirtualizedCollectionView(XElement? xop)
         {
             InitializeComponent();
+            Application.AddMessageFilter(this);
+            Disposed += (sender, e) => Application.RemoveMessageFilter(this); ;
         }
-
         private void InitializeComponent()
         {
             DoubleBuffered = true;
@@ -150,24 +152,6 @@ namespace OnePageCollectionViewSketchpad
             }
         }
         WatchdogTimer? _wdtScroll = null;
-
-#if false
-        [EditorBrowsable(EditorBrowsableState.Never), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public int VisibleRowCount
-        {
-            get => _visibleRowCount;
-            private set
-            {
-                if (!Equals(_visibleRowCount, value))
-                {
-                    _visibleRowCount = value;
-                    _templateCount = Math.Max(_templateCount, _visibleRowCount) + 1;
-                    Vacuum();
-                }
-            }
-        }
-        int _visibleRowCount = 0;
-#endif
         int _templateCount = 10;
 
         private void Vacuum()
@@ -311,7 +295,6 @@ namespace OnePageCollectionViewSketchpad
 
         public IReadOnlyList<View> Cards => _cards.ToArray();
 
-
         private ObservableCollection<View>_cards = new();
 
         [EditorBrowsable(EditorBrowsableState.Never), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -385,6 +368,45 @@ namespace OnePageCollectionViewSketchpad
         {
             PropertyChanged?.Invoke(sender, e);
         }
+        public bool PreFilterMessage(ref Message m)
+        {
+            switch ((Win32Message)m.Msg)
+            {
+                case Win32Message.WM_LBUTTONDOWN:
+                    localOnMouse(true);
+                    break;
+                case Win32Message.WM_LBUTTONUP:
+                    localOnMouse(false);
+                    break;
+            }
+            void localOnMouse(bool isDown)
+            {
+                if (!isDown)
+                {
+
+                    var clientPoint = PointToClient(Cursor.Position);
+                    var hit = HitTest(clientPoint.X, clientPoint.Y);
+                    if (hit.RowIndex >= 0)
+                    {
+                        var item = ItemsSource?[hit.RowIndex];
+                        if (item is ISelectableQueryFilterItem selectable && selectable.IsReadOnly)
+                        {
+                            switch (selectable.Selection)
+                            {
+                                case ItemSelection.None:
+                                    selectable.Selection = ItemSelection.Exclusive;
+                                    break;
+                                case ItemSelection.Exclusive:
+                                    selectable.Selection = ItemSelection.None;
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+            return false; 
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
     }
 }

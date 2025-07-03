@@ -92,7 +92,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB
                 }
             }
         }
+
         private ItemSelection _selection = ItemSelection.None;
+
+        public bool IsReadOnly
+        {
+            get => _isReadOnly;
+            set
+            {
+                if (!Equals(_isReadOnly, value))
+                {
+                    _isReadOnly = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        bool _isReadOnly = true;
 
         public override string ToString() => $"{Description} {KeywordsDisplay} {TagsDisplay}".Trim();
 
