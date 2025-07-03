@@ -12,6 +12,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB
     [Table("items")]
     public class AtomicQuoteTestModel : SelfIndexed, ISelectableQueryFilterItem
     {
-        public OnePageItemSelection Selection { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public ItemSelection Selection { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }

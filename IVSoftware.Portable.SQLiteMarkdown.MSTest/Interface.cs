@@ -12,7 +12,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     /// This enumeration supports bitwise operations to allow combinations of selection states.
     /// </summary>
     [Flags]
-    public enum OnePageItemSelection
+    public enum ItemSelection
     {
         /// <summary>
         /// The item is not selected.
@@ -39,6 +39,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     public interface ISelectableQueryFilterItem
         : ISelfIndexedMarkdown
     {
-        OnePageItemSelection Selection { get; set; }
+        ItemSelection Selection { get; set; }
     }
 }

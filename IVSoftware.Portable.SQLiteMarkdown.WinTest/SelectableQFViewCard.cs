@@ -50,8 +50,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             SetColumnSpan(gridKeywordsAndTags, 2);
             _labelKeywords.Font = new Font(Font.FontFamily, Font.Size - 1F);
             _labelTags.Font = new Font(Font.FontFamily, Font.Size - 2F);
+
+            _labelDescription.Click += OnAnyClicked;
+            _labelKeywords.Click += OnAnyClicked;
+            _labelTags.Click += OnAnyClicked;
         }
 
+        private void OnAnyClicked(object? sender, EventArgs e)
+        {
+            switch (DataContext!.Selection)
+            {
+                case MSTest.ItemSelection.None:
+                    DataContext!.Selection = MSTest.ItemSelection.Exclusive;
+                    break;
+                case MSTest.ItemSelection.Exclusive:
+                    DataContext!.Selection = MSTest.ItemSelection.None;
+                    break;
+                case MSTest.ItemSelection.Multi:
+                case MSTest.ItemSelection.Primary:
+                default:
+                    // N O O P for now
+                    break;
+            }
+        }
 
         public new SelectableQFModel? DataContext
         {

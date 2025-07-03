@@ -46,17 +46,17 @@ namespace OnePageCollectionViewSketchpad
                 if (ItemsSource is not null &&
                     e.ColumnIndex != -1 &&
                     e.RowIndex != -1 &&
-                    e.RowIndex < ItemsSource.Count
-                    )
+                    e.RowIndex < ItemsSource.Count)
                 {
                     using (var brush = new SolidBrush(BackgroundColor))
                     {
                         e.Graphics?.FillRectangle(brush, e.CellBounds);
                     }
+
                     View? view = null;
                     var row = Rows[e.RowIndex];
-
                     var mod = e.RowIndex % _templateCount;
+
                     if (!_recycledViews.TryGetValue(mod, out view))
                     {
                         view = (View)Activator.CreateInstance(DataTemplate.Type)!;
@@ -64,19 +64,34 @@ namespace OnePageCollectionViewSketchpad
                         Controls.Add(view);
                     }
 
-                    int desiredHeight = Math.Max(view.PreferredSize.Height, MIN_ROW_HEIGHT);
+                    view.DataContext = ItemsSource[mod];
+
+                    var margin = view.Margin;
+                    var cellRect = GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
+
+                    var adjustedBounds = new Rectangle(
+                        cellRect.X + margin.Left,
+                        cellRect.Y + margin.Top,
+                        Math.Max(0, cellRect.Width - margin.Horizontal),
+                        Math.Max(0, cellRect.Height - margin.Vertical)
+                    );
+
+                    int desiredHeight = Math.Max(view.PreferredSize.Height + margin.Vertical, MIN_ROW_HEIGHT);
                     if (row.Height != desiredHeight)
                     {
                         row.Height = desiredHeight;
                         return;
                     }
-                    view.DataContext = ItemsSource[mod];
+
+                    view.Bounds = adjustedBounds;
                     view.Visible = true;
-                    view.Bounds  = GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
                 }
+
                 e.Handled = true;
                 return;
             };
+
+
             CellValueNeeded += (sender, e) =>
             {
                 if (ItemsSource is not null &&
