@@ -264,7 +264,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             }
                         }
                     }
-
+                    Debug.Assert(indexProperties.Count + termProperties.Count + tagProperties.Count > 0);
 
                     var builder = new List<string>();
 

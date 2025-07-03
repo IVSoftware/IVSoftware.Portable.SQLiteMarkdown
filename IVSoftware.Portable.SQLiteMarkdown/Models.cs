@@ -16,12 +16,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </summary>
     public class SelfIndexed : ISelfIndexedMarkdown
     {
-        public SelfIndexed() 
+        public SelfIndexed()
         {
-            if(_isPkCheckRequired && !
+            if (_isPkCheckRequired && !
                 GetType()
                 .GetProperties()
-                .Any(_=>_.GetCustomAttributes<PrimaryKeyAttribute>(inherit: false).Any()))
+                .Any(_ => _.GetCustomAttributes<PrimaryKeyAttribute>(inherit: false).Any()))
             {
                 _isPkCheckRequired = false;
                 var msg = $"The [PrimaryKey] attribute must be reapplied to override string {nameof(Id)} {{ get; }} in the derived class";
@@ -111,7 +111,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         private string ensure(ref string indexedProperty)
         {
-            if(_isIndexingRequired)
+            if (_isIndexingRequired)
             {
                 internalExecuteIndexing();
             }
@@ -120,7 +120,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
 
         // This 'is' a SQLiteColumn.
-        public string Properties 
+        public string Properties
         {
             get
             {
@@ -133,11 +133,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         // This is 'not'.
-        private Dictionary<string, object> internalProperties 
-        { 
+        private Dictionary<string, object> internalProperties
+        {
             get
             {
-                if(_internalProperties is null)
+                if (_internalProperties is null)
                 {
                     _internalProperties = new Dictionary<string, object>();
                 }
@@ -186,7 +186,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         private void updateIfIndexed(string propertyName)
         {
-            if( persistedProperties[PersistenceMode.Json]
+            if (persistedProperties[PersistenceMode.Json]
                .FirstOrDefault(_ => _.Name == propertyName)
                 is PropertyInfo pi)
             {
@@ -424,6 +424,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Dictionary<PersistenceMode, List<PropertyInfo>> _persistedProperties = null;
 
         #endregion I N D E X I N G    &    P E R S I S T E N C E    M A P S
+    }
 
+
+    [Obsolete("Used in unit tests for early adopter migration support.")]
+    public class SelfIndexedOR : SelfIndexed
+    {
+        /// <summary>
+        /// Gets or sets the term for SQL-like search functionality.
+        /// Updated based on properties with SqlContainsAttribute.
+        /// </summary>
+        [SqlLikeTerm]
+        public new string QueryTerm
+        {
+            get => base.QueryTerm;
+            set => base.QueryTerm = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the term used for filter-based searching.
+        /// Updated based on properties with FilterContainsAttribute.
+        /// </summary>
+        [FilterContainsTerm]
+        public new string FilterTerm
+        {
+            get => base.FilterTerm;
+            set => base.FilterTerm = value;
+        }
     }
 }

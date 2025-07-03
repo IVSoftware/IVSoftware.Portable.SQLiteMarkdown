@@ -180,6 +180,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                     var searchEntryState = SearchEntryState;
                     var context = InputText.ParseSqlMarkdown<T>(ref searchEntryState);
+
+#if DEBUG
+                    var cstring = context.ToString();
+                    { }
+
+#endif
+
                     var tmp = FilterQueryDatabase.Query<T>(context.ToString());
 
 #if false && DEBUG

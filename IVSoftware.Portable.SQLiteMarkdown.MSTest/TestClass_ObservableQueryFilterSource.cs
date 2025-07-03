@@ -1622,6 +1622,23 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
 
                 context = "color".ParseSqlMarkdown<SelectableQueryModel>(IndexingMode.QueryLikeTerm, ref validationState);
                 Assert.AreEqual(ValidationState.Valid, validationState);
+
+
+                actual = context.ToString();
+                actual.ToClipboard();
+                actual.ToClipboardExpected();
+                actual.ToClipboardAssert("Expecting generated sql to match.");
+                { }
+                expected = @" 
+SELECT * FROM items WHERE
+()";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting generated sql to match."
+                );
+
                 //sql = context.ToString();
                 recordset = cnx.Query<SelectableQueryModel>(context.ToString());
                 Assert.AreEqual(19, recordset.Count);
