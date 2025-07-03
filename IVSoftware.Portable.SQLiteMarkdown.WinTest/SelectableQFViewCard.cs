@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -74,26 +75,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             }
         }
 
-        public new SelectableQFModel? DataContext
-        {
-            get => (SelectableQFModel?)base.DataContext;
-            set
-            {
-                if(DataContext is not null)
-                {
-                    DataContext.PropertyChanged -= OnPropertyChanged;
-                }
-                base.DataContext = value;
-                if(DataContext is not null)
-                {
-                    DataContext.PropertyChanged += OnPropertyChanged;
-                }
-            }
-        }
+        public new SelectableQFModel? DataContext => (SelectableQFModel?)base.DataContext;
+
+        /// <summary>
+        /// Trackable for subscribe and unsibscribe.
+        /// </summary>
+        public SelectableQFModel? _dataContext = null;
 
         protected override void OnDataContextChanged(EventArgs e)
         {
             base.OnDataContextChanged(e);
+
+            if (_dataContext is not null)
+            {
+                _dataContext.PropertyChanged -= OnPropertyChanged;
+            }
+            _dataContext = DataContext;
+            if (_dataContext is not null)
+            {
+                _dataContext.Selection = MSTest.ItemSelection.None;
+                _dataContext.PropertyChanged += OnPropertyChanged;
+            }
             foreach (var pi in DataContext?.GetType().GetProperties() ?? [])
             {
                 OnPropertyChanged(DataContext, new PropertyChangedEventArgs(pi.Name));
@@ -102,31 +104,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
 
         public override Size GetPreferredSize(Size proposedSize)
             => new Size(Size.Width, 80);
-
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
-            OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        protected virtual void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            PropertyChanged?.Invoke(sender, e);
-            if(ReferenceEquals(sender, this))
-            { }
-            else if (ReferenceEquals(sender, DataContext))
-            {
-                switch (e.PropertyName)
-                {
-                    case nameof(SelectableQFModel.Description):
-                        _labelDescription.Text = DataContext?.Description ?? string.Empty;
-                        break;
-                    case nameof(SelectableQFModel.Keywords):
-                        _labelKeywords.Text = DataContext?.KeywordsDisplay ?? string.Empty;
-                        break;
-                    case nameof(SelectableQFModel.Tags):
-                        _labelTags.Text = DataContext?.Tags ?? string.Empty;
-                        break;
-                }
-            }
-        }
-        public event PropertyChangedEventHandler? PropertyChanged;
 
 
 
@@ -152,5 +129,43 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             Anchor = (AnchorStyles)0xf,
             Dock = DockStyle.Fill,
         };
+
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
+            OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+        protected virtual void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            PropertyChanged?.Invoke(sender, e);
+            if(ReferenceEquals(sender, this))
+            { }
+            else if (ReferenceEquals(sender, DataContext))
+            {
+                switch (e.PropertyName)
+                {
+                    case nameof(DataContext.Description):
+                        _labelDescription.Text = DataContext?.Description ?? string.Empty;
+                        break;
+                    case nameof(DataContext.Keywords):
+                        _labelKeywords.Text = DataContext?.KeywordsDisplay ?? string.Empty;
+                        break;
+                    case nameof(DataContext.Tags):
+                        _labelTags.Text = DataContext?.Tags ?? string.Empty;
+                        break;
+                    case nameof(DataContext.Selection):
+                        switch (DataContext?.Selection)
+                        {
+                            case MSTest.ItemSelection.None:
+                                BackColor = Color.Empty;
+                                ForeColor = Color.Empty;
+                                break;
+                            case MSTest.ItemSelection.Exclusive:
+                                BackColor = Color.CornflowerBlue;
+                                ForeColor = Color.White;
+                                break;
+                        }
+                        break;
+                }
+            }
+        }
+        public event PropertyChangedEventHandler? PropertyChanged;
     }
 }
