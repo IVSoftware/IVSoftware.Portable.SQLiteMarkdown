@@ -119,4 +119,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         QueryCompleteWithResults,
         #endregion Q U E R Y
     }
+
+    /// <summary>
+    /// Flags-based enum controlling the allowable states of the FSM
+    /// </summary>
+    [Flags]
+    public enum QueryFilterConfig
+    {
+        /// <summary>
+        /// A configuration that provides Query behavior only.
+        /// </summary>
+        Query = 0x00040000,
+
+        /// <summary>
+        /// A configuration that provides Filter behavior only.
+        /// </summary>
+        Filter = 0x00100000,
+
+        /// <summary>
+        /// A configuration that provides both Query and Filter state-based behaviors.
+        /// </summary> 
+        QueryAndFilter = Query | Filter,
+    }
 }

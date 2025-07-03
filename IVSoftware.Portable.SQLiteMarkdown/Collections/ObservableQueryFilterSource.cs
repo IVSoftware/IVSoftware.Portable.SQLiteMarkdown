@@ -12,30 +12,10 @@ using System.Runtime.CompilerServices;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
-    /// <summary>
-    /// Flags-based enum controlling the visibility and behavior of elements in the navigation search bar.
-    /// </summary>
-    [Flags]
-    public enum QueryFilterConfig
-    {
-        /// <summary>
-        /// A configuration that provides Query behavior only.
-        /// </summary>
-        Query = 0x00040000,
-
-        /// <summary>
-        /// A configuration that provides Filter behavior only.
-        /// </summary>
-        Filter = 0x00100000,
-
-        /// <summary>
-        /// A configuration that provides both Query and Filter state-based behaviors.
-        /// </summary> 
-        QueryAndFilter = Query | Filter,
-    }
 
     public partial class ObservableQueryFilterSource<T>
-        : IObservableQueryFilterSource
+        : MarkdownContext
+        , IObservableQueryFilterSource
         , IList<T>
         where T : new()
     {
@@ -51,13 +31,35 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
                 switch (e.Action)
                 {
+                    case NotifyCollectionChangedAction.Add:
+                        foreach (var inpc in e.NewItems?.OfType<INotifyPropertyChanged>())
+                        {
+                            inpc.PropertyChanged += OnItemPropertyChanged;
+                        }
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        foreach (var inpc in e.OldItems?.OfType<INotifyPropertyChanged>())
+                        {
+                            inpc.PropertyChanged -= OnItemPropertyChanged;
+                        }
+                        break;
                     case NotifyCollectionChangedAction.Reset:
                         _filteredItems.Clear();
+                        foreach (var inpc in _unsubscribeItems)
+                        {
+                            inpc.PropertyChanged -= OnItemPropertyChanged;
+                        }
                         FilterQueryDatabase.DeleteAll<T>();
                         break;
                 }
+                _unsubscribeItems = _unfilteredItems.OfType<INotifyPropertyChanged>().ToArray();
             };
         }
+
+        private void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+        }
+        private INotifyPropertyChanged[] _unsubscribeItems = new INotifyPropertyChanged[] { };
 
         private readonly ObservableCollection<T> _filteredItems = new ObservableCollection<T>();
         private readonly ObservableCollection<T> _unfilteredItems = new ObservableCollection<T>();
