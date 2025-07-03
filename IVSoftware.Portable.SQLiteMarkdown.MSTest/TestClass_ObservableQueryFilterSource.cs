@@ -1256,8 +1256,10 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             }
         }
 
+
+        [Obsolete("Test for early adopter (beta) migration support.")]
         [TestMethod]
-        public async Task Test_ObservableQueryFilterStateTracker()
+        public async Task Test_ObservableQueryFilterStateTrackerOR()
         {
             string actual, expected, sql;
             SenderEventPair sep;
@@ -1265,8 +1267,8 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             PropertyChangedEventArgs epc;
             Queue<SenderEventPair> eventQueue = new();
 
-            List<SelectableQueryModel> recordset;
-            var items = new ObservableQueryFilterSource<SelectableQueryModel>();
+            List<SelectableQueryModelOR> recordset;
+            var items = new ObservableQueryFilterSource<SelectableQueryModelOR>();
 
 
             items.PropertyChanged += (sender, e) =>
@@ -1396,7 +1398,7 @@ InputText";
                     );
                     // Based on UI interaction like return key pressed
                     sql = items.InputText.ParseSqlMarkdown<SelectableQueryModel>();
-                    recordset = cnx.Query<SelectableQueryModel>(sql);
+                    recordset = cnx.Query<SelectableQueryModelOR>(sql);
                     items.ReplaceItems(recordset);
 
                     Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, items.SearchEntryState);
@@ -1608,11 +1610,13 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             }
         }
 
+
+        [Obsolete("Test for early adopter (beta) migration support.")]
         [TestMethod]
         public void Test_PositionalOR()
         {
             string actual, expected, sql;
-            List<SelectableQueryModel> recordset;
+            List<SelectableQueryModelOR> recordset;
             MarkdownContextOR context;
             var validationState = ValidationState.Empty;
 
@@ -1620,7 +1624,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             {
                 #region S U B T E S T S
 
-                context = "color".ParseSqlMarkdown<SelectableQueryModel>(IndexingMode.QueryLikeTerm, ref validationState);
+                context = "color".ParseSqlMarkdown<SelectableQueryModelOR>(IndexingMode.QueryLikeTerm, ref validationState);
                 Assert.AreEqual(ValidationState.Valid, validationState);
 
 
@@ -1631,7 +1635,13 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 { }
                 expected = @" 
 SELECT * FROM items WHERE
-()";
+(QueryTerm LIKE '%color%')";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting generated sql to match."
+                );
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -1640,31 +1650,31 @@ SELECT * FROM items WHERE
                 );
 
                 //sql = context.ToString();
-                recordset = cnx.Query<SelectableQueryModel>(context.ToString());
+                recordset = cnx.Query<SelectableQueryModelOR>(context.ToString());
                 Assert.AreEqual(19, recordset.Count);
 
                 // WORKS
-                recordset = cnx.Query<SelectableQueryModel>("SELECT * FROM items WHERE\r\n(QueryTerm LIKE ?)", "%color%");
+                recordset = cnx.Query<SelectableQueryModelOR>("SELECT * FROM items WHERE\r\n(QueryTerm LIKE ?)", "%color%");
                 Assert.AreEqual(19, recordset.Count);
 
                 // WORKS
-                recordset = cnx.Query<SelectableQueryModel>(context.PositionalQuery, context.PositionalArgs);
+                recordset = cnx.Query<SelectableQueryModelOR>(context.PositionalQuery, context.PositionalArgs);
                 Assert.AreEqual(19, recordset.Count);
 
                 // WORKS
                 var (query, args) =
                     "color"
-                    .ParseSqlMarkdown<SelectableQueryModel>(IndexingMode.QueryLikeTerm, ref validationState)
+                    .ParseSqlMarkdown<SelectableQueryModelOR>(IndexingMode.QueryLikeTerm, ref validationState)
                     .ToPositional();
-                recordset = cnx.Query<SelectableQueryModel>(query, args);
+                recordset = cnx.Query<SelectableQueryModelOR>(query, args);
                 Assert.AreEqual(19, recordset.Count);
 
 
                 (query, args) =
                     "animal"
-                    .ParseSqlMarkdown<SelectableQueryModel>(IndexingMode.QueryLikeTerm, ref validationState)
+                    .ParseSqlMarkdown<SelectableQueryModelOR>(IndexingMode.QueryLikeTerm, ref validationState)
                     .ToPositional();
-                recordset = cnx.Query<SelectableQueryModel>(query, args);
+                recordset = cnx.Query<SelectableQueryModelOR>(query, args);
                 Assert.AreEqual(12, recordset.Count);
 
 

@@ -62,7 +62,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
         string _tags = string.Empty;
     }
 
-    [Obsolete("Used in unit tests for early adopter migration support.")]
+    [Obsolete("Used in unit tests for early adopter (beta) migration support.")]
     /// <summary>
     /// Simple class that implements ISelfIndexedMarkdown by
     /// inheriting <see cref="SelfIndexed"/>.

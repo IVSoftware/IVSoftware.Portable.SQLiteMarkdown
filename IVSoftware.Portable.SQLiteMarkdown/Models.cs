@@ -427,7 +427,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
 
-    [Obsolete("Used in unit tests for early adopter migration support.")]
+    [Obsolete("Used in unit tests for early adopter (beta) migration support.")]
     public class SelfIndexedOR : SelfIndexed
     {
         /// <summary>
