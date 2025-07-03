@@ -80,6 +80,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     foreach (var oldItem in e.OldItems.OfType<T>())
                     {
                         _set.Remove(oldItem);
+                        if(oldItem is INotifyPropertyChanged inpc)
+                        {
+                            inpc.PropertyChanged -= OnItemPropertyChanged;
+                        }
                     }
                     break;
                 case NotifyCollectionChangedAction.Reset:

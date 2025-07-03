@@ -52,11 +52,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             _labelKeywords.Font = new Font(Font.FontFamily, Font.Size - 1F);
             _labelTags.Font = new Font(Font.FontFamily, Font.Size - 2F);
 
-            _labelDescription.Click += OnAnyClicked;
-            _labelKeywords.Click += OnAnyClicked;
-            _labelTags.Click += OnAnyClicked;
+            _labelDescription.MouseUp += OnAnyMouseUp;
+            _labelKeywords.MouseUp += OnAnyMouseUp;
+            _labelTags.MouseUp += OnAnyMouseUp;
 
-            _labelDescription.MouseEnter += OnAnyMouseEnter;
+            _labelDescription.MouseUp += OnAnyMouseEnter;
             _labelKeywords.MouseEnter += OnAnyMouseEnter;
             _labelTags.MouseEnter += OnAnyMouseEnter;
         }
@@ -65,32 +65,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         {
             if (sender is Control control)
             {
-                BeginInvoke(() =>
-                {
-                    control.Focus();
-                });
+                control.Focus();
             }
         }
 
-        private void OnAnyClicked(object? sender, EventArgs e)
+        private void OnAnyMouseUp(object? sender, EventArgs e)
         {
-            BeginInvoke(() =>
+            switch (DataContext!.Selection)
             {
-                switch (DataContext!.Selection)
-                {
-                    case ItemSelection.None:
-                        DataContext!.Selection = ItemSelection.Exclusive;
-                        break;
-                    case ItemSelection.Exclusive:
-                        DataContext!.Selection = ItemSelection.None;
-                        break;
-                    case ItemSelection.Multi:
-                    case ItemSelection.Primary:
-                    default:
-                        // N O O P for now
-                        break;
-                }
-            });
+                case ItemSelection.None:
+                    DataContext!.Selection = ItemSelection.Exclusive;
+                    break;
+                case ItemSelection.Exclusive:
+                    DataContext!.Selection = ItemSelection.None;
+                    break;
+                case ItemSelection.Multi:
+                case ItemSelection.Primary:
+                default:
+                    // N O O P for now
+                    break;
+            }
         }
 
         public new SelectableQFModel? DataContext => (SelectableQFModel?)base.DataContext;
