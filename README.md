@@ -160,65 +160,34 @@ Here are more examples:
 
 ---
 
-## Query Templates for Expression Parsing
+## Split Contracts – Query Templates for Expression Parsing
 
-In many scenarios, you already have a dataset — for example:
+So let’s be clear. We’ve used a class to generate a SQL expression. When we perform the actual query, does the data type receiving the recordset need to be the same type?  
+**It does not!**
 
-- An `ObservableCollection<T>` that will be filtered in-memory, or
-- A SQLite table or IQueryable source populated with records of type `T`
+That’s the idea behind **Split Contracts** — you can separate the type used to **build the query** from the type used to **receive the results**. The query model is just a template. It defines how to interpret the input expression, not how the data is stored or shaped.
 
-But you may want to control **how the search expression is parsed and translated into SQL** — independently of how your data is shaped or persisted.
-
-To support this, the parser treats `T` as a **query template**, not necessarily the literal payload type.
-
-You can define a proxy class with:
-
-- The same property names as your real data
-- The same `[Table]` mapping (optional, but recommended for SQLite)
-- Different `[MarkdownTerm]` attributes to control which fields participate in the expression
+This lets you create purpose-specific templates that filter the same table in different ways. Want to search just by `Name`? Or only `Species`? Or maybe apply a strict tag match? Define a few small query classes and switch between them on the fly — even bind them to a dropdown in the UI.
 
 ```csharp
-[Table("Contact")]
-public class ContactStrictIndex
-{
-    [SqlLikeTerm]
-    public string Name { get; set; }
-}
-
-[Table("Contact")]
-public class ContactWideIndex
-{
-    [SqlLikeTerm]
-    public string Name { get; set; }
-
-    [SqlLikeTerm]
-    public string Email { get; set; }
-}
+class SearchByName     { [QueryLikeTerm] public string Name { get; set; } }
+class SearchBySpecies  { [QueryLikeTerm] public string Species { get; set; } }
+class SearchByTag      { [TagMatchTerm]  public string Tags { get; set; } }
 ```
 
-You can then parse the same input using different templates:
+Each of these can use the same search input — but produce different SQL depending on the fields and attributes involved.
 
-```csharp
-var strictSql = "foo bar".ParseSqlMarkdown<ContactStrictIndex>();
-var wideSql = "foo bar".ParseSqlMarkdown<ContactWideIndex>();
-```
+> Think of Split Contracts as little search adapters: they don't hold the data, they shape the search.
 
-This pattern allows you to:
+This pattern lets you:
 
 - Apply different query behaviors for different views, roles, or modes
-- Avoid annotating your core domain model with filter-specific concerns
+- Avoid annotating your core data models with filter-specific concerns
 - Cleanly separate indexing logic from data logic
 
 > Query templates are lightweight and composable — think of them as named filter contracts for how a user’s input should be interpreted.
 
 ---
-
-## ObservableQueryFilterSource
-
-Drop-in replacement for ObservableCollection&lt;T&gt; with built-in support for both Query and Query-then-Filter workflows. It exposes a declarative interface for managing collection state while tracking query/filter intent via an internal FSM (QueryFilterStateTracker). Though UI-agnostic, the class anticipates integration with a navigation search bar, where queries are externally applied and subsequent in-memory filtering is handled via an embedded SQLite store. This enables persistent introspection of the original query, filtered/unfiltered results, and search metadata—all without any UI dependencies.
-
-[ObservableQueryFilterSource](./IVSoftware.Portable.SQLiteMarkdown/ReadMe/observable-query-filter-source.md)
-___
 
 ## SelfIndexing Class
 
@@ -227,3 +196,10 @@ The `SelfIndexing` class enables automatic generation of SQL search terms from p
 To use it, inherit from `SelfIndexed`, apply `[PrimaryKey]` to your ID property, and annotate other properties with `[SelfIndexed(...)]` to control how they contribute to indexing and persistence.
 
 [SelfIndexing](./IVSoftware.Portable.SQLiteMarkdown/ReadMe/selfindexing-class.md)
+___
+
+## ObservableQueryFilterSource
+
+Drop-in replacement for ObservableCollection&lt;T&gt; with built-in support for both Query and Query-then-Filter workflows. It exposes a declarative interface for managing collection state while tracking query/filter intent via an internal FSM (QueryFilterStateTracker). Though UI-agnostic, the class anticipates integration with a navigation search bar, where queries are externally applied and subsequent in-memory filtering is handled via an embedded SQLite store. This enables persistent introspection of the original query, filtered/unfiltered results, and search metadata—all without any UI dependencies.
+
+[ObservableQueryFilterSource](./IVSoftware.Portable.SQLiteMarkdown/ReadMe/observable-query-filter-source.md)

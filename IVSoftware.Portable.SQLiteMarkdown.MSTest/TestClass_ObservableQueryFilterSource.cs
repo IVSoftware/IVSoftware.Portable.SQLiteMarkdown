@@ -2299,7 +2299,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%Tom ""safe inner"" Tester%')"
         /// PFAW!
         /// </summary>
         [TestMethod]
-        public async Task Test_CustomSQLiteFunction()
+        public void Test_CustomSQLiteFunction()
         {
             using (var cnx = InitializeInMemoryDatabase())
             {
@@ -2344,6 +2344,7 @@ Where PropertyValue({nameof(SelectableQueryModel.Properties)}, '{nameof(Selectab
                 { }
             }
         }
+
         [TestMethod]
         public async Task Test_DemoFlow()
         {

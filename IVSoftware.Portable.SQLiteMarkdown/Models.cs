@@ -51,7 +51,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Gets or sets the term for SQL-like search functionality.
         /// Updated based on properties with SqlContainsAttribute.
         /// </summary>
-        [SqlLikeTerm]
+        [QueryLikeTerm]
         public string QueryTerm
         {
             get => ensure(ref _likeTerm);
@@ -70,7 +70,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Gets or sets the term used for filter-based searching.
         /// Updated based on properties with FilterContainsAttribute.
         /// </summary>
-        [FilterContainsTerm]
+        [FilterLikeTerm]
         public string FilterTerm
         {
             get => ensure(ref _containsTerm);
