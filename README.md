@@ -141,22 +141,22 @@ Input like `"pet"` will match:
 
 Here are more examples:
 
-| Input Expression       | SQL Translation (simplified)                                                                 | Description                         |
-|------------------------|----------------------------------------------------------------------------------------------|-------------------------------------|
-| `cat dog`              | `(Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')`   | Implicit AND                        |
-| `cat | dog`            | `(Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%')`    | OR operator                         |
+| Input Expression       | SQL Translation (simplified)                                                                     | Description                         |
+|------------------------|--------------------------------------------------------------------------------------------------|-------------------------------------|
+| `cat dog`              | `(Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')`    | Implicit AND                        |
+| `cat & dog`            | `(Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')`    | Explicit AND                        |
+| `cat &&& dog`          | `(Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')`    | Redundant AND syntax normalized     |
+| `cat | dog`            | `(Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%')`     | OR operator                         |
+| `cat || dog`           | `(Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%')`     | Redundant OR syntax normalized      |
 | `cat !dog`             | `(Name LIKE '%cat%' OR Species LIKE '%cat%') AND NOT (Name LIKE '%dog%' OR Species LIKE '%dog%')`| AND with NOT                        |
-| `!cat`                 | `NOT (Name LIKE '%cat%' OR Species LIKE '%cat%')`                                              | Single NOT                          |
-| `'exact phrase'`       | `(Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')`                               | Exact match using single quotes     |
-| `"exact phrase"`       | `(Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')`                               | Exact match using double quotes     |
+| `!cat`                 | `NOT (Name LIKE '%cat%' OR Species LIKE '%cat%')`                                                | Single NOT                          |
+| `\!cat`                | `(Name LIKE '%!cat%' OR Species LIKE '%!cat%')`                                                  | Escaped NOT — treated as literal    |
 | `!(cat | dog)`         | `NOT ((Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%'))` | Negated group                     |
-| `cat & dog`            | `(Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')`   | Explicit AND                        |
-| `cat &&& dog`          | `(Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')`   | Redundant AND syntax normalized     |
-| `cat || dog`           | `(Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%')`    | Redundant OR syntax normalized      |
-| `\!cat`                | `(Name LIKE '%!cat%' OR Species LIKE '%!cat%')`                                               | Escaped NOT — treated as literal    |
-| `\[bracket\]`          | `(Name LIKE '%[bracket]%' OR Species LIKE '%[bracket]%')`                                     | Escaped brackets                    |
+| `'exact phrase'`       | `(Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')`                                  | Exact match using single quotes     |
+| `"exact phrase"`       | `(Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')`                                  | Exact match using double quotes     |
+| `\"Hello\"`          | `(Name LIKE '%""Hello""%' OR Species LIKE '%""Hello""%')`                                          | Literal quotes via escaping         |
 
-> Matching is case-insensitive by default unless configured via `StringCasing`.
+> Matching is case-insensitive.
 
 ---
 

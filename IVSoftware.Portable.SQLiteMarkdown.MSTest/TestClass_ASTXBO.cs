@@ -15,7 +15,42 @@ namespace IVSoftware.Portable.SQLiteMarkdown.XBO
     public sealed class TestClass_ASTXBO
     {
         static Dictionary<Type, Dictionary<QueryFilterMode, Dictionary<string, string>>> LimitTable { get; } = new()
-        {
+        {            
+            // PUBLISHED: ReadMe version verify claims.
+            [typeof(PetProfile)] = new()
+            {
+                [QueryFilterMode.Query] = new()
+                {
+                    // Implicit AND
+                    ["cat dog"] = "SELECT * FROM pets WHERE (Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')",
+                    // Explicit AND
+                    ["cat & dog"] = @"SELECT * FROM pets WHERE (Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')",
+                    // Redundant AND syntax normalized 
+                    ["cat &&& dog"] = @"SELECT * FROM pets WHERE (Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')",
+                    // OR Operator
+                    ["cat | dog"] = @"SELECT * FROM pets WHERE (Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%')",
+                    // Redundant OR syntax normalized
+                    ["cat || dog"] = @"SELECT * FROM pets WHERE (Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%')",
+                    // AND with NOT
+                    ["cat !dog"] = @"SELECT * FROM pets WHERE (Name LIKE '%cat%' OR Species LIKE '%cat%') AND (NOT (Name LIKE '%dog%' OR Species LIKE '%dog%'))",
+                    // Escaped NOT — treated as literal
+                    ["\\!cat"] = @"SELECT * FROM pets WHERE (Name LIKE '%!cat%' OR Species LIKE '%!cat%')",
+                    // Single NOT
+                    ["!cat"] = @"SELECT * FROM pets WHERE (NOT (Name LIKE '%cat%' OR Species LIKE '%cat%'))",
+                    // Negated group
+                    ["!(cat | dog)"] = @"SELECT * FROM pets WHERE (NOT ((Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%')))",
+                    // Exact match using single quotes 
+                    ["'exact phrase'"] = @"SELECT * FROM pets WHERE (Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')",
+                    // Exact match using double quotes 
+                    ["\"exact phrase\""] = @"SELECT * FROM pets WHERE (Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')",
+                    // Escaped quotes
+                    ["\"\"Hello\"\""] = @"SELECT * FROM pets WHERE (Name LIKE '%""Hello""%' OR Species LIKE '%""Hello""%')",
+                    // Escaped quotes
+                    ["\\\"Hello\\\""] = @"SELECT * FROM pets WHERE (Name LIKE '%""Hello""%' OR Species LIKE '%""Hello""%')",
+                }
+            },
+
+            // Split Contract Template over PetProfileSC
             [typeof(PetProfileN)] = new()
             {
                 [QueryFilterMode.Query] = new()
@@ -25,10 +60,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.XBO
                     ["cat dog"] = "SELECT * FROM pets WHERE (Name LIKE '%cat%') AND (Name LIKE '%dog%')",
                     ["!cat dog"] = "SELECT * FROM pets WHERE (NOT (Name LIKE '%cat%')) AND (Name LIKE '%dog%')",
                     ["!(cat|dog)"] = "SELECT * FROM pets WHERE (NOT ((Name LIKE '%cat%') OR (Name LIKE '%dog%')))",
-                    ["pet!(cat|dog)"] = "SELECT * FROM pets WHERE (Name LIKE '%pet%') AND (NOT ((Name LIKE '%cat%') OR (Name LIKE '%dog%')))"
+                    ["pet!(cat|dog)"] = "SELECT * FROM pets WHERE (Name LIKE '%pet%') AND (NOT ((Name LIKE '%cat%') OR (Name LIKE '%dog%')))",
                 }
             },
 
+            // Split Contract Template over PetProfileSC
             [typeof(PetProfileNS)] = new()
             {
                 [QueryFilterMode.Query] = new()
@@ -37,10 +73,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.XBO
                     ["!cat"] = "SELECT * FROM pets WHERE (NOT (Name LIKE '%cat%' OR Species LIKE '%cat%'))",
                     ["cat dog"] = "SELECT * FROM pets WHERE (Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')",
                     ["!cat dog"] = "SELECT * FROM pets WHERE (NOT (Name LIKE '%cat%' OR Species LIKE '%cat%')) AND (Name LIKE '%dog%' OR Species LIKE '%dog%')",
-                    ["pet!(cat|dog)"] = "SELECT * FROM pets WHERE (Name LIKE '%pet%' OR Species LIKE '%pet%') AND (NOT ((Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%')))"
+                    ["pet!(cat|dog)"] = "SELECT * FROM pets WHERE (Name LIKE '%pet%' OR Species LIKE '%pet%') AND (NOT ((Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%')))",
                 },
             },
 
+            // Split Contract Template over PetProfileSC
             [typeof(PetProfileNS_N)] = new()
             {
                 [QueryFilterMode.Query] = new()
@@ -57,6 +94,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.XBO
                 }
             },
 
+            // Split Contract Template over PetProfileSC
             [typeof(PetProfileN_NT_T)] = new()
             {
                 [QueryFilterMode.Query] = new()
@@ -407,17 +445,16 @@ SELECT * FROM pets WHERE (NOT (Name LIKE '%cat%' OR Species LIKE '%cat%'))"
         {
             string actual, expected;
 
-            actual = "Tom Tester'".ParseSqlMarkdown<PetProfileN>();
+            actual = "\\\"Hello\\\"".ParseSqlMarkdown<PetProfileN>();
             actual.ToClipboardExpected();
             { }
             expected = @" 
 SELECT * FROM pets WHERE 
-(Name LIKE '%Tom%') AND (Name LIKE '%Tester''%')"
+(Name LIKE '%""Hello""%')"
             ;
             Assert.AreEqual(
                 expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting single term NOT LIKE expression"
+                actual.NormalizeResult()
             );
         }
 

@@ -563,7 +563,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         }
                         expr = sbExpr.ToString();
 
-#if DEBUG
+#if false && DEBUG
                         Debug.WriteLine($"250619.A");
                         Debug.WriteLine($"{exprOR,-30} | {expr,-30}");
                         { }

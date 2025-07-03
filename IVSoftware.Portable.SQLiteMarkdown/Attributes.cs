@@ -12,11 +12,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     [AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
     public abstract class MarkdownTermAttribute : Attribute
     {
+#if false && PROPOSED
         /// <summary>
         /// Specifies the casing transformation to be applied to the term.
         /// Default is <see cref="StringCasing.Lower"/>.
         /// </summary>
         public StringCasing StringCasing { get; set; } = StringCasing.Lower;
+#endif
     }
 
     /// <summary>
