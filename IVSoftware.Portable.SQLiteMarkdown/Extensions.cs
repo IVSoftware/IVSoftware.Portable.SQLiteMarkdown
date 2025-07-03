@@ -247,12 +247,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                   pi
                                   .GetCustomAttributes<MarkdownTermAttribute>(inherit: true))
                         {
-                            if (attr is SqlLikeTermAttribute)
+                            if (attr is SqlLikeTermAttribute || attr is QueryLikeTermAttribute)
                             {
                                 indexProperties.Add(pi);
                                 termProperties.Add(pi);
                             }
-                            else if (attr is FilterContainsTermAttribute)
+                            else if (attr is FilterContainsTermAttribute || attr is FilterLikeTermAttribute)
                             {
                                 indexProperties.Add(pi);
                                 termProperties.Add(pi);
