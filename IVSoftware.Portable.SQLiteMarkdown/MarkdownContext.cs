@@ -946,8 +946,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (!Equals(_queryFilterConfig, value))
                 {
                     _queryFilterConfig = value;
-                    // Seems odd, right? But what this does is review the new QFC
-                    // in its determination of legal state that it can be in 'now'.
+                    // Seems odd, right? But this actually does something.
+                    // It forces a review of of its current state to make
+                    // sure that it's still legal with the new QFC.
                     FilteringState = FilteringState;
                     OnPropertyChanged();
                 }
