@@ -26,9 +26,10 @@ It works well in situations where you want to support both *browsing* and *filte
 
 This library is platform-agnostic. At the same time, it drops any pretense of not knowing there's a UI out there with a "probable almost-certain shape" to it. That predicted UI is unapologetically supported with states and bindable properties.
 
-<img src="./IVSoftware.Portable.SQLiteMarkdown/README/img/demo-screenshot-term.png" alt="Search demo with and without [app] tag" width="600"/>
+<img src="https://raw.githubusercontent.com/IVSoftware/Portable/master/IVSoftware.Portable.SQLiteMarkdown/README/img/demo-screenshot-term.png" alt="Search demo with and without [app] tag" width="600"/>
 
-<img src="./IVSoftware.Portable.SQLiteMarkdown/README/img/demo-screenshot-tag.png" alt="Search demo with [app] tag" width="600"/>
+<img src="https://raw.githubusercontent.com/IVSoftware/Portable/master/IVSoftware.Portable.SQLiteMarkdown/README/img/demo-screenshot-tag.png" alt="Search demo with [app] tag" width="600"/>
+
 
 The included demo is WinForms but don't be misled by that. There are no platform dependencies in the core package. None.
 
