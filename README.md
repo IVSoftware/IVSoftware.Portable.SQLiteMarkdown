@@ -12,7 +12,7 @@ Instead, it’s a lightweight utility that captures the **gestalt** of a dataset
 - Driven by a **shared navigation search bar**
 - Where one input field controls both what’s shown and how it’s refined
 
-It works well in situations where you want to support both *browsing* and *filtering* without re-engineering your data layer or your UI.
+It works well in situations where you want to support both *browsing* and *filtering* without re-engineering your data layer or your UI, and all it asks in return is that you decorate your target properties using the small set of [MarkdownTerm] attributes available in this package.
 
 
 | Mode            | Description                                                                 |
@@ -21,11 +21,17 @@ It works well in situations where you want to support both *browsing* and *filte
 | **QUERY**         | Query a remote source (e.g., cloud database, REST API)                     |
 | **QUERY → FILTER**| Query a remote source, then refine results using SQLite-backed filtering   |
 
-<img src="./IVSoftware.Portable.SQLiteMarkdown/README/img/demo-screenshots.png" alt="Search demo with and without [app] tag" width="600"/>
+# Demo App included in this Repo
 
+This library is platform-agnostic. At the same time, it drops any pretense of not knowing there's a UI out there with a "probable-almost-certain shape" to it. That predicted UI is unapologetically supported with states and bindable properties.
 
+<img src="./IVSoftware.Portable.SQLiteMarkdown/README/img/demo-screenshot-term.png" alt="Search demo with and without [app] tag" width="600"/>
 
-# Expression Parsing Documentation
+<img src="./IVSoftware.Portable.SQLiteMarkdown/README/img/demo-screenshot-tag.png" alt="Search demo with [app] tag" width="600"/>
+
+___
+
+# Expression Syntax Documentation
 
 This README outlines the operators and rules for parsing expressions in a custom search language. The operators follow a standard order of operations and offer flexible syntax for various logical expressions.
 
