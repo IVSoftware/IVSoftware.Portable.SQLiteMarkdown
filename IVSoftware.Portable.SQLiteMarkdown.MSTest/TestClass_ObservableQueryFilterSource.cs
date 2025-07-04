@@ -2419,8 +2419,6 @@ Where PropertyValue({nameof(SelectableQFModel.Properties)}, '{nameof(SelectableQ
             {
                 string actual, expected, sql;
                 List<SelectableQFModel> recordset;
-                SelectableQFModel[] itemsArray;
-                ValidationState state;
                 SenderEventPair sep;
                 NotifyCollectionChangedEventArgs? ecc;
                 SelectableQFModel[] newItems = [];

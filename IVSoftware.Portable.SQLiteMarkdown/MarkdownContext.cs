@@ -946,6 +946,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (!Equals(_queryFilterConfig, value))
                 {
                     _queryFilterConfig = value;
+                    // Seems odd, right? But what this does is review the new QFC
+                    // in its determination of legal state that it can be in 'now'.
+                    FilteringState = FilteringState;
                     OnPropertyChanged();
                 }
             }
@@ -974,13 +977,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected FilteringState FilteringStatePrev { get; set;  }
         public FilteringState FilteringState
         {
-            get => _filteringState;
+            get =>_filteringState;
             protected set
             {
-                if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                switch (QueryFilterConfig)
                 {
-                    // The only transition allowed is going back to Inactive.
-                    value = FilteringState.Ineligible;
+                    case QueryFilterConfig.Query:
+                        // Query-only is always ineligible for filtering.
+                        value = FilteringState.Ineligible;
+                        break;
+                    case QueryFilterConfig.Filter:
+                        // Filter-only is always either armed or active.
+                        if(value == FilteringState.Ineligible)
+                        {
+                            value = FilteringState.Armed;
+                        }
+                        break;
+                    case QueryFilterConfig.QueryAndFilter:
+                        break;
+                    default:
+                        break;
                 }
                 if (!Equals(_filteringState, value))
                 {
@@ -993,7 +1009,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-        FilteringState _filteringState = default;
+        FilteringState _filteringState = FilteringState.Ineligible;
 
         public FilteringState FilteringStateForTest
         {
