@@ -39,6 +39,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
             => ParseSqlMarkdown(expr, typeof(T), qfMode, out XElement _);
 
+        protected string ParseSqlMarkdown<T>()
+            => ParseSqlMarkdown(InputText, typeof(T), _qfMode, out XElement _);
+
         public string ParseSqlMarkdown(string expr, Type type, QueryFilterMode qfMode, out XElement xast)
         {
             Raw = expr;
@@ -923,6 +926,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
 
         protected virtual void OnFilteringStateChanged() { }
+
+        public string InputText
+        {
+            get => _inputText;
+            set
+            {
+                if (!Equals(_inputText, value))
+                {
+                    _inputText = value;
+                    OnPropertyChanged();
+                    OnInputTextChanged();
+                }
+            }
+        }
+        string _inputText = string.Empty;
+        protected virtual void OnInputTextChanged() { }
         #endregion S T A T E    M A C H I N E
     }
 }

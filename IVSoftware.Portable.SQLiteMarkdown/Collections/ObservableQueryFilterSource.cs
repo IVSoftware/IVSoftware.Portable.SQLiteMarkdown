@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
@@ -224,24 +225,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 #endif
 
                     var searchEntryState = SearchEntryState;
-                    var context = InputText.ParseSqlMarkdown<T>(ref searchEntryState);
-
+                    var sql = ParseSqlMarkdown<T>();
 
 #if DEBUG
+                    var context = InputText.ParseSqlMarkdown<T>(ref searchEntryState);
                     var cstring = context.ToString();
-                    { }
-
-#endif
-
-                    var tmp = FilterQueryDatabase.Query<T>(context.ToString());
-
-#if false && DEBUG
-                    if (InputText == "olf")
+                    if(sql == cstring)
                     {
-                        T item;
-                        item = tmp.Single();
+                    }
+                    else 
+                    {
+                        // Must have "where" and must have at least 1 non whitespace char after it.
+                        if (Regex.IsMatch(sql ?? "", @"where\s+\S", RegexOptions.IgnoreCase))
+                        {
+
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"Expected WHERE clause with content. Parse result was:\n{sql}");
+                        }
+
+
+
+                        // Probably 'not' the same so far. Here's what we need to happen:
+                        // - Using the string extension is stand-alone and always makes a new context.
+                        // - Going forward, the string extension should support only expr (a.k.a. @this), QueryFilterMode, and Minimum Length
+                        // - We're done with passing state into the string extension, however. If state is what you want, maintain a context.
+                        // - If you want, you can pull that context off the 'out XElement' from the first string call. But honestly this is more intended to be a test feature.
                     }
 #endif
+
+                    var tmp = FilterQueryDatabase.Query<T>(sql);
+
                     // This is 'not' the place for a reconciled sync.
                     // We would do that in the UI if at all.
                     _filteredItems.Clear();
@@ -435,20 +450,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
         SQLiteConnection _memoryDatabase = default;
-        public string InputText
-        {
-            get => _inputText;
-            set
-            {
-                if (!Equals(_inputText, value))
-                {
-                    _inputText = value;
-                    OnPropertyChanged();
-                    OnInputTextChanged();
-                }
-            }
-        }
-        string _inputText = string.Empty;
 
         public MarkdownContextOR MarkdownContextOR
         {
@@ -461,8 +462,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public string SQL => MarkdownContextOR?.ToString();
 
-        protected virtual void OnInputTextChanged()
+        protected override void OnInputTextChanged()
         {
+            base.OnInputTextChanged();
+
             var trim = InputText?.Trim() ?? string.Empty;
             var filteringStateB4 = FilteringState;
             switch (FilteringState)

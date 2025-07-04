@@ -1316,7 +1316,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
 
                 #region S U B T E S T S
 
-                void subtestEmptyToFirstChar()
+                async Task subtestEmptyToFirstChar()
                 {
                     Assert.AreEqual(
                         "Search Items",
@@ -1518,17 +1518,19 @@ Busy"
                     // that query result, so filtering goes Active in theis case.
 
 #endif
-
-
                     // animal.b
-                    // Expecting Filter mode
+                    // Expecting Filter mode and an internal query.
                     items.InputText += "b";
                     { }
+                    await localSettle();
 
                     actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
-                    actual.ToClipboard();
                     actual.ToClipboardExpected();
                     { }
+expected = @" 
+"
+;
+
                     expected = @" 
 Black Cat  [animal] [color]
 White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
