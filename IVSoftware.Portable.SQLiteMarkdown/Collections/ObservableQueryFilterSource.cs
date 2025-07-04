@@ -16,7 +16,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     [DebuggerDisplay("Count={Count}")]
     public partial class ObservableQueryFilterSource<T>
         : MarkdownContext<T>
-        , IObservableQueryFilterSource
+        , IObservableQueryFilterSource<T>
         , IList<T>
         where T : new()
     {
@@ -124,7 +124,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         bool _busy = default;
 
-        public void ReplaceItems(IList items)
+        public void ReplaceItems(IEnumerable<T> items)
         {
             try
             {
@@ -132,11 +132,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
                 _unfilteredItems.Clear();
-                if (items.Count == 0)
-                {
-                    SearchEntryState = SearchEntryState.QueryCompleteNoResults;
-                }
-                else
+                if (items.Any())
                 {
                     foreach (T item in items)
                     {
@@ -151,6 +147,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     );
                     SearchEntryState = SearchEntryState.QueryCompleteWithResults;
                 }
+                else
+                {
+                    SearchEntryState = SearchEntryState.QueryCompleteNoResults;
+                }
                 FilteringState =
                     _unfilteredItems.Count < 2
                     ? FilteringState.Ineligible
@@ -161,6 +161,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 Busy = false;
             }
         }
+
+        public void InitializeFilterOnlyMode(IEnumerable<T> items)
+        {
+            throw new NotImplementedException("ToDo");
+        }
+
+
         public void ApplyFilter()
         {
             try
@@ -361,23 +368,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
             }
         }
-        public SQLiteConnection MemoryDatabase
-        {
-            get => _memoryDatabase;
-            set
-            {
-                if (!Equals(_memoryDatabase, value))
-                {
-                    if(_memoryDatabase != null)
-                    {
-                        _memoryDatabase.Dispose();
-                    }
-                    _memoryDatabase = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        SQLiteConnection _memoryDatabase = default;
 
         public MarkdownContextOR MarkdownContextOR
         {

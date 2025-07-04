@@ -745,7 +745,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             if (!Equals(_contractType, value))
                             {
                                 _contractType = value;
-                                OnTypeChanged();
+                                OnContractTypeChanged();
                                 OnPropertyChanged();
                             }
                             break;
@@ -760,7 +760,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             if (_contractType is null)
                             {
                                 _contractType = value;
-                                OnTypeChanged();
+                                OnContractTypeChanged();
                                 OnPropertyChanged();
                             }
                             break;
@@ -773,8 +773,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public Type ProxyType { get; private set; }
 
-        protected virtual void OnTypeChanged()
+        protected virtual void OnContractTypeChanged()
         {
+            if (ContractType is null)
+            {
+                throw new InvalidOperationException("Contract type cannot be null.");
+            }
+            else
+            {
+                if (FilterQueryDatabase != null)
+                {
+                    FilterQueryDatabase.Dispose();
+                }
+                FilterQueryDatabase  = new SQLiteConnection(":memory:");
+                FilterQueryDatabase.CreateTable(ContractType);
+            }
         }
 
 
@@ -923,7 +936,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     value = param.Value.ToString();
                 }
-
                 formatted = formatted.Replace(param.Key, value);
             }
             return formatted;
@@ -956,21 +968,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         QueryFilterConfig _queryFilterConfig = QueryFilterConfig.QueryAndFilter;
 
+        protected virtual SQLiteConnection FilterQueryDatabase { get; set; }
 
 
-        public SQLiteConnection FilterQueryDatabase
+        public SQLiteConnection MemoryDatabase
         {
-            get
+            get => _memoryDatabase;
+            set
             {
-                if (_filterQueryDatabase is null)
+                if (!Equals(_memoryDatabase, value))
                 {
-                    _filterQueryDatabase = new SQLiteConnection(":memory:");
-                    _filterQueryDatabase.CreateTable(ContractType);
+                    if (_memoryDatabase != null)
+                    {
+                        _memoryDatabase.Dispose();
+                    }
+                    _memoryDatabase = value;
+                    OnPropertyChanged();
                 }
-                return _filterQueryDatabase;
             }
         }
-        SQLiteConnection _filterQueryDatabase = null;
+        SQLiteConnection _memoryDatabase = default;
         #endregion C O N F I G
 
         #region N A V    S E A R C H    S T A T E    M A C H I N E

@@ -66,7 +66,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         , INotifyCollectionChanged
         , INotifyPropertyChanged
     {
-        void ApplyFilter();
         bool IsFiltering { get; }
         string InputText { get; set; }
 
@@ -82,6 +81,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         SQLiteConnection MemoryDatabase { get; set; }
         FilteringState Clear(bool all = false);
         void Commit();
+    }
+    public interface IObservableQueryFilterSource<T>
+        : IObservableQueryFilterSource
+    {
+        void InitializeFilterOnlyMode(IEnumerable<T> items);
+        void ReplaceItems (IEnumerable<T> items);
     }
 
     /// <summary>
