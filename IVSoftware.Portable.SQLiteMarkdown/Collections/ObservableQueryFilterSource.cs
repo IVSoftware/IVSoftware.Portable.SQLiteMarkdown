@@ -161,7 +161,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 Busy = false;
             }
         }
-
         public void ApplyFilter()
         {
             try
@@ -212,6 +211,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                     var searchEntryState = SearchEntryState;
                     var sql = ParseSqlMarkdown<T>();
+                    // Must have "where" and must have at least 1 non whitespace char after it.
+                    if (Regex.IsMatch(sql ?? "", @"where\s+\S", RegexOptions.IgnoreCase))
+                    {
+
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Expected WHERE clause with content. Parse result was:\n{sql}");
+                    }
 
 #if DEBUG
                     var context = InputText.ParseSqlMarkdown<T>(ref searchEntryState);
@@ -221,18 +229,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     }
                     else 
                     {
-                        // Must have "where" and must have at least 1 non whitespace char after it.
-                        if (Regex.IsMatch(sql ?? "", @"where\s+\S", RegexOptions.IgnoreCase))
-                        {
-
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException($"Expected WHERE clause with content. Parse result was:\n{sql}");
-                        }
-
-
-
                         // Probably 'not' the same so far. Here's what we need to happen:
                         // - Using the string extension is stand-alone and always makes a new context.
                         // - Going forward, the string extension should support only expr (a.k.a. @this), QueryFilterMode, and Minimum Length
@@ -241,12 +237,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     }
 #endif
 
-                    var tmp = FilterQueryDatabase.Query<T>(sql);
+                    var filteredRecords = FilterQueryDatabase.Query<T>(sql);
 
                     // This is 'not' the place for a reconciled sync.
                     // We would do that in the UI if at all.
                     _filteredItems.Clear();
-                    foreach(var item in tmp)
+                    foreach(var item in filteredRecords)
                     {
                         _filteredItems.Add(item);
                     }
@@ -291,60 +287,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         void IList.Clear() => Clear();
         void ICollection<T>.Clear() => Clear();
-
-        // Canonical {5932CB31-B914-4DE8-9457-7A668CDB7D08}
-        public FilteringState Clear(bool all = false)
-        {
-            if (all)
-            {
-                InputText = string.Empty;
-                FilteringState = FilteringState.Ineligible;
-                SearchEntryState = SearchEntryState.Cleared;
-            }
-            else
-            {
-                if (InputText.Length > 0)
-                {
-                    // Basically, if there is entry text but the filtering
-                    // is still only armed not active, that indicates that
-                    // what we're seeing in the list is the result of a full
-                    // db query that just occurred. So now, when we CLEAR that
-                    // text, it's assumed to be in the interest of filtering
-                    // that query result, so filtering goes Active in theis case.
-                    InputText = string.Empty;
-                    switch (FilteringState)
-                    {
-                        case FilteringState.Ineligible:
-                            break;
-                        case FilteringState.Armed:
-                            FilteringState = FilteringState.Active;
-                            break;
-                        case FilteringState.Active:
-                            break;
-                        default:
-                            throw new NotImplementedException($"Bad case: {FilteringState}");
-                    }
-                }
-                else
-                {
-                    switch (FilteringState)
-                    {
-                        case FilteringState.Ineligible:
-                            break;
-                        case FilteringState.Armed:
-                        case FilteringState.Active:
-                            // If the text is already empty and
-                            // you click again, it's a hard reset!
-                            FilteringState = FilteringState.Ineligible;
-                            break;
-                        default:
-                            throw new NotImplementedException($"Bad case: {FilteringState}");
-                    }
-                }
-            }
-            // Fluent return;
-            return FilteringState;
-        }
 
         public bool Contains(T item) { return _unfilteredItems.Contains(item); }
 
@@ -574,7 +516,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected override void OnFilteringStateChanged()
         {
+            // Relies on BC functionality, except where firing the CollectionChanged event is concerned.
             base.OnFilteringStateChanged();
+
+            // List-specific.
             switch (FilteringState)
             {
                 case FilteringState.Ineligible:
@@ -583,17 +528,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     _unfilteredItems.Clear();
                     CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                     break;
-                case FilteringState.Armed:
-                    break;
-                case FilteringState.Active:
-                    break;
-                default:
-                    break;
             }
         }
 
         /// <summary>
         /// This is a router for whether to show the unfiltered set or the filtered one.
+        /// The override allows some intelligence WRT the number of filterable items in the list.
         /// </summary>
         public override bool RouteToFullRecordset
         {
