@@ -182,6 +182,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             try
             {
+                Debug.Assert(IsFiltering);
+
                 Busy = true;
                 if (InputText.Length == 0)
                 {

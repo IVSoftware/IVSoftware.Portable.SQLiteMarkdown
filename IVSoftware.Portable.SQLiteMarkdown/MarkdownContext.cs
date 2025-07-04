@@ -36,11 +36,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 .WithBoundAttributeValue(this);
         }
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
+
         public string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
-            => ParseSqlMarkdown(expr, typeof(T), qfMode, out XElement _);
+            => ParseSqlMarkdown(
+                expr, typeof(T), 
+                qfMode,
+                out XElement _);
 
         protected string ParseSqlMarkdown<T>()
-            => ParseSqlMarkdown(InputText, typeof(T), _qfMode, out XElement _);
+            => ParseSqlMarkdown(
+                InputText,
+                typeof(T), 
+                IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query, 
+                out XElement _);
 
         public string ParseSqlMarkdown(string expr, Type type, QueryFilterMode qfMode, out XElement xast)
         {
