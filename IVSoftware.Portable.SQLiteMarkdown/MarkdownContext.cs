@@ -970,7 +970,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual SQLiteConnection FilterQueryDatabase { get; set; }
 
-
+        
         public SQLiteConnection MemoryDatabase
         {
             get => _memoryDatabase;
@@ -978,7 +978,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (!Equals(_memoryDatabase, value))
                 {
-                    if (_memoryDatabase != null)
+                    if(_memoryDatabase != null)
                     {
                         _memoryDatabase.Dispose();
                     }

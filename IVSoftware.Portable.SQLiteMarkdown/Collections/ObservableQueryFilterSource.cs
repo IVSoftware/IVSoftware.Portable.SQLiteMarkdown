@@ -94,7 +94,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
         ObservableSelectionHashSet<ISelectableQueryFilterItem> _selectedItems = null;
-
         public SelectionMode SelectionMode
         {
             get => SelectedItems.SelectionMode;
@@ -103,7 +102,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 SelectedItems.SelectionMode = value;
             }
         }
-
 
         private readonly ObservableCollection<T> _filteredItems = new ObservableCollection<T>();
         private readonly ObservableCollection<T> _unfilteredItems = new ObservableCollection<T>();
@@ -124,7 +122,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         bool _busy = default;
 
+        /// <summary>
+        /// Replaces the entire current dataset after a query.
+        /// Not valid in Filter-only mode. Raises CollectionChanged and sets FilteringState based on count.
+        /// </summary>
         public void ReplaceItems(IEnumerable<T> items)
+        {
+            if (QueryFilterConfig == QueryFilterConfig.Filter)
+            {
+                throw new InvalidOperationException("You must turn off File-Only mode to use this method");
+            }
+            else
+            {
+                ReplaceItemsInternal(items);
+            }
+        }
+
+        private void ReplaceItemsInternal(IEnumerable<T> items)
         {
             try
             {
@@ -134,7 +148,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 _unfilteredItems.Clear();
                 if (items.Any())
                 {
-                    foreach (T item in items)
+                    foreach (T item in items.ToArray())
                     {
                         _unfilteredItems.Add(item);
                     }
@@ -162,13 +176,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
+        /// <summary>
+        /// Sets Filter-only mode and initializes the dataset for filtering.
+        /// Ideal for static lists (e.g., preferences, enums).
+        /// When a filter is "cleared" it means the collection view returns to "all items visible".
+        /// </summary>
         public void InitializeFilterOnlyMode(IEnumerable<T> items)
         {
-            throw new NotImplementedException("ToDo");
+            ReplaceItemsInternal(items.ToArray());
+            QueryFilterConfig = QueryFilterConfig.Filter;
         }
 
-
-        public void ApplyFilter()
+        /// <summary>
+        /// Applies filtering based on incremental changes to the input text,
+        /// occurring after the initial query. Operates on the in-memory SQLite store
+        /// when in QueryAndFilter or Filter mode. Override to customize filter behavior.
+        /// </summary>
+        protected virtual void ApplyFilter()
         {
             try
             {
@@ -272,6 +296,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
+        #region I L I S T
         public int IndexOf(T item) { return _unfilteredItems.IndexOf(item); }
 
         public void Insert(int index, T item)
@@ -336,6 +361,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         bool ICollection.IsSynchronized { get { return ((ICollection)_unfilteredItems).IsSynchronized; } }
 
         object ICollection.SyncRoot { get { return ((ICollection)_unfilteredItems).SyncRoot; } }
+
+        #endregion I L I S T
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 

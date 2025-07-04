@@ -2432,7 +2432,7 @@ Where PropertyValue({nameof(SelectableQFModel.Properties)}, '{nameof(SelectableQ
                     // to switch out sources many times.
                     ItemsSource = items,
                 };
-                items.InputTextSettled += (sender, e) =>
+                items.InputTextSettled += async (sender, e) =>
                 {
                     if (ReferenceEquals(sender, items))
                     {
@@ -2454,7 +2454,7 @@ Where PropertyValue({nameof(SelectableQFModel.Properties)}, '{nameof(SelectableQ
                                 break;
                             case SearchEntryState.QueryCompleteNoResults:
                             case SearchEntryState.QueryCompleteWithResults:
-                                items.ApplyFilter();
+                                // items.ApplyFilter();
                                 break;
                             default:
                                 break;
