@@ -1,3 +1,30 @@
+ï»¿# Expression Parsing
+
+This cross-platform library supports expression-based filtering and search for SQLite-backed collections. Input text is parsed into SQL using structured rules for substrings and tags with atomicity for "quoted phrases".
+
+### Designed for a common shape
+
+This isnâ€™t a full SQL parser or a precision query engine â€” and it doesnâ€™t try to be. It wonâ€™t replace hand-crafted queries when those are needed.
+
+Instead, itâ€™s a lightweight utility that captures the **gestalt** of a dataset in a useful, pragmatic way â€” tuned for the **probable and almost-certain** UI shape:
+
+- A **platform-specific list view** (WinForms, MAUI, WPF, etc.)
+- Driven by a **shared navigation search bar**
+- Where one input field controls both whatâ€™s shown and how itâ€™s refined
+
+It works well in situations where you want to support both *browsing* and *filtering* without re-engineering your data layer or your UI.
+
+
+| Mode            | Description                                                                 |
+|------------------|-----------------------------------------------------------------------------|
+| **FILTER**        | Filter an in-memory list (e.g., app settings, enums, cached results)       |
+| **QUERY**         | Query a remote source (e.g., cloud database, REST API)                     |
+| **QUERY â†’ FILTER**| Query a remote source, then refine results using SQLite-backed filtering   |
+
+<img src="./IVSoftware.Portable.SQLiteMarkdown/README/img/demo-screenshots.png" alt="Search demo with and without [app] tag" width="600"/>
+
+
+
 # Expression Parsing Documentation
 
 This README outlines the operators and rules for parsing expressions in a custom search language. The operators follow a standard order of operations and offer flexible syntax for various logical expressions.
@@ -113,7 +140,7 @@ Double quotes (`"`) follow the same rules as single quotes.
 - During **incremental input**, a **trailing unpaired** quote is always treated as **literal**.
 ___
 
-By following these rules, expressions can be parsed flexibly and safely—even while a user is still typing.
+By following these rules, expressions can be parsed flexibly and safelyâ€”even while a user is still typing.
 
 ___
 
@@ -150,7 +177,7 @@ Here are more examples:
 | `cat || dog`           | `(Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%')`     | Redundant OR syntax normalized      |
 | `cat !dog`             | `(Name LIKE '%cat%' OR Species LIKE '%cat%') AND NOT (Name LIKE '%dog%' OR Species LIKE '%dog%')`| AND with NOT                        |
 | `!cat`                 | `NOT (Name LIKE '%cat%' OR Species LIKE '%cat%')`                                                | Single NOT                          |
-| `\!cat`                | `(Name LIKE '%!cat%' OR Species LIKE '%!cat%')`                                                  | Escaped NOT — treated as literal    |
+| `\!cat`                | `(Name LIKE '%!cat%' OR Species LIKE '%!cat%')`                                                  | Escaped NOT â€” treated as literal    |
 | `!(cat | dog)`         | `NOT ((Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%'))` | Negated group                     |
 | `'exact phrase'`       | `(Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')`                                  | Exact match using single quotes     |
 | `"exact phrase"`       | `(Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')`                                  | Exact match using double quotes     |
@@ -160,14 +187,14 @@ Here are more examples:
 
 ---
 
-## Split Contracts – Query Templates for Expression Parsing
+## Split Contracts â€“ Query Templates for Expression Parsing
 
-So let’s be clear. We’ve used a class to generate a SQL expression. When we perform the actual query, does the data type receiving the recordset need to be the same type?  
+So letâ€™s be clear. Weâ€™ve used a class to generate a SQL expression. When we perform the actual query, does the data type receiving the recordset need to be the same type?  
 **It does not!**
 
-That’s the idea behind **Split Contracts** — you can separate the type used to **build the query** from the type used to **receive the results**. The query model is just a template. It defines how to interpret the input expression, not how the data is stored or shaped.
+Thatâ€™s the idea behind **Split Contracts** â€” you can separate the type used to **build the query** from the type used to **receive the results**. The query model is just a template. It defines how to interpret the input expression, not how the data is stored or shaped.
 
-This lets you create purpose-specific templates that filter the same table in different ways. Want to search just by `Name`? Or only `Species`? Or maybe apply a strict tag match? Define a few small query classes and switch between them on the fly — even bind them to a dropdown in the UI.
+This lets you create purpose-specific templates that filter the same table in different ways. Want to search just by `Name`? Or only `Species`? Or maybe apply a strict tag match? Define a few small query classes and switch between them on the fly â€” even bind them to a dropdown in the UI.
 
 ```csharp
 class SearchByName     { [QueryLikeTerm] public string Name { get; set; } }
@@ -175,7 +202,7 @@ class SearchBySpecies  { [QueryLikeTerm] public string Species { get; set; } }
 class SearchByTag      { [TagMatchTerm]  public string Tags { get; set; } }
 ```
 
-Each of these can use the same search input — but produce different SQL depending on the fields and attributes involved.
+Each of these can use the same search input â€” but produce different SQL depending on the fields and attributes involved.
 
 > Think of Split Contracts as little search adapters: they don't hold the data, they shape the search.
 
@@ -185,7 +212,7 @@ This pattern lets you:
 - Avoid annotating your core data models with filter-specific concerns
 - Cleanly separate indexing logic from data logic
 
-> Query templates are lightweight and composable — think of them as named filter contracts for how a user’s input should be interpreted.
+> Query templates are lightweight and composable â€” think of them as named filter contracts for how a userâ€™s input should be interpreted.
 
 ---
 
@@ -200,6 +227,6 @@ ___
 
 ## ObservableQueryFilterSource
 
-Drop-in replacement for ObservableCollection&lt;T&gt; with built-in support for both Query and Query-then-Filter workflows. It exposes a declarative interface for managing collection state while tracking query/filter intent via an internal FSM (QueryFilterStateTracker). Though UI-agnostic, the class anticipates integration with a navigation search bar, where queries are externally applied and subsequent in-memory filtering is handled via an embedded SQLite store. This enables persistent introspection of the original query, filtered/unfiltered results, and search metadata—all without any UI dependencies.
+Drop-in replacement for ObservableCollection&lt;T&gt; with built-in support for both Query and Query-then-Filter workflows. It exposes a declarative interface for managing collection state while tracking query/filter intent via an internal FSM (QueryFilterStateTracker). Though UI-agnostic, the class anticipates integration with a navigation search bar, where queries are externally applied and subsequent in-memory filtering is handled via an embedded SQLite store. This enables persistent introspection of the original query, filtered/unfiltered results, and search metadataâ€”all without any UI dependencies.
 
 [ObservableQueryFilterSource](./IVSoftware.Portable.SQLiteMarkdown/ReadMe/observable-query-filter-source.md)

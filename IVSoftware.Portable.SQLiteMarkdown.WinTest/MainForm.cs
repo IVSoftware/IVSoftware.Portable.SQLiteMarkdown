@@ -188,7 +188,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 }
                 list.Add(instance);
             }
-
+            // Unit tested
             Add("Brown Dog", "[canine] [color]", false, new() { "loyal", "friend", "furry" });
             Add("Green Apple", "[fruit] [color]", false, new() { "tart", "snack", "healthy" });
             Add("Yellow Banana", "[fruit] [color]", false);
@@ -220,6 +220,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             Add("Turtle", "[animal]", false);
             Add("Mango", "[fruit]", false);
             Add("Should NOT match an expression with an \"animal\" tag.", "[not animal]", false);
+            // Live-demo specific.
+            Add("Appetizer Plate", "[dish]", false, new() { "starter", "appealing", "snack" });
+            Add("Errata", "[notes]", false, new() { "crunchy", "green", "appended" });
+            Add("Happy Camper", "[phrase]", false, new() { "joyful", "camp", "approach-west" });
+            Add("Great example - Markdown Demo", "[app] [portable]", false, new() { "digital", "mobile", "software" });
+            Add("Application Form", "[document]", false, new() { "paperwork", "apply" });
+            Add("App Store", "[app]", false, new() { "digital", "mobile", "software" });
+
 
             imdb.InsertAll(list);
             return imdb;
