@@ -68,12 +68,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public static MarkdownContextOR ParseSqlMarkdown<T>(
             this string expr,
-            IndexingMode indexingMode,
-            ref ValidationState validationState)
-            => ParseSqlMarkdownOR<T>(expr, ref validationState, null, 3, indexingMode);
-
-        public static MarkdownContextOR ParseSqlMarkdown<T>(
-            this string expr,
             ref ValidationState validationState,
             Predicate<string> validationPredicate = null)
             => ParseSqlMarkdownOR<T>(expr, ref validationState, validationPredicate, 3, IndexingMode.All);

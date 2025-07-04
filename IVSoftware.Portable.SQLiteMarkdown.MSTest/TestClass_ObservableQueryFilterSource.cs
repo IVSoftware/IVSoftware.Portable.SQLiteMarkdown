@@ -1760,9 +1760,6 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%animal%')";
 
                     recordset = cnx.Query<T>(mc.ToString());
                     Assert.AreEqual(12, recordset.Count);
-
-                    { }
-
 #if ABSTRACT
                     HOWEVER:
                     - This doesn't work and isn't intended to.
