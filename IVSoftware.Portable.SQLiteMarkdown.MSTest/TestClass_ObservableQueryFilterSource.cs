@@ -2424,6 +2424,7 @@ Where PropertyValue({nameof(SelectableQFModel.Properties)}, '{nameof(SelectableQ
                 NotifyCollectionChangedEventArgs? ecc;
                 SelectableQFModel[] newItems = [];
                 Queue<SenderEventPair> eventQueue = new();
+                SemaphoreSlim awaiter = new SemaphoreSlim(1, 1);
 
                 var items = new ObservableQueryFilterSource<SelectableQFModel>();
                 NavSearchBar nsb = new NavSearchBar
@@ -2453,12 +2454,14 @@ Where PropertyValue({nameof(SelectableQFModel.Properties)}, '{nameof(SelectableQ
                                 items.ReplaceItems(recordset);
                                 break;
                             case SearchEntryState.QueryCompleteNoResults:
-                                break;
                             case SearchEntryState.QueryCompleteWithResults:
+                                items.ApplyFilter();
                                 break;
                             default:
                                 break;
                         }
+                        awaiter.Wait(0);
+                        awaiter.Release();
                     }
                 };
                 items.CollectionChanged += (sender, e) =>
@@ -2483,18 +2486,13 @@ Where PropertyValue({nameof(SelectableQFModel.Properties)}, '{nameof(SelectableQ
                 };
 
                 await subtestQueryInitial();
-
-
-
+                await subtestAppendAndRequery();
 
 
                 #region S U B T E S T S
                 async Task subtestQueryInitial()
                 {
-
-
-                    nsb.InputText = "animal";
-                    await localSettle();
+                    await localSettle("animal");
                     Assert.IsNotNull((ecc = (NotifyCollectionChangedEventArgs?)eventQueue.Dequeue()?.e));
                     {
                         switch (ecc.Action)
@@ -2551,11 +2549,55 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                         "Expecting items to match"
                     );
                 }
+
+                async Task subtestAppendAndRequery()
+                {
+                    items.Clear(all: true);   
+                    // Live-demo specific.
+                    Add("Appetizer Plate", "[dish]", false, new() { "starter", "appealing", "snack" });
+                    Add("Errata", "[notes]", false, new() { "crunchy", "green", "appended" });
+                    Add("Happy Camper", "[phrase]", false, new() { "joyful", "camp", "approach-west" });
+                    Add("Great example - Markdown Demo", "[app] [portable]", false, new() { "digital", "mobile", "software" });
+                    Add("Application Form", "[document]", false, new() { "paperwork", "apply" });
+                    Add("App Store", "[app]", false, new() { "digital", "mobile", "software" });
+
+                    await localSettle("app gre");
+
+                    actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
+                    expected = @" 
+Green Apple ""tart"",""snack"",""healthy"" [fruit] [color]
+Errata ""crunchy"",""green"",""appended"" [notes]
+Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portable]"
+                    ;
+
+                    Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, items.SearchEntryState);
+
+                    // Perform a filter
+                    await localSettle("[app] gre");
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting items to match"
+                    );
+
+                    actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
+
+                    actual.ToClipboardExpected();
+                    expected = @" 
+Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portable]"
+                    ;
+                }
                 #endregion S U B T E S T S
 
                 #region L o c a l F x
-                async Task localSettle(double seconds = 1.0) =>
-                    await Task.Delay(TimeSpan.FromSeconds(seconds));
+                async Task localSettle(string expr)
+                {
+                    awaiter.Wait(0);
+                    nsb.InputText = expr;
+                    await awaiter.WaitAsync();
+                    awaiter.Release();
+                }
 
                 void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
                 {
@@ -2575,183 +2617,4 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             }
         }
     }
-#if false
-    
-
-        [TestMethod]
-        public async Task Test_DemoFlow()
-        {
-            using (var cnx = InitializeInMemoryDatabase())
-            {
-                string actual, expected, sql;
-                List<SelectableQFModel> recordset;
-                SelectableQFModel[] itemsArray;
-                MarkdownContextOR context;
-                ValidationState state;
-                SenderEventPair sep;
-                NotifyCollectionChangedEventArgs? ecc;
-                SelectableQFModel[] newItems = [];
-                Queue<SenderEventPair> eventQueue = new();
-
-                var items = new ObservableQueryFilterSource<SelectableQFModel>();
-                NavSearchBar nsb = new NavSearchBar
-                {
-                    // NavSearchBar UI controls are designed
-                    // to switch out sources many times.
-                    ItemsSource = items,
-                };
-                items.InputTextSettled += (sender, e) =>
-                {
-                    if (sender is IObservableQueryFilterSource qfs)
-                    {
-                        switch (qfs.SearchEntryState)
-                        {
-                            case SearchEntryState.Cleared:
-                                break;
-                            case SearchEntryState.QueryEmpty:
-                                break;
-                            case SearchEntryState.QueryENB:
-                                break;
-                            case SearchEntryState.QueryEN:
-                                // Client is responsible for the query at large because
-                                // only they know what the data connection is. Once QFS
-                                // has the recordset, it can filter it using SQLite.
-                                sql = qfs.InputText.ParseSqlMarkdown<SelectableQFModel>();
-                                recordset = cnx.Query<SelectableQFModel>(sql);
-                                items.ReplaceItems(recordset);
-                                break;
-                            case SearchEntryState.QueryCompleteNoResults:
-                                break;
-                            case SearchEntryState.QueryCompleteWithResults:
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                };
-                items.CollectionChanged += (sender, e) =>
-                {
-                    eventQueue.Enqueue((sender, e));
-                    // FYI:
-                    switch (e.Action)
-                    {
-                        case NotifyCollectionChangedAction.Add:
-                            break;
-                        case NotifyCollectionChangedAction.Remove:
-                            break;
-                        case NotifyCollectionChangedAction.Replace:
-                            break;
-                        case NotifyCollectionChangedAction.Move:
-                            break;
-                        case NotifyCollectionChangedAction.Reset:
-                            break;
-                        default:
-                            break;
-                    }
-                };
-
-                nsb.InputText = "animal";
-                await localSettle();
-                Assert.IsNotNull((ecc = (NotifyCollectionChangedEventArgs?)eventQueue.Dequeue()?.e));
-                {
-                    switch (ecc.Action)
-                    {
-                        case NotifyCollectionChangedAction.Reset:
-                            break;
-                        default:
-                            Assert.Fail("Expecting Reset");
-                            break;
-                    }
-                }
-                Assert.IsNotNull((ecc = (NotifyCollectionChangedEventArgs?)eventQueue.DequeueSingle()?.e));
-                {
-                    switch (ecc.Action)
-                    {
-                        case NotifyCollectionChangedAction.Add:
-                            newItems =
-                                ecc
-                                .NewItems
-                                ?.OfType<SelectableQFModel>()
-                                .ToArray() ?? [];
-                            Assert.AreEqual(12, newItems.Length);
-                            break;
-                        default:
-                            Assert.Fail("Expecting Add");
-                            break;
-                    }
-                }
-
-                subtestViewInitial();
-                await subtestAppendAndRequery();
-
-
-                #region S U B T E S T S
-                void subtestViewInitial()
-                {
-                    // As a product of the CollectionChangedEvent this
-                    // is representative of what we'd see in the visible list.
-                    actual = string.Join(Environment.NewLine, newItems.Select(_ => _.ToString()));
-                    actual.ToClipboard();
-                    actual.ToClipboardExpected();
-                    actual.ToClipboardAssert("Expecting items to match");
-                    { }
-                    expected = @" 
-    Black Cat  [animal] [color]
-    Orange Fox  [animal] [color]
-    White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
-    Gray Wolf ""pack"",""howl"",""wild"" [animal] [color]
-    Golden Lion  [animal] [color]
-    Brown Bear ""strong"",""wild"",""forest"" [animal] [color]
-    Black Panther ""stealthy"",""feline"",""night"" [animal] [color]
-    Elephant ""trunk"",""herd"",""safari"" [animal]
-    Giraffe  [animal]
-    Kangaroo ""bounce"",""outback"",""marsupial"" [animal]
-    Turtle  [animal]
-    Should NOT match an expression with an ""animal"" tag.  [not animal]";
-
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting items to match"
-                    );
-                }
-
-                async Task subtestAppendAndRequery()
-                {
-                    // Live-demo specific.
-                    Add("Appetizer Plate", "[dish]", false, new() { "starter", "appealing", "snack" });
-                    Add("Errata", "[notes]", false, new() { "crunchy", "green", "appended" });
-                    Add("Happy Camper", "[phrase]", false, new() { "joyful", "camp", "approach-west" });
-                    Add("Great example - Markdown Demo", "[app] [portable]", false, new() { "digital", "mobile", "software" });
-                    Add("Application Form", "[document]", false, new() { "paperwork", "apply" });
-                    Add("App Store", "[app]", false, new() { "digital", "mobile", "software" });
-                }
-                nsb.InputText = "app";
-                await localSettle();
-                { }
-                #endregion S U B T E S T S
-
-                #region L o c a l F x
-                async Task localSettle(double seconds = 1.0) =>
-                    await Task.Delay(TimeSpan.FromSeconds(seconds));
-
-
-                void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
-                {
-                    var instance = new SelectableQFModel();
-                    var type = typeof(SelectableQFModel);
-                    type.GetProperty("Description")?.SetValue(instance, description);
-                    type.GetProperty("Tags")?.SetValue(instance, tags);
-                    type.GetProperty("IsChecked")?.SetValue(instance, isChecked);
-                    if (keywords != null)
-                    {
-                        var json = JsonConvert.SerializeObject(keywords);
-                        type.GetProperty("Keywords")?.SetValue(instance, json);
-                    }
-                    cnx.Insert(instance);
-                }
-                #endregion L o c a l F x
-            }
-        }
-#endif
 }

@@ -12,7 +12,7 @@ using System.Runtime.CompilerServices;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
-
+    [DebuggerDisplay("Count={Count}")]
     public partial class ObservableQueryFilterSource<T>
         : MarkdownContext
         , IObservableQueryFilterSource
@@ -294,42 +294,51 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         // Canonical {5932CB31-B914-4DE8-9457-7A668CDB7D08}
         public FilteringState Clear(bool all = false)
         {
-            if (InputText.Length > 0)
+            if (all)
             {
-                // Basically, if there is entry text but the filtering
-                // is still only armed not active, that indicates that
-                // what we're seeing in the list is the result of a full
-                // db query that just occurred. So now, when we CLEAR that
-                // text, it's assumed to be in the interest of filtering
-                // that query result, so filtering goes Active in theis case.
                 InputText = string.Empty;
-                switch (FilteringState)
-                {
-                    case FilteringState.Ineligible:
-                        break;
-                    case FilteringState.Armed:
-                        FilteringState = FilteringState.Active;
-                        break;
-                    case FilteringState.Active:
-                        break;
-                    default:
-                        throw new NotImplementedException($"Bad case: {FilteringState}");
-                }
+                FilteringState = FilteringState.Ineligible;
+                SearchEntryState = SearchEntryState.Cleared;
             }
             else
             {
-                switch (FilteringState)
+                if (InputText.Length > 0)
                 {
-                    case FilteringState.Ineligible:
-                        break;
-                    case FilteringState.Armed:
-                    case FilteringState.Active:
-                        // If the text is already empty and
-                        // you click again, it's a hard reset!
-                        FilteringState = FilteringState.Ineligible;
-                        break;
-                    default:
-                        throw new NotImplementedException($"Bad case: {FilteringState}");
+                    // Basically, if there is entry text but the filtering
+                    // is still only armed not active, that indicates that
+                    // what we're seeing in the list is the result of a full
+                    // db query that just occurred. So now, when we CLEAR that
+                    // text, it's assumed to be in the interest of filtering
+                    // that query result, so filtering goes Active in theis case.
+                    InputText = string.Empty;
+                    switch (FilteringState)
+                    {
+                        case FilteringState.Ineligible:
+                            break;
+                        case FilteringState.Armed:
+                            FilteringState = FilteringState.Active;
+                            break;
+                        case FilteringState.Active:
+                            break;
+                        default:
+                            throw new NotImplementedException($"Bad case: {FilteringState}");
+                    }
+                }
+                else
+                {
+                    switch (FilteringState)
+                    {
+                        case FilteringState.Ineligible:
+                            break;
+                        case FilteringState.Armed:
+                        case FilteringState.Active:
+                            // If the text is already empty and
+                            // you click again, it's a hard reset!
+                            FilteringState = FilteringState.Ineligible;
+                            break;
+                        default:
+                            throw new NotImplementedException($"Bad case: {FilteringState}");
+                    }
                 }
             }
             // Fluent return;
