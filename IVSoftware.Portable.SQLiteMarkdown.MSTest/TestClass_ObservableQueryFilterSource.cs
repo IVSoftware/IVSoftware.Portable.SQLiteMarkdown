@@ -2454,6 +2454,13 @@ Where PropertyValue({nameof(SelectableQFModel.Properties)}, '{nameof(SelectableQ
                                 break;
                             case SearchEntryState.QueryCompleteNoResults:
                             case SearchEntryState.QueryCompleteWithResults:
+                                // No need for explicit. This is inherent on the
+                                // awaiter but give it a little extra time.
+
+                                // Do this
+                                await Task.Delay(TimeSpan.FromSeconds(0.5));
+
+                                // Not this (ApplyFilter is protected now anyway!)
                                 // items.ApplyFilter();
                                 break;
                             default:
