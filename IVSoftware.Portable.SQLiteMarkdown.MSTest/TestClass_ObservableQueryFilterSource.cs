@@ -1309,7 +1309,6 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 List<T> recordset;
                 var items = new ObservableQueryFilterSource<T>();
 
-
                 items.PropertyChanged += (sender, e) =>
                 {
                     eventQueue.Enqueue((sender, e));

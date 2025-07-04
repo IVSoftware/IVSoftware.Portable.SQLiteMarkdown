@@ -518,7 +518,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
             WDTInputTextSettled.StartOrRestart();
         }
-        public event EventHandler InputTextSettled;
 
         public string Placeholder =>
                 IsFiltering
@@ -537,65 +536,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
         string _title = "Items";
-
-        public SearchEntryState SearchEntryState
-        {
-            get => _searchEntryState;
-            protected set
-            {
-                if (!Equals(_searchEntryState, value))
-                {
-                    _searchEntryState = value;
-                    OnSearchEntryStateChanged();
-                    OnPropertyChanged();
-                }
-            }
-        }
-        SearchEntryState _searchEntryState = default;
-
-        protected virtual void OnSearchEntryStateChanged()
-        {
-        }
-
-        protected WatchdogTimer WDTInputTextSettled
-        {
-            get
-            {
-                if (_wdtInputTextSettled is null)
-                {
-                    _wdtInputTextSettled =
-                        new WatchdogTimer
-                        {
-                            Interval = InputTextSettleInterval
-                        };
-                    _wdtInputTextSettled.RanToCompletion += (sender, e) =>
-                    {
-                        InputTextSettled?.Invoke(this, EventArgs.Empty);
-                    };
-                }
-                return _wdtInputTextSettled;
-            }
-        }
-        WatchdogTimer _wdtInputTextSettled = null;
-
-        public TimeSpan InputTextSettleInterval
-        {
-            get => _inputTextSettleInterval;
-            set
-            {
-                if (!Equals(_inputTextSettleInterval, value))
-                {
-                    if (_wdtInputTextSettled is WatchdogTimer wdt)
-                    {
-                        wdt.Interval = value;
-                    }
-                    _inputTextSettleInterval = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        TimeSpan _inputTextSettleInterval = TimeSpan.FromSeconds(0.25);
 
         protected virtual void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs eUnk)
         {

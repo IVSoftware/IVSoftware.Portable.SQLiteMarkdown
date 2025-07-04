@@ -893,7 +893,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         QueryFilterConfig _queryFilterConfig = QueryFilterConfig.QueryAndFilter;
         #endregion C O N F I G
 
-        #region S T A T E    M A C H I N E
+        #region N A V    S E A R C H    S T A T E    M A C H I N E
         public virtual bool RouteToFullRecordset => true;
         protected FilteringState FilteringStatePrev { get; set;  }
         public FilteringState FilteringState
@@ -950,6 +950,64 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         string _inputText = string.Empty;
         protected virtual void OnInputTextChanged() { }
-        #endregion S T A T E    M A C H I N E
+
+        public SearchEntryState SearchEntryState
+        {
+            get => _searchEntryState;
+            protected set
+            {
+                if (!Equals(_searchEntryState, value))
+                {
+                    _searchEntryState = value;
+                    OnSearchEntryStateChanged();
+                    OnPropertyChanged();
+                }
+            }
+        }
+        SearchEntryState _searchEntryState = default;
+
+        protected virtual void OnSearchEntryStateChanged() { }
+
+        protected WatchdogTimer WDTInputTextSettled
+        {
+            get
+            {
+                if (_wdtInputTextSettled is null)
+                {
+                    _wdtInputTextSettled =
+                        new WatchdogTimer
+                        {
+                            Interval = InputTextSettleInterval
+                        };
+                    _wdtInputTextSettled.RanToCompletion += (sender, e) =>
+                    {
+                        InputTextSettled?.Invoke(this, EventArgs.Empty);
+                    };
+                }
+                return _wdtInputTextSettled;
+            }
+        }
+        WatchdogTimer _wdtInputTextSettled = null;
+        public event EventHandler InputTextSettled;
+
+        public TimeSpan InputTextSettleInterval
+        {
+            get => _inputTextSettleInterval;
+            set
+            {
+                if (!Equals(_inputTextSettleInterval, value))
+                {
+                    if (_wdtInputTextSettled is WatchdogTimer wdt)
+                    {
+                        wdt.Interval = value;
+                    }
+                    _inputTextSettleInterval = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        TimeSpan _inputTextSettleInterval = TimeSpan.FromSeconds(0.25);
+        #endregion N A V    S E A R C H    S T A T E    M A C H I N E
     }
 }
