@@ -2420,7 +2420,6 @@ Where PropertyValue({nameof(SelectableQFModel.Properties)}, '{nameof(SelectableQ
                 string actual, expected, sql;
                 List<SelectableQFModel> recordset;
                 SelectableQFModel[] itemsArray;
-                MarkdownContextOR context;
                 ValidationState state;
                 SenderEventPair sep;
                 NotifyCollectionChangedEventArgs? ecc;
@@ -2437,9 +2436,9 @@ Where PropertyValue({nameof(SelectableQFModel.Properties)}, '{nameof(SelectableQ
                 };
                 items.InputTextSettled += (sender, e) =>
                 {
-                    if (sender is IObservableQueryFilterSource qfs)
+                    if (ReferenceEquals(sender, items))
                     {
-                        switch (qfs.SearchEntryState)
+                        switch (items.SearchEntryState)
                         {
                             case SearchEntryState.Cleared:
                                 break;
@@ -2451,7 +2450,7 @@ Where PropertyValue({nameof(SelectableQFModel.Properties)}, '{nameof(SelectableQ
                                 // Client is responsible for the query at large because
                                 // only they know what the data connection is. Once QFS
                                 // has the recordset, it can filter it using SQLite.
-                                sql = qfs.InputText.ParseSqlMarkdown<SelectableQFModel>();
+                                sql = items.ParseSqlMarkdown<SelectableQFModel>(items.InputText);
                                 recordset = cnx.Query<SelectableQFModel>(sql);
                                 items.ReplaceItems(recordset);
                                 break;
@@ -2464,6 +2463,10 @@ Where PropertyValue({nameof(SelectableQFModel.Properties)}, '{nameof(SelectableQ
                         }
                         awaiter.Wait(0);
                         awaiter.Release();
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Expecting events from OQFS only.");
                     }
                 };
                 items.CollectionChanged += (sender, e) =>

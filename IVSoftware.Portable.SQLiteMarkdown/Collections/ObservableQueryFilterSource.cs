@@ -15,7 +15,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
     [DebuggerDisplay("Count={Count}")]
     public partial class ObservableQueryFilterSource<T>
-        : MarkdownContext
+        : MarkdownContext<T>
         , IObservableQueryFilterSource
         , IList<T>
         where T : new()
@@ -497,19 +497,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 Debug.Fail("ADVISORY - Sender is not IList. Is this intentional?");
             }
         }
-        public SQLiteConnection FilterQueryDatabase
-        {
-            get
-            {
-                if (_filterQueryDatabase is null)
-                {
-                    _filterQueryDatabase = new SQLiteConnection(":memory:");
-                    _filterQueryDatabase.CreateTable<T>();
-                }
-                return _filterQueryDatabase;
-            }
-        }
-        SQLiteConnection _filterQueryDatabase = null;
 
 
         #region R O U T E D    C O N D I T I O N A L S

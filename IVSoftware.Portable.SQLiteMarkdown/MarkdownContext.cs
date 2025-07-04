@@ -30,12 +30,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Creates a self-contained expression parsing environment, binding it
         /// to an XML-based AST using the IVSoftware.Portable.XBoundObject NuGet.
         /// </summary>
-        public MarkdownContext()
+        /// <remarks>
+        /// [Careful] 
+        /// The initial type must be known and captured regardless of GF mode.
+        /// A paremeterless CTOR would not be appropriate so avaid that.
+        /// </remarks>
+        public MarkdownContext(Type type) 
         {
             XAST = new
                 XElement(nameof(StdAstNode.ast))
                 .WithBoundAttributeValue(this);
+            ContractType = type;
         }
+
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
 
         public string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
@@ -51,17 +58,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query, 
                 out XElement _);
 
-        public string ParseSqlMarkdown(string expr, Type type, QueryFilterMode qfMode, out XElement xast)
+        public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
         {
+            if (proxyType is null) throw new InvalidOperationException("Proxy type must be specified");
+            ProxyType = proxyType;
+
             Raw = expr;
-            Type = type;
             Transform = Raw;
 
             Preamble = $"SELECT * FROM {localGetTableName()} WHERE";
 
             string localGetTableName()
             {
-                var tableAttr = type
+                var tableAttr = ContractType
                     .GetCustomAttributes(inherit: true)
                     .FirstOrDefault(attr => attr.GetType().Name == "TableAttribute");
 
@@ -71,7 +80,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if (nameProp != null && nameProp.GetValue(tableAttr) is string name)
                         return name;
                 }
-                return type.Name;
+                return proxyType.Name;
             }
 #if DEBUG
             if (expr == "animal b")
@@ -79,7 +88,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
             // Guard reentrancy by making sure to clear previous passes.
             XAST.RemoveNodes();
-            _qfMode = qfMode;
+            _activeQFMode = qfMode;
             if(ValidationPredicate?.Invoke(expr) == false)
             {
                 xast = XAST;
@@ -494,7 +503,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 string childClauseE, childClauseN;
                 string
-                    table = Type.GetCustomAttribute<TableAttribute>()?.Name ?? Type.Name;
+                    table = ProxyType.GetCustomAttribute<TableAttribute>()?.Name ?? ProxyType.Name;
                 var nArgs =
                     XAST
                     .DescendantsAndSelf()
@@ -538,13 +547,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     childClauseN);
                                 break;
                             case StdAstNode.term:
-                                var likeTerms = Type
+                                var likeTerms = ProxyType
                                     .GetProperties()
                                     .Where(p =>
                                         (qfMode == QueryFilterMode.Query && p.GetCustomAttribute<QueryLikeTermAttribute>() != null) ||
                                         (qfMode == QueryFilterMode.Filter && p.GetCustomAttribute<FilterLikeTermAttribute>() != null))
                                     .ToArray();
-                                var tagTerms = Type
+                                var tagTerms = ProxyType
                                     .GetProperties()
                                     .Where(p =>
                                         (p.GetCustomAttribute<TagMatchTermAttribute>() != null))
@@ -717,7 +726,57 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// The attributed CLR type used to resolve which properties participate in term matching.
         /// </summary>
-        public Type Type { get;  private set; }
+        public Type ContractType
+        {
+            get => _contractType;
+            set
+            {
+                if (value is null)
+                {
+                    Debug.Assert(DateTime.Now.Date == new DateTime(2025, 7, 4).Date, "Don't forget disabled");
+                    throw new InvalidOperationException("Need that type...!");
+                }
+                else
+                {
+                    switch (_activeQFMode)
+                    {
+                        case QueryFilterMode.Query:
+                            // Allow unconditional
+                            if (!Equals(_contractType, value))
+                            {
+                                _contractType = value;
+                                OnTypeChanged();
+                                OnPropertyChanged();
+                            }
+                            break;
+                        case QueryFilterMode.Filter:
+
+                            // Allow only if Type not set by previous query.
+                            Debug.Assert(
+                                QueryFilterConfig == QueryFilterConfig.Filter,
+                                "Expecting Query before Filter in any other mode!"
+                            );
+
+                            if (_contractType is null)
+                            {
+                                _contractType = value;
+                                OnTypeChanged();
+                                OnPropertyChanged();
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+
+        Type _contractType = default;
+
+        public Type ProxyType { get; private set; }
+
+        protected virtual void OnTypeChanged()
+        {
+        }
+
 
         /// <summary>
         /// The SQL WHERE clause preamble, e.g. "SELECT * FROM tablename WHERE".
@@ -825,7 +884,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return _validationPredicate ?? (expr =>
                 {
                     // Default true, or (in Query mode) 3 minimum contiguous chars.
-                    switch (_qfMode)
+                    switch (_activeQFMode)
                     {
                         case QueryFilterMode.Query:
                             return Regex.IsMatch(expr, @"[a-zA-Z0-9]{3}");
@@ -840,7 +899,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         Predicate<string> _validationPredicate = null;
         
-        private QueryFilterMode _qfMode = QueryFilterMode.Query;
+        private QueryFilterMode _activeQFMode = QueryFilterMode.Query;
 
         #endregion P O S I T I O N A L    S U P P O R T
 
@@ -892,6 +951,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         QueryFilterConfig _queryFilterConfig = QueryFilterConfig.QueryAndFilter;
+
+
+
+        public SQLiteConnection FilterQueryDatabase
+        {
+            get
+            {
+                if (_filterQueryDatabase is null)
+                {
+                    _filterQueryDatabase = new SQLiteConnection(":memory:");
+                    _filterQueryDatabase.CreateTable(ContractType);
+                }
+                return _filterQueryDatabase;
+            }
+        }
+        SQLiteConnection _filterQueryDatabase = null;
         #endregion C O N F I G
 
         #region N A V    S E A R C H    S T A T E    M A C H I N E
@@ -932,8 +1007,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 : FilteringState == FilteringState.Active
                     ? true
                     : FilteringStatePrev == FilteringState.Active;
-
-
 
         // Canonical {5932CB31-B914-4DE8-9457-7A668CDB7D08}
         public FilteringState Clear(bool all = false)
@@ -988,7 +1061,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // Fluent return;
             return FilteringState;
         }
-
 
         protected virtual void OnFilteringStateChanged() { }
 
@@ -1105,5 +1177,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         TimeSpan _inputTextSettleInterval = TimeSpan.FromSeconds(0.25);
         #endregion N A V    S E A R C H    S T A T E    M A C H I N E
+    }
+    public class MarkdownContext<T> : MarkdownContext
+    {
+        public MarkdownContext() : base(typeof(T)) { }
     }
 }

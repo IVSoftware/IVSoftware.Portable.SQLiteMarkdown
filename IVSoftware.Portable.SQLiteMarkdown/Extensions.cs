@@ -1310,12 +1310,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             QueryFilterMode qfMode,
             Predicate<string> validationPredicate,
             out XElement xexpr) => 
-                new MarkdownContext()
+                new MarkdownContext(type)
                 {
                     ValidationPredicate = validationPredicate,
                 }.ParseSqlMarkdown(@this, type, qfMode, out xexpr);
         public static string ParseSqlMarkdown(this string @this, Type type, QueryFilterMode qfMode, out XElement xast)
-            => new MarkdownContext().ParseSqlMarkdown(@this, type, qfMode, out xast);
+            => new MarkdownContext(type).ParseSqlMarkdown(@this, type, qfMode, out xast);
         public static string ParseSqlMarkdown(this MarkdownContext @this, string expr, Type type, QueryFilterMode qfMode, out XElement xast)
             => @this.ParseSqlMarkdown(expr, type, qfMode, out xast);
 
