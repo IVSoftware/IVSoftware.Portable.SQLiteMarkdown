@@ -1055,52 +1055,84 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             string localWrap(string s) => $"[{s.Trim()}]";
             #endregion L o c a l M e t h o d s;
         }
+        #endregion V E R S I O N    O R
 
-#if false && SAVE
-        public static MarkdownContextOR GenerateInterpolatedTerm(
-            this ASTNode[] astNodes,
-            NodeTypeFlags nodeTypes,
-            StringCasing stringCasing = StringCasing.Lower
-)
+        #region V E R S I O N    1 . 0
+
+        public static string ParseSqlMarkdown<T>(
+            this string @this,
+            QueryFilterMode qfMode = QueryFilterMode.Query)
         {
-            var distinctTerms = new HashSet<string>();
-            var parameters = new List<KeyValuePair<string, object>>();
-            var parameterIndex = 1;
-
-            switch (nodeTypes)
-            {
-                case NodeTypeFlags.Term:
-                    foreach (var node in astNodes)
-                        if (node.ASTType == NodeType.Term)
-                            distinctTerms.Add(node.Value);
-                    break;
-
-                case NodeTypeFlags.Tag:
-                    foreach (var node in astNodes)
-                        if (node.ASTType == NodeType.Tag)
-                            distinctTerms.Add(node.Value);
-                    break;
-
-                case NodeTypeFlags.All:
-                    foreach (var node in astNodes)
-                        if (node.ASTType == NodeType.Term || node.ASTType == NodeType.Tag)
-                            distinctTerms.Add(node.Value);
-                    break;
-            }
-
-            var tokenized = string.Join("~", distinctTerms.Select(term =>
-            {
-                string paramName = $"@param{parameterIndex++}".ApplyCasing(stringCasing);
-                parameters.Add(new KeyValuePair<string, object>(paramName, term));
-                return paramName;
-            }));
-
-            tokenized = tokenized
-                .Replace("$dquote$", @"""")
-                .Replace("$squote$", @"'");
-            return new MarkdownContextOR(tokenized, parameters);
+            var validationState = ValidationState.Empty;
+            return @this.ParseSqlMarkdown(
+                ref validationState,
+                typeof(T),
+                qfMode,
+                null,
+                out _);
         }
-#endif
+
+        public static string ParseSqlMarkdown<T>(
+            this string @this, 
+            QueryFilterMode qfMode,
+            out XElement xast)
+        {
+            var validationState = ValidationState.Empty;
+            return @this.ParseSqlMarkdown(
+                ref validationState,
+                typeof(T),
+                qfMode,
+                null,
+                out xast);
+        }
+
+        private static string ParseSqlMarkdown(
+            this string @this,
+            ref ValidationState validationState,
+            Type type,
+            QueryFilterMode qfMode,
+            Predicate<string> validationPredicate,
+            out XElement xexpr) => 
+                new MarkdownContext(type)
+                {
+                    ValidationPredicate = validationPredicate,
+                }.ParseSqlMarkdown(@this, type, qfMode, out xexpr);
+        public static string ParseSqlMarkdown(this string @this, Type type, QueryFilterMode qfMode, out XElement xast)
+            => new MarkdownContext(type).ParseSqlMarkdown(@this, type, qfMode, out xast);
+        public static string ParseSqlMarkdown(this MarkdownContext @this, string expr, Type type, QueryFilterMode qfMode, out XElement xast)
+            => @this.ParseSqlMarkdown(expr, type, qfMode, out xast);
+
+        /// <summary>
+        /// Non-breaking compatible filter term attribute getter.
+        /// </summary>
+        public static MarkdownTermAttribute GetQueryTermAttribute(this PropertyInfo pi)
+            =>
+            pi.GetCustomAttribute<QueryLikeTermAttribute>() is QueryLikeTermAttribute qlt
+            ? qlt
+            : pi.GetCustomAttribute<SqlLikeTermAttribute>();
+
+        /// <summary>
+        /// Non-breaking compatible filter term attribute getter.
+        /// </summary>
+        public static MarkdownTermAttribute GetFilterTermAttribute(this PropertyInfo pi)
+            => 
+            pi.GetCustomAttribute<FilterLikeTermAttribute>() is FilterLikeTermAttribute flt
+            ? flt
+            : pi.GetCustomAttribute<FilterContainsTermAttribute>();
+
+
+        /// <summary>
+        /// Non-breaking compatible filter term attribute getter.
+        /// </summary>
+        public static bool IsQueryTermAttribute(this MarkdownTermAttribute mta)
+            => typeof(QueryLikeTermAttribute).IsAssignableFrom(mta.GetType());
+
+        /// <summary>
+        /// Non-breaking compatible filter term attribute getter.
+        /// </summary>
+        public static bool IsFilterTermAttribute(this MarkdownTermAttribute mta)
+            => typeof(FilterLikeTermAttribute).IsAssignableFrom(mta.GetType());
+        #endregion V E R S I O N    1 . 0
 
         static string ApplyCasing(this string s, StringCasing casingOption)
         {
@@ -1218,9 +1250,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return fuzzySql;
         }
 
-        public static (string Query, object[] Args) ToPositional(this MarkdownContextOR context)
-            => (context.PositionalQuery, context.PositionalArgs);
-
         public static string ToStringFromEventType(this SenderEventPair @this)
             => @this.e is null
             ? "null"
@@ -1240,83 +1269,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public static bool CanParseAsJson(this string @this)
             => Regex.IsMatch(@this, @"^\s*\[\s*(""(?:[^""\\]|\\.)*""\s*,\s*)*(""[^""\\]*""\s*)\]\s*$");
-        #endregion V E R S I O N    O R
-
-        #region V E R S I O N    1 . 0
-
-        public static string ParseSqlMarkdown<T>(
-            this string @this,
-            QueryFilterMode qfMode = QueryFilterMode.Query)
-        {
-            var validationState = ValidationState.Empty;
-            return @this.ParseSqlMarkdown(
-                ref validationState,
-                typeof(T),
-                qfMode,
-                null,
-                out _);
-        }
-
-        public static string ParseSqlMarkdown<T>(
-            this string @this, 
-            QueryFilterMode qfMode,
-            out XElement xast)
-        {
-            var validationState = ValidationState.Empty;
-            return @this.ParseSqlMarkdown(
-                ref validationState,
-                typeof(T),
-                qfMode,
-                null,
-                out xast);
-        }
-
-        private static string ParseSqlMarkdown(
-            this string @this,
-            ref ValidationState validationState,
-            Type type,
-            QueryFilterMode qfMode,
-            Predicate<string> validationPredicate,
-            out XElement xexpr) => 
-                new MarkdownContext(type)
-                {
-                    ValidationPredicate = validationPredicate,
-                }.ParseSqlMarkdown(@this, type, qfMode, out xexpr);
-        public static string ParseSqlMarkdown(this string @this, Type type, QueryFilterMode qfMode, out XElement xast)
-            => new MarkdownContext(type).ParseSqlMarkdown(@this, type, qfMode, out xast);
-        public static string ParseSqlMarkdown(this MarkdownContext @this, string expr, Type type, QueryFilterMode qfMode, out XElement xast)
-            => @this.ParseSqlMarkdown(expr, type, qfMode, out xast);
-
-        /// <summary>
-        /// Non-breaking compatible filter term attribute getter.
-        /// </summary>
-        public static MarkdownTermAttribute GetQueryTermAttribute(this PropertyInfo pi)
-            =>
-            pi.GetCustomAttribute<QueryLikeTermAttribute>() is QueryLikeTermAttribute qlt
-            ? qlt
-            : pi.GetCustomAttribute<SqlLikeTermAttribute>();
-
-        /// <summary>
-        /// Non-breaking compatible filter term attribute getter.
-        /// </summary>
-        public static MarkdownTermAttribute GetFilterTermAttribute(this PropertyInfo pi)
-            => 
-            pi.GetCustomAttribute<FilterLikeTermAttribute>() is FilterLikeTermAttribute flt
-            ? flt
-            : pi.GetCustomAttribute<FilterContainsTermAttribute>();
-
-
-        /// <summary>
-        /// Non-breaking compatible filter term attribute getter.
-        /// </summary>
-        public static bool IsQueryTermAttribute(this MarkdownTermAttribute mta)
-            => typeof(QueryLikeTermAttribute).IsAssignableFrom(mta.GetType());
-
-        /// <summary>
-        /// Non-breaking compatible filter term attribute getter.
-        /// </summary>
-        public static bool IsFilterTermAttribute(this MarkdownTermAttribute mta)
-            => typeof(FilterLikeTermAttribute).IsAssignableFrom(mta.GetType());
     }
-    #endregion V E R S I O N    1 . 0
 }
