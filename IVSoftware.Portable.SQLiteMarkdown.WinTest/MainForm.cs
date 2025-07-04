@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms.VisualStyles;
+using static OnePageCollectionViewSketchpad.VirtualizedCollectionView;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
 {
@@ -15,8 +16,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         public MainForm()
         {
             InitializeComponent();
-            QFSUT = new ObservableQueryFilterSource<SelectableQueryModel>();
+            QFSUT = new ObservableQueryFilterSource<SelectableQFModel>
+            {
+                SelectionMode = SelectionMode.Single,
+            };
             vcView.ItemsSource = QFSUT;
+            vcView.DataTemplate = new CollectionViewDataTemplate<SelectableQFViewCard>();
             if (vcView.ItemsSource is IObservableQueryFilterSource qfs)
             {
                 textInputText.TextChanged += (sender, e) =>
@@ -39,7 +44,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                             break;
                     }
                 };
-                qfs.MemoryDatabase = CreateDemoDatabase<SelectableQueryModel>();
+                qfs.MemoryDatabase = CreateDemoDatabase<SelectableQFModel>();
                 qfs.PropertyChanged += (sender, e) =>
                 {
                     switch (e.PropertyName)
@@ -124,7 +129,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             {
                 BeginInvoke(() =>
                 {
-                    MessageBox.Show(QFSUT.InputText.ParseSqlMarkdown<SelectableQueryModel>());
+                    MessageBox.Show(QFSUT.InputText.ParseSqlMarkdown<SelectableQFModel>());
                 });
             };
             tsmiCombo.SelectedIndexChanged += (sender, e) =>
@@ -134,7 +139,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 {
                     if (tsmiCombo.SelectedItem?.ToString() is { } expr)
                     {
-                        MessageBox.Show(expr.ParseSqlMarkdown<SelectableQueryModel>());
+                        MessageBox.Show(expr.ParseSqlMarkdown<SelectableQFModel>());
                     }
                 });
             };
@@ -161,28 +166,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         /// <summary>
         /// QSF Under Test for ad hoc states and expr evals.
         /// </summary>
-        private ObservableQueryFilterSource<SelectableQueryModel> QFSUT { get; } 
-
-        public class CardModel : INotifyPropertyChanged
-        {
-            public string Description
-            {
-                get => _description;
-                set
-                {
-                    if (!Equals(_description, value))
-                    {
-                        _description = value;
-                        OnPropertyChanged();
-                    }
-                }
-            }
-            string _description = string.Empty;
-            protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            public event PropertyChangedEventHandler? PropertyChanged;
-            public override string ToString() => Description;
-        }
+        private ObservableQueryFilterSource<SelectableQFModel> QFSUT { get; } 
 
         private SQLiteConnection CreateDemoDatabase<T>() where T : new()
         {
@@ -204,7 +188,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 }
                 list.Add(instance);
             }
-
+            // Unit tested
             Add("Brown Dog", "[canine] [color]", false, new() { "loyal", "friend", "furry" });
             Add("Green Apple", "[fruit] [color]", false, new() { "tart", "snack", "healthy" });
             Add("Yellow Banana", "[fruit] [color]", false);
@@ -236,6 +220,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             Add("Turtle", "[animal]", false);
             Add("Mango", "[fruit]", false);
             Add("Should NOT match an expression with an \"animal\" tag.", "[not animal]", false);
+            // Live-demo specific.
+            Add("Appetizer Plate", "[dish]", false, new() { "starter", "appealing", "snack" });
+            Add("Errata", "[notes]", false, new() { "crunchy", "green", "appended" });
+            Add("Happy Camper", "[phrase]", false, new() { "joyful", "camp", "approach-west" });
+            Add("Great example - Markdown Demo", "[app] [portable]", false, new() { "digital", "mobile", "software" });
+            Add("Application Form", "[document]", false, new() { "paperwork", "apply" });
+            Add("App Store", "[app]", false, new() { "digital", "mobile", "software" });
+
 
             imdb.InsertAll(list);
             return imdb;

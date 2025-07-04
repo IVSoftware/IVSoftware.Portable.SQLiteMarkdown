@@ -22,13 +22,17 @@ namespace OnePageCollectionViewSketchpad
     public class VirtualizedCollectionView 
         : DataGridView
         , INotifyPropertyChanged
+        , IMessageFilter
     {
+
+        const int MIN_ROW_HEIGHT = 60;
         public VirtualizedCollectionView() : this(default) { }
         public VirtualizedCollectionView(XElement? xop)
         {
             InitializeComponent();
+            Application.AddMessageFilter(this);
+            Disposed += (sender, e) => Application.RemoveMessageFilter(this); ;
         }
-
         private void InitializeComponent()
         {
             DoubleBuffered = true;
@@ -44,44 +48,52 @@ namespace OnePageCollectionViewSketchpad
                 if (ItemsSource is not null &&
                     e.ColumnIndex != -1 &&
                     e.RowIndex != -1 &&
-                    e.RowIndex < ItemsSource.Count
-                    )
+                    e.RowIndex < ItemsSource.Count)
                 {
                     using (var brush = new SolidBrush(BackgroundColor))
                     {
                         e.Graphics?.FillRectangle(brush, e.CellBounds);
                     }
+
                     View? view = null;
                     var row = Rows[e.RowIndex];
-                    const int ROW_HEIGHT = 60;
-                    if (row.Height != ROW_HEIGHT)
-                    {
-                        row.Height = ROW_HEIGHT;
-                        return;
-                    }
-
                     var mod = e.RowIndex % _templateCount;
+
                     if (!_recycledViews.TryGetValue(mod, out view))
                     {
                         view = (View)Activator.CreateInstance(DataTemplate.Type)!;
                         _recycledViews[mod] = view;
                         Controls.Add(view);
                     }
+
                     view.DataContext = ItemsSource[mod];
+
+                    var margin = view.Margin;
+                    var cellRect = GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
+
+                    var adjustedBounds = new Rectangle(
+                        cellRect.X + margin.Left,
+                        cellRect.Y + margin.Top,
+                        Math.Max(0, cellRect.Width - margin.Horizontal),
+                        Math.Max(0, cellRect.Height - margin.Vertical)
+                    );
+
+                    int desiredHeight = Math.Max(view.PreferredSize.Height + margin.Vertical, MIN_ROW_HEIGHT);
+                    if (row.Height != desiredHeight)
+                    {
+                        row.Height = desiredHeight;
+                        return;
+                    }
+
+                    view.Bounds = adjustedBounds;
                     view.Visible = true;
-                    view.Bounds  = GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
-#if DEBUG
-                    //if(view is DefaultCollectionViewCard card)
-                    //{
-                    //    if(card.Text.StartsWith("Brown Dog"))
-                    //    { }
-                    //}
-                    Debug.WriteLine($@"250621.A ROWINDEX=""{e.RowIndex}"" MOD=""{mod}"" NTEMPLATES=""{_templateCount}""" );
-#endif
                 }
+
                 e.Handled = true;
                 return;
             };
+
+
             CellValueNeeded += (sender, e) =>
             {
                 if (ItemsSource is not null &&
@@ -114,8 +126,6 @@ namespace OnePageCollectionViewSketchpad
                     Invalidate();
                 }
             };
-            // Dev bootstrap artifact...but this "should" still work?
-            ItemsSource = new[] { "Dogs", "Cats", "Pets" };
         }
         Dictionary<int, View> _recycledViews = new();
 
@@ -142,24 +152,6 @@ namespace OnePageCollectionViewSketchpad
             }
         }
         WatchdogTimer? _wdtScroll = null;
-
-#if false
-        [EditorBrowsable(EditorBrowsableState.Never), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public int VisibleRowCount
-        {
-            get => _visibleRowCount;
-            private set
-            {
-                if (!Equals(_visibleRowCount, value))
-                {
-                    _visibleRowCount = value;
-                    _templateCount = Math.Max(_templateCount, _visibleRowCount) + 1;
-                    Vacuum();
-                }
-            }
-        }
-        int _visibleRowCount = 0;
-#endif
         int _templateCount = 10;
 
         private void Vacuum()
@@ -303,7 +295,6 @@ namespace OnePageCollectionViewSketchpad
 
         public IReadOnlyList<View> Cards => _cards.ToArray();
 
-
         private ObservableCollection<View>_cards = new();
 
         [EditorBrowsable(EditorBrowsableState.Never), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -377,6 +368,45 @@ namespace OnePageCollectionViewSketchpad
         {
             PropertyChanged?.Invoke(sender, e);
         }
+        public bool PreFilterMessage(ref Message m)
+        {
+            switch ((Win32Message)m.Msg)
+            {
+                case Win32Message.WM_LBUTTONDOWN:
+                    localOnMouse(true);
+                    break;
+                case Win32Message.WM_LBUTTONUP:
+                    localOnMouse(false);
+                    break;
+            }
+            void localOnMouse(bool isDown)
+            {
+                if (!isDown)
+                {
+
+                    var clientPoint = PointToClient(Cursor.Position);
+                    var hit = HitTest(clientPoint.X, clientPoint.Y);
+                    if (hit.RowIndex >= 0)
+                    {
+                        var item = ItemsSource?[hit.RowIndex];
+                        if (item is ISelectableQueryFilterItem selectable && selectable.IsReadOnly)
+                        {
+                            switch (selectable.Selection)
+                            {
+                                case ItemSelection.None:
+                                    selectable.Selection = ItemSelection.Exclusive;
+                                    break;
+                                case ItemSelection.Exclusive:
+                                    selectable.Selection = ItemSelection.None;
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+            return false; 
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
     }
 }

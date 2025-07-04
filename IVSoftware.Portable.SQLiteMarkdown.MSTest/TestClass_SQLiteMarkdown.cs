@@ -690,7 +690,7 @@ OnePageReservedId.NoneId
         }
 
         [TestMethod]
-        public void Test_ReflectFields()
+        public void Test_ReflectFieldsOR()
         {
             string actual, expected;
             PropertyInfo[] likeTerms;
@@ -700,9 +700,9 @@ OnePageReservedId.NoneId
 
             likeTerms = type
                 .GetProperties()
-                .Where(p =>
-                    (qfMode == QueryFilterMode.Query && p.GetCustomAttribute<QueryLikeTermAttribute>() != null) ||
-                    (qfMode == QueryFilterMode.Filter && p.GetCustomAttribute<FilterLikeTermAttribute>() != null))
+                .Where(_ =>
+                    (qfMode == QueryFilterMode.Query && _.GetQueryTermAttribute() != null) ||
+                    (qfMode == QueryFilterMode.Filter && _.GetFilterTermAttribute() != null))
                 .ToArray();
             actual = likeTerms.Single().Name;
             expected = @" 
@@ -717,9 +717,9 @@ QueryTerm";
 
             likeTerms = type
                 .GetProperties()
-                .Where(p =>
-                    (qfMode == QueryFilterMode.Query && p.GetCustomAttribute<SqlLikeTermAttribute>() != null) ||
-                    (qfMode == QueryFilterMode.Filter && p.GetCustomAttribute<FilterContainsTermAttribute>() != null))
+                .Where(_ =>
+                    (qfMode == QueryFilterMode.Query && _.GetQueryTermAttribute() != null) ||
+                    (qfMode == QueryFilterMode.Filter && _.GetFilterTermAttribute() != null))
                 .ToArray();
 
             actual = likeTerms.Single().Name;
@@ -736,9 +736,9 @@ QueryTerm";
 
             likeTerms = type
                 .GetProperties()
-                .Where(p =>
-                    (qfMode == QueryFilterMode.Query && p.GetCustomAttribute<QueryLikeTermAttribute>() != null) ||
-                    (qfMode == QueryFilterMode.Filter && p.GetCustomAttribute<FilterLikeTermAttribute>() != null))
+                .Where(_ =>
+                    (qfMode == QueryFilterMode.Query && _.GetQueryTermAttribute() != null) ||
+                    (qfMode == QueryFilterMode.Filter && _.GetFilterTermAttribute() != null))
                 .ToArray();
             actual = likeTerms.Single().Name;
             expected = @" 
@@ -754,9 +754,9 @@ FilterTerm";
 
             likeTerms = type
                 .GetProperties()
-                .Where(p =>
-                    (qfMode == QueryFilterMode.Query && p.GetCustomAttribute<SqlLikeTermAttribute>() != null) ||
-                    (qfMode == QueryFilterMode.Filter && p.GetCustomAttribute<FilterContainsTermAttribute>() != null))
+                .Where(_ =>
+                    (qfMode == QueryFilterMode.Query && _.GetQueryTermAttribute() != null) ||
+                    (qfMode == QueryFilterMode.Filter && _.GetFilterTermAttribute() != null))
                 .ToArray();
 
             { }

@@ -1,4 +1,41 @@
-# Expression Parsing Documentation
+﻿# Expression Parsing
+
+This cross-platform library supports expression-based filtering and search for SQLite-backed collections. Input text is parsed into SQL using structured rules for substrings and tags with atomicity for "quoted phrases".
+
+### Designed for a common shape
+
+This isn’t a full SQL parser or a precision query engine — and it doesn’t try to be. It won’t replace hand-crafted queries when those are needed.
+
+Instead, it’s a lightweight utility that captures the **gestalt** of a dataset in a useful, pragmatic way — tuned for the **probable and almost-certain** UI shape:
+
+- A **platform-specific list view** (WinForms, MAUI, WPF, etc.)
+- Driven by a **shared navigation search bar**
+- Where one input field controls both what’s shown and how it’s refined
+
+It works well in situations where you want to support both *browsing* and *filtering* without re-engineering your data layer or your UI, and all it asks in return is that you decorate your target properties using the small set of [MarkdownTerm] attributes available in this package.
+
+
+| Mode            | Description                                                                 |
+|------------------|-----------------------------------------------------------------------------|
+| **FILTER**        | Filter an in-memory list (e.g., app settings, enums, cached results)       |
+| **QUERY**         | Query a remote source (e.g., cloud database, REST API)                     |
+| **QUERY → FILTER**| Query a remote source, then refine results using SQLite-backed filtering   |
+
+---
+# Demo App included in this Repo
+
+This library is platform-agnostic. At the same time, it drops any pretense of not knowing there's a UI out there with a "probable almost-certain shape" to it. That predicted UI is unapologetically supported with states and bindable properties.
+
+<img src="https://raw.githubusercontent.com/IVSoftware/Portable/master/IVSoftware.Portable.SQLiteMarkdown/README/img/demo-screenshot-term.png" alt="Search demo with and without [app] tag" width="600"/>
+
+<img src="https://raw.githubusercontent.com/IVSoftware/Portable/master/IVSoftware.Portable.SQLiteMarkdown/README/img/demo-screenshot-tag.png" alt="Search demo with [app] tag" width="600"/>
+
+
+The included demo is WinForms but don't be misled by that. There are no platform dependencies in the core package. None.
+
+___
+
+# Expression Syntax Documentation
 
 This README outlines the operators and rules for parsing expressions in a custom search language. The operators follow a standard order of operations and offer flexible syntax for various logical expressions.
 
@@ -113,7 +150,7 @@ Double quotes (`"`) follow the same rules as single quotes.
 - During **incremental input**, a **trailing unpaired** quote is always treated as **literal**.
 ___
 
-By following these rules, expressions can be parsed flexibly and safely�even while a user is still typing.
+By following these rules, expressions can be parsed flexibly and safely—even while a user is still typing.
 
 ___
 
@@ -141,84 +178,53 @@ Input like `"pet"` will match:
 
 Here are more examples:
 
-| Input Expression       | SQL Translation (simplified)                                                                 | Description                         |
-|------------------------|----------------------------------------------------------------------------------------------|-------------------------------------|
-| `cat dog`              | `(Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')`   | Implicit AND                        |
-| `cat | dog`            | `(Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%')`    | OR operator                         |
+| Input Expression       | SQL Translation (simplified)                                                                     | Description                         |
+|------------------------|--------------------------------------------------------------------------------------------------|-------------------------------------|
+| `cat dog`              | `(Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')`    | Implicit AND                        |
+| `cat & dog`            | `(Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')`    | Explicit AND                        |
+| `cat &&& dog`          | `(Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')`    | Redundant AND syntax normalized     |
+| `cat | dog`            | `(Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%')`     | OR operator                         |
+| `cat || dog`           | `(Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%')`     | Redundant OR syntax normalized      |
 | `cat !dog`             | `(Name LIKE '%cat%' OR Species LIKE '%cat%') AND NOT (Name LIKE '%dog%' OR Species LIKE '%dog%')`| AND with NOT                        |
-| `!cat`                 | `NOT (Name LIKE '%cat%' OR Species LIKE '%cat%')`                                              | Single NOT                          |
-| `'exact phrase'`       | `(Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')`                               | Exact match using single quotes     |
-| `"exact phrase"`       | `(Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')`                               | Exact match using double quotes     |
+| `!cat`                 | `NOT (Name LIKE '%cat%' OR Species LIKE '%cat%')`                                                | Single NOT                          |
+| `\!cat`                | `(Name LIKE '%!cat%' OR Species LIKE '%!cat%')`                                                  | Escaped NOT — treated as literal    |
 | `!(cat | dog)`         | `NOT ((Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%'))` | Negated group                     |
-| `cat & dog`            | `(Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')`   | Explicit AND                        |
-| `cat &&& dog`          | `(Name LIKE '%cat%' OR Species LIKE '%cat%') AND (Name LIKE '%dog%' OR Species LIKE '%dog%')`   | Redundant AND syntax normalized     |
-| `cat || dog`           | `(Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%')`    | Redundant OR syntax normalized      |
-| `\!cat`                | `(Name LIKE '%!cat%' OR Species LIKE '%!cat%')`                                               | Escaped NOT � treated as literal    |
-| `\[bracket\]`          | `(Name LIKE '%[bracket]%' OR Species LIKE '%[bracket]%')`                                     | Escaped brackets                    |
+| `'exact phrase'`       | `(Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')`                                  | Exact match using single quotes     |
+| `"exact phrase"`       | `(Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')`                                  | Exact match using double quotes     |
+| `\"Hello\"`          | `(Name LIKE '%""Hello""%' OR Species LIKE '%""Hello""%')`                                          | Literal quotes via escaping         |
 
-> Matching is case-insensitive by default unless configured via `StringCasing`.
+> Matching is case-insensitive.
 
 ---
 
-## Query Templates for Expression Parsing
+## Split Contracts – Query Templates for Expression Parsing
 
-In many scenarios, you already have a dataset � for example:
+So let’s be clear. We’ve used a class to generate a SQL expression. When we perform the actual query, does the data type receiving the recordset need to be the same type?  
+**It does not!**
 
-- An `ObservableCollection<T>` that will be filtered in-memory, or
-- A SQLite table or IQueryable source populated with records of type `T`
+That’s the idea behind **Split Contracts** — you can separate the type used to **build the query** from the type used to **receive the results**. The query model is just a template. It defines how to interpret the input expression, not how the data is stored or shaped.
 
-But you may want to control **how the search expression is parsed and translated into SQL** � independently of how your data is shaped or persisted.
-
-To support this, the parser treats `T` as a **query template**, not necessarily the literal payload type.
-
-You can define a proxy class with:
-
-- The same property names as your real data
-- The same `[Table]` mapping (optional, but recommended for SQLite)
-- Different `[MarkdownTerm]` attributes to control which fields participate in the expression
+This lets you create purpose-specific templates that filter the same table in different ways. Want to search just by `Name`? Or only `Species`? Or maybe apply a strict tag match? Define a few small query classes and switch between them on the fly — even bind them to a dropdown in the UI.
 
 ```csharp
-[Table("Contact")]
-public class ContactStrictIndex
-{
-    [SqlLikeTerm]
-    public string Name { get; set; }
-}
-
-[Table("Contact")]
-public class ContactWideIndex
-{
-    [SqlLikeTerm]
-    public string Name { get; set; }
-
-    [SqlLikeTerm]
-    public string Email { get; set; }
-}
+class SearchByName     { [QueryLikeTerm] public string Name { get; set; } }
+class SearchBySpecies  { [QueryLikeTerm] public string Species { get; set; } }
+class SearchByTag      { [TagMatchTerm]  public string Tags { get; set; } }
 ```
 
-You can then parse the same input using different templates:
+Each of these can use the same search input — but produce different SQL depending on the fields and attributes involved.
 
-```csharp
-var strictSql = "foo bar".ParseSqlMarkdown<ContactStrictIndex>();
-var wideSql = "foo bar".ParseSqlMarkdown<ContactWideIndex>();
-```
+> Think of Split Contracts as little search adapters: they don't hold the data, they shape the search.
 
-This pattern allows you to:
+This pattern lets you:
 
 - Apply different query behaviors for different views, roles, or modes
-- Avoid annotating your core domain model with filter-specific concerns
+- Avoid annotating your core data models with filter-specific concerns
 - Cleanly separate indexing logic from data logic
 
-> Query templates are lightweight and composable � think of them as named filter contracts for how a user�s input should be interpreted.
+> Query templates are lightweight and composable — think of them as named filter contracts for how a user’s input should be interpreted.
 
 ---
-
-## ObservableQueryFilterSource
-
-Drop-in replacement for ObservableCollection&lt;T&gt; with built-in support for both Query and Query-then-Filter workflows. It exposes a declarative interface for managing collection state while tracking query/filter intent via an internal FSM (QueryFilterStateTracker). Though UI-agnostic, the class anticipates integration with a navigation search bar, where queries are externally applied and subsequent in-memory filtering is handled via an embedded SQLite store. This enables persistent introspection of the original query, filtered/unfiltered results, and search metadata�all without any UI dependencies.
-
-[ObservableQueryFilterSource](./IVSoftware.Portable.SQLiteMarkdown/ReadMe/observable-query-filter-source.md)
-___
 
 ## SelfIndexing Class
 
@@ -227,3 +233,10 @@ The `SelfIndexing` class enables automatic generation of SQL search terms from p
 To use it, inherit from `SelfIndexed`, apply `[PrimaryKey]` to your ID property, and annotate other properties with `[SelfIndexed(...)]` to control how they contribute to indexing and persistence.
 
 [SelfIndexing](./IVSoftware.Portable.SQLiteMarkdown/ReadMe/selfindexing-class.md)
+___
+
+## ObservableQueryFilterSource
+
+Drop-in replacement for ObservableCollection&lt;T&gt; with built-in support for both Query and Query-then-Filter workflows. It exposes a declarative interface for managing collection state while tracking query/filter intent via an internal FSM (QueryFilterStateTracker). Though UI-agnostic, the class anticipates integration with a navigation search bar, where queries are externally applied and subsequent in-memory filtering is handled via an embedded SQLite store. This enables persistent introspection of the original query, filtered/unfiltered results, and search metadata—all without any UI dependencies.
+
+[ObservableQueryFilterSource](./IVSoftware.Portable.SQLiteMarkdown/ReadMe/observable-query-filter-source.md)

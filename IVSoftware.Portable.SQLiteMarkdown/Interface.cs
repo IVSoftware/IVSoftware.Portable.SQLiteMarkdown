@@ -21,8 +21,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     ///   the indexed terms and the Values backing store.
     /// - Most queries operate on the exposed indexed values, reducing the need for each property to consume 
     ///   individual columns (e.g., in an SQLite schema).
-    /// - The [SelfIndexedIgnore] attribute, inheriting from [SQLite.Ignore], instructs the implementing class 
-    ///   to update the Values store without serializing changes in marked properties directly.
     /// </remarks>
     public interface ISelfIndexedMarkdown : INotifyPropertyChanged
     {
@@ -84,5 +82,62 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         SQLiteConnection MemoryDatabase { get; set; }
         FilteringState Clear(bool all = false);
         void Commit();
+    }
+
+    /// <summary>
+    /// Specifies the selection state of an item in a OnePageCollectionView. 
+    /// This enumeration supports bitwise operations to allow combinations of selection states.
+    /// </summary>
+    [Flags]
+    public enum ItemSelection
+    {
+        /// <summary>
+        /// The item is not selected.
+        /// </summary>
+        None = 0x0,
+
+        /// <summary>
+        /// The item is the only selection.
+        /// This state cannot coexist with other states.
+        /// </summary>
+        Exclusive = 0x1,
+
+        /// <summary>
+        /// The item is one of multiple selected items.
+        /// </summary>
+        Multi = 0x2,
+
+        /// <summary>
+        /// The item is the most recently selected and is always part of a multi-selection.
+        /// </summary>
+        Primary = 0x6,
+    }
+
+    public enum SelectionMode
+    {
+        /// <summary>
+        /// Selection not allowed.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// One-hot selection.
+        /// </summary>
+        Single,
+
+        /// <summary>
+        /// Multiple selection allowed.
+        /// </summary>
+        Multiple
+    }
+
+    public interface ISelectableQueryFilterItem
+    {
+        ItemSelection Selection { get; set; }
+        bool IsReadOnly { get; set; }
+    }
+
+    public interface IEditableQueryFilterItem
+    {
     }
 }

@@ -12,30 +12,10 @@ using System.Runtime.CompilerServices;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
-    /// <summary>
-    /// Flags-based enum controlling the visibility and behavior of elements in the navigation search bar.
-    /// </summary>
-    [Flags]
-    public enum QueryFilterConfig
-    {
-        /// <summary>
-        /// A configuration that provides Query behavior only.
-        /// </summary>
-        Query = 0x00040000,
-
-        /// <summary>
-        /// A configuration that provides Filter behavior only.
-        /// </summary>
-        Filter = 0x00100000,
-
-        /// <summary>
-        /// A configuration that provides both Query and Filter state-based behaviors.
-        /// </summary> 
-        QueryAndFilter = Query | Filter,
-    }
 
     public partial class ObservableQueryFilterSource<T>
-        : IObservableQueryFilterSource
+        : MarkdownContext
+        , IObservableQueryFilterSource
         , IList<T>
         where T : new()
     {
@@ -51,13 +31,78 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
                 switch (e.Action)
                 {
+                    case NotifyCollectionChangedAction.Add:
+                        foreach (var inpc in e.NewItems?.OfType<INotifyPropertyChanged>())
+                        {
+                            inpc.PropertyChanged += OnItemPropertyChanged;
+                        }
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        foreach (var inpc in e.OldItems?.OfType<INotifyPropertyChanged>())
+                        {
+                            inpc.PropertyChanged -= OnItemPropertyChanged;
+                        }
+                        break;
                     case NotifyCollectionChangedAction.Reset:
                         _filteredItems.Clear();
+                        foreach (var inpc in _unsubscribeItems)
+                        {
+                            inpc.PropertyChanged -= OnItemPropertyChanged;
+                        }
                         FilterQueryDatabase.DeleteAll<T>();
                         break;
                 }
+                _unsubscribeItems = _unfilteredItems.OfType<INotifyPropertyChanged>().ToArray();
             };
         }
+
+        protected virtual void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(ISelectableQueryFilterItem.Selection):
+                    if(sender is ISelectableQueryFilterItem selectable)
+                    {
+                        switch (selectable.Selection)
+                        {
+                            case ItemSelection.None:
+                                SelectedItems.Remove(selectable);
+                                break;
+                            case ItemSelection.Exclusive:
+                                SelectedItems.Add(selectable);
+                                break;
+                        }
+                    }
+                    break;
+            }
+        }
+        private INotifyPropertyChanged[] _unsubscribeItems = new INotifyPropertyChanged[] { };
+
+        public ObservableSelectionHashSet<ISelectableQueryFilterItem> SelectedItems
+        {
+            get
+            {
+                if (_selectedItems is null)
+                {
+                    _selectedItems = new ObservableSelectionHashSet<ISelectableQueryFilterItem>();
+                    _selectedItems.PropertyChanged += (sender, e) =>
+                    {
+                    };
+                }
+                return _selectedItems;
+            }
+        }
+        ObservableSelectionHashSet<ISelectableQueryFilterItem> _selectedItems = null;
+
+        public SelectionMode SelectionMode
+        {
+            get => SelectedItems.SelectionMode;
+            set
+            {
+                SelectedItems.SelectionMode = value;
+            }
+        }
+
 
         private readonly ObservableCollection<T> _filteredItems = new ObservableCollection<T>();
         private readonly ObservableCollection<T> _unfilteredItems = new ObservableCollection<T>();
@@ -76,7 +121,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
             }
         }
-        bool _isReadOnly = default;
+        bool _isReadOnly = true;
 
         public bool IsFixedSize => ((IList)_unfilteredItems).IsFixedSize;
 
@@ -180,6 +225,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                     var searchEntryState = SearchEntryState;
                     var context = InputText.ParseSqlMarkdown<T>(ref searchEntryState);
+
+
+#if DEBUG
+                    var cstring = context.ToString();
+                    { }
+
+#endif
+
                     var tmp = FilterQueryDatabase.Query<T>(context.ToString());
 
 #if false && DEBUG

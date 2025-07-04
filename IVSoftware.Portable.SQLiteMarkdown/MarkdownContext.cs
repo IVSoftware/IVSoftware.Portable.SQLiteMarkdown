@@ -97,31 +97,46 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // Preemptive explicit escapes.
             void localEscape()
             {
-                var escapes = new HashSet<string> {
-                    @"\&", @"\|", @"\!", @"\(", @"\)", @"\[", @"\]", @"\'", @"\""", @"\\"
-                };
-                var emitted = new HashSet<string>();
-                var hydrated = Transform; // Start from Raw
-
-                foreach (Match match in Regex.Matches(expr, @"\\[&|!()\[\]'""\\]"))
+                // Escape map — from raw escape sequence to literal character
+                var escapes = new Dictionary<string, string>
                 {
-                    var escSeq = match.Value;
-                    if (!emitted.Contains(escSeq))
-                    {
-                        var key = $"${quoteId++:X8}$";
-                        var value = escSeq[1].ToString();
+                    [@"\&"] = "&",
+                    [@"\|"] = "|",
+                    [@"\!"] = "!",
+                    [@"\("] = "(",
+                    [@"\)"] = ")",
+                    [@"\["] = "[",
+                    [@"\]"] = "]",
+                    [@"\'"] = "'",
+                    [@"\"""] = "\"",
+                    [@"\\"] = "\\"
+                };
 
-                        // Replace first occurrence only
-                        var index = hydrated.IndexOf(escSeq, StringComparison.Ordinal);
-                        if (index >= 0)
-                        {
-                            hydrated = hydrated.Substring(0, index) + key +
-                                       hydrated.Substring(index + escSeq.Length);
-                        }
-                        Atomics[key] = value;
-                        emitted.Add(escSeq);
+                // Ensure these are defined in your class
+                // int quoteId = 0; — must be field, not local
+                // Dictionary<string, string> Atomics = new(); — must be field
+                // string Transform = some raw input — must be field or property
+
+                string hydrated = Transform;
+
+                foreach (var kvp in escapes)
+                {
+                    string escSeq = kvp.Key;
+                    string literalChar = kvp.Value;
+
+                    int index = hydrated.IndexOf(escSeq, StringComparison.Ordinal);
+                    while (index >= 0)
+                    {
+                        string key = $"${quoteId++:X8}$";
+                        hydrated = hydrated.Substring(0, index) + key + hydrated.Substring(index + escSeq.Length);
+
+                        Atomics[key] = literalChar;
+
+                        // Continue looking for next instance
+                        index = hydrated.IndexOf(escSeq, index + key.Length, StringComparison.Ordinal);
                     }
                 }
+
                 Transform = hydrated;
 
                 lock (_lock)

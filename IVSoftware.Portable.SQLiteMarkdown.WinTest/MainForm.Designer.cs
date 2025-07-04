@@ -40,9 +40,9 @@
             tsmiEvaluate = new ToolStripMenuItem();
             toolStripSeparator2 = new ToolStripSeparator();
             tsmiCombo = new ToolStripComboBox();
+            tsmiPromptEachStep = new ToolStripMenuItem();
             buttonClear = new ButtonEx();
             labelSearchIcon = new Label();
-            tsmiPromptEachStep = new ToolStripMenuItem();
             Grid.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)vcView).BeginInit();
             contextMenuQueryFilter.SuspendLayout();
@@ -71,6 +71,7 @@
             // 
             vcView.AllowUserToAddRows = false;
             vcView.AllowUserToDeleteRows = false;
+            vcView.BackgroundColor = Color.LightBlue;
             vcView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             vcView.ColumnHeadersVisible = false;
             vcView.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1 });
@@ -107,7 +108,7 @@
             contextMenuQueryFilter.ImageScalingSize = new Size(24, 24);
             contextMenuQueryFilter.Items.AddRange(new ToolStripItem[] { tsmiQuery, tsmiFilter, tsmiSeparator1, tsmiEvaluate, toolStripSeparator2, tsmiCombo, tsmiPromptEachStep });
             contextMenuQueryFilter.Name = "contextMenuStrip1";
-            contextMenuQueryFilter.Size = new Size(311, 243);
+            contextMenuQueryFilter.Size = new Size(311, 212);
             // 
             // tsmiQuery
             // 
@@ -144,16 +145,17 @@
             // tsmiCombo
             // 
             tsmiCombo.Font = new Font("Segoe UI", 11F);
-            tsmiCombo.Items.AddRange(new object[]
-            {
-                "[animal]",
-                 @"""""""Tom Tester's""""""",
-                "\"Tom Tester's\"",
-                "'Tom Tester'",
-            });
+            tsmiCombo.Items.AddRange(new object[] { "[animal]", "\"\"\"Tom Tester's\"\"\"", "\"Tom Tester's\"", "'Tom Tester'" });
             tsmiCombo.Name = "tsmiCombo";
-            tsmiCombo.Size = new Size(250, 36);
+            tsmiCombo.Size = new Size(250, 38);
             tsmiCombo.Text = "Select";
+            // 
+            // tsmiPromptEachStep
+            // 
+            tsmiPromptEachStep.CheckOnClick = true;
+            tsmiPromptEachStep.Name = "tsmiPromptEachStep";
+            tsmiPromptEachStep.Size = new Size(310, 38);
+            tsmiPromptEachStep.Text = "Prompt Each Step";
             // 
             // buttonClear
             // 
@@ -177,13 +179,6 @@
             labelSearchIcon.TabIndex = 3;
             labelSearchIcon.Text = "🔍";
             labelSearchIcon.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // tsmiPromptEachStep
-            // 
-            tsmiPromptEachStep.CheckOnClick = true;
-            tsmiPromptEachStep.Name = "tsmiPromptEachStep";
-            tsmiPromptEachStep.Size = new Size(310, 38);
-            tsmiPromptEachStep.Text = "Prompt Each Step";
             // 
             // MainForm
             // 

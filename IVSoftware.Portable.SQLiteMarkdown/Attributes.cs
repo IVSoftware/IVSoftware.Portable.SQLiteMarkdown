@@ -12,11 +12,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     [AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
     public abstract class MarkdownTermAttribute : Attribute
     {
+#if false && PROPOSED
         /// <summary>
         /// Specifies the casing transformation to be applied to the term.
         /// Default is <see cref="StringCasing.Lower"/>.
         /// </summary>
         public StringCasing StringCasing { get; set; } = StringCasing.Lower;
+#endif
     }
 
     /// <summary>
@@ -76,11 +78,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public class SelfIndexedAttribute : Attribute
     {
         public SelfIndexedAttribute(
-            IndexingMode indexingMode = IndexingMode.LikeOrContains,
-            PersistenceMode persistenceMode = PersistenceMode.Json)
+            IndexingMode indexingMode = IndexingMode.QueryOrFilter)
         {
             IndexingMode = indexingMode;
-            PersistenceMode = persistenceMode;
         }
 
         public IndexingMode IndexingMode { get; private set; }
@@ -89,6 +89,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Determines if the property will be persisted within the <c>Properties</c> dictionary 
         /// in a JSON-formatted store, depending on the specified <c>PersistenceMode</c>. 
         /// </summary>
-        public PersistenceMode PersistenceMode { get; private set; }
+        [Obsolete("This property may be removed in future releases.")]
+        public PersistenceMode PersistenceMode { get; } = PersistenceMode.Json;
     }
 }

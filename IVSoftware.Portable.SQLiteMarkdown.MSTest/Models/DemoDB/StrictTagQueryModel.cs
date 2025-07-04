@@ -80,7 +80,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB
         }
         bool _isChecked = default;
 
-        public OnePageItemSelection Selection
+        public ItemSelection Selection
         {
             get => _selection;
             set
@@ -92,7 +92,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB
                 }
             }
         }
-        private OnePageItemSelection _selection = OnePageItemSelection.None;
+
+        private ItemSelection _selection = ItemSelection.None;
+
+        public bool IsReadOnly
+        {
+            get => _isReadOnly;
+            set
+            {
+                if (!Equals(_isReadOnly, value))
+                {
+                    _isReadOnly = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        bool _isReadOnly = true;
 
         public override string ToString() => $"{Description} {KeywordsDisplay} {TagsDisplay}".Trim();
 

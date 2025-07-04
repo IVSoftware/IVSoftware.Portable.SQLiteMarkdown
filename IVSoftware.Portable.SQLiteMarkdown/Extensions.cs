@@ -247,12 +247,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                   pi
                                   .GetCustomAttributes<MarkdownTermAttribute>(inherit: true))
                         {
-                            if (attr is SqlLikeTermAttribute)
+                            if (attr is SqlLikeTermAttribute || attr is QueryLikeTermAttribute)
                             {
                                 indexProperties.Add(pi);
                                 termProperties.Add(pi);
                             }
-                            else if (attr is FilterContainsTermAttribute)
+                            else if (attr is FilterContainsTermAttribute || attr is FilterLikeTermAttribute)
                             {
                                 indexProperties.Add(pi);
                                 termProperties.Add(pi);
@@ -264,7 +264,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             }
                         }
                     }
-
+                    Debug.Assert(indexProperties.Count + termProperties.Count + tagProperties.Count > 0);
 
                     var builder = new List<string>();
 
@@ -376,9 +376,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 switch (pi.Name)
                                 {
                                     case nameof(ISelfIndexedMarkdown.QueryTerm):
-                                        return (!indexingMode.HasFlag(IndexingMode.LikeTerm));
+                                        return (!indexingMode.HasFlag(IndexingMode.QueryLikeTerm));
                                     case nameof(ISelfIndexedMarkdown.FilterTerm):
-                                        return (!indexingMode.HasFlag(IndexingMode.ContainsTerm));
+                                        return (!indexingMode.HasFlag(IndexingMode.FilterLikeTerm));
                                     case nameof(ISelfIndexedMarkdown.TagMatchTerm):
                                         return (!indexingMode.HasFlag(IndexingMode.TagMatchTerm));
                                     default: return false;
@@ -563,7 +563,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         }
                         expr = sbExpr.ToString();
 
-#if DEBUG
+#if false && DEBUG
                         Debug.WriteLine($"250619.A");
                         Debug.WriteLine($"{exprOR,-30} | {expr,-30}");
                         { }
@@ -1318,6 +1318,37 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             => new MarkdownContext().ParseSqlMarkdown(@this, type, qfMode, out xast);
         public static string ParseSqlMarkdown(this MarkdownContext @this, string expr, Type type, QueryFilterMode qfMode, out XElement xast)
             => @this.ParseSqlMarkdown(expr, type, qfMode, out xast);
+
+        /// <summary>
+        /// Non-breaking compatible filter term attribute getter.
+        /// </summary>
+        public static MarkdownTermAttribute GetQueryTermAttribute(this PropertyInfo pi)
+            =>
+            pi.GetCustomAttribute<QueryLikeTermAttribute>() is QueryLikeTermAttribute qlt
+            ? qlt
+            : pi.GetCustomAttribute<SqlLikeTermAttribute>();
+
+        /// <summary>
+        /// Non-breaking compatible filter term attribute getter.
+        /// </summary>
+        public static MarkdownTermAttribute GetFilterTermAttribute(this PropertyInfo pi)
+            => 
+            pi.GetCustomAttribute<FilterLikeTermAttribute>() is FilterLikeTermAttribute flt
+            ? flt
+            : pi.GetCustomAttribute<FilterContainsTermAttribute>();
+
+
+        /// <summary>
+        /// Non-breaking compatible filter term attribute getter.
+        /// </summary>
+        public static bool IsQueryTermAttribute(this MarkdownTermAttribute mta)
+            => typeof(QueryLikeTermAttribute).IsAssignableFrom(mta.GetType());
+
+        /// <summary>
+        /// Non-breaking compatible filter term attribute getter.
+        /// </summary>
+        public static bool IsFilterTermAttribute(this MarkdownTermAttribute mta)
+            => typeof(FilterLikeTermAttribute).IsAssignableFrom(mta.GetType());
     }
     #endregion V E R S I O N    1 . 0
 }
