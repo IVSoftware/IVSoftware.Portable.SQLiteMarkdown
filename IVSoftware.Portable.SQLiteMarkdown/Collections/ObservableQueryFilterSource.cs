@@ -110,22 +110,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public IReadOnlyList<T> UnfilteredItems => _unfilteredItems;
 
-        public bool IsReadOnly
-        {
-            get => _isReadOnly;
-            set
-            {
-                if (!Equals(_isReadOnly, value))
-                {
-                    _isReadOnly = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        bool _isReadOnly = true;
-
-        public bool IsFixedSize => ((IList)_unfilteredItems).IsFixedSize;
-
         public bool Busy
         {
             get => _busy;
@@ -468,36 +452,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             base.OnInputTextChanged();
 
-            var trim = InputText?.Trim() ?? string.Empty;
-            var filteringStateB4 = FilteringState;
             switch (FilteringState)
             {
-                case FilteringState.Ineligible:
-                    if (trim.Length == 0)
-                    {
-                        SearchEntryState = SearchEntryState.QueryEmpty;
-                    }
-                    else if (trim.Length < 3)
-                    {
-                        SearchEntryState = SearchEntryState.QueryENB;
-                        return;
-                    }
-                    else
-                    {
-                        SearchEntryState = SearchEntryState.QueryEN;
-                    }
-                    break;
                 case FilteringState.Armed:
-                    if (trim.Length != 0)
+                    // Basically, this is when a backspace in Filter mode results in an
+                    // empty entry text field. We want to stay in filtering mode though,
+                    // but the UI visuals might change e.g. icon glyph and/or color.
+                    if (InputText.Length == 0 && FilteringStatePrev == FilteringState.Active)
                     {
-                        FilteringState = FilteringState.Active;
-                    }
-                    break;
-                case FilteringState.Active:
-                    if(trim.Length == 0)
-                    {
-                        // Downgrade but stay armed.
-                        FilteringState = FilteringState.Armed;
                         CollectionChanged?.Invoke(
                             this,
                             new NotifyQueryFilterCollectionChangedEventArgs(
@@ -507,8 +469,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         );
                     }
                     break;
-                default:
-                    throw new NotImplementedException($"Bad case: {FilteringState}");
             }
             // If after all of that we manage to be in an active
             // filtering state then go ahead and apply.
@@ -516,7 +476,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 ApplyFilter();
             }
-            WDTInputTextSettled.StartOrRestart();
         }
 
         public string Placeholder =>
@@ -665,6 +624,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
         public int Count => _RoutedItems_.Count;
+
+        /// <summary>
+        /// Required IList support
+        /// </summary>
+        public bool IsReadOnly => ((IList)_unfilteredItems).IsReadOnly;
+
+        /// <summary>
+        /// Required IList support
+        /// </summary>
+        public bool IsFixedSize => ((IList)_unfilteredItems).IsFixedSize;
 
         public T this[int index]
         {

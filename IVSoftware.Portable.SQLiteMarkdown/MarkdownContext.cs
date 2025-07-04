@@ -1,4 +1,5 @@
 ﻿
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
@@ -949,7 +950,47 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         string _inputText = string.Empty;
-        protected virtual void OnInputTextChanged() { }
+        protected virtual void OnInputTextChanged()
+        {
+            // Trim without eventing.
+            _inputText = _inputText.Trim();
+
+            var filteringStateB4 = FilteringState;
+            switch (FilteringState)
+            {
+                case FilteringState.Ineligible:
+                    if (InputText.Length == 0)
+                    {
+                        SearchEntryState = SearchEntryState.QueryEmpty;
+                    }
+                    else if (InputText.Length < 3)
+                    {
+                        SearchEntryState = SearchEntryState.QueryENB;
+                        return;
+                    }
+                    else
+                    {
+                        SearchEntryState = SearchEntryState.QueryEN;
+                    }
+                    break;
+                case FilteringState.Armed:
+                    if (InputText.Length != 0)
+                    {
+                        FilteringState = FilteringState.Active;
+                    }
+                    break;
+                case FilteringState.Active:
+                    if (InputText.Length == 0)
+                    {
+                        // Downgrade but stay armed.
+                        FilteringState = FilteringState.Armed;
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException($"Bad case: {FilteringState}");
+            }
+            WDTInputTextSettled.StartOrRestart();
+        }
 
         public SearchEntryState SearchEntryState
         {
@@ -1006,7 +1047,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-
         TimeSpan _inputTextSettleInterval = TimeSpan.FromSeconds(0.25);
         #endregion N A V    S E A R C H    S T A T E    M A C H I N E
     }
