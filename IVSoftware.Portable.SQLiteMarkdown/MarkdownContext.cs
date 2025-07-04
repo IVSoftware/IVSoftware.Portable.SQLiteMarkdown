@@ -5,10 +5,12 @@ using SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -21,7 +23,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// clause by accumulating  parsing state, managing AST nodes, tracking substitutions,
     /// and guiding final SQL generation via attribute-aware hydration.
     /// </summary>
-    public class MarkdownContext
+    public class MarkdownContext : INotifyPropertyChanged
     {
         /// <summary>
         /// Creates a self-contained expression parsing environment, binding it
@@ -34,16 +36,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 .WithBoundAttributeValue(this);
         }
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
-
-#if false
-
-        public static string ParseSqlMarkdown<T>(this string @this, out XElement xast)
-            => ParseSqlMarkdown(@this, typeof(T), QueryFilterMode.Query, out xast);
-        public static string ParseSqlMarkdown<T>(this string @this, QueryFilterMode qfMode, out XElement xast)
-            => ParseSqlMarkdown(@this, typeof(T), qfMode, out xast);
-        public static string ParseSqlMarkdown(this string @this, Type type, QueryFilterMode qfMode = QueryFilterMode.Query)
-            => ParseSqlMarkdown(@this, type, qfMode, out XElement _);
-#endif
         public string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
             => ParseSqlMarkdown(expr, typeof(T), qfMode, out XElement _);
 
@@ -840,33 +832,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         #endregion P O S I T I O N A L    S U P P O R T
 
-#if false
-        #region P O S I T I O N A L    S U P P O R T    O R
-        public string Query { get; }
-
-        public string PositionalQuery =>
-            Regex.Replace(Query, @"@\w+", "?");
-
-        public object[] PositionalArgs =>
-            Args.Select(kvp => kvp.Value).ToArray();
-
-        public List<KeyValuePair<string, object>> Args { get; }
-
-        public override string ToString()
-        {
-            string formatted = Query;
-            foreach (var param in Args)
-            {
-                var value = param.Value is string str
-                    ? $"'{str.Replace("'", "''")}'"
-                    : param.Value?.ToString() ?? "NULL";
-
-                formatted = formatted.Replace(param.Key, value);
-            }
-            return formatted;
-        }
-        #endregion P O S I T I O N A L    S U P P O R T    O R
-#endif
         public object _lock = new object();
         public override string ToString()
         {
@@ -893,5 +858,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return formatted;
         }
 
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
+            OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+        protected virtual void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            PropertyChanged?.Invoke(sender, e);
+        }
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #region S T A T E    M A C H I N E
+
+        #endregion S T A T E    M A C H I N E
     }
 }

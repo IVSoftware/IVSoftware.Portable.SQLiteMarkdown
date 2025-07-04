@@ -388,13 +388,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         object ICollection.SyncRoot { get { return ((ICollection)_unfilteredItems).SyncRoot; } }
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
-            OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        protected virtual void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            PropertyChanged?.Invoke(sender, e);
-        }
 
         /// <summary>
         /// No client data connection is assumed, but if a persistent
@@ -536,7 +529,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         QueryFilterConfig _queryFilterConfig = QueryFilterConfig.QueryAndFilter;
 
-        private FilteringState FilteringStatePrev { get; set;  }
+        protected FilteringState FilteringStatePrev { get; set;  }
         public FilteringState FilteringState
         {
             get => _filteringState;
@@ -567,7 +560,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
 
-        private void OnFilteringStateChanged()
+        protected virtual void OnFilteringStateChanged()
         {
             switch (FilteringState)
             {
