@@ -2556,6 +2556,21 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 #region L o c a l F x
                 async Task localSettle(double seconds = 1.0) =>
                     await Task.Delay(TimeSpan.FromSeconds(seconds));
+
+                void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
+                {
+                    var instance = new SelectableQFModel();
+                    var type = typeof(SelectableQFModel);
+                    type.GetProperty("Description")?.SetValue(instance, description);
+                    type.GetProperty("Tags")?.SetValue(instance, tags);
+                    type.GetProperty("IsChecked")?.SetValue(instance, isChecked);
+                    if (keywords != null)
+                    {
+                        var json = JsonConvert.SerializeObject(keywords);
+                        type.GetProperty("Keywords")?.SetValue(instance, json);
+                    }
+                    cnx.Insert(instance);
+                }
                 #endregion L o c a l F x
             }
         }
