@@ -51,32 +51,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public static partial class Extensions
     {
         #region V E R S I O N    O R
-        private static readonly Dictionary<Type, MarkdownContextOR> _contextCache = new Dictionary<Type, MarkdownContextOR>();
-
-        /// <summary>
-        /// Parses the given markdown expression into a complete SQL query string
-        /// using default validation behavior. Suitable for one-shot query scenarios
-        /// where no filter state needs to be preserved.
-        /// </summary>
-        /// <typeparam name="T">The target model type, which must be attributed for markdown indexing.</typeparam>
-        /// <returns>A SQL query string with interpolated LIKE/TagMatch conditions.</returns>
-        public static string ParseSqlMarkdown<T>(
-            this string expr,
-            byte minInputLength,
-            IndexingMode indexingMode)
-        {
-            var _ = ValidationState.Valid;
-            return expr.ParseSqlMarkdownOR<T>(ref _, null, minInputLength, indexingMode);
-        }
-
-#if false
-
-        public static string ParseSqlMarkdown(this string @this, Type type, QueryFilterMode qfMode, out XElement xast)
-            => new MarkdownContext(@this, type).ParseSqlMarkdown(@this, type, qfMode, out xast);
-        public static string ParseSqlMarkdown(this MarkdownContext @this, string expr, Type type, QueryFilterMode qfMode, out XElement xast) 
-            => @this.ParseSqlMarkdown(expr, type, qfMode, out xast);
-
-#endif
 
         public static string ParseSqlMarkdown<T>(
             this string @this,

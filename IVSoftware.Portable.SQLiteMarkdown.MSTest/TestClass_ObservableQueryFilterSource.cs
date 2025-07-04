@@ -1650,69 +1650,76 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
         public void Test_PositionalOR()
         {
             string actual, expected, sql;
-            List<SelectableQueryModelOR> recordset;
-            MarkdownContextOR context;
-            var validationState = ValidationState.Empty;
 
-            using (var cnx = InitializeInMemoryDatabase())
+            localTest<SelectableQueryModelOR>();
+
+            void localTest<T>() where T : new()
             {
-                #region S U B T E S T S
 
-                context = "color".ParseSqlMarkdown<SelectableQueryModelOR>(IndexingMode.QueryLikeTerm, ref validationState);
-                Assert.AreEqual(ValidationState.Valid, validationState);
+                List<T> recordset;
+                MarkdownContextOR context;
+                var validationState = ValidationState.Empty;
+
+                using (var cnx = InitializeInMemoryDatabase())
+                {
+                    #region S U B T E S T S
+
+                    context = "color".ParseSqlMarkdown<T>(IndexingMode.QueryLikeTerm, ref validationState);
+                    Assert.AreEqual(ValidationState.Valid, validationState);
 
 
-                actual = context.ToString();
-                actual.ToClipboard();
-                actual.ToClipboardExpected();
-                actual.ToClipboardAssert("Expecting generated sql to match.");
-                { }
-                expected = @" 
+                    actual = context.ToString();
+                    actual.ToClipboard();
+                    actual.ToClipboardExpected();
+                    actual.ToClipboardAssert("Expecting generated sql to match.");
+                    { }
+                    expected = @" 
 SELECT * FROM items WHERE
 (QueryTerm LIKE '%color%')";
 
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting generated sql to match."
-                );
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting generated sql to match."
+                    );
 
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting generated sql to match."
-                );
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting generated sql to match."
+                    );
 
-                //sql = context.ToString();
-                recordset = cnx.Query<SelectableQueryModelOR>(context.ToString());
-                Assert.AreEqual(19, recordset.Count);
+                    //sql = context.ToString();
+                    recordset = cnx.Query<T>(context.ToString());
+                    Assert.AreEqual(19, recordset.Count);
 
-                // WORKS
-                recordset = cnx.Query<SelectableQueryModelOR>("SELECT * FROM items WHERE\r\n(QueryTerm LIKE ?)", "%color%");
-                Assert.AreEqual(19, recordset.Count);
+                    // WORKS
+                    recordset = cnx.Query<T>("SELECT * FROM items WHERE\r\n(QueryTerm LIKE ?)", "%color%");
+                    Assert.AreEqual(19, recordset.Count);
 
-                // WORKS
-                recordset = cnx.Query<SelectableQueryModelOR>(context.PositionalQuery, context.PositionalArgs);
-                Assert.AreEqual(19, recordset.Count);
+                    // WORKS
+                    recordset = cnx.Query<T>(context.PositionalQuery, context.PositionalArgs);
+                    Assert.AreEqual(19, recordset.Count);
 
-                // WORKS
-                var (query, args) =
-                    "color"
-                    .ParseSqlMarkdown<SelectableQueryModelOR>(IndexingMode.QueryLikeTerm, ref validationState)
-                    .ToPositional();
-                recordset = cnx.Query<SelectableQueryModelOR>(query, args);
-                Assert.AreEqual(19, recordset.Count);
-
-
-                (query, args) =
-                    "animal"
-                    .ParseSqlMarkdown<SelectableQueryModelOR>(IndexingMode.QueryLikeTerm, ref validationState)
-                    .ToPositional();
-                recordset = cnx.Query<SelectableQueryModelOR>(query, args);
-                Assert.AreEqual(12, recordset.Count);
+                    // WORKS
+                    var (query, args) =
+                        "color"
+                        .ParseSqlMarkdown<T>(IndexingMode.QueryLikeTerm, ref validationState)
+                        .ToPositional();
+                    recordset = cnx.Query<T>(query, args);
+                    Assert.AreEqual(19, recordset.Count);
 
 
-                #endregion S U B T E S T S
+                    (query, args) =
+                        "animal"
+                        .ParseSqlMarkdown<T>(IndexingMode.QueryLikeTerm, ref validationState)
+                        .ToPositional();
+                    recordset = cnx.Query<T>(query, args);
+                    Assert.AreEqual(12, recordset.Count);
+
+
+                    #endregion S U B T E S T S
+                }
             }
         }
 
