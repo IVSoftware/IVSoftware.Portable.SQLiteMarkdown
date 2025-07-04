@@ -21,6 +21,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static SQLite.SQLite3;
+using static System.Net.Mime.MediaTypeNames;
 using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
 [assembly:InternalsVisibleTo("IVSoftware.Portable.SQLiteMarkdown.MSTest")]
@@ -1644,79 +1645,133 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             }
         }
 
-
-        [Obsolete("Test for early adopter (beta) migration support.")]
         [TestMethod]
         public void Test_PositionalOR()
         {
             string actual, expected, sql;
+            XElement xast;
 
+            // Test for early adopter (beta) migration support.
             localTest<SelectableQueryModelOR>();
+
+            // Test for current model
+            localTest<SelectableQFModel>();
 
             void localTest<T>() where T : new()
             {
-
                 List<T> recordset;
                 MarkdownContextOR context;
+                MarkdownContext mc;
+                SQLiteCommand cmd;
                 var validationState = ValidationState.Empty;
 
                 using (var cnx = InitializeInMemoryDatabase())
                 {
                     #region S U B T E S T S
 
-                    context = "color".ParseSqlMarkdown<T>(IndexingMode.QueryLikeTerm, ref validationState);
-                    Assert.AreEqual(ValidationState.Valid, validationState);
+                    sql = "color".ParseSqlMarkdown<T>(QueryFilterMode.Query, out xast);
 
-
-                    actual = context.ToString();
-                    actual.ToClipboard();
+                    actual = sql;
                     actual.ToClipboardExpected();
-                    actual.ToClipboardAssert("Expecting generated sql to match.");
-                    { }
                     expected = @" 
-SELECT * FROM items WHERE
+SELECT * FROM items WHERE 
 (QueryTerm LIKE '%color%')";
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
-                        "Expecting generated sql to match."
+                        "Expecting generated sql to match"
                     );
+
+                    Assert.IsNotNull((mc = xast.To<MarkdownContext>()));
+
+                    actual = mc.PositionalQuery;
+                    expected = @" 
+SELECT * FROM items WHERE (QueryTerm LIKE ?)";
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
-                        "Expecting generated sql to match."
+                        "Expecting templated query with '?'"
                     );
 
-                    //sql = context.ToString();
-                    recordset = cnx.Query<T>(context.ToString());
-                    Assert.AreEqual(19, recordset.Count);
 
-                    // WORKS
-                    recordset = cnx.Query<T>("SELECT * FROM items WHERE\r\n(QueryTerm LIKE ?)", "%color%");
-                    Assert.AreEqual(19, recordset.Count);
+                    actual = mc.NamedQuery;
+                    expected = @" 
+SELECT * FROM items WHERE (QueryTerm LIKE @param0000)";
 
-                    // WORKS
-                    recordset = cnx.Query<T>(context.PositionalQuery, context.PositionalArgs);
-                    Assert.AreEqual(19, recordset.Count);
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting named query with '?'"
+                    );
 
-                    // WORKS
-                    var (query, args) =
-                        "color"
-                        .ParseSqlMarkdown<T>(IndexingMode.QueryLikeTerm, ref validationState)
-                        .ToPositional();
-                    recordset = cnx.Query<T>(query, args);
+
+                    cmd = cnx.CreateCommand(mc.NamedQuery, mc.NamedArgs);
+
+                    recordset =cmd.ExecuteQuery<T>();
                     Assert.AreEqual(19, recordset.Count);
 
 
-                    (query, args) =
-                        "animal"
-                        .ParseSqlMarkdown<T>(IndexingMode.QueryLikeTerm, ref validationState)
-                        .ToPositional();
-                    recordset = cnx.Query<T>(query, args);
+                    cmd = cnx.CreateCommand(mc.PositionalQuery, mc.PositionalArgs);
+
+                    recordset = cmd.ExecuteQuery<T>();
+                    Assert.AreEqual(19, recordset.Count);
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting generated sql to match"
+                    );
+                    recordset = cnx.Query<T>(mc.PositionalQuery, mc.PositionalArgs);
+                    Assert.AreEqual(19, recordset.Count);
+
+                    sql = "animal".ParseSqlMarkdown<T>(QueryFilterMode.Query, out xast);
+                    Assert.IsNotNull((mc = xast.To<MarkdownContext>()));
+
+                    actual = sql;
+                    expected = @" 
+SELECT * FROM items WHERE 
+(QueryTerm LIKE '%animal%')";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting generated sql to match"
+                    );
+
+                    recordset = cnx.Query<T>(sql);
                     Assert.AreEqual(12, recordset.Count);
 
+
+                    actual = mc.ToString();
+                    actual.ToClipboard();
+                    actual.ToClipboardExpected();
+                    actual.ToClipboardAssert("Expecting ToString forms Sql");
+                    { }
+                    expected = @" 
+SELECT * FROM items WHERE (QueryTerm LIKE '%animal%')";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting ToString forms Sql"
+                    );
+
+                    recordset = cnx.Query<T>(mc.ToString());
+                    Assert.AreEqual(12, recordset.Count);
+
+                    { }
+
+#if ABSTRACT
+                    HOWEVER:
+                    - This doesn't work and isn't intended to.
+                    - NOTE the CreateCommand version PASSED earlier and works fine.
+                    - NOTE the Positional version  PASSED earlier and works fine.
+                    But this permutation? Not so much. Don't use it.
+                    recordset = cnx.Query<T>(mc.NamedQuery, mc.NamedArgs);
+                    Assert.AreEqual(12, recordset.Count);
+#endif
 
                     #endregion S U B T E S T S
                 }
