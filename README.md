@@ -199,8 +199,7 @@ Here are more examples:
 
 ## Split Contracts – Query Templates for Expression Parsing
 
-So let’s be clear. We’ve used a class to generate a SQL expression. When we perform the actual query, does the data type receiving the recordset need to be the same type?  
-**It does not!**
+So let’s be clear. We’ve used a class to generate a SQL expression. When we perform the actual query, does the data type receiving the recordset need to be the same type?  **It does not!**
 
 That’s the idea behind **Split Contracts** — you can separate the type used to **build the query** from the type used to **receive the results**. The query model is just a template. It defines how to interpret the input expression, not how the data is stored or shaped.
 
