@@ -1289,157 +1289,164 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
         }
 
 
-        [Obsolete("Test for early adopter (beta) migration support.")]
         [TestMethod]
-        public async Task Test_ObservableQueryFilterStateTrackerOR()
+        public void Test_TrackProgressiveInputState()
         {
             string actual, expected, sql;
             SenderEventPair sep;
             NotifyCollectionChangedEventArgs ecc;
             PropertyChangedEventArgs epc;
-            Queue<SenderEventPair> eventQueue = new();
 
-            List<SelectableQueryModelOR> recordset;
-            var items = new ObservableQueryFilterSource<SelectableQueryModelOR>();
+            // Test for early adopter (beta) migration support.
+            localTest<SelectableQueryModelOR>();
 
+            // Test for current version scheme
+            localTest<SelectableQFModel>();
 
-            items.PropertyChanged += (sender, e) =>
+            void localTest<T>() where T: new()
             {
-                eventQueue.Enqueue((sender, e));
-            };
-            using (var cnx = InitializeInMemoryDatabase())
-            {
-                subtestEmptyToFirstChar();
-                subtestSecondChar();
-                subtestThirdCharEnableQuery();
-                await subtestCommit();
+                Queue<SenderEventPair> eventQueue = new();
+                List<T> recordset;
+                var items = new ObservableQueryFilterSource<T>();
 
-                #region S U B T E S T S
 
-                async Task subtestEmptyToFirstChar()
+                items.PropertyChanged += (sender, e) =>
                 {
-                    Assert.AreEqual(
-                        "Search Items",
-                        items.Placeholder);
+                    eventQueue.Enqueue((sender, e));
+                };
+                using (var cnx = InitializeInMemoryDatabase())
+                {
+                    subtestEmptyToFirstChar();
+                    subtestSecondChar();
+                    subtestThirdCharEnableQuery();
+                    subtestCommit();
 
-                    // "a"
-                    items.InputText += 'a';
-                    actual =
-                        string
-                        .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
-                        .OfType<PropertyChangedEventArgs>()
-                        .Select(_ => _.PropertyName));
-                    actual.ToClipboardExpected();
-                    expected = @"
+                    #region S U B T E S T S
+
+                    void subtestEmptyToFirstChar()
+                    {
+                        Assert.AreEqual(
+                            "Search Items",
+                            items.Placeholder);
+
+                        // "a"
+                        items.InputText += 'a';
+                        actual =
+                            string
+                            .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
+                            .OfType<PropertyChangedEventArgs>()
+                            .Select(_ => _.PropertyName));
+
+                        expected = @"
 InputText
 SearchEntryState";
 
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting specific property changes."
-                    );
-                    eventQueue.Clear();
-                }
+                        Assert.AreEqual(
+                            expected.NormalizeResult(),
+                            actual.NormalizeResult(),
+                            "Expecting specific property changes."
+                        );
+                        eventQueue.Clear();
+                    }
 
-                void subtestSecondChar()
-                {
-                    Assert.AreEqual(
-                        SearchEntryState.QueryENB,
-                        items.SearchEntryState,
-                        "Expecting specific state CHANGED."
-                    );
+                    void subtestSecondChar()
+                    {
+                        Assert.AreEqual(
+                            SearchEntryState.QueryENB,
+                            items.SearchEntryState,
+                            "Expecting specific state CHANGED."
+                        );
 
-                    // "an"
-                    items.InputText += 'n';
-                    actual =
-                        string
-                        .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
-                        .OfType<PropertyChangedEventArgs>()
-                        .Select(_ => _.PropertyName));
-                    actual.ToClipboardExpected();
-                    expected = @"
+                        // "an"
+                        items.InputText += 'n';
+                        actual =
+                            string
+                            .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
+                            .OfType<PropertyChangedEventArgs>()
+                            .Select(_ => _.PropertyName));
+                        actual.ToClipboardExpected();
+                        expected = @"
 InputText";
 
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting specific property changes."
-                    );
-                    eventQueue.Clear();
-                }
+                        Assert.AreEqual(
+                            expected.NormalizeResult(),
+                            actual.NormalizeResult(),
+                            "Expecting specific property changes."
+                        );
+                        eventQueue.Clear();
+                    }
 
-                void subtestThirdCharEnableQuery()
-                {
-                    Assert.AreEqual(
-                        SearchEntryState.QueryENB,
-                        items.SearchEntryState,
-                        "Expecting specific state UNCHANGED."
-                    );
+                    void subtestThirdCharEnableQuery()
+                    {
+                        Assert.AreEqual(
+                            SearchEntryState.QueryENB,
+                            items.SearchEntryState,
+                            "Expecting specific state UNCHANGED."
+                        );
 
-                    // "ani"
-                    items.InputText += 'i';
-                    actual =
-                        string
-                        .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
-                        .OfType<PropertyChangedEventArgs>()
-                        .Select(_ => _.PropertyName));
-                    actual.ToClipboardExpected();
-                    expected = @"
+                        // "ani"
+                        items.InputText += 'i';
+                        actual =
+                            string
+                            .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
+                            .OfType<PropertyChangedEventArgs>()
+                            .Select(_ => _.PropertyName));
+                        actual.ToClipboardExpected();
+                        expected = @"
 InputText
 SearchEntryState";
 
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting specific property changes."
-                    );
-                    eventQueue.Clear();
+                        Assert.AreEqual(
+                            expected.NormalizeResult(),
+                            actual.NormalizeResult(),
+                            "Expecting specific property changes."
+                        );
+                        eventQueue.Clear();
 
-                    Assert.AreEqual(
-                        SearchEntryState.QueryEN,
-                        items.SearchEntryState,
-                        "Expecting specific state CHANGED."
-                    );
-                }
+                        Assert.AreEqual(
+                            SearchEntryState.QueryEN,
+                            items.SearchEntryState,
+                            "Expecting specific state CHANGED."
+                        );
+                    }
 
-                async Task subtestCommit()
-                {
-                    // "animal"
-                    items.InputText += "mal";
-                    actual =
-                        string
-                        .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
-                        .OfType<PropertyChangedEventArgs>()
-                        .Select(_ => _.PropertyName));
-                    actual.ToClipboardExpected();
-                    expected = @"
+                    void subtestCommit()
+                    {
+                        // "animal"
+                        items.InputText += "mal";
+                        actual =
+                            string
+                            .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
+                            .OfType<PropertyChangedEventArgs>()
+                            .Select(_ => _.PropertyName));
+                        actual.ToClipboardExpected();
+                        expected = @"
 InputText";
 
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting specific property changes."
-                    );
-                    eventQueue.Clear();
+                        Assert.AreEqual(
+                            expected.NormalizeResult(),
+                            actual.NormalizeResult(),
+                            "Expecting specific property changes."
+                        );
+                        eventQueue.Clear();
 
-                    Assert.AreEqual(
-                        SearchEntryState.QueryEN,
-                        items.SearchEntryState,
-                        "Expecting specific state UNCHANGED."
-                    );
-                    // Based on UI interaction like return key pressed
-                    sql = items.InputText.ParseSqlMarkdown<SelectableQFModel>();
-                    recordset = cnx.Query<SelectableQueryModelOR>(sql);
-                    items.ReplaceItems(recordset);
+                        Assert.AreEqual(
+                            SearchEntryState.QueryEN,
+                            items.SearchEntryState,
+                            "Expecting specific state UNCHANGED."
+                        );
+                        // Based on UI interaction like return key pressed
+                        sql = items.InputText.ParseSqlMarkdown<T>();
+                        recordset = cnx.Query<T>(sql);
+                        items.ReplaceItems(recordset);
 
-                    Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, items.SearchEntryState);
-                    Assert.AreEqual(FilteringState.Armed, items.FilteringState);
-                    Assert.AreNotEqual(0, recordset.Count);
-                    Assert.AreNotEqual(0, items.Count);
+                        Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, items.SearchEntryState);
+                        Assert.AreEqual(FilteringState.Armed, items.FilteringState);
+                        Assert.AreNotEqual(0, recordset.Count);
+                        Assert.AreNotEqual(0, items.Count);
 
-                    actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
-                    expected = @" 
+                        actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
+                        expected = @" 
 Black Cat  [animal] [color]
 Orange Fox  [animal] [color]
 White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
@@ -1453,18 +1460,18 @@ Kangaroo ""bounce"",""outback"",""marsupial"" [animal]
 Turtle  [animal]
 Should NOT match an expression with an ""animal"" tag.  [not animal]";
 
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting filtered results to match."
-                    );
-                    actual =
-                        string
-                        .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
-                        .OfType<PropertyChangedEventArgs>()
-                        .Select(_ => _.PropertyName));
-                    actual.ToClipboardExpected();
-                    expected = @" 
+                        Assert.AreEqual(
+                            expected.NormalizeResult(),
+                            actual.NormalizeResult(),
+                            "Expecting filtered results to match."
+                        );
+                        actual =
+                            string
+                            .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
+                            .OfType<PropertyChangedEventArgs>()
+                            .Select(_ => _.PropertyName));
+                        actual.ToClipboardExpected();
+                        expected = @" 
 Busy
 SearchEntryState
 SearchEntryState
@@ -1472,40 +1479,40 @@ FilteringState
 RouteToFullRecordset
 IsFiltering
 Busy"
-                    ;
+                        ;
 
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting specific property changes."
-                    );
-                    eventQueue.Clear();
+                        Assert.AreEqual(
+                            expected.NormalizeResult(),
+                            actual.NormalizeResult(),
+                            "Expecting specific property changes."
+                        );
+                        eventQueue.Clear();
 
-                    Assert.AreEqual(
-                        SearchEntryState.QueryCompleteWithResults,
-                        items.SearchEntryState,
-                        "Expecting notified entry state change."
-                    );
+                        Assert.AreEqual(
+                            SearchEntryState.QueryCompleteWithResults,
+                            items.SearchEntryState,
+                            "Expecting notified entry state change."
+                        );
 
-                    Assert.AreEqual(
-                        FilteringState.Armed,
-                        items.FilteringState,
-                        "Expecting notified entry state change."
-                    );
+                        Assert.AreEqual(
+                            FilteringState.Armed,
+                            items.FilteringState,
+                            "Expecting notified entry state change."
+                        );
 
-                    items.Clear();
+                        items.Clear();
 
-                    Assert.AreEqual(
-                        string.Empty,
-                        items.InputText,
-                        "Expecting empty input text."
-                    );
+                        Assert.AreEqual(
+                            string.Empty,
+                            items.InputText,
+                            "Expecting empty input text."
+                        );
 
-                    Assert.AreEqual(
-                        FilteringState.Active,
-                        items.FilteringState,
-                        "Expecting nuanced behavior:"
-                    );
+                        Assert.AreEqual(
+                            FilteringState.Active,
+                            items.FilteringState,
+                            "Expecting nuanced behavior:"
+                        );
 
 #if ABSTRACT
                     // SEE FULL CONTEXT: Canonical {5932CB31-B914-4DE8-9457-7A668CDB7D08}
@@ -1518,44 +1525,38 @@ Busy"
                     // that query result, so filtering goes Active in theis case.
 
 #endif
-                    // animal.b
-                    // Expecting Filter mode and an internal query.
-                    items.InputText += "b";
-                    { }
-                    await localSettle();
+                        // animal.b
+                        // Expecting Filter mode and an internal query.
+                        items.InputText += "b";
 
-                    actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
-                    actual.ToClipboardExpected();
-                    { }
-expected = @" 
+                        actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
+                        actual.ToClipboardExpected();
+                        { }
+                        expected = @" 
 "
-;
+                        ;
 
-                    expected = @" 
+                        expected = @" 
 Black Cat  [animal] [color]
 White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
 Brown Bear ""strong"",""wild"",""forest"" [animal] [color]
 Black Panther ""stealthy"",""feline"",""night"" [animal] [color]
 Kangaroo ""bounce"",""outback"",""marsupial"" [animal]";
 
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting filtered items containing filter expr"
-                    );
+                        Assert.AreEqual(
+                            expected.NormalizeResult(),
+                            actual.NormalizeResult(),
+                            "Expecting filtered items containing filter expr"
+                        );
 
-                    Assert.IsTrue(items.RouteToFullRecordset);
-                    { }
+                        Assert.IsTrue(items.RouteToFullRecordset);
+                        { }
+                    }
+
+                    // G Z
+
+                    #endregion S U B T E S T S
                 }
-
-                // G Z
-
-                #endregion S U B T E S T S
-
-                #region L o c a l F x
-                async Task localSettle(double seconds = 1.0) =>
-                    await Task.Delay(TimeSpan.FromSeconds(seconds));
-                #endregion L o c a l F x
             }
         }
 
