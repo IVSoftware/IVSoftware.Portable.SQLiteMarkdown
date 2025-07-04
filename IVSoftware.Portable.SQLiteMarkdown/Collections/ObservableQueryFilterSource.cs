@@ -515,70 +515,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         public event EventHandler InputTextSettled;
 
-        public QueryFilterConfig QueryFilterConfig
-        {
-            get => _queryFilterConfig;
-            set
-            {
-                if (!Equals(_queryFilterConfig, value))
-                {
-                    _queryFilterConfig = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        QueryFilterConfig _queryFilterConfig = QueryFilterConfig.QueryAndFilter;
-
-        protected FilteringState FilteringStatePrev { get; set;  }
-        public FilteringState FilteringState
-        {
-            get => _filteringState;
-            protected set
-            {
-                if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
-                {
-                    // The only transition allowed is going back to Inactive.
-                    value = FilteringState.Ineligible;
-                }
-                if (!Equals(_filteringState, value))
-                {
-                    FilteringStatePrev = _filteringState;
-                    _filteringState = value;
-                    OnFilteringStateChanged();
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(RouteToFullRecordset));
-                    OnPropertyChanged(nameof(IsFiltering));
-                }
-            }
-        }
-        FilteringState _filteringState = default;
-
-        public FilteringState FilteringStateForTest
-        {
-            get => FilteringState;
-            set => FilteringState = value;
-        }
-
-
-        protected virtual void OnFilteringStateChanged()
-        {
-            switch (FilteringState)
-            {
-                case FilteringState.Ineligible:
-                    // Clear, then event ADHOC. That is, it's not always
-                    // in our best interest to simply forward the clear.
-                    _unfilteredItems.Clear();
-                    CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-                    break;
-                case FilteringState.Armed:
-                    break;
-                case FilteringState.Active:
-                    break;
-                default:
-                    break;
-            }
-        }
-
         public string Placeholder =>
                 IsFiltering
                 ? $"Filter {Title}"
@@ -732,10 +668,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         #region R O U T E D    C O N D I T I O N A L S
 
+        protected override void OnFilteringStateChanged()
+        {
+            base.OnFilteringStateChanged();
+            switch (FilteringState)
+            {
+                case FilteringState.Ineligible:
+                    // Clear, then event ADHOC. That is, it's not always
+                    // in our best interest to simply forward the clear.
+                    _unfilteredItems.Clear();
+                    CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    break;
+                case FilteringState.Armed:
+                    break;
+                case FilteringState.Active:
+                    break;
+                default:
+                    break;
+            }
+        }
+
         /// <summary>
         /// This is a router for whether to show the unfiltered set or the filtered one.
         /// </summary>
-        public bool RouteToFullRecordset
+        public override bool RouteToFullRecordset
         {
             get
             {
@@ -756,13 +712,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
             }
         }
-
-        public bool IsFiltering
-            =>  FilteringState == FilteringState.Ineligible
-                ? false
-                : FilteringState == FilteringState.Active
-                    ? true
-                    : FilteringStatePrev == FilteringState.Active;
 
         private IList<T> _RoutedItems_ =>
             RouteToFullRecordset ? _filteredItems : _unfilteredItems;

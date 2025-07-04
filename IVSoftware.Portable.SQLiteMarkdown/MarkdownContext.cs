@@ -866,8 +866,63 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         public event PropertyChangedEventHandler PropertyChanged;
 
-        #region S T A T E    M A C H I N E
+        #region C O N F I G
+        public QueryFilterConfig QueryFilterConfig
+        {
+            get => _queryFilterConfig;
+            set
+            {
+                if (!Equals(_queryFilterConfig, value))
+                {
+                    _queryFilterConfig = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        QueryFilterConfig _queryFilterConfig = QueryFilterConfig.QueryAndFilter;
+        #endregion C O N F I G
 
+        #region S T A T E    M A C H I N E
+        public virtual bool RouteToFullRecordset => true;
+        protected FilteringState FilteringStatePrev { get; set;  }
+        public FilteringState FilteringState
+        {
+            get => _filteringState;
+            protected set
+            {
+                if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                {
+                    // The only transition allowed is going back to Inactive.
+                    value = FilteringState.Ineligible;
+                }
+                if (!Equals(_filteringState, value))
+                {
+                    FilteringStatePrev = _filteringState;
+                    _filteringState = value;
+                    OnFilteringStateChanged();
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(RouteToFullRecordset));
+                    OnPropertyChanged(nameof(IsFiltering));
+                }
+            }
+        }
+        FilteringState _filteringState = default;
+
+        public FilteringState FilteringStateForTest
+        {
+            get => FilteringState;
+            set => FilteringState = value;
+        }
+
+        public bool IsFiltering
+            =>  FilteringState == FilteringState.Ineligible
+                ? false
+                : FilteringState == FilteringState.Active
+                    ? true
+                    : FilteringStatePrev == FilteringState.Active;
+
+
+        protected virtual void OnFilteringStateChanged() { }
         #endregion S T A T E    M A C H I N E
     }
 }
