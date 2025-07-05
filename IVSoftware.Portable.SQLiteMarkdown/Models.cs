@@ -245,26 +245,34 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if (string.IsNullOrWhiteSpace(sval)) continue;
 
                     if (!sval.TryTokenize(out astNodeArray)) continue;
-
-                    if (attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm) ||
-                        attr.IndexingMode.HasFlag(IndexingMode.FilterLikeTerm))
+                    for (int j = 0; j < astNodeArray.Length; j++)
                     {
-                        for (int j = 0; j < astNodeArray.Length; j++)
+                        var node = astNodeArray[j];
+                        switch (node.ASTType)
                         {
-                            var node = astNodeArray[j];
-                            if (node.ASTType == NodeType.Term)
-                            {
+                            case NodeType.Term:
                                 if (attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm))
+                                {
                                     likeNodes.Add(node);
+                                }
                                 if (attr.IndexingMode.HasFlag(IndexingMode.FilterLikeTerm))
+                                {
                                     containsNodes.Add(node);
-                            }
-                            else if (node.ASTType == NodeType.Tag &&
-                                     attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm))
-                            {
-                                // Tags treated as terms when LikeTerm is also set
-                                likeNodes.Add(new ASTNode(NodeType.Term, node.Value));
-                            }
+                                }
+                                break;
+                            case NodeType.Tag:
+                                if (attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm))
+                                {
+                                    // Tags treated as terms when LikeTerm is also set
+                                    likeNodes.Add(new ASTNode(NodeType.Term, node.Value));
+                                }
+                                if (attr.IndexingMode.HasFlag(IndexingMode.FilterLikeTerm))
+                                {
+
+                                }
+                                break;
+                            default:
+                                break;
                         }
                     }
 
