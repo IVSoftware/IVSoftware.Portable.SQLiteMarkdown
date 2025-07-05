@@ -2,6 +2,7 @@
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SQLite;
 using System;
@@ -513,7 +514,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             if (!rehydrated.Contains(','))
                             {
                                 _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(rehydrated);
-                                rehydrated = rehydrated.Replace("[", string.Empty).Replace("[", string.Empty);
+                                rehydrated = rehydrated.Replace("[", string.Empty).Replace("]", string.Empty);
                                 switch (QueryFilterConfig)
                                 {
                                     case QueryFilterConfig.Query:
@@ -530,16 +531,39 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         if(!indexingHandled)
                         {
                             // Rehydration is still necessary for atomic particles that are 'not' tags!.
-                            rawTerm = Rehydrate(rawTerm).Replace("[", string.Empty).Replace("[", string.Empty);
-                            switch (QueryFilterConfig)
+                            rawTerm = Rehydrate(rawTerm);
+                            if (rawTerm.CanParseAsJson())
                             {
-                                case QueryFilterConfig.Query:
-                                    _parsedIndexTerms[IndexingMode.QueryLikeTerm]
-                                        .Add(rawTerm);
-                                    break;
-                                case QueryFilterConfig.Filter:
-                                    _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(rawTerm);
-                                    break;
+                                var terms = JsonConvert.DeserializeObject<List<string>>(rawTerm);
+
+                                foreach (var t in terms)
+                                {
+                                    var term = t.Trim();
+                                    if (string.IsNullOrWhiteSpace(term)) continue;
+
+                                    switch (QueryFilterConfig)
+                                    {
+                                        case QueryFilterConfig.Query:
+                                            _parsedIndexTerms[IndexingMode.QueryLikeTerm].Add(term);
+                                            break;
+                                        case QueryFilterConfig.Filter:
+                                            _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(term);
+                                            break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                switch (QueryFilterConfig)
+                                {
+                                    case QueryFilterConfig.Query:
+                                        _parsedIndexTerms[IndexingMode.QueryLikeTerm]
+                                            .Add(rawTerm.ToLower());
+                                        break;
+                                    case QueryFilterConfig.Filter:
+                                        _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(rawTerm.ToLower());
+                                        break;
+                                }
                             }
                         }
                         #endregion S E L F    I N D E X I N G    S U P P O R T
