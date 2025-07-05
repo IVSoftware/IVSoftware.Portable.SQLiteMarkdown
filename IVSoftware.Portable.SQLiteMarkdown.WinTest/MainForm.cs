@@ -1,5 +1,6 @@
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
+using IVSoftware.Portable.SQLiteMarkdown.WinTest.Models;
 using Newtonsoft.Json;
 using OnePageCollectionViewSketchpad;
 using SQLite;
@@ -16,7 +17,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         public MainForm()
         {
             InitializeComponent();
-            QFSUT = new ObservableQueryFilterSource<SelectableQFModelLTOQO>
+            QFSUT = new ObservableQueryFilterSource<SelectableQFModel>
             {
                 SelectionMode = SelectionMode.Single,
             };
@@ -47,7 +48,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                             break;
                     }
                 };
-                qfs.MemoryDatabase = CreateDemoDatabase<SelectableQFModelLTOQO>();
+                qfs.MemoryDatabase = CreateDemoDatabase<SelectableQFModelTOQO>();
                 qfs.PropertyChanged += (sender, e) =>
                 {
                     switch (e.PropertyName)
@@ -132,7 +133,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             {
                 BeginInvoke(() =>
                 {
-                    MessageBox.Show(QFSUT.ParseSqlMarkdown<SelectableQFModelLTOQO>());
+                    MessageBox.Show(QFSUT.ParseSqlMarkdown<SelectableQFModelTOQO>());
                 });
             };
             tsmiCombo.SelectedIndexChanged += (sender, e) =>
@@ -142,7 +143,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 {
                     if (tsmiCombo.SelectedItem?.ToString() is { } expr)
                     {
-                        MessageBox.Show(expr.ParseSqlMarkdown<SelectableQFModelLTOQO>());
+                        MessageBox.Show(expr.ParseSqlMarkdown<SelectableQFModelTOQO>());
                     }
                 });
             };
@@ -169,7 +170,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         /// <summary>
         /// QSF Under Test for ad hoc states and expr evals.
         /// </summary>
-        private ObservableQueryFilterSource<SelectableQFModelLTOQO> QFSUT { get; } 
+        private ObservableQueryFilterSource<SelectableQFModel> QFSUT { get; } 
 
         private SQLiteConnection CreateDemoDatabase<T>() where T : new()
         {

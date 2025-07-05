@@ -11,7 +11,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     /// </summary>
     [DebuggerDisplay("{Description}")]
     [Table("items")]
-    public class SelectableQFModelLTOQO : SelfIndexed, ISelectableQueryFilterItem
+    public class SelectableQFModelTOQO : SelfIndexed, ISelectableQueryFilterItem
     {
         [PrimaryKey]
         public override string Id { get; set; } = Guid.NewGuid().ToString();

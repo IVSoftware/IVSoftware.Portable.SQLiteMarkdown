@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
+using IVSoftware.Portable.SQLiteMarkdown.WinTest.Models;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -70,12 +71,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             }
         }
 
-        public new SelectableQFModelLTOQO? DataContext => (SelectableQFModelLTOQO?)base.DataContext;
+        public new SelectableQFModel? DataContext => (SelectableQFModel?)base.DataContext;
 
         /// <summary>
-        /// Trackable for subscribe and unsibscribe.
+        /// Trackable for subscribe and unsubscribe.
         /// </summary>
-        public SelectableQFModelLTOQO? _dataContext = null;
+        public SelectableQFModel? _dataContext = null;
 
         protected override void OnDataContextChanged(EventArgs e)
         {

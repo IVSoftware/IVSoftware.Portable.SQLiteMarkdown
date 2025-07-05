@@ -49,7 +49,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Models
         public string KeywordsDisplay => Keywords.Trim('[', ']');
 
         [SelfIndexed(
-            IndexingMode.QueryLikeTerm |   // Responds to non-bracketed tokens as if they were bracketed, but not the other way around.
+            IndexingMode.QueryLikeTerm | 
             IndexingMode.FilterLikeTerm |  
             IndexingMode.TagMatchTerm)]    // Responds to strict bracketed terms
         public string Tags
