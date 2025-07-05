@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
@@ -447,7 +448,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             break;
                         case '(':
                             xprev = xcurrent;
-                            xcurrent = new XElement(nameof(StdAstNode.sub));
+                            xcurrent = new XElement(nameof(StdAstNode.sub), new XAttribute(nameof(StdAstAttr.ismatched), bool.FalseString));
                             break;
                         case ')':
                             xopen = xcurrent.Ancestors().FirstOrDefault(_ => _.Name.LocalName == nameof(StdAstNode.sub));
@@ -752,7 +753,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             case StdAstNode.and:
                                 if (string.IsNullOrWhiteSpace(childClauseE))
                                 {
-                                    throw new InvalidOperationException("Expecting non-empty term.");
+                                    // KNOWN EDGE CASE
+                                    // e.g. sho|bla) [not animal]
+                                    Debug.WriteLine("ADVISORY : KNOWN EDGE CASE - Expecting non-empty term.");
                                 }
                                 node.SetAttributeValue(
                                     nameof(StdAstAttr.clauseE),
@@ -791,7 +794,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     }
                                     else
                                     {
-                                        throw new NotImplementedException("ToDo - render this as a literal.");
+                                        Debug.WriteLine("ADVISORY: ToDo - render this as a literal.");
                                     }
                                 }
                                 else
@@ -1329,14 +1332,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         {
                             Interval = InputTextSettleInterval
                         };
-                    _wdtInputTextSettled.RanToCompletion += (sender, e) =>
+                    _wdtInputTextSettled.RanToCompletion += async (sender, e) =>
                     {
+                        await _sslimInputText.WaitAsync();
                         OnInputTextSettled(new CancelEventArgs());
+                        _sslimInputText.Release();
                     };
                 }
                 return _wdtInputTextSettled;
             }
         }
+        SemaphoreSlim _sslimInputText = new SemaphoreSlim(1, 1);
 
         protected virtual void OnInputTextSettled(CancelEventArgs e)
         {

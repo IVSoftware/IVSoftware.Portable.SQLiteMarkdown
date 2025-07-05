@@ -48,8 +48,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Models
 
         public string KeywordsDisplay => Keywords.Trim('[', ']');
 
-        [SelfIndexed(IndexingMode.TagMatchTerm)]    // Tag term considered only for explicit brackets.
-        //[SelfIndexed(IndexingMode.All)]           // Tag terms are included in all LIKE queries
+        // ADVISORY KNOWN ORDER OF OPERATIONS BUG
+        // bla|sho [not animal]
+
+        // [SelfIndexed(IndexingMode.TagMatchTerm)]    // Tag term considered only for explicit brackets.  "color' does not match [color]
+        [SelfIndexed(IndexingMode.All)]             // Tag terms are included in all LIKE queries:      "color' matches [color]
         public string Tags
         {
             get => _tags;

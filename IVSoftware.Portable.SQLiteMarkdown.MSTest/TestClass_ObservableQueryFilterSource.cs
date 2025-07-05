@@ -1291,7 +1291,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
 
 
         [TestMethod]
-        public void Test_TrackProgressiveInputState()
+        public async Task Test_TrackProgressiveInputState()
         {
             string actual, expected, sql;
             SenderEventPair sep;
@@ -1299,16 +1299,28 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             PropertyChangedEventArgs epc;
 
             // Test for early adopter (beta) migration support.
-            localTest<SelectableQueryModelOR>();
+            await localTest<SelectableQueryModelOR>();
 
             // Test for current version scheme
-            localTest<SelectableQFModelTOQO>();
+            await localTest<SelectableQFModelTOQO>();
 
-            void localTest<T>() where T: new()
+            async Task localTest<T>() where T: new()
             {
                 Queue<SenderEventPair> eventQueue = new();
                 List<T> recordset;
                 var items = new ObservableQueryFilterSource<T>();
+
+                SemaphoreSlim awaiter = new SemaphoreSlim(1,1);
+                async Task localWaitForSettled(Action action)
+                {
+                    action();
+                    await Task.Delay(TimeSpan.FromSeconds(0.5));
+                }
+                items.InputTextSettled += (sender, e) =>
+                {
+                    awaiter.Wait(0);
+                    awaiter.Release();
+                };
 
                 items.PropertyChanged += (sender, e) =>
                 {
@@ -1316,21 +1328,21 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 };
                 using (var cnx = InitializeInMemoryDatabase())
                 {
-                    subtestEmptyToFirstChar();
-                    subtestSecondChar();
-                    subtestThirdCharEnableQuery();
-                    subtestCommit();
+                    await subtestEmptyToFirstChar();
+                    await subtestSecondChar();
+                    await subtestThirdCharEnableQuery();
+                    await subtestCommit();
 
                     #region S U B T E S T S
 
-                    void subtestEmptyToFirstChar()
+                    async Task subtestEmptyToFirstChar()
                     {
                         Assert.AreEqual(
                             "Search Items",
                             items.Placeholder);
 
                         // "a"
-                        items.InputText += 'a';
+                        await localWaitForSettled(() => items.InputText += 'a');
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1349,7 +1361,7 @@ SearchEntryState";
                         eventQueue.Clear();
                     }
 
-                    void subtestSecondChar()
+                    async Task subtestSecondChar()
                     {
                         Assert.AreEqual(
                             SearchEntryState.QueryENB,
@@ -1358,7 +1370,7 @@ SearchEntryState";
                         );
 
                         // "an"
-                        items.InputText += 'n';
+                        await localWaitForSettled(() => items.InputText += 'n');
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1376,7 +1388,7 @@ InputText";
                         eventQueue.Clear();
                     }
 
-                    void subtestThirdCharEnableQuery()
+                    async Task subtestThirdCharEnableQuery()
                     {
                         Assert.AreEqual(
                             SearchEntryState.QueryENB,
@@ -1385,7 +1397,7 @@ InputText";
                         );
 
                         // "ani"
-                        items.InputText += 'i';
+                        await localWaitForSettled(() => items.InputText += 'i');
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1410,10 +1422,10 @@ SearchEntryState";
                         );
                     }
 
-                    void subtestCommit()
+                    async Task subtestCommit()
                     {
                         // "animal"
-                        items.InputText += "mal";
+                        await localWaitForSettled(() => items.InputText += "mal");
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1527,14 +1539,10 @@ Busy"
 #endif
                         // animal.b
                         // Expecting Filter mode and an internal query.
-                        items.InputText += "b";
+                        await localWaitForSettled(() => items.InputText += "b");
+
 
                         actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
-                        actual.ToClipboardExpected();
-                        { }
-                        expected = @" 
-"
-                        ;
 
                         expected = @" 
 Black Cat  [animal] [color]
