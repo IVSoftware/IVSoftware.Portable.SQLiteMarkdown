@@ -133,7 +133,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             {
                 BeginInvoke(() =>
                 {
-                    MessageBox.Show(QFSUT.ParseSqlMarkdown<SelectableQFModelTOQO>());
+                    MessageBox.Show(QFSUT.ParseSqlMarkdown());
                 });
             };
             tsmiCombo.SelectedIndexChanged += (sender, e) =>
@@ -143,7 +143,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 {
                     if (tsmiCombo.SelectedItem?.ToString() is { } expr)
                     {
-                        MessageBox.Show(expr.ParseSqlMarkdown<SelectableQFModelTOQO>());
+                        MessageBox.Show(expr.ParseSqlMarkdown<SelectableQFModel>());
                     }
                 });
             };

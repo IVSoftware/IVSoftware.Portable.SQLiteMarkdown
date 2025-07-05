@@ -1331,13 +1331,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         };
                     _wdtInputTextSettled.RanToCompletion += (sender, e) =>
                     {
-                        InputTextSettled?.Invoke(this, EventArgs.Empty);
+                        OnInputTextSettled(new CancelEventArgs());
                     };
                 }
                 return _wdtInputTextSettled;
             }
         }
+
+        protected virtual void OnInputTextSettled(CancelEventArgs e)
+        {
+            InputTextSettled?.Invoke(this, e);
+        }
+
         WatchdogTimer _wdtInputTextSettled = null;
+
+
         public event EventHandler InputTextSettled;
 
         public TimeSpan InputTextSettleInterval
