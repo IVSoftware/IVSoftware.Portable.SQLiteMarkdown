@@ -16,7 +16,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         public MainForm()
         {
             InitializeComponent();
-            QFSUT = new ObservableQueryFilterSource<SelectableQFModel>
+            QFSUT = new ObservableQueryFilterSource<SelectableQFModelLTOQO>
             {
                 SelectionMode = SelectionMode.Single,
             };
@@ -47,7 +47,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                             break;
                     }
                 };
-                qfs.MemoryDatabase = CreateDemoDatabase<SelectableQFModel>();
+                qfs.MemoryDatabase = CreateDemoDatabase<SelectableQFModelLTOQO>();
                 qfs.PropertyChanged += (sender, e) =>
                 {
                     switch (e.PropertyName)
@@ -132,7 +132,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             {
                 BeginInvoke(() =>
                 {
-                    MessageBox.Show(QFSUT.ParseSqlMarkdown<SelectableQFModel>());
+                    MessageBox.Show(QFSUT.ParseSqlMarkdown<SelectableQFModelLTOQO>());
                 });
             };
             tsmiCombo.SelectedIndexChanged += (sender, e) =>
@@ -142,7 +142,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 {
                     if (tsmiCombo.SelectedItem?.ToString() is { } expr)
                     {
-                        MessageBox.Show(expr.ParseSqlMarkdown<SelectableQFModel>());
+                        MessageBox.Show(expr.ParseSqlMarkdown<SelectableQFModelLTOQO>());
                     }
                 });
             };
@@ -169,7 +169,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         /// <summary>
         /// QSF Under Test for ad hoc states and expr evals.
         /// </summary>
-        private ObservableQueryFilterSource<SelectableQFModel> QFSUT { get; } 
+        private ObservableQueryFilterSource<SelectableQFModelLTOQO> QFSUT { get; } 
 
         private SQLiteConnection CreateDemoDatabase<T>() where T : new()
         {

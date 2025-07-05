@@ -70,12 +70,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             }
         }
 
-        public new SelectableQFModel? DataContext => (SelectableQFModel?)base.DataContext;
+        public new SelectableQFModelLTOQO? DataContext => (SelectableQFModelLTOQO?)base.DataContext;
 
         /// <summary>
         /// Trackable for subscribe and unsibscribe.
         /// </summary>
-        public SelectableQFModel? _dataContext = null;
+        public SelectableQFModelLTOQO? _dataContext = null;
 
         protected override void OnDataContextChanged(EventArgs e)
         {

@@ -6,9 +6,12 @@ using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
 {
+    /// <summary>
+    /// LTOQO = This class is "like tag on query only" and many tests rely on this being the case.
+    /// </summary>
     [DebuggerDisplay("{Description}")]
     [Table("items")]
-    public class SelectableQFModel : SelfIndexed, ISelectableQueryFilterItem
+    public class SelectableQFModelLTOQO : SelfIndexed, ISelectableQueryFilterItem
     {
         [PrimaryKey]
         public override string Id { get; set; } = Guid.NewGuid().ToString();
@@ -47,7 +50,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
 
         [SelfIndexed(
             IndexingMode.QueryLikeTerm |   // Responds to non-bracketed tokens as if they were bracketed, but not the other way around.
-            IndexingMode.FilterLikeTerm |   // Responds to non-bracketed tokens as if they were bracketed, but not the other way around.
             IndexingMode.TagMatchTerm)]    // Responds to strict bracketed terms
         public string Tags
         {
