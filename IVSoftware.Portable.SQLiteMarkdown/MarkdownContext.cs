@@ -593,6 +593,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                         }
                                     }
                                 }
+                                else
+                                {
+                                    switch (_activeQFMode)
+                                    {
+                                        case QueryFilterMode.Query:
+                                            break;
+                                        case QueryFilterMode.Filter:
+                                            var openBracketCount = 0;
+                                            foreach (var c in value)
+                                            {
+                                                switch (c)
+                                                {
+                                                    case '[': openBracketCount++; break;
+                                                    case ']': openBracketCount--; break;
+                                                }
+                                            }
+
+                                            // Fuzzy tag filter.
+                                            if (openBracketCount != 0) // Could be pos or neg
+                                            {
+                                                foreach (var tagTerm in tagTerms)
+                                                {
+                                                    if (visited.Add(tagTerm))
+                                                    {
+                                                        exprsE.Add($"{tagTerm.Name} LIKE '%{value}%'");
+                                                        exprsN.Add($"{tagTerm.Name} LIKE {argId}");
+                                                    }
+                                                }
+                                            }
+                                            break;
+                                    }
+                                }
                                 var unionsE = string.Join(" OR ", exprsE);
                                 var unionsN = string.Join(" OR ", exprsN);
 

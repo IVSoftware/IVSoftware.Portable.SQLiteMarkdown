@@ -220,6 +220,73 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         private WatchdogTimer _wdtPropertyChanged = default;
+
+        private void internalExecuteIndexing()
+        {
+            lock (_lock)
+            {
+                var likeNodes = new HashSet<ASTNode>();
+                var containsNodes = new HashSet<ASTNode>();
+                var tagNodes = new HashSet<ASTNode>();
+                ASTNode[] astNodeArray;
+
+                var props = GetType().GetProperties();
+
+                for (int i = 0; i < props.Length; i++)
+                {
+                    var pi = props[i];
+                    var attr = pi.GetCustomAttribute<SelfIndexedAttribute>();
+                    if (attr == null) continue;
+
+                    var val = pi.GetValue(this);
+                    if (!(val is IConvertible)) continue;
+
+                    var sval = Convert.ToString(val);
+                    if (string.IsNullOrWhiteSpace(sval)) continue;
+
+                    if (!sval.TryTokenize(out astNodeArray)) continue;
+
+                    if (attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm) ||
+                        attr.IndexingMode.HasFlag(IndexingMode.FilterLikeTerm))
+                    {
+                        for (int j = 0; j < astNodeArray.Length; j++)
+                        {
+                            var node = astNodeArray[j];
+                            if (node.ASTType == NodeType.Term)
+                            {
+                                if (attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm))
+                                    likeNodes.Add(node);
+                                if (attr.IndexingMode.HasFlag(IndexingMode.FilterLikeTerm))
+                                    containsNodes.Add(node);
+                            }
+                            else if (node.ASTType == NodeType.Tag &&
+                                     attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm))
+                            {
+                                // Tags treated as terms when LikeTerm is also set
+                                likeNodes.Add(new ASTNode(NodeType.Term, node.Value));
+                            }
+                        }
+                    }
+
+                    if (attr.IndexingMode.HasFlag(IndexingMode.TagMatchTerm))
+                    {
+                        for (int j = 0; j < astNodeArray.Length; j++)
+                        {
+                            var node = astNodeArray[j];
+                            if (node.ASTType == NodeType.Tag)
+                                tagNodes.Add(node);
+                        }
+                    }
+                }
+
+                QueryTerm = likeNodes.ToArray().GenerateTerm(NodeTypeFlags.Term);
+                FilterTerm = containsNodes.ToArray().GenerateTerm(NodeTypeFlags.Term);
+                TagMatchTerm = tagNodes.ToArray().GenerateTerm(NodeTypeFlags.Tag);
+
+                _isIndexingRequired = false;
+            }
+        }
+#if false
         private void internalExecuteIndexing()
         {
             lock (_lock)
@@ -286,61 +353,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 FilterTerm = filterLikeNodes.ToArray().GenerateTerm(NodeTypeFlags.Term);
                 TagMatchTerm = tagNodes.ToArray().GenerateTerm(NodeTypeFlags.Tag);
 
-                _isIndexingRequired = false;
-            }
-        }
-
-#if false
-        private void internalExecuteIndexing()
-        {
-            lock (_lock)
-            {
-                LikeTerm = localGenerateTermFromProperties(IndexingMode.LikeTerm);
-                ContainsTerm = localGenerateTermFromProperties(IndexingMode.ContainsTerm);
-                TagMatchTerm = localGenerateTermFromProperties(IndexingMode.TagMatchTerm);
-                string localGenerateTermFromProperties(IndexingMode key)
-                {
-                    var astNodesHashSet = new HashSet<ASTNode>();
-                    ASTNode[] astNodeArray;
-
-                    lock (_lock)
-                    {
-                        foreach (var pi in indexedProperties[key])
-                        {
-                            bool isLikeTermFromTag =
-                                Equals(key, IndexingMode.TagMatchTerm) &&
-                                (pi.GetCustomAttribute<SelfIndexedAttribute>()?.IndexingMode.HasFlag(IndexingMode.LikeTerm) ?? false);
-
-                            if (isLikeTermFromTag)
-                            {
-                            }
-
-                            var cMe = pi.GetValue(this);
-                            { }
-                            if (cMe is IConvertible conv &&
-                                Convert.ToString(conv) is string sval &&
-                                !string.IsNullOrWhiteSpace(sval) &&
-                                sval.TryTokenize(out astNodeArray))
-                            {
-                                foreach (var astNode in astNodeArray)
-                                {
-                                    astNodesHashSet.Add(astNode);
-                                }
-                            }
-                        }
-                    }
-                    NodeTypeFlags nodeTypes = 0;
-                    if (key.HasFlag(IndexingMode.LikeTerm) ||
-                        key.HasFlag(IndexingMode.ContainsTerm))
-                    {
-                        nodeTypes |= NodeTypeFlags.Term;
-                    }
-                    if (key.HasFlag(IndexingMode.TagMatchTerm))
-                    {
-                        nodeTypes |= NodeTypeFlags.Tag;
-                    }
-                    return astNodesHashSet.ToArray().GenerateTerm(nodeTypes);
-                }
                 _isIndexingRequired = false;
             }
         }
