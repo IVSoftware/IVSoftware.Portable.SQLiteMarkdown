@@ -1,14 +1,17 @@
 ﻿
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -21,43 +24,53 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// clause by accumulating  parsing state, managing AST nodes, tracking substitutions,
     /// and guiding final SQL generation via attribute-aware hydration.
     /// </summary>
-    public class MarkdownContext
+    public class MarkdownContext : INotifyPropertyChanged
     {
         /// <summary>
         /// Creates a self-contained expression parsing environment, binding it
         /// to an XML-based AST using the IVSoftware.Portable.XBoundObject NuGet.
         /// </summary>
-        public MarkdownContext()
+        /// <remarks>
+        /// [Careful] 
+        /// The initial type must be known and captured regardless of GF mode.
+        /// A paremeterless CTOR would not be appropriate so avaid that.
+        /// </remarks>
+        public MarkdownContext(Type type) 
         {
             XAST = new
                 XElement(nameof(StdAstNode.ast))
                 .WithBoundAttributeValue(this);
+            ContractType = type;
         }
+
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
 
-#if false
-
-        public static string ParseSqlMarkdown<T>(this string @this, out XElement xast)
-            => ParseSqlMarkdown(@this, typeof(T), QueryFilterMode.Query, out xast);
-        public static string ParseSqlMarkdown<T>(this string @this, QueryFilterMode qfMode, out XElement xast)
-            => ParseSqlMarkdown(@this, typeof(T), qfMode, out xast);
-        public static string ParseSqlMarkdown(this string @this, Type type, QueryFilterMode qfMode = QueryFilterMode.Query)
-            => ParseSqlMarkdown(@this, type, qfMode, out XElement _);
-#endif
         public string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
-            => ParseSqlMarkdown(expr, typeof(T), qfMode, out XElement _);
+            => ParseSqlMarkdown(
+                expr, typeof(T), 
+                qfMode,
+                out XElement _);
 
-        public string ParseSqlMarkdown(string expr, Type type, QueryFilterMode qfMode, out XElement xast)
+        protected string ParseSqlMarkdown<T>()
+            => ParseSqlMarkdown(
+                InputText,
+                typeof(T), 
+                IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query, 
+                out XElement _);
+
+        public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
         {
+            if (proxyType is null) throw new InvalidOperationException("Proxy type must be specified");
+            ProxyType = proxyType;
+
             Raw = expr;
-            Type = type;
             Transform = Raw;
 
             Preamble = $"SELECT * FROM {localGetTableName()} WHERE";
 
             string localGetTableName()
             {
-                var tableAttr = type
+                var tableAttr = ContractType
                     .GetCustomAttributes(inherit: true)
                     .FirstOrDefault(attr => attr.GetType().Name == "TableAttribute");
 
@@ -67,7 +80,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if (nameProp != null && nameProp.GetValue(tableAttr) is string name)
                         return name;
                 }
-                return type.Name;
+                return proxyType.Name;
             }
 #if DEBUG
             if (expr == "animal b")
@@ -75,7 +88,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
             // Guard reentrancy by making sure to clear previous passes.
             XAST.RemoveNodes();
-            _qfMode = qfMode;
+            _activeQFMode = qfMode;
             if(ValidationPredicate?.Invoke(expr) == false)
             {
                 xast = XAST;
@@ -490,7 +503,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 string childClauseE, childClauseN;
                 string
-                    table = Type.GetCustomAttribute<TableAttribute>()?.Name ?? Type.Name;
+                    table = ProxyType.GetCustomAttribute<TableAttribute>()?.Name ?? ProxyType.Name;
                 var nArgs =
                     XAST
                     .DescendantsAndSelf()
@@ -534,13 +547,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     childClauseN);
                                 break;
                             case StdAstNode.term:
-                                var likeTerms = Type
+                                var likeTerms = ProxyType
                                     .GetProperties()
                                     .Where(p =>
                                         (qfMode == QueryFilterMode.Query && p.GetCustomAttribute<QueryLikeTermAttribute>() != null) ||
                                         (qfMode == QueryFilterMode.Filter && p.GetCustomAttribute<FilterLikeTermAttribute>() != null))
                                     .ToArray();
-                                var tagTerms = Type
+                                var tagTerms = ProxyType
                                     .GetProperties()
                                     .Where(p =>
                                         (p.GetCustomAttribute<TagMatchTermAttribute>() != null))
@@ -713,7 +726,70 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// The attributed CLR type used to resolve which properties participate in term matching.
         /// </summary>
-        public Type Type { get;  private set; }
+        public Type ContractType
+        {
+            get => _contractType;
+            set
+            {
+                if (value is null)
+                {
+                    Debug.Assert(DateTime.Now.Date == new DateTime(2025, 7, 4).Date, "Don't forget disabled");
+                    throw new InvalidOperationException("Need that type...!");
+                }
+                else
+                {
+                    switch (_activeQFMode)
+                    {
+                        case QueryFilterMode.Query:
+                            // Allow unconditional
+                            if (!Equals(_contractType, value))
+                            {
+                                _contractType = value;
+                                OnContractTypeChanged();
+                                OnPropertyChanged();
+                            }
+                            break;
+                        case QueryFilterMode.Filter:
+
+                            // Allow only if Type not set by previous query.
+                            Debug.Assert(
+                                QueryFilterConfig == QueryFilterConfig.Filter,
+                                "Expecting Query before Filter in any other mode!"
+                            );
+
+                            if (_contractType is null)
+                            {
+                                _contractType = value;
+                                OnContractTypeChanged();
+                                OnPropertyChanged();
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+
+        Type _contractType = default;
+
+        public Type ProxyType { get; private set; }
+
+        protected virtual void OnContractTypeChanged()
+        {
+            if (ContractType is null)
+            {
+                throw new InvalidOperationException("Contract type cannot be null.");
+            }
+            else
+            {
+                if (FilterQueryDatabase != null)
+                {
+                    FilterQueryDatabase.Dispose();
+                }
+                FilterQueryDatabase  = new SQLiteConnection(":memory:");
+                FilterQueryDatabase.CreateTable(ContractType);
+            }
+        }
+
 
         /// <summary>
         /// The SQL WHERE clause preamble, e.g. "SELECT * FROM tablename WHERE".
@@ -821,7 +897,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return _validationPredicate ?? (expr =>
                 {
                     // Default true, or (in Query mode) 3 minimum contiguous chars.
-                    switch (_qfMode)
+                    switch (_activeQFMode)
                     {
                         case QueryFilterMode.Query:
                             return Regex.IsMatch(expr, @"[a-zA-Z0-9]{3}");
@@ -836,37 +912,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         Predicate<string> _validationPredicate = null;
         
-        private QueryFilterMode _qfMode = QueryFilterMode.Query;
+        private QueryFilterMode _activeQFMode = QueryFilterMode.Query;
 
         #endregion P O S I T I O N A L    S U P P O R T
 
-#if false
-        #region P O S I T I O N A L    S U P P O R T    O R
-        public string Query { get; }
-
-        public string PositionalQuery =>
-            Regex.Replace(Query, @"@\w+", "?");
-
-        public object[] PositionalArgs =>
-            Args.Select(kvp => kvp.Value).ToArray();
-
-        public List<KeyValuePair<string, object>> Args { get; }
-
-        public override string ToString()
-        {
-            string formatted = Query;
-            foreach (var param in Args)
-            {
-                var value = param.Value is string str
-                    ? $"'{str.Replace("'", "''")}'"
-                    : param.Value?.ToString() ?? "NULL";
-
-                formatted = formatted.Replace(param.Key, value);
-            }
-            return formatted;
-        }
-        #endregion P O S I T I O N A L    S U P P O R T    O R
-#endif
         public object _lock = new object();
         public override string ToString()
         {
@@ -887,11 +936,284 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     value = param.Value.ToString();
                 }
-
                 formatted = formatted.Replace(param.Key, value);
             }
             return formatted;
         }
 
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
+            OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+        protected virtual void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            PropertyChanged?.Invoke(sender, e);
+        }
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #region C O N F I G
+        public QueryFilterConfig QueryFilterConfig
+        {
+            get => _queryFilterConfig;
+            set
+            {
+                if (!Equals(_queryFilterConfig, value))
+                {
+                    _queryFilterConfig = value;
+                    // Seems odd, right? But this actually does something.
+                    // It forces a review of of its current state to make
+                    // sure that it's still legal with the new QFC.
+                    FilteringState = FilteringState;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        QueryFilterConfig _queryFilterConfig = QueryFilterConfig.QueryAndFilter;
+
+        protected virtual SQLiteConnection FilterQueryDatabase { get; set; }
+
+        
+        public SQLiteConnection MemoryDatabase
+        {
+            get => _memoryDatabase;
+            set
+            {
+                if (!Equals(_memoryDatabase, value))
+                {
+                    if(_memoryDatabase != null)
+                    {
+                        _memoryDatabase.Dispose();
+                    }
+                    _memoryDatabase = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        SQLiteConnection _memoryDatabase = default;
+        #endregion C O N F I G
+
+        #region N A V    S E A R C H    S T A T E    M A C H I N E
+        public virtual bool RouteToFullRecordset => true;
+        protected FilteringState FilteringStatePrev { get; set;  }
+        public FilteringState FilteringState
+        {
+            get =>_filteringState;
+            protected set
+            {
+                switch (QueryFilterConfig)
+                {
+                    case QueryFilterConfig.Query:
+                        // Query-only is always ineligible for filtering.
+                        value = FilteringState.Ineligible;
+                        break;
+                    case QueryFilterConfig.Filter:
+                        // Filter-only is always either armed or active.
+                        if(value == FilteringState.Ineligible)
+                        {
+                            value = FilteringState.Armed;
+                        }
+                        break;
+                    case QueryFilterConfig.QueryAndFilter:
+                        break;
+                    default:
+                        break;
+                }
+                if (!Equals(_filteringState, value))
+                {
+                    FilteringStatePrev = _filteringState;
+                    _filteringState = value;
+                    OnFilteringStateChanged();
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(RouteToFullRecordset));
+                    OnPropertyChanged(nameof(IsFiltering));
+                }
+            }
+        }
+        FilteringState _filteringState = FilteringState.Ineligible;
+
+        public FilteringState FilteringStateForTest
+        {
+            get => FilteringState;
+            set => FilteringState = value;
+        }
+
+        public bool IsFiltering
+            => FilteringState == FilteringState.Ineligible
+                ? false
+                : FilteringState == FilteringState.Active
+                    ? true
+                    : FilteringStatePrev == FilteringState.Active;
+
+        // Canonical {5932CB31-B914-4DE8-9457-7A668CDB7D08}
+        public FilteringState Clear(bool all = false)
+        {
+            if (all)
+            {
+                InputText = string.Empty;
+                FilteringState = FilteringState.Ineligible;
+                SearchEntryState = SearchEntryState.Cleared;
+            }
+            else
+            {
+                if (InputText.Length > 0)
+                {
+                    // Basically, if there is entry text but the filtering
+                    // is still only armed not active, that indicates that
+                    // what we're seeing in the list is the result of a full
+                    // db query that just occurred. So now, when we CLEAR that
+                    // text, it's assumed to be in the interest of filtering
+                    // that query result, so filtering goes Active in theis case.
+                    InputText = string.Empty;
+                    switch (FilteringState)
+                    {
+                        case FilteringState.Ineligible:
+                            break;
+                        case FilteringState.Armed:
+                            FilteringState = FilteringState.Active;
+                            break;
+                        case FilteringState.Active:
+                            break;
+                        default:
+                            throw new NotImplementedException($"Bad case: {FilteringState}");
+                    }
+                }
+                else
+                {
+                    switch (FilteringState)
+                    {
+                        case FilteringState.Ineligible:
+                            break;
+                        case FilteringState.Armed:
+                        case FilteringState.Active:
+                            // If the text is already empty and
+                            // you click again, it's a hard reset!
+                            FilteringState = FilteringState.Ineligible;
+                            break;
+                        default:
+                            throw new NotImplementedException($"Bad case: {FilteringState}");
+                    }
+                }
+            }
+            // Fluent return;
+            return FilteringState;
+        }
+
+        protected virtual void OnFilteringStateChanged() { }
+
+        public string InputText
+        {
+            get => _inputText;
+            set
+            {
+                if (!Equals(_inputText, value))
+                {
+                    _inputText = value;
+                    OnPropertyChanged();
+                    OnInputTextChanged();
+                }
+            }
+        }
+        string _inputText = string.Empty;
+        protected virtual void OnInputTextChanged()
+        {
+            // Trim without eventing.
+            _inputText = _inputText.Trim();
+
+            var filteringStateB4 = FilteringState;
+            switch (FilteringState)
+            {
+                case FilteringState.Ineligible:
+                    if (InputText.Length == 0)
+                    {
+                        SearchEntryState = SearchEntryState.QueryEmpty;
+                    }
+                    else if (InputText.Length < 3)
+                    {
+                        SearchEntryState = SearchEntryState.QueryENB;
+                        return;
+                    }
+                    else
+                    {
+                        SearchEntryState = SearchEntryState.QueryEN;
+                    }
+                    break;
+                case FilteringState.Armed:
+                    if (InputText.Length != 0)
+                    {
+                        FilteringState = FilteringState.Active;
+                    }
+                    break;
+                case FilteringState.Active:
+                    if (InputText.Length == 0)
+                    {
+                        // Downgrade but stay armed.
+                        FilteringState = FilteringState.Armed;
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException($"Bad case: {FilteringState}");
+            }
+            WDTInputTextSettled.StartOrRestart();
+        }
+
+        public SearchEntryState SearchEntryState
+        {
+            get => _searchEntryState;
+            protected set
+            {
+                if (!Equals(_searchEntryState, value))
+                {
+                    _searchEntryState = value;
+                    OnSearchEntryStateChanged();
+                    OnPropertyChanged();
+                }
+            }
+        }
+        SearchEntryState _searchEntryState = default;
+
+        protected virtual void OnSearchEntryStateChanged() { }
+
+        protected WatchdogTimer WDTInputTextSettled
+        {
+            get
+            {
+                if (_wdtInputTextSettled is null)
+                {
+                    _wdtInputTextSettled =
+                        new WatchdogTimer
+                        {
+                            Interval = InputTextSettleInterval
+                        };
+                    _wdtInputTextSettled.RanToCompletion += (sender, e) =>
+                    {
+                        InputTextSettled?.Invoke(this, EventArgs.Empty);
+                    };
+                }
+                return _wdtInputTextSettled;
+            }
+        }
+        WatchdogTimer _wdtInputTextSettled = null;
+        public event EventHandler InputTextSettled;
+
+        public TimeSpan InputTextSettleInterval
+        {
+            get => _inputTextSettleInterval;
+            set
+            {
+                if (!Equals(_inputTextSettleInterval, value))
+                {
+                    if (_wdtInputTextSettled is WatchdogTimer wdt)
+                    {
+                        wdt.Interval = value;
+                    }
+                    _inputTextSettleInterval = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        TimeSpan _inputTextSettleInterval = TimeSpan.FromSeconds(0.25);
+        #endregion N A V    S E A R C H    S T A T E    M A C H I N E
+    }
+    public class MarkdownContext<T> : MarkdownContext
+    {
+        public MarkdownContext() : base(typeof(T)) { }
     }
 }

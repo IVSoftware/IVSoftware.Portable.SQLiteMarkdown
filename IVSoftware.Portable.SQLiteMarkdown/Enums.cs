@@ -42,42 +42,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         Json,
     }
-    /// <summary>
-    /// Specifies the indexing behavior for a property within OnePage's "query-then-filter" model,
-    /// defining how the property will participate in different types of search operations during
-    /// both the initial database query and the subsequent in-memory filtering phases.
-    ///
-    /// These options allow for efficient data retrieval and filtering, enhancing responsiveness
-    /// within OnePage applications as users interact with search fields.
-    /// </summary>
-    /// 
-    [Flags]
-    public enum IndexingMode
-    {
-        /// <summary>
-        /// Participates in the JSON blob for Query mode SQL where: LIKE '%value"%'.
-        /// </summary>
-        QueryLikeTerm = 0x01,
-
-        /// <summary>
-        /// Participates in the JSON blob for Query mode SQL where: LIKE '%value"%'.
-        /// </summary>
-        FilterLikeTerm = 0x02,
-
-        /// <summary>
-        /// Participates in the JSON blob for explicit tag queries SQL where values are 
-        /// surrounded by square brackets and searched: LIKE '%[value]"%'.
-        /// </summary>
-        TagMatchTerm = 0x04,
-
-        /// <summary>
-        /// Combines both query phase and filter phase matching, enabling the property to
-        /// support both partial retrieval from the database and broad in-memory search functionality.
-        /// </summary>
-        QueryOrFilter = 0x03,
-
-        All = 0x7,
-    }
     public enum FilteringState
     {
         /// <summary>

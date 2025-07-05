@@ -143,7 +143,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                     }
                 });
             };
-            Extensions.StackPrompt += (sender, e) =>
+            ExtensionsOR.StackPrompt += (sender, e) =>
             {
                 BeginInvoke(() =>
                 {
@@ -154,7 +154,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             {
                 BeginInvoke(() =>
                 {
-                    Extensions.PromptEachStep = tsmiPromptEachStep.Checked;
+                    ExtensionsOR.PromptEachStep = tsmiPromptEachStep.Checked;
                 });
             };
             labelSearchIcon.Click += (sender, e) => 

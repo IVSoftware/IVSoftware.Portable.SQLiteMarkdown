@@ -9,13 +9,14 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
-
+    [DebuggerDisplay("Count={Count}")]
     public partial class ObservableQueryFilterSource<T>
-        : MarkdownContext
-        , IObservableQueryFilterSource
+        : MarkdownContext<T>
+        , IObservableQueryFilterSource<T>
         , IList<T>
         where T : new()
     {
@@ -93,7 +94,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
         ObservableSelectionHashSet<ISelectableQueryFilterItem> _selectedItems = null;
-
         public SelectionMode SelectionMode
         {
             get => SelectedItems.SelectionMode;
@@ -103,27 +103,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-
         private readonly ObservableCollection<T> _filteredItems = new ObservableCollection<T>();
         private readonly ObservableCollection<T> _unfilteredItems = new ObservableCollection<T>();
 
         public IReadOnlyList<T> UnfilteredItems => _unfilteredItems;
-
-        public bool IsReadOnly
-        {
-            get => _isReadOnly;
-            set
-            {
-                if (!Equals(_isReadOnly, value))
-                {
-                    _isReadOnly = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        bool _isReadOnly = true;
-
-        public bool IsFixedSize => ((IList)_unfilteredItems).IsFixedSize;
 
         public bool Busy
         {
@@ -139,7 +122,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         bool _busy = default;
 
-        public void ReplaceItems(IList items)
+        /// <summary>
+        /// Replaces the entire current dataset after a query.
+        /// Not valid in Filter-only mode. Raises CollectionChanged and sets FilteringState based on count.
+        /// </summary>
+        public void ReplaceItems(IEnumerable<T> items)
+        {
+            if (QueryFilterConfig == QueryFilterConfig.Filter)
+            {
+                throw new InvalidOperationException("You must turn off File-Only mode to use this method");
+            }
+            else
+            {
+                ReplaceItemsInternal(items);
+            }
+        }
+
+        private void ReplaceItemsInternal(IEnumerable<T> items)
         {
             try
             {
@@ -147,13 +146,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
                 _unfilteredItems.Clear();
-                if (items.Count == 0)
+                if (items.Any())
                 {
-                    SearchEntryState = SearchEntryState.QueryCompleteNoResults;
-                }
-                else
-                {
-                    foreach (T item in items)
+                    foreach (T item in items.ToArray())
                     {
                         _unfilteredItems.Add(item);
                     }
@@ -166,6 +161,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     );
                     SearchEntryState = SearchEntryState.QueryCompleteWithResults;
                 }
+                else
+                {
+                    SearchEntryState = SearchEntryState.QueryCompleteNoResults;
+                }
                 FilteringState =
                     _unfilteredItems.Count < 2
                     ? FilteringState.Ineligible
@@ -177,10 +176,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        public void ApplyFilter()
+        /// <summary>
+        /// Sets Filter-only mode and initializes the dataset for filtering.
+        /// Ideal for static lists (e.g., preferences, enums).
+        /// When a filter is "cleared" it means the collection view returns to "all items visible".
+        /// </summary>
+        public void InitializeFilterOnlyMode(IEnumerable<T> items)
+        {
+            ReplaceItemsInternal(items.ToArray());
+            QueryFilterConfig = QueryFilterConfig.Filter;
+        }
+
+        /// <summary>
+        /// Applies filtering based on incremental changes to the input text,
+        /// occurring after the initial query. Operates on the in-memory SQLite store
+        /// when in QueryAndFilter or Filter mode. Override to customize filter behavior.
+        /// </summary>
+        protected virtual void ApplyFilter()
         {
             try
             {
+                Debug.Assert(IsFiltering);
+
                 Busy = true;
                 if (InputText.Length == 0)
                 {
@@ -224,28 +241,39 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 #endif
 
                     var searchEntryState = SearchEntryState;
-                    var context = InputText.ParseSqlMarkdown<T>(ref searchEntryState);
+                    var sql = ParseSqlMarkdown<T>();
+                    // Must have "where" and must have at least 1 non whitespace char after it.
+                    if (Regex.IsMatch(sql ?? "", @"where\s+\S", RegexOptions.IgnoreCase))
+                    {
 
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Expected WHERE clause with content. Parse result was:\n{sql}");
+                    }
 
 #if DEBUG
+                    var context = InputText.ParseSqlMarkdown<T>(ref searchEntryState);
                     var cstring = context.ToString();
-                    { }
-
-#endif
-
-                    var tmp = FilterQueryDatabase.Query<T>(context.ToString());
-
-#if false && DEBUG
-                    if (InputText == "olf")
+                    if(sql == cstring)
                     {
-                        T item;
-                        item = tmp.Single();
+                    }
+                    else 
+                    {
+                        // Probably 'not' the same so far. Here's what we need to happen:
+                        // - Using the string extension is stand-alone and always makes a new context.
+                        // - Going forward, the string extension should support only expr (a.k.a. @this), QueryFilterMode, and Minimum Length
+                        // - We're done with passing state into the string extension, however. If state is what you want, maintain a context.
+                        // - If you want, you can pull that context off the 'out XElement' from the first string call. But honestly this is more intended to be a test feature.
                     }
 #endif
+
+                    var filteredRecords = FilterQueryDatabase.Query<T>(sql);
+
                     // This is 'not' the place for a reconciled sync.
                     // We would do that in the UI if at all.
                     _filteredItems.Clear();
-                    foreach(var item in tmp)
+                    foreach(var item in filteredRecords)
                     {
                         _filteredItems.Add(item);
                     }
@@ -268,6 +296,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
+        #region I L I S T
         public int IndexOf(T item) { return _unfilteredItems.IndexOf(item); }
 
         public void Insert(int index, T item)
@@ -290,51 +319,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         void IList.Clear() => Clear();
         void ICollection<T>.Clear() => Clear();
-
-        // Canonical {5932CB31-B914-4DE8-9457-7A668CDB7D08}
-        public FilteringState Clear(bool all = false)
-        {
-            if (InputText.Length > 0)
-            {
-                // Basically, if there is entry text but the filtering
-                // is still only armed not active, that indicates that
-                // what we're seeing in the list is the result of a full
-                // db query that just occurred. So now, when we CLEAR that
-                // text, it's assumed to be in the interest of filtering
-                // that query result, so filtering goes Active in theis case.
-                InputText = string.Empty;
-                switch (FilteringState)
-                {
-                    case FilteringState.Ineligible:
-                        break;
-                    case FilteringState.Armed:
-                        FilteringState = FilteringState.Active;
-                        break;
-                    case FilteringState.Active:
-                        break;
-                    default:
-                        throw new NotImplementedException($"Bad case: {FilteringState}");
-                }
-            }
-            else
-            {
-                switch (FilteringState)
-                {
-                    case FilteringState.Ineligible:
-                        break;
-                    case FilteringState.Armed:
-                    case FilteringState.Active:
-                        // If the text is already empty and
-                        // you click again, it's a hard reset!
-                        FilteringState = FilteringState.Ineligible;
-                        break;
-                    default:
-                        throw new NotImplementedException($"Bad case: {FilteringState}");
-                }
-            }
-            // Fluent return;
-            return FilteringState;
-        }
 
         public bool Contains(T item) { return _unfilteredItems.Contains(item); }
 
@@ -378,14 +362,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         object ICollection.SyncRoot { get { return ((ICollection)_unfilteredItems).SyncRoot; } }
 
+        #endregion I L I S T
+
         public event NotifyCollectionChangedEventHandler CollectionChanged;
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
-            OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        protected virtual void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            PropertyChanged?.Invoke(sender, e);
-        }
 
         /// <summary>
         /// No client data connection is assumed, but if a persistent
@@ -416,37 +395,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
             }
         }
-        public SQLiteConnection MemoryDatabase
-        {
-            get => _memoryDatabase;
-            set
-            {
-                if (!Equals(_memoryDatabase, value))
-                {
-                    if(_memoryDatabase != null)
-                    {
-                        _memoryDatabase.Dispose();
-                    }
-                    _memoryDatabase = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        SQLiteConnection _memoryDatabase = default;
-        public string InputText
-        {
-            get => _inputText;
-            set
-            {
-                if (!Equals(_inputText, value))
-                {
-                    _inputText = value;
-                    OnPropertyChanged();
-                    OnInputTextChanged();
-                }
-            }
-        }
-        string _inputText = string.Empty;
 
         public MarkdownContextOR MarkdownContextOR
         {
@@ -459,38 +407,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public string SQL => MarkdownContextOR?.ToString();
 
-        protected virtual void OnInputTextChanged()
+        protected override void OnInputTextChanged()
         {
-            var trim = InputText?.Trim() ?? string.Empty;
-            var filteringStateB4 = FilteringState;
+            base.OnInputTextChanged();
+
             switch (FilteringState)
             {
-                case FilteringState.Ineligible:
-                    if (trim.Length == 0)
-                    {
-                        SearchEntryState = SearchEntryState.QueryEmpty;
-                    }
-                    else if (trim.Length < 3)
-                    {
-                        SearchEntryState = SearchEntryState.QueryENB;
-                        return;
-                    }
-                    else
-                    {
-                        SearchEntryState = SearchEntryState.QueryEN;
-                    }
-                    break;
                 case FilteringState.Armed:
-                    if (trim.Length != 0)
+                    // Basically, this is when a backspace in Filter mode results in an
+                    // empty entry text field. We want to stay in filtering mode though,
+                    // but the UI visuals might change e.g. icon glyph and/or color.
+                    if (InputText.Length == 0 && FilteringStatePrev == FilteringState.Active)
                     {
-                        FilteringState = FilteringState.Active;
-                    }
-                    break;
-                case FilteringState.Active:
-                    if(trim.Length == 0)
-                    {
-                        // Downgrade but stay armed.
-                        FilteringState = FilteringState.Armed;
                         CollectionChanged?.Invoke(
                             this,
                             new NotifyQueryFilterCollectionChangedEventArgs(
@@ -500,80 +428,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         );
                     }
                     break;
-                default:
-                    throw new NotImplementedException($"Bad case: {FilteringState}");
             }
             // If after all of that we manage to be in an active
             // filtering state then go ahead and apply.
             if (FilteringState == FilteringState.Active)
             {
                 ApplyFilter();
-            }
-            WDTInputTextSettled.StartOrRestart();
-        }
-        public event EventHandler InputTextSettled;
-
-        public QueryFilterConfig QueryFilterConfig
-        {
-            get => _queryFilterConfig;
-            set
-            {
-                if (!Equals(_queryFilterConfig, value))
-                {
-                    _queryFilterConfig = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        QueryFilterConfig _queryFilterConfig = QueryFilterConfig.QueryAndFilter;
-
-        private FilteringState FilteringStatePrev { get; set;  }
-        public FilteringState FilteringState
-        {
-            get => _filteringState;
-            protected set
-            {
-                if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
-                {
-                    // The only transition allowed is going back to Inactive.
-                    value = FilteringState.Ineligible;
-                }
-                if (!Equals(_filteringState, value))
-                {
-                    FilteringStatePrev = _filteringState;
-                    _filteringState = value;
-                    OnFilteringStateChanged();
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(RouteToFullRecordset));
-                    OnPropertyChanged(nameof(IsFiltering));
-                }
-            }
-        }
-        FilteringState _filteringState = default;
-
-        public FilteringState FilteringStateForTest
-        {
-            get => FilteringState;
-            set => FilteringState = value;
-        }
-
-
-        private void OnFilteringStateChanged()
-        {
-            switch (FilteringState)
-            {
-                case FilteringState.Ineligible:
-                    // Clear, then event ADHOC. That is, it's not always
-                    // in our best interest to simply forward the clear.
-                    _unfilteredItems.Clear();
-                    CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-                    break;
-                case FilteringState.Armed:
-                    break;
-                case FilteringState.Active:
-                    break;
-                default:
-                    break;
             }
         }
 
@@ -594,65 +454,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
         string _title = "Items";
-
-        public SearchEntryState SearchEntryState
-        {
-            get => _searchEntryState;
-            protected set
-            {
-                if (!Equals(_searchEntryState, value))
-                {
-                    _searchEntryState = value;
-                    OnSearchEntryStateChanged();
-                    OnPropertyChanged();
-                }
-            }
-        }
-        SearchEntryState _searchEntryState = default;
-
-        protected virtual void OnSearchEntryStateChanged()
-        {
-        }
-
-        protected WatchdogTimer WDTInputTextSettled
-        {
-            get
-            {
-                if (_wdtInputTextSettled is null)
-                {
-                    _wdtInputTextSettled =
-                        new WatchdogTimer
-                        {
-                            Interval = InputTextSettleInterval
-                        };
-                    _wdtInputTextSettled.RanToCompletion += (sender, e) =>
-                    {
-                        InputTextSettled?.Invoke(this, EventArgs.Empty);
-                    };
-                }
-                return _wdtInputTextSettled;
-            }
-        }
-        WatchdogTimer _wdtInputTextSettled = null;
-
-        public TimeSpan InputTextSettleInterval
-        {
-            get => _inputTextSettleInterval;
-            set
-            {
-                if (!Equals(_inputTextSettleInterval, value))
-                {
-                    if (_wdtInputTextSettled is WatchdogTimer wdt)
-                    {
-                        wdt.Interval = value;
-                    }
-                    _inputTextSettleInterval = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        TimeSpan _inputTextSettleInterval = TimeSpan.FromSeconds(0.25);
 
         protected virtual void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs eUnk)
         {
@@ -713,27 +514,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 Debug.Fail("ADVISORY - Sender is not IList. Is this intentional?");
             }
         }
-        public SQLiteConnection FilterQueryDatabase
-        {
-            get
-            {
-                if (_filterQueryDatabase is null)
-                {
-                    _filterQueryDatabase = new SQLiteConnection(":memory:");
-                    _filterQueryDatabase.CreateTable<T>();
-                }
-                return _filterQueryDatabase;
-            }
-        }
-        SQLiteConnection _filterQueryDatabase = null;
 
 
         #region R O U T E D    C O N D I T I O N A L S
 
+        protected override void OnFilteringStateChanged()
+        {
+            // Relies on BC functionality, except where firing the CollectionChanged event is concerned.
+            base.OnFilteringStateChanged();
+
+            // List-specific.
+            switch (FilteringState)
+            {
+                case FilteringState.Ineligible:
+                    // Clear, then event ADHOC. That is, it's not always
+                    // in our best interest to simply forward the clear.
+                    _unfilteredItems.Clear();
+                    CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    break;
+            }
+        }
+
         /// <summary>
         /// This is a router for whether to show the unfiltered set or the filtered one.
+        /// The override allows some intelligence WRT the number of filterable items in the list.
         /// </summary>
-        public bool RouteToFullRecordset
+        public override bool RouteToFullRecordset
         {
             get
             {
@@ -755,13 +561,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        public bool IsFiltering
-            =>  FilteringState == FilteringState.Ineligible
-                ? false
-                : FilteringState == FilteringState.Active
-                    ? true
-                    : FilteringStatePrev == FilteringState.Active;
-
         private IList<T> _RoutedItems_ =>
             RouteToFullRecordset ? _filteredItems : _unfilteredItems;
 
@@ -769,6 +568,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
         public int Count => _RoutedItems_.Count;
+
+        /// <summary>
+        /// Required IList support
+        /// </summary>
+        public bool IsReadOnly => ((IList)_unfilteredItems).IsReadOnly;
+
+        /// <summary>
+        /// Required IList support
+        /// </summary>
+        public bool IsFixedSize => ((IList)_unfilteredItems).IsFixedSize;
 
         public T this[int index]
         {

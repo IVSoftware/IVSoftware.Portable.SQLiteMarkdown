@@ -156,6 +156,7 @@
             tsmiPromptEachStep.Name = "tsmiPromptEachStep";
             tsmiPromptEachStep.Size = new Size(310, 38);
             tsmiPromptEachStep.Text = "Prompt Each Step";
+            tsmiPromptEachStep.Visible = false;
             // 
             // buttonClear
             // 

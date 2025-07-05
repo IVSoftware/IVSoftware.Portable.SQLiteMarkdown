@@ -26,9 +26,9 @@ It works well in situations where you want to support both *browsing* and *filte
 
 This library is platform-agnostic. At the same time, it drops any pretense of not knowing there's a UI out there with a "probable almost-certain shape" to it. That predicted UI is unapologetically supported with states and bindable properties.
 
-<img src="https://github.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown/blob/master/IVSoftware.Portable.SQLiteMarkdown/README/img/demo-screenshot-term.png" alt="Search demo with and without [app] tag" width="600"/>
+![Search demo with and without [app] tag](https://raw.githubusercontent.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown/master/IVSoftware.Portable.SQLiteMarkdown/README/img/demo-screenshot-term.png)
 
-<img src="https://github.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown/blob/master/IVSoftware.Portable.SQLiteMarkdown/README/img/demo-screenshot-tag.png" alt="Search demo with [app] tag" width="600"/>
+![Search demo with [app] tag](https://raw.githubusercontent.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown/master/IVSoftware.Portable.SQLiteMarkdown/README/img/demo-screenshot-tag.png)
 
 
 The included demo is WinForms but don't be misled by that. There are no platform dependencies in the core package. None.
@@ -199,8 +199,7 @@ Here are more examples:
 
 ## Split Contracts – Query Templates for Expression Parsing
 
-So let’s be clear. We’ve used a class to generate a SQL expression. When we perform the actual query, does the data type receiving the recordset need to be the same type?  
-**It does not!**
+So let’s be clear. We’ve used a class to generate a SQL expression. When we perform the actual query, does the data type receiving the recordset need to be the same type?  **It does not!**
 
 That’s the idea behind **Split Contracts** — you can separate the type used to **build the query** from the type used to **receive the results**. The query model is just a template. It defines how to interpret the input expression, not how the data is stored or shaped.
 
