@@ -20,10 +20,10 @@ public class Contact
     [PrimaryKey]
     public string Id { get; set; }
 
-    [SqlLikeTerm]
+    [QueryLikeTerm]
     public string Name { get; set; }
 
-    [SqlLikeTerm]
+    [QueryLikeTerm]
     public string Email { get; set; }
 }
 ```

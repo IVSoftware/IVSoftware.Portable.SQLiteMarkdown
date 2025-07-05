@@ -18,39 +18,15 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageReleaseNotes>
-			Initial alpha release 1.0.0:
-			- Includes markdown serialization and binding to SQLite via sqlite-net-pcl.
-			- Supports IVSoftware.Portable.Threading and XBoundObject integration.
-			- Includes support for both Newtonsoft.Json and System.Text.Json.
-			Initial alpha1 release 1.0.0:
-			- Unit Testing
-			- Atomic single and double quotes now fully supported.
-			Initial alpha2 release 1.0.0:
-			- ObservableQueryFilterSource preliminary Unit Testing
-			- FSOL ApplyFilter using memory SQLITE scheme.
-			- IObservableQueryFilterSource integration of [Obsolete] IQueryFilterStateTracker is complete and functional.
-			Upgraded to beta release 1.0.0:
-			- The GitHub repo is public now with a preliminary WinForms example.
-			- The interface is becoming stable but until an RC version posts the interface contract should be considered probationary.
-			- For the adventurous, the intent is starting to be clear enough to be potentially useful.
-			- ADVISORY: Unit Testing is clean in DEBUG mode but the atomic string parsing fails two tests in release mode. Avoid atomic string parsing for now.
-			Beta Release + 1
-			- ADVISORY: This is 'not' a released bundle.
-			- Unit Tests @ 16 are passing handily now in RELEASE mode. (A critical expr assignment was being done inside a #DEBUG block.)
-			Beta Release + 2
-			- ADVISORY: This is 'not' a released bundle.
-			- The FilterValue property has been entirely removed from iterfaces, classed, MSTest data.
-			- Going forward, the QueryTemplate and FilterTemplate properties will express differences between terms to be considered in the respective states.
-			Beta Release + 3
-			- [Obsolete] SqlLikeTerm		-&gt; QueryLikeTerm
-			- [Obsolete] FilterContainsTerm -&gt; FilterLikeTerm
-			- The obsolete attributes are aliased to the new ones so as not to break early adopter builds.
-
+			RC1
+			- The package contracts (Interfaces and Methods) are finalized now and will not be subject to future breaking changes.
+			- Early adopters should migrate away from anything marked [Obsolete] or OR as these do not carry the same guarantee.
+			- There is a tone of testing behind this release, but the Query-Only and Filter-Only modes need more coverage so use with caution for now.
 		</PackageReleaseNotes>
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
 		<BaseVersion>1.0.0</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-beta3</VersionPrefix>
+		<VersionPrefix>$(BaseVersion)-rc1</VersionPrefix>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<SignAssembly>True</SignAssembly>
