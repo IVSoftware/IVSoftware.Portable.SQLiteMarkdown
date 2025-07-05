@@ -2,6 +2,7 @@
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using Newtonsoft.Json.Linq;
 using SQLite;
 using System;
 using System.Collections;
@@ -24,7 +25,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// clause by accumulating  parsing state, managing AST nodes, tracking substitutions,
     /// and guiding final SQL generation via attribute-aware hydration.
     /// </summary>
-    [DebuggerDisplay("ContractType={ContractType}")]public class MarkdownContext : INotifyPropertyChanged
+    [DebuggerDisplay("ContractType={ContractType}")]
+    public class MarkdownContext 
+        : INotifyPropertyChanged
+        , ISelfIndexedMarkdown
     {
         /// <summary>
         /// Creates a self-contained expression parsing environment, binding it
@@ -500,6 +504,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if (isLastChar)
                     {
                         xcurrent.SetAttributeValue(nameof(StdAstAttr.value), sb);
+                        #region S E L F    I N D E X I N G    S U P P O R T
+                        var term = sb.ToString();
+                        bool isTag = term.StartsWith("$FDFD") && term.Length == 10;
+                        if(isTag)
+                        {
+                            _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(term);
+                        }
+                        #endregion S E L F    I N D E X I N G    S U P P O R T
                         sb.Clear();
                         return false;
                     }
@@ -853,7 +865,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         public IReadOnlyDictionary<IndexingMode, IReadOnlyCollection<string>> IndexedTerms =>
             _parsedIndexTerms.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyCollection<string>)kvp.Value.AsReadOnly());
-
 
 
         /// <summary>
@@ -1274,8 +1285,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+
+
         TimeSpan _inputTextSettleInterval = TimeSpan.FromSeconds(0.25);
         #endregion N A V    S E A R C H    S T A T E    M A C H I N E
+
+        #region S E L F    I N D E X E D
+        public string PrimaryKey => throw new NotImplementedException();
+
+        public string QueryTerm { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string FilterTerm { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string TagMatchTerm { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string Properties { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        #endregion S E L F    I N D E X E D
     }
     public class MarkdownContext<T> : MarkdownContext
     {

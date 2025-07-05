@@ -223,6 +223,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         private void internalExecuteIndexing()
         {
+            var localMC = new MarkdownContext(GetType());
             lock (_lock)
             {
                 var likeNodes = new HashSet<ASTNode>();
@@ -232,6 +233,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                 var props = GetType().GetProperties();
 
+
+#if false || NEW_WAY
                 for (int i = 0; i < props.Length; i++)
                 {
                     var pi = props[i];
@@ -240,7 +243,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                     var val = pi.GetValue(this);
                     if (!(val is IConvertible)) continue;
+                    localMC.InputText = Convert.ToString(val);
+                    localMC.ParseSqlMarkdown();
+                    { }
+                }
 
+                QueryTerm = localMC.QueryTerm;
+                FilterTerm = localMC.FilterTerm;
+                TagMatchTerm = localMC.TagMatchTerm;
+
+#else
+
+                for (int i = 0; i < props.Length; i++)
+                {
+                    var pi = props[i];
+                    var attr = pi.GetCustomAttribute<SelfIndexedAttribute>();
+                    if (attr == null) continue;
+
+                    var val = pi.GetValue(this);
+                    if (!(val is IConvertible)) continue;
                     var sval = Convert.ToString(val);
                     if (string.IsNullOrWhiteSpace(sval)) continue;
 
@@ -290,7 +311,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 QueryTerm = likeNodes.ToArray().GenerateTerm(NodeTypeFlags.Term);
                 FilterTerm = containsNodes.ToArray().GenerateTerm(NodeTypeFlags.Term);
                 TagMatchTerm = tagNodes.ToArray().GenerateTerm(NodeTypeFlags.Tag);
-
+                
+#endif
                 _isIndexingRequired = false;
             }
         }
