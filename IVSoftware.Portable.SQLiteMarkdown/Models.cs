@@ -234,23 +234,44 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 var props = GetType().GetProperties();
 
 
-#if false || NEW_WAY
+#if true || NEW_WAY
                 for (int i = 0; i < props.Length; i++)
                 {
                     var pi = props[i];
                     var attr = pi.GetCustomAttribute<SelfIndexedAttribute>();
                     if (attr == null) continue;
-
                     var val = pi.GetValue(this);
                     if (!(val is IConvertible)) continue;
                     localMC.InputText = Convert.ToString(val);
-                    localMC.ParseSqlMarkdown();
-                    { }
+                    if(attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm))
+                    {
+                        using (localMC.DHostSelfIndexing.GetToken(nameof(IndexingMode), IndexingMode.QueryLikeTerm))
+                        {
+                            localMC.ParseSqlMarkdown();
+                        }
+                    }
+
+                    if(attr.IndexingMode.HasFlag(IndexingMode.FilterLikeTerm))
+                    {
+                        using (localMC.DHostSelfIndexing.GetToken(nameof(IndexingMode), IndexingMode.FilterLikeTerm))
+                        {
+                            localMC.ParseSqlMarkdown();
+                        }
+                    }
+
+                    if(attr.IndexingMode.HasFlag(IndexingMode.TagMatchTerm))
+                    {
+                        using (localMC.DHostSelfIndexing.GetToken(nameof(IndexingMode), IndexingMode.TagMatchTerm))
+                        {
+                            localMC.ParseSqlMarkdown();
+                        }
+                    }
                 }
 
                 QueryTerm = localMC.QueryTerm;
                 FilterTerm = localMC.FilterTerm;
                 TagMatchTerm = localMC.TagMatchTerm;
+                { }
 
 #else
 

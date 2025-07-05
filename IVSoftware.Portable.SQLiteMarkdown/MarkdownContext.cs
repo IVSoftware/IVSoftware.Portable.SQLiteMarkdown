@@ -1,4 +1,5 @@
 ﻿
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -504,67 +505,81 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if (isLastChar)
                     {
                         xcurrent.SetAttributeValue(nameof(StdAstAttr.value), sb);
-                        #region S E L F    I N D E X I N G    S U P P O R T
-                        var rawTerm = sb.ToString();
-                        bool isTag = rawTerm.StartsWith("$FDFD") && rawTerm.Length == 10;
-                        bool indexingHandled = false;
-                        if(isTag)
+                        if (DHostSelfIndexing[nameof(IndexingMode)] is IndexingMode selfIndexingMode)
                         {
-                            var rehydrated = Rehydrate(rawTerm);
-                            if (!rehydrated.Contains(','))
-                            {
-                                _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(rehydrated);
-                                rehydrated = rehydrated.Replace("[", string.Empty).Replace("]", string.Empty);
-                                switch (QueryFilterConfig)
-                                {
-                                    case QueryFilterConfig.Query:
-                                        _parsedIndexTerms[IndexingMode.QueryLikeTerm]
-                                            .Add(rehydrated);
-                                        break;
-                                    case QueryFilterConfig.Filter:
-                                        _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(rehydrated);
-                                        break;
-                                }
-                                indexingHandled = true;
-                            }
-                        }
-                        if(!indexingHandled)
-                        {
+                            #region S E L F    I N D E X I N G    S U P P O R T
+                            var rawTerm = sb.ToString();
+                            bool isTag = rawTerm.StartsWith("$FDFD") && rawTerm.Length == 10;
+                            bool indexingHandled = false;
+
                             // Rehydration is still necessary for atomic particles that are 'not' tags!.
-                            rawTerm = Rehydrate(rawTerm);
-                            if (rawTerm.CanParseAsJson())
+                            string rehydrated = Rehydrate(rawTerm);
+                            if (isTag)
                             {
-                                var terms = JsonConvert.DeserializeObject<List<string>>(rawTerm);
-
-                                foreach (var t in terms)
+                                if (!rehydrated.Contains(','))
                                 {
-                                    var term = t.Trim();
-                                    if (string.IsNullOrWhiteSpace(term)) continue;
-
-                                    switch (QueryFilterConfig)
+                                    _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(rehydrated);
+                                    rehydrated = rehydrated.Replace("[", string.Empty).Replace("]", string.Empty);
+                                    switch(selfIndexingMode)
                                     {
-                                        case QueryFilterConfig.Query:
-                                            _parsedIndexTerms[IndexingMode.QueryLikeTerm].Add(term);
+                                        case IndexingMode.QueryLikeTerm:
+                                            _parsedIndexTerms[IndexingMode.QueryLikeTerm].Add(rehydrated);
                                             break;
-                                        case QueryFilterConfig.Filter:
-                                            _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(term);
+                                        case IndexingMode.FilterLikeTerm:
+                                            _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(rehydrated);
+                                            break;
+                                        case IndexingMode.TagMatchTerm:
+                                            _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(rehydrated);
+                                            break;
+                                    }
+                                    indexingHandled = true;
+                                }
+                            }
+                            if (!indexingHandled)
+                            {
+                                if (rehydrated.CanParseAsJson())
+                                {
+                                    var terms = JsonConvert.DeserializeObject<List<string>>(rehydrated);
+
+                                    foreach (var t in terms)
+                                    {
+                                        var atom = t.Trim();
+                                        if (string.IsNullOrWhiteSpace(atom)) continue;
+
+                                        switch (selfIndexingMode)
+                                        {
+                                            case IndexingMode.QueryLikeTerm:
+                                                _parsedIndexTerms[IndexingMode.QueryLikeTerm].Add(atom);
+                                                break;
+                                            case IndexingMode.FilterLikeTerm:
+                                                _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(atom);
+                                                break;
+                                            case IndexingMode.TagMatchTerm:
+                                                _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(atom);
+                                                break;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    switch (selfIndexingMode)
+                                    {
+                                        case IndexingMode.QueryLikeTerm:
+                                            _parsedIndexTerms[IndexingMode.QueryLikeTerm].Add(rehydrated.ToLower());
+                                            break;
+                                        case IndexingMode.FilterLikeTerm:
+                                            _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(rehydrated.ToLower());
+                                            break;
+                                        case IndexingMode.TagMatchTerm:
+                                            _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(rehydrated.ToLower());
                                             break;
                                     }
                                 }
                             }
-                            else
-                            {
-                                switch (QueryFilterConfig)
-                                {
-                                    case QueryFilterConfig.Query:
-                                        _parsedIndexTerms[IndexingMode.QueryLikeTerm]
-                                            .Add(rawTerm.ToLower());
-                                        break;
-                                    case QueryFilterConfig.Filter:
-                                        _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(rawTerm.ToLower());
-                                        break;
-                                }
-                            }
+                        }
+                        else
+                        {
+                            Debug.Fail("ADVISORY - First Time.");
                         }
                         #endregion S E L F    I N D E X I N G    S U P P O R T
                         sb.Clear();
@@ -1099,6 +1114,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         QueryFilterConfig _queryFilterConfig = QueryFilterConfig.QueryAndFilter;
 
+        public DisposableHost DHostSelfIndexing
+        {
+            get
+            {
+                if (_dhostSelfIndexing is null)
+                {
+                    _dhostSelfIndexing = new DisposableHost();
+                }
+                return _dhostSelfIndexing;
+            }
+        }
+        DisposableHost _dhostSelfIndexing = null;
+
         protected virtual SQLiteConnection FilterQueryDatabase { get; set; }
 
         
@@ -1348,7 +1376,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         #region S E L F    I N D E X E D
         public string QueryTerm => string.Join("~", _parsedIndexTerms[IndexingMode.QueryLikeTerm]);
         public string FilterTerm => string.Join("~", _parsedIndexTerms[IndexingMode.FilterLikeTerm]);
-        public string TagMatchTerm => string.Join("~", _parsedIndexTerms[IndexingMode.TagMatchTerm]);
+        public string TagMatchTerm => string.Join(string.Empty, _parsedIndexTerms[IndexingMode.TagMatchTerm]);
 
         #endregion S E L F    I N D E X E D
     }

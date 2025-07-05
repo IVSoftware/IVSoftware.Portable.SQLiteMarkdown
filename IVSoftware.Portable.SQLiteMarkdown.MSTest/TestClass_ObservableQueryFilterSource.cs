@@ -450,9 +450,9 @@ TagsDisplay    =""[canine] [color] [atomic tag]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""brown~dog~loyal~friend~furry~canine~color~atomic&tag""
+QueryTerm      =""brown~dog~loyal~friend~furry~canine~color~atomic tag""
 FilterTerm     =""brown~dog~loyal~friend~furry""
-TagMatchTerm   =""[canine]~[color]~[atomic&tag]""
+TagMatchTerm   =""[canine]~[color]~[atomic tag]""
 Properties     =""{
   ""Description"": ""Brown Dog"",
   ""Tags"": ""[canine] [color] [atomic tag]"",
