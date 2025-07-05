@@ -244,7 +244,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     var sval = Convert.ToString(val);
                     if (string.IsNullOrWhiteSpace(sval)) continue;
 
-                    if (!sval.TryTokenize(out astNodeArray)) continue;
+                    if (!sval.TryTokenizeOR(out astNodeArray)) continue;
                     for (int j = 0; j < astNodeArray.Length; j++)
                     {
                         var node = astNodeArray[j];

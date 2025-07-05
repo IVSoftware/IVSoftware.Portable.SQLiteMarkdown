@@ -134,7 +134,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 else
                 {
-                    if (lint.TryTokenize(out var astNodes, minInputLength))
+                    if (lint.TryTokenizeOR(out var astNodes, minInputLength))
                     {
                         validationState = ValidationState.Valid;
                         sql = localMakeSqlCommand(astNodes);
@@ -724,17 +724,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             return atomic.Replace("&", " ");
         }
-        public static bool TryTokenize(this string expr, out ASTNode[] result, int minInputLength = 3)
+        public static bool TryTokenizeOR(this string expr, out ASTNode[] result, int minInputLength = 3)
         {
-#if DEBUG
-            switch (expr)
-            {
-                case "b":
-                    break;
-                default:
-                    break;
-            }
-#endif
             var tokens = new List<ASTNode>();
             bool benignUnmatched = false;
             if (string.IsNullOrWhiteSpace(expr))
@@ -744,7 +735,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
+#if DEBUG
+            switch (expr)
+            {
+                case "b":
+                    break;
+                case "[canine] [color] [atomic tag]":
+                    break;
+                default:
+                    break;
+            }
+#endif
                 expr = expr.Lint(trim: false);
+#if DEBUG
+            switch (expr)
+            {
+                case "b":
+                    break;
+                case "[canine] [color] [atomictag]":
+                    break;
+                case "[canine] [color] [atomic~tag]":
+                    break;
+                default:
+                    break;
+            }
+#endif
+
+
                 if (expr.CanParseAsJson())
                 {
                     try

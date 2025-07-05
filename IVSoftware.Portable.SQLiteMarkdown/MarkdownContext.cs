@@ -24,7 +24,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// clause by accumulating  parsing state, managing AST nodes, tracking substitutions,
     /// and guiding final SQL generation via attribute-aware hydration.
     /// </summary>
-    public class MarkdownContext : INotifyPropertyChanged
+    [DebuggerDisplay("ContractType={ContractType}")]public class MarkdownContext : INotifyPropertyChanged
     {
         /// <summary>
         /// Creates a self-contained expression parsing environment, binding it
@@ -51,6 +51,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 qfMode,
                 out XElement _);
 
+        /// <summary>
+        /// Run from internal values using ContractType
+        /// </summary>
+        public string ParseSqlMarkdown()
+            => ParseSqlMarkdown(
+                InputText,
+                ContractType,
+                IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query,
+                out XElement _);
+
+        /// <summary>
+        /// Run from internal values using a supplied ProxyType
+        /// </summary>
         public string ParseSqlMarkdown<T>()
             => ParseSqlMarkdown(
                 InputText,
@@ -803,8 +816,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         Type _contractType = default;
 
-        public Type ProxyType { get; private set; }
-
         protected virtual void OnContractTypeChanged()
         {
             if (ContractType is null)
@@ -821,6 +832,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 FilterQueryDatabase.CreateTable(ContractType);
             }
         }
+
+        public Type ProxyType { get; private set; }
+
+        /// <summary>
+        /// Caches values from [SelfIndexed] properties grouped by IndexingMode.
+        /// Populated on ParseSqlMarkdown(...), used to generate QueryTerm, FilterTerm, and TagMatchTerm.
+        /// </summary>
+        private Dictionary<IndexingMode, List<string>> _parsedIndexTerms
+            = new Dictionary<IndexingMode, List<string>>
+            {
+                [IndexingMode.QueryLikeTerm] = new List<string>(),
+                [IndexingMode.FilterLikeTerm] = new List<string>(),
+                [IndexingMode.TagMatchTerm] = new List<string>()
+            };
+
+        /// <summary>
+        /// Returns a read-only view of parsed index terms grouped by IndexingMode.
+        /// Used externally by SelfIndexed.ApplyIndexTerms(...)
+        /// </summary>
+        public IReadOnlyDictionary<IndexingMode, IReadOnlyCollection<string>> IndexedTerms =>
+            _parsedIndexTerms.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyCollection<string>)kvp.Value.AsReadOnly());
+
 
 
         /// <summary>

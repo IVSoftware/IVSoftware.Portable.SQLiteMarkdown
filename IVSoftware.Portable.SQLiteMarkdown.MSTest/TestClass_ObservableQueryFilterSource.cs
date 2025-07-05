@@ -143,7 +143,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 new SelectableQFModelLTOQO
                 {
                     Description = "Brown Dog",
-                    Tags = "[canine] [color]",
+                    Tags = "[canine] [color] [atomic tag]",
                     IsChecked = false,
                     Keywords = JsonConvert.SerializeObject(new List<string> { "loyal", "friend", "furry" })
                 },
@@ -440,21 +440,22 @@ SELECT * FROM items WHERE (FilterTerm LIKE '%animal%')"
                     actual = joined;
                     actual.ToClipboardExpected();
                     { }
+
                     expected = @" 
 Description    =""Brown Dog""
 Keywords       =""[""loyal"",""friend"",""furry""]""
 KeywordsDisplay=""""loyal"",""friend"",""furry""""
-Tags           =""[canine] [color]""
-TagsDisplay    =""[canine] [color]""
+Tags           =""[canine] [color] [atomic tag]""
+TagsDisplay    =""[canine] [color] [atomic tag]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""brown~dog~loyal~friend~furry~canine~color""
+QueryTerm      =""brown~dog~loyal~friend~furry~canine~color~atomic&tag""
 FilterTerm     =""brown~dog~loyal~friend~furry""
-TagMatchTerm   =""[canine]~[color]""
+TagMatchTerm   =""[canine]~[color]~[atomic&tag]""
 Properties     =""{
   ""Description"": ""Brown Dog"",
-  ""Tags"": ""[canine] [color]"",
+  ""Tags"": ""[canine] [color] [atomic tag]"",
   ""Keywords"": ""[\""loyal\"",\""friend\"",\""furry\""]""
 }""
 "
