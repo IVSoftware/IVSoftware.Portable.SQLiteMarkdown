@@ -351,7 +351,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                     exprLocal = sbExpr.ToString();
 
-#if DEBUG
+#if DEBUG && false && SAVE
                     Debug.WriteLine($"250619.A");
                     Debug.WriteLine($"{exprOR,-30} | {exprLocal,-30}");
                     { }
@@ -402,10 +402,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     this.OnAwaited(new AwaitedEventArgs(caller: nameof(localLint)));
                 }
-#if DEBUG
+#if false && DEBUG && SAVE
                 if (b4 != Transform)
                 {
-                    Debug.WriteLine($"{b4} -> {Transform}");
+                    Debug.WriteLine($"250705 {b4} -> {Transform}");
                 }
 #endif
             }
@@ -815,7 +815,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 {XAST.Attribute(nameof(StdAstAttr.clauseE))?.Value ?? $"1"}"
 .Trim();
 
-#if DEBUG
+#if false && DEBUG && SAVE
                 Debug.WriteLine(string.Empty);
                 Debug.WriteLine("250702 - String-First");
                 Debug.WriteLine(Query);

@@ -48,7 +48,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                             break;
                     }
                 };
-                qfs.MemoryDatabase = CreateDemoDatabase<SelectableQFModelTOQO>();
+                qfs.MemoryDatabase = CreateDemoDatabase<SelectableQFModel>();
                 qfs.PropertyChanged += (sender, e) =>
                 {
                     switch (e.PropertyName)
