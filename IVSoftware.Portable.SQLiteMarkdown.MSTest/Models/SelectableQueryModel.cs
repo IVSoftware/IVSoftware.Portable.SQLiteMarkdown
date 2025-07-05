@@ -46,7 +46,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
         public string KeywordsDisplay => Keywords.Trim('[', ']');
 
         [SelfIndexed(
-            IndexingMode.QueryLikeTerm |         // Responds to non-bracketed tokens as if they were bracketed, but not the other way around.
+            IndexingMode.QueryLikeTerm |   // Responds to non-bracketed tokens as if they were bracketed, but not the other way around.
+            IndexingMode.FilterLikeTerm |   // Responds to non-bracketed tokens as if they were bracketed, but not the other way around.
             IndexingMode.TagMatchTerm)]    // Responds to strict bracketed terms
         public string Tags
         {
@@ -106,8 +107,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
             }
         }
         bool _isReadOnly = true;
-
-
 
         public override string ToString() => $"{Description} {KeywordsDisplay} {TagsDisplay}".Trim();
 

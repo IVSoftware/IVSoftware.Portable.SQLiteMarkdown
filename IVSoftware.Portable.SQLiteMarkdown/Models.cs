@@ -224,8 +224,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             lock (_lock)
             {
-                var likeNodes = new HashSet<ASTNode>();
-                var containsNodes = new HashSet<ASTNode>();
+                var queryLikeNodes = new HashSet<ASTNode>();
+                var filterLikeNodes = new HashSet<ASTNode>();
                 var tagNodes = new HashSet<ASTNode>();
                 ASTNode[] astNodeArray;
 
@@ -251,18 +251,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         for (int j = 0; j < astNodeArray.Length; j++)
                         {
                             var node = astNodeArray[j];
-                            if (node.ASTType == NodeType.Term)
+                            switch (node.ASTType)
                             {
-                                if (attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm))
-                                    likeNodes.Add(node);
-                                if (attr.IndexingMode.HasFlag(IndexingMode.FilterLikeTerm))
-                                    containsNodes.Add(node);
-                            }
-                            else if (node.ASTType == NodeType.Tag &&
-                                     attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm))
-                            {
-                                // Tags treated as terms when LikeTerm is also set
-                                likeNodes.Add(new ASTNode(NodeType.Term, node.Value));
+                                case NodeType.Term:
+                                    if (attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm))
+                                        queryLikeNodes.Add(node);
+                                    if (attr.IndexingMode.HasFlag(IndexingMode.FilterLikeTerm))
+                                        filterLikeNodes.Add(node);
+                                    break;
+                                case NodeType.Tag:
+                                    var adhocTermNode = new ASTNode(NodeType.Term, node.Value);
+                                    // Tags treated as terms when LikeTerm is also set for mode.
+                                    if (attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm))
+                                        queryLikeNodes.Add(adhocTermNode);
+                                    if (attr.IndexingMode.HasFlag(IndexingMode.FilterLikeTerm))
+                                        filterLikeNodes.Add(adhocTermNode);
+                                    break;
                             }
                         }
                     }
@@ -278,8 +282,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                 }
 
-                QueryTerm = likeNodes.ToArray().GenerateTerm(NodeTypeFlags.Term);
-                FilterTerm = containsNodes.ToArray().GenerateTerm(NodeTypeFlags.Term);
+                QueryTerm = queryLikeNodes.ToArray().GenerateTerm(NodeTypeFlags.Term);
+                FilterTerm = filterLikeNodes.ToArray().GenerateTerm(NodeTypeFlags.Term);
                 TagMatchTerm = tagNodes.ToArray().GenerateTerm(NodeTypeFlags.Tag);
 
                 _isIndexingRequired = false;

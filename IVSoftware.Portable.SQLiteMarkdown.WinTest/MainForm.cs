@@ -129,7 +129,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             {
                 BeginInvoke(() =>
                 {
-                    MessageBox.Show(QFSUT.InputText.ParseSqlMarkdown<SelectableQFModel>());
+                    MessageBox.Show(QFSUT.ParseSqlMarkdown<SelectableQFModel>());
                 });
             };
             tsmiCombo.SelectedIndexChanged += (sender, e) =>

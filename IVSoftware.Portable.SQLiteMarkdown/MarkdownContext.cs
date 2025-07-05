@@ -51,7 +51,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 qfMode,
                 out XElement _);
 
-        protected string ParseSqlMarkdown<T>()
+        public string ParseSqlMarkdown<T>()
             => ParseSqlMarkdown(
                 InputText,
                 typeof(T), 
