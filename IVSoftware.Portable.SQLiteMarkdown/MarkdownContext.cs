@@ -507,6 +507,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         xcurrent.SetAttributeValue(nameof(StdAstAttr.value), sb);
                         if (DHostSelfIndexing[nameof(IndexingMode)] is IndexingMode selfIndexingMode)
                         {
+                            Debug.Assert(!DHostSelfIndexing.IsZero(), "Expecting to 'not' have to check this!");
                             #region S E L F    I N D E X I N G    S U P P O R T
                             var rawTerm = sb.ToString();
                             bool isTag = rawTerm.StartsWith("$FDFD") && rawTerm.Length == 10;
@@ -518,8 +519,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             {
                                 if (!rehydrated.Contains(','))
                                 {
-                                    _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(rehydrated);
-                                    rehydrated = rehydrated.Replace("[", string.Empty).Replace("]", string.Empty);
                                     switch(selfIndexingMode)
                                     {
                                         case IndexingMode.QueryLikeTerm:
@@ -529,7 +528,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                             _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(rehydrated);
                                             break;
                                         case IndexingMode.TagMatchTerm:
-                                            _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(rehydrated);
+                                            _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(rehydrated.Trim("[]".ToCharArray()));
                                             break;
                                     }
                                     indexingHandled = true;
@@ -555,7 +554,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                                 _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(atom);
                                                 break;
                                             case IndexingMode.TagMatchTerm:
-                                                _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(atom);
+                                                _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(atom.Trim("[]".ToCharArray()));
                                                 break;
                                         }
                                     }
@@ -571,15 +570,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                             _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(rehydrated.ToLower());
                                             break;
                                         case IndexingMode.TagMatchTerm:
-                                            _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(rehydrated.ToLower());
+                                            _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(rehydrated.Trim("[]".ToCharArray()).ToLower());
                                             break;
                                     }
                                 }
                             }
-                        }
-                        else
-                        {
-                            Debug.Fail("ADVISORY - First Time.");
                         }
                         #endregion S E L F    I N D E X I N G    S U P P O R T
                         sb.Clear();
@@ -921,20 +916,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Caches values from [SelfIndexed] properties grouped by IndexingMode.
         /// Populated on ParseSqlMarkdown(...), used to generate QueryTerm, FilterTerm, and TagMatchTerm.
         /// </summary>
-        private Dictionary<IndexingMode, List<string>> _parsedIndexTerms
-            = new Dictionary<IndexingMode, List<string>>
+        private Dictionary<IndexingMode, HashSet<string>> _parsedIndexTerms
+            = new Dictionary<IndexingMode, HashSet<string>>
             {
-                [IndexingMode.QueryLikeTerm] = new List<string>(),
-                [IndexingMode.FilterLikeTerm] = new List<string>(),
-                [IndexingMode.TagMatchTerm] = new List<string>()
+                [IndexingMode.QueryLikeTerm] = new HashSet<string>(),
+                [IndexingMode.FilterLikeTerm] = new HashSet<string>(),
+                [IndexingMode.TagMatchTerm] = new HashSet<string>()
             };
-
-        /// <summary>
-        /// Returns a read-only view of parsed index terms grouped by IndexingMode.
-        /// Used externally by SelfIndexed.ApplyIndexTerms(...)
-        /// </summary>
-        public IReadOnlyDictionary<IndexingMode, IReadOnlyCollection<string>> IndexedTerms =>
-            _parsedIndexTerms.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyCollection<string>)kvp.Value.AsReadOnly());
 
 
         /// <summary>
@@ -1376,7 +1364,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         #region S E L F    I N D E X E D
         public string QueryTerm => string.Join("~", _parsedIndexTerms[IndexingMode.QueryLikeTerm]);
         public string FilterTerm => string.Join("~", _parsedIndexTerms[IndexingMode.FilterLikeTerm]);
-        public string TagMatchTerm => string.Join(string.Empty, _parsedIndexTerms[IndexingMode.TagMatchTerm]);
+        public string TagMatchTerm => string.Join(" ", _parsedIndexTerms[IndexingMode.TagMatchTerm].Select(_ => $"[{_}]"));
 
         #endregion S E L F    I N D E X E D
     }

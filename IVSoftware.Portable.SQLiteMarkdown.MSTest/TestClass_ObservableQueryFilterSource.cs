@@ -440,7 +440,6 @@ SELECT * FROM items WHERE (FilterTerm LIKE '%animal%')"
                     actual = joined;
                     actual.ToClipboardExpected();
                     { }
-
                     expected = @" 
 Description    =""Brown Dog""
 Keywords       =""[""loyal"",""friend"",""furry""]""
@@ -450,9 +449,9 @@ TagsDisplay    =""[canine] [color] [atomic tag]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""brown~dog~loyal~friend~furry~canine~color~atomic tag""
+QueryTerm      =""brown~dog~loyal~friend~furry~[canine]~[color]~[atomic tag]""
 FilterTerm     =""brown~dog~loyal~friend~furry""
-TagMatchTerm   =""[canine]~[color]~[atomic tag]""
+TagMatchTerm   =""[canine] [color] [atomic tag]""
 Properties     =""{
   ""Description"": ""Brown Dog"",
   ""Tags"": ""[canine] [color] [atomic tag]"",
@@ -589,9 +588,9 @@ TagsDisplay    =""[canine] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""brown~dog~loyal~friend~furry~canine~color""
+QueryTerm      =""brown~dog~loyal~friend~furry~[canine]~[color]""
 FilterTerm     =""brown~dog~loyal~friend~furry""
-TagMatchTerm   =""[canine]~[color]""
+TagMatchTerm   =""[canine] [color]""
 Properties     =""{
   ""Description"": ""Brown Dog"",
   ""Tags"": ""[canine] [color]"",
@@ -606,9 +605,9 @@ TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""green~apple~tart~snack~healthy~fruit~color""
+QueryTerm      =""green~apple~tart~snack~healthy~[fruit]~[color]""
 FilterTerm     =""green~apple~tart~snack~healthy""
-TagMatchTerm   =""[fruit]~[color]""
+TagMatchTerm   =""[fruit] [color]""
 Properties     =""{
   ""Description"": ""Green Apple"",
   ""Tags"": ""[fruit] [color]"",
@@ -623,9 +622,9 @@ TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""yellow~banana~~fruit~color""
+QueryTerm      =""yellow~banana~[fruit]~[color]""
 FilterTerm     =""yellow~banana""
-TagMatchTerm   =""[fruit]~[color]""
+TagMatchTerm   =""[fruit] [color]""
 Properties     =""{
   ""Description"": ""Yellow Banana"",
   ""Tags"": ""[fruit] [color]""
@@ -639,9 +638,9 @@ TagsDisplay    =""[bird] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""blue~bird~sky~feathered~song~bird~color""
+QueryTerm      =""blue~bird~sky~feathered~song~[bird]~[color]""
 FilterTerm     =""blue~bird~sky~feathered~song""
-TagMatchTerm   =""[bird]~[color]""
+TagMatchTerm   =""[bird] [color]""
 Properties     =""{
   ""Description"": ""Blue Bird"",
   ""Tags"": ""[bird] [color]"",
@@ -656,9 +655,9 @@ TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""red~cherry~sweet~summer~dessert~fruit~color""
+QueryTerm      =""red~cherry~sweet~summer~dessert~[fruit]~[color]""
 FilterTerm     =""red~cherry~sweet~summer~dessert""
-TagMatchTerm   =""[fruit]~[color]""
+TagMatchTerm   =""[fruit] [color]""
 Properties     =""{
   ""Description"": ""Red Cherry"",
   ""Tags"": ""[fruit] [color]"",
@@ -673,9 +672,9 @@ TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""black~cat~~animal~color""
+QueryTerm      =""black~cat~[animal]~[color]""
 FilterTerm     =""black~cat""
-TagMatchTerm   =""[animal]~[color]""
+TagMatchTerm   =""[animal] [color]""
 Properties     =""{
   ""Description"": ""Black Cat"",
   ""Tags"": ""[animal] [color]""
@@ -689,9 +688,9 @@ TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""orange~fox~~animal~color""
+QueryTerm      =""orange~fox~[animal]~[color]""
 FilterTerm     =""orange~fox""
-TagMatchTerm   =""[animal]~[color]""
+TagMatchTerm   =""[animal] [color]""
 Properties     =""{
   ""Description"": ""Orange Fox"",
   ""Tags"": ""[animal] [color]""
@@ -705,9 +704,9 @@ TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""white~rabbit~bunny~soft~jump~animal~color""
+QueryTerm      =""white~rabbit~bunny~soft~jump~[animal]~[color]""
 FilterTerm     =""white~rabbit~bunny~soft~jump""
-TagMatchTerm   =""[animal]~[color]""
+TagMatchTerm   =""[animal] [color]""
 Properties     =""{
   ""Description"": ""White Rabbit"",
   ""Tags"": ""[animal] [color]"",
@@ -722,9 +721,9 @@ TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""purple~grape~~fruit~color""
+QueryTerm      =""purple~grape~[fruit]~[color]""
 FilterTerm     =""purple~grape""
-TagMatchTerm   =""[fruit]~[color]""
+TagMatchTerm   =""[fruit] [color]""
 Properties     =""{
   ""Description"": ""Purple Grape"",
   ""Tags"": ""[fruit] [color]""
@@ -738,9 +737,9 @@ TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""gray~wolf~pack~howl~wild~animal~color""
+QueryTerm      =""gray~wolf~pack~howl~wild~[animal]~[color]""
 FilterTerm     =""gray~wolf~pack~howl~wild""
-TagMatchTerm   =""[animal]~[color]""
+TagMatchTerm   =""[animal] [color]""
 Properties     =""{
   ""Description"": ""Gray Wolf"",
   ""Tags"": ""[animal] [color]"",
@@ -755,9 +754,9 @@ TagsDisplay    =""[bird] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""pink~flamingo~~bird~color""
+QueryTerm      =""pink~flamingo~[bird]~[color]""
 FilterTerm     =""pink~flamingo""
-TagMatchTerm   =""[bird]~[color]""
+TagMatchTerm   =""[bird] [color]""
 Properties     =""{
   ""Description"": ""Pink Flamingo"",
   ""Tags"": ""[bird] [color]""
@@ -771,9 +770,9 @@ TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""golden~lion~~animal~color""
+QueryTerm      =""golden~lion~[animal]~[color]""
 FilterTerm     =""golden~lion""
-TagMatchTerm   =""[animal]~[color]""
+TagMatchTerm   =""[animal] [color]""
 Properties     =""{
   ""Description"": ""Golden Lion"",
   ""Tags"": ""[animal] [color]""
@@ -787,9 +786,9 @@ TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""brown~bear~strong~wild~forest~animal~color""
+QueryTerm      =""brown~bear~strong~wild~forest~[animal]~[color]""
 FilterTerm     =""brown~bear~strong~wild~forest""
-TagMatchTerm   =""[animal]~[color]""
+TagMatchTerm   =""[animal] [color]""
 Properties     =""{
   ""Description"": ""Brown Bear"",
   ""Tags"": ""[animal] [color]"",
@@ -804,9 +803,9 @@ TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""green~pear~~fruit~color""
+QueryTerm      =""green~pear~[fruit]~[color]""
 FilterTerm     =""green~pear""
-TagMatchTerm   =""[fruit]~[color]""
+TagMatchTerm   =""[fruit] [color]""
 Properties     =""{
   ""Description"": ""Green Pear"",
   ""Tags"": ""[fruit] [color]""
@@ -820,9 +819,9 @@ TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""red~strawberry~~fruit~color""
+QueryTerm      =""red~strawberry~[fruit]~[color]""
 FilterTerm     =""red~strawberry""
-TagMatchTerm   =""[fruit]~[color]""
+TagMatchTerm   =""[fruit] [color]""
 Properties     =""{
   ""Description"": ""Red Strawberry"",
   ""Tags"": ""[fruit] [color]""
@@ -836,9 +835,9 @@ TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""black~panther~stealthy~feline~night~animal~color""
+QueryTerm      =""black~panther~stealthy~feline~night~[animal]~[color]""
 FilterTerm     =""black~panther~stealthy~feline~night""
-TagMatchTerm   =""[animal]~[color]""
+TagMatchTerm   =""[animal] [color]""
 Properties     =""{
   ""Description"": ""Black Panther"",
   ""Tags"": ""[animal] [color]"",
@@ -853,9 +852,9 @@ TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""yellow~lemon~~fruit~color""
+QueryTerm      =""yellow~lemon~[fruit]~[color]""
 FilterTerm     =""yellow~lemon""
-TagMatchTerm   =""[fruit]~[color]""
+TagMatchTerm   =""[fruit] [color]""
 Properties     =""{
   ""Description"": ""Yellow Lemon"",
   ""Tags"": ""[fruit] [color]""
@@ -869,9 +868,9 @@ TagsDisplay    =""[bird] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""white~swan~~bird~color""
+QueryTerm      =""white~swan~[bird]~[color]""
 FilterTerm     =""white~swan""
-TagMatchTerm   =""[bird]~[color]""
+TagMatchTerm   =""[bird] [color]""
 Properties     =""{
   ""Description"": ""White Swan"",
   ""Tags"": ""[bird] [color]""
@@ -885,9 +884,9 @@ TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""purple~plum~~fruit~color""
+QueryTerm      =""purple~plum~[fruit]~[color]""
 FilterTerm     =""purple~plum""
-TagMatchTerm   =""[fruit]~[color]""
+TagMatchTerm   =""[fruit] [color]""
 Properties     =""{
   ""Description"": ""Purple Plum"",
   ""Tags"": ""[fruit] [color]""
@@ -901,9 +900,9 @@ TagsDisplay    =""[marine-mammal] [ocean]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""blue~whale~ocean~mammal~giant~marine-mammal""
+QueryTerm      =""blue~whale~ocean~mammal~giant~[marine-mammal]~[ocean]""
 FilterTerm     =""blue~whale~ocean~mammal~giant""
-TagMatchTerm   =""[marine-mammal]~[ocean]""
+TagMatchTerm   =""[marine-mammal] [ocean]""
 Properties     =""{
   ""Description"": ""Blue Whale"",
   ""Tags"": ""[marine-mammal] [ocean]"",
@@ -918,7 +917,7 @@ TagsDisplay    =""[animal]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""elephant~trunk~herd~safari~animal""
+QueryTerm      =""elephant~trunk~herd~safari~[animal]""
 FilterTerm     =""elephant~trunk~herd~safari""
 TagMatchTerm   =""[animal]""
 Properties     =""{
@@ -935,7 +934,7 @@ TagsDisplay    =""[fruit]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""pineapple~~fruit""
+QueryTerm      =""pineapple~[fruit]""
 FilterTerm     =""pineapple""
 TagMatchTerm   =""[fruit]""
 Properties     =""{
@@ -951,7 +950,7 @@ TagsDisplay    =""[fish]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""shark~~fish""
+QueryTerm      =""shark~[fish]""
 FilterTerm     =""shark""
 TagMatchTerm   =""[fish]""
 Properties     =""{
@@ -967,7 +966,7 @@ TagsDisplay    =""[bird]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""owl~~bird""
+QueryTerm      =""owl~[bird]""
 FilterTerm     =""owl""
 TagMatchTerm   =""[bird]""
 Properties     =""{
@@ -983,7 +982,7 @@ TagsDisplay    =""[animal]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""giraffe~~animal""
+QueryTerm      =""giraffe~[animal]""
 FilterTerm     =""giraffe""
 TagMatchTerm   =""[animal]""
 Properties     =""{
@@ -999,7 +998,7 @@ TagsDisplay    =""[fruit]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""coconut~~fruit""
+QueryTerm      =""coconut~[fruit]""
 FilterTerm     =""coconut""
 TagMatchTerm   =""[fruit]""
 Properties     =""{
@@ -1015,7 +1014,7 @@ TagsDisplay    =""[animal]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""kangaroo~bounce~outback~marsupial~animal""
+QueryTerm      =""kangaroo~bounce~outback~marsupial~[animal]""
 FilterTerm     =""kangaroo~bounce~outback~marsupial""
 TagMatchTerm   =""[animal]""
 Properties     =""{
@@ -1032,7 +1031,7 @@ TagsDisplay    =""[fruit]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""dragonfruit~~fruit""
+QueryTerm      =""dragonfruit~[fruit]""
 FilterTerm     =""dragonfruit""
 TagMatchTerm   =""[fruit]""
 Properties     =""{
@@ -1048,7 +1047,7 @@ TagsDisplay    =""[animal]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""turtle~~animal""
+QueryTerm      =""turtle~[animal]""
 FilterTerm     =""turtle""
 TagMatchTerm   =""[animal]""
 Properties     =""{
@@ -1064,7 +1063,7 @@ TagsDisplay    =""[fruit]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""mango~~fruit""
+QueryTerm      =""mango~[fruit]""
 FilterTerm     =""mango""
 TagMatchTerm   =""[fruit]""
 Properties     =""{
@@ -1080,9 +1079,9 @@ TagsDisplay    =""[not animal]""
 IsChecked      =""False""
 Selection      =""None""
 IsReadOnly     =""True""
-QueryTerm      =""should~not~match~an~expression~with~animal~tag.~~not&animal""
+QueryTerm      =""should~not~match~an~expression~with~animal~tag.~[not animal]""
 FilterTerm     =""should~not~match~an~expression~with~animal~tag.""
-TagMatchTerm   =""[not&animal]""
+TagMatchTerm   =""[not animal]""
 Properties     =""{
   ""Description"": ""Should NOT match an expression with an \""animal\"" tag."",
   ""Tags"": ""[not animal]""
@@ -2196,16 +2195,14 @@ SELECT * FROM items WHERE (QueryTerm LIKE ?) AND (QueryTerm LIKE ?)
                 subtestStrictNotBracketed();
                 subtestStrictBracketed();
 
-                { }
-
                 #region S U B T E S T S
                 void subtestReportBrownDog()
                 {
                     recordset = cnx.Query<StrictTagQueryModel>("brown dog".ParseSqlMarkdown<StrictTagQueryModel>());
                     actual = recordset.Single().Report();
-                    actual.ToClipboard();
+
                     actual.ToClipboardExpected();
-                    actual.ToClipboardAssert("Expecting strict tag indexing.");
+                    { }
                     expected = @" 
 Description    =""Brown Dog""
 Keywords       =""[""loyal"",""friend"",""furry""]""
@@ -2217,23 +2214,18 @@ Selection      =""None""
 IsReadOnly     =""True""
 QueryTerm      =""brown~dog~loyal~friend~furry""
 FilterTerm     =""brown~dog~loyal~friend~furry""
-TagMatchTerm   =""[canine]~[color]""
+TagMatchTerm   =""[canine] [color]""
 Properties     =""{
   ""Description"": ""Brown Dog"",
   ""Tags"": ""[canine] [color]"",
   ""Keywords"": ""[\""loyal\"",\""friend\"",\""furry\""]""
-}""";
+}"""
+                    ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
                         "Expecting strict tag indexing."
-                    );
-
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting strict tag indexing does NOT INCLUDE 'canine' and 'color' in LikeTerm."
                     );
                 }
                 void subtestStrictNotBracketed()
