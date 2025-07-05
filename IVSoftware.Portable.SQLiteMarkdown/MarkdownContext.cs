@@ -504,14 +504,42 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     {
                         xcurrent.SetAttributeValue(nameof(StdAstAttr.value), sb);
                         #region S E L F    I N D E X I N G    S U P P O R T
-                        var termId = sb.ToString();
-                        bool isTag = termId.StartsWith("$FDFD") && termId.Length == 10;
+                        var rawTerm = sb.ToString();
+                        bool isTag = rawTerm.StartsWith("$FDFD") && rawTerm.Length == 10;
+                        bool indexingHandled = false;
                         if(isTag)
                         {
-                            var term = Rehydrate(termId);
-                            if(!term.Contains(','))
+                            var rehydrated = Rehydrate(rawTerm);
+                            if (!rehydrated.Contains(','))
                             {
-                                _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(term);
+                                _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(rehydrated);
+                                rehydrated = rehydrated.Replace("[", string.Empty).Replace("[", string.Empty);
+                                switch (QueryFilterConfig)
+                                {
+                                    case QueryFilterConfig.Query:
+                                        _parsedIndexTerms[IndexingMode.QueryLikeTerm]
+                                            .Add(rehydrated);
+                                        break;
+                                    case QueryFilterConfig.Filter:
+                                        _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(rehydrated);
+                                        break;
+                                }
+                                indexingHandled = true;
+                            }
+                        }
+                        if(!indexingHandled)
+                        {
+                            // Rehydration is still necessary for atomic particles that are 'not' tags!.
+                            rawTerm = Rehydrate(rawTerm).Replace("[", string.Empty).Replace("[", string.Empty);
+                            switch (QueryFilterConfig)
+                            {
+                                case QueryFilterConfig.Query:
+                                    _parsedIndexTerms[IndexingMode.QueryLikeTerm]
+                                        .Add(rawTerm);
+                                    break;
+                                case QueryFilterConfig.Filter:
+                                    _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(rawTerm);
+                                    break;
                             }
                         }
                         #endregion S E L F    I N D E X I N G    S U P P O R T

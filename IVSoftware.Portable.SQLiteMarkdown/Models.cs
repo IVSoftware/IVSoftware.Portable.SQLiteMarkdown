@@ -263,12 +263,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     var val = pi.GetValue(this);
                     if (!(val is IConvertible)) continue;
 
-                    // Transistional preview.
+                    // Transitional preview.
                     localMC.InputText = Convert.ToString(val);
+                    localMC.QueryFilterConfig = QueryFilterConfig.Query;
                     localMC.ParseSqlMarkdown();
-                    var queryTerm = localMC.QueryTerm;
-                    var filterTerm = localMC.FilterTerm;
                     var tagTerm = localMC.TagMatchTerm;
+                    var queryTerm = localMC.QueryTerm;
+                    localMC.QueryFilterConfig = QueryFilterConfig.Filter;
+                    var filterTerm = localMC.FilterTerm;
+                    localMC.ParseSqlMarkdown();
                     { }
                     if(!string.IsNullOrEmpty(tagTerm))
                     { }
