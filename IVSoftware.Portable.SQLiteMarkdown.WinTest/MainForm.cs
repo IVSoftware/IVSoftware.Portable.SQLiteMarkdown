@@ -37,9 +37,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                             break;
                         case Keys.Return:
                             e.SuppressKeyPress = true;
-                            if (vcView.ItemsSource is IObservableQueryFilterSource qfs)
+                            qfs.Commit();
+                            break;
+                        case Keys.Back:
+                            if (textInputText.TextLength == 0)
                             {
-                                qfs.Commit();
+                                qfs.Clear(all: true);
                             }
                             break;
                     }

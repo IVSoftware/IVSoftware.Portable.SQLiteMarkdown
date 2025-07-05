@@ -222,8 +222,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         case FilteringState.Ineligible:
                             break;
                         case FilteringState.Armed:
-                            FilterQueryDatabase.DeleteAll<T>();
-                            FilterQueryDatabase.InsertAll(_unfilteredItems);
                             FilteringState = FilteringState.Active;
                             break;
                         case FilteringState.Active:
@@ -531,6 +529,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     // in our best interest to simply forward the clear.
                     _unfilteredItems.Clear();
                     CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    break;
+                case FilteringState.Armed:
+                    if(FilteringStatePrev == FilteringState.Ineligible)
+                    {
+                        FilterQueryDatabase.DeleteAll<T>();
+                        FilterQueryDatabase.InsertAll(_unfilteredItems);
+                    }
+                    break;
+                case FilteringState.Active:
                     break;
             }
         }
