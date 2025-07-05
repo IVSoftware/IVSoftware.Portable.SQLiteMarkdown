@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
@@ -56,7 +57,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 _unsubscribeItems = _unfilteredItems.OfType<INotifyPropertyChanged>().ToArray();
             };
         }
-
+        protected override void OnInputTextSettled(CancelEventArgs e)
+        {
+            base.OnInputTextSettled(e);
+            if (!e.Cancel)
+            {
+                if (FilteringState == FilteringState.Active)
+                {
+                    ApplyFilter();
+                }
+            }
+        }
         protected virtual void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
@@ -427,12 +438,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     }
                     break;
             }
-            // If after all of that we manage to be in an active
-            // filtering state then go ahead and apply.
-            if (FilteringState == FilteringState.Active)
-            {
-                ApplyFilter();
-            }
         }
 
         public string Placeholder =>
@@ -516,7 +521,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         #region R O U T E D    C O N D I T I O N A L S
 
-        protected override void OnFilteringStateChanged()
+        protected override async void OnFilteringStateChanged()
         {
             // Relies on BC functionality, except where firing the CollectionChanged event is concerned.
             base.OnFilteringStateChanged();
@@ -533,8 +538,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 case FilteringState.Armed:
                     if(FilteringStatePrev == FilteringState.Ineligible)
                     {
+
+                        Debug.Assert(DateTime.Now.Date == new DateTime(2025, 7, 5).Date, "Don't forget disabled");
+#if false
+                        await Task.Delay(TimeSpan.FromTicks(1));
                         FilterQueryDatabase.DeleteAll<T>();
                         FilterQueryDatabase.InsertAll(_unfilteredItems);
+#endif
                     }
                     break;
                 case FilteringState.Active:
