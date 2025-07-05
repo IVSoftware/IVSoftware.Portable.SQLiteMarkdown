@@ -28,7 +28,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     [DebuggerDisplay("ContractType={ContractType}")]
     public class MarkdownContext 
         : INotifyPropertyChanged
-        , ISelfIndexedMarkdown
     {
         /// <summary>
         /// Creates a self-contained expression parsing environment, binding it
@@ -505,11 +504,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     {
                         xcurrent.SetAttributeValue(nameof(StdAstAttr.value), sb);
                         #region S E L F    I N D E X I N G    S U P P O R T
-                        var term = sb.ToString();
-                        bool isTag = term.StartsWith("$FDFD") && term.Length == 10;
+                        var termId = sb.ToString();
+                        bool isTag = termId.StartsWith("$FDFD") && termId.Length == 10;
                         if(isTag)
                         {
-                            _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(term);
+                            var term = Rehydrate(termId);
+                            if(!term.Contains(','))
+                            {
+                                _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(term);
+                            }
                         }
                         #endregion S E L F    I N D E X I N G    S U P P O R T
                         sb.Clear();
@@ -1291,12 +1294,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         #endregion N A V    S E A R C H    S T A T E    M A C H I N E
 
         #region S E L F    I N D E X E D
-        public string PrimaryKey => throw new NotImplementedException();
+        public string QueryTerm => string.Join("~", _parsedIndexTerms[IndexingMode.QueryLikeTerm]);
+        public string FilterTerm => string.Join("~", _parsedIndexTerms[IndexingMode.FilterLikeTerm]);
+        public string TagMatchTerm => string.Join("~", _parsedIndexTerms[IndexingMode.TagMatchTerm]);
 
-        public string QueryTerm { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public string FilterTerm { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public string TagMatchTerm { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public string Properties { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         #endregion S E L F    I N D E X E D
     }
     public class MarkdownContext<T> : MarkdownContext
