@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.Threading;
 using SQLite;
 using System;
 using System.Collections;
@@ -183,6 +184,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
             finally
             {
+                lock (_lock)
+                {
+                    this.OnAwaited();
+                }
                 Busy = false;
             }
         }
@@ -301,6 +306,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
             finally
             {
+                lock(_lock)
+                {
+                    this.OnAwaited();
+                }
                 Busy = false;
             }
         }
