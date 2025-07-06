@@ -60,21 +60,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             };
         }
 
-        public ObservableSelectionHashSet<ISelectableQueryFilterItem> SelectedItems
+        public ObservableSelectionHashSet<object> SelectedItems
         {
             get
             {
                 if (_selectedItems is null)
                 {
-                    _selectedItems = new ObservableSelectionHashSet<ISelectableQueryFilterItem>();
-                    _selectedItems.PropertyChanged += (sender, e) =>
+                    _selectedItems = new ObservableSelectionHashSet<object>();
+                    _selectedItems.CollectionChanged += (sender, e) =>
                     {
+                        SelectionChanged?.Invoke(this, e);
                     };
                 }
                 return _selectedItems;
             }
         }
-        ObservableSelectionHashSet<ISelectableQueryFilterItem> _selectedItems = null;
+        ObservableSelectionHashSet<object> _selectedItems = null;
+
+        public event EventHandler SelectionChanged;
         public SelectionMode SelectionMode
         {
             get => SelectedItems.SelectionMode;
@@ -593,6 +596,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// Required IList support
         /// </summary>
         public bool IsFixedSize => ((IList)_unfilteredItems).IsFixedSize;
+
+        IList IObservableQueryFilterSource<T>.SelectedItems => SelectedItems;
 
         public T this[int index]
         {
