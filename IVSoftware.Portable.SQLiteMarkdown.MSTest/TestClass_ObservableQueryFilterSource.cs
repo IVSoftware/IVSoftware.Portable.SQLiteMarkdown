@@ -1615,6 +1615,7 @@ Busy"
 #endif
                         // animal.b
                         // Expecting Filter mode and an internal query.
+                        // See also: {24048258-8BE4-40C4-BF85-8863E98BED51}
                         items.InputText += "b";
                         await items;
 

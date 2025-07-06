@@ -1321,6 +1321,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnSearchEntryStateChanged() { }
 
+
         protected WatchdogTimer WDTInputTextSettled
         {
             get
@@ -1328,14 +1329,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (_wdtInputTextSettled is null)
                 {
                     _wdtInputTextSettled =
-                        new WatchdogTimer
+                        new WatchdogTimer(
+                            defaultInitialAction: () =>
+                            {
+                                // Do this or fail here:
+                                // - Test_TrackProgressiveInputState() 
+                                // See also: {24048258-8BE4-40C4-BF85-8863E98BED51}
+                                _ready.Wait(0);
+                            },
+                            defaultCompleteAction: () =>
+                            {
+                                OnInputTextSettled(new CancelEventArgs());
+                            })
                         {
                             Interval = InputTextSettleInterval
                         };
-                    _wdtInputTextSettled.RanToCompletion += (sender, e) =>
-                    {
-                        OnInputTextSettled(new CancelEventArgs());
-                    };
                 }
                 return _wdtInputTextSettled;
             }
