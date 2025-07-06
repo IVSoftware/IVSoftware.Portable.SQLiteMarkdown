@@ -6,9 +6,12 @@ using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
 {
+    /// <summary>
+    /// LTOQO = This class is "like tag on query only" and many tests rely on this being the case.
+    /// </summary>
     [DebuggerDisplay("{Description}")]
     [Table("items")]
-    public class SelectableQFModel : SelfIndexed, ISelectableQueryFilterItem
+    public class SelectableQFModelTOQO : SelfIndexed, ISelectableQueryFilterItem
     {
         [PrimaryKey]
         public override string Id { get; set; } = Guid.NewGuid().ToString();
@@ -46,7 +49,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
         public string KeywordsDisplay => Keywords.Trim('[', ']');
 
         [SelfIndexed(
-            IndexingMode.QueryLikeTerm |         // Responds to non-bracketed tokens as if they were bracketed, but not the other way around.
+            IndexingMode.QueryLikeTerm |   // Responds to non-bracketed tokens as if they were bracketed, but not the other way around.
             IndexingMode.TagMatchTerm)]    // Responds to strict bracketed terms
         public string Tags
         {
@@ -106,8 +109,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
             }
         }
         bool _isReadOnly = true;
-
-
 
         public override string ToString() => $"{Description} {KeywordsDisplay} {TagsDisplay}".Trim();
 

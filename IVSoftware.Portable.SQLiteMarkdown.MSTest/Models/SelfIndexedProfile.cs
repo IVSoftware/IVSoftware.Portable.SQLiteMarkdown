@@ -13,6 +13,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     /// </summary>
     class SelfIndexedProfile : SelfIndexed, ISelfIndexedMarkdown
     {
+
         [PrimaryKey]
         public override string Id { get; set; } = "38CFE38E-0D90-4C9F-A4E5-845089CB2BB0";
 

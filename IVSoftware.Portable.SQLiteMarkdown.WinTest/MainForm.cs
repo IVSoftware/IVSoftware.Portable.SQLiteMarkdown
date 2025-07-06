@@ -1,5 +1,6 @@
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
+using IVSoftware.Portable.SQLiteMarkdown.WinTest.Models;
 using Newtonsoft.Json;
 using OnePageCollectionViewSketchpad;
 using SQLite;
@@ -37,9 +38,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                             break;
                         case Keys.Return:
                             e.SuppressKeyPress = true;
-                            if (vcView.ItemsSource is IObservableQueryFilterSource qfs)
+                            qfs.Commit();
+                            break;
+                        case Keys.Back:
+                            if (textInputText.TextLength == 0)
                             {
-                                qfs.Commit();
+                                qfs.Clear(all: true);
                             }
                             break;
                     }
@@ -129,7 +133,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             {
                 BeginInvoke(() =>
                 {
-                    MessageBox.Show(QFSUT.InputText.ParseSqlMarkdown<SelectableQFModel>());
+                    MessageBox.Show(QFSUT.ParseSqlMarkdown());
                 });
             };
             tsmiCombo.SelectedIndexChanged += (sender, e) =>
@@ -157,9 +161,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                     ExtensionsOR.PromptEachStep = tsmiPromptEachStep.Checked;
                 });
             };
+
             labelSearchIcon.Click += (sender, e) => 
             {
-                QFSUT.FilteringStateForTest = FilteringState.Ineligible; 
+                // The idea hear is to leave filtering mode but
+                // use the existing text as a new query.
+                var tmp = QFSUT.InputText;
+                QFSUT.Clear(all: true);
+                QFSUT.InputText = tmp;
+                QFSUT.Commit();
             };
         }
 

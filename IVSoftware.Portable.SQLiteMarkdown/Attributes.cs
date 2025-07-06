@@ -91,6 +91,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [Obsolete("This property may be removed in future releases.")]
         public PersistenceMode PersistenceMode { get; } = PersistenceMode.Json;
     }
+
     /// <summary>
     /// Specifies the indexing behavior for a property within OnePage's "query-then-filter" model,
     /// defining how the property will participate in different types of search operations during

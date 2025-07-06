@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.SQLiteMarkdown.Collections;
+﻿using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using SQLite;
 using System;
 using System.Collections;
@@ -6,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -87,6 +89,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         void InitializeFilterOnlyMode(IEnumerable<T> items);
         void ReplaceItems (IEnumerable<T> items);
+        Task ReplaceItemsAsync (IEnumerable<T> items);
+        IList SelectedItems { get; }
+        DisposableHost DHostBusy { get; }
+
+        event EventHandler SelectionChanged;
     }
 
     /// <summary>

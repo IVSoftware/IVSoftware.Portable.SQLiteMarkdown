@@ -1,7 +1,10 @@
 ﻿
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SQLite;
 using System;
 using System.Collections;
@@ -14,7 +17,10 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Xml.Linq;
+
+[assembly: InternalsVisibleTo("IVSoftware.Portable.SQLiteMarkdown.MSTest")]
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -24,7 +30,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// clause by accumulating  parsing state, managing AST nodes, tracking substitutions,
     /// and guiding final SQL generation via attribute-aware hydration.
     /// </summary>
-    public class MarkdownContext : INotifyPropertyChanged
+    [DebuggerDisplay("ContractType={ContractType}")]
+    public class MarkdownContext 
+        : INotifyPropertyChanged
     {
         /// <summary>
         /// Creates a self-contained expression parsing environment, binding it
@@ -51,7 +59,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 qfMode,
                 out XElement _);
 
-        protected string ParseSqlMarkdown<T>()
+        /// <summary>
+        /// Run from internal values using ContractType
+        /// </summary>
+        public string ParseSqlMarkdown()
+            => ParseSqlMarkdown(
+                InputText,
+                ContractType,
+                IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query,
+                out XElement _);
+
+        /// <summary>
+        /// Run from internal values using a supplied ProxyType
+        /// </summary>
+        public string ParseSqlMarkdown<T>()
             => ParseSqlMarkdown(
                 InputText,
                 typeof(T), 
@@ -333,7 +354,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                     exprLocal = sbExpr.ToString();
 
-#if DEBUG
+#if DEBUG && false && SAVE
                     Debug.WriteLine($"250619.A");
                     Debug.WriteLine($"{exprOR,-30} | {exprLocal,-30}");
                     { }
@@ -384,10 +405,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     this.OnAwaited(new AwaitedEventArgs(caller: nameof(localLint)));
                 }
-#if DEBUG
+#if false && DEBUG && SAVE
                 if (b4 != Transform)
                 {
-                    Debug.WriteLine($"{b4} -> {Transform}");
+                    Debug.WriteLine($"250705 {b4} -> {Transform}");
                 }
 #endif
             }
@@ -429,7 +450,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             break;
                         case '(':
                             xprev = xcurrent;
-                            xcurrent = new XElement(nameof(StdAstNode.sub));
+                            xcurrent = new XElement(nameof(StdAstNode.sub), new XAttribute(nameof(StdAstAttr.ismatched), bool.FalseString));
                             break;
                         case ')':
                             xopen = xcurrent.Ancestors().FirstOrDefault(_ => _.Name.LocalName == nameof(StdAstNode.sub));
@@ -487,6 +508,78 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if (isLastChar)
                     {
                         xcurrent.SetAttributeValue(nameof(StdAstAttr.value), sb);
+                        if (DHostSelfIndexing[nameof(IndexingMode)] is IndexingMode selfIndexingMode)
+                        {
+                            Debug.Assert(!DHostSelfIndexing.IsZero(), "Expecting to 'not' have to check this!");
+                            #region S E L F    I N D E X I N G    S U P P O R T
+                            var rawTerm = sb.ToString();
+                            bool isTag = rawTerm.StartsWith("$FDFD") && rawTerm.Length == 10;
+                            bool indexingHandled = false;
+
+                            // Rehydration is still necessary for atomic particles that are 'not' tags!.
+                            string rehydrated = Rehydrate(rawTerm);
+                            if (isTag)
+                            {
+                                if (!rehydrated.Contains(','))
+                                {
+                                    switch(selfIndexingMode)
+                                    {
+                                        case IndexingMode.QueryLikeTerm:
+                                            _parsedIndexTerms[IndexingMode.QueryLikeTerm].Add(rehydrated);
+                                            break;
+                                        case IndexingMode.FilterLikeTerm:
+                                            _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(rehydrated);
+                                            break;
+                                        case IndexingMode.TagMatchTerm:
+                                            _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(rehydrated.Trim("[]".ToCharArray()));
+                                            break;
+                                    }
+                                    indexingHandled = true;
+                                }
+                            }
+                            if (!indexingHandled)
+                            {
+                                if (rehydrated.CanParseAsJson())
+                                {
+                                    var terms = JsonConvert.DeserializeObject<List<string>>(rehydrated);
+
+                                    foreach (var t in terms)
+                                    {
+                                        var atom = t.Trim();
+                                        if (string.IsNullOrWhiteSpace(atom)) continue;
+
+                                        switch (selfIndexingMode)
+                                        {
+                                            case IndexingMode.QueryLikeTerm:
+                                                _parsedIndexTerms[IndexingMode.QueryLikeTerm].Add(atom);
+                                                break;
+                                            case IndexingMode.FilterLikeTerm:
+                                                _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(atom);
+                                                break;
+                                            case IndexingMode.TagMatchTerm:
+                                                _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(atom.Trim("[]".ToCharArray()));
+                                                break;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    switch (selfIndexingMode)
+                                    {
+                                        case IndexingMode.QueryLikeTerm:
+                                            _parsedIndexTerms[IndexingMode.QueryLikeTerm].Add(rehydrated.ToLower());
+                                            break;
+                                        case IndexingMode.FilterLikeTerm:
+                                            _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(rehydrated.ToLower());
+                                            break;
+                                        case IndexingMode.TagMatchTerm:
+                                            _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(rehydrated.Trim("[]".ToCharArray()).ToLower());
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                        #endregion S E L F    I N D E X I N G    S U P P O R T
                         sb.Clear();
                         return false;
                     }
@@ -593,6 +686,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                         }
                                     }
                                 }
+                                else
+                                {
+                                    switch (_activeQFMode)
+                                    {
+                                        case QueryFilterMode.Query:
+                                            break;
+                                        case QueryFilterMode.Filter:
+                                            var openBracketCount = 0;
+                                            foreach (var c in value)
+                                            {
+                                                switch (c)
+                                                {
+                                                    case '[': openBracketCount++; break;
+                                                    case ']': openBracketCount--; break;
+                                                }
+                                            }
+
+                                            // Fuzzy tag filter.
+                                            if (openBracketCount != 0) // Could be pos or neg
+                                            {
+                                                foreach (var tagTerm in tagTerms)
+                                                {
+                                                    if (visited.Add(tagTerm))
+                                                    {
+                                                        exprsE.Add($"{tagTerm.Name} LIKE '%{value}%'");
+                                                        exprsN.Add($"{tagTerm.Name} LIKE {argId}");
+                                                    }
+                                                }
+                                            }
+                                            break;
+                                    }
+                                }
                                 var unionsE = string.Join(" OR ", exprsE);
                                 var unionsN = string.Join(" OR ", exprsN);
 
@@ -630,7 +755,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             case StdAstNode.and:
                                 if (string.IsNullOrWhiteSpace(childClauseE))
                                 {
-                                    throw new InvalidOperationException("Expecting non-empty term.");
+                                    // KNOWN EDGE CASE
+                                    // e.g. sho|bla) [not animal]
+                                    Debug.WriteLine("ADVISORY : KNOWN EDGE CASE - Expecting non-empty term.");
                                 }
                                 node.SetAttributeValue(
                                     nameof(StdAstAttr.clauseE),
@@ -669,7 +796,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     }
                                     else
                                     {
-                                        throw new NotImplementedException("ToDo - render this as a literal.");
+                                        Debug.WriteLine("ADVISORY: ToDo - render this as a literal.");
                                     }
                                 }
                                 else
@@ -693,7 +820,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 {XAST.Attribute(nameof(StdAstAttr.clauseE))?.Value ?? $"1"}"
 .Trim();
 
-#if DEBUG
+#if false && DEBUG && SAVE
                 Debug.WriteLine(string.Empty);
                 Debug.WriteLine("250702 - String-First");
                 Debug.WriteLine(Query);
@@ -771,8 +898,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         Type _contractType = default;
 
-        public Type ProxyType { get; private set; }
-
         protected virtual void OnContractTypeChanged()
         {
             if (ContractType is null)
@@ -789,6 +914,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 FilterQueryDatabase.CreateTable(ContractType);
             }
         }
+
+        public Type ProxyType { get; private set; }
+
+        /// <summary>
+        /// Caches values from [SelfIndexed] properties grouped by IndexingMode.
+        /// Populated on ParseSqlMarkdown(...), used to generate QueryTerm, FilterTerm, and TagMatchTerm.
+        /// </summary>
+        private Dictionary<IndexingMode, HashSet<string>> _parsedIndexTerms
+            = new Dictionary<IndexingMode, HashSet<string>>
+            {
+                [IndexingMode.QueryLikeTerm] = new HashSet<string>(),
+                [IndexingMode.FilterLikeTerm] = new HashSet<string>(),
+                [IndexingMode.TagMatchTerm] = new HashSet<string>()
+            };
 
 
         /// <summary>
@@ -968,6 +1107,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         QueryFilterConfig _queryFilterConfig = QueryFilterConfig.QueryAndFilter;
 
+        public DisposableHost DHostSelfIndexing
+        {
+            get
+            {
+                if (_dhostSelfIndexing is null)
+                {
+                    _dhostSelfIndexing = new DisposableHost();
+                }
+                return _dhostSelfIndexing;
+            }
+        }
+        DisposableHost _dhostSelfIndexing = null;
+
         protected virtual SQLiteConnection FilterQueryDatabase { get; set; }
 
         
@@ -1128,13 +1280,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     else if (InputText.Length < 3)
                     {
                         SearchEntryState = SearchEntryState.QueryENB;
-                        return;
                     }
                     else
                     {
                         SearchEntryState = SearchEntryState.QueryEN;
                     }
-                    break;
+                    OnInputTextSettled(new CancelEventArgs(cancel: true));
+                    return;
                 case FilteringState.Armed:
                     if (InputText.Length != 0)
                     {
@@ -1184,13 +1336,60 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         };
                     _wdtInputTextSettled.RanToCompletion += (sender, e) =>
                     {
-                        InputTextSettled?.Invoke(this, EventArgs.Empty);
+                        OnInputTextSettled(new CancelEventArgs());
                     };
                 }
                 return _wdtInputTextSettled;
             }
         }
+        IDisposable _busyToken = null;
+
+        public DisposableHost DHostBusy
+        {
+            get
+            {
+                if (_dhostBusy is null)
+                {
+                    _dhostBusy = new DisposableHost();
+                    _dhostBusy.BeginUsing += (sender, e) =>
+                    {
+                        _ready.Wait(0);
+                        Busy = true;
+                        OnPropertyChanged(nameof(Busy));
+                    };
+                    _dhostBusy.FinalDispose += (sender, e) =>
+                    {
+                        Busy = false;
+                        OnPropertyChanged(nameof(Busy));
+                        _ready.Wait(0);
+                        _ready.Release();
+                    };
+                }
+                return _dhostBusy;
+            }
+        }
+        DisposableHost _dhostBusy = null;
+        protected SemaphoreSlim _ready { get; } = new SemaphoreSlim(1, 1);
+        public TaskAwaiter GetAwaiter() =>
+            _ready
+            .WaitAsync(new CancellationTokenSource(TimeSpan.FromSeconds(1)).Token)
+            .GetAwaiter();
+
+        internal void Release()
+        {
+            _ready.Wait(0);
+            _ready.Release();
+        }
+        public bool Busy { get; private set; }
+
+        protected virtual void OnInputTextSettled(CancelEventArgs e)
+        {
+            InputTextSettled?.Invoke(this, e);
+        }
+
         WatchdogTimer _wdtInputTextSettled = null;
+
+
         public event EventHandler InputTextSettled;
 
         public TimeSpan InputTextSettleInterval
@@ -1209,8 +1408,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+
+
         TimeSpan _inputTextSettleInterval = TimeSpan.FromSeconds(0.25);
         #endregion N A V    S E A R C H    S T A T E    M A C H I N E
+
+        #region S E L F    I N D E X E D
+        public string QueryTerm => string.Join("~", _parsedIndexTerms[IndexingMode.QueryLikeTerm]);
+        public string FilterTerm => string.Join("~", _parsedIndexTerms[IndexingMode.FilterLikeTerm]);
+        public string TagMatchTerm => string.Join(" ", _parsedIndexTerms[IndexingMode.TagMatchTerm].Select(_ => $"[{_}]"));
+
+        #endregion S E L F    I N D E X E D
     }
     public class MarkdownContext<T> : MarkdownContext
     {
