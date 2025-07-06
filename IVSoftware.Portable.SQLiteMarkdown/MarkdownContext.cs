@@ -1278,13 +1278,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     else if (InputText.Length < 3)
                     {
                         SearchEntryState = SearchEntryState.QueryENB;
-                        return;
                     }
                     else
                     {
                         SearchEntryState = SearchEntryState.QueryEN;
                     }
-                    break;
+                    InputTextSettled?.Invoke(this, new CancelEventArgs(cancel: true));
+                    return;
                 case FilteringState.Armed:
                     if (InputText.Length != 0)
                     {
