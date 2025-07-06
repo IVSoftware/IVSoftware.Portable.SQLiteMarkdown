@@ -31,7 +31,6 @@
             components = new System.ComponentModel.Container();
             Grid = new TableLayoutPanel();
             vcView = new OnePageCollectionViewSketchpad.VirtualizedCollectionView();
-            dataGridViewTextBoxColumn1 = new DataGridViewTextBoxColumn();
             textInputText = new TextBox();
             contextMenuQueryFilter = new ContextMenuStrip(components);
             tsmiQuery = new ToolStripMenuItem();
@@ -74,7 +73,6 @@
             vcView.BackgroundColor = Color.LightBlue;
             vcView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             vcView.ColumnHeadersVisible = false;
-            vcView.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1 });
             Grid.SetColumnSpan(vcView, 3);
             vcView.Dock = DockStyle.Fill;
             vcView.Location = new Point(3, 53);
@@ -84,12 +82,6 @@
             vcView.Size = new Size(502, 838);
             vcView.TabIndex = 0;
             vcView.VirtualMode = true;
-            // 
-            // dataGridViewTextBoxColumn1
-            // 
-            dataGridViewTextBoxColumn1.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            dataGridViewTextBoxColumn1.MinimumWidth = 8;
-            dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
             // 
             // textInputText
             // 
@@ -202,7 +194,6 @@
 
         private TableLayoutPanel Grid;
         private OnePageCollectionViewSketchpad.VirtualizedCollectionView vcView;
-        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
         private TextBox textInputText;
         private ButtonEx buttonClear;
         private Label labelSearchIcon;

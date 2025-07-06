@@ -199,6 +199,16 @@ namespace OnePageCollectionViewSketchpad
                     {
                         ((INotifyCollectionChanged)_itemsSource).CollectionChanged += localOnCollectionChanged;
                     }
+                    if (ColumnCount == 0)
+                    {
+                        Columns.Add(new DataGridViewTextBoxColumn
+                        {
+                            AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
+                            MinimumWidth = 8,
+                            Name = "Items"
+                        });
+                    }
+
                     OnPropertyChanged();
 
                     #region L o c a l F x       
@@ -285,8 +295,7 @@ namespace OnePageCollectionViewSketchpad
                             }
                         }
                     }		
-                    #endregion L o c a l F x
-                    
+                    #endregion L o c a l F x                    
                 }
             }
         }
