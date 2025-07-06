@@ -179,9 +179,18 @@ namespace OnePageCollectionViewSketchpad
             get => _itemsSource;
             set
             {
+                if (ColumnCount == 0)
+                {
+                    Columns.Add(new DataGridViewTextBoxColumn
+                    {
+                        AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
+                        MinimumWidth = 8,
+                        Name = "Items"
+                    });
+                }
                 if (!Equals(_itemsSource, value))
                 {
-                    if(_itemsSource is INotifyPropertyChanged)
+                    if (_itemsSource is INotifyPropertyChanged)
                     {
                         ((INotifyPropertyChanged)_itemsSource).PropertyChanged -= localOnPropertyChanged;
                     }
@@ -193,28 +202,19 @@ namespace OnePageCollectionViewSketchpad
                     if (_itemsSource is INotifyPropertyChanged)
                     {
                         ((INotifyPropertyChanged)_itemsSource).PropertyChanged += localOnPropertyChanged;
-
                     }
                     if (_itemsSource is INotifyCollectionChanged)
                     {
                         ((INotifyCollectionChanged)_itemsSource).CollectionChanged += localOnCollectionChanged;
                     }
-                    if (ColumnCount == 0)
-                    {
-                        Columns.Add(new DataGridViewTextBoxColumn
-                        {
-                            AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
-                            MinimumWidth = 8,
-                            Name = "Items"
-                        });
-                    }
-
+                    RowCount = ItemsSource?.Count ?? 0;
+                    Invalidate();
                     OnPropertyChanged();
 
                     #region L o c a l F x       
                     void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
                     {
-                        if( sender is IObservableQueryFilterSource qfs && 
+                        if (sender is IObservableQueryFilterSource qfs &&
                             e is NotifyQueryFilterCollectionChangedEventArgs eqfs)
                         {
                             switch (eqfs.Action)
@@ -294,8 +294,9 @@ namespace OnePageCollectionViewSketchpad
                                     break;
                             }
                         }
-                    }		
-                    #endregion L o c a l F x                    
+                    }
+                    #endregion L o c a l F x
+
                 }
             }
         }
