@@ -301,7 +301,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public void CopyTo(T[] array, int arrayIndex) { _unfilteredItems.CopyTo(array, arrayIndex); }
 
-
         bool IList.Contains(object value) { return ((IList)_unfilteredItems).Contains(value); }
 
         int IList.IndexOf(object value) { return ((IList)_unfilteredItems).IndexOf(value); }
