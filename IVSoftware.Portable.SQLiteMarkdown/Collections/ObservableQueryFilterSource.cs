@@ -21,6 +21,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         : MarkdownContext<T>
         , IObservableQueryFilterSource<T>
         , IList<T>
+        where T : new()
     {
         public ObservableQueryFilterSource()
         {
@@ -235,7 +236,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             throw new InvalidOperationException($"Expected WHERE clause with content. Parse result was:\n{sql}");
                         }
 
-#if DEBUG
+#if false && DEBUG && SAVE
                         var context = InputText.ParseSqlMarkdown<T>(ref searchEntryState);
                         var cstring = context.ToString();
                         if (sql == cstring)
@@ -251,32 +252,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         }
 #endif
 
-                        if (typeof(T).IsClass && new TableMapping(typeof(T)) is TableMapping mapping)
-                        {
-                            var filteredRecords = 
-                                FilterQueryDatabase
-                                .Query(mapping, sql)
-                                .Cast<T>();
+                        var filteredRecords = FilterQueryDatabase.Query<T>(sql);
 
-                            // This is 'not' the place for a reconciled sync.
-                            // We would do that in the UI if at all.
-                            _filteredItems.Clear();
-                            foreach (var item in filteredRecords)
-                            {
-                                _filteredItems.Add(item);
-                            }
-                            // Active REGARDLESS of result because if unfiltered
-                            // count < 2 we're not supposed to be here in the first place.
-                            Debug.Assert(_unfilteredItems.Count >= 2, "ADVISORY - Filterable source is required.");
-                            FilteringState = FilteringState.Active;
-                            CollectionChanged?.Invoke(
-                                this,
-                                new NotifyQueryFilterCollectionChangedEventArgs(
-                                    NotifyQueryFilterCollectionChangedAction.ApplyFilter,
-                                    _filteredItems.ToList() // snapshot
-                                )
-                            );
+                        // This is 'not' the place for a reconciled sync.
+                        // We would do that in the UI if at all.
+                        _filteredItems.Clear();
+                        foreach (var item in filteredRecords)
+                        {
+                            _filteredItems.Add(item);
                         }
+                        // Active REGARDLESS of result because if unfiltered
+                        // count < 2 we're not supposed to be here in the first place.
+                        Debug.Assert(_unfilteredItems.Count >= 2, "ADVISORY - Filterable source is required.");
+                        FilteringState = FilteringState.Active;
+                        CollectionChanged?.Invoke(
+                            this,
+                            new NotifyQueryFilterCollectionChangedEventArgs(
+                                NotifyQueryFilterCollectionChangedAction.ApplyFilter,
+                                _filteredItems.ToList() // snapshot
+                            )
+                        );
                     }
                 }
                 finally
@@ -386,7 +381,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         public void Commit()
         {
-            if(!(MemoryDatabase is null || TableMapping is null))
+            if (MemoryDatabase != null)
             {
                 switch (SearchEntryState)
                 {
@@ -397,10 +392,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     case SearchEntryState.QueryENB:
                         break;
                     case SearchEntryState.QueryEN:
-                        var cMe = 
-                            MemoryDatabase
-                            .Query(TableMapping, InputText.ParseSqlMarkdown<T>())
-                            .Cast<T>();
+                        var cMe = MemoryDatabase.Query<T>(InputText.ParseSqlMarkdown<T>());
                         ReplaceItems(cMe);
                         break;
                     case SearchEntryState.QueryCompleteNoResults:
@@ -413,28 +405,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        public TableMapping TableMapping
-        {
-            get
-            {
-                if (_tableMapping is null)
-                {
-                    if (ContractType.GetConstructor(Type.EmptyTypes) == null)
-                    {
-                        try
-                        {
-                            _tableMapping = new TableMapping(ContractType);
-                        }
-                        catch
-                        {
-                            Debug.Fail("ADVISORY - Failed to create TableMapping.");
-                        }
-                    }
-                }
-                return _tableMapping;
-            }
-        }
-        TableMapping _tableMapping = null;
         public MarkdownContextOR MarkdownContextOR
         {
             get
@@ -598,7 +568,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                     break;
                 case FilteringState.Armed:
-                    if(FilteringStatePrev == FilteringState.Ineligible)
+                    if (FilteringStatePrev == FilteringState.Ineligible)
                     {
                         await Task.Delay(TimeSpan.FromTicks(1));
                         FilterQueryDatabase.DeleteAll<T>();
