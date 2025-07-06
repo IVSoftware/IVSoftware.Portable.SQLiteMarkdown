@@ -1500,6 +1500,7 @@ SearchEntryState";
                     {
                         // "animal"
                         items.InputText += "mal";
+                        await items;
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1524,7 +1525,7 @@ InputText";
                         // Based on UI interaction like return key pressed
                         sql = items.InputText.ParseSqlMarkdown<T>();
                         recordset = cnx.Query<T>(sql);
-                        items.ReplaceItems(recordset);
+                        await items.ReplaceItemsAsync(recordset);
 
                         Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, items.SearchEntryState);
                         Assert.AreEqual(FilteringState.Armed, items.FilteringState);

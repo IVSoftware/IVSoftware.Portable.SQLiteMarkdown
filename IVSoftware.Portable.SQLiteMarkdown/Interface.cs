@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -87,6 +88,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         void InitializeFilterOnlyMode(IEnumerable<T> items);
         void ReplaceItems (IEnumerable<T> items);
+        Task ReplaceItemsAsync (IEnumerable<T> items);
     }
 
     /// <summary>

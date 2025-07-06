@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
@@ -58,38 +59,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 _unsubscribeItems = _unfilteredItems.OfType<INotifyPropertyChanged>().ToArray();
             };
         }
-        protected override void OnInputTextSettled(CancelEventArgs e)
-        {
-            base.OnInputTextSettled(e);
-            if (!e.Cancel)
-            {
-                if (FilteringState == FilteringState.Active)
-                {
-                    ApplyFilter();
-                }
-            }
-        }
-        protected virtual void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(ISelectableQueryFilterItem.Selection):
-                    if(sender is ISelectableQueryFilterItem selectable)
-                    {
-                        switch (selectable.Selection)
-                        {
-                            case ItemSelection.None:
-                                SelectedItems.Remove(selectable);
-                                break;
-                            case ItemSelection.Exclusive:
-                                SelectedItems.Add(selectable);
-                                break;
-                        }
-                    }
-                    break;
-            }
-        }
-        private INotifyPropertyChanged[] _unsubscribeItems = new INotifyPropertyChanged[] { };
 
         public ObservableSelectionHashSet<ISelectableQueryFilterItem> SelectedItems
         {
@@ -120,46 +89,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public IReadOnlyList<T> UnfilteredItems => _unfilteredItems;
 
-        public DisposableHost DHostBusy
-        {
-            get
-            {
-                if (_dhostBusy is null)
-                {
-                    _dhostBusy = new DisposableHost();
-                    _dhostBusy.BeginUsing += (sender, e) =>
-                    {
-                        _busy = true;
-                        OnPropertyChanged(nameof(Busy));
-                    };
-                    _dhostBusy.FinalDispose += (sender, e) =>
-                    {
-                        _busy = false;
-                        OnPropertyChanged(nameof(Busy));
-                    };
-                }
-                return _dhostBusy;
-            }
-        }
-        DisposableHost _dhostBusy = null;
-        public bool Busy
-        {
-            get => !DHostBusy.IsZero();
-#if false
-            private set
-            {
-                if (!Equals(_busy, value))
-                {
-                    _busy = value;
-                    OnPropertyChanged();
-                }
-            }
-#endif
-        }
-        bool _busy = default;
-
-        public TaskAwaiter GetAwaiter() => Task.Delay(500).GetAwaiter();
-
         /// <summary>
         /// Replaces the entire current dataset after a query.
         /// Not valid in Filter-only mode. Raises CollectionChanged and sets FilteringState based on count.
@@ -174,6 +103,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 ReplaceItemsInternal(items);
             }
+        }
+        public async Task ReplaceItemsAsync(IEnumerable<T> items)
+        {
+            ReplaceItemsInternal(items);
+            await this;
         }
 
         private void ReplaceItemsInternal(IEnumerable<T> items)
@@ -475,6 +409,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     break;
             }
         }
+        protected override void OnInputTextSettled(CancelEventArgs e)
+        {
+            base.OnInputTextSettled(e);
+            if (!e.Cancel)
+            {
+                if (FilteringState == FilteringState.Active)
+                {
+                    ApplyFilter();
+                }
+            }
+        }
+        protected virtual void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(ISelectableQueryFilterItem.Selection):
+                    if (sender is ISelectableQueryFilterItem selectable)
+                    {
+                        switch (selectable.Selection)
+                        {
+                            case ItemSelection.None:
+                                SelectedItems.Remove(selectable);
+                                break;
+                            case ItemSelection.Exclusive:
+                                SelectedItems.Add(selectable);
+                                break;
+                        }
+                    }
+                    break;
+            }
+        }
+        private INotifyPropertyChanged[] _unsubscribeItems = new INotifyPropertyChanged[] { };
 
         public string Placeholder =>
                 IsFiltering

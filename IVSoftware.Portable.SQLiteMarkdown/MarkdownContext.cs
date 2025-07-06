@@ -1328,21 +1328,66 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (_wdtInputTextSettled is null)
                 {
                     _wdtInputTextSettled =
-                        new WatchdogTimer
+                        new WatchdogTimer(
+                            defaultInitialAction: () => 
+                            {
+                                // Pulling the token has ramifications so don't lock
+                                // around things like UI activity indicators.
+                                var token = DHostBusy.GetToken();
+                                // However, we do require this assignment to be threadsafe.
+                                lock (_lock) _busyToken = token;
+                            },
+                            defaultCompleteAction: () => 
+                            {
+                                OnInputTextSettled(new CancelEventArgs());
+                                _busyToken?.Dispose();
+                                lock (_lock) _busyToken = null;
+                            })
                         {
                             Interval = InputTextSettleInterval
                         };
-                    _wdtInputTextSettled.RanToCompletion += async (sender, e) =>
-                    {
-                        await _sslimInputText.WaitAsync();
-                        OnInputTextSettled(new CancelEventArgs());
-                        _sslimInputText.Release();
-                    };
                 }
                 return _wdtInputTextSettled;
             }
         }
-        SemaphoreSlim _sslimInputText = new SemaphoreSlim(1, 1);
+        IDisposable _busyToken = null;
+
+        public DisposableHost DHostBusy
+        {
+            get
+            {
+                if (_dhostBusy is null)
+                {
+                    _dhostBusy = new DisposableHost();
+                    _dhostBusy.BeginUsing += (sender, e) =>
+                    {
+                        _ready.Wait(0);
+                        _busy = true;
+                        OnPropertyChanged(nameof(Busy));
+                    };
+                    _dhostBusy.FinalDispose += (sender, e) =>
+                    {
+                        _busy = false;
+                        OnPropertyChanged(nameof(Busy));
+                        _ready.Wait(0);
+                        _ready.Release();
+                    };
+                }
+                return _dhostBusy;
+            }
+        }
+        DisposableHost _dhostBusy = null;
+        SemaphoreSlim _ready { get; } = new SemaphoreSlim(1, 1);
+        public TaskAwaiter GetAwaiter() =>
+            _ready
+            .WaitAsync(new CancellationTokenSource(TimeSpan.FromSeconds(1)).Token)
+            .GetAwaiter();
+
+        public bool Busy
+        {
+            get => !DHostBusy.IsZero();
+        }
+        bool _busy = false;
 
         protected virtual void OnInputTextSettled(CancelEventArgs e)
         {
