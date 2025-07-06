@@ -41,11 +41,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         {
                             inpc.PropertyChanged += OnItemPropertyChanged;
                         }
+                        if(FilteringState != FilteringState.Active)
+                        {
+                            CollectionChanged?.Invoke(this, e);
+                        }
                         break;
                     case NotifyCollectionChangedAction.Remove:
                         foreach (var inpc in e.OldItems?.OfType<INotifyPropertyChanged>())
                         {
                             inpc.PropertyChanged -= OnItemPropertyChanged;
+                        }
+                        if(FilteringState != FilteringState.Active)
+                        {
+                            CollectionChanged?.Invoke(this, e);
                         }
                         break;
                     case NotifyCollectionChangedAction.Reset:
@@ -55,7 +63,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             inpc.PropertyChanged -= OnItemPropertyChanged;
                         }
                         FilterQueryDatabase.DeleteAll<T>();
-                        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                        CollectionChanged?.Invoke(this, e);
                         break;
                 }
                 _unsubscribeItems = _unfilteredItems.OfType<INotifyPropertyChanged>().ToArray();
