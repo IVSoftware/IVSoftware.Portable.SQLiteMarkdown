@@ -1,6 +1,6 @@
 ## Observable Query Filter Source
 
-This class is a drop-in replacement for ObservableCollection&lt;T&gt; and supports `INotifyCollectionChanged`, but it does not inherit from it. Instead, it wraps two collections - one of consisting of all items (unfiltered collection) and one consisting of a subset of the full recordset. The routing between there two collections is managed by state variables.
+This class is a functional drop-in replacement for ObservableCollection&lt;T&gt; and supports `INotifyCollectionChanged`, but it does not inherit from it. Instead, it wraps two collections - one consisting of all items (unfiltered collection) and one consisting of a subset of the full recordset. The routing between there two collections is managed by state variables.
 
 On one hand, this portable class is completely decoupled from any platform-specific UI controls or views. At the same time, it acknowledges the probable and almost-certain existence of 'some' UI and unapologetically supports the most likely configurations of a UI with these state variables.
 
@@ -112,6 +112,43 @@ This avoids accidental result loss while giving the user clear control over when
 - Debounced filtering with developer-defined timing
 
 ___
+ 
+___
+
+### Awaitable Semantics
+
+`ObservableQueryFilterSource<T>` is directly awaitable. Awaiting an instance pauses execution while the system is considered *busy*—this begins with the first character typed (regardless of whether it leads to a queryable state) and continues until input has settled.
+
+If input settling triggers a query, the system remains busy until that query completes and the result set is loaded. This allows you to coordinate with async flows:
+
+```csharp
+await items;
+```
+
+> **Note:** If you use `ReplaceItemsAsync()`, it automatically completes the busy cycle. You do not need to call `.Release()` manually.
+
+___
+
+### Spinning Busy from User Code
+
+If your query or processing logic takes time (e.g., calling a remote API), you can manually indicate that the system is busy using a token:
+
+```csharp
+using (items.DHostBusy.GetToken())
+{
+    var results = await MyRemoteQueryAsync();
+    await items.ReplaceItemsAsync(results);
+}
+```
+
+This ensures:
+- `items.Busy == true` while your operation is active
+- The `await items;` mechanism waits until both input settles **and** your async logic completes
+- State transitions (`SearchEntryState`, `FilteringState`) remain correct and observable
+
+This is the preferred way to keep UI or consumers in sync with ongoing user-driven queries.
+___
+
 
 ### Common Pattern: Shared NavSearchBar
 
@@ -120,6 +157,8 @@ In many apps, a shared `NavSearchBar` (NSB) is used to support multiple collecti
 Each view typically owns its own view model, and that view model contains an instance of `ObservableQueryFilterSource<T>` (OQFS) for its dataset.
 
 While the view model could track the active expression and filtering state explicitly, `OQFS` already maintains the current input expression and state internally. This allows the NSB to be easily reconfigured when returning to a given view — no need for separate state plumbing.
+
+> **Note:** NavSearchBar is not provided directly; this pattern assumes a shared search input routed through the view model’s InputText. You can also browse this repo for tests like Test_DemoFlow() to see this pattern in action.
 
 This pattern supports:
 

@@ -1,11 +1,11 @@
-﻿This `SelfIndexed` C# class serves as a base class for managing properties that use custom attributes to support complex indexing and searching functionalities. Here’s a high-level breakdown of its purpose and functionality:
+﻿This SelfIndexed C# base class can be inherited to manage properties decorated with custom attributes for advanced indexing and search functionality. Here’s a high-level breakdown of its purpose and behavior:
 
 1. **Primary Key Management**:
    - A `PrimaryKey` property checks for the `[PrimaryKey]` attribute on derived class properties.
    - If no property has this attribute, the class throws an exception, ensuring the derived class explicitly specifies a primary key.
 
 2. **Searchable Properties**:
-   - Three main properties—`LikeTerm`, `ContainsTerm`, and `TagMatchTerm`—are marked with specific attributes (`[SqlLikeTerm]`, `[FilterContainsTerm]`, `[TagMatchTerm]`). These support different types of search capabilities.
+   - Three main properties—`LikeTerm`, `ContainsTerm`, and `TagMatchTerm`—are marked with specific attributes (`[QueryLikeTerm]`, `[FilterLikeTerm]`, `[TagMatchTerm]`). These support different types of search capabilities.
    - Each term is dynamically updated via `ensure` logic that triggers re-indexing only when necessary.
 
 3. **Indexing and Caching**:

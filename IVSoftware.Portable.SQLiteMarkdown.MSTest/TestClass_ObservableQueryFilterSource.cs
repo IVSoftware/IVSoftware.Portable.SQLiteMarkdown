@@ -27,7 +27,6 @@ using static System.Net.Mime.MediaTypeNames;
 using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 using static IVSoftware.Portable.Threading.Extensions;
 
-[assembly:InternalsVisibleTo("IVSoftware.Portable.SQLiteMarkdown.MSTest")]
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {   
     // Namespace with test-only classes.
@@ -1378,6 +1377,7 @@ SearchEntryState";
                             "Expecting ending state is ENB."
                         );
                     }
+
                     void subtestFirstCharToEmpty()
                     {
                         Assert.AreEqual(
@@ -1395,6 +1395,7 @@ SearchEntryState";
                         );
                         eventQueue.Clear();
                     }
+
                     void subtestEmptyToFirstChar()
                     {
                         Assert.AreEqual(

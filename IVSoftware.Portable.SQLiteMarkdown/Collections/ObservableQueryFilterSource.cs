@@ -116,6 +116,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             ReplaceItemsInternal(items);
             await this;
+            _ready.Release();
         }
 
         private void ReplaceItemsInternal(IEnumerable<T> items)

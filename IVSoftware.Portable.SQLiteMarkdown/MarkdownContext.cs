@@ -20,6 +20,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml.Linq;
 
+[assembly: InternalsVisibleTo("IVSoftware.Portable.SQLiteMarkdown.MSTest")]
+
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
     /// <summary>
@@ -1328,24 +1330,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (_wdtInputTextSettled is null)
                 {
                     _wdtInputTextSettled =
-                        new WatchdogTimer(
-                            defaultInitialAction: () => 
-                            {
-                                // Pulling the token has ramifications so don't lock
-                                // around things like UI activity indicators.
-                                var token = DHostBusy.GetToken();
-                                // However, we do require this assignment to be threadsafe.
-                                lock (_lock) _busyToken = token;
-                            },
-                            defaultCompleteAction: () => 
-                            {
-                                OnInputTextSettled(new CancelEventArgs());
-                                _busyToken?.Dispose();
-                                lock (_lock) _busyToken = null;
-                            })
+                        new WatchdogTimer
                         {
                             Interval = InputTextSettleInterval
                         };
+                    _wdtInputTextSettled.RanToCompletion += (sender, e) =>
+                    {
+                        OnInputTextSettled(new CancelEventArgs());
+                    };
                 }
                 return _wdtInputTextSettled;
             }
@@ -1362,12 +1354,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     _dhostBusy.BeginUsing += (sender, e) =>
                     {
                         _ready.Wait(0);
-                        _busy = true;
+                        Busy = true;
                         OnPropertyChanged(nameof(Busy));
                     };
                     _dhostBusy.FinalDispose += (sender, e) =>
                     {
-                        _busy = false;
+                        Busy = false;
                         OnPropertyChanged(nameof(Busy));
                         _ready.Wait(0);
                         _ready.Release();
@@ -1377,17 +1369,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         DisposableHost _dhostBusy = null;
-        SemaphoreSlim _ready { get; } = new SemaphoreSlim(1, 1);
+        protected SemaphoreSlim _ready { get; } = new SemaphoreSlim(1, 1);
         public TaskAwaiter GetAwaiter() =>
             _ready
             .WaitAsync(new CancellationTokenSource(TimeSpan.FromSeconds(1)).Token)
             .GetAwaiter();
 
-        public bool Busy
+        internal void Release()
         {
-            get => !DHostBusy.IsZero();
+            _ready.Wait(0);
+            _ready.Release();
         }
-        bool _busy = false;
+        public bool Busy { get; private set; }
 
         protected virtual void OnInputTextSettled(CancelEventArgs e)
         {
