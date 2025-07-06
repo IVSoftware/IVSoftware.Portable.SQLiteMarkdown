@@ -1283,7 +1283,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     {
                         SearchEntryState = SearchEntryState.QueryEN;
                     }
-                    InputTextSettled?.Invoke(this, new CancelEventArgs(cancel: true));
+                    OnInputTextSettled(new CancelEventArgs(cancel: true));
                     return;
                 case FilteringState.Armed:
                     if (InputText.Length != 0)

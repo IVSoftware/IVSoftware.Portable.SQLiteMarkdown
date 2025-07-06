@@ -1313,11 +1313,24 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 SemaphoreSlim awaiter = new SemaphoreSlim(1,1);
                 async Task localWaitForSettled(Action action)
                 {
+                    awaiter.Wait(0);
                     action();
-                    await Task.Delay(TimeSpan.FromSeconds(0.5));
+                    await awaiter.WaitAsync();
+                    awaiter.Release();
                 }
-                items.InputTextSettled += (sender, e) =>
+                items.InputTextSettled += async (sender, e) =>
                 {
+                    if(e is CancelEventArgs eCancel)
+                    {
+                        if(eCancel.Cancel)
+                        { 
+                            await Task.Delay(TimeSpan.FromSeconds(0.5));
+                        }
+                        else 
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(0.5));
+                        }
+                    }
                     awaiter.Wait(0);
                     awaiter.Release();
                 };
@@ -1457,7 +1470,7 @@ InputText";
                         Assert.AreNotEqual(0, recordset.Count);
                         Assert.AreNotEqual(0, items.Count);
 
-                        actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
+                        actual = string.Join(Environment.NewLine, items.OfType<object>().Select(_ => _.ToString()));
                         expected = @" 
 Black Cat  [animal] [color]
 Orange Fox  [animal] [color]
