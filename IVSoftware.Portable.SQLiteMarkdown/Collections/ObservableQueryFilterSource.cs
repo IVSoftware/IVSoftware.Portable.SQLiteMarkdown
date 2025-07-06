@@ -69,13 +69,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     _selectedItems = new ObservableSelectionHashSet<object>();
                     _selectedItems.CollectionChanged += (sender, e) =>
                     {
-                        SelectionChanged?.Invoke(this, e);
+                        OnSelectionChanged();
                     };
                 }
                 return _selectedItems;
             }
         }
         ObservableSelectionHashSet<object> _selectedItems = null;
+
+        protected virtual void OnSelectionChanged()
+        {
+            SelectionChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         public event EventHandler SelectionChanged;
         public SelectionMode SelectionMode
