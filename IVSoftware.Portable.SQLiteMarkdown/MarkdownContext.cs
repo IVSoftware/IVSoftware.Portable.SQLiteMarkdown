@@ -20,8 +20,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml.Linq;
 
-[assembly: InternalsVisibleTo("IVSoftware.Portable.SQLiteMarkdown.MSTest")]
-
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
     /// <summary>
@@ -1374,12 +1372,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             _ready
             .WaitAsync(new CancellationTokenSource(TimeSpan.FromSeconds(1)).Token)
             .GetAwaiter();
-
-        internal void Release()
-        {
-            _ready.Wait(0);
-            _ready.Release();
-        }
         public bool Busy { get; private set; }
 
         protected virtual void OnInputTextSettled(CancelEventArgs e)
