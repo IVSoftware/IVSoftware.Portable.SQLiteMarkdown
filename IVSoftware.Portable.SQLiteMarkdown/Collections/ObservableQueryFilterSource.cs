@@ -287,22 +287,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         #region I L I S T
         public int IndexOf(T item) { return _unfilteredItems.IndexOf(item); }
 
-        public void Insert(int index, T item)
-        {
-            _unfilteredItems.Insert(index, item);
-            ApplyFilter();
-        }
-
-        public void RemoveAt(int index)
-        {
-            _unfilteredItems.RemoveAt(index);
-            ApplyFilter();
-        }
 
         public void Add(T item)
         {
             _unfilteredItems.Add(item);
-            ApplyFilter();
+            OnExternalChange();
         }
 
         void IList.Clear() => Clear();
@@ -312,27 +301,39 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public void CopyTo(T[] array, int arrayIndex) { _unfilteredItems.CopyTo(array, arrayIndex); }
 
-        public bool Remove(T item)
-        {
-            var removed = _unfilteredItems.Remove(item);
-            if (removed) ApplyFilter();
-            return removed;
-        }
-        int IList.Add(object value)
-        {
-            _unfilteredItems.Add((T)value);
-            ApplyFilter();
-            return _unfilteredItems.IndexOf((T)value);
-        }
 
         bool IList.Contains(object value) { return ((IList)_unfilteredItems).Contains(value); }
 
         int IList.IndexOf(object value) { return ((IList)_unfilteredItems).IndexOf(value); }
+        public void Insert(int index, T item)
+        {
+            _unfilteredItems.Insert(index, item);
+            OnExternalChange();
+        }
+
+        public void RemoveAt(int index)
+        {
+            _unfilteredItems.RemoveAt(index);
+            OnExternalChange();
+        }
+
+        int IList.Add(object value)
+        {
+            _unfilteredItems.Add((T)value);
+            OnExternalChange();
+            return _unfilteredItems.IndexOf((T)value);
+        }
+        public bool Remove(T item)
+        {
+            var removed = _unfilteredItems.Remove(item);
+            if (removed) OnExternalChange();
+            return removed;
+        }
 
         void IList.Insert(int index, object value)
         {
             _unfilteredItems.Insert(index, (T)value);
-            ApplyFilter();
+            OnExternalChange();
         }
 
         void IList.Remove(object value)
@@ -340,7 +341,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             if (_unfilteredItems.Contains((T)value))
             {
                 _unfilteredItems.Remove((T)value);
-                ApplyFilter();
+                OnExternalChange();
+            }
+        }
+
+        /// <summary>
+        /// We need this, but this implementation is 
+        /// probationary and might need some tweaking.
+        /// </summary>
+        private void OnExternalChange()
+        {
+            FilteringState = FilteringState;
+            switch (FilteringState)
+            {
+                case FilteringState.Ineligible:
+                    break;
+                case FilteringState.Armed:
+                    break;
+                case FilteringState.Active:
+                    ApplyFilter();
+                    break;
+                default:
+                    break;
             }
         }
 
