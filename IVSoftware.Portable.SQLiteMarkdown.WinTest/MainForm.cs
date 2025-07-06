@@ -161,9 +161,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                     ExtensionsOR.PromptEachStep = tsmiPromptEachStep.Checked;
                 });
             };
+
             labelSearchIcon.Click += (sender, e) => 
             {
-                QFSUT.FilteringStateForTest = FilteringState.Ineligible; 
+                // The idea hear is to leave filtering mode but
+                // use the existing text as a new query.
+                var tmp = QFSUT.InputText;
+                QFSUT.Clear(all: true);
+                QFSUT.InputText = tmp;
+                QFSUT.Commit();
             };
         }
 
