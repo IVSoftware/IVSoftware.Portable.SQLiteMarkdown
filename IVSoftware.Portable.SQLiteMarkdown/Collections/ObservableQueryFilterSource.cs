@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -54,6 +55,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             inpc.PropertyChanged -= OnItemPropertyChanged;
                         }
                         FilterQueryDatabase.DeleteAll<T>();
+                        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                         break;
                 }
                 _unsubscribeItems = _unfilteredItems.OfType<INotifyPropertyChanged>().ToArray();
@@ -294,8 +296,36 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             OnExternalChange();
         }
 
-        void IList.Clear() => Clear();
-        void ICollection<T>.Clear() => Clear();
+        void IList.Clear() => Clear(all: true);
+        void ICollection<T>.Clear() => Clear(all: true);
+
+        public new void Clear(bool all = false)
+        {
+            base.Clear(all);
+            if(FilteringState < FilteringState.Armed)
+            {
+#if DEBUG
+                CollectionChanged += localCollectionChanged;
+
+                // [Careful] 
+                // If we're responding to FilteringState changed to clear the
+                // unfiltered items list it MIGHT NOT WORK. For example, manual
+                // add-remove changes to Items will bypass the input state machine. 
+                _unfilteredItems.Clear();
+
+                void localCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+                {
+                    CollectionChanged -= localCollectionChanged;
+                }
+#else
+                // [Careful] 
+                // If we're responding to FilteringState changed to clear the
+                // unfiltered items list it MIGHT NOT WORK. For example, manual
+                // add-remove changes to Items will bypass the input state machine. 
+                _unfilteredItems.Clear();
+#endif
+            }
+        }
 
         public bool Contains(T item) { return _unfilteredItems.Contains(item); }
 
