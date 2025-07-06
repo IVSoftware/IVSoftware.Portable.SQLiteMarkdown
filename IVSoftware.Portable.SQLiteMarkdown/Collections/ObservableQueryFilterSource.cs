@@ -123,7 +123,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public bool Busy
         {
             get => _busy;
-            set
+            private set
             {
                 if (!Equals(_busy, value))
                 {
@@ -133,6 +133,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
         bool _busy = default;
+
+        public TaskAwaiter GetAwaiter() => Task.Delay(500).GetAwaiter();
 
         /// <summary>
         /// Replaces the entire current dataset after a query.
@@ -547,13 +549,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 case FilteringState.Armed:
                     if(FilteringStatePrev == FilteringState.Ineligible)
                     {
-
-                        Debug.Assert(DateTime.Now.Date == new DateTime(2025, 7, 5).Date, "Don't forget disabled");
-#if false
                         await Task.Delay(TimeSpan.FromTicks(1));
                         FilterQueryDatabase.DeleteAll<T>();
                         FilterQueryDatabase.InsertAll(_unfilteredItems);
-#endif
                     }
                     break;
                 case FilteringState.Active:
