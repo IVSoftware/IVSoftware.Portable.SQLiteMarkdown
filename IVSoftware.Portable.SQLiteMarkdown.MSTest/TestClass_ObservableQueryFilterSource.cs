@@ -1324,11 +1324,11 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     {
                         if(eCancel.Cancel)
                         { 
-                            await Task.Delay(TimeSpan.FromSeconds(0.5));
+                            await Task.Delay(TimeSpan.FromSeconds(0.25));
                         }
                         else 
                         {
-                            await Task.Delay(TimeSpan.FromSeconds(0.5));
+                            await Task.Delay(TimeSpan.FromSeconds(0.25));
                         }
                     }
                     awaiter.Wait(0);
