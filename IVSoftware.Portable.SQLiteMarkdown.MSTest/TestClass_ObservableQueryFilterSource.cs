@@ -1292,7 +1292,6 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             }
         }
 
-
         [TestMethod]
         public async Task Test_TrackProgressiveInputState()
         {
