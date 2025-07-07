@@ -15,12 +15,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         public MainForm()
         {
             InitializeComponent();
-            QFSUT = new ObservableQueryFilterSource<SelectableQFModel>
-            {
-                SelectionMode = SelectionMode.Single,
-            };
-            vcView.ItemsSource = QFSUT;
-            vcView.DataTemplate = new VirtualizedCollectionView.CollectionViewDataTemplate<SelectableQFViewCard>();
+            vcView.ItemsSource = Items;
+            vcView.DataTemplate = new CollectionView.CollectionViewDataTemplate<SelectableQFViewCard>();
             if (vcView.ItemsSource is IObservableQueryFilterSource qfs)
             {
                 textInputText.TextChanged += (sender, e) =>
@@ -114,7 +110,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 { 
                     if (vcView.ItemsSource is IObservableQueryFilterSource qfs)
                     {
-                        QFSUT.FilteringStateForTest = FilteringState.Ineligible;
+                        Items.FilteringStateForTest = FilteringState.Ineligible;
                         tsmiFilter.Checked = false;
                     }
                 });
@@ -123,7 +119,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             {
                 BeginInvoke(() =>
                 {
-                    QFSUT.FilteringStateForTest = FilteringState.Active;
+                    Items.FilteringStateForTest = FilteringState.Active;
                     tsmiQuery.Checked = false;
                 });
             };
@@ -131,7 +127,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             {
                 BeginInvoke(() =>
                 {
-                    MessageBox.Show(QFSUT.ParseSqlMarkdown());
+                    MessageBox.Show(Items.ParseSqlMarkdown());
                 });
             };
             tsmiCombo.SelectedIndexChanged += (sender, e) =>
@@ -164,17 +160,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             {
                 // The idea hear is to leave filtering mode but
                 // use the existing text as a new query.
-                var tmp = QFSUT.InputText;
-                QFSUT.Clear(all: true);
-                QFSUT.InputText = tmp;
-                QFSUT.Commit();
+                var tmp = Items.InputText;
+                Items.Clear(all: true);
+                Items.InputText = tmp;
+                Items.Commit();
             };
         }
 
         /// <summary>
         /// QSF Under Test for ad hoc states and expr evals.
         /// </summary>
-        private ObservableQueryFilterSource<SelectableQFModel> QFSUT { get; } 
+        public ObservableQueryFilterSource<SelectableQFModel> Items
+        {
+            get
+            {
+                if (_items is null)
+                {
+                    _items = new ObservableQueryFilterSource<SelectableQFModel>(SelectionMode.Single);
+                    _items.CanMultiselect = () => Control.ModifierKeys == Keys.Control;
+                }
+                return _items;
+            }
+        }
+        ObservableQueryFilterSource<SelectableQFModel>? _items = null;
 
         private SQLiteConnection CreateDemoDatabase<T>() where T : new()
         {

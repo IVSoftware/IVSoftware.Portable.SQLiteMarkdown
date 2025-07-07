@@ -707,7 +707,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // Eventually we'll want to add an item to a filtered list, but to do so:
                 // - New item needs to be added to the clients external (maybe) database.
                 // - New item needs to be added to the local FilterQueryDatabase,
-                // - Finally, we need to add it to the filetered items regardless
+                // - Finally, we need to add it to the filtered items regardless
                 //   of whether it meets the current filter (otherwise you might
                 //   add it and have it disappear due to the filter.
                 // WE WILL NEED TO DO THIS CAREFULLY WHEN THE TIME COMES!

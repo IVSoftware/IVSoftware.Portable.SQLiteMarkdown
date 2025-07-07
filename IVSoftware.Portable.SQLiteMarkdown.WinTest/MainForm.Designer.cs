@@ -32,7 +32,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         {
             components = new System.ComponentModel.Container();
             Grid = new TableLayoutPanel();
-            vcView = new VirtualizedCollectionView();
+            vcView = new CollectionView();
             textInputText = new TextBox();
             contextMenuQueryFilter = new ContextMenuStrip(components);
             tsmiQuery = new ToolStripMenuItem();
@@ -195,7 +195,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         #endregion
 
         private TableLayoutPanel Grid;
-        private VirtualizedCollectionView vcView;
+        private CollectionView vcView;
         private TextBox textInputText;
         private ButtonEx buttonClear;
         private Label labelSearchIcon;

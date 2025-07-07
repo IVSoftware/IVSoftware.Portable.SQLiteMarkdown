@@ -20,6 +20,7 @@ using View = System.Windows.Forms.Control;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
 {
+#if false
     public partial class VirtualizedCollectionView 
         : DataGridView
         , INotifyPropertyChanged
@@ -399,4 +400,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
 
         public event PropertyChangedEventHandler? PropertyChanged;
     }
+#endif
 }

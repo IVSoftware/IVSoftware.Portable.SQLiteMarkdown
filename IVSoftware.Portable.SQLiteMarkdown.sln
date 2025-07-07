@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.SQLiteM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.SQLiteMarkdown.WinTest", "IVSoftware.Portable.SQLiteMarkdown.WinTest\IVSoftware.Portable.SQLiteMarkdown.WinTest.csproj", "{6F13BCBE-FDF0-48F7-9A8E-622EC8755267}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.WinForms.OnePage", "..\..\OnePage\IVSoftware.WinForms.OnePage\IVSoftware.WinForms.OnePage\IVSoftware.WinForms.OnePage.csproj", "{77FAF4F8-A2E5-4EC7-9B9D-4E0F698A0B01}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{6F13BCBE-FDF0-48F7-9A8E-622EC8755267}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F13BCBE-FDF0-48F7-9A8E-622EC8755267}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F13BCBE-FDF0-48F7-9A8E-622EC8755267}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77FAF4F8-A2E5-4EC7-9B9D-4E0F698A0B01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77FAF4F8-A2E5-4EC7-9B9D-4E0F698A0B01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77FAF4F8-A2E5-4EC7-9B9D-4E0F698A0B01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77FAF4F8-A2E5-4EC7-9B9D-4E0F698A0B01}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
