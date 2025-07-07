@@ -21,10 +21,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
 
             public override object? DataContext
             {
-                get => Tag;
+                get => base.DataContext;
                 set
                 {
-                    Tag = value;
+                    base.DataContext = value;
                     Text = value?.ToString();
                 }
             }
