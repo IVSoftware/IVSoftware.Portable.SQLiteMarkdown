@@ -53,30 +53,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             _labelTags.Font = new Font(Font.FontFamily, Font.Size - 2F);
         }
 
-        private void OnAnyMouseUp(object? sender, EventArgs e)
-        {
-            switch (DataContext!.Selection)
-            {
-                case ItemSelection.None:
-                    DataContext!.Selection = ItemSelection.Exclusive;
-                    break;
-                case ItemSelection.Exclusive:
-                    DataContext!.Selection = ItemSelection.None;
-                    break;
-                case ItemSelection.Multi:
-                case ItemSelection.Primary:
-                default:
-                    // N O O P for now
-                    break;
-            }
-        }
+        /// <summary>
+        /// Returns the preferred height for this card template and makes the card autonomous
+        /// in this regard. The hosting VirtualizedCollectionView refers to this override to
+        /// adjust row height accordingly, and this supports the idea that a given card might
+        /// want to "expand" its height to accommodate on-demand content.
+        /// </summary>
+        public override Size GetPreferredSize(Size proposedSize)
+            => new Size(Size.Width, 80);
 
         public new SelectableQFModel? DataContext => (SelectableQFModel?)base.DataContext;
 
         /// <summary>
         /// Trackable for subscribe and unsubscribe.
         /// </summary>
-        public SelectableQFModel? _dataContext = null;
+        SelectableQFModel? _dataContext = null;
 
         protected override void OnDataContextChanged(EventArgs e)
         {
@@ -97,11 +88,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 OnPropertyChanged(DataContext, new PropertyChangedEventArgs(pi.Name));
             }
         }
-
-        public override Size GetPreferredSize(Size proposedSize)
-            => new Size(Size.Width, 80);
-
-
 
         private Label _labelDescription = new Label
         {
@@ -133,8 +119,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         protected virtual void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             PropertyChanged?.Invoke(sender, e);
-            if(ReferenceEquals(sender, this))
-            { }
+            if (ReferenceEquals(sender, this))
+            {   /* G T K */
+                // This important guard prevents an infinite loop.
+            }
             else if (ReferenceEquals(sender, DataContext))
             {
                 switch (e.PropertyName)

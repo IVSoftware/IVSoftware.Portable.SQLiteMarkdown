@@ -66,7 +66,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
                         Controls.Add(view);
                     }
 
-                    view.DataContext = ItemsSource[mod];
+                    view.DataContext = ItemsSource[e.RowIndex];
 
                     var margin = view.Margin;
                     var cellRect = GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
@@ -81,7 +81,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
                     int desiredHeight = Math.Max(view.PreferredSize.Height + margin.Vertical, MIN_ROW_HEIGHT);
                     if (row.Height != desiredHeight)
                     {
+                        // Causes row validation
                         row.Height = desiredHeight;
+                        // Exit early to avoid drawing at incorrect size.
+                        // Paint using the corrected row height on the next pass.
                         return;
                     }
 
@@ -102,11 +105,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
                     e.RowIndex < ItemsSource.Count
                     )
                 {
-                    var mod = e.RowIndex % _templateCount;
-                    if (e.RowIndex < ItemsSource.Count)
-                    {
-                        e.Value = ItemsSource[mod];
-                    }
+                    e.Value = ItemsSource[e.RowIndex];
                 }
             };
             Scroll += (sender, e) =>
@@ -127,6 +126,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
                 }
             };
         }
+
+        /// <summary>
+        /// Gets the currently recycled view instances keyed by template slot.
+        /// Used internally and by tests to verify view reuse and layout state.
+        /// </summary>
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal IReadOnlyDictionary<int, View> RecycledViews => _recycledViews;
         Dictionary<int, View> _recycledViews = new();
 
         public WatchdogTimer WDTScroll
@@ -300,12 +307,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
                 }
             }
         }
-
         IList? _itemsSource = null;
-
-        public IReadOnlyList<View> Cards => _cards.ToArray();
-
-        private ObservableCollection<View>_cards = new();
 
         [EditorBrowsable(EditorBrowsableState.Never), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public CollectionViewDataTemplate DataTemplate
