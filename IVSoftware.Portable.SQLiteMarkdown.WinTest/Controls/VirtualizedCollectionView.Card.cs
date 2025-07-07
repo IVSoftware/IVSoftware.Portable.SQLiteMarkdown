@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
 {
@@ -34,8 +29,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
                 }
             }
 
-            public ItemSelection Selection { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-            public bool IsReadOnly { get; set; } = false;
+            public ItemSelection Selection
+            {
+                get => _selection;
+                set
+                {
+                    if (!Equals(_selection, value))
+                    {
+                        _selection = value;
+                        OnPropertyChanged();
+                    }
+                }
+            }
+            ItemSelection _selection = default;
+
+
+            /// <summary>
+            /// Default true means that it will belectable when not editing.
+            /// </summary>
+            public bool IsReadOnly { get; set; } = true;
 
             protected override void OnDataContextChanged(EventArgs e)
             {
