@@ -52,7 +52,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
             protected override void OnDataContextChanged(EventArgs e)
             {
                 base.OnDataContextChanged(e);
+
+                if (_dataContext is INotifyPropertyChanged)
+                {
+                    ((INotifyPropertyChanged)_dataContext).PropertyChanged -= OnPropertyChanged;
+                }
+                _dataContext = DataContext;
+                if (_dataContext is INotifyPropertyChanged)
+                {
+                    ((INotifyPropertyChanged)_dataContext).PropertyChanged += OnPropertyChanged;
+                }
+                if (_dataContext is ISelectableQueryFilterItem qfItem)
+                {
+                    qfItem.Selection = ItemSelection.None;
+                }
+                foreach (var pi in DataContext?.GetType().GetProperties() ?? [])
+                {
+                    OnPropertyChanged(DataContext, new PropertyChangedEventArgs(pi.Name));
+                }
             }
+            // For unsubscribing.
+            object? _dataContext = null;
+
             protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
                 OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             protected virtual void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -62,12 +83,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
                 {   /* G T K */
                     // This important guard prevents an infinite loop.
                 }
-                else
+                else if (ReferenceEquals(sender, DataContext))
                 {
+                    switch (e.PropertyName)
+                    {
+                        case nameof(ISelectableQueryFilterItem.Selection):
+                            if (DataContext is ISelectableQueryFilterItem selectable)
+                            {
+                                switch (selectable?.Selection)
+                                {
+                                    case ItemSelection.None:
+                                        BackColor = Color.Empty;
+                                        ForeColor = Color.Empty;
+                                        break;
+                                    case ItemSelection.Exclusive:
+                                        BackColor = Color.CornflowerBlue;
+                                        ForeColor = Color.White;
+                                        break;
+                                }
+                            }
+                            break;
+                    }
                 }
             }
             public event PropertyChangedEventHandler? PropertyChanged;
         }
-
     }
 }
