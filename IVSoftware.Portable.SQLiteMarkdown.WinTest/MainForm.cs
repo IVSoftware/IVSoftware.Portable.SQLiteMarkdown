@@ -1,14 +1,12 @@
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
-using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
+using IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls;
 using IVSoftware.Portable.SQLiteMarkdown.WinTest.Models;
 using Newtonsoft.Json;
-using OnePageCollectionViewSketchpad;
 using SQLite;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms.VisualStyles;
-using static OnePageCollectionViewSketchpad.VirtualizedCollectionView;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
 {
@@ -22,7 +20,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 SelectionMode = SelectionMode.Single,
             };
             vcView.ItemsSource = QFSUT;
-            vcView.DataTemplate = new CollectionViewDataTemplate<SelectableQFViewCard>();
+            vcView.DataTemplate = new VirtualizedCollectionView.CollectionViewDataTemplate<SelectableQFViewCard>();
             if (vcView.ItemsSource is IObservableQueryFilterSource qfs)
             {
                 textInputText.TextChanged += (sender, e) =>

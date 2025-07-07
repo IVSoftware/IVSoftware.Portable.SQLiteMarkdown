@@ -41,9 +41,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         {
                             inpc.PropertyChanged += OnItemPropertyChanged;
                         }
-                        if(FilteringState != FilteringState.Active)
+                        if (Busy)
+                        {   /* G T K */
+                        }
+                        else
                         {
-                            CollectionChanged?.Invoke(this, e);
+                            if (FilteringState != FilteringState.Active)
+                            {
+                                CollectionChanged?.Invoke(this, e);
+                            }
                         }
                         break;
                     case NotifyCollectionChangedAction.Remove:
@@ -51,7 +57,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         {
                             inpc.PropertyChanged -= OnItemPropertyChanged;
                         }
-                        if(FilteringState != FilteringState.Active)
+                        if (Busy)
+                        {   /* G T K */
+                        }
+                        else
                         {
                             CollectionChanged?.Invoke(this, e);
                         }

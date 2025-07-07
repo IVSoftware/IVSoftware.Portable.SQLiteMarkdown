@@ -17,7 +17,7 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using View = System.Windows.Forms.Control;
 
-namespace OnePageCollectionViewSketchpad
+namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
 {
     public class VirtualizedCollectionView 
         : DataGridView
