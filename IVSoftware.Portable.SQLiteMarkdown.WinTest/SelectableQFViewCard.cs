@@ -112,8 +112,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             Dock = DockStyle.Fill,
         };
 
-
-
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
             OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         protected virtual void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -152,7 +150,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 }
             }
         }
-
         public event PropertyChangedEventHandler? PropertyChanged;
     }
 }

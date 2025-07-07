@@ -19,7 +19,7 @@ using View = System.Windows.Forms.Control;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
 {
-    public class VirtualizedCollectionView 
+    public partial class VirtualizedCollectionView 
         : DataGridView
         , INotifyPropertyChanged
         , IMessageFilter
@@ -348,32 +348,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
                 Type = typeof(T);
             }
         }
-
-        public class DefaultCollectionViewCard : Label
-        {
-            public DefaultCollectionViewCard()
-            {
-                AutoSize = false;
-                TextAlign = ContentAlignment.MiddleLeft;
-                Padding = new Padding(4);
-                Margin = new Padding(2);
-                BorderStyle = BorderStyle.FixedSingle;
-            }
-
-            public override object? DataContext
-            {
-                get => Tag;
-                set
-                {
-                    Tag = value;
-                    Text = value?.ToString();
-                }
-            }
-            protected override void OnDataContextChanged(EventArgs e)
-            {
-                base.OnDataContextChanged(e);
-            }
-        }
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
             OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         protected virtual void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -395,7 +369,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
             {
                 if (!isDown)
                 {
-
                     var clientPoint = PointToClient(Cursor.Position);
                     var hit = HitTest(clientPoint.X, clientPoint.Y);
                     if (hit.RowIndex >= 0)
