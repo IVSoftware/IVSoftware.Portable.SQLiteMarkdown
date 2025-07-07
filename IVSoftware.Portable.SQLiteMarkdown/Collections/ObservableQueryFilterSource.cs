@@ -690,6 +690,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         IList<T> IObservableQueryFilterSource<T>.SelectedItems => SelectedItems;
 
+        IList IObservableQueryFilterSource.SelectedItems => SelectedItems;
+
+        public Func<bool> CanMultiselect 
+        {
+            get => SelectedItems.CanMultiselect;
+            set => SelectedItems.CanMultiselect = value;
+        }
+        Func<bool> _canMultiselect = null;
+
         public T this[int index]
         {
             get { return _RoutedItems_[index]; }

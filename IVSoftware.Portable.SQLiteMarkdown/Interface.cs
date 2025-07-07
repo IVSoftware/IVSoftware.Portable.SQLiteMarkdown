@@ -70,7 +70,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         bool IsFiltering { get; }
         string InputText { get; set; }
-        SelectionMode SelectionMode { get; set; }
+        SelectionMode SelectionMode { get; set; } 
+        Func<bool> CanMultiselect { get; set; }
+        IList SelectedItems { get; }
         SearchEntryState SearchEntryState { get; }
         FilteringState FilteringState { get; }
         string Placeholder { get; }
@@ -91,7 +93,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         void InitializeFilterOnlyMode(IEnumerable<T> items);
         void ReplaceItems (IEnumerable<T> items);
         Task ReplaceItemsAsync (IEnumerable<T> items);
-        IList<T> SelectedItems { get; }
+        new IList<T> SelectedItems { get; }
         DisposableHost DHostBusy { get; }
 
         event EventHandler SelectionChanged;

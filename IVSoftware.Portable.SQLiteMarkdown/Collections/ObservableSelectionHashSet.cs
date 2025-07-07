@@ -20,7 +20,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 case SelectionMode.None:
                     return;
                 case SelectionMode.Single:
-                    ClearItems();
+                    if (!CanMultiselect())
+                    {
+                        ClearItems();
+                    }
                     break;
                 case SelectionMode.Multiple:
                     break;
@@ -55,6 +58,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     break;
             }
         }
+
+        public Func<bool> CanMultiselect
+        {
+            get => _canMultiselect is null
+                ? () => SelectionMode == SelectionMode.Multiple
+                : _canMultiselect;
+            set => _canMultiselect = value;
+        }
+        Func<bool> _canMultiselect = null;
 
         protected override void ClearItems()
         {
