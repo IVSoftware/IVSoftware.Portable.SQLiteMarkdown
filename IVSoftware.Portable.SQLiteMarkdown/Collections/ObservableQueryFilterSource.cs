@@ -85,13 +85,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             SelectionMode = selectionMode;
         }
 
-        public ObservableSelectionHashSet<object> SelectedItems
+        public ObservableSelectionHashSet<T> SelectedItems
         {
             get
             {
                 if (_selectedItems is null)
                 {
-                    _selectedItems = new ObservableSelectionHashSet<object>();
+                    _selectedItems = new ObservableSelectionHashSet<T>();
                     _selectedItems.CollectionChanged += (sender, e) =>
                     {
                         OnSelectionChanged();
@@ -100,7 +100,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 return _selectedItems;
             }
         }
-        ObservableSelectionHashSet<object> _selectedItems = null;
+        ObservableSelectionHashSet<T> _selectedItems = null;
 
         protected virtual void OnSelectionChanged()
         {
@@ -519,15 +519,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             switch (e.PropertyName)
             {
                 case nameof(ISelectableQueryFilterItem.Selection):
-                    if (sender is ISelectableQueryFilterItem selectable)
+                    if (sender is T itemT && itemT is ISelectableQueryFilterItem selectable)
                     {
                         switch (selectable.Selection)
                         {
                             case ItemSelection.None:
-                                SelectedItems.Remove(selectable);
+                                SelectedItems.Remove(itemT);
                                 break;
                             case ItemSelection.Exclusive:
-                                SelectedItems.Add(selectable);
+                                SelectedItems.Add(itemT);
                                 break;
                         }
                     }
@@ -688,7 +688,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         public bool IsFixedSize => ((IList)_unfilteredItems).IsFixedSize;
 
-        IList IObservableQueryFilterSource<T>.SelectedItems => SelectedItems;
+        IList<T> IObservableQueryFilterSource<T>.SelectedItems => SelectedItems;
 
         public T this[int index]
         {

@@ -91,7 +91,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         void InitializeFilterOnlyMode(IEnumerable<T> items);
         void ReplaceItems (IEnumerable<T> items);
         Task ReplaceItemsAsync (IEnumerable<T> items);
-        IList SelectedItems { get; }
+        IList<T> SelectedItems { get; }
         DisposableHost DHostBusy { get; }
 
         event EventHandler SelectionChanged;
