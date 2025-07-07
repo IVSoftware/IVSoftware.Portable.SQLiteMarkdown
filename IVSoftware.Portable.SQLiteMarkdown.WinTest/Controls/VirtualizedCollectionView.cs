@@ -14,6 +14,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 using System.Xml.Linq;
 using View = System.Windows.Forms.Control;
 
@@ -367,23 +368,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
             }
             void localOnMouse(bool isDown)
             {
-                if (!isDown)
+                if (ItemsSource is IObservableQueryFilterSource qfs && 
+                    qfs.SelectionMode != SQLiteMarkdown.SelectionMode.None)
                 {
-                    var clientPoint = PointToClient(Cursor.Position);
-                    var hit = HitTest(clientPoint.X, clientPoint.Y);
-                    if (hit.RowIndex >= 0)
+                    if (!isDown)
                     {
-                        var item = ItemsSource?[hit.RowIndex];
-                        if (item is ISelectableQueryFilterItem selectable && selectable.IsReadOnly)
+                        var clientPoint = PointToClient(Cursor.Position);
+                        var hit = HitTest(clientPoint.X, clientPoint.Y);
+                        if (hit.RowIndex >= 0)
                         {
-                            switch (selectable.Selection)
+                            var item = ItemsSource?[hit.RowIndex];
+                            if (item is ISelectableQueryFilterItem selectable && selectable.IsReadOnly)
                             {
-                                case ItemSelection.None:
-                                    selectable.Selection = ItemSelection.Exclusive;
-                                    break;
-                                case ItemSelection.Exclusive:
-                                    selectable.Selection = ItemSelection.None;
-                                    break;
+                                switch (selectable.Selection)
+                                {
+                                    case ItemSelection.None:
+                                        selectable.Selection = ItemSelection.Exclusive;
+                                        break;
+                                    case ItemSelection.Exclusive:
+                                        selectable.Selection = ItemSelection.None;
+                                        break;
+                                }
                             }
                         }
                     }

@@ -70,8 +70,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         bool IsFiltering { get; }
         string InputText { get; set; }
-
-        event EventHandler InputTextSettled;
+        SelectionMode SelectionMode { get; set; }
         SearchEntryState SearchEntryState { get; }
         FilteringState FilteringState { get; }
         string Placeholder { get; }
@@ -83,6 +82,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         SQLiteConnection MemoryDatabase { get; set; }
         FilteringState Clear(bool all = false);
         void Commit();
+
+        event EventHandler InputTextSettled;
     }
     public interface IObservableQueryFilterSource<T>
         : IObservableQueryFilterSource
