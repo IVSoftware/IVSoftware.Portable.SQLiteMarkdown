@@ -79,6 +79,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             };
         }
 
+        public ObservableQueryFilterSource(SelectionMode selectionMode)
+            : this()
+        {
+            SelectionMode = selectionMode;
+        }
+
         public ObservableSelectionHashSet<object> SelectedItems
         {
             get
