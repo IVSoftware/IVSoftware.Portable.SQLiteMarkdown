@@ -62,10 +62,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Controls
                 {
                     ((INotifyPropertyChanged)_dataContext).PropertyChanged += OnPropertyChanged;
                 }
-                if (_dataContext is ISelectableQueryFilterItem qfItem)
-                {
-                    qfItem.Selection = ItemSelection.None;
-                }
                 foreach (var pi in DataContext?.GetType().GetProperties() ?? [])
                 {
                     OnPropertyChanged(DataContext, new PropertyChangedEventArgs(pi.Name));
