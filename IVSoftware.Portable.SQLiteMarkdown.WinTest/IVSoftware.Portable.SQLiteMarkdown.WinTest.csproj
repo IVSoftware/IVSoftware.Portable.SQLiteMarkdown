@@ -9,7 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\OnePage\IVSoftware.WinForms.OnePage\IVSoftware.WinForms.OnePage\IVSoftware.WinForms.OnePage.csproj" />
     <ProjectReference Include="..\IVSoftware.Portable.SQLiteMarkdown.MSTest\IVSoftware.Portable.SQLiteMarkdown.MSTest.csproj" />
   </ItemGroup>
 
