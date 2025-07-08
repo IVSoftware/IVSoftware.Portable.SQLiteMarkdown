@@ -77,6 +77,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         string Placeholder { get; }
         bool Busy { get; }
         QueryFilterConfig QueryFilterConfig { get; set; }
+
+        SelectionMode SelectionMode { get; set; }
         string Title { get; set; }
         MarkdownContextOR MarkdownContextOR { get; }
         string SQL { get; }
