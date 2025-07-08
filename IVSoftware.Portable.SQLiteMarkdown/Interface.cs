@@ -70,29 +70,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         bool IsFiltering { get; }
         string InputText { get; set; }
-
-        event EventHandler InputTextSettled;
+        SelectionMode SelectionMode { get; set; }
+        Func<bool> CanMultiselect { get; set; }
+        IList SelectedItems { get; }
         SearchEntryState SearchEntryState { get; }
         FilteringState FilteringState { get; }
         string Placeholder { get; }
         bool Busy { get; }
         QueryFilterConfig QueryFilterConfig { get; set; }
-
-        SelectionMode SelectionMode { get; set; }
         string Title { get; set; }
         MarkdownContextOR MarkdownContextOR { get; }
         string SQL { get; }
         SQLiteConnection MemoryDatabase { get; set; }
         FilteringState Clear(bool all = false);
         void Commit();
+
+        event EventHandler InputTextSettled;
     }
     public interface IObservableQueryFilterSource<T>
         : IObservableQueryFilterSource
     {
         void InitializeFilterOnlyMode(IEnumerable<T> items);
-        void ReplaceItems (IEnumerable<T> items);
-        Task ReplaceItemsAsync (IEnumerable<T> items);
-        IList SelectedItems { get; }
+        void ReplaceItems(IEnumerable<T> items);
+        Task ReplaceItemsAsync(IEnumerable<T> items);
+        new IList<T> SelectedItems { get; }
         DisposableHost DHostBusy { get; }
 
         event EventHandler SelectionChanged;

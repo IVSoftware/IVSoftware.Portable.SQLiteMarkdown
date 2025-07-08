@@ -20,14 +20,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 case SelectionMode.None:
                     return;
                 case SelectionMode.Single:
-                    ClearItems();
+                    if (!CanMultiselect())
+                    {
+                        ClearItems();
+                    }
                     break;
                 case SelectionMode.Multiple:
                     break;
             }
             if (_set.Add(item))
             {
-                if(item is INotifyPropertyChanged inpc)
+                if (item is INotifyPropertyChanged inpc)
                 {
                     inpc.PropertyChanged += OnItemPropertyChanged;
                 }
@@ -56,11 +59,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
+        public Func<bool> CanMultiselect
+        {
+            get => _canMultiselect is null
+                ? () => SelectionMode == SelectionMode.Multiple
+                : _canMultiselect;
+            set => _canMultiselect = value;
+        }
+        Func<bool> _canMultiselect = null;
+
         protected override void ClearItems()
         {
             foreach (var item in _set.ToArray())
             {
-                if(item is INotifyPropertyChanged inpc)
+                if (item is INotifyPropertyChanged inpc)
                 {
                     inpc.PropertyChanged -= OnItemPropertyChanged;
                 }
@@ -80,7 +92,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     foreach (var oldItem in e.OldItems.OfType<T>())
                     {
                         _set.Remove(oldItem);
-                        if(oldItem is INotifyPropertyChanged inpc)
+                        if (oldItem is INotifyPropertyChanged inpc)
                         {
                             inpc.PropertyChanged -= OnItemPropertyChanged;
                         }

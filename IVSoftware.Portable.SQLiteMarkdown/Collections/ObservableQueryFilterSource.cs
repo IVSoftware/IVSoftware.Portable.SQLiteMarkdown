@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -40,11 +41,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         {
                             inpc.PropertyChanged += OnItemPropertyChanged;
                         }
+                        if (Busy)
+                        {   /* G T K */
+                        }
+                        else
+                        {
+                            if (FilteringState != FilteringState.Active)
+                            {
+                                CollectionChanged?.Invoke(this, e);
+                            }
+                        }
                         break;
                     case NotifyCollectionChangedAction.Remove:
                         foreach (var inpc in e.OldItems?.OfType<INotifyPropertyChanged>())
                         {
                             inpc.PropertyChanged -= OnItemPropertyChanged;
+                        }
+                        if (Busy)
+                        {   /* G T K */
+                        }
+                        else
+                        {
+                            CollectionChanged?.Invoke(this, e);
                         }
                         break;
                     case NotifyCollectionChangedAction.Reset:
@@ -54,19 +72,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             inpc.PropertyChanged -= OnItemPropertyChanged;
                         }
                         FilterQueryDatabase.DeleteAll<T>();
+                        CollectionChanged?.Invoke(this, e);
                         break;
                 }
                 _unsubscribeItems = _unfilteredItems.OfType<INotifyPropertyChanged>().ToArray();
             };
         }
 
-        public ObservableSelectionHashSet<object> SelectedItems
+        public ObservableQueryFilterSource(SelectionMode selectionMode)
+            : this()
+        {
+            SelectionMode = selectionMode;
+        }
+
+        public ObservableSelectionHashSet<T> SelectedItems
         {
             get
             {
                 if (_selectedItems is null)
                 {
-                    _selectedItems = new ObservableSelectionHashSet<object>();
+                    _selectedItems = new ObservableSelectionHashSet<T>();
                     _selectedItems.CollectionChanged += (sender, e) =>
                     {
                         OnSelectionChanged();
@@ -75,7 +100,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 return _selectedItems;
             }
         }
-        ObservableSelectionHashSet<object> _selectedItems = null;
+        ObservableSelectionHashSet<T> _selectedItems = null;
 
         protected virtual void OnSelectionChanged()
         {
@@ -236,7 +261,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             throw new InvalidOperationException($"Expected WHERE clause with content. Parse result was:\n{sql}");
                         }
 
-#if DEBUG
+#if false && DEBUG && SAVE
                         var context = InputText.ParseSqlMarkdown<T>(ref searchEntryState);
                         var cstring = context.ToString();
                         if (sql == cstring)
@@ -287,60 +312,120 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         #region I L I S T
         public int IndexOf(T item) { return _unfilteredItems.IndexOf(item); }
 
-        public void Insert(int index, T item)
-        {
-            _unfilteredItems.Insert(index, item);
-            ApplyFilter();
-        }
+        void IList.Clear() => Clear(all: true);
+        void ICollection<T>.Clear() => Clear(all: true);
 
-        public void RemoveAt(int index)
+        public new void Clear(bool all = false)
         {
-            _unfilteredItems.RemoveAt(index);
-            ApplyFilter();
-        }
+            base.Clear(all);
+            if (FilteringState < FilteringState.Armed)
+            {
+#if DEBUG
+                CollectionChanged += localCollectionChanged;
 
-        public void Add(T item)
-        {
-            _unfilteredItems.Add(item);
-            ApplyFilter();
-        }
+                // [Careful] 
+                // If we're responding to FilteringState changed to clear the
+                // unfiltered items list it MIGHT NOT WORK. For example, manual
+                // add-remove changes to Items will bypass the input state machine. 
+                _unfilteredItems.Clear();
 
-        void IList.Clear() => Clear();
-        void ICollection<T>.Clear() => Clear();
+                void localCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+                {
+                    CollectionChanged -= localCollectionChanged;
+                }
+#else
+                // [Careful] 
+                // If we're responding to FilteringState changed to clear the
+                // unfiltered items list it MIGHT NOT WORK. For example, manual
+                // add-remove changes to Items will bypass the input state machine. 
+                _unfilteredItems.Clear();
+#endif
+            }
+        }
 
         public bool Contains(T item) { return _unfilteredItems.Contains(item); }
 
         public void CopyTo(T[] array, int arrayIndex) { _unfilteredItems.CopyTo(array, arrayIndex); }
 
-        public bool Remove(T item)
-        {
-            var removed = _unfilteredItems.Remove(item);
-            if (removed) ApplyFilter();
-            return removed;
-        }
-        int IList.Add(object value)
-        {
-            _unfilteredItems.Add((T)value);
-            ApplyFilter();
-            return _unfilteredItems.IndexOf((T)value);
-        }
-
         bool IList.Contains(object value) { return ((IList)_unfilteredItems).Contains(value); }
 
         int IList.IndexOf(object value) { return ((IList)_unfilteredItems).IndexOf(value); }
-
-        void IList.Insert(int index, object value)
+        public void Insert(int index, T item)
         {
-            _unfilteredItems.Insert(index, (T)value);
-            ApplyFilter();
+            _unfilteredItems.Insert(index, item);
+            OnExternalChange(item);
         }
 
-        void IList.Remove(object value)
+        public void Add(T item)
         {
-            if (_unfilteredItems.Contains((T)value))
+            _unfilteredItems.Add(item);
+            OnExternalChange(item);
+        }
+        public void RemoveAt(int index)
+        {
+            object item;
+            if (index < _unfilteredItems.Count)
             {
-                _unfilteredItems.Remove((T)value);
-                ApplyFilter();
+                item = _unfilteredItems[index];
+            }
+            else
+            {
+                item = null;
+            }
+            _unfilteredItems.RemoveAt(index);
+            OnExternalChange(item);
+        }
+
+        int IList.Add(object item)
+        {
+            _unfilteredItems.Add((T)item);
+            OnExternalChange(item);
+            return _unfilteredItems.IndexOf((T)item);
+        }
+        public bool Remove(T item)
+        {
+            var removed = _unfilteredItems.Remove(item);
+            if (removed) OnExternalChange(item);
+            return removed;
+        }
+
+        void IList.Insert(int index, object item)
+        {
+            _unfilteredItems.Insert(index, (T)item);
+            OnExternalChange(item);
+        }
+
+        void IList.Remove(object item)
+        {
+            if (_unfilteredItems.Contains((T)item))
+            {
+                _unfilteredItems.Remove((T)item);
+                OnExternalChange(item);
+            }
+        }
+
+        /// <summary>
+        /// We need this, but this implementation is 
+        /// probationary and might need some tweaking.
+        /// </summary>
+        private void OnExternalChange(object value)
+        {
+            if (value is ISelectableQueryFilterItem selectable)
+            {
+                selectable.Selection = ItemSelection.None;
+            }
+            FilteringState = FilteringState;
+            switch (FilteringState)
+            {
+                case FilteringState.Ineligible:
+                    break;
+                case FilteringState.Armed:
+                    break;
+                case FilteringState.Active:
+                    ApplyFilter();
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -360,7 +445,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         public void Commit()
         {
-            if(MemoryDatabase != null)
+            if (MemoryDatabase != null)
             {
                 switch (SearchEntryState)
                 {
@@ -434,15 +519,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             switch (e.PropertyName)
             {
                 case nameof(ISelectableQueryFilterItem.Selection):
-                    if (sender is ISelectableQueryFilterItem selectable)
+                    if (sender is T itemT && itemT is ISelectableQueryFilterItem selectable)
                     {
                         switch (selectable.Selection)
                         {
                             case ItemSelection.None:
-                                SelectedItems.Remove(selectable);
+                                SelectedItems.Remove(itemT);
                                 break;
                             case ItemSelection.Exclusive:
-                                SelectedItems.Add(selectable);
+                                SelectedItems.Add(itemT);
                                 break;
                         }
                     }
@@ -547,7 +632,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                     break;
                 case FilteringState.Armed:
-                    if(FilteringStatePrev == FilteringState.Ineligible)
+                    if (FilteringStatePrev == FilteringState.Ineligible)
                     {
                         await Task.Delay(TimeSpan.FromTicks(1));
                         FilterQueryDatabase.DeleteAll<T>();
@@ -603,7 +688,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         public bool IsFixedSize => ((IList)_unfilteredItems).IsFixedSize;
 
-        IList IObservableQueryFilterSource<T>.SelectedItems => SelectedItems;
+        IList<T> IObservableQueryFilterSource<T>.SelectedItems => SelectedItems;
+
+        IList IObservableQueryFilterSource.SelectedItems => SelectedItems;
+
+        public Func<bool> CanMultiselect
+        {
+            get => SelectedItems.CanMultiselect;
+            set => SelectedItems.CanMultiselect = value;
+        }
+        Func<bool> _canMultiselect = null;
 
         public T this[int index]
         {
@@ -613,7 +707,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // Eventually we'll want to add an item to a filtered list, but to do so:
                 // - New item needs to be added to the clients external (maybe) database.
                 // - New item needs to be added to the local FilterQueryDatabase,
-                // - Finally, we need to add it to the filetered items regardless
+                // - Finally, we need to add it to the filtered items regardless
                 //   of whether it meets the current filter (otherwise you might
                 //   add it and have it disappear due to the filter.
                 // WE WILL NEED TO DO THIS CAREFULLY WHEN THE TIME COMES!
