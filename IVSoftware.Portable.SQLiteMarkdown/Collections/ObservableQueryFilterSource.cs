@@ -150,8 +150,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 try
                 {
-                    CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-
+                    // This causes a Reset on the main INCC
                     _unfilteredItems.Clear();
                     if (items.Any())
                     {

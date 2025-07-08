@@ -2557,7 +2557,6 @@ Where PropertyValue({nameof(SelectableQFModelTOQO.Properties)}, '{nameof(Selecta
             {
                 string actual, expected, sql;
                 List<SelectableQFModelTOQO> recordset;
-                SenderEventPair sep;
                 NotifyCollectionChangedEventArgs? ecc;
                 SelectableQFModelTOQO[] newItems = [];
                 Queue<SenderEventPair> eventQueue = new();
