@@ -100,7 +100,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// Specifies the selection state of an item in a OnePageCollectionView. 
+    /// Specifies the selection state of an item in a CollectionView. 
     /// This enumeration supports bitwise operations to allow combinations of selection states.
     /// </summary>
     [Flags]
