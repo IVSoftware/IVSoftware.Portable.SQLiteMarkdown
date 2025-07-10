@@ -223,7 +223,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// within the provided SQL string with their singular forms. If no terms can be singularized, 
         /// the original list is returned unchanged.
         /// </summary>
-        /// <typeparam name="T">The type of the model implementing IOnePageModel.</typeparam>
+        /// <typeparam name="T">The type of the proxy used for sql gen.</typeparam>
         /// <param name="smart">The list of model instances to return if no modifications occur.</param>
         /// <param name="sql">The SQL query string containing candidate terms for singularization.</param>
         /// <returns>A list of model instances, either modified based on singularization or unchanged.</returns>

@@ -1,38 +1,31 @@
-﻿using IVSoftware.Portable;
-using IVSoftware.Portable.SQLiteMarkdown;
-using IVSoftware.Portable.SQLiteMarkdown.Collections;
-using System;
+﻿using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Xml.Linq;
 using View = System.Windows.Forms.Control;
 
-namespace OnePageCollectionViewSketchpad
+
+namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
 {
-    public class VirtualizedCollectionView 
+    public partial class CollectionView 
         : DataGridView
         , INotifyPropertyChanged
         , IMessageFilter
     {
-
         const int MIN_ROW_HEIGHT = 60;
-        public VirtualizedCollectionView() : this(default) { }
-        public VirtualizedCollectionView(XElement? xop)
+        public CollectionView() : this(default) { }
+        public CollectionView(XElement? xop)
         {
             InitializeComponent();
             Application.AddMessageFilter(this);
-            Disposed += (sender, e) => Application.RemoveMessageFilter(this); ;
+            Disposed += (sender, e) => Application.RemoveMessageFilter(this);
+            _selectedItems = new ObservableHashSet();
+            _selectedItems.CollectionChanged += OnSelectedItemsChanged;
         }
+
         private void InitializeComponent()
         {
             DoubleBuffered = true;
@@ -66,7 +59,7 @@ namespace OnePageCollectionViewSketchpad
                         Controls.Add(view);
                     }
 
-                    view.DataContext = ItemsSource[mod];
+                    view.DataContext = ItemsSource[e.RowIndex];
 
                     var margin = view.Margin;
                     var cellRect = GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
@@ -81,7 +74,10 @@ namespace OnePageCollectionViewSketchpad
                     int desiredHeight = Math.Max(view.PreferredSize.Height + margin.Vertical, MIN_ROW_HEIGHT);
                     if (row.Height != desiredHeight)
                     {
+                        // Causes row validation
                         row.Height = desiredHeight;
+                        // Exit early to avoid drawing at incorrect size.
+                        // Paint using the corrected row height on the next pass.
                         return;
                     }
 
@@ -102,11 +98,7 @@ namespace OnePageCollectionViewSketchpad
                     e.RowIndex < ItemsSource.Count
                     )
                 {
-                    var mod = e.RowIndex % _templateCount;
-                    if (e.RowIndex < ItemsSource.Count)
-                    {
-                        e.Value = ItemsSource[mod];
-                    }
+                    e.Value = ItemsSource[e.RowIndex];
                 }
             };
             Scroll += (sender, e) =>
@@ -127,6 +119,150 @@ namespace OnePageCollectionViewSketchpad
                 }
             };
         }
+        public IReadOnlyList<object> SelectedItems => new ReadOnlyCollection<object>(_selectedItems);
+
+        private readonly ObservableHashSet _selectedItems;
+        public new SelectionMode SelectionMode
+        {
+            get => _selectionMode;
+            set
+            {
+                if (!Equals(_selectionMode, value))
+                {
+                    _selectionMode = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        SelectionMode _selectionMode = SelectionMode.None;
+
+        public Func<bool> CanMultiselect
+        {
+            get => _canMultiselect ?? (() => SelectionMode == SelectionMode.Multiple);
+            set => _canMultiselect = value;
+        }
+        private Func<bool>? _canMultiselect;
+
+        public bool PreFilterMessage(ref Message m)
+        {
+            switch ((Win32Message)m.Msg)
+            {
+                case Win32Message.WM_LBUTTONDOWN:
+                    localOnMouse(true);
+                    break;
+                case Win32Message.WM_LBUTTONUP:
+                    localOnMouse(false);
+                    break;
+            }
+            void localOnMouse(bool isDown)
+            {
+                if (!isDown)
+                {
+                    var clientPoint = PointToClient(Cursor.Position);
+                    var hit = HitTest(clientPoint.X, clientPoint.Y);
+                    if (hit.RowIndex >= 0)
+                    {
+                        var item = ItemsSource?[hit.RowIndex];
+                        if (SelectionMode != SelectionMode.None)
+                        {
+                            if (CanMultiselect())
+                            {
+                                if (item is ISelectable selectable)
+                                {
+                                    // Special upgrade.
+                                    if(selectable.Selection == ItemSelection.Multi)
+                                    {
+                                        foreach (var selected in SelectedItems.OfType<ISelectable>())
+                                        {
+                                            selected.Selection =
+                                                ReferenceEquals(selected, item)
+                                                ? ItemSelection.Primary
+                                                : ItemSelection.Multi;
+                                        }
+                                        return;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                _selectedItems.Clear();
+                            }
+                            if (_selectedItems.Contains(item))
+                            {
+                                _selectedItems.Remove(item);
+                            }
+                            else
+                            {
+                                _selectedItems.Add(item);
+                            }
+                        }
+                        ItemClicked?.Invoke(this, new ItemMouseEventArgs(item));
+                    }
+                }
+            }
+            return false;
+        }
+        protected virtual void OnSelectedItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            SelectionChanged?.Invoke(this, e);
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (var item in e.NewItems?.OfType<ISelectable>() ?? [])
+                    {
+                        item.Selection = ItemSelection.Multi;
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (var item in e.OldItems?.OfType<ISelectable>() ?? [])
+                    {
+                        item.Selection = ItemSelection.None;
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    if (e is NotifyCollectionResetEventArgs eReset)
+                    {
+                        foreach (var item in eReset.OldItems?.OfType<ISelectable>() ?? [])
+                        {
+                            item.Selection = ItemSelection.None;
+                        }
+                    }
+                    else
+                    { }
+                    break;
+                default:
+                    break;
+            }
+            var selectables = SelectedItems.OfType<ISelectable>().ToArray();
+            switch (selectables.Length)
+            {
+                case 0:
+                    break;
+                case 1:
+                    selectables[0].Selection = ItemSelection.Exclusive;
+                    break;
+                default:
+                    selectables[0].Selection = ItemSelection.Primary;
+                    for (var i = 1; i < selectables.Length; i++)
+                    {
+                        selectables[i].Selection = ItemSelection.Multi;
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Gets the currently recycled view instances keyed by template slot.
+        /// Used internally and by tests to verify view reuse and layout state.
+        /// </summary>
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal IReadOnlyDictionary<int, View> RecycledViews => _recycledViews;
         Dictionary<int, View> _recycledViews = new();
 
         public WatchdogTimer WDTScroll
@@ -158,7 +294,7 @@ namespace OnePageCollectionViewSketchpad
         {
             int first = Math.Max(FirstDisplayedScrollingRowIndex, 0);
             int last = first + DisplayedRowCount(true);
-            _templateCount = Math.Max(_templateCount, (last - first) + 1);
+            _templateCount = Math.Max(_templateCount, last - first + 1);
             var visibleKeys = new HashSet<int>();
             for (int i = first; i < last; i++)
             {
@@ -179,9 +315,18 @@ namespace OnePageCollectionViewSketchpad
             get => _itemsSource;
             set
             {
+                if (ColumnCount == 0)
+                {
+                    Columns.Add(new DataGridViewTextBoxColumn
+                    {
+                        AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
+                        MinimumWidth = 8,
+                        Name = "Items"
+                    });
+                }
                 if (!Equals(_itemsSource, value))
                 {
-                    if(_itemsSource is INotifyPropertyChanged)
+                    if (_itemsSource is INotifyPropertyChanged)
                     {
                         ((INotifyPropertyChanged)_itemsSource).PropertyChanged -= localOnPropertyChanged;
                     }
@@ -190,46 +335,24 @@ namespace OnePageCollectionViewSketchpad
                         ((INotifyCollectionChanged)_itemsSource).CollectionChanged -= localOnCollectionChanged;
                     }
                     _itemsSource = value;
+
                     if (_itemsSource is INotifyPropertyChanged)
                     {
                         ((INotifyPropertyChanged)_itemsSource).PropertyChanged += localOnPropertyChanged;
-
                     }
                     if (_itemsSource is INotifyCollectionChanged)
                     {
                         ((INotifyCollectionChanged)_itemsSource).CollectionChanged += localOnCollectionChanged;
                     }
+                    RowCount = ItemsSource?.Count ?? 0;
+                    Vacuum();
+                    Invalidate();
                     OnPropertyChanged();
 
                     #region L o c a l F x       
                     void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
                     {
-                        if( sender is IObservableQueryFilterSource qfs && 
-                            e is NotifyQueryFilterCollectionChangedEventArgs eqfs)
-                        {
-                            switch (eqfs.Action)
-                            {
-                                case NotifyQueryFilterCollectionChangedAction.Add:
-                                    break;
-                                case NotifyQueryFilterCollectionChangedAction.Remove:
-                                    break;
-                                case NotifyQueryFilterCollectionChangedAction.Replace:
-                                    break;
-                                case NotifyQueryFilterCollectionChangedAction.Move:
-                                    break;
-                                case NotifyQueryFilterCollectionChangedAction.Reset:
-                                    break;
-                                case NotifyQueryFilterCollectionChangedAction.QueryResult:
-                                    break;
-                                case NotifyQueryFilterCollectionChangedAction.ApplyFilter:
-                                    Debug.Assert(qfs.Count == eqfs.NewItems?.Count);
-                                    break;
-                                default:
-                                    break;
-                            }
-                            RowCount = qfs.Count;
-                        }
-                        else if (sender is IList items)
+                        if (sender is IList items)
                         {
                             RowCount = items.Count;
                         }
@@ -284,18 +407,13 @@ namespace OnePageCollectionViewSketchpad
                                     break;
                             }
                         }
-                    }		
+                    }
                     #endregion L o c a l F x
-                    
+
                 }
             }
         }
-
         IList? _itemsSource = null;
-
-        public IReadOnlyList<View> Cards => _cards.ToArray();
-
-        private ObservableCollection<View>_cards = new();
 
         [EditorBrowsable(EditorBrowsableState.Never), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public CollectionViewDataTemplate DataTemplate
@@ -337,75 +455,15 @@ namespace OnePageCollectionViewSketchpad
             }
         }
 
-        public class DefaultCollectionViewCard : Label
-        {
-            public DefaultCollectionViewCard()
-            {
-                AutoSize = false;
-                TextAlign = ContentAlignment.MiddleLeft;
-                Padding = new Padding(4);
-                Margin = new Padding(2);
-                BorderStyle = BorderStyle.FixedSingle;
-            }
-
-            public override object? DataContext
-            {
-                get => Tag;
-                set
-                {
-                    Tag = value;
-                    Text = value?.ToString();
-                }
-            }
-            protected override void OnDataContextChanged(EventArgs e)
-            {
-                base.OnDataContextChanged(e);
-            }
-        }
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
             OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         protected virtual void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             PropertyChanged?.Invoke(sender, e);
         }
-        public bool PreFilterMessage(ref Message m)
-        {
-            switch ((Win32Message)m.Msg)
-            {
-                case Win32Message.WM_LBUTTONDOWN:
-                    localOnMouse(true);
-                    break;
-                case Win32Message.WM_LBUTTONUP:
-                    localOnMouse(false);
-                    break;
-            }
-            void localOnMouse(bool isDown)
-            {
-                if (!isDown)
-                {
-                    var clientPoint = PointToClient(Cursor.Position);
-                    var hit = HitTest(clientPoint.X, clientPoint.Y);
-                    if (hit.RowIndex >= 0)
-                    {
-                        var item = ItemsSource?[hit.RowIndex];
-                        if (item is ISelectable selectable && !selectable.IsEditing)
-                        {
-                            switch (selectable.Selection)
-                            {
-                                case ItemSelection.None:
-                                    selectable.Selection = ItemSelection.Exclusive;
-                                    break;
-                                case ItemSelection.Exclusive:
-                                    selectable.Selection = ItemSelection.None;
-                                    break;
-                            }
-                        }
-                    }
-                }
-            }
-            return false; 
-        }
-
         public event PropertyChangedEventHandler? PropertyChanged;
+
+        public new event EventHandler<NotifyCollectionChangedEventArgs>? SelectionChanged;
+        public event EventHandler<ItemMouseEventArgs>? ItemClicked;
     }
 }
