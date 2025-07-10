@@ -8,7 +8,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     public class ObservableQueryFilterSource : ObservableQueryFilterSource<StringWrapper>
     {
         public ObservableQueryFilterSource() { }
+#if false
         public ObservableQueryFilterSource(SelectionMode selectionMode) 
             : base(selectionMode) { }
+#endif
     }
 }

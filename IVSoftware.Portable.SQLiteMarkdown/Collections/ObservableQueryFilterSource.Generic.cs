@@ -81,12 +81,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             };
         }
 
+
+#if false
+
+        IList<T> IObservableQueryFilterSource<T>.SelectedItems => SelectedItems;
+
+        IList IObservableQueryFilterSource.SelectedItems => SelectedItems;
+
+        public Func<bool> CanMultiselect
+        {
+            get => SelectedItems.CanMultiselect;
+            set => SelectedItems.CanMultiselect = value;
+        }
+        Func<bool> _canMultiselect = null;
         public ObservableQueryFilterSource(SelectionMode selectionMode)
             : this()
         {
             SelectionMode = selectionMode;
         }
-
         public ObservableSelectionHashSet<T> SelectedItems
         {
             get
@@ -118,6 +130,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 SelectedItems.SelectionMode = value;
             }
         }
+#endif
 
         private readonly ObservableCollection<T> _filteredItems = new ObservableCollection<T>();
         private readonly ObservableCollection<T> _unfilteredItems = new ObservableCollection<T>();
@@ -705,17 +718,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// Required IList support
         /// </summary>
         public bool IsFixedSize => ((IList)_unfilteredItems).IsFixedSize;
-
-        IList<T> IObservableQueryFilterSource<T>.SelectedItems => SelectedItems;
-
-        IList IObservableQueryFilterSource.SelectedItems => SelectedItems;
-
-        public Func<bool> CanMultiselect
-        {
-            get => SelectedItems.CanMultiselect;
-            set => SelectedItems.CanMultiselect = value;
-        }
-        Func<bool> _canMultiselect = null;
 
         public T this[int index]
         {
