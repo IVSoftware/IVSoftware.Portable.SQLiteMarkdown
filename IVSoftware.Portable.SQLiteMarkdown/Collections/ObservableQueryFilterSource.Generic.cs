@@ -1,5 +1,7 @@
 ﻿using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.Threading;
+using Newtonsoft.Json.Linq;
 using SQLite;
 using System;
 using System.Collections;
@@ -377,10 +379,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         int IList.Add(object item)
         {
-            _unfilteredItems.Add((T)item);
-            OnExternalChange(item);
-            return _unfilteredItems.IndexOf((T)item);
+            if(item is T itemT)
+            {
+                _unfilteredItems.Add(itemT);
+                OnExternalChange(item);
+                return _unfilteredItems.IndexOf(itemT);
+            }
+            if(typeof(T) == typeof(StringWrapper))
+            {
+                var wrapper = new StringWrapper(item?.ToString() ?? string.Empty);
+                if (wrapper is T itemTT)
+                {
+                    _unfilteredItems.Add(itemTT);
+                    return _unfilteredItems.IndexOf(itemTT);
+                }
+            }
+            throw new ArgumentException($"Value of type {item?.GetType()} cannot be added to list of {typeof(T)}");
         }
+
         public bool Remove(T item)
         {
             var removed = _unfilteredItems.Remove(item);
@@ -468,6 +484,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
+        [Obsolete("Legacy unit test support only.")]
         public MarkdownContextOR MarkdownContextOR
         {
             get
