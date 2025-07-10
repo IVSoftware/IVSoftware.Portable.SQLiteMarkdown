@@ -383,7 +383,6 @@ namespace OnePageCollectionViewSketchpad
             {
                 if (!isDown)
                 {
-
                     var clientPoint = PointToClient(Cursor.Position);
                     var hit = HitTest(clientPoint.X, clientPoint.Y);
                     if (hit.RowIndex >= 0)

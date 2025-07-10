@@ -532,6 +532,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         protected virtual void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+#if false
             switch (e.PropertyName)
             {
                 case nameof(ISelectable.Selection):
@@ -549,6 +550,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     }
                     break;
             }
+#endif
         }
         private INotifyPropertyChanged[] _unsubscribeItems = new INotifyPropertyChanged[] { };
 

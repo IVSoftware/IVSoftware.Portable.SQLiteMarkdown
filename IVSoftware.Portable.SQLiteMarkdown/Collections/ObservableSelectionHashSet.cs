@@ -33,22 +33,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         private Func<bool> _canMultiselect;
 
-        public new void Add(T item)
+        public new bool Add(T item)
         {
             switch (SelectionMode)
             {
                 case SelectionMode.None:
-                    return;
+                    return false;
                 case SelectionMode.Single:
                     if (!CanMultiselect())
                         ClearItems();
                     break;
             }
-
             if (item is INotifyPropertyChanged inpc)
                 inpc.PropertyChanged += OnItemPropertyChanged;
 
             base.Add(item);
+            return true;
         }
 
         protected override void ClearItems()
@@ -61,7 +61,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 if (item is ISelectable selectable)
                     selectable.Selection = ItemSelection.None;
             }
-
             base.ClearItems();
         }
 
