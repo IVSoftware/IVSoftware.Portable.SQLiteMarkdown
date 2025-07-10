@@ -146,10 +146,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Multiple
     }
 
-    public interface ISelectableQueryFilterItem
+    public interface ISelectable
     {
         ItemSelection Selection { get; set; }
-        bool IsReadOnly { get; set; }
+        bool IsEditing { get; set; }
     }
 
     public interface IEditableQueryFilterItem

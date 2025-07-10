@@ -425,7 +425,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         private void OnExternalChange(object value)
         {
-            if (value is ISelectableQueryFilterItem selectable)
+            if (value is ISelectable selectable)
             {
                 selectable.Selection = ItemSelection.None;
             }
@@ -534,8 +534,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             switch (e.PropertyName)
             {
-                case nameof(ISelectableQueryFilterItem.Selection):
-                    if (sender is T itemT && itemT is ISelectableQueryFilterItem selectable)
+                case nameof(ISelectable.Selection):
+                    if (sender is T itemT && itemT is ISelectable selectable)
                     {
                         switch (selectable.Selection)
                         {

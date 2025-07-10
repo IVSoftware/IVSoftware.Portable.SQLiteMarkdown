@@ -58,7 +58,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 if (item is INotifyPropertyChanged inpc)
                     inpc.PropertyChanged -= OnItemPropertyChanged;
 
-                if (item is ISelectableQueryFilterItem selectable)
+                if (item is ISelectable selectable)
                     selectable.Selection = ItemSelection.None;
             }
 
@@ -77,8 +77,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         private void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ISelectableQueryFilterItem.Selection)
-                && sender is T item && sender is ISelectableQueryFilterItem selectable)
+            if (e.PropertyName == nameof(ISelectable.Selection)
+                && sender is T item && sender is ISelectable selectable)
             {
                 switch (selectable.Selection)
                 {

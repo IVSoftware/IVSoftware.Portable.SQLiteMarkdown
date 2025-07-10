@@ -389,7 +389,7 @@ namespace OnePageCollectionViewSketchpad
                     if (hit.RowIndex >= 0)
                     {
                         var item = ItemsSource?[hit.RowIndex];
-                        if (item is ISelectableQueryFilterItem selectable && selectable.IsReadOnly)
+                        if (item is ISelectable selectable && !selectable.IsEditing)
                         {
                             switch (selectable.Selection)
                             {

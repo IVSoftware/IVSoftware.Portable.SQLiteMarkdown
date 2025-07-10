@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
     public class StringWrapper
-        : ISelectableQueryFilterItem
+        : ISelectable
         , INotifyPropertyChanged
     {
         public string Value { get; set; }
@@ -38,7 +38,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         ItemSelection _selection = default;
 
-        public bool IsReadOnly { get; set; } = true;
+        public bool IsEditing { get; set; } = false;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

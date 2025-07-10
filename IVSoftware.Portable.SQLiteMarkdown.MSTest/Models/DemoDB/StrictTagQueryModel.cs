@@ -11,7 +11,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB
 {
     [DebuggerDisplay("{Description}")]
     [Table("items")]
-    public class StrictTagQueryModel : SelfIndexed, ISelectableQueryFilterItem
+    public class StrictTagQueryModel : SelfIndexed, ISelectable
     {
         [PrimaryKey]
         public override string Id { get; set; } = Guid.NewGuid().ToString();
@@ -95,19 +95,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB
 
         private ItemSelection _selection = ItemSelection.None;
 
-        public bool IsReadOnly
+        public bool IsEditing
         {
-            get => _isReadOnly;
+            get => _isEditing;
             set
             {
-                if (!Equals(_isReadOnly, value))
+                if (!Equals(_isEditing, value))
                 {
-                    _isReadOnly = value;
+                    _isEditing = value;
                     OnPropertyChanged();
                 }
             }
         }
-        bool _isReadOnly = true;
+        bool _isEditing = false;
 
         public override string ToString() => $"{Description} {KeywordsDisplay} {TagsDisplay}".Trim();
 
