@@ -142,8 +142,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
         }
         private Func<bool>? _canMultiselect;
 
-        public MultiselectOption MultiselectOption { get; set; }
-
         public bool PreFilterMessage(ref Message m)
         {
             switch ((Win32Message)m.Msg)
@@ -171,7 +169,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                                 // Special upgrade.
                                 if (item is ISelectable selectable &&
                                     selectable.Selection == ItemSelection.Multi &&
-                                    MultiselectOption != MultiselectOption.DisablePrimary)
+                                    MultiselectMode != MultiselectMode.DisablePrimary)
                                 {
                                     foreach (var selected in SelectedItems.OfType<ISelectable>())
                                     {
@@ -247,14 +245,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                     selectables[0].Selection = ItemSelection.Exclusive;
                     break;
                 default:
-                    selectables[0].Selection = ItemSelection.Primary;
-                    for (var i = 1; i < selectables.Length; i++)
+                    switch (MultiselectMode)
                     {
-                        selectables[i].Selection = ItemSelection.Multi;
+                        case MultiselectMode.LastIsPrimary:
+                            int i;
+                            for (i = 0; i < selectables.Length - 1; i++)
+                            {
+                                selectables[i].Selection = ItemSelection.Multi;
+                            }
+                            selectables[i].Selection = ItemSelection.Primary;
+                            break;
+                        case MultiselectMode.FirstIsPrimary:
+                            selectables[0].Selection = ItemSelection.Primary;
+                            for (i = 1; i < selectables.Length; i++)
+                            {
+                                selectables[i].Selection = ItemSelection.Multi;
+                            }
+                            break;
+                        case MultiselectMode.DisablePrimary:
+                            break;
+                        default:
+                            break;
                     }
                     break;
             }
         }
+
+        public MultiselectMode MultiselectMode { get; set; } = MultiselectMode.DisablePrimary;
 
         /// <summary>
         /// Gets the currently recycled view instances keyed by template slot.
@@ -466,7 +483,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
         public new event EventHandler<NotifyCollectionChangedEventArgs>? SelectionChanged;
         public event EventHandler<ItemMouseEventArgs>? ItemClicked;
     }
-    public enum MultiselectOption
+    public enum MultiselectMode
     {
         LastIsPrimary,
         FirstIsPrimary,
