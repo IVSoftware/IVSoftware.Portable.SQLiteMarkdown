@@ -270,8 +270,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                     break;
             }
         }
-
-        public MultiselectMode MultiselectMode { get; set; } = MultiselectMode.DisablePrimary;
+        MultiselectMode MultiselectMode { get; set; } = MultiselectMode.LastIsPrimary;
 
         /// <summary>
         /// Gets the currently recycled view instances keyed by template slot.
