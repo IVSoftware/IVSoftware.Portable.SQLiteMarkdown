@@ -9,6 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrate\**" />
+    <EmbeddedResource Remove="Migrate\**" />
+    <None Remove="Migrate\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\IVSoftware.Portable.SQLiteMarkdown.MSTest\IVSoftware.Portable.SQLiteMarkdown.MSTest.csproj" />
   </ItemGroup>
 

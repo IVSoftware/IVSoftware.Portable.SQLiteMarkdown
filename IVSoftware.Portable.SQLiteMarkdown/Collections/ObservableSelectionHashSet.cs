@@ -10,6 +10,98 @@ using System.Runtime.CompilerServices;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
+    public class ObservableSelectionHashSet<T> : ObservableHashSet<T>, INotifyPropertyChanged
+    {
+        public SelectionMode SelectionMode
+        {
+            get => _selectionMode;
+            set
+            {
+                if (!Equals(_selectionMode, value))
+                {
+                    _selectionMode = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        private SelectionMode _selectionMode = SelectionMode.None;
+
+        public Func<bool> CanMultiselect
+        {
+            get => _canMultiselect ?? (() => SelectionMode == SelectionMode.Multiple);
+            set => _canMultiselect = value;
+        }
+        private Func<bool> _canMultiselect;
+
+        public new bool Add(T item)
+        {
+            switch (SelectionMode)
+            {
+                case SelectionMode.None:
+                    return false;
+                case SelectionMode.Single:
+                    if (!CanMultiselect())
+                        ClearItems();
+                    break;
+            }
+            if (item is INotifyPropertyChanged inpc)
+                inpc.PropertyChanged += OnItemPropertyChanged;
+
+            base.Add(item);
+            return true;
+        }
+
+        protected override void ClearItems()
+        {
+            foreach (var item in this.ToArray())
+            {
+                if (item is INotifyPropertyChanged inpc)
+                    inpc.PropertyChanged -= OnItemPropertyChanged;
+
+                if (item is ISelectable selectable)
+                    selectable.Selection = ItemSelection.None;
+            }
+            base.ClearItems();
+        }
+
+        protected override void RemoveItem(int index)
+        {
+            var item = this[index];
+
+            if (item is INotifyPropertyChanged inpc)
+                inpc.PropertyChanged -= OnItemPropertyChanged;
+
+            base.RemoveItem(index);
+        }
+
+        private void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ISelectable.Selection)
+                && sender is T item && sender is ISelectable selectable)
+            {
+                switch (selectable.Selection)
+                {
+                    case ItemSelection.None:
+                        Remove(item);
+                        break;
+                    case ItemSelection.Exclusive:
+                        Add(item);
+                        break;
+                }
+            }
+        }
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
+            base.OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
+
+        public new event PropertyChangedEventHandler PropertyChanged
+        {
+            add => base.PropertyChanged += value;
+            remove => base.PropertyChanged -= value;
+        }
+    }
+
+#if false
     public class ObservableSelectionHashSet<T> : ObservableCollection<T>, INotifyPropertyChanged
     {
         private readonly HashSet<T> _set = new HashSet<T>();
@@ -140,4 +232,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             remove => base.PropertyChanged -= value;
         }
     }
+#endif
 }

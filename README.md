@@ -156,7 +156,7 @@ ___
 
 ## Expression to SQL Translation
 
-Once your model is decorated with `[SqlLikeTerm]` or related attributes, parsed expressions are converted into SQL using the attribute definitions. Each term is matched across **all decorated fields**, joined with `OR`.
+Once your model is decorated with markdown attributes like `[QueryLikeTerm]`, parsed expressions are converted into SQL using the attribute definitions. Each term is matched across **all decorated fields**, joined with `OR`.
 
 For example:
 
@@ -224,12 +224,16 @@ This pattern lets you:
 > Query templates are lightweight and composable — think of them as named filter contracts for how a user’s input should be interpreted.
 
 ---
-
 ## SelfIndexing Class
 
-The `SelfIndexing` class enables automatic generation of SQL search terms from property values using simple attribute annotations. It tracks changes in data, defers processing intelligently, and maintains up-to-date searchable terms (`LikeTerm`, `ContainsTerm`, `TagMatchTerm`) for fast, expression-based querying over markdown-bound SQLite objects.
+The `SelfIndexing` class enables automatic generation of SQL search terms from property values using simple attribute annotations. It tracks changes in data, throttles processing intelligently, and maintains up-to-date searchable properties (`QueryTerm`, `FilterTerm`, `TagMatchTerm`) for fast, expression-based querying over markdown-bound SQLite objects.
 
-To use it, inherit from `SelfIndexed`, apply `[PrimaryKey]` to your ID property, and annotate other properties with `[SelfIndexed(...)]` to control how they contribute to indexing and persistence.
+One easy way to take advantage of this scheme is to inherit from the `SelfIndexed` base class, apply `[PrimaryKey]` to your ID property, and annotate other properties with e.g. `[SelfIndexed(IndexingMode.QueryOrFilter)]` to control how they contribute to indexing and persistence.
+
+> **Note:**  
+> These indexing attributes — `[QueryLikeTerm]`, `[FilterLikeTerm]`, and `[TagMatchTerm]` — typically map directly to individual SQL clauses.  
+> However, when used via `[SelfIndexed]` in a class derived from `SelfIndexed`, those values are **aggregated** into unified properties like `QueryTerm`, `FilterTerm`, and `TagMatchTerm`.  
+> This makes `SelfIndexing` especially well-suited for filtering and full-text search scenarios, where a consolidated expression better reflects user intent.
 
 [SelfIndexing](./IVSoftware.Portable.SQLiteMarkdown/ReadMe/selfindexing-class.md)
 ___

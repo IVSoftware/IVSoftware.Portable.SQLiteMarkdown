@@ -10,7 +10,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB
 {
     [DebuggerDisplay("{Description}")]
     [Table("items")]
-    public class AtomicQuoteTestModel : SelfIndexed, ISelectableQueryFilterItem
+    public class AtomicQuoteTestModel : SelfIndexed, ISelectable
     {
 
         public ItemSelection Selection
@@ -28,18 +28,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB
 
         private ItemSelection _selection = ItemSelection.None;
 
-        public bool IsReadOnly
+        public bool IsEditing
         {
-            get => _isReadOnly;
+            get => _isEditing;
             set
             {
-                if (!Equals(_isReadOnly, value))
+                if (!Equals(_isEditing, value))
                 {
-                    _isReadOnly = value;
+                    _isEditing = value;
                     OnPropertyChanged();
                 }
             }
         }
-        bool _isReadOnly = true;
+        bool _isEditing = false;
     }
 }

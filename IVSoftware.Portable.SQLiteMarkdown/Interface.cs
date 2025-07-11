@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
 using SQLite;
 using System;
 using System.Collections;
@@ -70,22 +71,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         bool IsFiltering { get; }
         string InputText { get; set; }
-        SelectionMode SelectionMode { get; set; }
-        Func<bool> CanMultiselect { get; set; }
-        IList SelectedItems { get; }
         SearchEntryState SearchEntryState { get; }
         FilteringState FilteringState { get; }
         string Placeholder { get; }
         bool Busy { get; }
         QueryFilterConfig QueryFilterConfig { get; set; }
         string Title { get; set; }
-        MarkdownContextOR MarkdownContextOR { get; }
         string SQL { get; }
         SQLiteConnection MemoryDatabase { get; set; }
         FilteringState Clear(bool all = false);
         void Commit();
-
         event EventHandler InputTextSettled;
+
+        event EventHandler<ItemPropertyChangedEventArgs> ItemPropertyChanged;
     }
     public interface IObservableQueryFilterSource<T>
         : IObservableQueryFilterSource
@@ -93,14 +91,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         void InitializeFilterOnlyMode(IEnumerable<T> items);
         void ReplaceItems(IEnumerable<T> items);
         Task ReplaceItemsAsync(IEnumerable<T> items);
-        new IList<T> SelectedItems { get; }
         DisposableHost DHostBusy { get; }
 
+#if false
+        new IList<T> SelectedItems { get; }
         event EventHandler SelectionChanged;
+#endif
     }
 
     /// <summary>
-    /// Specifies the selection state of an item in a OnePageCollectionView. 
+    /// Specifies the selection state of an item in a CollectionView. 
     /// This enumeration supports bitwise operations to allow combinations of selection states.
     /// </summary>
     [Flags]
@@ -146,10 +146,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Multiple
     }
 
-    public interface ISelectableQueryFilterItem
+    public interface ISelectable
     {
         ItemSelection Selection { get; set; }
-        bool IsReadOnly { get; set; }
+        bool IsEditing { get; set; }
     }
 
     public interface IEditableQueryFilterItem

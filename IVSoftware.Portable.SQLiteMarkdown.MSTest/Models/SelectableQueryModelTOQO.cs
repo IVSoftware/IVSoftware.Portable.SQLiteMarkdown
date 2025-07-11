@@ -11,7 +11,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     /// </summary>
     [DebuggerDisplay("{Description}")]
     [Table("items")]
-    public class SelectableQFModelTOQO : SelfIndexed, ISelectableQueryFilterItem
+    public class SelectableQFModelTOQO : SelfIndexed, ISelectable
     {
         [PrimaryKey]
         public override string Id { get; set; } = Guid.NewGuid().ToString();
@@ -96,19 +96,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
         }
         private ItemSelection _selection = ItemSelection.None;
 
-        public bool IsReadOnly
+        public bool IsEditing
         {
-            get => _isReadOnly;
+            get => _isEditing;
             set
             {
-                if (!Equals(_isReadOnly, value))
+                if (!Equals(_isEditing, value))
                 {
-                    _isReadOnly = value;
+                    _isEditing = value;
                     OnPropertyChanged();
                 }
             }
         }
-        bool _isReadOnly = true;
+        bool _isEditing = false;
 
         public override string ToString() => $"{Description} {KeywordsDisplay} {TagsDisplay}".Trim();
 
@@ -143,7 +143,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     [Table("items")]
 
     [Obsolete("Used in unit tests for early adopter (beta) migration support.")]
-    public class SelectableQueryModelOR : SelfIndexedOR, ISelectableQueryFilterItem
+    public class SelectableQueryModelOR : SelfIndexedOR, ISelectable
     {
         [PrimaryKey]
         public override string Id { get; set; } = Guid.NewGuid().ToString();
@@ -228,19 +228,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
         }
         private ItemSelection _selection = ItemSelection.None;
 
-        public bool IsReadOnly
+        public bool IsEditing
         {
-            get => _isReadOnly;
+            get => _isEditing;
             set
             {
-                if (!Equals(_isReadOnly, value))
+                if (!Equals(_isEditing, value))
                 {
-                    _isReadOnly = value;
+                    _isEditing = value;
                     OnPropertyChanged();
                 }
             }
         }
-        bool _isReadOnly = true;
+        bool _isEditing = false;
 
         public override string ToString() => $"{Description} {KeywordsDisplay} {TagsDisplay}".Trim();
 

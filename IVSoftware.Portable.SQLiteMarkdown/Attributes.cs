@@ -93,12 +93,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// Specifies the indexing behavior for a property within OnePage's "query-then-filter" model,
+    /// Specifies the indexing behavior for a property within the "query-then-filter" model,
     /// defining how the property will participate in different types of search operations during
     /// both the initial database query and the subsequent in-memory filtering phases.
     ///
-    /// These options allow for efficient data retrieval and filtering, enhancing responsiveness
-    /// within OnePage applications as users interact with search fields.
+    /// These options allow for efficient data retrieval and filtering, enhancing 
+    /// responsiveness within query-filter applications as users interact with search fields.
     /// </summary>
     /// 
     [Flags]

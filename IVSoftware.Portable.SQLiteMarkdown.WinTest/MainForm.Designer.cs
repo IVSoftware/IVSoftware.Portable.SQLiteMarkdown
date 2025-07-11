@@ -1,4 +1,6 @@
-﻿namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
+﻿using IVSoftware.Portable.SQLiteMarkdown.WinTest.OP;
+
+namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
 {
     partial class MainForm
     {
@@ -30,7 +32,7 @@
         {
             components = new System.ComponentModel.Container();
             Grid = new TableLayoutPanel();
-            vcView = new OnePageCollectionViewSketchpad.VirtualizedCollectionView();
+            vcView = new CollectionView();
             dataGridViewTextBoxColumn1 = new DataGridViewTextBoxColumn();
             textInputText = new TextBox();
             contextMenuQueryFilter = new ContextMenuStrip(components);
@@ -201,7 +203,7 @@
         #endregion
 
         private TableLayoutPanel Grid;
-        private OnePageCollectionViewSketchpad.VirtualizedCollectionView vcView;
+        private CollectionView vcView;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
         private TextBox textInputText;
         private ButtonEx buttonClear;

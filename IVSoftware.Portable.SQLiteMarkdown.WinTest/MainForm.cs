@@ -1,14 +1,8 @@
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
-using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.Portable.SQLiteMarkdown.WinTest.Models;
+using IVSoftware.Portable.SQLiteMarkdown.WinTest.OP;
 using Newtonsoft.Json;
-using OnePageCollectionViewSketchpad;
 using SQLite;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Windows.Forms.VisualStyles;
-using static OnePageCollectionViewSketchpad.VirtualizedCollectionView;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
 {
@@ -17,12 +11,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         public MainForm()
         {
             InitializeComponent();
-            QFSUT = new ObservableQueryFilterSource<SelectableQFModel>
+            QFSUT = new ObservableQueryFilterSource<SelectableQFModel>();
+            QFSUT.ItemPropertyChanged += (sender, e) =>
             {
-                SelectionMode = SelectionMode.Single,
             };
+            vcView.SelectionMode = SelectionMode.Single;
+            vcView.CanMultiselect = () =>
+                vcView.SelectionMode != SelectionMode.None &&
+                ModifierKeys == Keys.Control;
             vcView.ItemsSource = QFSUT;
-            vcView.DataTemplate = new CollectionViewDataTemplate<SelectableQFViewCard>();
+            vcView.DataTemplate = new CollectionView.CollectionViewDataTemplate<SelectableQFViewCard>();
             if (vcView.ItemsSource is IObservableQueryFilterSource qfs)
             {
                 textInputText.TextChanged += (sender, e) =>
