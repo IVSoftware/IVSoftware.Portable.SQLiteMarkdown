@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
 using SQLite;
 using System;
 using System.Collections;
@@ -76,18 +77,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         bool Busy { get; }
         QueryFilterConfig QueryFilterConfig { get; set; }
         string Title { get; set; }
-        MarkdownContextOR MarkdownContextOR { get; }
         string SQL { get; }
         SQLiteConnection MemoryDatabase { get; set; }
         FilteringState Clear(bool all = false);
         void Commit();
-
         event EventHandler InputTextSettled;
-#if false
-        IList SelectedItems { get; }
-        Func<bool> CanMultiselect { get; set; }
-        SelectionMode SelectionMode { get; set; }
-#endif
+
+        event EventHandler<ItemPropertyChangedEventArgs> ItemPropertyChanged;
     }
     public interface IObservableQueryFilterSource<T>
         : IObservableQueryFilterSource

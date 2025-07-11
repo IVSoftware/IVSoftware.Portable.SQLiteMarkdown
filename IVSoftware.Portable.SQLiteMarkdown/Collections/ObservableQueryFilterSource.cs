@@ -1,24 +1,31 @@
-﻿using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown.Common;
+﻿using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.Threading;
-using Newtonsoft.Json.Linq;
-using SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
+    /// <summary>
+    /// Provides a query-then-filter state engine for collections of <typeparamref name="T"/>, 
+    /// supporting expression-based parsing, SQLite-backed filtering, and in-memory dataset routing. 
+    /// 
+    /// This class is UI-agnostic but designed to work with navigable list views where a shared search
+    /// bar drives both initial queries and incremental filtering. It supports both remote query 
+    /// and local refinement workflows without assuming any specific platform or UI framework.
+    ///
+    /// Filtering is driven by attribute-decorated model properties and is internally debounced, 
+    /// tracked, and stateful, exposing both query and filter readiness for external observation.
+    /// </summary>
+
     [DebuggerDisplay("Count={Count}")]
     public partial class ObservableQueryFilterSource<T>
         : MarkdownContext<T>
@@ -80,57 +87,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 _unsubscribeItems = _unfilteredItems.OfType<INotifyPropertyChanged>().ToArray();
             };
         }
-
-
-#if false
-
-        IList<T> IObservableQueryFilterSource<T>.SelectedItems => SelectedItems;
-
-        IList IObservableQueryFilterSource.SelectedItems => SelectedItems;
-
-        public Func<bool> CanMultiselect
-        {
-            get => SelectedItems.CanMultiselect;
-            set => SelectedItems.CanMultiselect = value;
-        }
-        Func<bool> _canMultiselect = null;
-        public ObservableQueryFilterSource(SelectionMode selectionMode)
-            : this()
-        {
-            SelectionMode = selectionMode;
-        }
-        public ObservableSelectionHashSet<T> SelectedItems
-        {
-            get
-            {
-                if (_selectedItems is null)
-                {
-                    _selectedItems = new ObservableSelectionHashSet<T>();
-                    _selectedItems.CollectionChanged += (sender, e) =>
-                    {
-                        OnSelectionChanged();
-                    };
-                }
-                return _selectedItems;
-            }
-        }
-        ObservableSelectionHashSet<T> _selectedItems = null;
-
-        protected virtual void OnSelectionChanged()
-        {
-            SelectionChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        public event EventHandler SelectionChanged;
-        public SelectionMode SelectionMode
-        {
-            get => SelectedItems.SelectionMode;
-            set
-            {
-                SelectedItems.SelectionMode = value;
-            }
-        }
-#endif
 
         private readonly ObservableCollection<T> _filteredItems = new ObservableCollection<T>();
         private readonly ObservableCollection<T> _unfilteredItems = new ObservableCollection<T>();
@@ -545,26 +501,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         protected virtual void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-#if false
-            switch (e.PropertyName)
-            {
-                case nameof(ISelectable.Selection):
-                    if (sender is T itemT && itemT is ISelectable selectable)
-                    {
-                        switch (selectable.Selection)
-                        {
-                            case ItemSelection.None:
-                                SelectedItems.Remove(itemT);
-                                break;
-                            case ItemSelection.Exclusive:
-                                SelectedItems.Add(itemT);
-                                break;
-                        }
-                    }
-                    break;
-            }
-#endif
+            ItemPropertyChanged?.Invoke(this, new ItemPropertyChangedEventArgs(e.PropertyName, sender));
         }
+        public event EventHandler<ItemPropertyChangedEventArgs> ItemPropertyChanged;
         private INotifyPropertyChanged[] _unsubscribeItems = new INotifyPropertyChanged[] { };
 
         public string Placeholder =>
