@@ -155,6 +155,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                                 BackColor = Color.Empty;
                                 ForeColor = Color.Empty;
                                 break;
+                            case ItemSelection.Primary:
+                                BackColor = Color.RoyalBlue;
+                                ForeColor = Color.White;
+                                break;
+                            case ItemSelection.Multi:
                             case ItemSelection.Exclusive:
                                 BackColor = Color.CornflowerBlue;
                                 ForeColor = Color.White;
@@ -164,7 +169,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 }
             }
         }
-
         public event PropertyChangedEventHandler? PropertyChanged;
+    }
+    static class ExtensionsInternal
+    {
+        public static IEnumerable<Control> Descendants(this Control @this)
+        {
+            return localDescendants(@this.Controls);
+
+            IEnumerable<Control> localDescendants(Control.ControlCollection controls)
+            {
+                foreach (Control view in controls)
+                {
+                    yield return view;
+
+                    foreach (var child in localDescendants(view.Controls))
+                    {
+                        yield return child;
+                    }
+                }
+            }
+        }
     }
 }

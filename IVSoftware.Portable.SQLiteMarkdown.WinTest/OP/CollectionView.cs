@@ -10,7 +10,7 @@ using View = System.Windows.Forms.Control;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
 {
-    public partial class CollectionView 
+    public partial class CollectionView
         : DataGridView
         , INotifyPropertyChanged
         , IMessageFilter
@@ -135,13 +135,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
             }
         }
         SelectionMode _selectionMode = SelectionMode.None;
-
         public Func<bool> CanMultiselect
         {
             get => _canMultiselect ?? (() => SelectionMode == SelectionMode.Multiple);
             set => _canMultiselect = value;
         }
         private Func<bool>? _canMultiselect;
+
+        public MultiselectOption MultiselectOption { get; set; }
 
         public bool PreFilterMessage(ref Message m)
         {
@@ -167,20 +168,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                         {
                             if (CanMultiselect())
                             {
-                                if (item is ISelectable selectable)
+                                // Special upgrade.
+                                if (item is ISelectable selectable &&
+                                    selectable.Selection == ItemSelection.Multi &&
+                                    MultiselectOption != MultiselectOption.DisablePrimary)
                                 {
-                                    // Special upgrade.
-                                    if(selectable.Selection == ItemSelection.Multi)
+                                    foreach (var selected in SelectedItems.OfType<ISelectable>())
                                     {
-                                        foreach (var selected in SelectedItems.OfType<ISelectable>())
-                                        {
-                                            selected.Selection =
-                                                ReferenceEquals(selected, item)
-                                                ? ItemSelection.Primary
-                                                : ItemSelection.Multi;
-                                        }
-                                        return;
+                                        selected.Selection =
+                                            ReferenceEquals(selected, item)
+                                            ? ItemSelection.Primary
+                                            : ItemSelection.Multi;
                                     }
+                                    return;
                                 }
                             }
                             else
@@ -281,7 +281,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                             Invalidate();
                         })
                     {
-                        Interval = TimeSpan.FromSeconds(0.1) 
+                        Interval = TimeSpan.FromSeconds(0.1)
                     };
                 }
                 return _wdtScroll;
@@ -294,7 +294,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
         {
             int first = Math.Max(FirstDisplayedScrollingRowIndex, 0);
             int last = first + DisplayedRowCount(true);
-            _templateCount = Math.Max(_templateCount, last - first + 1);
+            _templateCount = Math.Max(_templateCount, (last - first) + 1);
             var visibleKeys = new HashSet<int>();
             for (int i = first; i < last; i++)
             {
@@ -420,7 +420,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
         {
             get
             {
-                if(_dataTemplate == null)
+                if (_dataTemplate == null)
                 {
                     _dataTemplate = new CollectionViewDataTemplate<DefaultCollectionViewCard>();
                 }
@@ -465,5 +465,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
 
         public new event EventHandler<NotifyCollectionChangedEventArgs>? SelectionChanged;
         public event EventHandler<ItemMouseEventArgs>? ItemClicked;
+    }
+    public enum MultiselectOption
+    {
+        LastIsPrimary,
+        FirstIsPrimary,
+        DisablePrimary,
     }
 }
