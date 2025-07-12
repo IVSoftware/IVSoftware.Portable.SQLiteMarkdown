@@ -197,6 +197,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             Grid.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)vcView).EndInit();
             contextMenuQueryFilter.ResumeLayout(false);
+
+            Controls.Add(new InfoOverlay
+            {
+                Dock = DockStyle.Fill,
+                Visible = true,
+            });
             ResumeLayout(false);
         }
 

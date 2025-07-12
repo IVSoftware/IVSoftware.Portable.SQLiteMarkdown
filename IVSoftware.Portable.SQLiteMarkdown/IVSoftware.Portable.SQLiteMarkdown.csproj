@@ -18,15 +18,17 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageReleaseNotes>
-			RC1
-			- The package contracts (Interfaces and Methods) are finalized now and will not be subject to future breaking changes.
-			- Early adopters should migrate away from anything marked [Obsolete] or OR as these do not carry the same guarantee.
-			- There is a tone of testing behind this release, but the Query-Only and Filter-Only modes need more coverage so use with caution for now.
+			Initial 1.0.0 stable release.
+			- Finalized public interfaces and method contracts. No breaking changes expected post-1.0.
+			- Deprecated APIs (marked [Obsolete] or suffixed with OR) are excluded from future guarantees.
+			- Fully tested against standard workflows, including query-then-filter.
+			- Query-only and filter-only modes are functional but flagged for further test expansion.
 		</PackageReleaseNotes>
+
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
 		<BaseVersion>1.0.0</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-rc1</VersionPrefix>
+		<VersionPrefix>$(BaseVersion)</VersionPrefix>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<SignAssembly>True</SignAssembly>
