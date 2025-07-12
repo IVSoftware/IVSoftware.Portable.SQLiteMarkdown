@@ -101,13 +101,25 @@
             // 
             gridInfo.SetColumnSpan(labelInfo, 2);
             labelInfo.Dock = DockStyle.Fill;
-            labelInfo.Font = new Font("Segoe UI", 9F);
+            labelInfo.Font = new Font("Segoe UI", 8.5F);
             labelInfo.Location = new Point(71, 0);
-            labelInfo.Margin = new Padding(10, 0, 3, 0);
+            labelInfo.Margin = new Padding(10, 3, 3, 0);
             labelInfo.Name = "labelInfo";
             labelInfo.Size = new Size(426, 309);
-            labelInfo.TabIndex = 2; 
-            labelInfo.Text = "Try these searches:\r\n\r\n    • animal\r\n    • color\r\n\r\nRemember to clear [X] two times:\r\n\r\n    • Once to clear Filter text.\r\n    • A second to return to Query mode.";
+            labelInfo.TabIndex = 2; labelInfo.Text = @"
+Try these simple searches:
+    • animal
+    • color
+
+Compare:
+    • app vs [app]
+    • gre app vs gre [app]
+
+💡 Hint: Tap [×] twice to reset:
+    • First clears filter text.
+    • Second returns to query mode.".Trim();
+
+
             labelInfo.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // labelVR
