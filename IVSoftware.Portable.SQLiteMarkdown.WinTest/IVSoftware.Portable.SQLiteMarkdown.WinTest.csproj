@@ -33,7 +33,7 @@
 
 
 	<ItemGroup>
-		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="*-*" />
+		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="*" />
 	</ItemGroup>
 
 </Project>
