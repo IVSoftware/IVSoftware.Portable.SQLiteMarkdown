@@ -30,7 +30,8 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(InfoContentForm));
             gridInfo = new TableLayoutPanel();
-            iconInfo = new PictureBox();
+            iconInfo = new PictureBox(); 
+            labelWelcome = new RichTextBox();
             labelInfo = new Label();
             labelVR = new Label();
             labelHR = new Label();
@@ -47,20 +48,28 @@
             gridInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 11.9047623F));
             gridInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 2F));
             gridInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 75.10822F));
-            gridInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.7489157F));
-            gridInfo.Controls.Add(iconInfo, 0, 0);
-            gridInfo.Controls.Add(labelInfo, 2, 0);
-            gridInfo.Controls.Add(labelVR, 1, 0);
-            gridInfo.Controls.Add(labelHR, 0, 1);
-            gridInfo.Controls.Add(checkBoxDSA, 3, 2);
-            gridInfo.Controls.Add(labelDSA, 2, 2);
+            gridInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.7489157F)); 
+            
+            gridInfo.Controls.Add(labelWelcome, 2, 0);   // Welcome banner
+            gridInfo.SetColumnSpan(labelWelcome, 2);     // Span columns 1, 2, and 3
+            gridInfo.Controls.Add(iconInfo, 0, 1);       // Icon
+            gridInfo.Controls.Add(labelVR, 1, 1);        // Divider next to icon
+            gridInfo.Controls.Add(labelInfo, 2, 1);      // Main body text (row 1)
+
+            gridInfo.Controls.Add(labelHR, 0, 2);        // Horizontal rule (row 2)
+            gridInfo.SetColumnSpan(labelHR, 4);          // Make sure it still spans all columns
+
+            gridInfo.Controls.Add(labelDSA, 2, 3);       // DSA label (row 3)
+            gridInfo.Controls.Add(checkBoxDSA, 3, 3);    // DSA checkbox (row 3)
+
             gridInfo.Dock = DockStyle.Fill;
             gridInfo.Location = new Point(0, 0);
             gridInfo.Name = "gridInfo";
-            gridInfo.RowCount = 3;
-            gridInfo.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            gridInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 1F));
-            gridInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            gridInfo.RowCount = 4;
+            gridInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));   // Row 0: Welcome
+            gridInfo.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));   // Row 1: Main body
+            gridInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 1F));    // Row 2: Horizontal line
+            gridInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));   // Row 3: DSA
             gridInfo.Size = new Size(500, 350);
             gridInfo.TabIndex = 0;
             // 
@@ -73,24 +82,37 @@
             iconInfo.Size = new Size(48, 48);
             iconInfo.SizeMode = PictureBoxSizeMode.AutoSize;
             iconInfo.TabIndex = 1;
-            iconInfo.TabStop = false;
+            iconInfo.TabStop = false; 
+            iconInfo.Image = SystemIcons.Information.ToBitmap();
+            // 
+            // labelWelcome
+            // 
+            labelWelcome.BackColor = Color.FromArgb(178, 223, 219);  // Match grid background
+            labelWelcome.BorderStyle = BorderStyle.None;
+            labelWelcome.Dock = DockStyle.Fill;
+            labelWelcome.Font = new Font("Segoe UI", 12F);
+            labelWelcome.ReadOnly = true;
+            labelWelcome.ScrollBars = RichTextBoxScrollBars.None;
+            labelWelcome.Text = "Welcome!";
+            labelWelcome.ForeColor = ColorTranslator.FromHtml("#444444");
+            labelWelcome.Margin = new Padding(10, 8, 0, 0);
             // 
             // labelInfo
             // 
             gridInfo.SetColumnSpan(labelInfo, 2);
             labelInfo.Dock = DockStyle.Fill;
-            labelInfo.Font = new Font("Segoe UI", 10F);
+            labelInfo.Font = new Font("Segoe UI", 9F);
             labelInfo.Location = new Point(71, 0);
             labelInfo.Margin = new Padding(10, 0, 3, 0);
             labelInfo.Name = "labelInfo";
             labelInfo.Size = new Size(426, 309);
             labelInfo.TabIndex = 2; 
-            labelInfo.Text = "Welcome!\r\n\r\nTry these searches:\r\n\r\n    • animal\r\n    • color\r\n\r\nRemember to clear [X] two times:\r\n\r\n    • Once to clear Filter text.\r\n    • A second to return to Query mode.";
+            labelInfo.Text = "Try these searches:\r\n\r\n    • animal\r\n    • color\r\n\r\nRemember to clear [X] two times:\r\n\r\n    • Once to clear Filter text.\r\n    • A second to return to Query mode.";
             labelInfo.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // labelVR
             // 
-            labelVR.Anchor = AnchorStyles.None;
+            labelVR.Anchor = AnchorStyles.Top|AnchorStyles.Bottom;
             labelVR.BackColor = Color.FromArgb(170, 170, 170);
             labelVR.Location = new Point(62, 154);
             labelVR.Name = "labelVR";
@@ -107,6 +129,7 @@
             labelHR.Name = "labelHR";
             labelHR.Size = new Size(480, 1);
             labelHR.TabIndex = 3;
+            labelHR.Visible = false;
             // 
             // checkBoxDSA
             // 
@@ -157,6 +180,7 @@
         private TableLayoutPanel gridInfo = null!;
         private CheckBox checkBoxDSA = null!;
         private PictureBox iconInfo = null!;
+        private RichTextBox labelWelcome = null!;
         private Label labelInfo = null!;
         private Label labelVR = null!;
         private Label labelHR = null!;
