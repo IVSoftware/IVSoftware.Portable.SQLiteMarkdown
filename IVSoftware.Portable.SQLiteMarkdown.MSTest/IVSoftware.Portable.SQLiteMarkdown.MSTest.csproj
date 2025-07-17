@@ -12,16 +12,14 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.0" />
-    <PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="1.0.8" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
-  </ItemGroup>
-
 	<ItemGroup>
+		<PackageReference Include="coverlet.collector" Version="6.0.0" />
+		<PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="1.0.8" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+		<PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
+		<PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
 		<PackageReference Include="sqlite-net-pcl" Version="*" />
+		<PackageReference Include="Newtonsoft.Json" Version="*" />
 	</ItemGroup>
 	
 	<!-- Debug mode uses local project reference -->

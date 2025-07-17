@@ -119,6 +119,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                 }
             };
         }
+
+
+        /// <summary>
+        /// Ensures BackColor tracks BackgroundColor so that recycled templates which declare
+        /// BackColor = Color.Empty inherit the intended background color. Without this, they fall
+        /// back to the DataGridView's BackColor, which is not designer-visible but still influences
+        /// rendering, causing unexpected visual results.
+        /// </summary>
+        protected override void OnBackgroundColorChanged(EventArgs e)
+        {
+            base.OnBackgroundColorChanged(e);
+            BackColor = BackgroundColor;
+        }
+
         public IReadOnlyList<object> SelectedItems => new ReadOnlyCollection<object>(_selectedItems);
 
         private readonly ObservableHashSet _selectedItems;
