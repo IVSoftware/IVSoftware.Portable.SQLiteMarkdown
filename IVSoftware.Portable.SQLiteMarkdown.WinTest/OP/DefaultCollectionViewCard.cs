@@ -85,8 +85,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                                 switch (selectable?.Selection)
                                 {
                                     case ItemSelection.None:
-                                        BackColor = Color.Empty;
-                                        ForeColor = Color.Empty;
+                                        BackColor = SystemColors.Window;
+                                        ForeColor = SystemColors.WindowText;
                                         break;
                                     case ItemSelection.Multi:
                                         BackColor = Color.FromArgb(125, Color.CornflowerBlue);

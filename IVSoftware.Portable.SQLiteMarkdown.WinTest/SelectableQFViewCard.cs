@@ -152,8 +152,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                         switch (DataContext?.Selection)
                         {
                             case ItemSelection.None:
-                                BackColor = Color.Empty;
-                                ForeColor = Color.Empty;
+                                BackColor = SystemColors.Window;
+                                ForeColor = SystemColors.WindowText;
                                 break;
                             case ItemSelection.Primary:
                                 BackColor = Color.RoyalBlue;
