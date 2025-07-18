@@ -12,7 +12,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         : ISelectable
         , INotifyPropertyChanged
     {
-        public string Value { get; set; }
 
         public StringWrapper() { }
 
@@ -23,6 +22,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         public static implicit operator StringWrapper(string s) => new StringWrapper(s);
 
         public static implicit operator string(StringWrapper wrapper) => wrapper?.Value;
+
+        public string Value
+        {
+            get => _value;
+            set
+            {
+                if (!Equals(_value, value))
+                {
+                    _value = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        string _value = string.Empty;
 
         public ItemSelection Selection
         {

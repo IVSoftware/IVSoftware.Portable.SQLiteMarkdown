@@ -25,12 +25,15 @@
 			- Fully tested against standard workflows, including query-then-filter.
 			- Query-only and filter-only modes are functional but flagged for further test expansion.
 			- See the repo for a functional demo (WinForms) you can run out of the box.
+			
+			Release Candidate 1.0.1 RC1
+			- The utility class StringWrapper, originally introduced to support string-based ItemsSource collections, now raises PropertyChanged when Value changes. Its role has expanded as a general-purpose model for simple item binding scenarios.
 		</PackageReleaseNotes>
 
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
-		<BaseVersion>1.0.0</BaseVersion>
-		<VersionPrefix>$(BaseVersion)</VersionPrefix>
+		<BaseVersion>1.0.1</BaseVersion>
+		<VersionPrefix>$(BaseVersion)-rc1</VersionPrefix>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<SignAssembly>True</SignAssembly>
