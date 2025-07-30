@@ -45,6 +45,9 @@
 		<PackageReference Include="Newtonsoft.Json" Version="*" />
 		<PackageReference Include="sqlite-net-pcl" Version="*" />
 		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="*" />
+		<!-- System.Text.Json is included to override a vulnerable 
+		     version that was being pulled in transitively by one of 
+			 our dependencies. OnePage, however, uses Newtonsoft.Json -->			 
 		<PackageReference Include="System.Text.Json" Version="6.0.11" />
 	</ItemGroup>
 

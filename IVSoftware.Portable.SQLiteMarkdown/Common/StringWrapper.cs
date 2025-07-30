@@ -12,7 +12,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         : ISelectable
         , INotifyPropertyChanged
     {
-
         public StringWrapper() { }
 
         public StringWrapper(string value) => Value = value;
@@ -23,6 +22,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         public static implicit operator string(StringWrapper wrapper) => wrapper?.Value;
 
+        /// <summary>
+        /// Primary key property for SQLite tables. Named "Id" to leverage automatic 
+        /// primary key recognition in ORMs like sqlite-net-pcl, avoiding the need to 
+        /// reference sqlite-net-pcl solely for the [PrimaryKey] attribute on this single property.
+        /// </summary>
+        // [PrimaryKey]
+        public string Id { get; set; } = 
+            Guid
+            .NewGuid()
+            .ToString()
+            .Trim("{}".ToCharArray())
+            .ToUpper();
+
+        [QueryLikeTerm, FilterLikeTerm]
         public string Value
         {
             get => _value;
