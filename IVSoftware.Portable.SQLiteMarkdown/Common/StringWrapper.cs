@@ -8,6 +8,13 @@ using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
+    /// <summary>
+    /// A lightweight wrapper that enables simple strings to participate in ObservableQueryFilterSource's 
+    /// query-filter state engine. Implements ISelectable and INotifyPropertyChanged to support selection 
+    /// scenarios and reactive UI binding, while providing QueryLikeTerm/FilterLikeTerm attributes for 
+    /// automatic SQL WHERE clause generation via the SQLiteMarkdown parsing system. Includes implicit 
+    /// conversions for seamless interoperability with raw strings during collection initialization.
+    /// </summary>
     public class StringWrapper
         : ISelectable
         , INotifyPropertyChanged
