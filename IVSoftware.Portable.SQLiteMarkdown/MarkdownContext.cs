@@ -658,7 +658,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 value = value.Replace("'", "''"); // It's time to escape the squotes for SQL.
 
                                 if (likeTerms.Length == 0 && tagTerms.Length == 0)
-                                    throw new InvalidOperationException("Parser requires at least one term.");
+                                    throw new InvalidOperationException($"Parser requires at least one term for {qfMode}.");
                                 // Different - 
                                 // Enumerate fields and memoize them.
                                 List<string>
