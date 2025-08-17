@@ -1203,21 +1203,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
+                bool isDowngradeToQuery = FilteringState != FilteringState.Ineligible;
+                bool isUpgradeToFilter = FilteringState == FilteringState.Ineligible;
                 if (InputText.Length > 0)
                 {
-                    // Basically, if there is entry text but the filtering
-                    // is still only armed not active, that indicates that
-                    // what we're seeing in the list is the result of a full
-                    // db query that just occurred. So now, when we CLEAR that
-                    // text, it's assumed to be in the interest of filtering
-                    // that query result, so filtering goes Active in theis case.
                     InputText = string.Empty;
                     switch (FilteringState)
                     {
                         case FilteringState.Ineligible:
                             break;
                         case FilteringState.Armed:
-                            FilteringState = FilteringState.Active;
+                            // Basically, if there is entry text but the filtering
+                            // is still only armed not active, that indicates that
+                            // what we're seeing in the list is the result of a full
+                            // db query that just occurred. So now, when we CLEAR that
+                            // text, it's assumed to be in the interest of filtering
+                            // that query result, so filtering stays Armed in this case.
                             break;
                         case FilteringState.Active:
                             break;
