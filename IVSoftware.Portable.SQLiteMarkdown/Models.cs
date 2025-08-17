@@ -223,16 +223,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         private void internalExecuteIndexing()
         {
-            var localMC = new MarkdownContext(GetType());
             lock (_lock)
             {
-                var likeNodes = new HashSet<ASTNode>();
-                var containsNodes = new HashSet<ASTNode>();
-                var tagNodes = new HashSet<ASTNode>();
-                ASTNode[] astNodeArray;
-
+                // Used in old and new ways.
                 var props = GetType().GetProperties();
-
+                var localMC = new MarkdownContext(GetType());
 
 #if true || NEW_WAY
                 for (int i = 0; i < props.Length; i++)
@@ -274,7 +269,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 { }
 
 #else
-
+                var likeNodes = new HashSet<ASTNode>();
+                var containsNodes = new HashSet<ASTNode>();
+                var tagNodes = new HashSet<ASTNode>();
+                ASTNode[] astNodeArray;
                 for (int i = 0; i < props.Length; i++)
                 {
                     var pi = props[i];

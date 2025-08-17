@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -210,14 +211,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             default:
                                 throw new NotImplementedException($"Bad case: {FilteringState}");
                         }
-#if DEBUG
-                        var count = FilterQueryDatabase.ExecuteScalar<int>("SELECT COUNT(*) FROM items");
-                        if (count == 0)
-                        {
-                            Debug.Fail("ADVISORY - Did you remember to populate the FilterQueryDatabase?");
-                            return;
-                        }
-#endif
 
                         var searchEntryState = SearchEntryState;
                         var sql = ParseSqlMarkdown<T>();

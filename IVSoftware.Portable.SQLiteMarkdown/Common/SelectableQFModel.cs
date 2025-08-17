@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.Models
+namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
     [DebuggerDisplay("{Description}")]
     [Table("items")]

@@ -1,5 +1,4 @@
-﻿using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
-using IVSoftware.Portable.SQLiteMarkdown.WinTest.Models;
+﻿using IVSoftware.Portable.SQLiteMarkdown.Common;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -125,8 +124,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             Anchor = (AnchorStyles)0xf,
             Dock = DockStyle.Fill,
         };
-
-
 
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
             OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));

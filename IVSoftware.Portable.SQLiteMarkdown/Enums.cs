@@ -115,5 +115,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         WM_LBUTTONUP = 0x0202,
         WM_RBUTTONDOWN = 0x0204,
         WM_RBUTTONUP = 0x0205,
+        WM_CONTEXTMENU = 0x007B,
     }
 }

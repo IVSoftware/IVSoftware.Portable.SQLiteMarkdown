@@ -8,11 +8,17 @@ using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
+    /// <summary>
+    /// A lightweight wrapper that enables simple strings to participate in ObservableQueryFilterSource's 
+    /// query-filter state engine. Implements ISelectable and INotifyPropertyChanged to support selection 
+    /// scenarios and reactive UI binding, while providing QueryLikeTerm/FilterLikeTerm attributes for 
+    /// automatic SQL WHERE clause generation via the SQLiteMarkdown parsing system. Includes implicit 
+    /// conversions for seamless interoperability with raw strings during collection initialization.
+    /// </summary>
     public class StringWrapper
         : ISelectable
         , INotifyPropertyChanged
     {
-
         public StringWrapper() { }
 
         public StringWrapper(string value) => Value = value;
@@ -23,6 +29,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         public static implicit operator string(StringWrapper wrapper) => wrapper?.Value;
 
+        /// <summary>
+        /// Primary key property for SQLite tables. Named "Id" to leverage automatic 
+        /// primary key recognition in ORMs like sqlite-net-pcl, avoiding the need to 
+        /// reference sqlite-net-pcl solely for the [PrimaryKey] attribute on this single property.
+        /// </summary>
+        // [PrimaryKey]
+        public string Id { get; set; } = 
+            Guid
+            .NewGuid()
+            .ToString()
+            .Trim("{}".ToCharArray())
+            .ToUpper();
+
+        [QueryLikeTerm, FilterLikeTerm]
         public string Value
         {
             get => _value;
