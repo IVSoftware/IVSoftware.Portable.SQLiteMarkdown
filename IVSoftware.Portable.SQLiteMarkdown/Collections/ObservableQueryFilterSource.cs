@@ -433,8 +433,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     case SearchEntryState.QueryENB:
                         break;
                     case SearchEntryState.QueryEN:
-                        var cMe = MemoryDatabase.Query<T>(InputText.ParseSqlMarkdown<T>());
-                        ReplaceItems(cMe);
+                        // Nullable property, but we're not in
+                        // a target framework that supports it.
+                        if (MemoryDatabase != null)
+                        {
+                            var cMe = MemoryDatabase.Query<T>(InputText.ParseSqlMarkdown<T>());
+                            ReplaceItems(cMe);
+                        }
                         break;
                     case SearchEntryState.QueryCompleteNoResults:
                         break;

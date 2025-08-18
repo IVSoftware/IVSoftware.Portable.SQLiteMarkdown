@@ -1137,7 +1137,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+        // Nullable property, but we're not in
+        // a target framework that supports it.
         SQLiteConnection _memoryDatabase = default;
+
         #endregion C O N F I G
 
         #region N A V    S E A R C H    S T A T E    M A C H I N E
