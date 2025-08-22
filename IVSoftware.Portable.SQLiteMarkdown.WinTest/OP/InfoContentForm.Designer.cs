@@ -106,7 +106,8 @@
             labelInfo.Margin = new Padding(10, 3, 3, 0);
             labelInfo.Name = "labelInfo";
             labelInfo.Size = new Size(426, 309);
-            labelInfo.TabIndex = 2; labelInfo.Text = @"
+            labelInfo.TabIndex = 2; 
+            labelInfo.Text = @"
 Try these simple searches:
     • animal
     • color
