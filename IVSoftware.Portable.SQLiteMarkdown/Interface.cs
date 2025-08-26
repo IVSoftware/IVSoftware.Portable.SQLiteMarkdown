@@ -141,6 +141,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Single,
 
         /// <summary>
+        /// Allow modifiers like SHIFT and CONTROL
+        /// </summary>
+        ModifiedSingle,
+
+        /// <summary>
         /// Multiple selection allowed.
         /// </summary>
         Multiple
