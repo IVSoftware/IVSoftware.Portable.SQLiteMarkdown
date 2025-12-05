@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+	  <!--Clipboard-->
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="coverlet.collector" Version="6.0.0" />
+		<PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="1.0.8" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+		<PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
+		<PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
+		<PackageReference Include="sqlite-net-pcl" Version="*" />
+		<PackageReference Include="Newtonsoft.Json" Version="*" />
+	</ItemGroup>
+	
+	<!-- Debug mode uses local project reference -->
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+		<ProjectReference Include="..\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown.csproj" />
+	</ItemGroup>
+
+	<!-- Release mode uses NuGet prerelease version -->
+	<ItemGroup Condition="'$(Configuration)' == 'Release'">
+		<!--
+		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="*-*" />
+		-->
+		<ProjectReference Include="..\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown.csproj" />
+	</ItemGroup>
+
+
+
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="*-*" />
+		<PackageReference Include="IVSoftware.Portable.Disposable" Version="*-*" />
+	</ItemGroup>
+
+	<!--
+	- Use NuGet references, not project references.
+	- Use 'latest stable' floating reference, not prerelease floating reference.
+	-->
+	<ItemGroup Condition="'$(Configuration)' == 'Release'">
+		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="*" />
+		<PackageReference Include="IVSoftware.Portable.Disposable" Version="*" />
+	</ItemGroup>
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+</Project>

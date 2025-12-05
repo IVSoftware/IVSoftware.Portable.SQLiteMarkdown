@@ -1,0 +1,65 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Title>IVSoftware.Portable.SQLiteMarkdown</Title>
+		<PackageId>IVSoftware.Portable.SQLiteMarkdown</PackageId>
+		<Description>Lightweight, cross-platform expression-to-SQL parser with intuitive syntax. Supports query-then-filter workflows where external data can come from any source, with in-memory filtering powered by SQLite. Features atomic quoted phrases and tag-based terms.</Description>
+		<PackageTags>portable;cross-platform;sqlite;markdown;search;filtering;query;expression-parser;tags;quoted-phrases;navigation-ui;netstandard</PackageTags>
+		<RepositoryUrl>https://github.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown.git</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown.git</PackageProjectUrl>
+		<RootNamespace>IVSoftware.Portable.SQLiteMarkdown</RootNamespace>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Author>Thomas C. Gregor</Author>
+		<Owner>IVSoftware LLC</Owner>
+		<Copyright>Copyright © 2023-2025 IVSoftware LLC</Copyright>
+		<FileVersion>$(AssemblyVersion)</FileVersion>
+		<Version>$(AssemblyVersion)</Version>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageReleaseNotes>
+			Initial 1.0.0 stable release.
+			- Finalized public interfaces and method contracts. No breaking changes expected post-1.0.
+			- Deprecated APIs (marked [Obsolete] or suffixed with OR) are excluded from future guarantees.
+			- Fully tested against standard workflows, including query-then-filter.
+			- Query-only and filter-only modes are functional but flagged for further test expansion.
+			- See the repo for a functional demo (WinForms) you can run out of the box.
+			
+			Release Candidate 1.0.1 RC1
+			- The utility class StringWrapper, originally introduced to support string-based ItemsSource collections, now raises PropertyChanged when Value changes. Its role has expanded as a general-purpose model for simple item binding scenarios.
+		</PackageReleaseNotes>
+
+		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
+		<DebugType>embedded</DebugType>
+		<BaseVersion>1.0.1</BaseVersion>
+		<VersionPrefix>$(BaseVersion)-rc1</VersionPrefix>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<SignAssembly>True</SignAssembly>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="IVSoftware.Portable.Threading" Version="*" />
+		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="*" />
+		<PackageReference Include="Newtonsoft.Json" Version="*" />
+		<PackageReference Include="sqlite-net-pcl" Version="*" />
+		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="*" />
+		<!-- System.Text.Json is included to override a vulnerable 
+		     version that was being pulled in transitively by one of 
+			 our dependencies. OnePage, however, uses Newtonsoft.Json -->			 
+		<PackageReference Include="System.Text.Json" Version="6.0.11" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="README\img\" />
+	</ItemGroup>
+
+</Project>

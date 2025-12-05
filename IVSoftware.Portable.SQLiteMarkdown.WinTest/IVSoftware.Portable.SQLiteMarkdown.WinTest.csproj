@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrate\**" />
+    <EmbeddedResource Remove="Migrate\**" />
+    <None Remove="Migrate\**" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="IVSoftware.Portable.Threading" Version="*" />
+		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="*" />
+		<PackageReference Include="Newtonsoft.Json" Version="*" />
+		<PackageReference Include="sqlite-net-pcl" Version="*" />
+		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="*" />
+		<PackageReference Include="System.Text.Json" Version="6.0.11" />
+	</ItemGroup>
+
+	<!-- Debug mode uses local project reference -->
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+		<ProjectReference Include="..\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown.csproj" />
+	</ItemGroup>
+
+	<!-- Release mode uses NuGet prerelease version -->
+	<ItemGroup Condition="'$(Configuration)' == 'Release'">
+		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="*-*" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="*" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\IVSoftware.Portable.SQLiteMarkdown.MSTest\IVSoftware.Portable.SQLiteMarkdown.MSTest.csproj" />
+	</ItemGroup>
+
+</Project>
