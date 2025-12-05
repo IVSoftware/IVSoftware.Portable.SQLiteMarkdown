@@ -23,11 +23,30 @@
 			- Deprecated APIs (marked [Obsolete] or suffixed with OR) are excluded from future guarantees.
 			- Fully tested against standard workflows, including query-then-filter.
 			- Query-only and filter-only modes are functional but flagged for further test expansion.
+			- See the repo for a functional demo (WinForms) that will run out of the box.
+
+			Initial 1.0.0 stable release.
+			- Deprecated APIs (marked [Obsolete] or suffixed with OR) are excluded from future guarantees.
+			- Fully tested against standard workflows, including query-then-filter.
+			- Query-only and filter-only modes are functional but flagged for further test expansion.
 			- See the repo for a functional demo (WinForms) you can run out of the box.
 
 			Release 1.0.1
-			- StringWrapper - Now evolved as a general-purpose model for simple item binding scenarios, and raises PropertyChanged when Value changes.
-			- SelectableQFModel - A fully attributed, self-indexing QF model, offering a schema-ready SQLite row type with integrated tag, keyword, and description indexing plus built-in selection semantics.
+
+			- StringWrapper - Promoted to a general-purpose model for simple item-binding scenarios.
+			Now raises PropertyChanged when Value changes, making it suitable for MVVM-style UIs.
+
+			- SelectableQFModel - A fully attributed, self-indexing query/filter model providing a
+			schema-ready SQLite row type with integrated tag, keyword, and description indexing,
+			plus built-in selection semantics.
+
+			- Unit test updated to confirm the correct FSM behavior:
+			1. After a query completes (term still visible), FilteringState = Armed.
+			2. After the first clear (term becomes blank), FilteringState remains Armed.
+			3. From here, the FSM branches:
+			- Clearing again resets the engine for a new query, OR
+			- Typing characters promotes FilteringState to Active.
+
 		</PackageReleaseNotes>
 
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
