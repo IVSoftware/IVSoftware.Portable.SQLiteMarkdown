@@ -3,12 +3,33 @@ using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
+    /// <summary>
+    /// A fully query-filter–aware data model that participates in both SQLite-backed
+    /// querying and in-memory filtering through automatic self-indexing.
+    /// 
+    /// This class is designed for use with ObservableQueryFilterSource<T> and provides:
+    /// 
+    /// - Attribute-driven indexing via <see cref="SelfIndexedAttribute"/>, enabling
+    ///   Description, Keywords, and Tags to generate QueryTerm, FilterTerm, and
+    ///   TagMatchTerm values automatically through the SQLiteMarkdown parsing engine.
+    /// 
+    /// - A minimal, SQLite-compatible schema using a GUID primary key and a compact
+    ///   JSON-backed Keywords field, allowing flexible term expansion without schema churn.
+    /// 
+    /// - First-class selection semantics through <see cref="ISelectable"/>, enabling
+    ///   UI list controls to track Exclusive, Multi, and Primary selections without
+    ///   external wrappers.
+    /// 
+    /// Typical usage: 
+    /// - As the row type for a Query/Filter list where users search by typed text,
+    ///   bracketed tags, or combined expressions.
+    /// - As a building block for tag-centric or keyword-centric item catalogs where
+    ///   the UI requires round-trippable filtering between full-recordset queries and
+    ///   incremental in-memory refinement.
+    /// </summary>
     [DebuggerDisplay("{Description}")]
     [Table("items")]
     public class SelectableQFModel : SelfIndexed, ISelectable
@@ -51,8 +72,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         // ADVISORY KNOWN ORDER OF OPERATIONS BUG
         // bla|sho [not animal]
 
-        // [SelfIndexed(IndexingMode.TagMatchTerm)]    // Tag term considered only for explicit brackets.  "color' does not match [color]
-        [SelfIndexed(IndexingMode.All)]             // Tag terms are included in all LIKE queries:      "color' matches [color]
+        // [SelfIndexed(IndexingMode.TagMatchTerm)]     // Tag term considered only for explicit brackets.  "color' does not match [color]
+        [SelfIndexed(IndexingMode.All)]                 // Tag terms are included in all LIKE queries:      "color' matches [color]
         public string Tags
         {
             get => _tags;

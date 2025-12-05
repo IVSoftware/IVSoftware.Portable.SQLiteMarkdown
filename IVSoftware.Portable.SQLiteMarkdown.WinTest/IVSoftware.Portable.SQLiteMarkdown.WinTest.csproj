@@ -20,7 +20,6 @@
 		<PackageReference Include="Newtonsoft.Json" Version="*" />
 		<PackageReference Include="sqlite-net-pcl" Version="*" />
 		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="*" />
-		<PackageReference Include="System.Text.Json" Version="6.0.11" />
 	</ItemGroup>
 
 	<!-- Debug mode uses local project reference -->
@@ -30,15 +29,7 @@
 
 	<!-- Release mode uses NuGet prerelease version -->
 	<ItemGroup Condition="'$(Configuration)' == 'Release'">
-		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="*-*" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="*" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\IVSoftware.Portable.SQLiteMarkdown.MSTest\IVSoftware.Portable.SQLiteMarkdown.MSTest.csproj" />
+		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="1.0.1-rc2Local" />
 	</ItemGroup>
 
 </Project>

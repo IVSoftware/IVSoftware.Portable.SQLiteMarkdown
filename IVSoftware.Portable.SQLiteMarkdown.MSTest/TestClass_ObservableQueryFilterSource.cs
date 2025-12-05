@@ -1597,20 +1597,20 @@ Busy"
                         );
 
                         Assert.AreEqual(
-                            FilteringState.Active,
+                            FilteringState.Armed,
                             items.FilteringState,
                             "Expecting nuanced behavior:"
                         );
 
 #if ABSTRACT
-                    // SEE FULL CONTEXT: Canonical {5932CB31-B914-4DE8-9457-7A668CDB7D08}
-
-                    // Basically, if there is entry text but the filtering
-                    // is still only armed not active, that indicates that
-                    // what we're seeing in the list is the result of a full
-                    // db query that just occurred. So now, when we CLEAR that
-                    // text, it's assumed to be in the interest of filtering
-                    // that query result, so filtering goes Active in theis case.
+                        // SEE FULL CONTEXT: Canonical {5932CB31-B914-4DE8-9457-7A668CDB7D08}
+                        
+                        // Basically, if there is entry text but the filtering
+                        // is still only armed not active, that indicates that
+                        // what we're seeing in the list is the result of a full
+                        // db query that just occurred. So now, when we CLEAR that
+                        // text, it's assumed to be in the interest of filtering
+                        // that query result, so filtering stays Armed in this case.
 
 #endif
                         // animal.b

@@ -20,20 +20,20 @@
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageReleaseNotes>
 			Initial 1.0.0 stable release.
-			- Finalized public interfaces and method contracts. No breaking changes expected post-1.0.
 			- Deprecated APIs (marked [Obsolete] or suffixed with OR) are excluded from future guarantees.
 			- Fully tested against standard workflows, including query-then-filter.
 			- Query-only and filter-only modes are functional but flagged for further test expansion.
 			- See the repo for a functional demo (WinForms) you can run out of the box.
-			
-			Release Candidate 1.0.1 RC1
-			- The utility class StringWrapper, originally introduced to support string-based ItemsSource collections, now raises PropertyChanged when Value changes. Its role has expanded as a general-purpose model for simple item binding scenarios.
+
+			Release 1.0.1
+			- StringWrapper - Now evolved as a general-purpose model for simple item binding scenarios, and raises PropertyChanged when Value changes.
+			- SelectableQFModel - A fully attributed, self-indexing QF model, offering a schema-ready SQLite row type with integrated tag, keyword, and description indexing plus built-in selection semantics.
 		</PackageReleaseNotes>
 
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
 		<BaseVersion>1.0.1</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-rc1</VersionPrefix>
+		<VersionPrefix>$(BaseVersion)</VersionPrefix>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<SignAssembly>True</SignAssembly>
@@ -45,10 +45,6 @@
 		<PackageReference Include="Newtonsoft.Json" Version="*" />
 		<PackageReference Include="sqlite-net-pcl" Version="*" />
 		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="*" />
-		<!-- System.Text.Json is included to override a vulnerable 
-		     version that was being pulled in transitively by one of 
-			 our dependencies. OnePage, however, uses Newtonsoft.Json -->			 
-		<PackageReference Include="System.Text.Json" Version="6.0.11" />
 	</ItemGroup>
 
 	<ItemGroup>
