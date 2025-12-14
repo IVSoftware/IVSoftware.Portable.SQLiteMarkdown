@@ -1,23 +1,12 @@
-﻿using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.Threading;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
+﻿using IVSoftware.Portable;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using SQLite;
-using SQLitePCL;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Security;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
@@ -159,11 +148,37 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         static string EncloseInSquareBrackets(this string s) => $"[{s.Trim()}]";
 
+        /// <summary>
+        /// Formats a delimited list of tag values into canonical bracketed form.
+        /// </summary>
+        /// <remarks>
+        /// This method is a strict formatter and assumes delimiter-based input.
+        /// It does not support or interpret bracket syntax. If the input contains
+        /// square brackets, an exception is thrown to prevent ambiguous or mixed
+        /// grammars.
+        ///
+        /// Behavior:
+        /// - Splits the input string using a single specified delimiter.
+        /// - Trims and filters empty tokens.
+        /// - Wraps each token in square brackets.
+        /// - Applies optional casing.
+        /// - Concatenates all bracketed tokens without separators.
+        ///
+        /// Use <c>NormalizeTags</c> when grammar detection is required.
+        /// </remarks>
+        /// <param name="this">The input string containing delimited tag values.</param>
+        /// <param name="termDelimiter">The delimiter used to split the input.</param>
+        /// <param name="stringCasing">The casing applied to each tag value.</param>
+        /// <returns>A canonical bracketed tag string.</returns>
         public static string MakeTags(
             this string @this,
             TermDelimiter termDelimiter = TermDelimiter.Comma,
             StringCasing stringCasing = StringCasing.Lower)
         {
+            if(@this.Any(_=>_ == '[' || _ == ']'))
+            {
+                throw new ArgumentException("Square brackets must be removed before calling this method.");
+            }
             // Example input: Tags = "C# .NET MAUI,C# WPF, C# WinForms".MakeTags()
             // ExampleOutput: 
             char delimiter;
@@ -186,6 +201,85 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 .Where(_ => !string.IsNullOrWhiteSpace(_));
             return string.Join(string.Empty, split.Select(_ => _.EncloseInSquareBrackets().ApplyCasing(stringCasing)));
         }
+
+        /// <summary>
+        /// Normalizes a tag string into canonical bracketed form by detecting
+        /// the applicable tag grammar.
+        /// </summary>
+        /// <remarks>
+        /// Grammar precedence:
+        /// 1. Explicit bracket syntax ("[tag]") takes priority.
+        /// 2. Known delimiters (comma, semicolon, tilde).
+        /// 3. Whitespace as a fallback.
+        ///
+        /// The result is a concatenation of individually bracketed tokens
+        /// with no separators. Delimiter-based parsing is delegated to
+        /// <c>MakeTags</c>.
+        /// </remarks>
+        /// <param name="value">The raw tag input string.</param>
+        /// <returns>A canonical bracketed tag string.</returns>
+        public static string NormalizeTags(this string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return string.Empty;
+            }
+
+            // 1. Explicit bracket grammar wins
+            if (TryParseBracketGrammar(value, out var bracketTokens))
+            {
+                return string.Concat(bracketTokens.Select(t => $"[{t}]"));
+            }
+
+            // 2. Known delimiter grammar
+            foreach (TermDelimiter delimiter in Enum.GetValues(typeof(TermDelimiter)))
+            {
+                char c;
+                switch (delimiter)
+                {
+                    case TermDelimiter.Comma:
+                        c = ',';
+                        break;
+                    case TermDelimiter.Semicolon:
+                        c = ';';
+                        break;
+                    case TermDelimiter.Tilde:
+                        c = '~';
+                        break;
+                    default:
+                        throw new NotImplementedException($"Bad case: {delimiter}");
+                }
+                if (value.Contains(c))
+                {
+                    return value.MakeTags(delimiter, StringCasing.Original);
+                }
+            }
+
+            // 3. Whitespace grammar
+            var tokens =
+                value
+                    .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            return string.Concat(tokens.Select(t => $"[{t}]"));
+        }
+
+        private static bool TryParseBracketGrammar(string input, out IEnumerable<string> tokens)
+        {
+            var matches = Regex.Matches(input, @"\[(.*?)\]");
+            if (matches.Count == 0)
+            {
+                tokens = null;
+                return false;
+            }
+
+            tokens =
+                matches
+                    .Cast<Match>()
+                    .Select(m => m.Groups[1].Value);
+
+            return true;
+        }
+
 
         /// <summary>
         /// Converts a plural word to its singular form by applying common English pluralization rules.

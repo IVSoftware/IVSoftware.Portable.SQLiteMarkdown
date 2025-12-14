@@ -79,6 +79,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             get => _tags;
             set
             {
+                value = value.NormalizeTags();
                 if (!Equals(_tags, value))
                 {
                     _tags = value;
@@ -88,8 +89,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         private string _tags = string.Empty;
 
+        [JsonIgnore, Obsolete]
         public string TagsDisplay => Tags;
-
 
         public bool IsChecked
         {
@@ -133,7 +134,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         bool _isEditing = false;
 
-        public override string ToString() => $"{Description} {KeywordsDisplay} {TagsDisplay}".Trim();
+        public override string ToString() => $"{Description} {KeywordsDisplay} {Tags}".Trim();
 
         public string Report()
         {

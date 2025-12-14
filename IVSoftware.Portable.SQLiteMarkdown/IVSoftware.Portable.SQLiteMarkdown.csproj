@@ -47,12 +47,19 @@
 			- Clearing again resets the engine for a new query, OR
 			- Typing characters promotes FilteringState to Active.
 
+
+			Release 1.0.2
+			- ADDED: NormalizeTags() extension.
+			- Made 2 changes to SelectableQFModel class
+			1. Tags property setter uses NormalizeTags() to lint the value before writing the backing store.
+			2. [Obsolete, JsonIgnore] public string TagsDisplay => Tags; // Remove redundant property from JSON
+
 		</PackageReleaseNotes>
 
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
-		<BaseVersion>1.0.1</BaseVersion>
-		<VersionPrefix>$(BaseVersion)</VersionPrefix>
+		<BaseVersion>1.0.2</BaseVersion>
+		<VersionPrefix>$(BaseVersion)-beta</VersionPrefix>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<SignAssembly>True</SignAssembly>
