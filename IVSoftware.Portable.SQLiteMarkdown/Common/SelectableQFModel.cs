@@ -88,9 +88,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         private string _tags = string.Empty;
 
-        public string TagsDisplay => Tags;
-
-
         public bool IsChecked
         {
             get => _isChecked;
@@ -133,7 +130,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         bool _isEditing = false;
 
-        public override string ToString() => $"{Description} {KeywordsDisplay} {TagsDisplay}".Trim();
+        public override string ToString() => $"{Description} {KeywordsDisplay} {Tags}".Trim();
 
         public string Report()
         {

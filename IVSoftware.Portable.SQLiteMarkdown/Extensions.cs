@@ -187,6 +187,51 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return string.Join(string.Empty, split.Select(_ => _.EncloseInSquareBrackets().ApplyCasing(stringCasing)));
         }
 
+        public static string NormalizeTags(this string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return string.Empty;
+            }
+
+            // 1. Explicit bracket grammar wins
+            if (TryParseBracketGrammar(value, out var bracketTokens))
+            {
+                return string.Concat(bracketTokens.Select(t => $"[{t}]"));
+            }
+
+            // 2. Comma grammar
+            if (value.Contains(','))
+            {
+                return value.MakeTags(TermDelimiter.Comma, StringCasing.Original);
+            }
+
+            // 3. Whitespace grammar
+            var tokens =
+                value
+                    .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            return string.Concat(tokens.Select(t => $"[{t}]"));
+        }
+
+        private static bool TryParseBracketGrammar(string input, out IEnumerable<string> tokens)
+        {
+            var matches = Regex.Matches(input, @"\[(.*?)\]");
+            if (matches.Count == 0)
+            {
+                tokens = null;
+                return false;
+            }
+
+            tokens =
+                matches
+                    .Cast<Match>()
+                    .Select(m => m.Groups[1].Value);
+
+            return true;
+        }
+
+
         /// <summary>
         /// Converts a plural word to its singular form by applying common English pluralization rules.
         /// Handles cases such as 'ies' to 'y', 'ves' to 'f', and words ending in 'oes' or 'es'.
