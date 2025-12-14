@@ -1,13 +1,14 @@
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Reflection;
-using System.Reflection.Metadata.Ecma335;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SQLite;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection;
+using System.Reflection.Metadata.Ecma335;
 using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
@@ -709,6 +710,167 @@ FilterTerm";
                 .Where(p =>
                     (p.GetCustomAttribute<TagMatchTermAttribute>() != null))
                 .ToArray();
+        }
+
+
+
+        [TestMethod]
+        public void Test_NormalizeTags()
+        {
+            string actual, expected;
+            SelectableQFModel model;
+
+            model = new SelectableQFModel 
+            { 
+                Id = "1",
+                Description = "Purple Animal", 
+                Tags = "animal color" 
+            };
+
+            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+{
+  ""Id"": ""1"",
+  ""Description"": ""Purple Animal"",
+  ""Keywords"": ""[]"",
+  ""KeywordsDisplay"": """",
+  ""Tags"": ""[animal][color]"",
+  ""IsChecked"": false,
+  ""Selection"": 0,
+  ""IsEditing"": false,
+  ""PrimaryKey"": ""1"",
+  ""QueryTerm"": ""purple~animal~[animal][color]"",
+  ""FilterTerm"": ""purple~animal~[animal][color]"",
+  ""TagMatchTerm"": ""[animal][color]"",
+  ""Properties"": ""{\r\n  \""Description\"": \""Purple Animal\"",\r\n  \""Tags\"": \""[animal][color]\""\r\n}""
+}"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting correct tag representation in Query and Filter exprs."
+            );
+
+            model = new SelectableQFModel
+            {
+                Id = "1",
+                Description = "Purple Animal",
+                Tags = "animal,color"
+            };
+
+            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual.ToClipboardExpected(); // For viewing only
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting that expected DOES NOT CHANGE."
+            );
+
+
+            model = new SelectableQFModel
+            {
+                Id = "1",
+                Description = "Purple Animal",
+                Tags = "animal;color"
+            };
+
+            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual.ToClipboardExpected(); // For viewing only
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting that expected DOES NOT CHANGE."
+            );
+
+
+            model = new SelectableQFModel
+            {
+                Id = "1",
+                Description = "Purple Animal",
+                Tags = "animal~color"
+            };
+
+            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual.ToClipboardExpected(); // For viewing only
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting that expected DOES NOT CHANGE."
+            );
+
+
+            model = new SelectableQFModel
+            {
+                Id = "1",
+                Description = "Purple Animal",
+                Tags = "[animal][color]"
+            };
+
+            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual.ToClipboardExpected(); // For viewing only
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting that expected DOES NOT CHANGE."
+            );
+
+
+            model = new SelectableQFModel
+            {
+                Id = "1",
+                Description = "Purple Animal",
+                Tags = "[animal][color]"
+            };
+
+            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual.ToClipboardExpected(); // For viewing only
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting that expected DOES NOT CHANGE."
+            );
+
+
+            model = new SelectableQFModel
+            {
+                Id = "1",
+                Description = "Purple Animal",
+                Tags = "[animal,big]    [color]"
+            };
+
+            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+{
+  ""Id"": ""1"",
+  ""Description"": ""Purple Animal"",
+  ""Keywords"": ""[]"",
+  ""KeywordsDisplay"": """",
+  ""Tags"": ""[animal,big][color]"",
+  ""IsChecked"": false,
+  ""Selection"": 0,
+  ""IsEditing"": false,
+  ""PrimaryKey"": ""1"",
+  ""QueryTerm"": ""purple~animal~[animal,big][color]"",
+  ""FilterTerm"": ""purple~animal~[animal,big][color]"",
+  ""TagMatchTerm"": ""[animal,big][color]"",
+  ""Properties"": ""{\r\n  \""Description\"": \""Purple Animal\"",\r\n  \""Tags\"": \""[animal,big][color]\""\r\n}""
+}"
+            ;
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting brackets beat commas."
+            );
         }
     }
 }
