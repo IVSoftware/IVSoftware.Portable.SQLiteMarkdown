@@ -89,6 +89,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         private string _tags = string.Empty;
 
+        [JsonIgnore, Obsolete]
+        public string TagsDisplay => Tags;
+
         public bool IsChecked
         {
             get => _isChecked;
