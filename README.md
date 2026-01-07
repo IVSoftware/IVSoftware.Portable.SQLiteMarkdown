@@ -225,21 +225,30 @@ This pattern lets you:
 
 ### Split Contracts and Table Identity
 
-Markdown parsing works best when the table identity is unambiguously assigned for one, and only one, class in the inheritance tree e.g. `[Table("items")]`. In this example, the prologue is always "SELECT * FROM items WHERE ..." because the parser uses the most derived `[Table]` attribute.
+One aspect to be aware of - and one that keeps the train on the tracks - is that the parser is table aware. To ground the discussion back to a simple idea - the output consists of a prologue:
+
+`"SELECT * FROM items`
+
+combined with a declarative WHERE clause based on the attributes already described:
+
+`WHERE ...`
+
+Markdown parsing assumes that the table identity is unambiguously assigned for one, and only one, class in the inheritance tree e.g. `[Table("items")]`. In this example, the prologue is always "SELECT * FROM items WHERE ..." because the parser discovers the `[Table]` attribute assigned to the `SelectableQFModel` base class.
 
 ```
 // Table will be 'items' because the [Table] attribute is defined on SelectableQFModel.
 class SelectableQFModelSubclass : SelectableQFModel{ }
 ```
-
-By design, this deviates from the way that the sqlit-pcl-net library itself deals with table inheritance, specifically when `CreateTable<T>()` is invoked. In the example shown, if the intent is to create a table where `T` is `SelectableQFModelSubclass` then it will also require explicit table tagging.
+___
+_**Parsing is inheritance-aware in a way that may diverge from the SQLite ORM used for schema creation. By design, parsing deliberately allows table identity to be discovered through the inheritance chain. SQLite schema creation generally assumes the declared table identity of the contract used. In the example shown, if the intent is to create a table where `T` is `SelectableQFModelSubclass` then it will also require explicit table tagging._
+___
 
 ```
 [Table("items")]
 class SelectableQFModelSubclass : SelectableQFModel{ }
 ```
 
-This is a requirement of SQLite, not the markdown parser.
+This ensures that both SQLite and the markdown parser attribute table identity consistently.
 
 ---
 ## SelfIndexing Class
