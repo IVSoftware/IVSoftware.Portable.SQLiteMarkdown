@@ -262,11 +262,11 @@ One easy way to take advantage of this scheme is to inherit from the `SelfIndexe
 > However, when used via `[SelfIndexed]` in a class derived from `SelfIndexed`, those values are **aggregated** into unified properties like `QueryTerm`, `FilterTerm`, and `TagMatchTerm`.  
 > This makes `SelfIndexing` especially well-suited for filtering and full-text search scenarios, where a consolidated expression better reflects user intent.
 
-[SelfIndexing](./IVSoftware.Portable.SQLiteMarkdown/README/selfindexing-class.md)
+[SelfIndexing](https://github.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown/blob/master/IVSoftware.Portable.SQLiteMarkdown/README/selfindexing-class.md)
 ___
 
 ## ObservableQueryFilterSource
 
 Drop-in replacement for ObservableCollection&lt;T&gt; with built-in support for both Query and Query-then-Filter workflows. It exposes a declarative interface for managing collection state while tracking query/filter intent via an internal FSM (QueryFilterStateTracker). Though UI-agnostic, the class anticipates integration with a navigation search bar, where queries are externally applied and subsequent in-memory filtering is handled via an embedded SQLite store. This enables persistent introspection of the original query, filtered/unfiltered results, and search metadata—all without any UI dependencies.
 
-[ObservableQueryFilterSource](./IVSoftware.Portable.SQLiteMarkdown/README/observable-query-filter-source.md)
+[ObservableQueryFilterSource](https://github.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown/blob/master/IVSoftware.Portable.SQLiteMarkdown/README/observable-query-filter-source.md)

@@ -40,26 +40,26 @@
 			schema-ready SQLite row type with integrated tag, keyword, and description indexing,
 			plus built-in selection semantics.
 
-			- Unit test updated to confirm the correct FSM behavior:
+			- Unit test (in repo) updated to confirm the correct FSM behavior:
 			1. After a query completes (term still visible), FilteringState = Armed.
 			2. After the first clear (term becomes blank), FilteringState remains Armed.
 			3. From here, the FSM branches:
 			- Clearing again resets the engine for a new query, OR
 			- Typing characters promotes FilteringState to Active.
 
-
 			Release 1.0.2
-			- ADDED: NormalizeTags() extension.
+			- Added: NormalizeTags() extension.
 			- Made 2 changes to SelectableQFModel class
 			1. Tags property setter uses NormalizeTags() to lint the value before writing the backing store.
 			2. [Obsolete, JsonIgnore] public string TagsDisplay => Tags; // Remove redundant property from JSON
+			- Unit testing (in repo) for edge cases for split contract inheritance Test_TablePropertyInheritance().
 
 		</PackageReleaseNotes>
 
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
 		<BaseVersion>1.0.2</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-beta</VersionPrefix>
+		<VersionPrefix>$(BaseVersion)-rc</VersionPrefix>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<SignAssembly>True</SignAssembly>
