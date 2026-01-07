@@ -4,13 +4,13 @@ This cross-platform library supports expression-based filtering and search for S
 
 ### Designed for a common shape
 
-This isn’t a full SQL parser or a precision query engine — and it doesn’t try to be. It won’t replace hand-crafted queries when those are needed.
+This isn't a full SQL parser or a precision query engine — and it doesn't try to be. It won't replace hand-crafted queries when those are needed.
 
-Instead, it’s a lightweight utility that captures the **gestalt** of a dataset in a useful, pragmatic way — tuned for the **probable and almost-certain** UI shape:
+Instead, it's a lightweight utility that captures the **gestalt** of a dataset in a useful, pragmatic way — tuned for the **probable and almost-certain** UI shape:
 
 - A **platform-specific list view** (WinForms, MAUI, WPF, etc.)
 - Driven by a **shared navigation search bar**
-- Where one input field controls both what’s shown and how it’s refined
+- Where one input field controls both what's shown and how it's refined
 
 It works well in situations where you want to support both *browsing* and *filtering* without re-engineering your data layer or your UI, and all it asks in return is that you decorate your target properties using the small set of [MarkdownTerm] attributes available in this package.
 
@@ -199,9 +199,9 @@ Here are more examples:
 
 ## Split Contracts – Query Templates for Expression Parsing
 
-So let’s be clear. We’ve used a class to generate a SQL expression. When we perform the actual query, does the data type receiving the recordset need to be the same type?  **It does not!**
+So let's be clear. We've used a class to generate a SQL expression. When we perform the actual query, does the data type receiving the recordset need to be the same type?  **It does not!**
 
-That’s the idea behind **Split Contracts** — you can separate the type used to **build the query** from the type used to **receive the results**. The query model is just a template. It defines how to interpret the input expression, not how the data is stored or shaped.
+That's the idea behind **Split Contracts** — you can separate the type used to **build the query** from the type used to **receive the results**. The query model is just a template. It defines how to interpret the input expression, not how the data is stored or shaped.
 
 This lets you create purpose-specific templates that filter the same table in different ways. Want to search just by `Name`? Or only `Species`? Or maybe apply a strict tag match? Define a few small query classes and switch between them on the fly — even bind them to a dropdown in the UI.
 
@@ -221,7 +221,34 @@ This pattern lets you:
 - Avoid annotating your core data models with filter-specific concerns
 - Cleanly separate indexing logic from data logic
 
-> Query templates are lightweight and composable — think of them as named filter contracts for how a user’s input should be interpreted.
+> Query templates are lightweight and composable — think of them as named filter contracts for how a user's input should be interpreted.
+
+### Split Contracts and Table Identity
+
+One aspect to be aware of - and one that keeps the train on the tracks - is that the parser is table aware. To ground the discussion back to a simple idea - the output consists of a preamble:
+
+`"SELECT * FROM items`
+
+combined with a declarative WHERE clause based on the attributes already described:
+
+`WHERE ...`
+
+Markdown parsing assumes that the table identity is unambiguously assigned for one, and only one, class in the inheritance tree e.g. `[Table("items")]`. In this example, the prologue is always "SELECT * FROM items WHERE ..." because the parser discovers the `[Table]` attribute assigned to the `SelectableQFModel` base class.
+
+```
+// Table will be 'items' because the [Table] attribute is defined on SelectableQFModel.
+class SelectableQFModelSubclass : SelectableQFModel{ }
+```
+___
+_**Parsing is inheritance-aware in a way that may diverge from the SQLite ORM used for schema creation. By design, parsing deliberately allows table identity to be discovered through the inheritance chain. SQLite schema creation generally assumes the declared table identity of the contract used. In the example shown, if the intent is to create a table where `T` is `SelectableQFModelSubclass` then it will also require explicit table tagging._
+___
+
+```
+[Table("items")]
+class SelectableQFModelSubclass : SelectableQFModel{ }
+```
+
+This ensures that both SQLite and the markdown parser attribute table identity consistently.
 
 ---
 ## SelfIndexing Class
@@ -235,11 +262,11 @@ One easy way to take advantage of this scheme is to inherit from the `SelfIndexe
 > However, when used via `[SelfIndexed]` in a class derived from `SelfIndexed`, those values are **aggregated** into unified properties like `QueryTerm`, `FilterTerm`, and `TagMatchTerm`.  
 > This makes `SelfIndexing` especially well-suited for filtering and full-text search scenarios, where a consolidated expression better reflects user intent.
 
-[SelfIndexing](./IVSoftware.Portable.SQLiteMarkdown/README/selfindexing-class.md)
+[SelfIndexing](https://github.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown/blob/master/IVSoftware.Portable.SQLiteMarkdown/README/selfindexing-class.md)
 ___
 
 ## ObservableQueryFilterSource
 
 Drop-in replacement for ObservableCollection&lt;T&gt; with built-in support for both Query and Query-then-Filter workflows. It exposes a declarative interface for managing collection state while tracking query/filter intent via an internal FSM (QueryFilterStateTracker). Though UI-agnostic, the class anticipates integration with a navigation search bar, where queries are externally applied and subsequent in-memory filtering is handled via an embedded SQLite store. This enables persistent introspection of the original query, filtered/unfiltered results, and search metadata—all without any UI dependencies.
 
-[ObservableQueryFilterSource](./IVSoftware.Portable.SQLiteMarkdown/README/observable-query-filter-source.md)
+[ObservableQueryFilterSource](https://github.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown/blob/master/IVSoftware.Portable.SQLiteMarkdown/README/observable-query-filter-source.md)
