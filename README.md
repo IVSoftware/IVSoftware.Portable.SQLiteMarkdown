@@ -4,13 +4,13 @@ This cross-platform library supports expression-based filtering and search for S
 
 ### Designed for a common shape
 
-This isn’t a full SQL parser or a precision query engine — and it doesn’t try to be. It won’t replace hand-crafted queries when those are needed.
+This isn't a full SQL parser or a precision query engine — and it doesn't try to be. It won't replace hand-crafted queries when those are needed.
 
-Instead, it’s a lightweight utility that captures the **gestalt** of a dataset in a useful, pragmatic way — tuned for the **probable and almost-certain** UI shape:
+Instead, it's a lightweight utility that captures the **gestalt** of a dataset in a useful, pragmatic way — tuned for the **probable and almost-certain** UI shape:
 
 - A **platform-specific list view** (WinForms, MAUI, WPF, etc.)
 - Driven by a **shared navigation search bar**
-- Where one input field controls both what’s shown and how it’s refined
+- Where one input field controls both what's shown and how it's refined
 
 It works well in situations where you want to support both *browsing* and *filtering* without re-engineering your data layer or your UI, and all it asks in return is that you decorate your target properties using the small set of [MarkdownTerm] attributes available in this package.
 
@@ -199,9 +199,9 @@ Here are more examples:
 
 ## Split Contracts – Query Templates for Expression Parsing
 
-So let’s be clear. We’ve used a class to generate a SQL expression. When we perform the actual query, does the data type receiving the recordset need to be the same type?  **It does not!**
+So let's be clear. We've used a class to generate a SQL expression. When we perform the actual query, does the data type receiving the recordset need to be the same type?  **It does not!**
 
-That’s the idea behind **Split Contracts** — you can separate the type used to **build the query** from the type used to **receive the results**. The query model is just a template. It defines how to interpret the input expression, not how the data is stored or shaped.
+That's the idea behind **Split Contracts** — you can separate the type used to **build the query** from the type used to **receive the results**. The query model is just a template. It defines how to interpret the input expression, not how the data is stored or shaped.
 
 This lets you create purpose-specific templates that filter the same table in different ways. Want to search just by `Name`? Or only `Species`? Or maybe apply a strict tag match? Define a few small query classes and switch between them on the fly — even bind them to a dropdown in the UI.
 
@@ -221,7 +221,25 @@ This pattern lets you:
 - Avoid annotating your core data models with filter-specific concerns
 - Cleanly separate indexing logic from data logic
 
-> Query templates are lightweight and composable — think of them as named filter contracts for how a user’s input should be interpreted.
+> Query templates are lightweight and composable — think of them as named filter contracts for how a user's input should be interpreted.
+
+### Split Contracts and Table Identity
+
+Markdown parsing works best when the table identity is unambiguously assigned for one, and only one, class in the inheritance tree e.g. `[Table("items")]`. In this example, the prologue is always "SELECT * FROM items WHERE ..." because the parser uses the most derived `[Table]` attribute.
+
+```
+// Table will be 'items' because the [Table] attribute is defined on SelectableQFModel.
+class SelectableQFModelSubclass : SelectableQFModel{ }
+```
+
+By design, this deviates from the way that the sqlit-pcl-net library itself deals with table inheritance, specifically when `CreateTable<T>()` is invoked. In the example shown, if the intent is to create a table where `T` is `SelectableQFModelSubclass` then it will also require explicit table tagging.
+
+```
+[Table("items")]
+class SelectableQFModelSubclass : SelectableQFModel{ }
+```
+
+This is a requirement of SQLite, not the markdown parser.
 
 ---
 ## SelfIndexing Class

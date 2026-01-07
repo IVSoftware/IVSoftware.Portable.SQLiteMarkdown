@@ -872,5 +872,78 @@ FilterTerm";
                 "Expecting brackets beat commas."
             );
         }
+
+
+        /// <summary>
+        /// By design, the ParseSQLiteMarkdown method employs inheritance to determine table identity for parsing.
+        /// </summary>
+        /// <remarks>
+        /// SQLite itself, when invoking CreateTable on subclass T, does *not* drill down for table inheritance
+        /// </remarks>
+        [TestMethod]
+        public void Test_TablePropertyInheritance()
+        {
+            string actual, expected;
+            List<string> tableNames;
+            var query = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%';";
+
+            using (var cnx = new SQLiteConnection(":memory:"))
+            {
+                cnx.CreateTable<SelectableQFModel>();
+                tableNames = cnx.QueryScalars<string>(query);
+
+                actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  ""items""
+]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table"
+                );
+            }
+
+            using (var cnx = new SQLiteConnection(":memory:"))
+            {
+                cnx.CreateTable<SelectableQFModelSubclass>();
+                tableNames = cnx.QueryScalars<string>(query);
+
+                actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  ""items""
+]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table of base class is NOT FOUND."
+                );
+
+                var mdc = new MarkdownContext<SelectableQFModelSubclass>();
+                mdc.InputText = "animal";
+
+                actual = mdc.ParseSqlMarkdown();
+                { }
+                actual.ToClipboardAssert("Expecting table to match.");
+                { }
+                expected = @" 
+SELECT * FROM SelectableQFModelSubclass WHERE 
+(QueryTerm LIKE '%animal%')";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting table to match."
+                );
+            }
+        }
     }
 }
