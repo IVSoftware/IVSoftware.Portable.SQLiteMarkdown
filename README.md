@@ -225,7 +225,7 @@ This pattern lets you:
 
 ### Split Contracts and Table Identity
 
-One aspect to be aware of - and one that keeps the train on the tracks - is that the parser is table aware. To ground the discussion back to a simple idea - the output consists of a prologue:
+One aspect to be aware of - and one that keeps the train on the tracks - is that the parser is table aware. To ground the discussion back to a simple idea - the output consists of a preamble:
 
 `"SELECT * FROM items`
 

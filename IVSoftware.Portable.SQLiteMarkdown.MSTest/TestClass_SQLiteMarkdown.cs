@@ -887,6 +887,44 @@ FilterTerm";
             List<string> tableNames;
             var query = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%';";
 
+
+            #region T H I S    I S    T H E    C O N C E R N 
+            using (var cnx = new SQLiteConnection(":memory:"))
+            {
+                // Subclass "G" means "Gotcha!"
+                cnx.CreateTable<SelectableQFModelSubclassG>();
+                tableNames = cnx.QueryScalars<string>(query);
+
+                actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  ""SelectableQFModelSubclassG""
+]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting that SQLite will create table named after the subclass when no [Table] is declared."
+                );
+
+                // Whereas the parser is deliberately going to pick up the `[Table("items"]` from the BC.
+                actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclassG>();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+SELECT * FROM items WHERE 
+(QueryTerm LIKE '%animal%')";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table identity."
+                );
+            }
+            #endregion T H I S    I S    T H E    C O N C E R N
+
             using (var cnx = new SQLiteConnection(":memory:"))
             {
                 cnx.CreateTable<SelectableQFModel>();
@@ -927,15 +965,16 @@ FilterTerm";
                     "Expecting 'items' table of base class is NOT FOUND."
                 );
 
+                // Now check parser where declared table identity DUPLICATES the BC
                 var mdc = new MarkdownContext<SelectableQFModelSubclass>();
                 mdc.InputText = "animal";
 
                 actual = mdc.ParseSqlMarkdown();
                 { }
-                actual.ToClipboardAssert("Expecting table to match.");
+                actual.ToClipboardExpected();
                 { }
                 expected = @" 
-SELECT * FROM SelectableQFModelSubclass WHERE 
+SELECT * FROM items WHERE 
 (QueryTerm LIKE '%animal%')";
 
                 Assert.AreEqual(
@@ -943,7 +982,35 @@ SELECT * FROM SelectableQFModelSubclass WHERE
                     actual.NormalizeResult(),
                     "Expecting table to match."
                 );
+
+                // Now check parser EXTENSION where declared table identity DUPLICATES the BC
+                actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclass>();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+SELECT * FROM items WHERE 
+(QueryTerm LIKE '%animal%')";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table identity."
+                );
             }
+
+            // Now check parser where declared table identity is INCONSISTENT WITH the BC
+            actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclassA>();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+SELECT * FROM itemsA WHERE 
+(QueryTerm LIKE '%animal%')";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting 'itemsA' table identity."
+            );
         }
     }
 }
