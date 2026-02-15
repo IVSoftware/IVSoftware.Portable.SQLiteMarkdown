@@ -2,10 +2,12 @@ using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.WinOS.MSTest.Extensions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SQLite;
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
@@ -14,7 +16,7 @@ using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
     [TestClass]
-    public class UnitTestSQLiteParser
+    public class TestClass_UnitTestSQLiteParser
     {
         #region D H O S T    D I S P O S A B L E    D A T A B A S E S
 
@@ -378,6 +380,133 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         /// Backing field for the ExpressionTable dictionary.
         /// </summary>
         Dictionary<string, ExpressionTestEntry>? _expressionTable = default;
+
+        /// <summary>
+        /// Supplemental test after production state error detected.
+        /// </summary>
+        /// <remarks>
+        /// State machine failed to return to Cleared after consecutive [X].
+        /// </remarks>
+        [TestMethod]
+        public async Task Test_FSMs()
+        {
+            Assert.IsNull(SynchronizationContext.Current);
+
+            var mdc = new TestableMarkdownContext<SelectableQFModel>();
+            Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
+            Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+
+
+            await subtestClearAwaiterOnly();
+            await subtestQueryWithResultsClearSequence();
+            await subtestQueryWithFilteredResultsClearSequence();
+
+            #region S U B T E S T S 
+            async Task subtestClearAwaiterOnly()
+            {
+                mdc.Clear(all: true);
+                await mdc;
+                mdc.Clear(all: true);
+                await mdc;
+            };
+            async Task subtestQueryWithResultsClearSequence()
+            {
+                mdc.Clear(all: true);
+                mdc.InputText = "valid query";
+                await mdc;
+
+                Assert.AreEqual(SearchEntryState.QueryEN, mdc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+
+                // Query occurs.
+                mdc.SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                mdc.FilteringState = FilteringState.Armed;
+
+                // #1 [X]
+                // User clears the input text.
+                // In this case FilteringState should remain Armed.
+                // because the transition is from non-empty input text to empty.
+
+                mdc.Clear();
+                await mdc;
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Armed, mdc.FilteringState, "Expecting initial state.");
+
+                // #2 [X]
+                // User returns to Query without emptying the list.
+                mdc.Clear();
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+
+                // #3 [X]
+                // The MCD can clear its own state heuristically, rather than epistemically.
+                // Even without knowledge of the list contents, these combined states are the signal:
+                // - FilteringState.Ineligible | SearchEntryState.QueryCompleteWithResults
+                // THIS IS THE ACTION THAT WAS FAILING IN PRODUCTION and REPLICATED before fixing.
+                mdc.Clear();
+                Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+            }
+            async Task subtestQueryWithFilteredResultsClearSequence()
+            {
+                mdc.Clear(all: true);
+                await mdc;
+                mdc.InputText = "valid query";
+                await mdc;
+
+                Assert.AreEqual(SearchEntryState.QueryEN, mdc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+
+                // Query occurs.
+                mdc.SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                mdc.FilteringState = FilteringState.Armed;
+
+                // Filtering occurs
+                mdc.InputText = "valid query abc";
+                await mdc;
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Active, mdc.FilteringState, "Expecting active filtering.");
+
+                // #1 [X]
+                // User clears the input text.
+                // In this case FilteringState should remain Armed.
+                // because the transition is from non-empty input text to empty.
+                mdc.Clear();
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Armed, mdc.FilteringState, "Expecting initial state.");
+
+                // #2 [X]
+                // User returns to Query without emptying the list.
+                mdc.Clear();
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+
+                // #3 [X]
+                // The MCD can clear its own state heuristically, rather than epistemically.
+                // Even without knowledge of the list contents, these combined states are the signal:
+                // - FilteringState.Ineligible | SearchEntryState.QueryCompleteWithResults
+                // THIS IS THE ACTION THAT WAS FAILING IN PRODUCTION and REPLICATED before fixing.
+                mdc.Clear();
+                Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+            }
+            #endregion S U B T E S T S
+        }
+
+        class TestableMarkdownContext<T> : MarkdownContext<T>
+        {
+            public new FilteringState FilteringState
+            {
+                get => base.FilteringState;
+                internal set => base.FilteringState = value;
+            }
+            public new SearchEntryState SearchEntryState
+            {
+                get => base.SearchEntryState;
+                internal set => base.SearchEntryState = value;
+            }
+            public bool IsReady => _ready.CurrentCount > 0;
+        }
 
         /// <summary>
         /// Test method to validate the expressions in ExpressionTable by comparing actual results
@@ -1011,6 +1140,26 @@ SELECT * FROM itemsA WHERE
                 actual.NormalizeResult(),
                 "Expecting 'itemsA' table identity."
             );
+        }
+
+        [TestMethod]
+        public void Test_SelfIndexingIllegalChars()
+        {
+
+            string actual, expected;
+
+            var model = new SelectableQFModel
+            {
+                Description = "Azz!",
+            };
+            actual = model.QueryTerm;
+            actual.ToClipboardExpected();
+            { } // <- FIRST TIME ONLY: Adjust the message.
+            actual.ToClipboardAssert("Expecting result to match.");
+            { }
+            
+            actual = model.FilterTerm;
+            actual = model.TagMatchTerm;
         }
     }
 }

@@ -81,9 +81,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         SQLiteConnection MemoryDatabase { get; set; }
         FilteringState Clear(bool all = false);
         void Commit();
-        event EventHandler InputTextSettled;
+        event EventHandler? InputTextSettled;
 
-        event EventHandler<ItemPropertyChangedEventArgs> ItemPropertyChanged;
+        event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
     }
     public interface IObservableQueryFilterSource<T>
         : IObservableQueryFilterSource

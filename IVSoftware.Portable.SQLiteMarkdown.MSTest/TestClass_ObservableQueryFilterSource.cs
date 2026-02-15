@@ -131,7 +131,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 }
             }
             public event PropertyChangedEventHandler? PropertyChanged;
-
         }
     }
 
@@ -1297,7 +1296,6 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             var id1 = Thread.CurrentThread.ManagedThreadId;
 
             string actual, expected, sql;
-            SenderEventPair sep;
             NotifyCollectionChangedEventArgs ecc;
             PropertyChangedEventArgs epc;
 
@@ -1361,9 +1359,10 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                             .OfType<PropertyChangedEventArgs>()
                             .Select(_ => _.PropertyName));
 
-                        expected = @"
+                        expected = @" 
 InputText
-SearchEntryState";
+SearchEntryState
+Running";
 
                         Assert.AreEqual(
                             expected.NormalizeResult(),
@@ -1509,7 +1508,8 @@ SearchEntryState";
                             .Select(_ => _.PropertyName));
                         actual.ToClipboardExpected();
                         expected = @"
-InputText";
+InputText
+Running";
 
                         Assert.AreEqual(
                             expected.NormalizeResult(),
@@ -1559,6 +1559,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                             .OfType<PropertyChangedEventArgs>()
                             .Select(_ => _.PropertyName));
                         actual.ToClipboardExpected();
+                        { }
                         expected = @" 
 Busy
 SearchEntryState
@@ -1619,8 +1620,9 @@ Busy"
                         items.InputText += "b";
                         await items;
 
-
                         actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
+                        actual.ToClipboardExpected();
+                        { }
 
                         expected = @" 
 Black Cat  [animal] [color]
@@ -2560,9 +2562,11 @@ Where PropertyValue({nameof(SelectableQFModelTOQO.Properties)}, '{nameof(Selecta
                 NotifyCollectionChangedEventArgs? ecc;
                 SelectableQFModelTOQO[] newItems = [];
                 Queue<SenderEventPair> eventQueue = new();
-                SemaphoreSlim awaiter = new SemaphoreSlim(1, 1);
 
-                var items = new ObservableQueryFilterSource<SelectableQFModelTOQO>();
+                var items = new ObservableQueryFilterSource<SelectableQFModelTOQO>
+                {
+                    MemoryDatabase = cnx
+                };
                 NavSearchBar nsb = new NavSearchBar
                 {
                     // NavSearchBar UI controls are designed
@@ -2603,8 +2607,6 @@ Where PropertyValue({nameof(SelectableQFModelTOQO.Properties)}, '{nameof(Selecta
                             default:
                                 break;
                         }
-                        awaiter.Wait(0);
-                        awaiter.Release();
                     }
                     else
                     {
@@ -2639,7 +2641,8 @@ Where PropertyValue({nameof(SelectableQFModelTOQO.Properties)}, '{nameof(Selecta
                 #region S U B T E S T S
                 async Task subtestQueryInitial()
                 {
-                    await localSettle("animal");
+                    await localCommitOnSettle("animal");
+
                     Assert.IsNotNull((ecc = (NotifyCollectionChangedEventArgs?)eventQueue.Dequeue()?.e));
                     {
                         switch (ecc.Action)
@@ -2708,7 +2711,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     Add("Application Form", "[document]", false, new() { "paperwork", "apply" });
                     Add("App Store", "[app]", false, new() { "digital", "mobile", "software" });
 
-                    await localSettle("app gre");
+                    await localCommitOnSettle("app gre");
 
                     actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
                     expected = @" 
@@ -2720,7 +2723,7 @@ Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portabl
                     Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, items.SearchEntryState);
 
                     // Perform a filter
-                    await localSettle("[app] gre");
+                    await localCommitOnSettle("[app] gre");
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -2738,12 +2741,11 @@ Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portabl
                 #endregion S U B T E S T S
 
                 #region L o c a l F x
-                async Task localSettle(string expr)
+                async Task localCommitOnSettle(string expr)
                 {
-                    awaiter.Wait(0);
                     nsb.InputText = expr;
-                    await awaiter.WaitAsync();
-                    awaiter.Release();
+                    items.Commit();
+                    await items;
                 }
 
                 void Add(string description, string tags, bool isChecked, List<string>? keywords = null)

@@ -19,7 +19,7 @@
 		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="*" />
 		<PackageReference Include="Newtonsoft.Json" Version="*" />
 		<PackageReference Include="sqlite-net-pcl" Version="*" />
-		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="*" />
+		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="2.0.0-beta" />
 	</ItemGroup>
 
 	<!-- Debug mode uses local project reference -->

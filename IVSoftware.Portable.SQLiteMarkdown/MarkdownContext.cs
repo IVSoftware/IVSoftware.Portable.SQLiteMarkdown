@@ -1,24 +1,21 @@
-﻿
-using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown.Collections;
+﻿using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using SQLite;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -29,8 +26,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// and guiding final SQL generation via attribute-aware hydration.
     /// </summary>
     [DebuggerDisplay("ContractType={ContractType}")]
-    public class MarkdownContext 
-        : INotifyPropertyChanged
+    public partial class MarkdownContext 
+        : WatchdogTimer
+        , INotifyPropertyChanged
     {
         /// <summary>
         /// Creates a self-contained expression parsing environment, binding it
@@ -39,10 +37,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// [Careful] 
         /// The initial type must be known and captured regardless of GF mode.
-        /// A paremeterless CTOR would not be appropriate so avaid that.
+        /// A parameterless CTOR would not be appropriate so avoid that.
         /// </remarks>
         public MarkdownContext(Type type) 
         {
+            Interval = TimeSpan.FromSeconds(0.25);
             XAST = new
                 XElement(nameof(StdAstNode.ast))
                 .WithBoundAttributeValue(this);
@@ -89,7 +88,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             string localGetTableName()
             {
-                var tableAttr = ContractType
+                var tableAttr = proxyType
                     .GetCustomAttributes(inherit: true)
                     .FirstOrDefault(attr => attr.GetType().Name == "TableAttribute");
 
@@ -842,16 +841,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             #endregion L o c a l F x   
         }
 
-
         /// <summary>
         /// The raw unprocessed input string from the user.
         /// </summary>
-        public string Raw { get; private set; }
+        public string Raw { get; private set; } = string.Empty;
 
         /// <summary>
         /// The attributed CLR type used to resolve which properties participate in term matching.
         /// </summary>
-        public Type ContractType
+        public Type? ContractType
         {
             get => _contractType;
             set
@@ -894,7 +892,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        Type _contractType = default;
+        Type? _contractType = default;
 
         protected virtual void OnContractTypeChanged()
         {
@@ -913,7 +911,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        public Type ProxyType { get; private set; }
+        public Type? ProxyType { get; private set; }
 
         /// <summary>
         /// Caches values from [SelfIndexed] properties grouped by IndexingMode.
@@ -942,11 +940,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// It directly drives downstream processes like AST construction and transliteration,
         /// and is observable during unit tests for step-by-step verification.
         /// </summary>
-        public string Transform 
-        { 
-            get;
-            internal set;
-        }
+        public string Transform { get; internal set; } = string.Empty;
 
 #if false
         /// <summary>
@@ -986,7 +980,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             return expr;
         }
-        public string Query { get; private set; }
+        public string Query { get; private set; } = string.Empty;
 
         #region N A M E D    S U P P O R T
         /// <summary>
@@ -1027,6 +1021,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 .Select(_ => $"%{_args[_.Value]}%")
                 .ToArray();
 
+        /// <summary>
+        /// Gets or sets a pre-parse eligibility filter that determines whether
+        /// an input expression should proceed through the parsing pipeline.
+        /// </summary>
+        /// <remarks>
+        /// This predicate is evaluated at the start of <c>ParseSqlMarkdown</c>.
+        /// If it returns <c>false</c>, parsing is aborted and an empty result is returned.
+        ///
+        /// This is not a syntactic validator. Structural correctness is handled
+        /// later by the linter and AST builder. Instead, this property acts as a
+        /// lightweight gate to prevent unnecessary parsing and SQL generation.
+        ///
+        /// By default:
+        /// - In <see cref="QueryFilterMode.Query"/> mode, the expression must contain
+        ///   at least three contiguous alphanumeric characters.
+        /// - In <see cref="QueryFilterMode.Filter"/> mode, all input is considered eligible.
+        ///
+        /// Consumers may override this predicate to enforce domain-specific
+        /// eligibility rules such as minimum length, throttling heuristics,
+        /// or restricted character policies.
+        /// </remarks>
         public Predicate<string> ValidationPredicate
         {
             get
@@ -1047,7 +1062,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             set => _validationPredicate = value;
         }
 
-        Predicate<string> _validationPredicate = null;
+        Predicate<string>? _validationPredicate = null;
         
         private QueryFilterMode _activeQFMode = QueryFilterMode.Query;
 
@@ -1078,14 +1093,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return formatted;
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
-            OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        protected virtual void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            PropertyChanged?.Invoke(sender, e);
-        }
-        public event PropertyChangedEventHandler PropertyChanged;
-
         #region C O N F I G
         public QueryFilterConfig QueryFilterConfig
         {
@@ -1105,20 +1112,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         QueryFilterConfig _queryFilterConfig = QueryFilterConfig.QueryAndFilter;
 
-        public DisposableHost DHostSelfIndexing
-        {
-            get
-            {
-                if (_dhostSelfIndexing is null)
-                {
-                    _dhostSelfIndexing = new DisposableHost();
-                }
-                return _dhostSelfIndexing;
-            }
-        }
-        DisposableHost _dhostSelfIndexing = null;
+        public DisposableHost DHostSelfIndexing { get; } = new();
 
-        protected virtual SQLiteConnection FilterQueryDatabase { get; set; }
+        protected virtual SQLiteConnection? FilterQueryDatabase { get; set; }
 
         
         public SQLiteConnection MemoryDatabase
@@ -1149,6 +1145,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public FilteringState FilteringState
         {
             get =>_filteringState;
+            // {461B2298-3E0A-49F8-AE52-EB43F70699AD}
+            // CONTROLLED ACCESS
+            // To obtain set access to this property, make a subclass.
+            // It is not designed to be modified directly, e.g. by the consumer
+            // of a client collection that exposes MarkdownContext as a property.
+            // EXAMPLE - promote to internal
+            // public class InternalMarkdownContext<T> : MarkdownContext<T>
+            // {
+            //    public new FilteringState FilteringState
+            //    {
+            //        get => base.FilteringState;
+            //        internal set => base.FilteringState = value;
+            //    }
+            // }
+            // RATIONALE
+            // Promoting to internal is something that can be safely done
+            // in the assembly that holds the client collection, but would
+            // not work if done in the library itself.
             protected set
             {
                 switch (QueryFilterConfig)
@@ -1206,10 +1220,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
-                bool isDowngradeToQuery = FilteringState != FilteringState.Ineligible;
-                bool isUpgradeToFilter = FilteringState == FilteringState.Ineligible;
+                // UpgradeToFilter : FilteringState == FilteringState.Ineligible;
+                // DowngradeToQuery: FilteringState != FilteringState.Ineligible;
+                // DowngradeToClear: DowngradeToQuery + SearchEntryState is not showing a query result.
                 if (InputText.Length > 0)
                 {
+                    // Input text is non-empty.
                     InputText = string.Empty;
                     switch (FilteringState)
                     {
@@ -1231,9 +1247,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 else
                 {
+                    // Input text is empty.
                     switch (FilteringState)
                     {
                         case FilteringState.Ineligible:
+                            // RELEASE 1.0.2 bug fixed by adding this clause.
+                            switch (SearchEntryState)
+                            {
+                                case SearchEntryState.QueryCompleteNoResults:
+                                case SearchEntryState.QueryCompleteWithResults:
+                                    SearchEntryState = SearchEntryState.Cleared;
+                                    break;
+                            }
                             break;
                         case FilteringState.Armed:
                         case FilteringState.Active:
@@ -1287,8 +1312,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     {
                         SearchEntryState = SearchEntryState.QueryEN;
                     }
-                    OnInputTextSettled(new CancelEventArgs(cancel: true));
-                    return;
+                    // [Careful]
+                    // ALWAYS kick the timer, even if filtering is not eligible.
+                    break;
                 case FilteringState.Armed:
                     if (InputText.Length != 0)
                     {
@@ -1305,12 +1331,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 default:
                     throw new NotImplementedException($"Bad case: {FilteringState}");
             }
-            WDTInputTextSettled.StartOrRestart();
+            StartOrRestart();
         }
 
         public SearchEntryState SearchEntryState
         {
             get => _searchEntryState;
+            // See also: 
+            // {461B2298-3E0A-49F8-AE52-EB43F70699AD}
             protected set
             {
                 if (!Equals(_searchEntryState, value))
@@ -1325,7 +1353,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnSearchEntryStateChanged() { }
 
-
+        protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
+        {
+            await base.OnEpochFinalizingAsync(e);
+            if(!e.Cancel)
+            {
+                OnInputTextSettled(new CancelEventArgs());
+            }
+        }
+#if false
         protected WatchdogTimer WDTInputTextSettled
         {
             get
@@ -1336,24 +1372,48 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         new WatchdogTimer(
                             defaultInitialAction: () =>
                             {
-                                // Do this or fail here:
-                                // - Test_TrackProgressiveInputState() 
+                                // Do this.
+                                // Otherwise fail Test_TrackProgressiveInputState() {...}
                                 // See also: {24048258-8BE4-40C4-BF85-8863E98BED51}
+                                Debug.WriteLine($"210206.Z defaultInitialAction");
                                 _ready.Wait(0);
+                                _wdtEpochToken ??= DHostEpochReferenceCount.GetToken();
                             },
                             defaultCompleteAction: () =>
                             {
                                 OnInputTextSettled(new CancelEventArgs());
+                                localSafeRelease();
                             })
                         {
                             Interval = InputTextSettleInterval
                         };
+                    _wdtInputTextSettled.Cancelled += (sender, e) =>
+                    {
+                        localSafeRelease();
+                    };
+                    void localSafeRelease()
+                    {
+                        _ready.Wait(0);
+                        _ready.Release();
+                        _wdtEpochToken?.Dispose();
+                        _wdtEpochToken = null;
+                    }
                 }
                 return _wdtInputTextSettled;
             }
         }
-        IDisposable _busyToken = null;
 
+        WatchdogTimer? _wdtInputTextSettled = null;
+        IDisposable? _wdtEpochToken = null;
+#endif
+
+        /// <summary>
+        /// Reference counter for Busy property.
+        /// </summary>
+        /// <remarks>
+        /// This does not hold the awaiter and should be used
+        /// for visual activity indicator only.
+        /// </remarks>
         public DisposableHost DHostBusy
         {
             get
@@ -1363,7 +1423,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     _dhostBusy = new DisposableHost();
                     _dhostBusy.BeginUsing += (sender, e) =>
                     {
-                        _ready.Wait(0);
                         Busy = true;
                         OnPropertyChanged(nameof(Busy));
                     };
@@ -1371,19 +1430,41 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     {
                         Busy = false;
                         OnPropertyChanged(nameof(Busy));
-                        _ready.Wait(0);
-                        _ready.Release();
                     };
                 }
                 return _dhostBusy;
             }
         }
-        DisposableHost _dhostBusy = null;
+        DisposableHost? _dhostBusy = null;
+
+        public DisposableHost DHostEpochReferenceCount
+        {
+            get
+            {
+                if (_dhostEpochReferenceCount is null)
+                {
+                    _dhostEpochReferenceCount = new DisposableHost();
+                    _dhostEpochReferenceCount.BeginUsing += (sender, e) =>
+                    {
+                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 2, 7).Date, "Don't forget disabled");
+                        _ready.Wait(0);
+                    };
+                    _dhostEpochReferenceCount.FinalDispose += (sender, e) =>
+                    {
+                        _ready.Wait(0);
+                        _ready.Release();
+                    };
+                }
+                return _dhostEpochReferenceCount;
+            }
+        }
+        DisposableHost? _dhostEpochReferenceCount = null;
+
+#if DEBUG
+        protected SemaphoreSlimWithTrace _ready { get; } = new SemaphoreSlimWithTrace(1, 1);
+#else
         protected SemaphoreSlim _ready { get; } = new SemaphoreSlim(1, 1);
-        public TaskAwaiter GetAwaiter() =>
-            _ready
-            .WaitAsync(new CancellationTokenSource(TimeSpan.FromSeconds(1)).Token)
-            .GetAwaiter();
+#endif
         public bool Busy { get; private set; }
 
         protected virtual void OnInputTextSettled(CancelEventArgs e)
@@ -1391,30 +1472,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             InputTextSettled?.Invoke(this, e);
         }
 
-        WatchdogTimer _wdtInputTextSettled = null;
+        public event EventHandler? InputTextSettled;
 
-
-        public event EventHandler InputTextSettled;
-
-        public TimeSpan InputTextSettleInterval
-        {
-            get => _inputTextSettleInterval;
-            set
-            {
-                if (!Equals(_inputTextSettleInterval, value))
-                {
-                    if (_wdtInputTextSettled is WatchdogTimer wdt)
-                    {
-                        wdt.Interval = value;
-                    }
-                    _inputTextSettleInterval = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-
-        TimeSpan _inputTextSettleInterval = TimeSpan.FromSeconds(0.25);
         #endregion N A V    S E A R C H    S T A T E    M A C H I N E
 
         #region S E L F    I N D E X E D

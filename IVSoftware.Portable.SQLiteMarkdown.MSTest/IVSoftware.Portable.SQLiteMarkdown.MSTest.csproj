@@ -21,34 +21,25 @@
 		<PackageReference Include="sqlite-net-pcl" Version="*" />
 		<PackageReference Include="Newtonsoft.Json" Version="*" />
 	</ItemGroup>
+
+
+	<!-- Debug mode -->
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+		<ProjectReference Include="..\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown.csproj" />
+	</ItemGroup>
 	
-	<!-- Debug mode uses local project reference -->
-	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
-		<ProjectReference Include="..\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown.csproj" />
-	</ItemGroup>
-
-	<!-- Release mode uses NuGet prerelease version -->
+	<!-- Release mode -->
 	<ItemGroup Condition="'$(Configuration)' == 'Release'">
-		<!--
-		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="*-*" />
-		-->
-		<ProjectReference Include="..\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown.csproj" />
-	</ItemGroup>
-
-
-
-	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
-		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="*-*" />
-		<PackageReference Include="IVSoftware.Portable.Disposable" Version="*-*" />
+		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="1.0.3-alpha2" />
 	</ItemGroup>
 
 	<!--
 	- Use NuGet references, not project references.
 	- Use 'latest stable' floating reference, not prerelease floating reference.
 	-->
-	<ItemGroup Condition="'$(Configuration)' == 'Release'">
-		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="*" />
-		<PackageReference Include="IVSoftware.Portable.Disposable" Version="*" />
+	<ItemGroup>
+		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="2.0.0-beta" />
+		<PackageReference Include="IVSoftware.Portable.Disposable" Version="2.0.0" />
 	</ItemGroup>
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />

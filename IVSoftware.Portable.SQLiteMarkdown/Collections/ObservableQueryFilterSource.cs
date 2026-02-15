@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -47,7 +48,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        foreach (var inpc in e.NewItems?.OfType<INotifyPropertyChanged>())
+                        foreach (var inpc in e.NewItems?.OfType<INotifyPropertyChanged>() ?? [])
                         {
                             inpc.PropertyChanged += OnItemPropertyChanged;
                         }
@@ -63,7 +64,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         }
                         break;
                     case NotifyCollectionChangedAction.Remove:
-                        foreach (var inpc in e.OldItems?.OfType<INotifyPropertyChanged>())
+                        foreach (var inpc in e.OldItems?.OfType<INotifyPropertyChanged>() ?? [])
                         {
                             inpc.PropertyChanged -= OnItemPropertyChanged;
                         }
@@ -81,7 +82,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         {
                             inpc.PropertyChanged -= OnItemPropertyChanged;
                         }
-                        FilterQueryDatabase.DeleteAll<T>();
+                        FilterQueryDatabase?.DeleteAll<T>();
                         CollectionChanged?.Invoke(this, e);
                         break;
                 }
@@ -113,7 +114,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             ReplaceItemsInternal(items);
             await this;
-            _ready.Release();
         }
 
         private void ReplaceItemsInternal(IEnumerable<T> items)
@@ -501,7 +501,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             ItemPropertyChanged?.Invoke(this, new ItemPropertyChangedEventArgs(e.PropertyName, sender));
         }
-        public event EventHandler<ItemPropertyChangedEventArgs> ItemPropertyChanged;
+        public event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
         private INotifyPropertyChanged[] _unsubscribeItems = new INotifyPropertyChanged[] { };
 
         public string Placeholder =>

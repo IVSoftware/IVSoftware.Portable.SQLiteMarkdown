@@ -120,6 +120,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         private ItemSelection _selection = ItemSelection.None;
 
+        [Ignore]
         public bool IsEditing
         {
             get => _isEditing;

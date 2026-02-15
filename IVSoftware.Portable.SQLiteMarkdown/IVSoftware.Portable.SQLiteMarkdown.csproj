@@ -9,6 +9,8 @@
 		<PackageProjectUrl>https://github.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown.git</PackageProjectUrl>
 		<RootNamespace>IVSoftware.Portable.SQLiteMarkdown</RootNamespace>
 		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Author>Thomas C. Gregor</Author>
 		<Owner>IVSoftware LLC</Owner>
@@ -18,6 +20,8 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<BaseVersion>1.0.3</BaseVersion>
+		<VersionPrefix>$(BaseVersion)-alpha4</VersionPrefix>
 		<PackageReleaseNotes>
 			Initial 1.0.0 stable release.
 			- Deprecated APIs (marked [Obsolete] or suffixed with OR) are excluded from future guarantees.
@@ -47,19 +51,21 @@
 			- Clearing again resets the engine for a new query, OR
 			- Typing characters promotes FilteringState to Active.
 
-			Release 1.0.2
+			Release 1.0.2 rc
 			- Added: NormalizeTags() extension.
-			- Made 2 changes to SelectableQFModel class
+			- Made 3 changes to SelectableQFModel class
 			1. Tags property setter uses NormalizeTags() to lint the value before writing the backing store.
 			2. [Obsolete, JsonIgnore] public string TagsDisplay => Tags; // Remove redundant property from JSON
+			3. [Ignore] public bool IsEditing // This property is not intended for database persistence.
 			- Unit testing (in repo) for edge cases for split contract inheritance Test_TablePropertyInheritance().
+			- SearchEntryState now correctly returns to SearchEntryState.Cleared when:
+			1. FilteringState = FilteringState.Ineligible
+			2. MarkdownContext.Clear() is invoked.
 
 		</PackageReleaseNotes>
 
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
-		<BaseVersion>1.0.2</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-rc</VersionPrefix>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<SignAssembly>True</SignAssembly>
@@ -67,10 +73,11 @@
 
 	<ItemGroup>
 		<PackageReference Include="IVSoftware.Portable.Threading" Version="*" />
+		<PackageReference Include="IVSoftware.Portable.Common" Version="1.0.0-rc1" />
 		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="*" />
 		<PackageReference Include="Newtonsoft.Json" Version="*" />
 		<PackageReference Include="sqlite-net-pcl" Version="*" />
-		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="*" />
+		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="2.0.0-beta" />
 	</ItemGroup>
 
 	<ItemGroup>

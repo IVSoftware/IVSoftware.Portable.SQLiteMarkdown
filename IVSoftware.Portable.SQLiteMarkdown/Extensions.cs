@@ -89,11 +89,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             ref ValidationState validationState,
             Type type,
             QueryFilterMode qfMode,
-            Predicate<string> validationPredicate,
+            Predicate<string>? validationPredicate,
             out XElement xexpr) => 
                 new MarkdownContext(type)
                 {
-                    ValidationPredicate = validationPredicate,
+                    ValidationPredicate = validationPredicate!, // Setting to null sets the VP to its default (which isn't null).
                 }.ParseSqlMarkdown(@this, type, qfMode, out xexpr);
         public static string ParseSqlMarkdown(this string @this, Type type, QueryFilterMode qfMode, out XElement xast)
             => new MarkdownContext(type).ParseSqlMarkdown(@this, type, qfMode, out xast);
@@ -107,7 +107,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             =>
             pi.GetCustomAttribute<QueryLikeTermAttribute>() is QueryLikeTermAttribute qlt
             ? qlt
-            : pi.GetCustomAttribute<SqlLikeTermAttribute>();
+            : pi.GetCustomAttribute<SqlLikeTermAttribute>(); // Non-breaking compatible filter term
 
         /// <summary>
         /// Non-breaking compatible filter term attribute getter.
@@ -116,7 +116,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             => 
             pi.GetCustomAttribute<FilterLikeTermAttribute>() is FilterLikeTermAttribute flt
             ? flt
-            : pi.GetCustomAttribute<FilterContainsTermAttribute>();
+            : pi.GetCustomAttribute<FilterContainsTermAttribute>(); // Non-breaking compatible filter term
 
 
         /// <summary>
