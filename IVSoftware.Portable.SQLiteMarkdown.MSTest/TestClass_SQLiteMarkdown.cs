@@ -1148,18 +1148,105 @@ SELECT * FROM itemsA WHERE
 
             string actual, expected;
 
-            var model = new SelectableQFModel
+            subtest_SafeCharsOnly();
+            subtest_ExclamationPoint();
+            #region S U B T E S T S 
+            void subtest_SafeCharsOnly()
             {
-                Description = "Azz!",
-            };
-            actual = model.QueryTerm;
-            actual.ToClipboardExpected();
-            { } // <- FIRST TIME ONLY: Adjust the message.
-            actual.ToClipboardAssert("Expecting result to match.");
-            { }
-            
-            actual = model.FilterTerm;
-            actual = model.TagMatchTerm;
+                var model = new SelectableQFModel
+                {
+                    Description = "Hello World",
+                    Keywords = "standard greeting",
+                    Tags = "intro, 101",
+                };
+                actual = model.QueryTerm;
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+hello~world~standard~greeting~[intro][101]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting uncontroversial term generation."
+                );
+
+                actual = model.FilterTerm;
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+hello~world~standard~greeting~[intro][101]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting uncontroversial term generation."
+                );
+
+                actual = model.TagMatchTerm;
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[intro][101]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting uncontroversial term generation."
+                );
+            }
+            void subtest_ExclamationPoint()
+            {
+                // TO DO - Hello World!
+                var model = new SelectableQFModel
+                {
+                    Description = "Hello World",
+                    Keywords = "standard greeting",
+                    Tags = "intro, 101",
+                };
+                actual = model.QueryTerm;
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+hello~world~standard~greeting~[intro][101]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting uncontroversial term generation."
+                );
+
+                actual = model.FilterTerm;
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+hello~world~standard~greeting~[intro][101]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting uncontroversial term generation."
+                );
+
+                actual = model.TagMatchTerm;
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[intro][101]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting uncontroversial term generation."
+                );
+            }
+            #endregion S U B T E S T S
         }
     }
 }
