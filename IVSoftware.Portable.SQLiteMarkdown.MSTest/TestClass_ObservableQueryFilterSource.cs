@@ -550,30 +550,78 @@ Properties     =""{
                 #endregion S U B T E S T S
             }
         }
-
+        /// <summary>
+        /// End-to-end verification of markdown parsing, literal quote handling,
+        /// SQL generation, database execution, and JSON serialization consistency.
+        /// </summary>
+        /// <remarks>
+        /// Exercises three boundaries:
+        /// 1. SQL generation from a user-escaped input (animal\").
+        /// 2. Stable term construction during indexing.
+        /// 3. Correct round-trip JSON escaping of literal quote characters.
+        /// 
+        /// Confirms that literal quotes are preserved as data while remaining
+        /// syntactically valid in generated SQL and serialized output.
+        /// </remarks>
         [TestMethod]
-        public void Test_ApplyExprManually()
+        public async Task Test_ApplyExprManually()
         {
             string actual, expected, sql;
-            List<SelectableQFModelTOQO> results;
-            MarkdownContextOR context;
-            ValidationState state;
+            List<SelectableQFModelTOQO> allRecords;
+            SelectableQFModelTOQO
+                testLiteralQuotes,
+                testLiteralQuery;
 
+            #region P R O L O G U E 
+            var mdc = new MarkdownContext<SelectableQFModelTOQO>();
+            mdc.InputText = @"animal\""";
+            await mdc;
+            sql = mdc.ParseSqlMarkdown();
+            actual = sql;
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+SELECT * FROM items WHERE 
+(QueryTerm LIKE '%animal""%')";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting valid sql query with escaped single quote."
+            );
+            #endregion P R O L O G U E
+
+            var builder = new List<string>();
+            using (var cnx = InitializeInMemoryDatabase())
+            {
+                allRecords = cnx.Query<SelectableQFModelTOQO>("Select * from items");
+                foreach (var item in allRecords)
+                {
+                    builder.Add(item.Report());
+                    builder.Add(string.Empty);
+                }
+                testLiteralQuotes =
+                    cnx
+                    .Query<SelectableQFModelTOQO>(
+                    "Select * from items where Description LIKE 'Should NOT match an expression with%'")
+                    .Single();
+                testLiteralQuery =
+                    cnx
+                    .Query<SelectableQFModelTOQO>(sql)
+                    .Single();
+            }
             subtestReport();
+            subtest_JsonQuoteRendering();
+            subtest_EscapedQuery();
+
 
             #region S U B T E S T S
+            /// <summary>
+            /// Verifies deterministic report rendering across all records,
+            /// ensuring term generation and literal quote preservation are stable.
+            /// </summary>
             void subtestReport()
             {
-                var builder = new List<string>();
-                using (var cnx = InitializeInMemoryDatabase())
-                {
-                    var allRecords = cnx.Query<SelectableQFModelTOQO>("Select * from items");
-                    foreach (var item in allRecords)
-                    {
-                        builder.Add(item.Report());
-                        builder.Add(string.Empty);
-                    }
-                }
 
                 var joined = string.Join(Environment.NewLine, builder);
 
@@ -1080,8 +1128,8 @@ TagsDisplay    =""[not animal]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""should~not~match~an~expression~with~animal~tag.~[not animal]""
-FilterTerm     =""should~not~match~an~expression~with~animal~tag.""
+QueryTerm      =""should~not~match~an~expression~with~""animal""~tag.~[not animal]""
+FilterTerm     =""should~not~match~an~expression~with~""animal""~tag.""
 TagMatchTerm   =""[not animal]""
 Properties     =""{
   ""Description"": ""Should NOT match an expression with an \""animal\"" tag."",
@@ -1094,6 +1142,74 @@ Properties     =""{
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Expecting report to match"
+                );
+            }
+
+            /// <summary>
+            /// Verifies JSON serialization preserves escaped quotes in term properties
+            /// without corrupting underlying literal data.
+            /// </summary>
+            void subtest_JsonQuoteRendering()
+            {
+                testLiteralQuotes.Id = "0"; // Make random Id deterministic
+                actual = JsonConvert.SerializeObject(testLiteralQuotes, Formatting.Indented);
+                expected = @" 
+{
+  ""Id"": ""0"",
+  ""Description"": ""Should NOT match an expression with an \""animal\"" tag."",
+  ""Keywords"": ""[]"",
+  ""KeywordsDisplay"": """",
+  ""Tags"": ""[not animal]"",
+  ""TagsDisplay"": ""[not animal]"",
+  ""IsChecked"": false,
+  ""Selection"": 0,
+  ""IsEditing"": false,
+  ""PrimaryKey"": ""0"",
+  ""QueryTerm"": ""should~not~match~an~expression~with~\""animal\""~tag.~[not animal]"",
+  ""FilterTerm"": ""should~not~match~an~expression~with~\""animal\""~tag."",
+  ""TagMatchTerm"": ""[not animal]"",
+  ""Properties"": ""{\r\n  \""Description\"": \""Should NOT match an expression with an \\\""animal\\\"" tag.\"",\r\n  \""Tags\"": \""[not animal]\""\r\n}""
+}"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting json to parse with correct quote escaping."
+                );
+            }
+
+            /// <summary>
+            /// Verifies that a user-escaped query (e.g., animal\") produces a valid SQL statement
+            /// and returns the expected literal-quote match.
+            /// </summary>
+            void subtest_EscapedQuery()
+            {
+                testLiteralQuery.Id = "1"; // Make random Id deterministic
+                actual = JsonConvert.SerializeObject(testLiteralQuery, Formatting.Indented);
+                expected = @" 
+{
+  ""Id"": ""1"",
+  ""Description"": ""Should NOT match an expression with an \""animal\"" tag."",
+  ""Keywords"": ""[]"",
+  ""KeywordsDisplay"": """",
+  ""Tags"": ""[not animal]"",
+  ""TagsDisplay"": ""[not animal]"",
+  ""IsChecked"": false,
+  ""Selection"": 0,
+  ""IsEditing"": false,
+  ""PrimaryKey"": ""1"",
+  ""QueryTerm"": ""should~not~match~an~expression~with~\""animal\""~tag.~[not animal]"",
+  ""FilterTerm"": ""should~not~match~an~expression~with~\""animal\""~tag."",
+  ""TagMatchTerm"": ""[not animal]"",
+  ""Properties"": ""{\r\n  \""Description\"": \""Should NOT match an expression with an \\\""animal\\\"" tag.\"",\r\n  \""Tags\"": \""[not animal]\""\r\n}""
+}"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting json to parse with correct quote escaping."
                 );
             }
             #endregion S U B T E S T S

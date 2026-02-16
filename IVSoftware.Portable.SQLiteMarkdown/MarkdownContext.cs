@@ -1,4 +1,7 @@
-﻿using IVSoftware.Portable.Disposable;
+﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
@@ -15,7 +18,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -39,9 +41,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// The initial type must be known and captured regardless of GF mode.
         /// A parameterless CTOR would not be appropriate so avoid that.
         /// </remarks>
-        public MarkdownContext(Type type) 
+        public MarkdownContext(Type type) : this(type, false) { }
+
+        [Canonical]
+        public MarkdownContext(Type type, bool disableQuerySemantics)
         {
-            Interval = TimeSpan.FromSeconds(0.25);
+            Interval = TimeSpan.FromSeconds(0.25);          // Default. Consumer can change.
             XAST = new
                 XElement(nameof(StdAstNode.ast))
                 .WithBoundAttributeValue(this);
@@ -62,7 +67,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public string ParseSqlMarkdown()
             => ParseSqlMarkdown(
                 InputText,
-                ContractType,
+                ContractType!,  // ThrowHard if null
                 IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query,
                 out XElement _);
 
@@ -76,16 +81,55 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query, 
                 out XElement _);
 
+        [Canonical]
         public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
         {
-            if (proxyType is null) throw new InvalidOperationException("Proxy type must be specified");
+            if (proxyType is null)
+            {
+                this.ThrowHard<ArgumentNullException>(("Proxy type must be specified"));
+                xast = null!; // We warned you.
+                return string.Empty;
+            }
             ProxyType = proxyType;
+#if DEBUG
+            if (expr == "animal b")
+            { }
+#endif
+            // Guard reentrancy by making sure to clear previous passes.
+            XAST.RemoveNodes();
+            _activeQFMode = qfMode;
+            if(ValidationPredicate?.Invoke(expr) == false)
+            {
+                xast = XAST;
+                return string.Empty;
+            }
 
             Raw = expr;
             Transform = Raw;
 
             Preamble = $"SELECT * FROM {localGetTableName()} WHERE";
+            xast = XAST;
+            uint quoteId = 0xFEFE0000;
+            uint tagId = 0xFDFD0000;
+            _args.Clear();
 
+            var indexingMode = (IndexingMode)(DHostSelfIndexing[nameof(IndexingMode)] ?? 0);
+            if (indexingMode == 0)
+            {
+                localEscape();
+            }
+            localRunTagLinter();
+
+            if (indexingMode == 0)
+            {
+                localRunQuoteLinter('"');
+            }
+            localRunQuoteLinter('\'');
+            localLint();
+            localBuildAST();
+            return localBuildExpression();
+
+            #region L o c a l F x
             string localGetTableName()
             {
                 var tableAttr = proxyType
@@ -100,32 +144,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 return proxyType.Name;
             }
-#if DEBUG
-            if (expr == "animal b")
-            { }
-#endif
-            // Guard reentrancy by making sure to clear previous passes.
-            XAST.RemoveNodes();
-            _activeQFMode = qfMode;
-            if(ValidationPredicate?.Invoke(expr) == false)
-            {
-                xast = XAST;
-                return string.Empty;
-            }
-            xast = XAST;
-            uint quoteId = 0xFEFE0000;
-            uint tagId = 0xFDFD0000;
-            _args.Clear();
-            localEscape();
-            localRunTagLinter();
-            localRunQuoteLinter('"');
-            localRunQuoteLinter('\'');
-            localLint();
-            localBuildAST();
-            return localBuildExpression();
 
-            #region L o c a l F x
-            // Preemptive explicit escapes.
+            // Preemptive explicit escapes (query syntax)
             void localEscape()
             {
                 // Escape map — from raw escape sequence to literal character
@@ -370,44 +390,82 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     return;
                 }
-                Transform = Transform.Trim();
-
-
-                // Collapse multiple spaces to a single space
-                Transform = Regex.Replace(Transform, @"\s+", " ");
-
-                // Normalize operators with proper spacing
-                Transform = Regex.Replace(Transform, @"\s*\|\s*", "|");
-                Transform = Regex.Replace(Transform, @"\s*&\s*", "&");
-                Transform = Regex.Replace(Transform, @"\s*!\s*", "!");
-
-                // Normalize repeated operators
-                Transform = Regex.Replace(Transform, @"[&]{2,}", "&");
-                Transform = Regex.Replace(Transform, @"[|]{2,}", "|");
-                Transform = Regex.Replace(Transform, @"[!]{2,}", "!");
-                // Insert explicit AND before '!' if it's a negated group and not already spaced
-                Transform = Regex.Replace(Transform, @"(?<!^)(?<![&|!(])!", "&!");
-
-                // Convert remaining space between words into implicit AND
-                Transform = Transform.Replace(' ', '&');
-
-
-                // Throw if adjacent operators conflict
-                if (Regex.IsMatch(Transform, @"(&\||\|&|!\||\|!|!&)"))
+                else
                 {
-                    throw new InvalidOperationException("Conflicting adjacent logical operators are not allowed.");
+                    if (indexingMode == 0)
+                    {
+                        localLintQuerySyntaxEnabled();
+                    }
+                    else
+                    {
+                        localLintQuerySyntaxDisabled();
+                    }
                 }
 
-                lock (_lock)
+                void localLintQuerySyntaxEnabled()
                 {
-                    this.OnAwaited(new AwaitedEventArgs(caller: nameof(localLint)));
-                }
+                    Transform = Transform.Trim();
+                    // Collapse multiple spaces to a single space
+                    Transform = Regex.Replace(Transform, @"\s+", " ");
+
+                    // Normalize operators with proper spacing
+                    Transform = Regex.Replace(Transform, @"\s*\|\s*", "|");
+                    Transform = Regex.Replace(Transform, @"\s*&\s*", "&");
+                    Transform = Regex.Replace(Transform, @"\s*!\s*", "!");
+
+                    // Normalize repeated operators
+                    Transform = Regex.Replace(Transform, @"[&]{2,}", "&");
+                    Transform = Regex.Replace(Transform, @"[|]{2,}", "|");
+                    Transform = Regex.Replace(Transform, @"[!]{2,}", "!");
+                    // Insert explicit AND before '!' if it's a negated group and not already spaced
+                    Transform = Regex.Replace(Transform, @"(?<!^)(?<![&|!(])!", "&!");
+
+                    // Convert remaining space between words into implicit AND
+                    Transform = Transform.Replace(' ', '&');
+
+
+                    // Throw if adjacent operators conflict
+                    if (Regex.IsMatch(Transform, @"(&\||\|&|!\||\|!|!&)"))
+                    {
+                        throw new InvalidOperationException("Conflicting adjacent logical operators are not allowed.");
+                    }
+
+                    lock (_lock)
+                    {
+                        this.OnAwaited(new AwaitedEventArgs(caller: nameof(localLint)));
+                    }
 #if false && DEBUG && SAVE
-                if (b4 != Transform)
-                {
-                    Debug.WriteLine($"250705 {b4} -> {Transform}");
-                }
+                        if (b4 != Transform)
+                        {
+                            Debug.WriteLine($"250705 {b4} -> {Transform}");
+                        }
 #endif
+                }
+
+                void localLintQuerySyntaxDisabled()
+                {
+                    Transform = Transform.Trim();
+
+                    // Collapse all whitespace runs to a single space.
+                    Transform = Regex.Replace(Transform, @"\s+", " ");
+
+                    // In term mode, space means token boundary only.
+                    // No operator normalization. No conflict detection.
+                    // We are not parsing a language here.
+                    Transform = Transform.Replace(' ', '&');
+
+                    lock (_lock)
+                    {
+                        this.OnAwaited(new AwaitedEventArgs(caller: nameof(localLint)));
+                    }
+#if false && DEBUG && SAVE
+    if (b4 != Transform)
+    {
+        Debug.WriteLine($"250705 TERM {b4} -> {Transform}");
+    }
+#endif
+                }
+
             }
 
             // Support nested expressions
@@ -423,63 +481,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 XElement
                     xopen;
 
-                for (i = 0, j = 1; i < Transform.Length; i++, j++)
+                if (indexingMode == 0)
                 {
-                    c = Transform[i];
-                    cp =
-                        j == Transform.Length
-                        ? '\0'
-                        : Transform[j];
-
-                    switch (c)
-                    {
-                        case '&':
-                            xprev = xcurrent;
-                            xcurrent = new XElement(nameof(StdAstNode.and));
-                            break;
-                        case '|':
-                            xprev = xcurrent;
-                            xcurrent = new XElement(nameof(StdAstNode.or));
-                            break;
-                        case '!':
-                            xprev = xcurrent;
-                            xcurrent = new XElement(nameof(StdAstNode.not));
-                            break;
-                        case '(':
-                            xprev = xcurrent;
-                            xcurrent = new XElement(nameof(StdAstNode.sub), new XAttribute(nameof(StdAstAttr.ismatched), bool.FalseString));
-                            break;
-                        case ')':
-                            xopen = xcurrent.Ancestors().FirstOrDefault(_ => _.Name.LocalName == nameof(StdAstNode.sub));
-                            if (xopen is null)
-                            {
-                                // Literal - add to character stream.
-                                sb.Append(c);
-                            }
-                            else
-                            {
-                                xopen.SetAttributeValue(nameof(StdAstAttr.ismatched), bool.TrueString);
-                            }
-                            continue;   // <- Different!
-                        default:
-                            if (localAppendChar(c, cp))
-                            {
-                                continue;
-                            }
-                            else
-                            {
-                                break;
-                            }
-                    }
-                    xprev.Add(xcurrent);
-
-                    // Detect unary 'not'
-                    if (xcurrent.Name.LocalName != nameof(StdAstNode.sub) &&
-                        xprev.Name.LocalName == nameof(StdAstNode.not) &&
-                        xprev.Parent != null)
-                    {
-                        xcurrent = xprev.Parent;
-                    }
+                    localBuildQuerySyntaxEnabledAST();
+                }
+                else
+                {
+                    localBuildQuerySyntaxDisabledAST();     // Fails 12 tests
+                    // localBuildQuerySyntaxEnabledAST();   // Original: fails only one test
                 }
 
                 lock (_lock)
@@ -492,10 +501,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 // Return true if loop can continue (i.e. end not detected).
                 bool localAppendChar(char newChar, char previewChar)
                 {
-                    bool isLastChar =
-                        previewChar == '\0'
-                        ? true
-                        : @"&|!()[]\".Contains(previewChar); // The '#' makes null not found.
+                    bool isLastChar;
+                    if(indexingMode == 0)
+                    {
+                        isLastChar =
+                            previewChar == '\0'
+                            ? true
+                            : @"&|!()[]\".Contains(previewChar); // The '#' makes null not found.
+                    }
+                    else
+                    {
+                        isLastChar =
+                            previewChar == '\0'
+                            ? true
+                            : previewChar == '&';
+                    }
+
+
                     if (sb.Length == 0)
                     {
                         xprev = xcurrent;
@@ -585,6 +607,135 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         return true; // Keep going
                     }
                 }
+
+                void localBuildQuerySyntaxEnabledAST()
+                {
+                    for (i = 0, j = 1; i < Transform.Length; i++, j++)
+                    {
+                        c = Transform[i];
+                        cp =
+                            j == Transform.Length
+                            ? '\0'
+                            : Transform[j];
+
+                        switch (c)
+                        {
+                            case '&':
+                                xprev = xcurrent;
+                                xcurrent = new XElement(nameof(StdAstNode.and));
+                                break;
+                            case '|':
+                                xprev = xcurrent;
+                                xcurrent = new XElement(nameof(StdAstNode.or));
+                                break;
+                            case '!':
+                                xprev = xcurrent;
+                                xcurrent = new XElement(nameof(StdAstNode.not));
+                                break;
+                            case '(':
+                                xprev = xcurrent;
+                                xcurrent = new XElement(nameof(StdAstNode.sub), new XAttribute(nameof(StdAstAttr.ismatched), bool.FalseString));
+                                break;
+                            case ')':
+                                xopen = xcurrent.Ancestors().FirstOrDefault(_ => _.Name.LocalName == nameof(StdAstNode.sub));
+                                if (xopen is null)
+                                {
+                                    // Literal - add to character stream.
+                                    sb.Append(c);
+                                }
+                                else
+                                {
+                                    xopen.SetAttributeValue(nameof(StdAstAttr.ismatched), bool.TrueString);
+                                }
+                                continue;   // <- Different!
+                            default:
+                                if (localAppendChar(c, cp))
+                                {
+                                    continue;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                        }
+                        xprev.Add(xcurrent);
+
+                        // Detect unary 'not'
+                        if (xcurrent.Name.LocalName != nameof(StdAstNode.sub) &&
+                            xprev.Name.LocalName == nameof(StdAstNode.not) &&
+                            xprev.Parent != null)
+                        {
+                            xcurrent = xprev.Parent;
+                        }
+                    }
+                }
+                void localBuildQuerySyntaxDisabledAST()
+                {
+                    for (i = 0, j = 1; i < Transform.Length; i++, j++)
+                    {
+                        c = Transform[i];
+                        cp =
+                            j == Transform.Length
+                            ? '\0'
+                            : Transform[j];
+
+                        switch (c)
+                        {
+                            case '&':
+                                xprev = xcurrent;
+                                xcurrent = new XElement(nameof(StdAstNode.and));
+                                break;
+#if false
+                            case '|':
+                                xprev = xcurrent;
+                                xcurrent = new XElement(nameof(StdAstNode.or));
+                                break;
+                            case '!':
+                                xprev = xcurrent;
+                                xcurrent = new XElement(nameof(StdAstNode.not));
+                                break;
+                            case '(':
+                                xprev = xcurrent;
+                                xcurrent = new XElement(nameof(StdAstNode.sub), new XAttribute(nameof(StdAstAttr.ismatched), bool.FalseString));
+                                break;
+                            case ')':
+                                xopen = xcurrent.Ancestors().FirstOrDefault(_ => _.Name.LocalName == nameof(StdAstNode.sub));
+                                if (xopen is null)
+                                {
+                                    // Literal - add to character stream.
+                                    sb.Append(c);
+                                }
+                                else
+                                {
+                                    xopen.SetAttributeValue(nameof(StdAstAttr.ismatched), bool.TrueString);
+                                }
+                                continue;   // <- Different!
+#endif
+                            default:
+                                if (localAppendChar(c, cp))
+                                {
+                                    continue;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                        }
+                        xprev.Add(xcurrent);
+
+#if false
+                        // Detect unary 'not'
+                        if (xcurrent.Name.LocalName != nameof(StdAstNode.sub) &&
+                            xprev.Name.LocalName == nameof(StdAstNode.not) &&
+                            xprev.Parent != null)
+                        {
+                            xcurrent = xprev.Parent;
+                        }
+#endif
+                    }
+                }
+
+
                 #endregion L o c a l F x
             }
 

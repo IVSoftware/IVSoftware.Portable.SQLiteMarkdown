@@ -20,8 +20,10 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		<BaseVersion>1.0.3</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-alpha4</VersionPrefix>
+		
+		<BaseVersion>2.0.0</BaseVersion>
+		<VersionPrefix>$(BaseVersion)-alpha01</VersionPrefix>
+		
 		<PackageReleaseNotes>
 			Initial 1.0.0 stable release.
 			- Deprecated APIs (marked [Obsolete] or suffixed with OR) are excluded from future guarantees.
@@ -61,6 +63,13 @@
 			- SearchEntryState now correctly returns to SearchEntryState.Cleared when:
 			1. FilteringState = FilteringState.Ineligible
 			2. MarkdownContext.Clear() is invoked.
+			
+			Release 2.0.0
+			
+			- MarkdownContext now *is-a* WatchdogTimer v 2.0.0 making it intrisically awaitable.
+			- WatchdogTimer v 2.0.0 features an awaitable async queue that is awaited before signalling GetAwaiter().
+			
+			Together, these provide an awaitable epoch wherein the context can await e.g. an async database query prior to resuming.
 
 		</PackageReleaseNotes>
 

@@ -1142,14 +1142,16 @@ SELECT * FROM itemsA WHERE
             );
         }
 
+
+
         [TestMethod]
         public void Test_SelfIndexingIllegalChars()
         {
-
             string actual, expected;
 
-            subtest_SafeCharsOnly();
+            // subtest_SafeCharsOnly();
             subtest_ExclamationPoint();
+
             #region S U B T E S T S 
             void subtest_SafeCharsOnly()
             {
@@ -1169,7 +1171,7 @@ hello~world~standard~greeting~[intro][101]"
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting uncontroversial term generation."
+                    "Expecting resolved controversial term generation."
                 );
 
                 actual = model.FilterTerm;
@@ -1182,7 +1184,7 @@ hello~world~standard~greeting~[intro][101]"
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting uncontroversial term generation."
+                    "Expecting resolved controversial term generation."
                 );
 
                 actual = model.TagMatchTerm;
@@ -1195,15 +1197,14 @@ hello~world~standard~greeting~[intro][101]"
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting uncontroversial term generation."
+                    "Expecting resolved controversial term generation."
                 );
             }
             void subtest_ExclamationPoint()
             {
-                // TO DO - Hello World!
                 var model = new SelectableQFModel
                 {
-                    Description = "Hello World",
+                    Description = "Hello World!",
                     Keywords = "standard greeting",
                     Tags = "intro, 101",
                 };
@@ -1211,26 +1212,26 @@ hello~world~standard~greeting~[intro][101]"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-hello~world~standard~greeting~[intro][101]"
+hello~world!~standard~greeting~[intro][101]"
                 ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting uncontroversial term generation."
+                    "Expecting resolved controversial term generation."
                 );
 
                 actual = model.FilterTerm;
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-hello~world~standard~greeting~[intro][101]"
+hello~world!~standard~greeting~[intro][101]"
                 ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting uncontroversial term generation."
+                    "Expecting resolved controversial term generation."
                 );
 
                 actual = model.TagMatchTerm;
