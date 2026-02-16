@@ -992,10 +992,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         }
                     }
                 }
-                Query = $@"
-{Preamble} 
-{XAST.Attribute(nameof(StdAstAttr.clauseE))?.Value ?? $"1"}"
-.Trim();
+                WherePredicate = XAST.Attribute(nameof(StdAstAttr.clauseE))?.Value ?? $"1";
 
 #if false && DEBUG && SAVE
                 Debug.WriteLine(string.Empty);
@@ -1015,8 +1012,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     this.OnAwaited(new AwaitedEventArgs(caller: nameof(localBuildExpression)));
                 }
-                return
-                    Query;
+                return Query;
             }
             #endregion L o c a l F x   
         }
@@ -1104,12 +1100,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 [IndexingMode.TagMatchTerm] = new HashSet<string>()
             };
 
-
-        /// <summary>
-        /// The SQL WHERE clause preamble, e.g. "SELECT * FROM tablename WHERE".
-        /// </summary>
-        public string Preamble { get; internal set; } = string.Empty;
-
         /// <summary>
         /// A mutable working buffer that begins as <see cref="Raw"/> and evolves across parser passes.
         /// 
@@ -1159,7 +1149,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             return expr;
         }
-        public string Query { get; private set; } = string.Empty;
+
+        /// <summary>
+        /// The SQL WHERE clause preamble, e.g. "SELECT * FROM tablename WHERE".
+        /// </summary>
+        public string Preamble { get; internal set; } = string.Empty;
+        public string WherePredicate { get; protected set; } = string.Empty;
+        public string Query => $@"
+{Preamble} 
+{WherePredicate}"
+.Trim();
 
         #region N A M E D    S U P P O R T
         /// <summary>

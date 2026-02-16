@@ -75,7 +75,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return _dhostAtomic;
             }
         }
-        static DisposableHost _dhostAtomic = null;
+        static DisposableHost? _dhostAtomic = null;
+
         static object _lock = new object();
 
         public static implicit operator string(MarkdownContextOR context) => context.ToString();

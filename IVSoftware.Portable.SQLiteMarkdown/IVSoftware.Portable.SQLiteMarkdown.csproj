@@ -12,6 +12,9 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		
+		<BaseVersion>2.0.0</BaseVersion>
+		<VersionPrefix>$(BaseVersion)-alpha03</VersionPrefix>
+		
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Author>Thomas C. Gregor</Author>
@@ -22,9 +25,6 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		
-		<BaseVersion>2.0.0</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-alpha02</VersionPrefix>
 		
 		<PackageReleaseNotes>
 			Initial 1.0.0 stable release.
@@ -66,12 +66,18 @@
 			1. FilteringState = FilteringState.Ineligible
 			2. MarkdownContext.Clear() is invoked.
 			
-			Release 2.0.0
+			Release 2.0.0			
+			
+			Together, these provide an awaitable epoch wherein the context can await e.g. an async database query prior to resuming:
 			
 			- MarkdownContext now *is-a* WatchdogTimer v 2.0.0 making it intrisically awaitable.
 			- WatchdogTimer v 2.0.0 features an awaitable async queue that is awaited before signalling GetAwaiter().
 			
-			Together, these provide an awaitable epoch wherein the context can await e.g. an async database query prior to resuming.
+			WherePredicate property allows for greater precision when extending the query e.g. for filtering.
+			
+			- Query consists of Preamble + WherePredicate.
+			- Preamble is the first portion of the Query up to and *including* the WHERE keyword.
+			- WherePredicate is generated from QueryTerm, FilterTerm, and TagTerm based on state.
 
 		</PackageReleaseNotes>
 
