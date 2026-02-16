@@ -29,7 +29,7 @@
 
 	<!-- Release mode uses NuGet prerelease version -->
 	<ItemGroup Condition="'$(Configuration)' == 'Release'">
-		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="1.0.1-rc2Local" />
+		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="2.0.0-alpha04" />
 	</ItemGroup>
 
 </Project>
