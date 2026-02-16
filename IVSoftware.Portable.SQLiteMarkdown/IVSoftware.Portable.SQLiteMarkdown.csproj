@@ -8,8 +8,10 @@
 		<RepositoryUrl>https://github.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown.git</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown.git</PackageProjectUrl>
 		<RootNamespace>IVSoftware.Portable.SQLiteMarkdown</RootNamespace>
+		
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
+		
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Author>Thomas C. Gregor</Author>
@@ -22,7 +24,7 @@
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		
 		<BaseVersion>2.0.0</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-alpha01</VersionPrefix>
+		<VersionPrefix>$(BaseVersion)-alpha02</VersionPrefix>
 		
 		<PackageReleaseNotes>
 			Initial 1.0.0 stable release.

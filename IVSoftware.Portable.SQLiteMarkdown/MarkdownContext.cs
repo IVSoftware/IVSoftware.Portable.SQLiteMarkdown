@@ -126,6 +126,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             localRunQuoteLinter('\'');
             localLint();
+            localRemoveTransientTrailingOperator();
             localBuildAST();
             return localBuildExpression();
 
@@ -465,7 +466,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 #endif
                 }
+            }
 
+            // When query syntax is enabled, suppress trailing operators
+            // with the assumption that they're a transient of IME runtime.
+            void localRemoveTransientTrailingOperator()
+            {
+                if (indexingMode == 0 && !string.IsNullOrEmpty(Transform))
+                {
+                    var wk = Transform;
+
+                    while (wk.Length > 0)
+                    {
+                        char last = wk[wk.Length - 1];
+
+                        // Operators that require a right-hand operand.
+                        if (last == '&' || last == '|' || last == '!' || last == '\\')
+                        {
+                            wk = wk.Substring(0, wk.Length - 1);
+                            continue;
+                        }
+                        break;
+                    }
+                    Transform = wk;
+                }
             }
 
             // Support nested expressions
@@ -891,7 +915,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             case StdAstNode.not:
                                 if (string.IsNullOrWhiteSpace(childClauseE))
                                 {
-                                    throw new InvalidOperationException("Expecting non-empty term.");
+                                    this.ThrowHard<InvalidOperationException>("Expecting non-empty term.");
+                                    break;
                                 }
                                 node.SetAttributeValue(
                                     nameof(StdAstAttr.clauseE),
@@ -905,7 +930,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 {
                                     // KNOWN EDGE CASE
                                     // e.g. sho|bla) [not animal]
-                                    Debug.WriteLine("ADVISORY : KNOWN EDGE CASE - Expecting non-empty term.");
+                                    var msg = "ADVISORY : KNOWN EDGE CASE - Expecting non-empty term.";
+                                    Debug.WriteLine(msg);
+                                    this.Advisory(msg);
                                 }
                                 node.SetAttributeValue(
                                     nameof(StdAstAttr.clauseE),
@@ -917,7 +944,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             case StdAstNode.or:
                                 if (string.IsNullOrWhiteSpace(childClauseE))
                                 {
-                                    throw new InvalidOperationException("Expecting non-empty term.");
+                                    this.ThrowHard<InvalidOperationException>("Expecting non-empty term.");
+                                    break;
                                 }
                                 node.SetAttributeValue(
                                     nameof(StdAstAttr.clauseE),
@@ -929,7 +957,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             case StdAstNode.sub:
                                 if (string.IsNullOrWhiteSpace(childClauseE))
                                 {
-                                    throw new InvalidOperationException("Expecting non-empty term.");
+                                    this.ThrowHard<InvalidOperationException>("Expecting non-empty term.");
+                                    break;
                                 }
                                 if (node.Attribute(nameof(StdAstAttr.ismatched))?.Value is string ismatched)
                                 {
@@ -1007,8 +1036,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (value is null)
                 {
-                    Debug.Assert(DateTime.Now.Date == new DateTime(2025, 7, 4).Date, "Don't forget disabled");
-                    throw new InvalidOperationException("Need that type...!");
+                    this.ThrowHard<NullReferenceException>($"{nameof(ContractType)} cannot be null.");
                 }
                 else
                 {
@@ -1049,7 +1077,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if (ContractType is null)
             {
-                throw new InvalidOperationException("Contract type cannot be null.");
+                this.ThrowHard<NullReferenceException>($"{nameof(ContractType)} cannot be null.");
             }
             else
             {

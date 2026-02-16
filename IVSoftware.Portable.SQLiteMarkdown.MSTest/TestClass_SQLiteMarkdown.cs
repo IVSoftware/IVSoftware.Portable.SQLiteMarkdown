@@ -1249,5 +1249,108 @@ hello~world!~standard~greeting~[intro][101]"
             }
             #endregion S U B T E S T S
         }
+
+        /// <summary>
+        /// Tests transient e.g. 'filter time out' queries with trailing operators.
+        /// </summary>
+        [TestMethod]
+        public async Task Test_TrailingOperator()
+        {
+            string actual, expected, sql;
+
+            var mdc = new MarkdownContext<SelectableQFModel>();
+
+            using (var cnx = new SQLiteConnection(":memory:"))
+            {
+                cnx.CreateTable<SelectableQFModel>();
+
+                await subtest_TrailingBackslash();
+                await subtest_TrailingAnd();
+                await subtest_TrailingOr();
+                await subtest_TrailingNot();
+
+                #region S U B T E S T S
+                async Task subtest_TrailingBackslash()
+                {
+                    mdc.InputText = @"animal\";
+                    await mdc;
+                    sql = mdc.ParseSqlMarkdown();
+                    actual = sql;
+
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+SELECT * FROM items WHERE 
+(QueryTerm LIKE '%animal%')"
+                    ;
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting trailing operator uncertainty."
+                    );
+                    // Ensure no exceptions on actual query.
+                    _ = cnx.Query<SelectableQFModel>(sql);
+                }
+                async Task subtest_TrailingAnd()
+                {
+                    mdc.InputText = @"animal&";
+                    await mdc;
+                    sql = mdc.ParseSqlMarkdown();
+
+                    actual = sql;
+                    expected = @" 
+SELECT * FROM items WHERE 
+(QueryTerm LIKE '%animal%')"
+                    ;
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting trailing operator uncertainty."
+                    );
+                    // Ensure no exceptions on actual query.
+                    _ = cnx.Query<SelectableQFModel>(sql);
+                }
+                async Task subtest_TrailingOr()
+                {
+                    mdc.InputText = @"animal|";
+                    await mdc;
+                    sql = mdc.ParseSqlMarkdown();
+
+                    actual = sql;
+                    expected = @" 
+SELECT * FROM items WHERE 
+(QueryTerm LIKE '%animal%')"
+                    ;
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting trailing operator uncertainty."
+                    );
+                    // Ensure no exceptions on actual query.
+                    _ = cnx.Query<SelectableQFModel>(sql);
+                }
+                async Task subtest_TrailingNot()
+                {
+                    mdc.InputText = @"animal!";
+                    await mdc;
+                    sql = mdc.ParseSqlMarkdown();
+
+                    actual = sql;
+                    expected = @" 
+SELECT * FROM items WHERE 
+(QueryTerm LIKE '%animal%')"
+                    ;
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting trailing operator uncertainty."
+                    );
+                    // Ensure no exceptions on actual query.
+                    _ = cnx.Query<SelectableQFModel>(sql);
+                }
+                #endregion S U B T E S T S
+            }
+        }
     }
 }
