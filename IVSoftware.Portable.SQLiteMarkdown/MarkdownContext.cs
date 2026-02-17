@@ -1496,20 +1496,40 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             get => _inputText;
             set
             {
+                value ??= string.Empty;
                 if (!Equals(_inputText, value))
                 {
                     _inputText = value;
                     OnInputTextChanged();
                     OnPropertyChanged();
-                    RemoveTransientCharactersFromEnd();
+                    ExecuteRestartSemantics();
                 }
             }
         }
         string _inputText = string.Empty;
 
-        private void RemoveTransientCharactersFromEnd()
+        /// <summary>
+        /// Removes transient characters from end.
+        /// </summary>
+        protected virtual void ExecuteRestartSemantics()
         {
             var nonTransientInputText = InputText.TrimEnd();
+            bool hasTrailingEscapedOperator = false;
+            if (nonTransientInputText.Length >= 2)
+            {
+                int len = nonTransientInputText.Length;
+                char c1 = nonTransientInputText[len - 2];
+                char c2 = nonTransientInputText[len - 1];
+
+                if (c1 == '\\' && (c2 == '\\' || c2 == '!' || c2 == '|' || c2 == '&'))
+                {
+                    hasTrailingEscapedOperator = true;
+                }
+            }
+            if (!hasTrailingEscapedOperator)
+            {
+                nonTransientInputText = nonTransientInputText.TrimEnd(@"!|&".ToCharArray());
+            }
             if( _nonTransientInputText != nonTransientInputText)
             {
                 _nonTransientInputText = nonTransientInputText;
@@ -1538,8 +1558,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     {
                         SearchEntryState = SearchEntryState.QueryEN;
                     }
-                    // [Careful]
-                    // ALWAYS kick the timer, even if filtering is not eligible.
                     break;
                 case FilteringState.Armed:
                     if (InputText.Length != 0)

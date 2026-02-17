@@ -52,7 +52,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                     switch (e.PropertyName)
                     {
                         case nameof(qfs.InputText):
-                            // 260217 under repair
+                            // This is a two-way binding accomodation.
                             if(textInputText.Text != qfs.InputText)
                             {
                                 textInputText.Text = qfs.InputText;
