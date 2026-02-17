@@ -13,7 +13,7 @@
 		<LangVersion>latest</LangVersion>
 		
 		<BaseVersion>2.0.0</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-alpha04</VersionPrefix>
+		<VersionPrefix>$(BaseVersion)-alpha05</VersionPrefix>
 		
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>

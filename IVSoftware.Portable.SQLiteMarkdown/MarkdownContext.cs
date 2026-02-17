@@ -1134,7 +1134,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         public Dictionary<string, string> Atomics { get; } = new Dictionary<string, string>();
 
-
         public string Rehydrate(string expr)
         {
             restart:
@@ -1313,7 +1312,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         // Nullable property, but we're not in
         // a target framework that supports it.
-        SQLiteConnection _memoryDatabase = default;
+        SQLiteConnection? _memoryDatabase = default;
 
         #endregion C O N F I G
 
@@ -1374,12 +1373,49 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         FilteringState _filteringState = FilteringState.Ineligible;
 
+        /// <summary>
+        /// Exposes <see cref="FilteringState"/> for test scenarios while preventing direct production mutation.
+        /// </summary>
+        /// <remarks>
+        /// This property exists solely to support legacy and test workflows that require
+        /// setting <see cref="FilteringState"/> externally. The setter intentionally invokes
+        /// <c>ThrowHard&lt;NotSupportedException&gt;</c> to discourage direct use.
+        /// 
+        /// Consumers who require write access should derive from the declaring type and
+        /// use the protected setter instead. Alternatively, the throw may be handled to 
+        /// enable controlled legacy behavior, but such usage should be limited to tests.
+        /// </remarks>
+        [Obsolete("Use a subclass to gain access to the protected setter for FilteringState.")]
         public FilteringState FilteringStateForTest
         {
             get => FilteringState;
-            set => FilteringState = value;
+            set
+            {
+                // To enable legacy behavior, handle this Throw.
+                if (this.ThrowHard<NotSupportedException>(
+                   "Use a subclass to gain access to the protected setter for FilteringState.").Handled)
+                {
+                    FilteringState = value;
+                }
+            }
         }
 
+        /// <summary>
+        /// Indicates whether the collection is operating in latched filtering mode.
+        /// </summary>
+        /// <remarks>
+        /// Filtering mode exhibits hysteresis behavior to preserve user intent.
+        /// 
+        /// After a successful query yielding sufficient results, filtering becomes
+        /// eligible and transitions to Active upon the next IME input.
+        /// 
+        /// Clearing the IME does not immediately revert to query mode. If filtering
+        /// was previously Active, the state remains latched until an explicit second
+        /// clear action signals intent to exit filtering.
+        /// 
+        /// This prevents oscillation between Query and Filter modes caused by
+        /// transient empty input and preserves refinement context.
+        /// </remarks>
         public bool IsFiltering
             => FilteringState == FilteringState.Ineligible
                 ? false
@@ -1463,8 +1499,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (!Equals(_inputText, value))
                 {
                     _inputText = value;
-                    OnPropertyChanged();
                     OnInputTextChanged();
+                    OnPropertyChanged();
                 }
             }
         }
@@ -1511,6 +1547,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             StartOrRestart();
         }
+
+        /// <summary>
+        /// Returns the current synchronization authority between the
+        /// canonical collection and its projection.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model (typical):
+        /// - The filtered collection represents the current visible projection, and
+        ///   user-facing {add, edit, remove} operations occur against this projection.
+        /// - SyncAuthority anchors one side as authoritative during collection change
+        ///   propagation, suppressing re-entrant updates from the opposing side.
+        /// - When a refinement epoch is active, authority shifts to the canonical
+        ///   collection to prevent circular propagation while the projection settles.
+        /// - In the quiescent state, the projection is authoritative.
+        /// </remarks>
+        public CollectionSyncAuthority SyncAuthority =>
+            Running && (FilteringState != FilteringState.Ineligible)
+            ? CollectionSyncAuthority.Unfiltered
+            : CollectionSyncAuthority.Filtered;
+                
 
         public SearchEntryState SearchEntryState
         {
