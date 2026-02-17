@@ -356,20 +356,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                 }
                 if (!Equals(_itemsSource, value))
                 {
-                    if (_itemsSource is INotifyPropertyChanged)
-                    {
-                        ((INotifyPropertyChanged)_itemsSource).PropertyChanged -= localOnPropertyChanged;
-                    }
                     if (_itemsSource is INotifyCollectionChanged)
                     {
                         ((INotifyCollectionChanged)_itemsSource).CollectionChanged -= localOnCollectionChanged;
                     }
                     _itemsSource = value;
 
-                    if (_itemsSource is INotifyPropertyChanged)
-                    {
-                        ((INotifyPropertyChanged)_itemsSource).PropertyChanged += localOnPropertyChanged;
-                    }
                     if (_itemsSource is INotifyCollectionChanged)
                     {
                         ((INotifyCollectionChanged)_itemsSource).CollectionChanged += localOnCollectionChanged;
@@ -387,56 +379,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                             RowCount = items.Count;
                         }
                         Vacuum();
-                    }
-
-                    void localOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
-                    {
-                        if (sender is IObservableQueryFilterSource qfs)
-                        {
-                            switch (e.PropertyName)
-                            {
-                                case nameof(IObservableQueryFilterSource.SearchEntryState):
-                                    switch (qfs.SearchEntryState)
-                                    {
-                                        case SearchEntryState.Cleared:
-                                            break;
-                                        case SearchEntryState.QueryEmpty:
-                                            break;
-                                        case SearchEntryState.QueryENB:
-                                            break;
-                                        case SearchEntryState.QueryEN:
-                                            break;
-                                        case SearchEntryState.QueryCompleteNoResults:
-                                            break;
-                                        case SearchEntryState.QueryCompleteWithResults:
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                    break;
-                                case nameof(IObservableQueryFilterSource.FilteringState):
-                                    switch (qfs.FilteringState)
-                                    {
-                                        case FilteringState.Ineligible:
-                                            break;
-                                        case FilteringState.Armed:
-                                            break;
-                                        case FilteringState.Active:
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                    break;
-                                case nameof(IObservableQueryFilterSource.InputText):
-                                    break;
-                                case nameof(IObservableQueryFilterSource.MemoryDatabase):
-                                    break;
-                                case nameof(IObservableQueryFilterSource.Busy):
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
                     }
                     #endregion L o c a l F x
 

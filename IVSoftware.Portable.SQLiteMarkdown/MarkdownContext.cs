@@ -1499,8 +1499,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (!Equals(_inputText, value))
                 {
                     _inputText = value;
-                    OnInputTextChanged();
                     OnPropertyChanged();
+                    OnInputTextChanged();
                 }
             }
         }
