@@ -199,33 +199,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 _isIndexingRequired = true;
                 var cMe = pi.GetValue(this);
                 internalProperties[propertyName] = cMe;
-                wdtPropertyChanged.StartOrRestart();
             }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// Gets a watchdog timer that triggers term updates when a property
-        /// change event occurs, after a brief delay.
-        /// </summary>
-        private WatchdogTimer wdtPropertyChanged
-        {
-            get
-            {
-                if (_wdtPropertyChanged is null)
-                {
-                    _wdtPropertyChanged = new WatchdogTimer(defaultCompleteAction: () =>
-                    {
-                        internalExecuteIndexing();
-                    })
-                    { Interval = TimeSpan.FromSeconds(0.25) };
-                }
-                return _wdtPropertyChanged;
-            }
-        }
-
-        private WatchdogTimer _wdtPropertyChanged = default;
 
         private void internalExecuteIndexing()
         {

@@ -52,7 +52,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                     switch (e.PropertyName)
                     {
                         case nameof(qfs.InputText):
-                            textInputText.Text = qfs.InputText;
+                            // 260217 under repair
+                            if(textInputText.Text != qfs.InputText)
+                            {
+                                textInputText.Text = qfs.InputText;
+                            }
                             break;
                         case nameof(IObservableQueryFilterSource.Busy):
                             textInputText.Cursor = 
