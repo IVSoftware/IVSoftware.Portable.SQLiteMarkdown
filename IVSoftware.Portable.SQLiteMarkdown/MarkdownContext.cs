@@ -1501,10 +1501,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     _inputText = value;
                     OnInputTextChanged();
                     OnPropertyChanged();
+                    RemoveTransientCharactersFromEnd();
                 }
             }
         }
         string _inputText = string.Empty;
+
+        private void RemoveTransientCharactersFromEnd()
+        {
+            var nonTransientInputText = InputText.TrimEnd();
+            if( _nonTransientInputText != nonTransientInputText)
+            {
+                _nonTransientInputText = nonTransientInputText;
+                StartOrRestart();
+            }
+        }
+        string _nonTransientInputText = string.Empty;
+
 
         [Careful("Trimming or modifying the raw InputText is not allowed.")]
         protected virtual void OnInputTextChanged()
@@ -1544,7 +1557,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 default:
                     throw new NotImplementedException($"Bad case: {FilteringState}");
             }
-            StartOrRestart();
         }
 
         /// <summary>
