@@ -1502,16 +1502,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     _inputText = value;
                     OnInputTextChanged();
                     OnPropertyChanged();
-                    ExecuteRestartSemantics();
+                    RestartIfSemanticInputChanged();
                 }
             }
         }
         string _inputText = string.Empty;
 
         /// <summary>
-        /// Removes transient characters from end.
+        /// Normalizes trailing transient operators and restarts the debounce cycle
+        /// only if the resulting semantic input differs from the previous value.
         /// </summary>
-        protected virtual void ExecuteRestartSemantics()
+        protected virtual void RestartIfSemanticInputChanged()
         {
             var nonTransientInputText = InputText.TrimEnd();
             bool hasTrailingEscapedOperator = false;
