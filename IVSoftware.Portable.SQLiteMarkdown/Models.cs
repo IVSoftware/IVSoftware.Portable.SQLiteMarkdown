@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using IVSoftware.Portable.Common.Attributes;
+using Newtonsoft.Json;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -106,9 +107,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         private string _tagMatchTerm = string.Empty;
 
         /// <summary>
-        /// When a getter is called on an an index term, this method
+        /// When a getter is called on an index term, this method
         /// ensures that the indexing is always up do date on-demand.
         /// </summary>
+        /// <remarks>
+        /// USAGE
+        /// [QueryLikeTerm] public string QueryTerm => ensure(ref _likeTerm);
+        /// </remarks>
+        [Canonical("On-demand Indexing engine.")]
         private string ensure(ref string indexedProperty)
         {
             if (_isIndexingRequired)
@@ -237,7 +243,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if (attr == null) continue;
                     var val = pi.GetValue(this);
                     if (!(val is IConvertible)) continue;
+
                     localMC.InputText = Convert.ToString(val);
+
                     if(attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm))
                     {
                         using (localMC.DHostSelfIndexing.GetToken(nameof(IndexingMode), IndexingMode.QueryLikeTerm))

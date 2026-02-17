@@ -381,7 +381,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                         Vacuum();
                     }
                     #endregion L o c a l F x
-
                 }
             }
         }
