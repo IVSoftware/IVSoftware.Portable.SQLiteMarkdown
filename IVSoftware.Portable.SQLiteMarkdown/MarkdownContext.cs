@@ -1499,17 +1499,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (!Equals(_inputText, value))
                 {
                     _inputText = value;
-                    OnPropertyChanged();
                     OnInputTextChanged();
+                    OnPropertyChanged();
                 }
             }
         }
         string _inputText = string.Empty;
+
+        [Careful("Trimming or modifying the raw InputText is not allowed.")]
         protected virtual void OnInputTextChanged()
         {
-            // Trim without eventing.
-            _inputText = _inputText.Trim();
-
             var filteringStateB4 = FilteringState;
             switch (FilteringState)
             {

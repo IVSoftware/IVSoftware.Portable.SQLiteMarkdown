@@ -1474,11 +1474,11 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
                             .OfType<PropertyChangedEventArgs>()
                             .Select(_ => _.PropertyName));
-
                         expected = @" 
-InputText
 SearchEntryState
-Running";
+Running
+InputText"
+                        ;
 
                         Assert.AreEqual(
                             expected.NormalizeResult(),
@@ -1530,8 +1530,8 @@ Running";
                             .Select(_ => _.PropertyName));
 
                         expected = @"
-InputText
-SearchEntryState";
+SearchEntryState
+InputText";
 
                         Assert.AreEqual(
                             expected.NormalizeResult(),
