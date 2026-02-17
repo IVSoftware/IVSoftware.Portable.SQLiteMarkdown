@@ -1476,8 +1476,8 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                             .Select(_ => _.PropertyName));
                         expected = @" 
 SearchEntryState
-Running
-InputText"
+InputText
+Running"
                         ;
 
                         Assert.AreEqual(
@@ -1595,8 +1595,8 @@ InputText";
                             .Select(_ => _.PropertyName));
                         actual.ToClipboardExpected();
                         expected = @"
-InputText
-SearchEntryState";
+SearchEntryState
+InputText";
 
                         Assert.AreEqual(
                             expected.NormalizeResult(),
