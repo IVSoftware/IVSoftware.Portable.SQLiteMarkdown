@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using IVSoftware.Portable.Common.Attributes;
+using Newtonsoft.Json;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -106,9 +107,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         private string _tagMatchTerm = string.Empty;
 
         /// <summary>
-        /// When a getter is called on an an index term, this method
+        /// When a getter is called on an index term, this method
         /// ensures that the indexing is always up do date on-demand.
         /// </summary>
+        /// <remarks>
+        /// USAGE
+        /// [QueryLikeTerm] public string QueryTerm => ensure(ref _likeTerm);
+        /// </remarks>
+        [Canonical("On-demand Indexing engine.")]
         private string ensure(ref string indexedProperty)
         {
             if (_isIndexingRequired)
@@ -193,33 +199,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 _isIndexingRequired = true;
                 var cMe = pi.GetValue(this);
                 internalProperties[propertyName] = cMe;
-                wdtPropertyChanged.StartOrRestart();
             }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// Gets a watchdog timer that triggers term updates when a property
-        /// change event occurs, after a brief delay.
-        /// </summary>
-        private WatchdogTimer wdtPropertyChanged
-        {
-            get
-            {
-                if (_wdtPropertyChanged is null)
-                {
-                    _wdtPropertyChanged = new WatchdogTimer(defaultCompleteAction: () =>
-                    {
-                        internalExecuteIndexing();
-                    })
-                    { Interval = TimeSpan.FromSeconds(0.25) };
-                }
-                return _wdtPropertyChanged;
-            }
-        }
-
-        private WatchdogTimer _wdtPropertyChanged = default;
 
         private void internalExecuteIndexing()
         {
@@ -237,7 +220,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if (attr == null) continue;
                     var val = pi.GetValue(this);
                     if (!(val is IConvertible)) continue;
+
                     localMC.InputText = Convert.ToString(val);
+
                     if(attr.IndexingMode.HasFlag(IndexingMode.QueryLikeTerm))
                     {
                         using (localMC.DHostSelfIndexing.GetToken(nameof(IndexingMode), IndexingMode.QueryLikeTerm))

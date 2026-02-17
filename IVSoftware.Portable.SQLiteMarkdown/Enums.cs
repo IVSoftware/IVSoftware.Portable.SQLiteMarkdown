@@ -105,6 +105,51 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary> 
         QueryAndFilter = Query | Filter,
     }
+
+    /// <summary>
+    /// Specifies which collection currently has synchronization authority.
+    /// </summary>
+    /// <remarks>
+    /// Defines which side is authoritative when propagating changes between
+    /// the canonical unfiltered collection and its filtered projection.
+    /// 
+    /// Terminology:
+    /// - Canonical refers to the unfiltered source collection.
+    /// - Projection refers to the filtered collection derived from the canonical source.
+    /// - Upstream propagation means synchronization from the projection back to the canonical source.
+    /// 
+    /// Authority may shift during refinement epochs to suppress upstream propagation
+    /// and prevent circular collection change events.
+    /// </remarks>
+    public enum CollectionSyncAuthority
+    {
+        /// <summary>
+        /// The filtered projection is authoritative.
+        /// Changes originating in the filtered collection may propagate
+        /// to the canonical unfiltered backing collection.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model (typical):
+        /// - The filtered collection represents the current visible projection.
+        /// - User-facing {add, edit, remove} operations occur against this projection.
+        /// - These operations are treated as authoritative and synchronized upstream.
+        /// </remarks>
+        Filtered,
+
+        /// <summary>
+        /// The canonical unfiltered collection is authoritative.
+        /// Changes in the filtered projection are not propagated upstream.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model (typical):
+        /// - The unfiltered collection represents the canonical source for a settled state.
+        /// - During a refinement epoch, the filtered projection is modified programmatically.
+        /// - Upstream propagation is suppressed to prevent circular collection change events.
+        /// </remarks>
+        Unfiltered,
+    }
+
+
     public enum Win32Message
     {
         WM_MOUSEMOVE = 0x0200,

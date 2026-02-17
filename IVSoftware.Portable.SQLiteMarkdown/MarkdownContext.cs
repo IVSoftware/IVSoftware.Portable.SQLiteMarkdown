@@ -1134,7 +1134,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         public Dictionary<string, string> Atomics { get; } = new Dictionary<string, string>();
 
-
         public string Rehydrate(string expr)
         {
             restart:
@@ -1313,7 +1312,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         // Nullable property, but we're not in
         // a target framework that supports it.
-        SQLiteConnection _memoryDatabase = default;
+        SQLiteConnection? _memoryDatabase = default;
 
         #endregion C O N F I G
 
@@ -1374,12 +1373,49 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         FilteringState _filteringState = FilteringState.Ineligible;
 
+        /// <summary>
+        /// Exposes <see cref="FilteringState"/> for test scenarios while preventing direct production mutation.
+        /// </summary>
+        /// <remarks>
+        /// This property exists solely to support legacy and test workflows that require
+        /// setting <see cref="FilteringState"/> externally. The setter intentionally invokes
+        /// <c>ThrowHard&lt;NotSupportedException&gt;</c> to discourage direct use.
+        /// 
+        /// Consumers who require write access should derive from the declaring type and
+        /// use the protected setter instead. Alternatively, the throw may be handled to 
+        /// enable controlled legacy behavior, but such usage should be limited to tests.
+        /// </remarks>
+        [Obsolete("Use a subclass to gain access to the protected setter for FilteringState.")]
         public FilteringState FilteringStateForTest
         {
             get => FilteringState;
-            set => FilteringState = value;
+            set
+            {
+                // To enable legacy behavior, handle this Throw.
+                if (this.ThrowHard<NotSupportedException>(
+                   "Use a subclass to gain access to the protected setter for FilteringState.").Handled)
+                {
+                    FilteringState = value;
+                }
+            }
         }
 
+        /// <summary>
+        /// Indicates whether the collection is operating in latched filtering mode.
+        /// </summary>
+        /// <remarks>
+        /// Filtering mode exhibits hysteresis behavior to preserve user intent.
+        /// 
+        /// After a successful query yielding sufficient results, filtering becomes
+        /// eligible and transitions to Active upon the next IME input.
+        /// 
+        /// Clearing the IME does not immediately revert to query mode. If filtering
+        /// was previously Active, the state remains latched until an explicit second
+        /// clear action signals intent to exit filtering.
+        /// 
+        /// This prevents oscillation between Query and Filter modes caused by
+        /// transient empty input and preserves refinement context.
+        /// </remarks>
         public bool IsFiltering
             => FilteringState == FilteringState.Ineligible
                 ? false
@@ -1460,20 +1496,53 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             get => _inputText;
             set
             {
+                value ??= string.Empty;
                 if (!Equals(_inputText, value))
                 {
                     _inputText = value;
-                    OnPropertyChanged();
                     OnInputTextChanged();
+                    OnPropertyChanged();
+                    RestartIfSemanticInputChanged();
                 }
             }
         }
         string _inputText = string.Empty;
+
+        /// <summary>
+        /// Normalizes trailing transient operators and restarts the debounce cycle
+        /// only if the resulting semantic input differs from the previous value.
+        /// </summary>
+        protected virtual void RestartIfSemanticInputChanged()
+        {
+            var nonTransientInputText = InputText.TrimEnd();
+            bool hasTrailingEscapedOperator = false;
+            if (nonTransientInputText.Length >= 2)
+            {
+                int len = nonTransientInputText.Length;
+                char c1 = nonTransientInputText[len - 2];
+                char c2 = nonTransientInputText[len - 1];
+
+                if (c1 == '\\' && (c2 == '\\' || c2 == '!' || c2 == '|' || c2 == '&'))
+                {
+                    hasTrailingEscapedOperator = true;
+                }
+            }
+            if (!hasTrailingEscapedOperator)
+            {
+                nonTransientInputText = nonTransientInputText.TrimEnd(@"!|&".ToCharArray());
+            }
+            if( _nonTransientInputText != nonTransientInputText)
+            {
+                _nonTransientInputText = nonTransientInputText;
+                StartOrRestart();
+            }
+        }
+        string _nonTransientInputText = string.Empty;
+
+
+        [Careful("Trimming or modifying the raw InputText is not allowed.")]
         protected virtual void OnInputTextChanged()
         {
-            // Trim without eventing.
-            _inputText = _inputText.Trim();
-
             var filteringStateB4 = FilteringState;
             switch (FilteringState)
             {
@@ -1490,8 +1559,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     {
                         SearchEntryState = SearchEntryState.QueryEN;
                     }
-                    // [Careful]
-                    // ALWAYS kick the timer, even if filtering is not eligible.
                     break;
                 case FilteringState.Armed:
                     if (InputText.Length != 0)
@@ -1509,8 +1576,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 default:
                     throw new NotImplementedException($"Bad case: {FilteringState}");
             }
-            StartOrRestart();
         }
+
+        /// <summary>
+        /// Returns the current synchronization authority between the
+        /// canonical collection and its projection.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model (typical):
+        /// - The filtered collection represents the current visible projection, and
+        ///   user-facing {add, edit, remove} operations occur against this projection.
+        /// - SyncAuthority anchors one side as authoritative during collection change
+        ///   propagation, suppressing re-entrant updates from the opposing side.
+        /// - When a refinement epoch is active, authority shifts to the canonical
+        ///   collection to prevent circular propagation while the projection settles.
+        /// - In the quiescent state, the projection is authoritative.
+        /// </remarks>
+        public CollectionSyncAuthority SyncAuthority =>
+            Running && (FilteringState != FilteringState.Ineligible)
+            ? CollectionSyncAuthority.Unfiltered
+            : CollectionSyncAuthority.Filtered;
+                
 
         public SearchEntryState SearchEntryState
         {
