@@ -100,7 +100,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 xast = null!; // We warned you.
                 return string.Empty;
             }
-            ProxyType = proxyType;
+
+            using var local = this.WithOnDispose(
+                onInit: (sender, e) =>
+                {
+                    ProxyType = proxyType;
+                },
+                onDispose: (sender, e) =>
+                {
+                    ProxyType = null!;
+                });
 #if DEBUG
             if (expr == "animal b")
             { }
@@ -117,7 +126,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Raw = expr;
             Transform = Raw;
 
-            Preamble = $"SELECT * FROM {localGetTableName()} WHERE";
+            Preamble = $"SELECT * FROM {TableName} WHERE";
             xast = XAST;
             uint quoteId = 0xFEFE0000;
             uint tagId = 0xFDFD0000;
@@ -145,21 +154,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return localBuildExpression();
 
             #region L o c a l F x
-            string localGetTableName()
-            {
-                var tableAttr = proxyType
-                    .GetCustomAttributes(inherit: true)
-                    .FirstOrDefault(attr => attr.GetType().Name == "TableAttribute");
-
-                if (tableAttr != null)
-                {
-                    var nameProp = tableAttr.GetType().GetProperty("Name");
-                    if (nameProp != null && nameProp.GetValue(tableAttr) is string name)
-                        return name;
-                }
-                return proxyType.Name;
-            }
-
             // Preemptive explicit escapes (query syntax)
             void localEscape()
             {
