@@ -781,8 +781,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             string localBuildExpression()
             {
                 string childClauseE, childClauseN;
-                string
-                    table = ProxyType.GetCustomAttribute<TableAttribute>()?.Name ?? ProxyType.Name;
                 var nArgs =
                     XAST
                     .DescendantsAndSelf()
@@ -1074,7 +1072,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             }
                             break;
                         case QueryFilterMode.Filter:
-
                             // Allow only if Type not set by previous query.
                             Debug.Assert(
                                 QueryFilterConfig == QueryFilterConfig.Filter,
@@ -1136,12 +1133,15 @@ Overriding the OnContractTypeChanged method in a subclass offers full control.
                         PrimaryKeyName = mapping.PK.Name;
                     }
                 }
+                else
+                {
+                    TableName = GetTableNameHeuristic(ContractType);
+                }
             }
         }
 
         protected string TableName { get; set; }
         protected string PrimaryKeyName { get; set; }
-
 
         /// <summary>
         /// Proxy type allows e.g. query by interface or subclass
@@ -1157,24 +1157,51 @@ Overriding the OnContractTypeChanged method in a subclass offers full control.
             {
                 if (!Equals(_proxyType, value))
                 {
-                    if(value == ContractType)
+                    if (value is null || value == ContractType)
                     {
                         _proxyType = null;
                     }
                     else
                     {
-                        throw new NotImplementedException("ToDo");
-                        // TO DO
-                        // From FilterQueryDatabase verify:
-                        // ContractType has a table
-                        // It is the only table
-                        // It is the same table as the proxy class
-                        _proxyType = value;
+                        string
+                            contractTable = GetTableNameHeuristic(ContractType),
+                            proxyTable = GetTableNameHeuristic(value);
+
+                        if (string.Equals(contractTable, proxyTable, StringComparison.Ordinal))
+                        {
+                            // Table targets are compatible.
+                            _proxyType = value;
+                        }
+                        else
+                        {
+                            this.ThrowHard<SQLiteException>(
+                                $@"
+SQLite Tables are incompatible:
+'{proxyTable}' for {nameof(ProxyType)} = '{value.Name}'
+'{contractTable}' for {nameof(ContractType)} = '{ContractType.Name}'");
+                            return;
+                        }
                     }
                 }
             }
         }
         Type? _proxyType = default;
+
+        string GetTableNameHeuristic(Type type)
+        {
+            if (type is null)
+            {
+                return string.Empty;
+            }
+            else if (FilterQueryDatabase is null)
+            {
+                return type.GetCustomAttribute<TableAttribute>()?.Name ?? type.Name;
+            }
+            else
+            {
+                return FilterQueryDatabase.GetMapping(type).TableName;
+            }
+        }
 
         /// <summary>
         /// Caches values from [SelfIndexed] properties grouped by IndexingMode.
