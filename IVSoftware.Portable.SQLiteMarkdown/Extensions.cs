@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using System;
 using System.Collections.Generic;
@@ -84,6 +85,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 out xast);
         }
 
+        [Canonical("Common target for string extensions to ParseSqlMarkdown.")]
+        public static string ParseSqlMarkdown(this string @this, Type type, QueryFilterMode qfMode, out XElement xast)
+            => new MarkdownContext(
+                    type, 
+                    isFilterExecutionEnabled: false
+                ).ParseSqlMarkdown(@this, type, qfMode, out xast);
+
+        [Canonical("Standalone target for string extensions to ParseSqlMarkdown with validation flow.")]
         private static string ParseSqlMarkdown(
             this string @this,
             ref ValidationState validationState,
@@ -91,14 +100,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             QueryFilterMode qfMode,
             Predicate<string>? validationPredicate,
             out XElement xexpr) => 
-                new MarkdownContext(type)
+                new MarkdownContext(
+                type,
+                isFilterExecutionEnabled: false)
                 {
                     ValidationPredicate = validationPredicate!, // Setting to null sets the VP to its default (which isn't null).
                 }.ParseSqlMarkdown(@this, type, qfMode, out xexpr);
-        public static string ParseSqlMarkdown(this string @this, Type type, QueryFilterMode qfMode, out XElement xast)
-            => new MarkdownContext(type).ParseSqlMarkdown(@this, type, qfMode, out xast);
-        public static string ParseSqlMarkdown(this MarkdownContext @this, string expr, Type type, QueryFilterMode qfMode, out XElement xast)
-            => @this.ParseSqlMarkdown(expr, type, qfMode, out xast);
 
         /// <summary>
         /// Non-breaking compatible filter term attribute getter.

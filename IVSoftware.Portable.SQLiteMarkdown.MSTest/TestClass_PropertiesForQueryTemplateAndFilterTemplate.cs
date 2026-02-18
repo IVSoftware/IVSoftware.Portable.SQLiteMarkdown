@@ -233,7 +233,6 @@ $bracket$bracket$bracket$"
     {
         string actual, expected;
 
-        // Currently passing
         SimpleTerm();
         ImplicitAnd();
         ExplicitAnd();
@@ -242,8 +241,6 @@ $bracket$bracket$bracket$"
         NotOperator();
         SingleQuotedPhrase();
         DoubleQuotedPhrase();
-
-        // Currently failing
         ExplicitOr();
         RedundantOr();
         GroupedNegation();

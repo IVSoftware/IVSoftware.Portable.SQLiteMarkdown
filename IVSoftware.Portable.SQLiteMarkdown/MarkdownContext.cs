@@ -28,8 +28,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// clause by accumulating  parsing state, managing AST nodes, tracking substitutions,
     /// and guiding final SQL generation via attribute-aware hydration.
     /// </summary>
-    [DebuggerDisplay("ContractType={ContractType}")]
-    public partial class MarkdownContext 
+    [DebuggerDisplay("ContractType={ContractType} ProxyType={ProxyType}")]
+    public class MarkdownContext 
         : WatchdogTimer
         , INotifyPropertyChanged
     {
@@ -42,16 +42,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// The initial type must be known and captured regardless of GF mode.
         /// A parameterless CTOR would not be appropriate so avoid that.
         /// </remarks>
-        public MarkdownContext(Type type) : this(type, false) { }
+        public MarkdownContext(Type type) : this(type, true) { }
 
+        /// <summary>
+        /// Constructs an MDC instance with explicit instructions on whether 
+        /// to provision a memory SQLite database for filter queries,
+        /// </summary>
         [Canonical]
-        public MarkdownContext(Type type, bool disableQuerySemantics)
+        public MarkdownContext(Type type, bool isFilterExecutionEnabled)
         {
             Interval = TimeSpan.FromSeconds(0.25);          // Default. Consumer can change.
             XAST = new
                 XElement(nameof(StdAstNode.ast))
                 .WithBoundAttributeValue(this);
+
+            #region a t o m i c 
+            // Set this FIRST
+            IsFilterExecutionEnabled = isFilterExecutionEnabled;
             ContractType = type;
+            #endregion a t o m i c
         }
 
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
@@ -1085,6 +1094,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         Type? _contractType = default;
 
+        /// <summary>
+        /// Creates or recreates a memory database containing a table for the ContractType
+        /// </summary>
         protected virtual void OnContractTypeChanged()
         {
             if (ContractType is null)
@@ -1093,23 +1105,72 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
-                if (FilterQueryDatabase != null)
+                if (IsFilterExecutionEnabled)
                 {
-                    FilterQueryDatabase.Dispose();
+                    if (FilterQueryDatabase != null)
+                    {
+                        FilterQueryDatabase.Dispose();
+                    }
+                    FilterQueryDatabase = new SQLiteConnection(":memory:");
+                    FilterQueryDatabase.CreateTable(ContractType);
+                    // Loopback 'as seen by' SQLite
+                    var mapping = FilterQueryDatabase.GetMapping(ContractType);
+                    TableName = mapping.TableName;
+                    if (mapping.PK is null)
+                    {
+                        // Fallback to SQLite implicit rowid if no explicit PK exists.
+                        // Consumer may override by handling the Throw.
+
+                        PrimaryKeyName = "rowid";
+
+                        string msg = $@"
+Context has been created with filter execution enabled
+'{ContractType.Name}' is a model that provides no [PrimaryKey].
+If this is deliberate, mark this Throw as Handled.
+Overriding the OnContractTypeChanged method in a subclass offers full control.
+".TrimStart();
+                        this.ThrowHard<SQLiteException>(msg);
+                    }
+                    else
+                    {
+                        PrimaryKeyName = mapping.PK.Name;
+                    }
                 }
-                FilterQueryDatabase  = new SQLiteConnection(":memory:");
-                FilterQueryDatabase.CreateTable(ContractType);
             }
         }
 
-        public Type ProxyType
+        protected string TableName { get; set; }
+        protected string PrimaryKeyName { get; set; }
+
+
+        /// <summary>
+        /// Proxy type allows e.g. query by interface or subclass
+        /// that may supercede the [SelfIndexed] defaults.
+        /// </summary>
+        /// <remarks>
+        /// The target table, however, is *not allowed* to be different.
+        /// </remarks>
+        private Type ProxyType
         {
             get => _proxyType ?? ContractType;
             set
             {
                 if (!Equals(_proxyType, value))
                 {
-                    _proxyType = value;
+                    if(value == ContractType)
+                    {
+                        _proxyType = null;
+                    }
+                    else
+                    {
+                        throw new NotImplementedException("ToDo");
+                        // TO DO
+                        // From FilterQueryDatabase verify:
+                        // ContractType has a table
+                        // It is the only table
+                        // It is the same table as the proxy class
+                        _proxyType = value;
+                    }
                 }
             }
         }
@@ -1472,7 +1533,7 @@ AND
         #endregion C O N F I G
 
         #region N A V    S E A R C H    S T A T E    M A C H I N E
-        public virtual bool RouteToFullRecordset => true;
+
         protected FilteringState FilteringStatePrev { get; set;  }
         public FilteringState FilteringState
         {
@@ -1751,7 +1812,16 @@ AND
             Running && (FilteringState != FilteringState.Ineligible)
             ? CollectionSyncAuthority.Unfiltered
             : CollectionSyncAuthority.Filtered;
-                
+
+        /// <summary>
+        /// Consumers that maintain dual collections (not typical) may override
+        /// this property to route between Full (canonical) and Filtered versions.
+        /// </summary>
+        /// <remarks>
+        /// This is distinct from the SyncAuthority which governs DDX direction. 
+        /// </remarks>
+        public virtual bool RouteToFullRecordset => true;
+
 
         public SearchEntryState SearchEntryState
         {
@@ -1911,6 +1981,7 @@ AND
         /// Produce a IN clause with negative polarity that applies the specified PKs.
         /// </summary>
         public HashSet<object> DisallowedPrimaryKeys { get; } = new();
+        public bool IsFilterExecutionEnabled { get; }
     }
     public class MarkdownContext<T> : MarkdownContext
     {

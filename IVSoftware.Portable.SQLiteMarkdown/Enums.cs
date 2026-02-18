@@ -227,7 +227,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Unfiltered,
     }
 
-
     public enum Win32Message
     {
         WM_MOUSEMOVE = 0x0200,
