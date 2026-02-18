@@ -5,6 +5,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -128,6 +129,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             localLint();
             localRemoveTransientTrailingOperator();
             localBuildAST();
+            if (FilteringState != FilteringState.Ineligible)
+            {
+                localBuildPrimaryKeyClause();
+            }
             return localBuildExpression();
 
             #region L o c a l F x
@@ -1014,6 +1019,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 return Query;
             }
+
+            void localBuildPrimaryKeyClause()
+            {
+
+            }
             #endregion L o c a l F x   
         }
 
@@ -1025,9 +1035,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// The attributed CLR type used to resolve which properties participate in term matching.
         /// </summary>
-        public Type? ContractType
+        public Type ContractType
         {
-            get => _contractType;
+            get
+            {
+                if (_contractType is null)
+                {
+                    this.ThrowHard<NullReferenceException>($"{nameof(ContractType)} cannot be null.");
+                }
+                return _contractType!;
+            }
             set
             {
                 if (value is null)
@@ -1066,7 +1083,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-
         Type? _contractType = default;
 
         protected virtual void OnContractTypeChanged()
@@ -1086,7 +1102,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        public Type? ProxyType { get; private set; }
+        public Type ProxyType
+        {
+            get => _proxyType ?? ContractType;
+            set
+            {
+                if (!Equals(_proxyType, value))
+                {
+                    _proxyType = value;
+                }
+            }
+        }
+        Type? _proxyType = default;
 
         /// <summary>
         /// Caches values from [SelfIndexed] properties grouped by IndexingMode.
@@ -1153,11 +1180,141 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// The SQL WHERE clause preamble, e.g. "SELECT * FROM tablename WHERE".
         /// </summary>
         public string Preamble { get; internal set; } = string.Empty;
-        public string WherePredicate { get; protected set; } = string.Empty;
-        public string Query => $@"
+
+        public string WherePredicate
+        {
+            get => string.IsNullOrWhiteSpace(_wherePredicate) ? "1" : _wherePredicate;
+            set
+            {
+                if (!Equals(_wherePredicate, value))
+                {
+                    _wherePredicate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        string _wherePredicate = string.Empty;
+        public string PrimaryKeyPredicate { get; protected set; } = string.Empty;
+        public string Query
+        {
+            get
+            {
+                return $@"
 {Preamble} 
-{WherePredicate}"
-.Trim();
+{WherePredicate}
+{PrimaryKeyPredicateTerm}
+{LimitTerm}"
+    .Trim();
+            }
+        }
+
+        public bool CanExecutePrimaryKeyClause()
+        {
+            int total = AllowedPrimaryKeys.Count + DisallowedPrimaryKeys.Count;
+
+            return
+                total != 0
+                && total <= MaxPrimaryKeyTermCount
+                && FilteringState != FilteringState.Ineligible
+                && !string.IsNullOrWhiteSpace(PrimaryKeyColumnName);
+        }
+        /// <summary>
+        /// Builds a primary key predicate using IN and/or NOT IN clauses
+        /// based on AllowedPrimaryKeys and DisallowedPrimaryKeys.
+        /// Does not include leading AND; caller is responsible for composition.
+        /// Returns an empty string if no predicate can be constructed.
+        /// </summary>
+        public string PrimaryKeyClause()
+        {
+            if (!CanExecutePrimaryKeyClause())
+                return string.Empty;
+
+            var clauses = new List<string>();
+
+            if (AllowedPrimaryKeys.Count > 0)
+            {
+                string allowedList = string.Join(
+                    ", ",
+                    AllowedPrimaryKeys.Select(pk => localFormatPrimaryKeyLiteral(pk)));
+
+                clauses.Add($"{PrimaryKeyColumnName} IN ({allowedList})");
+            }
+
+            if (DisallowedPrimaryKeys.Count > 0)
+            {
+                string disallowedList = string.Join(
+                    ", ",
+                    DisallowedPrimaryKeys.Select(pk => localFormatPrimaryKeyLiteral(pk)));
+
+                clauses.Add($"{PrimaryKeyColumnName} NOT IN ({disallowedList})");
+            }
+
+            if (clauses.Count == 0)
+                return string.Empty;
+
+            return string.Join(" AND ", clauses); 
+            
+            static string localFormatPrimaryKeyLiteral(object pk)
+            {
+                return pk switch
+                {
+                    uint or int or long => pk.ToString()!,
+                    string s => $"'{s.Replace("'", "''")}'",
+                    _ => throw new InvalidOperationException("Unsupported primary key type.")
+                };
+            }
+        }
+        public string PrimaryKeyColumnName
+        {
+            get
+            {
+                var netType = ProxyType;
+                if (_primaryKeyColumnName is null)
+                {
+                }
+                return _primaryKeyColumnName;
+            }
+        }
+        string? _primaryKeyColumnName = null!;
+
+
+        #region L I M I T S 
+
+        /// <summary>
+        /// The maximum count of included and excluded predicates.
+        /// </summary>
+        public uint MaxPrimaryKeyTermCount { get; set; } = 1024;
+        public uint DefaultLimit
+        {
+            get => _defaultLimit;
+            set
+            {
+                if (!Equals(_defaultLimit, value))
+                {
+                    _defaultLimit = Math.Max(1, value);
+                    OnPropertyChanged();
+                }
+            }
+        }
+        uint _defaultLimit = uint.MaxValue;
+
+        public uint Limit =>
+            _dhostLimit.Tokens.LastOrDefault()?.Sender is uint limit 
+            ? limit 
+            : DefaultLimit;
+
+        private readonly DisposableHost _dhostLimit = new();
+
+        public IDisposable BeginLimit(uint limit) => _dhostLimit.GetToken(sender: limit);
+
+        private string PrimaryKeyPredicateTerm => 
+            CanExecutePrimaryKeyClause() 
+            ? $@"
+AND
+({PrimaryKeyPredicate})"
+            : string.Empty;
+        private string LimitTerm => Limit == uint.MaxValue ? string.Empty: $"LIMIT {Limit}";
+        #endregion L I M I T S
 
         #region N A M E D    S U P P O R T
         /// <summary>
@@ -1294,7 +1451,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected virtual SQLiteConnection? FilterQueryDatabase { get; set; }
 
         
-        public SQLiteConnection MemoryDatabase
+        public SQLiteConnection? MemoryDatabase
         {
             get => _memoryDatabase;
             set
@@ -1310,8 +1467,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-        // Nullable property, but we're not in
-        // a target framework that supports it.
         SQLiteConnection? _memoryDatabase = default;
 
         #endregion C O N F I G
@@ -1746,6 +1901,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public string TagMatchTerm => string.Join(" ", _parsedIndexTerms[IndexingMode.TagMatchTerm].Select(_ => $"[{_}]"));
 
         #endregion S E L F    I N D E X E D
+
+        /// <summary>
+        /// Produce a IN clause with positive polarity that applies the specified PKs.
+        /// </summary>
+        public HashSet<object> AllowedPrimaryKeys { get; } = new();
+
+        /// <summary>
+        /// Produce a IN clause with negative polarity that applies the specified PKs.
+        /// </summary>
+        public HashSet<object> DisallowedPrimaryKeys { get; } = new();
     }
     public class MarkdownContext<T> : MarkdownContext
     {
