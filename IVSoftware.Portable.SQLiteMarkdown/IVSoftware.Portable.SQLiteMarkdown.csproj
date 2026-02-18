@@ -13,7 +13,7 @@
 		<LangVersion>latest</LangVersion>
 		
 		<BaseVersion>2.0.0</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-alpha06</VersionPrefix>
+		<VersionPrefix>$(BaseVersion)-beta</VersionPrefix>
 		
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -84,6 +84,12 @@
 			- Synchronization authority between canonical and projected collections is declarative.
 			- Authority shifts automatically during refinement epochs to suppress upstream propagation.
 			- Circular collection change events are prevented through authority semantics rather than guard flags.
+
+			[SelfIndexed] Properties
+			
+			- Values included in may now contain operators.
+			- The terms will preserve the escaped characters.
+			- A complementary escaped input text term will produce a match, e.g. a description that ends with an exclamation point.
 
 		</PackageReleaseNotes>
 
