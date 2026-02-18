@@ -1352,5 +1352,22 @@ SELECT * FROM items WHERE
                 #endregion S U B T E S T S
             }
         }
+
+
+        [TestMethod]
+        public async Task Test_SyncAuthority()
+        {
+            string actual, expected;
+
+            MarkdownContext<SelectableQFModel> mdc = new();
+
+            subtest_SelectAndQuery();
+
+            #region S U B T E S T S 
+            void subtest_SelectAndQuery()
+            {
+            }
+            #endregion S U B T E S T S
+        }
     }
 }

@@ -67,10 +67,37 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         Active,
     }
+
+    /// <summary>
+    /// IME flat state machine. Takes on directionality in conjunction with FilteringState.
+    /// </summary>
     public enum SearchEntryState
     {
+        /// <summary>
+        /// The 'absolute zero' of the state machine and is the first of two states representing an empty IME.
+        /// </summary>
+        /// <remarks>
+        /// Based on reachable states that are dependent on config, the gravity
+        /// of regressive state machine 'eventually' reaches this state.
+        /// Mental Model:
+        /// When IME is non-empty:
+        /// - The first call to Clear empties the IME. Then:
+        /// - If FilteringState.Active then -> FilteringState.Armed + FilteredItems 
+        ///   will contain All items. When Query mode is reachable, this will be 'all 
+        ///   items in the current recordset' whereas in Filter-only mode this will
+        ///   be all items in the canonical unfiltered collection.        ///   
+        /// When IME is already empty:
+        /// - When Query state is reachable:
+        ///   case FilteringState.Armed then -> FilteringState.Ineligible + FilteredItems will contain None.
+        /// </remarks>
         Cleared,
 
+        /// <summary>
+        /// This is the second of two states representing an empty IME.
+        /// </summary>
+        /// <remarks>
+        /// 
+        /// </remarks>
         QueryEmpty,
 
         QueryENB,
@@ -85,7 +112,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// Flags-based enum controlling the allowable states of the FSM
+    /// Flags-based enum controlling the allowable states of the FSM.
     /// </summary>
     [Flags]
     public enum QueryFilterConfig
@@ -93,16 +120,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// A configuration that provides Query behavior only.
         /// </summary>
+        /// <remarks>
+        /// Mental Model:
+        /// - *Does Not* employ default settling semantics.
+        /// - Observes query syntax validation as new input is received.
+        /// - Performs a query only on receiving a UI-specific commit action.
+        /// </remarks>
         Query = 0x00040000,
 
         /// <summary>
         /// A configuration that provides Filter behavior only.
         /// </summary>
+        /// <remarks>
+        /// Mental Model:
+        /// - *Does* employ default settling semantics.
+        /// - Filters a collection of two or more items after IMS input settles.
+        /// </remarks>
         Filter = 0x00100000,
 
         /// <summary>
         /// A configuration that provides both Query and Filter state-based behaviors.
-        /// </summary> 
+        /// </summary>
+        /// Mental Model:
+        /// - Host an initial Query state and arms Filter mode if recordset count is <= 2.
+        /// - The initial query state must receive a UI-specific action to execute.
+        /// - The conditional filter state reacts to *new* settled IME changes.
+        /// </remarks>
         QueryAndFilter = Query | Filter,
     }
 
