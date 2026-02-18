@@ -1142,11 +1142,15 @@ Overriding the OnContractTypeChanged method in a subclass offers full control.
         /// contract (e.g. interface or subclass) while preserving table identity.
         /// </summary>
         /// <remarks>
-        /// - ProxyType may redefine attribute semantics for parsing, but it must
-        ///   resolve to the same SQLite table as ContractType.
-        /// - Why it matters: Different contracts may expose different Term attributes
-        ///   for the same underlying table, enabling alternate query surfaces without
-        ///   changing physical storage.
+        /// - Mental Model:
+        ///     Different contracts may expose different Term attributes for the
+        ///     same underlying table, enabling alternate query surfaces without
+        ///     changing physical storage.
+        /// - Rules:
+        ///   1. TableName is the sole authority for storage identity and cannot be
+        ///      supplanted by a [Table] attribute on the proxy or by any other means.
+        ///   2. A proxy type is valid only if its Term attributes reference columns
+        ///      that exist in the resolved SQLite table mapping.
         /// </remarks>
         private Type ProxyType
         {
