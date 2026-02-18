@@ -1,12 +1,16 @@
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SQLite;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
 using System.Reflection;
@@ -1361,7 +1365,58 @@ SELECT * FROM items WHERE
 
             MarkdownContext<SelectableQFModel> mdc = new();
 
+            subtest_FilterOnly();
+            subtest_QueryOnly();
+            subtest_QueryAndFilter();
+
+            Assert.Inconclusive();
+            #region S U B T E S T S 
+
+            void subtest_FilterOnly()
+            {
+                mdc.QueryFilterConfig = QueryFilterConfig.Filter;
+            }
+
+            void subtest_QueryOnly()
+            {
+                mdc.QueryFilterConfig = QueryFilterConfig.Query;
+            }
+            void subtest_QueryAndFilter()
+            {
+                mdc.QueryFilterConfig = QueryFilterConfig.QueryAndFilter;
+            }
+            #endregion S U B T E S T S
+        }
+
+#if false
+        [TestMethod]
+        public async Task Test_ProxyAuthority()
+        {
+            string actual, expected;
+
+            Queue<SenderEventPair> eventQueue = new();
+
+            #region L o c a l F x
+            void localOnEvent(object? sender, Throw e)
+            {
+                eventQueue.Enqueue((sender, e));
+            }
+            #endregion L o c a l F x
+            using var local = this.WithOnDispose(
+                onInit: (sender, e) =>
+                {
+                    Throw.BeginThrowOrAdvise += localOnEvent;
+                },
+                onDispose: (sender, e) =>
+                {
+                    Throw.BeginThrowOrAdvise += localOnEvent;
+                });
+
+            MarkdownContext<SelectableQFModel> mdc = new();
+
+
             subtest_SelectAndQuery();
+            Assert.Inconclusive();
 
             #region S U B T E S T S 
             void subtest_SelectAndQuery()
@@ -1369,5 +1424,6 @@ SELECT * FROM items WHERE
             }
             #endregion S U B T E S T S
         }
+#endif
     }
 }

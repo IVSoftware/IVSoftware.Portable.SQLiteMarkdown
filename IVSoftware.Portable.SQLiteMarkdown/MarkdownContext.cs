@@ -1144,11 +1144,15 @@ Overriding the OnContractTypeChanged method in a subclass offers full control.
         protected string PrimaryKeyName { get; set; }
 
         /// <summary>
-        /// Proxy type allows e.g. query by interface or subclass
-        /// that may supercede the [SelfIndexed] defaults.
+        /// Allows query interpretation to be projected through an alternate
+        /// contract (e.g. interface or subclass) while preserving table identity.
         /// </summary>
         /// <remarks>
-        /// The target table, however, is *not allowed* to be different.
+        /// - ProxyType may redefine attribute semantics for parsing, but it must
+        ///   resolve to the same SQLite table as ContractType.
+        /// - Why it matters: Different contracts may expose different Term attributes
+        ///   for the same underlying table, enabling alternate query surfaces without
+        ///   changing physical storage.
         /// </remarks>
         private Type ProxyType
         {
@@ -1186,6 +1190,8 @@ SQLite Tables are incompatible:
             }
         }
         Type? _proxyType = default;
+
+
 
         string GetTableNameHeuristic(Type type)
         {
