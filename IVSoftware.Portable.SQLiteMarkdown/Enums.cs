@@ -42,74 +42,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         Json,
     }
-    public enum FilteringState
-    {
-        /// <summary>
-        /// One of:
-        /// - Filtering is either globally disabled.
-        /// - The minimum item count of 2 UNFILTERED items is not present.
-        /// </summary>
-        Ineligible,
-
-        /// <summary>
-        /// - The list meets the minumum requirement.
-        /// - Now, when the text changes, a query will execute and filtering 
-        ///   will be considered active regardless of the filtered result count.
-        /// </summary>
-        /// <remarks>
-        /// - Pushing Armed will clear the filtered items buffer.
-        /// </remarks>
-        Armed,
-
-        /// <summary>
-        /// The visible list items represent a filtered
-        /// subset of records that match the predicate.
-        /// </summary>
-        Active,
-    }
-
-    /// <summary>
-    /// IME flat state machine. Takes on directionality in conjunction with FilteringState.
-    /// </summary>
-    public enum SearchEntryState
-    {
-        /// <summary>
-        /// The 'absolute zero' of the state machine and is the first of two states representing an empty IME.
-        /// </summary>
-        /// <remarks>
-        /// Based on reachable states that are dependent on config, the gravity
-        /// of regressive state machine 'eventually' reaches this state.
-        /// Mental Model:
-        /// When IME is non-empty:
-        /// - The first call to Clear empties the IME. Then:
-        /// - If FilteringState.Active then -> FilteringState.Armed + FilteredItems 
-        ///   will contain All items. When Query mode is reachable, this will be 'all 
-        ///   items in the current recordset' whereas in Filter-only mode this will
-        ///   be all items in the canonical unfiltered collection.        ///   
-        /// When IME is already empty:
-        /// - When Query state is reachable:
-        ///   case FilteringState.Armed then -> FilteringState.Ineligible + FilteredItems will contain None.
-        /// </remarks>
-        Cleared,
-
-        /// <summary>
-        /// This is the second of two states representing an empty IME.
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        QueryEmpty,
-
-        QueryENB,
-
-        QueryEN,
-
-        #region Q U E R Y
-        QueryCompleteNoResults,
-
-        QueryCompleteWithResults,
-        #endregion Q U E R Y
-    }
 
     /// <summary>
     /// Flags-based enum controlling the allowable states of the FSM.
@@ -147,6 +79,109 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - The conditional filter state reacts to *new* settled IME changes.
         /// </remarks>
         QueryAndFilter = Query | Filter,
+    }
+
+    /// <summary>
+    /// State machine whose specific behavior depends on QueryFilterConfig
+    /// </summary>
+    public enum FilteringState
+    {
+        /// <summary>
+        /// One of:
+        /// - Filtering is either globally disabled.
+        /// - The minimum item count of 2 UNFILTERED items is not present.
+        /// </summary>
+        Ineligible,
+
+        /// <summary>
+        /// - The list meets the minumum requirement.
+        /// - Now, when the text changes, a query will execute and filtering 
+        ///   will be considered active regardless of the filtered result count.
+        /// </summary>
+        /// <remarks>
+        /// - Pushing Armed will clear the filtered items buffer.
+        /// </remarks>
+        Armed,
+
+        /// <summary>
+        /// The visible list items represent a filtered
+        /// subset of records that match the predicate.
+        /// </summary>
+        /// <remarks>
+        /// When the regressive Clear is called in this state:
+        /// - The IME is emptied.
+        /// - The FilteredItems collection (e.g. 'visible items') matched the canonical UnfilteredItems collection.
+        /// </remarks>
+        Active,
+    }
+
+    /// <summary>
+    /// IME flat state machine. Takes on directionality in conjunction with FilteringState.
+    /// </summary>
+    public enum SearchEntryState
+    {
+        /// <summary>
+        /// The 'absolute zero' of the query-filter state machine that represents a regressive Clear response.
+        /// </summary>
+        /// <remarks>
+        /// - The IME has been cleared.
+        /// - The FilteredItems collection (e.g. "visible items") *has* (also) been cleared.
+        /// </remarks>
+        Cleared,
+
+        /// <summary>
+        /// Intermediate response to regressive Clear.
+        /// </summary>
+        /// <remarks>
+        /// - The IME has been cleared.
+        /// - The FilteredItems collection (e.g. "visible items") *has not* been cleared.
+        /// - NOT REACHABLE in QueryFilterConfig.Filter.
+        /// </remarks>
+        QueryEmpty,
+
+        /// <summary>
+        /// IME is non-empty, but *has not* met the validation (e.g. '3 char minimum') to execute a query.
+        /// </summary>
+        /// <remarks>
+        /// - NOT REACHABLE in QueryFilterConfig.Filter.
+        /// </remarks>
+        QueryENB,
+
+        /// <summary>
+        /// IME *has* met the validation (e.g. '3 char minimum') to execute a query and is awaiting Commit.
+        /// </summary>
+        /// <remarks>
+        /// - NOT REACHABLE in QueryFilterConfig.Filter.
+        /// </remarks>
+        QueryEN,
+
+        #region Q U E R Y
+        /// <summary>
+        /// The Commit action yielded 0 results for the current IME state.
+        /// </summary>
+        /// <remarks>
+        /// Mental Models for 'QueryCompleteNoResults' and 'QueryCompleteWithResults':
+        /// In QueryFilterConfig.Query mode:
+        /// - Always represents the result of the *external* user-defined query.
+        /// - State *cannot be advanced*.
+        /// - No mechanism exists to refine this query or filter the results.
+        /// In QueryFilterConfig.QueryAndFilter mode:
+        /// - If FilteringState == FilteringState.Ineligible
+        ///   Then this represents the result of the *external* user-defined query. 
+        /// - If FilteringState > FilteringState.Ineligible (is filtering a current recordset)
+        ///   Then this represents the result *internal* query on the UnfilteredItems memory database.
+        /// In QueryFilterConfig.Filter mode:
+        /// - Always represents the result *internal* query on the UnfilteredItems memory database.
+        /// - A state of 'QueryCompleteNoResults' when UnfilteredItems is non-empty is a special case
+        ///   that transfers authority to the AdaptiveShowAll state machine.
+        /// </remarks>
+        QueryCompleteNoResults,
+
+        /// <summary>
+        /// The Commit action yielded >= 1 result for the current IME state.
+        /// </summary>
+        QueryCompleteWithResults,
+        #endregion Q U E R Y
     }
 
     /// <summary>
