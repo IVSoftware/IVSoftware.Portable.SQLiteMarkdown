@@ -72,8 +72,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
         /// </summary>
         public string? TableNameFromBaseClassAttribute { get; }
 
+        bool _isUserSetName => !string.IsNullOrWhiteSpace(_tableName);
+
         public bool IsConflict =>
-            !( string.IsNullOrWhiteSpace(TableNameFromBaseClassAttribute)
+            !( _isUserSetName
+               ||string.IsNullOrWhiteSpace(TableNameFromBaseClassAttribute)
                || Equals(TableName, TableNameFromBaseClassAttribute));
     }
 }
