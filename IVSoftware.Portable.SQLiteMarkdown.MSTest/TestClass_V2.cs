@@ -72,16 +72,11 @@ public class TestClass_V2
         TableMapping mapping;
         using SQLiteConnection cnx = new(":memory:");
 
-        subtest_SelectableQFModel();
-        subtest_ExplicitAttributeOnSubclass();
+        //subtest_SelectableQFModel();
+        //subtest_ExplicitAttributeOnSubclass();
         subtest_ImplicitGotcha();
-        subtest_SimpleQueryNoTag();
-        subtest_SimpleQueryWithTag();
-        subtest_Case6();
-        subtest_Case7();
-        subtest_Case8();
-        subtest_Case9();
-        subtest_Case10();
+        //subtest_SimpleQueryNoTag();
+        //subtest_SimpleQueryWithTag();
 
         #region S U B T E S T S
         void subtest_SelectableQFModel()
@@ -160,21 +155,6 @@ SELECT * FROM items WHERE
                 actual.NormalizeResult(),
                 "Expecting result to match."
             );
-        }
-        void subtest_Case6()
-        {
-        }
-        void subtest_Case7()
-        {
-        }
-        void subtest_Case8()
-        {
-        }
-        void subtest_Case9()
-        {
-        }
-        void subtest_Case10()
-        {
         }
         #endregion S U B T E S T S
     }

@@ -1092,8 +1092,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Type? _contractType = default;
 
         /// <summary>
-        /// Creates or recreates a memory database containing a table for the ContractType
+        /// Conditionally creates or recreates a memory database containing a table for the ContractType
         /// </summary>
+        /// <remarks>
+        /// The value of IsFilterExecutionEnabled determines whether the database is created.
+        /// </remarks>
         protected virtual void OnContractTypeChanged()
         {
             if (ContractType is null)
@@ -1111,20 +1114,71 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     FilterQueryDatabase = new SQLiteConnection(":memory:");
                     FilterQueryDatabase.CreateTable(ContractType);
                 }
-                var e = new TableNameResolvingEventArgs(ContractType, FilterQueryDatabase);
-                TableNameResolving?.Invoke(this, e);
+                string currentTableName = 
+                    ContractType.GetCustomAttribute<TableAttribute>(inherit: false)?.Name ?? ContractType.Name;
+
+                if( ContractType.TryGetTableNameFromBaseClass(out var baseClassTableName)
+                    && !string.Equals(currentTableName, baseClassTableName))
+                {
+                    var e = new ResolveTableNameConflictEventArgs(currentTableName, baseClassTableName);
+                    ResolveTableNameConflict?.Invoke(this, e);
+                    switch (e.TableNameResolution)
+                    {
+                        case TableNameResolution.Conflicted:
+                            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 2, 19).Date, "Don't forget disabled");
+                            this.ThrowHard<AmbiguousMatchException>(
+    $"Table name conflict detected for contract type '{ContractType.FullName}'. " +
+    $"Current table name '{currentTableName}' differs from inherited table name '{baseClassTableName}'.");
+                            break;
+                        case TableNameResolution.UseCurrent:
+                            TableName = currentTableName;
+                            break;
+                        case TableNameResolution.UseInherited:
+                            TableName = baseClassTableName;
+                            break;
+                        default:
+                            this.ThrowHard<NotSupportedException>($"The {e.TableNameResolution.ToFullKey()} case is not supported.");
+                            break;
+                    }
+                }
+                else
+                {
+                    TableName = currentTableName;
+                }
             }
-        }
-        public static event EventHandler<TableNameResolvingEventArgs>? TableNameResolving;
+        }        
+        public static event EventHandler<ResolveTableNameConflictEventArgs>? ResolveTableNameConflict;
 
         /// <summary>
         /// This value is determined by the ContractType and cannot be modified.
         /// </summary>
-        /// <remarks>
-        /// Use the [Table] attribute on the contract type for full control.
-        /// </remarks>
+        [Canonical("SELECT * FROM {TableName}")]
         public string TableName { get; private set; }
-        protected string PrimaryKeyName { get; set; }
+
+        /// <summary>
+        /// Conditionally retrieves PK from cnx if it exists.
+        /// </summary>
+        protected string PrimaryKeyName
+        {
+            get
+            {
+                if( FilterQueryDatabase is not null 
+                    && FilterQueryDatabase.GetMapping(ContractType) is { } mapping
+                    && !string.IsNullOrWhiteSpace(mapping.PK?.Name))
+                {
+                    return mapping.PK?.Name!;
+                }
+                else
+                {
+                    this.ThrowHard<InvalidOperationException>(
+    $"PrimaryKeyName was requested while filter execution is not active. " +
+    $"Ensure {nameof(IsFilterExecutionEnabled)} is true and the filter database has been initialized " +
+    $"before accessing {nameof(PrimaryKeyName)}.");
+
+                    return null!; // We warned you.
+                }
+            }
+        }
 
         /// <summary>
         /// Allows query interpretation to be projected through an alternate
