@@ -1007,15 +1007,16 @@ FilterTerm";
             );
         }
 
-
         /// <summary>
         /// By design, the ParseSQLiteMarkdown method employs inheritance to determine table identity for parsing.
         /// </summary>
         /// <remarks>
         /// SQLite itself, when invoking CreateTable on subclass T, does *not* drill down for table inheritance
+        /// This is the original test. There is also a newer streamlined version.
+        /// #{B593ED5F-684A-4EF1-AA45-66E3766C7277}
         /// </remarks>
         [TestMethod]
-        public void Test_TablePropertyInheritance()
+        public void Test_TableAttributeInheritance()
         {
             string actual, expected;
             List<string> tableNames;

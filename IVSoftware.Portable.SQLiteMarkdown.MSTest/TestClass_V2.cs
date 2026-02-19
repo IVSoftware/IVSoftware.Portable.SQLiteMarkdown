@@ -1,16 +1,142 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
 using SQLite;
+using System.Configuration;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
 [TestClass]
 public class TestClass_V2
 {
+
+    [TestMethod]
+    public void Test_QueryPropertyBuilder()
+    {
+        string actual, expected;
+
+        Assert.Inconclusive();
+    }
+
+    /// <summary>
+    /// Streamlined checker for table inheritance.
+    /// </summary>
+    /// <remarks>
+    /// #{B593ED5F-684A-4EF1-AA45-66E3766C7277}
+    /// </remarks>
+    [TestMethod]
+    public void Test_StreamlinedTableAttributeInheritance()
+    {
+        string actual, expected;
+        Queue<SenderEventPair> eventQueue = new();
+        SenderEventPair sep;
+
+        #region L o c a l F x 
+        using var awaited = this.WithOnDispose(
+            onInit: (sender, e) => Threading.Extensions.Awaited += localOnAwaited,
+            onDispose: (sender, e) => Threading.Extensions.Awaited -= localOnAwaited);
+        void localOnAwaited(object? sender, AwaitedEventArgs e)
+        {
+            switch (e.Caller)
+            {
+                case nameof(MarkdownContext.FilterQueryDatabase):
+                    eventQueue.Enqueue(new(sender, e));
+                    break;
+            }
+        }
+        void localOnEvent(object? sender, Throw e)
+        {
+            eventQueue.Enqueue((sender, e));
+        }
+        #endregion L o c a l F x
+
+        using var local = this.WithOnDispose(
+            onInit: (sender, e) =>
+            {
+                Throw.BeginThrowOrAdvise += localOnEvent;
+            },
+            onDispose: (sender, e) =>
+            {
+                Throw.BeginThrowOrAdvise += localOnEvent;
+            });
+
+        TableMapping mapping;
+        using SQLiteConnection cnx = new(":memory:");
+
+        subtest_SelectableQFModel();
+        subtest_ExplicitAttributeOnSubclass();
+        subtest_ImplicitGotcha();
+        subtest_Case4();
+        subtest_Case5();
+        subtest_Case6();
+        subtest_Case7();
+        subtest_Case8();
+        subtest_Case9();
+        subtest_Case10();
+
+        #region S U B T E S T S
+        void subtest_SelectableQFModel()
+        {
+            // Uncontroversial explicit mapping
+            mapping = cnx.GetMapping<SelectableQFModel>();
+            Assert.AreEqual("items", mapping.TableName, @"Expecting [Table(""items""]");
+            Assert.AreEqual("Id", mapping.PK.PropertyName);
+        }
+
+        void subtest_ExplicitAttributeOnSubclass()
+        {
+            // Uncontroversial explicit mapping
+            mapping = cnx.GetMapping<SelectableQFModelSubclassA>();
+            Assert.AreEqual("itemsA", mapping.TableName, @"Expecting [Table(""itemsA""]");
+            Assert.AreEqual("Id", mapping.PK.PropertyName);
+        }
+
+        void subtest_ImplicitGotcha()
+        {
+            // Illustrative, and problematic implicit mapping
+            mapping = cnx.GetMapping<SelectableQFModelSubclassG>();
+
+            // B O O
+            Assert.AreEqual(
+                "SelectableQFModelSubclassG",
+                mapping.TableName,
+                @"Expecting inherited attribute goes unused.");
+            Assert.AreEqual("Id", mapping.PK.PropertyName);
+        }
+        void subtest_Case4()
+        {
+            actual = "green".ParseSqlMarkdown<SelectableQFModel>();
+
+            actual.ToClipboardExpected();
+            { } // <- FIRST TIME ONLY: Adjust the message.
+            actual.ToClipboardAssert("Expecting result to match.");
+            { }
+        }
+        void subtest_Case5()
+        {
+        }
+        void subtest_Case6()
+        {
+        }
+        void subtest_Case7()
+        {
+        }
+        void subtest_Case8()
+        {
+        }
+        void subtest_Case9()
+        {
+        }
+        void subtest_Case10()
+        {
+        }
+        #endregion S U B T E S T S
+    }
+
     [TestMethod]
     public void Test_SelfIndexingIllegalChars()
     {
@@ -225,7 +351,6 @@ SELECT * FROM items WHERE
     {
         Queue<SenderEventPair> eventQueue = new();
         SenderEventPair sep;
-
 
         #region L o c a l F x 
         using var awaited = this.WithOnDispose(
