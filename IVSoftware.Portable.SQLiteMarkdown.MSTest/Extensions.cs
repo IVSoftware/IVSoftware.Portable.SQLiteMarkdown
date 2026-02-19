@@ -15,11 +15,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 _ => throw new InvalidOperationException("Multiple items in queue."),
             };
 
-        public static SQLiteConnection PopulateDemoDatabase<T>(this SQLiteConnection? @this) 
+        public static void PopulateDemoDatabase<T>(this SQLiteConnection @this) 
             where T : new()
         {
-            @this ??= new SQLiteConnection(":memory:");
-
             @this.CreateTable<T>();
 
             var list = new List<T>();
@@ -79,7 +77,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
 
             @this.InsertAll(list);
-            return @this;
         }
     }
 }
