@@ -403,5 +403,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 yield return current;
             }
         }
+
+        public static bool TryGetTableNameFromBaseClass(this Type @this, out string tableName)
+        {
+            foreach (var @base in @this.BaseTypes())
+            {
+                tableName = @base.GetCustomAttribute<TableAttribute>(inherit: false)?.Name!;
+                if (!string.IsNullOrWhiteSpace(tableName))
+                {
+                    return true;
+                }
+            }
+
+            tableName = string.Empty;
+            return false;
+        }
     }
 }

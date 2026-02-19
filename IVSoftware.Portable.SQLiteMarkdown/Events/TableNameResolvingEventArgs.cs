@@ -79,4 +79,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
                ||string.IsNullOrWhiteSpace(TableNameFromBaseClassAttribute)
                || Equals(TableName, TableNameFromBaseClassAttribute));
     }
+
+    public enum TableNameResolution
+    {
+        Conflicted,
+
+        UseCurrent,
+
+        UseInherited,
+    }
+    public class ResolveTableEventArgs
+    {
+        public ResolveTableEventArgs(string currentTableName, string baseClassTableName)
+        {
+            CurrentTableName = currentTableName;
+            BaseClassTableName = baseClassTableName;
+        }
+        public string CurrentTableName { get; }
+        public string BaseClassTableName { get; }
+
+        public TableNameResolution TableNameResolution { get; set; } = TableNameResolution.Conflicted;
+    }
 }
