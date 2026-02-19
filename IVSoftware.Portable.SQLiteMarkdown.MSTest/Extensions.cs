@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using SQLite;
 using System.Diagnostics;
+using System.Reflection;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
@@ -18,6 +19,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         public static void PopulateDemoDatabase<T>(this SQLiteConnection @this) 
             where T : new()
         {
+            PropertyInfo?
+                piDescription = typeof(T).GetProperty("Description"),
+                piTags = typeof(T).GetProperty("Tags"),
+                piIsChecked = typeof(T).GetProperty("IsChecked");
+
             @this.CreateTable<T>();
 
             var list = new List<T>();
@@ -25,9 +31,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
             {
                 var instance = new T();
-                typeof(T).GetProperty("Description")?.SetValue(instance, description);
-                typeof(T).GetProperty("Tags")?.SetValue(instance, tags);
-                typeof(T).GetProperty("IsChecked")?.SetValue(instance, isChecked);
+                piDescription?.SetValue(instance, description);
+                piTags?.SetValue(instance, tags);
+                piIsChecked?.SetValue(instance, isChecked);
                 if (keywords != null)
                 {
                     var json = JsonConvert.SerializeObject(keywords);

@@ -5,6 +5,7 @@ using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
+using Newtonsoft.Json;
 using SQLite;
 using System.Configuration;
 
@@ -50,6 +51,10 @@ public class TestClass_V2
         }
         void localOnEvent(object? sender, Throw e)
         {
+            if(e is Throw @throw)
+            {
+                @throw.Handled = true;
+            }
             eventQueue.Enqueue((sender, e));
         }
         #endregion L o c a l F x
@@ -70,8 +75,8 @@ public class TestClass_V2
         subtest_SelectableQFModel();
         subtest_ExplicitAttributeOnSubclass();
         subtest_ImplicitGotcha();
-        subtest_Case4();
-        subtest_Case5();
+        subtest_SimpleQueryNoTag();
+        subtest_SimpleQueryWithTag();
         subtest_Case6();
         subtest_Case7();
         subtest_Case8();
@@ -101,23 +106,60 @@ public class TestClass_V2
             mapping = cnx.GetMapping<SelectableQFModelSubclassG>();
 
             // B O O
+            // SQLite wants to THROW AWAY the [Table] property of the base class.
             Assert.AreEqual(
                 "SelectableQFModelSubclassG",
                 mapping.TableName,
                 @"Expecting inherited attribute goes unused.");
             Assert.AreEqual("Id", mapping.PK.PropertyName);
+
+            // Mappings we have many. But this is the first actual table.
+            cnx.CreateTable<SelectableQFModelSubclassG>();
+            actual = JsonConvert.SerializeObject(cnx.GetTableNames(), Formatting.Indented);
+            expected = @" 
+[
+  ""SelectableQFModelSubclassG""
+]";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting json serialization to match."
+            );
+
+            actual = "green [color]".ParseSqlMarkdown<SelectableQFModelSubclassG>();
+            Assert.IsNotNull(eventQueue.DequeueSingle());
+
+            expected = @" 
+SELECT * FROM SelectableQFModelSubclassG WHERE
+(QueryTerm LIKE '%green%') AND (QueryTerm LIKE '%[color]%' OR TagMatchTerm LIKE '%[color]%')";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
         }
-        void subtest_Case4()
+        void subtest_SimpleQueryNoTag()
         {
             actual = "green".ParseSqlMarkdown<SelectableQFModel>();
-
-            actual.ToClipboardExpected();
-            { } // <- FIRST TIME ONLY: Adjust the message.
-            actual.ToClipboardAssert("Expecting result to match.");
-            { }
+            expected = @" 
+SELECT * FROM items WHERE
+(QueryTerm LIKE '%green%')"
+            ;
         }
-        void subtest_Case5()
+        void subtest_SimpleQueryWithTag()
         {
+            actual = "green [color]".ParseSqlMarkdown<SelectableQFModel>();
+            expected = @" 
+SELECT * FROM items WHERE
+(QueryTerm LIKE '%green%') AND (QueryTerm LIKE '%[color]%' OR TagMatchTerm LIKE '%[color]%')";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
         }
         void subtest_Case6()
         {

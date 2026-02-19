@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -113,6 +114,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #if DEBUG
             if (expr == "animal b")
             { }
+            switch (proxyType.Name)
+            {
+                case "SelectableQFModelSubclassG":
+                    break;
+            }
 #endif
             // Guard reentrancy by making sure to clear previous passes.
             XAST.RemoveNodes();
@@ -1104,37 +1110,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                     FilterQueryDatabase = new SQLiteConnection(":memory:");
                     FilterQueryDatabase.CreateTable(ContractType);
-                    // Loopback 'as seen by' SQLite
-                    var mapping = FilterQueryDatabase.GetMapping(ContractType);
-                    TableName = mapping.TableName;
-                    if (mapping.PK is null)
-                    {
-                        // Fallback to SQLite implicit rowid if no explicit PK exists.
-                        // Consumer may override by handling the Throw.
-
-                        PrimaryKeyName = "rowid";
-
-                        string msg = $@"
-Context has been created with filter execution enabled
-'{ContractType.Name}' is a model that provides no [PrimaryKey].
-If this is deliberate, mark this Throw as Handled.
-Overriding the OnContractTypeChanged method in a subclass offers full control.
-".TrimStart();
-                        this.ThrowHard<SQLiteException>(msg);
-                    }
-                    else
-                    {
-                        PrimaryKeyName = mapping.PK.Name;
-                    }
                 }
-                else
-                {
-                    TableName = GetTableNameHeuristic(ContractType);
-                }
+                var e = new TableNameResolvingEventArgs(ContractType, FilterQueryDatabase);
+                TableNameResolving?.Invoke(this, e);
             }
         }
+        public static event EventHandler<TableNameResolvingEventArgs>? TableNameResolving;
 
-        protected string TableName { get; set; }
+        /// <summary>
+        /// This value is determined by the ContractType and cannot be modified.
+        /// </summary>
+        /// <remarks>
+        /// Use the [Table] attribute on the contract type for full control.
+        /// </remarks>
+        public string TableName { get; private set; }
         protected string PrimaryKeyName { get; set; }
 
         /// <summary>
@@ -1189,23 +1178,72 @@ SQLite Tables are incompatible:
         }
         Type? _proxyType = default;
 
-
-
         string GetTableNameHeuristic(Type type)
         {
+#if false
+            TableAttribute attr;
+            string mode;
             if (type is null)
             {
                 return string.Empty;
             }
-            else if (FilterQueryDatabase is null)
-            {
-                return type.GetCustomAttribute<TableAttribute>()?.Name ?? type.Name;
-            }
             else
             {
-                return FilterQueryDatabase.GetMapping(type).TableName;
+                string tableName;
+                if (FilterQueryDatabase is null)
+                {
+                    attr = type.GetCustomAttribute<TableAttribute>(inherit: false);
+                    if (attr is null)
+                    {
+                        mode = "implicit from type";
+                    }
+                    else
+                    {
+                        mode = "explicit from [Table] attribute";
+                    }
+                    tableName = type.GetCustomAttribute<TableAttribute>(inherit: false)?.Name ?? type.Name;
+                }
+                else
+                {
+                    mode = "database table mapping";
+                    // I M P O R T A N T
+                    // This *does* create a TableMapping in FilterQueryDatabase.
+                    // But it *does not* create an actual Table.
+                    tableName = FilterQueryDatabase.GetMapping(type).TableName;
+                }
+
+                foreach (var @base in type.BaseTypes())
+                {
+                    if (@base.GetCustomAttribute<TableAttribute>(inherit: false) is { })
+                    {
+                        attr = @base.GetCustomAttribute<TableAttribute>(inherit: false);
+                        if (attr is null)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            if (!string.Equals(tableName, attr.Name))
+                            {
+                                string msg = $@"
+Ambiguous Table Mapping:
+{nameof(ContractType)} maps to {ContractType.Name} as [Table(""{tableName}"")] by {mode}.
+Its {@base.Name} base class maps to [Table(""{tableName}"")] by {mode}.
+".TrimStart();
+                                this.ThrowHard<AmbiguousMatchException>();
+
+                                // If handled, ignore.
+                                break;
+                            }
+                        }
+                    }
+                }
+                return tableName;
             }
+#endif
+            throw new NotImplementedException("ToDo");
         }
+
 
         /// <summary>
         /// Caches values from [SelfIndexed] properties grouped by IndexingMode.

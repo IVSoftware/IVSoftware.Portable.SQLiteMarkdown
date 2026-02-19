@@ -1,12 +1,14 @@
 ﻿using IVSoftware.Portable;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -379,5 +381,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public static bool CanParseAsJson(this string @this)
             => Regex.IsMatch(@this, @"^\s*\[\s*(""(?:[^""\\]|\\.)*""\s*,\s*)*(""[^""\\]*""\s*)\]\s*$");
+
+        public static string[] GetTableNames(this SQLiteConnection @this)
+        {
+            var query = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%';";
+            var preview = @this.QueryScalars<string>(query);
+            return preview.ToArray();
+        }
+
+        /// <summary>
+        /// Enumerates base classes of the specified subclass.
+        /// </summary>
+        public static IEnumerable<Type> BaseTypes(
+            this Type type,
+            bool includeSelf = false)
+        {
+            for (var current = includeSelf ? type : type.BaseType;
+                 current is not null;
+                 current = current.BaseType)
+            {
+                yield return current;
+            }
+        }
     }
 }
