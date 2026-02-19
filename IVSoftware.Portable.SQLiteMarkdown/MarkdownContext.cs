@@ -1267,38 +1267,38 @@ SQLite Tables are incompatible:
             }
             return expr;
         }
-
         /// <summary>
-        /// The SQL WHERE clause preamble, e.g. "SELECT * FROM tablename WHERE".
+        /// The assembled SQL expression.
         /// </summary>
-        public string Preamble { get; internal set; } = string.Empty;
-
-        public string WherePredicate
-        {
-            get => string.IsNullOrWhiteSpace(_wherePredicate) ? "1" : _wherePredicate;
-            set
-            {
-                if (!Equals(_wherePredicate, value))
-                {
-                    _wherePredicate = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        string _wherePredicate = string.Empty;
-        public string PrimaryKeyPredicate { get; protected set; } = string.Empty;
         public string Query
         {
             get
             {
-                return $@"
-{Preamble} 
-{WherePredicate}
-{PrimaryKeyPredicateTerm}
-{LimitTerm}"
-    .Trim();
+                var builder = new List<string> { Preamble };
+                if (!string.IsNullOrWhiteSpace(WherePredicate))
+                {
+                    builder.Add(WherePredicate);
+                }
+                if (CanExecutePrimaryKeyClause())
+                {
+                    builder.Add(PrimaryKeyClause());
+                }
+                if(Limit > 0)
+                {
+                    builder.Add($"LIMIT {Limit}");
+                }
+                var preview = string.Join(Environment.NewLine, builder);
+                return preview;
             }
         }
+
+        /// <summary>
+        /// The SQL WHERE clause preamble, e.g. "SELECT * FROM tablename WHERE".
+        /// </summary>
+        public string Preamble { get; protected set; } = string.Empty;
+
+        public string WherePredicate { get; protected set; }
+        public string PrimaryKeyPredicate { get; protected set; } = string.Empty;
 
         public bool CanExecutePrimaryKeyClause()
         {
@@ -1356,39 +1356,19 @@ SQLite Tables are incompatible:
                 };
             }
         }
-        public string PrimaryKeyColumnName
-        {
-            get
-            {
-                var netType = ProxyType;
-                if (_primaryKeyColumnName is null)
-                {
-                }
-                return _primaryKeyColumnName;
-            }
-        }
-        string? _primaryKeyColumnName = null!;
+        public string PrimaryKeyColumnName { get; protected set; }
 
 
         #region L I M I T S 
-
         /// <summary>
         /// The maximum count of included and excluded predicates.
         /// </summary>
         public uint MaxPrimaryKeyTermCount { get; set; } = 1024;
-        public uint DefaultLimit
-        {
-            get => _defaultLimit;
-            set
-            {
-                if (!Equals(_defaultLimit, value))
-                {
-                    _defaultLimit = Math.Max(1, value);
-                    OnPropertyChanged();
-                }
-            }
-        }
-        uint _defaultLimit = uint.MaxValue;
+
+        /// <summary>
+        /// To exclude this term from query, set to 0.
+        /// </summary>
+        public uint DefaultLimit { get; set; } = uint.MinValue;
 
         public uint Limit =>
             _dhostLimit.Tokens.LastOrDefault()?.Sender is uint limit 
@@ -1398,13 +1378,6 @@ SQLite Tables are incompatible:
         private readonly DisposableHost _dhostLimit = new();
 
         public IDisposable BeginLimit(uint limit) => _dhostLimit.GetToken(sender: limit);
-
-        private string PrimaryKeyPredicateTerm => 
-            CanExecutePrimaryKeyClause() 
-            ? $@"
-AND
-({PrimaryKeyPredicate})"
-            : string.Empty;
         private string LimitTerm => Limit == uint.MaxValue ? string.Empty: $"LIMIT {Limit}";
         #endregion L I M I T S
 
@@ -1840,25 +1813,6 @@ AND
         }
 
         /// <summary>
-        /// Returns the current synchronization authority between the
-        /// canonical collection and its projection.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model (typical):
-        /// - The filtered collection represents the current visible projection, and
-        ///   user-facing {add, edit, remove} operations occur against this projection.
-        /// - SyncAuthority anchors one side as authoritative during collection change
-        ///   propagation, suppressing re-entrant updates from the opposing side.
-        /// - When a refinement epoch is active, authority shifts to the canonical
-        ///   collection to prevent circular propagation while the projection settles.
-        /// - In the quiescent state, the projection is authoritative.
-        /// </remarks>
-        public CollectionSyncAuthority SyncAuthority =>
-            Running && (FilteringState != FilteringState.Ineligible)
-            ? CollectionSyncAuthority.Unfiltered
-            : CollectionSyncAuthority.Filtered;
-
-        /// <summary>
         /// Consumers that maintain dual collections (not typical) may override
         /// this property to route between Full (canonical) and Filtered versions.
         /// </summary>
@@ -2030,6 +1984,9 @@ AND
     }
     public class MarkdownContext<T> : MarkdownContext
     {
-        public MarkdownContext() : base(typeof(T)) { }
+        public MarkdownContext() 
+            : base(typeof(T)) { }
+        public MarkdownContext(bool isFilterExecutionEnabled)
+            : base(typeof(T), isFilterExecutionEnabled) { }
     }
 }

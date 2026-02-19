@@ -68,25 +68,24 @@
 
 			Release 2.0.0
 
-			Together, these provide an awaitable epoch wherein the context can await e.g. an async database query prior to resuming:
+			These two new features, taken together, provide an awaitable epoch wherein the context can await e.g. an async database query prior to resuming:
 
 			- MarkdownContext now *is-a* WatchdogTimer v 2.0.0 making it intrisically awaitable.
 			- WatchdogTimer v 2.0.0 features an awaitable async queue that is awaited before signalling GetAwaiter().
 
-			WherePredicate property allows for greater precision when extending the query e.g. for filtering.
+			The public `Query` property now exposes its modular components meaningfully to subclasses:
+			Query => $@"{Preamble} {WherePredicate} {PrimaryKeyPredicateTerm} {LimitTerm}"
+
+			The WherePredicate property is now exposed as {get; protected set}, allowing greater precision when extending the query e.g. for filtering.
 
 			- Query consists of Preamble + WherePredicate.
 			- Preamble is the first portion of the Query up to and *including* the WHERE keyword.
 			- WherePredicate is generated from QueryTerm, FilterTerm, and TagTerm based on state.
 
-			SyncAuthority establishes a direction-vector paradigm for collection synchronization.
+			Optional PrimaryKey filtering with AllowPrimaryKey and DisallowPrimaryKey hash sets.
 
-			- Synchronization authority between canonical and projected collections is declarative.
-			- Authority shifts automatically during refinement epochs to suppress upstream propagation.
-			- Circular collection change events are prevented through authority semantics rather than guard flags.
+			Improved [SelfIndexed] Properties
 
-			[SelfIndexed] Properties
-			
 			- Values included in may now contain operators.
 			- The terms will preserve the escaped characters.
 			- A complementary escaped input text term will produce a match, e.g. a description that ends with an exclamation point.
