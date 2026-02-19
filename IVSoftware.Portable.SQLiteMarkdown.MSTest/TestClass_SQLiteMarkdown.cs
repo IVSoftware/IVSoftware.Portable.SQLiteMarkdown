@@ -3,6 +3,7 @@ using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
+using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -1388,20 +1389,32 @@ SELECT * FROM items WHERE
             #endregion S U B T E S T S
         }
 
-#if false
         [TestMethod]
-        public async Task Test_ProxyAuthority()
+        public async Task Test_IsFilterExecutionEnabled()
         {
             string actual, expected;
 
             Queue<SenderEventPair> eventQueue = new();
 
-            #region L o c a l F x
+
+            #region L o c a l F x 
+            using var awaited = this.WithOnDispose(
+                onInit: (sender, e) => Threading.Extensions.Awaited += localOnAwaited,
+                onDispose: (sender, e) => Threading.Extensions.Awaited -= localOnAwaited);
+            void localOnAwaited(object? sender, AwaitedEventArgs e)
+            {
+                switch (e.Caller)
+                {
+                    case nameof(MarkdownContext.FilterQueryDatabase):
+                        break;
+                }
+            }
             void localOnEvent(object? sender, Throw e)
             {
                 eventQueue.Enqueue((sender, e));
             }
             #endregion L o c a l F x
+
             using var local = this.WithOnDispose(
                 onInit: (sender, e) =>
                 {
@@ -1421,9 +1434,9 @@ SELECT * FROM items WHERE
             #region S U B T E S T S 
             void subtest_SelectAndQuery()
             {
+                "carrot".ParseSqlMarkdown<SelectableQFModel>();
             }
             #endregion S U B T E S T S
         }
-#endif
     }
 }

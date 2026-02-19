@@ -1540,7 +1540,20 @@ AND
 
         public DisposableHost DHostSelfIndexing { get; } = new();
 
-        protected virtual SQLiteConnection? FilterQueryDatabase { get; set; }
+        public SQLiteConnection? FilterQueryDatabase
+        {
+            get => _filterQueryDatabase;
+            set
+            {
+                if (!Equals(_filterQueryDatabase, value))
+                {
+                    _filterQueryDatabase = value;
+                    OnPropertyChanged();
+                    this.OnAwaited();
+                }
+            }
+        }
+        SQLiteConnection? _filterQueryDatabase = default;
 
         
         public SQLiteConnection? MemoryDatabase
@@ -1556,6 +1569,7 @@ AND
                     }
                     _memoryDatabase = value;
                     OnPropertyChanged();
+                    this.OnAwaited();
                 }
             }
         }
