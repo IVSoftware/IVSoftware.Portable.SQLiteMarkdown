@@ -15,8 +15,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.V1
             MarkdownContext<SelectableQFModel> mdc = new();
             var cnx = mdc.MemoryDatabase;
 
-
             var ct = mdc.ContractType;
+
+#if false && AVAILABLE
+            var tn = mdc.TableName;
+#endif
         }
     }
 }

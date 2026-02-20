@@ -29,10 +29,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// and guiding final SQL generation via attribute-aware hydration.
     /// </summary>
     [DebuggerDisplay("ContractType={ContractType} ProxyType={ProxyType}")]
-    public class MarkdownContext 
+    public partial class MarkdownContext 
         : WatchdogTimer
         , INotifyPropertyChanged
     {
+        [Probationary]
+        public MarkdownContext()
+        {
+
+        }
+
         /// <summary>
         /// Creates a self-contained expression parsing environment, binding it
         /// to an XML-based AST using the IVSoftware.Portable.XBoundObject NuGet.
@@ -1024,182 +1030,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// The raw unprocessed input string from the user.
         /// </summary>
         public string Raw { get; private set; } = string.Empty;
-
-        /// <summary>
-        /// The attributed CLR type used to resolve which properties participate in term matching.
-        /// </summary>
-        public Type ContractType
-        {
-            get
-            {
-                if (_contractType is null)
-                {
-                    this.ThrowHard<NullReferenceException>($"{nameof(ContractType)} cannot be null.");
-                }
-                return _contractType!;
-            }
-            set
-            {
-                if (value is null)
-                {
-                    this.ThrowHard<NullReferenceException>($"{nameof(ContractType)} cannot be null.");
-                }
-                else
-                {
-                    switch (_activeQFMode)
-                    {
-                        case QueryFilterMode.Query:
-                            // Allow unconditional
-                            if (!Equals(_contractType, value))
-                            {
-                                _contractType = value;
-                                OnContractTypeChanged();
-                                OnPropertyChanged();
-                            }
-                            break;
-                        case QueryFilterMode.Filter:
-                            // Allow only if Type not set by previous query.
-                            Debug.Assert(
-                                QueryFilterConfig == QueryFilterConfig.Filter,
-                                "Expecting Query before Filter in any other mode!"
-                            );
-
-                            if (_contractType is null)
-                            {
-                                _contractType = value;
-                                OnContractTypeChanged();
-                                OnPropertyChanged();
-                            }
-                            break;
-                    }
-                }
-            }
-        }
-        Type? _contractType = default;
-
-        /// <summary>
-        /// Creates or recreates a memory database containing a table for the ContractType
-        /// </summary>
-        protected virtual void OnContractTypeChanged()
-        {
-            if (ContractType is null)
-            {
-                this.ThrowHard<NullReferenceException>($"{nameof(ContractType)} cannot be null.");
-            }
-            else
-            {
-                if (IsFilterExecutionEnabled)
-                {
-                    if (FilterQueryDatabase != null)
-                    {
-                        FilterQueryDatabase.Dispose();
-                    }
-                    FilterQueryDatabase = new SQLiteConnection(":memory:");
-                    FilterQueryDatabase.CreateTable(ContractType);
-                    // Loopback 'as seen by' SQLite
-                    var mapping = FilterQueryDatabase.GetMapping(ContractType);
-                    TableName = mapping.TableName;
-                    if (mapping.PK is null)
-                    {
-                        // Fallback to SQLite implicit rowid if no explicit PK exists.
-                        // Consumer may override by handling the Throw.
-
-                        PrimaryKeyName = "rowid";
-
-                        string msg = $@"
-Context has been created with filter execution enabled
-'{ContractType.Name}' is a model that provides no [PrimaryKey].
-If this is deliberate, mark this Throw as Handled.
-Overriding the OnContractTypeChanged method in a subclass offers full control.
-".TrimStart();
-                        this.ThrowHard<SQLiteException>(msg);
-                    }
-                    else
-                    {
-                        PrimaryKeyName = mapping.PK.Name;
-                    }
-                }
-                else
-                {
-                    TableName = GetTableNameHeuristic(ContractType);
-                }
-            }
-        }
-
-        protected string TableName { get; set; }
-        protected string PrimaryKeyName { get; set; }
-
-#if false
-        /// <summary>
-        /// Allows query interpretation to be projected through an alternate
-        /// contract (e.g. interface or subclass) while preserving table identity.
-        /// </summary>
-        /// <remarks>
-        /// - Mental Model:
-        ///     Different contracts may expose different Term attributes for the
-        ///     same underlying table, enabling alternate query surfaces without
-        ///     changing physical storage.
-        /// - Rules:
-        ///   1. TableName is the sole authority for storage identity and cannot be
-        ///      supplanted by a [Table] attribute on the proxy or by any other means.
-        ///   2. A proxy type is valid only if its Term attributes reference columns
-        ///      that exist in the resolved SQLite table mapping.
-        /// </remarks>
-        private Type ProxyType
-        {
-            get => _proxyType ?? ContractType;
-            set
-            {
-                if (!Equals(_proxyType, value))
-                {
-                    if (value is null || value == ContractType)
-                    {
-                        _proxyType = null;
-                    }
-                    else
-                    {
-                        string
-                            contractTable = GetTableNameHeuristic(ContractType),
-                            proxyTable = GetTableNameHeuristic(value);
-
-                        if (string.Equals(contractTable, proxyTable, StringComparison.Ordinal))
-                        {
-                            // Table targets are compatible.
-                            _proxyType = value;
-                        }
-                        else
-                        {
-                            this.ThrowHard<SQLiteException>(
-                                $@"
-SQLite Tables are incompatible:
-'{proxyTable}' for {nameof(ProxyType)} = '{value.Name}'
-'{contractTable}' for {nameof(ContractType)} = '{ContractType.Name}'");
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-        Type? _proxyType = default;
-#endif
-
-
-
-        string GetTableNameHeuristic(Type type)
-        {
-            if (type is null)
-            {
-                return string.Empty;
-            }
-            else if (FilterQueryDatabase is null)
-            {
-                return type.GetCustomAttribute<TableAttribute>()?.Name ?? type.Name;
-            }
-            else
-            {
-                return FilterQueryDatabase.GetMapping(type).TableName;
-            }
-        }
 
         /// <summary>
         /// Caches values from [SelfIndexed] properties grouped by IndexingMode.

@@ -13,6 +13,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 [TestClass]
 public class TestClass_V2
 {
+
+    [TestMethod]
+    public void Test_WhatIsContractType()
+    {
+        string actual, expected;
+        MarkdownContext mdc = new();
+        MarkdownContext<SelectableQFModel> mdcT = new();
+
+    }
+
     /// <summary>
     /// Streamlined checker for table inheritance.
     /// </summary>
@@ -61,13 +71,6 @@ public class TestClass_V2
         subtest_SelectableQFModel();
         subtest_ExplicitAttributeOnSubclass();
         subtest_ImplicitGotcha();
-        subtest_Case4();
-        subtest_Case5();
-        subtest_Case6();
-        subtest_Case7();
-        subtest_Case8();
-        subtest_Case9();
-        subtest_Case10();
 
         #region S U B T E S T S
         void subtest_SelectableQFModel()
@@ -106,24 +109,6 @@ public class TestClass_V2
             { } // <- FIRST TIME ONLY: Adjust the message.
             actual.ToClipboardAssert("Expecting result to match.");
             { }
-        }
-        void subtest_Case5()
-        {
-        }
-        void subtest_Case6()
-        {
-        }
-        void subtest_Case7()
-        {
-        }
-        void subtest_Case8()
-        {
-        }
-        void subtest_Case9()
-        {
-        }
-        void subtest_Case10()
-        {
         }
         #endregion S U B T E S T S
     }
