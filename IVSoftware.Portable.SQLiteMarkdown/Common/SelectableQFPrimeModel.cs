@@ -9,6 +9,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         DateTime Created { get; }
         string ChainOfCustody { get; }
     }
+
     public partial class SelectableQFPrimeModel 
         : SelectableQFModel
         , IChainOfCustody
@@ -31,7 +32,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 catch (Exception ex)
                 {
                     this.RethrowSoft(ex);
-                    ChainOfCustody = new();
                 }
             }
         }
