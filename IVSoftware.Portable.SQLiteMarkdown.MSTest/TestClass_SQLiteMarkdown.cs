@@ -1018,6 +1018,25 @@ FilterTerm";
         [TestMethod]
         public void Test_TableAttributeInheritance()
         {
+
+            #region L o c a l F x
+            var builderThrow = new List<string>();
+            void localOnBeginThrowOrAdvise(object? sender, Throw e)
+            {
+                builderThrow.Add(e.Message);
+                e.Handled = true;
+            }
+            #endregion L o c a l F x
+            using var local = this.WithOnDispose(
+                onInit: (sender, e) =>
+                {
+                    Throw.BeginThrowOrAdvise += localOnBeginThrowOrAdvise;
+                },
+                onDispose: (sender, e) =>
+                {
+                    Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
+                });
+
             string actual, expected;
             List<string> tableNames;
             var query = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%';";
@@ -1048,6 +1067,21 @@ FilterTerm";
                 actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclassG>();
                 actual.ToClipboardExpected();
                 { }
+
+                expected = @" 
+SELECT * FROM SelectableQFModelSubclassG WHERE
+(QueryTerm LIKE '%animal%')"
+                ;
+
+
+                actual = string.Join(Environment.NewLine, builderThrow);
+                actual.ToClipboardExpected();
+                { } // <- FIRST TIME ONLY: Adjust the message.
+                actual.ToClipboardAssert("Expecting builder content to match.");
+                { }
+
+
+
                 expected = @" 
 SELECT * FROM items WHERE 
 (QueryTerm LIKE '%animal%')";

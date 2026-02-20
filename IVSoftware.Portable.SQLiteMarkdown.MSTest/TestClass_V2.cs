@@ -5,22 +5,79 @@ using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
+using Newtonsoft.Json;
 using SQLite;
 using System.Configuration;
+using System.Security.Cryptography;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
 [TestClass]
 public class TestClass_V2
 {
-
+    /// <summary>
+    /// Exercise the 2.0.0 parameterless CTor which we describe as Anonymous.
+    /// </summary>
+    /// <remarks>
+    /// When constructed in this manner, the ContractType is null and will
+    /// throw hard if accessed. But this is not a breaking change because
+    /// previous versions simply did not allow instantiation in this condition.
+    /// </remarks>
     [TestMethod]
-    public void Test_WhatIsContractType()
+    public void Test_Anonymous()
     {
         string actual, expected;
-        MarkdownContext mdc = new();
-        MarkdownContext<SelectableQFModel> mdcT = new();
 
+        #region L o c a l F x
+        var builderThrow = new List<string>();
+        void localOnBeginThrowOrAdvise(object? sender, Throw e)
+        {
+            builderThrow.Add(e.Message);
+            e.Handled = true;
+        }
+        #endregion L o c a l F x
+        using var local = this.WithOnDispose(
+            onInit: (sender, e) =>
+            {
+                Throw.BeginThrowOrAdvise += localOnBeginThrowOrAdvise;
+            },
+            onDispose: (sender, e) =>
+            {
+                Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
+            });
+
+        MarkdownContext mdc = new();
+        Assert.IsNull(mdc.ContractType);
+
+        actual = JsonConvert.SerializeObject(builderThrow, Formatting.Indented);
+        expected = @" 
+[
+  ""ContractType cannot be null.""
+]";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting ContractType cannot be null."
+        );
+    }
+
+    [TestMethod]
+    public void Test_Contract()
+    {
+        string actual, expected;
+
+        MarkdownContext mdc = new(typeof(SelectableQFModel));
+        Assert.IsNotNull(mdc.ContractType);
+    }
+
+    [TestMethod]
+    public void Test_ContractT()
+    {
+        string actual, expected;
+
+        MarkdownContext<SelectableQFModel> mdc = new();
+        Assert.IsNotNull(mdc.ContractType);
     }
 
     /// <summary>

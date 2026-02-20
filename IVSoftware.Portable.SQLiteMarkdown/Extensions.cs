@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -40,7 +41,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
     public static partial class Extensions
     {
-
         #region V E R S I O N    1 . 0
 
         public static string ParseSqlMarkdown<T>(
@@ -379,5 +379,46 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public static bool CanParseAsJson(this string @this)
             => Regex.IsMatch(@this, @"^\s*\[\s*(""(?:[^""\\]|\\.)*""\s*,\s*)*(""[^""\\]*""\s*)\]\s*$");
+
+        /// <summary>
+        /// Enumerates base classes of the specified subclass.
+        /// </summary>
+        public static IEnumerable<Type> BaseTypes(
+            this Type type,
+            bool includeSelf = false)
+        {
+            for (var current = includeSelf ? type : type.BaseType;
+                 current is not null;
+                 current = current.BaseType)
+            {
+                yield return current;
+            }
+        }
+
+        public static bool TryGetTableNameFromBaseClass(this Type @this, out string tableName)
+            => @this.TryGetTableNameFromBaseClass(out tableName, out _);
+
+        public static bool TryGetTableNameFromBaseClass(this Type @this, out string tableName, out Type baseClass)
+        {
+            foreach (var @base in @this.BaseTypes())
+            {
+                tableName = @base.GetCustomAttribute<TableAttribute>(inherit: false)?.Name!;
+                if (!string.IsNullOrWhiteSpace(tableName))
+                {
+                    baseClass = @base;
+                    return true;
+                }
+            }
+            baseClass = @this;
+            tableName = @this.GetCustomAttribute<TableAttribute>(
+                inherit: false // CRITICAL! Does not produce an accurate result otherwise.
+            )?.Name ?? @this.Name;
+            return false;
+        }
+
+        public static bool TryGetTableNameFromTableAttribute(this Type @this, out string tableName)
+            => !string.IsNullOrWhiteSpace(tableName = @this.GetCustomAttribute<TableAttribute>(
+                inherit: false // CRITICAL! Does not produce an accurate result otherwise.
+        )?.Name!);
     }
 }
