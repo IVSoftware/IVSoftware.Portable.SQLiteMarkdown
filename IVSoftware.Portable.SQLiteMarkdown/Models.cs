@@ -210,7 +210,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 // Used in old and new ways.
                 var props = GetType().GetProperties();
-                var localMC = new MarkdownContext(GetType(), isFilterExecutionEnabled: false);
+                var localMC = new MarkdownContext(GetType());
 
 #if true || NEW_WAY
                 for (int i = 0; i < props.Length; i++)

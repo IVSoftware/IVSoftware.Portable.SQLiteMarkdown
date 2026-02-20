@@ -34,10 +34,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public interface IMarkdownContextContract
     {
         Type ContractType { get; set; }
-
         string ContractTableName { get; }
         string ContractPrimaryKeyName { get; }
-
         ContractErrorLevel ContractErrorLevel{ get; set; }
     }
     partial class MarkdownContext : IMarkdownContextContract
@@ -119,21 +117,35 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 _contractTableName = null;
                 _contractPrimaryKeyName = null;
-                if (IsFilterExecutionEnabled)
-                {
-                    if (FilterQueryDatabase != null)
-                    {
-                        FilterQueryDatabase.Dispose();
-                    }
-                    FilterQueryDatabase = new SQLiteConnection(":memory:");
-                    FilterQueryDatabase.CreateTable(ContractType);
-                    // Loopback 'as seen by' SQLite
-                    var mapping = FilterQueryDatabase.GetMapping(ContractType);
-                }
             }
         }
 
-        protected string TableName { get; set; }
+        /// <summary>
+        /// The table name for the current parse flow.
+        /// </summary>
+        public string TableName
+        {
+            get
+            {
+                if(string.IsNullOrWhiteSpace(_tableName))
+                {
+                    this.ThrowFramework<NullReferenceException>(
+                        $"{nameof(TableAttribute)} is 'guaranteed by design' to never yield null. " +
+                        $"That guarantee has failed.",
+                        @throw: true);
+                }
+                return _tableName;
+            }
+            set
+            {
+                if (!Equals(_tableName, value))
+                {
+                    _tableName = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        string _tableName = string.Empty;
 
         /// <summary>
         /// Heuristic - Follows internal rules that dictate contract intent.

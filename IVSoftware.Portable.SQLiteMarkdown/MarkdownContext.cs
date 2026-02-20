@@ -33,12 +33,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         : WatchdogTimer
         , INotifyPropertyChanged
     {
-        [Probationary]
-        public MarkdownContext()
-        {
-
-        }
-
         /// <summary>
         /// Creates a self-contained expression parsing environment, binding it
         /// to an XML-based AST using the IVSoftware.Portable.XBoundObject NuGet.
@@ -48,25 +42,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// The initial type must be known and captured regardless of GF mode.
         /// A parameterless CTOR would not be appropriate so avoid that.
         /// </remarks>
-        public MarkdownContext(Type type) : this(type, true) { }
-
-        /// <summary>
-        /// Constructs an MDC instance with explicit instructions on whether 
-        /// to provision a memory SQLite database for filter queries,
-        /// </summary>
         [Canonical]
-        public MarkdownContext(Type type, bool isFilterExecutionEnabled)
+        public MarkdownContext(Type type)
         {
             Interval = TimeSpan.FromSeconds(0.25);          // Default. Consumer can change.
             XAST = new
                 XElement(nameof(StdAstNode.ast))
                 .WithBoundAttributeValue(this);
-
-            #region a t o m i c 
-            // Set this FIRST
-            IsFilterExecutionEnabled = isFilterExecutionEnabled;
             ContractType = type;
-            #endregion a t o m i c
         }
 
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
@@ -1119,8 +1102,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         public string Preamble { get; protected set; } = string.Empty;
 
-        public string WherePredicate { get; protected set; }
-        public string PrimaryKeyPredicate { get; protected set; } = string.Empty;
+        public string? WherePredicate { get; protected set; }
+        public string? PrimaryKeyPredicate { get; protected set; } = string.Empty;
 
         public bool CanExecutePrimaryKeyClause()
         {
@@ -1180,7 +1163,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        public string PrimaryKeyColumnName { get; protected set; }
+        public string? PrimaryKeyColumnName { get; protected set; }
 
 
         #region L I M I T S 
@@ -1348,9 +1331,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///   provide an advisory stream should this be called upon to service more
         ///   that the implicit single table for the collection.
         /// </remarks>
-        protected SQLiteConnection? FilterQueryDatabase
+        protected SQLiteConnection FilterQueryDatabase
         {
-            get => _filterQueryDatabase;
+            get
+            {
+                if(_filterQueryDatabase is null)
+                {
+                    _filterQueryDatabase = new SQLiteConnection(":memory:");
+                    _filterQueryDatabase.CreateTable(ContractType);
+                }
+                return _filterQueryDatabase;
+            }
             set
             {
                 if (!Equals(_filterQueryDatabase, value))
@@ -1362,7 +1353,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         SQLiteConnection? _filterQueryDatabase = default;
-
         
         /// <summary>
         /// Support for inheritance model for Collection.
@@ -1818,13 +1808,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Produce a IN clause with negative polarity that applies the specified PKs.
         /// </summary>
         public HashSet<object> DisallowedPrimaryKeys { get; } = new();
-        public bool IsFilterExecutionEnabled { get; }
     }
     public class MarkdownContext<T> : MarkdownContext
     {
-        public MarkdownContext() 
-            : base(typeof(T)) { }
-        public MarkdownContext(bool isFilterExecutionEnabled)
-            : base(typeof(T), isFilterExecutionEnabled) { }
+        public MarkdownContext() : base(typeof(T)) { }
     }
 }

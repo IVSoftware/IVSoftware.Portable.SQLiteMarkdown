@@ -87,10 +87,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         [Canonical("Common target for string extensions to ParseSqlMarkdown.")]
         public static string ParseSqlMarkdown(this string @this, Type type, QueryFilterMode qfMode, out XElement xast)
-            => new MarkdownContext(
-                    type, 
-                    isFilterExecutionEnabled: false
-                ).ParseSqlMarkdown(@this, type, qfMode, out xast);
+            => new MarkdownContext(type).ParseSqlMarkdown(@this, type, qfMode, out xast);
 
         [Canonical("Standalone target for string extensions to ParseSqlMarkdown with validation flow.")]
         private static string ParseSqlMarkdown(
@@ -101,8 +98,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Predicate<string>? validationPredicate,
             out XElement xexpr) => 
                 new MarkdownContext(
-                type,
-                isFilterExecutionEnabled: false)
+                type)
                 {
                     ValidationPredicate = validationPredicate!, // Setting to null sets the VP to its default (which isn't null).
                 }.ParseSqlMarkdown(@this, type, qfMode, out xexpr);

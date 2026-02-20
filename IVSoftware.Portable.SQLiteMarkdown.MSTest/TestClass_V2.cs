@@ -15,6 +15,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 [TestClass]
 public class TestClass_V2
 {
+#if false
     /// <summary>
     /// Exercise the 2.0.0 parameterless CTor which we describe as Anonymous.
     /// </summary>
@@ -61,6 +62,7 @@ public class TestClass_V2
             "Expecting ContractType cannot be null."
         );
     }
+#endif
 
     [TestMethod]
     public void Test_Contract()
@@ -379,8 +381,9 @@ SELECT * FROM items WHERE
         }
     }
 
+
     [TestMethod]
-    public async Task Test_IsFilterExecutionEnabled()
+    public async Task Test_NoSpuriousFQD()
     {
         Queue<SenderEventPair> eventQueue = new();
         SenderEventPair sep;
@@ -416,32 +419,19 @@ SELECT * FROM items WHERE
 
         MarkdownContext<SelectableQFModel> mdc;
 
-        subtest_MDCExpectingFilterDatabase();
+        subtest_AssertCtorNoFQD();
 
-        subtest_MDCSuppressingDatabase();
-
-        subtest_StringExtensionAutoSuppress();
+        subtest_StringExtensionNoFQD();
 
         #region S U B T E S T S 
-        // Captures OnAwaited event when FilterDatabase is created in parameterless (original) CTor.
-        void subtest_MDCExpectingFilterDatabase()
+        // Captures 'absence of' OnAwaited event when FilterDatabase is suppressed in CTor.
+        void subtest_AssertCtorNoFQD()
         {
             mdc = new();
-
-            sep = eventQueue.DequeueSingle();
-            Assert.IsNotNull(sep, "Expecting database creation.");
-        }
-
-        // Captures 'absence of' OnAwaited event when FilterDatabase is suppressed in CTor.
-        void subtest_MDCSuppressingDatabase()
-        {
-            mdc = new MarkdownContext<SelectableQFModel>(
-                isFilterExecutionEnabled: false
-            );
             Assert.AreEqual(0, eventQueue.Count(), "Expecting *no* database creation.");
         }
 
-        void subtest_StringExtensionAutoSuppress()
+        void subtest_StringExtensionNoFQD()
         {
             "carrot".ParseSqlMarkdown<SelectableQFModel>();
             Assert.AreEqual(0, eventQueue.Count(), "Expecting *no* database creation.");
