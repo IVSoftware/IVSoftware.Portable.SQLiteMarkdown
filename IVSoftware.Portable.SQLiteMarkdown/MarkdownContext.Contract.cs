@@ -258,6 +258,17 @@ Rationale     : The contract database must be held stable for this inheritance t
         {
             public TableMapping GetMapping(Type type, CreateFlags createFlags = CreateFlags.None)
                 => Mapper.GetMapping(type, createFlags);
+            public TableMapping GetMapping(
+                Type type,
+                out string? pkName,
+                out string? pkPropertyName,
+                CreateFlags createFlags = CreateFlags.None)
+            {
+                var mapper = Mapper.GetMapping(type, createFlags);
+                pkName = mapper.PK?.Name;
+                pkPropertyName = mapper.PK?.PropertyName;
+                return mapper;
+            }
             SQLiteConnection Mapper
             {
                 get

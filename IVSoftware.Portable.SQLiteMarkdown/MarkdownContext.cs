@@ -1091,6 +1091,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             return expr;
         }
+
         /// <summary>
         /// The assembled SQL expression.
         /// </summary>
@@ -1134,6 +1135,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 && FilteringState != FilteringState.Ineligible
                 && !string.IsNullOrWhiteSpace(PrimaryKeyColumnName);
         }
+
         /// <summary>
         /// Builds a primary key predicate using IN and/or NOT IN clauses
         /// based on AllowedPrimaryKeys and DisallowedPrimaryKeys.
@@ -1180,6 +1182,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 };
             }
         }
+
         public string PrimaryKeyColumnName { get; protected set; }
 
 
@@ -1340,6 +1343,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Support for inheritance model for Collection.
         /// </summary>
+        /// <remarks>
+        /// - "The ephemeral backing store for this collection’s contract."
+        /// - Like any other SQLite database this can be configured with N tables.
+        ///   However, the semantic constraints on contract parsing (where ContractType 
+        ///   is assumed to be the item type of the collection that subclasses it) will
+        ///   provide an advisory stream should this be called upon to service more
+        ///   that the implicit single table for the collection.
+        /// </remarks>
         protected SQLiteConnection? FilterQueryDatabase
         {
             get => _filterQueryDatabase;
