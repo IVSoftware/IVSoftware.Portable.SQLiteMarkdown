@@ -389,7 +389,6 @@ SELECT * FROM items WHERE
     public void Test_NoSpuriousFQD()
     {
         Queue<SenderEventPair> eventQueue = new();
-        SenderEventPair sep;
 
         #region L o c a l F x 
         using var awaited = this.WithOnDispose(
@@ -439,6 +438,62 @@ SELECT * FROM items WHERE
         {
             "carrot".ParseSqlMarkdown<SelectableQFModel>();
             Assert.AreEqual(0, eventQueue.Count(), "Expecting *no* database creation.");
+        }
+        #endregion S U B T E S T S
+    }
+
+
+    [TestMethod]
+    public async Task Test_ModularQuery()
+    {
+        string actual, expected;
+        List<string> builder = new();
+
+
+        var mdc = new MarkdownContext<SelectableQFModel>();
+
+
+        await subtest_ModularQuery1();
+        await subtest_ModularQuery2();
+        await subtest_ModularQuery3();
+        await subtest_ModularQuery4();
+        await subtest_ModularQuery5();
+        await subtest_ModularQuery6();
+        await subtest_ModularQuery7();
+        await subtest_ModularQuery8();
+        await subtest_ModularQuery9();
+        await subtest_ModularQuery10();
+
+        #region S U B T E S T S
+        async Task subtest_ModularQuery1()
+        {
+        }
+        async Task subtest_ModularQuery2()
+        {
+        }
+        async Task subtest_ModularQuery3()
+        {
+        }
+        async Task subtest_ModularQuery4()
+        {
+        }
+        async Task subtest_ModularQuery5()
+        {
+        }
+        async Task subtest_ModularQuery6()
+        {
+        }
+        async Task subtest_ModularQuery7()
+        {
+        }
+        async Task subtest_ModularQuery8()
+        {
+        }
+        async Task subtest_ModularQuery9()
+        {
+        }
+        async Task subtest_ModularQuery10()
+        {
         }
         #endregion S U B T E S T S
     }

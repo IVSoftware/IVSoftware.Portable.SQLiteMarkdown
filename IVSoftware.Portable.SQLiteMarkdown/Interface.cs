@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using SQLite;
 using System;
 using System.Collections;
@@ -34,7 +35,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - An aggregated indexed term for retrievals in the Query state. 
         /// - Use the [SelfIndexed] attribute to route a property to this index.
         /// - Properties can be [SQLite.Ignore] and still participate in this
-        ///   index which is persisted inthe database as a JSON blob.
+        ///   index which is persisted in the database as a JSON blob.
         /// </summary>
         string QueryTerm { get; set; }
 
