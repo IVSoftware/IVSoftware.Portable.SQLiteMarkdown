@@ -31,29 +31,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         Advisory,
     }
-    public interface IMarkdownContextContract
-    {
-        Type ContractType { get; set; }
-        string ContractTableName { get; }
-        string ContractPrimaryKeyName { get; }
-        ContractErrorLevel ContractErrorLevel{ get; set; }
-    }
-    partial class MarkdownContext : IMarkdownContextContract
+
+    partial class MarkdownContext
     {
         /// <summary>
         /// Gets the contract type associated with this context.
         /// </summary>
         /// <remarks>
-        /// - In v2.0.0+ the distinction between anonymous (parser-only) and
-        ///   contract-bound contexts has been formalized.
-        /// - When constructed using the parameterless constructor, the context
-        ///   operates in anonymous mode and no contract type is assigned. In this 
-        ///   state, contract-dependent features (such as table identity and
-        ///   SQLite-backed filtering) are not initialized and will throw if accessed.    
-        /// - When a contract type is provided, the context becomes table-aware
-        ///   and enforces contract semantics. Accessing this property in
-        ///   anonymous mode triggers a guarded failure, preserving the boundary
-        ///   between parser-only and contract-bound behavior.
+        /// Reference type for advisory reporting stream on the IVSoftware.Portable.Common.Exceptions.BeginThrowOrAdvise event.
         /// </remarks>
         public Type ContractType
         {
@@ -164,55 +149,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     else
                     {
                         _contractTableName = ResolveTableNameForPass(ContractType);
-#if false && MOVED
-                        if(ContractType.TryGetTableNameFromBaseClass(out _contractTableName, out var bc))
-                        {
-                            // The BC is weighing in and we must advise on the possible outcomes:
-                            if(ContractType.TryGetTableNameFromTableAttribute(out var explicitTableName))
-                            {
-                                if (string.Equals(_contractTableName, explicitTableName, StringComparison.Ordinal))
-                                {   /* G T K + B C S */
-                                    // Nothing to see here. The proxy explicitly agrees with the base about the TableName
-                                }
-                                else
-                                {   /* W C S */
-                                    string msg = $@"
-{nameof(ContractTableName)} Conflict:
-Current Type '{ContractType.Name}' is explicitly mapped to [Table(""{explicitTableName}"")].
-Base    Type '{bc.Name}' is explicitly mapped to [Table(""{_contractTableName}"")].
-The rule is   : ""TO AVOID SPURIOUS TABLE CREATION - BASE CLASS WINS"".
-Why it matters: This rule deliberately ignores an explicit attribute.
-Rationale     : The contract database must be held stable for this inheritance tree.".TrimStart();
-                                    switch (ContractErrorLevel)
-                                    {
-                                        case ContractErrorLevel.ThrowSoft:
-                                            this.ThrowSoft<InvalidOperationException>(msg);
-                                            break;
-                                        case ContractErrorLevel.ThrowHard:
-                                            this.ThrowHard<InvalidOperationException>(msg);
-                                            break;
-                                        case ContractErrorLevel.Advisory:
-                                            this.Advisory(msg);
-                                            break;
-                                        default:
-                                            this.ThrowFramework<NotSupportedException>(
-                                                $"The {ContractErrorLevel.ToFullKey()} case is not supported.",
-                                                @throw: false);
-                                            break;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                this.Advisory($@"Type '{ContractType.Name}' is explicitly mapped to [Table(""{_contractTableName}"")] in base class.");
-                            }
-                        }
-                        else
-                        {
-                            // Accept the uncontroversial table name as seen by SQLite.
-                            _contractTableName = Mapper.GetMapping(ContractType).TableName;
-                        }
-#endif
                     }
                 }
                 return _contractTableName;
@@ -222,12 +158,12 @@ Rationale     : The contract database must be held stable for this inheritance t
 
         protected virtual string ResolveTableNameForPass(Type type)
         {
-            if (type.TryGetTableNameFromBaseClass(out var contractTableName, out var bc))
+            if (type.TryGetTableNameFromBaseClass(out var bcTableName, out var bc))
             {
                 // The BC is weighing in and we must advise on the possible outcomes:
                 if (type.TryGetTableNameFromTableAttribute(out var explicitTableName))
                 {
-                    if (string.Equals(contractTableName, explicitTableName, StringComparison.Ordinal))
+                    if (string.Equals(bcTableName, explicitTableName, StringComparison.Ordinal))
                     {   /* G T K + B C S */
                         // Nothing to see here. The proxy explicitly agrees with the base about the TableName
                     }
@@ -236,7 +172,7 @@ Rationale     : The contract database must be held stable for this inheritance t
                         string msg = $@"
 {nameof(ContractTableName)} Conflict:
 Current Type '{type.Name}' is explicitly mapped to [Table(""{explicitTableName}"")].
-Base    Type '{bc.Name}' is explicitly mapped to [Table(""{contractTableName}"")].
+Base    Type '{bc.Name}' is explicitly mapped to [Table(""{bcTableName}"")].
 The rule is   : ""TO AVOID SPURIOUS TABLE CREATION - BASE CLASS WINS"".
 Why it matters: This rule deliberately ignores an explicit attribute.
 Rationale     : The contract database must be held stable for this inheritance tree.".TrimStart();
@@ -261,15 +197,15 @@ Rationale     : The contract database must be held stable for this inheritance t
                 }
                 else
                 {
-                    this.Advisory($@"Type '{type.Name}' is explicitly mapped to [Table(""{contractTableName}"")] in base class.");
+                    this.Advisory($@"Type '{type.Name}' is explicitly mapped to [Table(""{bcTableName}"")] in base class.");
                 }
             }
             else
             {
                 // Accept the uncontroversial table name as seen by SQLite.
-                contractTableName = Mapper.GetMapping(type).TableName;
+                bcTableName = Mapper.GetMapping(type).TableName;
             }
-            return contractTableName;
+            return bcTableName;
         }
 
         public string ContractPrimaryKeyName

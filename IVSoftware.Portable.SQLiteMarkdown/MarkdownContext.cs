@@ -61,7 +61,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 out XElement _);
 
         /// <summary>
-        /// Run from internal values using ContractType
+        /// Parse the current InputText expr and build it against ContractType.
         /// </summary>
         public string ParseSqlMarkdown()
             => ParseSqlMarkdown(
@@ -80,7 +80,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query, 
                 out XElement _);
 
-
+        /// <summary>
+        /// Canonical entry point for parsing an expression against a specified proxy type and query/filter mode.
+        /// </summary>
+        /// <remarks>
+        /// Resolves the effective table identity for the pass, builds the AST, and produces the final SQL expression.
+        /// This overload is the semantic root used by all other ParseSqlMarkdown entry points.
+        /// 
+        /// The supplied proxyType must evaluate to the canonical contract table name. This is achieved by:
+        /// 1. Omitting a [Table] attribute so inheritance resolution applies, or
+        /// 2. Declaring an explicit [Table] attribute that agrees with the canonical base contract.
+        /// 
+        /// Conflicting table declarations are handled according to ContractErrorLevel.
+        /// </remarks>
         [Canonical]
         public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
         {
@@ -106,11 +118,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Raw = expr;
             Transform = Raw;
 
-#if true
             string tableName = ResolveTableNameForPass(proxyType);
-#else
-            string tableName = TableName;            
-#endif
 
             Preamble = $"SELECT * FROM {tableName} WHERE";
 

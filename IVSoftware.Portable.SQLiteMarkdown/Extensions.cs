@@ -396,7 +396,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public static bool TryGetTableNameFromBaseClass(this Type @this, out string tableName, out Type baseClass)
         {
-            foreach (var @base in @this.BaseTypes())
+            foreach (var @base in @this.BaseTypes().Reverse())
             {
                 tableName = @base.GetCustomAttribute<TableAttribute>(inherit: false)?.Name!;
                 if (!string.IsNullOrWhiteSpace(tableName))
