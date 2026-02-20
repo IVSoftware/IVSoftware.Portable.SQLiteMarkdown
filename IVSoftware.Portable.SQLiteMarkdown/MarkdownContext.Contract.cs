@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -100,8 +101,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
-                _contractTableName = null;
-                _contractPrimaryKeyName = null;
+                TableName = ResolveTableNameForPass(ContractType);
             }
         }
 
@@ -132,30 +132,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         string _tableName = string.Empty;
 
-        /// <summary>
-        /// Heuristic - Follows internal rules that dictate contract intent.
-        /// </summary>
-        public string ContractTableName
-        {
-            get
-            {
-                if (_contractTableName is null)
-                {
-                    if (_contractType is null) // Perform null check on backing store, not the property.
-                    {
-                        this.ThrowHard<NullReferenceException>($"The {nameof(ContractType)} must be assigned first.");
-                        _contractTableName = null!; // We warned you.
-                    }
-                    else
-                    {
-                        _contractTableName = ResolveTableNameForPass(ContractType);
-                    }
-                }
-                return _contractTableName;
-            }
-        }
-        string? _contractTableName = null;
-
         protected virtual string ResolveTableNameForPass(Type type)
         {
             if (type.TryGetTableNameFromBaseClass(out var bcTableName, out var bc))
@@ -168,36 +144,43 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         // Nothing to see here. The proxy explicitly agrees with the base about the TableName
                     }
                     else
-                    {   /* W C S */
-                        string msg = $@"
-{nameof(ContractTableName)} Conflict:
+                    {
+                        if (_warnedOnType.Add(type))
+                        {
+                            /* W C S */
+                            string msg = $@"
+{nameof(TableName)} Conflict:
 Current Type '{type.Name}' is explicitly mapped to [Table(""{explicitTableName}"")].
 Base    Type '{bc.Name}' is explicitly mapped to [Table(""{bcTableName}"")].
 The rule is   : ""TO AVOID SPURIOUS TABLE CREATION - BASE CLASS WINS"".
 Why it matters: This rule deliberately ignores an explicit attribute.
 Rationale     : The contract database must be held stable for this inheritance tree.".TrimStart();
-                        switch (ContractErrorLevel)
-                        {
-                            case ContractErrorLevel.ThrowSoft:
-                                this.ThrowSoft<InvalidOperationException>(msg);
-                                break;
-                            case ContractErrorLevel.ThrowHard:
-                                this.ThrowHard<InvalidOperationException>(msg);
-                                break;
-                            case ContractErrorLevel.Advisory:
-                                this.Advisory(msg);
-                                break;
-                            default:
-                                this.ThrowFramework<NotSupportedException>(
-                                    $"The {ContractErrorLevel.ToFullKey()} case is not supported.",
-                                    @throw: false);
-                                break;
+                            switch (ContractErrorLevel)
+                            {
+                                case ContractErrorLevel.ThrowSoft:
+                                    this.ThrowSoft<InvalidOperationException>(msg);
+                                    break;
+                                case ContractErrorLevel.ThrowHard:
+                                    this.ThrowHard<InvalidOperationException>(msg);
+                                    break;
+                                case ContractErrorLevel.Advisory:
+                                    this.Advisory(msg);
+                                    break;
+                                default:
+                                    this.ThrowFramework<NotSupportedException>(
+                                        $"The {ContractErrorLevel.ToFullKey()} case is not supported.",
+                                        @throw: false);
+                                    break;
+                            }
                         }
                     }
                 }
                 else
                 {
-                    this.Advisory($@"Type '{type.Name}' is explicitly mapped to [Table(""{bcTableName}"")] in base class.");
+                    if (_warnedOnType.Add(type))
+                    {
+                        this.Advisory($@"Type '{type.Name}' is explicitly mapped to [Table(""{bcTableName}"")] in base class.");
+                    }
                 }
             }
             else
@@ -208,26 +191,8 @@ Rationale     : The contract database must be held stable for this inheritance t
             return bcTableName;
         }
 
-        public string ContractPrimaryKeyName
-        {
-            get
-            {
-                if (_contractPrimaryKeyName is null) // Perform null check on backing store, not the property.
-                {
-                    if (_contractType is null)
-                    {
-                        this.ThrowHard<NullReferenceException>($"The {nameof(ContractType)} must be assigned first.");
-                        _contractPrimaryKeyName = null!; // We warned you.
-                    }
-                    else
-                    {
-                        _contractPrimaryKeyName = Mapper.GetMapping(ContractType).PK?.Name ?? "rowid";
-                    }
-                }
-                return _contractPrimaryKeyName;
-            }
-        }
-        string? _contractPrimaryKeyName = null;
+        private readonly HashSet<Type> _warnedOnType = new();
+
 
         protected static SQLiteConnectionMapper Mapper
         {

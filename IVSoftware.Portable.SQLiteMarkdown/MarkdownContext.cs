@@ -115,12 +115,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return string.Empty;
             }
 
+            // Properties are valid for the current parse flow
+            // and are *not* bound to the ContractType.
             Raw = expr;
             Transform = Raw;
+            TableName = ResolveTableNameForPass(proxyType);
 
-            string tableName = ResolveTableNameForPass(proxyType);
-
-            Preamble = $"SELECT * FROM {tableName} WHERE";
+            Preamble = $"SELECT * FROM {TableName} WHERE";
 
             xast = XAST;
             uint quoteId = 0xFEFE0000;
