@@ -381,9 +381,12 @@ SELECT * FROM items WHERE
         }
     }
 
-
+    /// <summary>
+    /// The MDC will raise OnAwaited if/when the FilterQueryDatabase is instantiated. 
+    /// Success in this test relies on the absence of any such events.
+    /// </summary>
     [TestMethod]
-    public async Task Test_NoSpuriousFQD()
+    public void Test_NoSpuriousFQD()
     {
         Queue<SenderEventPair> eventQueue = new();
         SenderEventPair sep;
@@ -414,7 +417,7 @@ SELECT * FROM items WHERE
             },
             onDispose: (sender, e) =>
             {
-                Throw.BeginThrowOrAdvise += localOnEvent;
+                Throw.BeginThrowOrAdvise -= localOnEvent;
             });
 
         MarkdownContext<SelectableQFModel> mdc;
@@ -424,13 +427,14 @@ SELECT * FROM items WHERE
         subtest_StringExtensionNoFQD();
 
         #region S U B T E S T S 
-        // Captures 'absence of' OnAwaited event when FilterDatabase is suppressed in CTor.
+        // Captures 'absence of' OnAwaited event.
         void subtest_AssertCtorNoFQD()
         {
             mdc = new();
             Assert.AreEqual(0, eventQueue.Count(), "Expecting *no* database creation.");
         }
 
+        // Captures 'absence of' OnAwaited event.
         void subtest_StringExtensionNoFQD()
         {
             "carrot".ParseSqlMarkdown<SelectableQFModel>();
