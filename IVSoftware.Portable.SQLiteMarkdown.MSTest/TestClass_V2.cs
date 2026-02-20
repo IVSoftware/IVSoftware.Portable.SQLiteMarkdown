@@ -13,15 +13,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 [TestClass]
 public class TestClass_V2
 {
-
-    [TestMethod]
-    public void Test_QueryPropertyBuilder()
-    {
-        string actual, expected;
-
-        Assert.Inconclusive();
-    }
-
     /// <summary>
     /// Streamlined checker for table inheritance.
     /// </summary>

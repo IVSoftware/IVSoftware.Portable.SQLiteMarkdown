@@ -91,6 +91,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query, 
                 out XElement _);
 
+
+
         [Canonical]
         public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
         {
@@ -100,16 +102,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 xast = null!; // We warned you.
                 return string.Empty;
             }
-
-            using var local = this.WithOnDispose(
-                onInit: (sender, e) =>
-                {
-                    ProxyType = proxyType;
-                },
-                onDispose: (sender, e) =>
-                {
-                    ProxyType = null!;
-                });
 #if DEBUG
             if (expr == "animal b")
             { }
@@ -818,13 +810,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     childClauseN);
                                 break;
                             case StdAstNode.term:
-                                var likeTerms = ProxyType
+                                var likeTerms = proxyType
                                     .GetProperties()
                                     .Where(p =>
                                         (qfMode == QueryFilterMode.Query && p.GetCustomAttribute<QueryLikeTermAttribute>() != null) ||
                                         (qfMode == QueryFilterMode.Filter && p.GetCustomAttribute<FilterLikeTermAttribute>() != null))
                                     .ToArray();
-                                var tagTerms = ProxyType
+                                var tagTerms = proxyType
                                     .GetProperties()
                                     .Where(p =>
                                         (p.GetCustomAttribute<TagMatchTermAttribute>() != null))
@@ -1137,6 +1129,7 @@ Overriding the OnContractTypeChanged method in a subclass offers full control.
         protected string TableName { get; set; }
         protected string PrimaryKeyName { get; set; }
 
+#if false
         /// <summary>
         /// Allows query interpretation to be projected through an alternate
         /// contract (e.g. interface or subclass) while preserving table identity.
@@ -1188,6 +1181,7 @@ SQLite Tables are incompatible:
             }
         }
         Type? _proxyType = default;
+#endif
 
 
 
@@ -1513,6 +1507,9 @@ SQLite Tables are incompatible:
 
         public DisposableHost DHostSelfIndexing { get; } = new();
 
+        /// <summary>
+        /// Support for inheritance model for Collection.
+        /// </summary>
         protected SQLiteConnection? FilterQueryDatabase
         {
             get => _filterQueryDatabase;
@@ -1529,6 +1526,9 @@ SQLite Tables are incompatible:
         SQLiteConnection? _filterQueryDatabase = default;
 
         
+        /// <summary>
+        /// Support for inheritance model for Collection.
+        /// </summary>
         public SQLiteConnection? MemoryDatabase
         {
             get => _memoryDatabase;
