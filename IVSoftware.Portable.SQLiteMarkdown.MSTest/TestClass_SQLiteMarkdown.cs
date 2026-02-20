@@ -1018,7 +1018,6 @@ FilterTerm";
         [TestMethod]
         public void Test_TableAttributeInheritance()
         {
-
             #region L o c a l F x
             var builderThrow = new List<string>();
             void localOnBeginThrowOrAdvise(object? sender, Throw e)

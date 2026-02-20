@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -145,42 +146,37 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                     else
                     {
-                        if (_warnedOnType.Add(type))
-                        {
-                            /* W C S */
-                            string msg = $@"
+                        /* W C S */
+                        string msg = $@"
 {nameof(TableName)} Conflict:
 Current Type '{type.Name}' is explicitly mapped to [Table(""{explicitTableName}"")].
 Base    Type '{bc.Name}' is explicitly mapped to [Table(""{bcTableName}"")].
 The rule is   : ""TO AVOID SPURIOUS TABLE CREATION - BASE CLASS WINS"".
 Why it matters: This rule deliberately ignores an explicit attribute.
 Rationale     : The contract database must be held stable for this inheritance tree.".TrimStart();
-                            switch (ContractErrorLevel)
-                            {
-                                case ContractErrorLevel.ThrowSoft:
-                                    this.ThrowSoft<InvalidOperationException>(msg);
-                                    break;
-                                case ContractErrorLevel.ThrowHard:
-                                    this.ThrowHard<InvalidOperationException>(msg);
-                                    break;
-                                case ContractErrorLevel.Advisory:
-                                    this.Advisory(msg);
-                                    break;
-                                default:
-                                    this.ThrowFramework<NotSupportedException>(
-                                        $"The {ContractErrorLevel.ToFullKey()} case is not supported.",
-                                        @throw: false);
-                                    break;
-                            }
+                        switch (ContractErrorLevel)
+                        {
+                            case ContractErrorLevel.ThrowSoft:
+                                localWarnOnceForType(() => this.ThrowSoft<InvalidOperationException>(msg));
+                                break;
+                            case ContractErrorLevel.ThrowHard:
+                                localWarnOnceForType(() => this.ThrowHard<InvalidOperationException>(msg));
+                                break;
+                            case ContractErrorLevel.Advisory:
+                                localWarnOnceForType(() => this.Advisory(msg));
+                                break;
+                            default:
+                                localWarnOnceForType(() => this.ThrowFramework<NotSupportedException>(
+                                    $"The {ContractErrorLevel.ToFullKey()} case is not supported.",
+                                    @throw: false));
+                                break;
                         }
                     }
                 }
                 else
                 {
-                    if (_warnedOnType.Add(type))
-                    {
-                        this.Advisory($@"Type '{type.Name}' is explicitly mapped to [Table(""{bcTableName}"")] in base class.");
-                    }
+                    localWarnOnceForType(() =>
+                        this.Advisory($@"Type '{type.Name}' is explicitly mapped to [Table(""{bcTableName}"")] in base class."));
                 }
             }
             else
@@ -189,10 +185,24 @@ Rationale     : The contract database must be held stable for this inheritance t
                 bcTableName = Mapper.GetMapping(type).TableName;
             }
             return bcTableName;
+
+            #region L o c a l F x 
+            void localWarnOnceForType(Action warn)
+            {
+                bool allowWarn;
+                lock(_warnLock)
+                {
+                    allowWarn = _warnedOnType.Add(type);
+                }
+                if(allowWarn)
+                {
+                    warn();
+                }
+            }
+            #endregion L o c a l F x
         }
-
         private readonly HashSet<Type> _warnedOnType = new();
-
+        private readonly object _warnLock = new();
 
         protected static SQLiteConnectionMapper Mapper
         {
