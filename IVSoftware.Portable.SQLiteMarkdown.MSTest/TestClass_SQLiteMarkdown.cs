@@ -1064,24 +1064,8 @@ FilterTerm";
                 );
 
                 // Whereas the parser is deliberately going to pick up the `[Table("items"]` from the BC.
+                builderThrow.Clear();
                 actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclassG>();
-                actual.ToClipboardExpected();
-                { }
-
-                expected = @" 
-SELECT * FROM SelectableQFModelSubclassG WHERE
-(QueryTerm LIKE '%animal%')"
-                ;
-
-
-                actual = string.Join(Environment.NewLine, builderThrow);
-                actual.ToClipboardExpected();
-                { } // <- FIRST TIME ONLY: Adjust the message.
-                actual.ToClipboardAssert("Expecting builder content to match.");
-                { }
-
-
-
                 expected = @" 
 SELECT * FROM items WHERE 
 (QueryTerm LIKE '%animal%')";
@@ -1090,6 +1074,20 @@ SELECT * FROM items WHERE
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Expecting 'items' table identity."
+                );
+
+                actual = string.Join(Environment.NewLine, builderThrow);
+                actual.ToClipboardExpected();
+                { } // <- FIRST TIME ONLY: Adjust the message.
+                actual.ToClipboardAssert("Expecting builder content to match.");
+                { }
+                expected = @" 
+Type 'SelectableQFModelSubclassG' is explicitly mapped to [Table(""items"")] in base class.";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
                 );
             }
             #endregion T H I S    I S    T H E    C O N C E R N

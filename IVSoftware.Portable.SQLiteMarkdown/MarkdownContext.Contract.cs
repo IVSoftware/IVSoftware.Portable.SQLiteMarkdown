@@ -42,7 +42,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
     partial class MarkdownContext : IMarkdownContextContract
     {
-
         /// <summary>
         /// Gets the contract type associated with this context.
         /// </summary>
@@ -118,6 +117,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
+                _tableName = null;
+                _primaryKeyName = null;
                 if (IsFilterExecutionEnabled)
                 {
                     if (FilterQueryDatabase != null)
@@ -161,17 +162,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 {   /* W C S */
                                     string msg = $@"
 {nameof(TableName)} Conflict:
-
-{ContractType.Name} is explicitly mapped to [Table(""{_tableName}"") in base class.
-";
+Current Type '{ContractType.Name}' is explicitly mapped to [Table(""{explicitTableName}"")].
+Base    Type '{bc.Name}' is explicitly mapped to [Table(""{_tableName}"")].
+The rule is   : ""TO AVOID SPURIOUS TABLE CREATION - BASE CLASS WINS"".
+Why it matters: This rule deliberately ignores an explicit attribute.
+Rationale     : The contract database must be held stable for this inheritance tree.".TrimStart();
                                     switch (ContractErrorLevel)
                                     {
                                         case ContractErrorLevel.ThrowSoft:
+                                            this.ThrowSoft<InvalidOperationException>(msg);
                                             break;
                                         case ContractErrorLevel.ThrowHard:
+                                            this.ThrowHard<InvalidOperationException>(msg);
                                             break;
                                         case ContractErrorLevel.Advisory:
-                                            this.Advisory($@"{ContractType.Name} is explicitly mapped to [Table(""{_tableName}"") in base class.");
+                                            this.Advisory(msg);
                                             break;
                                         default:
                                             this.ThrowFramework<NotSupportedException>(
@@ -183,7 +188,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             }
                             else
                             {
-                                this.Advisory($@"{ContractType.Name} is explicitly mapped to [Table(""{_tableName}"") in base class.");
+                                this.Advisory($@"Type '{ContractType.Name}' is explicitly mapped to [Table(""{_tableName}"")] in base class.");
                             }
                         }
                         else
