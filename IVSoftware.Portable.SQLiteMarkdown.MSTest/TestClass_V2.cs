@@ -43,7 +43,7 @@ public class TestClass_V2
         {
             switch (e.Caller)
             {
-                case nameof(MarkdownContext.FilterQueryDatabase):
+                case "FilterQueryDatabase":
                     eventQueue.Enqueue(new(sender, e));
                     break;
             }
@@ -360,7 +360,7 @@ SELECT * FROM items WHERE
         {
             switch (e.Caller)
             {
-                case nameof(MarkdownContext.FilterQueryDatabase):
+                case "FilterQueryDatabase":
                     eventQueue.Enqueue(new(sender, e));
                     break;
             }

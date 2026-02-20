@@ -1513,7 +1513,7 @@ SQLite Tables are incompatible:
 
         public DisposableHost DHostSelfIndexing { get; } = new();
 
-        public SQLiteConnection? FilterQueryDatabase
+        protected SQLiteConnection? FilterQueryDatabase
         {
             get => _filterQueryDatabase;
             set
