@@ -1166,12 +1166,24 @@ SELECT * FROM items WHERE
             }
 
             // Now check parser where declared table identity is INCONSISTENT WITH the BC
+            // v2.0+ "TO AVOID SPURIOUS TABLE CREATION - BASE CLASS WINS"
+            // v1.0  "Explicit [Table] attribute MUST BE RESPECTED."
             actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclassA>();
             actual.ToClipboardExpected();
             { }
+
+            expected = @" 
+SELECT * FROM items WHERE
+(QueryTerm LIKE '%animal%')"
+            ;
+
+#if false && VERSION_1_CONTRACT
+            "Explicit [Table] attribute MUST BE RESPECTED."            
+
             expected = @" 
 SELECT * FROM itemsA WHERE 
 (QueryTerm LIKE '%animal%')";
+#endif
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
