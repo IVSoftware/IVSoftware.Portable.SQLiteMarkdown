@@ -98,7 +98,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 out XElement _);
 
 
-
         [Canonical]
         public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
         {
@@ -124,7 +123,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Raw = expr;
             Transform = Raw;
 
-            Preamble = $"SELECT * FROM {TableName} WHERE";
+#if true
+            string tableName = ResolveTableNameForPass(proxyType);
+#else
+            string tableName = TableName;            
+#endif
+
+            Preamble = $"SELECT * FROM {tableName} WHERE";
+
             xast = XAST;
             uint quoteId = 0xFEFE0000;
             uint tagId = 0xFDFD0000;
@@ -145,10 +151,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             localLint();
             localRemoveTransientTrailingOperator();
             localBuildAST();
-            if (FilteringState != FilteringState.Ineligible)
-            {
-                localBuildPrimaryKeyClause();
-            }
             return localBuildExpression();
 
             #region L o c a l F x
@@ -1017,11 +1019,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     this.OnAwaited(new AwaitedEventArgs(caller: nameof(localBuildExpression)));
                 }
                 return Query;
-            }
-
-            void localBuildPrimaryKeyClause()
-            {
-
             }
             #endregion L o c a l F x   
         }

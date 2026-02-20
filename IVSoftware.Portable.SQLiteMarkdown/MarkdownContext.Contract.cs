@@ -35,8 +35,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         Type ContractType { get; set; }
 
-        string TableName { get; }
-        string PrimaryKeyName { get; }
+        string ContractTableName { get; }
+        string ContractPrimaryKeyName { get; }
 
         ContractErrorLevel ContractErrorLevel{ get; set; }
     }
@@ -117,8 +117,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
-                _tableName = null;
-                _primaryKeyName = null;
+                _contractTableName = null;
+                _contractPrimaryKeyName = null;
                 if (IsFilterExecutionEnabled)
                 {
                     if (FilterQueryDatabase != null)
@@ -133,37 +133,41 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
+        protected string TableName { get; set; }
+
         /// <summary>
         /// Heuristic - Follows internal rules that dictate contract intent.
         /// </summary>
-        public string TableName
+        public string ContractTableName
         {
             get
             {
-                if (_tableName is null)
+                if (_contractTableName is null)
                 {
                     if (_contractType is null) // Perform null check on backing store, not the property.
                     {
                         this.ThrowHard<NullReferenceException>($"The {nameof(ContractType)} must be assigned first.");
-                        _tableName = null!; // We warned you.
+                        _contractTableName = null!; // We warned you.
                     }
                     else
                     {
-                        if(ContractType.TryGetTableNameFromBaseClass(out _tableName, out var bc))
+                        _contractTableName = ResolveTableNameForPass(ContractType);
+#if false && MOVED
+                        if(ContractType.TryGetTableNameFromBaseClass(out _contractTableName, out var bc))
                         {
                             // The BC is weighing in and we must advise on the possible outcomes:
                             if(ContractType.TryGetTableNameFromTableAttribute(out var explicitTableName))
                             {
-                                if (string.Equals(_tableName, explicitTableName, StringComparison.Ordinal))
+                                if (string.Equals(_contractTableName, explicitTableName, StringComparison.Ordinal))
                                 {   /* G T K + B C S */
                                     // Nothing to see here. The proxy explicitly agrees with the base about the TableName
                                 }
                                 else
                                 {   /* W C S */
                                     string msg = $@"
-{nameof(TableName)} Conflict:
+{nameof(ContractTableName)} Conflict:
 Current Type '{ContractType.Name}' is explicitly mapped to [Table(""{explicitTableName}"")].
-Base    Type '{bc.Name}' is explicitly mapped to [Table(""{_tableName}"")].
+Base    Type '{bc.Name}' is explicitly mapped to [Table(""{_contractTableName}"")].
 The rule is   : ""TO AVOID SPURIOUS TABLE CREATION - BASE CLASS WINS"".
 Why it matters: This rule deliberately ignores an explicit attribute.
 Rationale     : The contract database must be held stable for this inheritance tree.".TrimStart();
@@ -188,41 +192,94 @@ Rationale     : The contract database must be held stable for this inheritance t
                             }
                             else
                             {
-                                this.Advisory($@"Type '{ContractType.Name}' is explicitly mapped to [Table(""{_tableName}"")] in base class.");
+                                this.Advisory($@"Type '{ContractType.Name}' is explicitly mapped to [Table(""{_contractTableName}"")] in base class.");
                             }
                         }
                         else
                         {
                             // Accept the uncontroversial table name as seen by SQLite.
-                            _tableName = Mapper.GetMapping(ContractType).TableName;
+                            _contractTableName = Mapper.GetMapping(ContractType).TableName;
+                        }
+#endif
+                    }
+                }
+                return _contractTableName;
+            }
+        }
+        string? _contractTableName = null;
+
+        protected virtual string ResolveTableNameForPass(Type type)
+        {
+            if (type.TryGetTableNameFromBaseClass(out var contractTableName, out var bc))
+            {
+                // The BC is weighing in and we must advise on the possible outcomes:
+                if (type.TryGetTableNameFromTableAttribute(out var explicitTableName))
+                {
+                    if (string.Equals(contractTableName, explicitTableName, StringComparison.Ordinal))
+                    {   /* G T K + B C S */
+                        // Nothing to see here. The proxy explicitly agrees with the base about the TableName
+                    }
+                    else
+                    {   /* W C S */
+                        string msg = $@"
+{nameof(ContractTableName)} Conflict:
+Current Type '{type.Name}' is explicitly mapped to [Table(""{explicitTableName}"")].
+Base    Type '{bc.Name}' is explicitly mapped to [Table(""{contractTableName}"")].
+The rule is   : ""TO AVOID SPURIOUS TABLE CREATION - BASE CLASS WINS"".
+Why it matters: This rule deliberately ignores an explicit attribute.
+Rationale     : The contract database must be held stable for this inheritance tree.".TrimStart();
+                        switch (ContractErrorLevel)
+                        {
+                            case ContractErrorLevel.ThrowSoft:
+                                this.ThrowSoft<InvalidOperationException>(msg);
+                                break;
+                            case ContractErrorLevel.ThrowHard:
+                                this.ThrowHard<InvalidOperationException>(msg);
+                                break;
+                            case ContractErrorLevel.Advisory:
+                                this.Advisory(msg);
+                                break;
+                            default:
+                                this.ThrowFramework<NotSupportedException>(
+                                    $"The {ContractErrorLevel.ToFullKey()} case is not supported.",
+                                    @throw: false);
+                                break;
                         }
                     }
                 }
-                return _tableName;
+                else
+                {
+                    this.Advisory($@"Type '{type.Name}' is explicitly mapped to [Table(""{contractTableName}"")] in base class.");
+                }
             }
+            else
+            {
+                // Accept the uncontroversial table name as seen by SQLite.
+                contractTableName = Mapper.GetMapping(type).TableName;
+            }
+            return contractTableName;
         }
-        string? _tableName = null;
 
-        public string PrimaryKeyName
+        public string ContractPrimaryKeyName
         {
             get
             {
-                if (_primaryKeyName is null) // Perform null check on backing store, not the property.
+                if (_contractPrimaryKeyName is null) // Perform null check on backing store, not the property.
                 {
                     if (_contractType is null)
                     {
                         this.ThrowHard<NullReferenceException>($"The {nameof(ContractType)} must be assigned first.");
-                        _primaryKeyName = null!; // We warned you.
+                        _contractPrimaryKeyName = null!; // We warned you.
                     }
                     else
                     {
-                        _primaryKeyName = Mapper.GetMapping(ContractType).PK?.Name ?? "rowid";
+                        _contractPrimaryKeyName = Mapper.GetMapping(ContractType).PK?.Name ?? "rowid";
                     }
                 }
-                return _primaryKeyName;
+                return _contractPrimaryKeyName;
             }
         }
-        string? _primaryKeyName = null;
+        string? _contractPrimaryKeyName = null;
 
         protected static SQLiteConnectionMapper Mapper
         {
@@ -236,22 +293,6 @@ Rationale     : The contract database must be held stable for this inheritance t
             }
         }
         static SQLiteConnectionMapper? _mapper = null;
-
-        string GetTableNameHeuristic(Type type)
-        {
-            if (type is null)
-            {
-                return string.Empty;
-            }
-            else if (FilterQueryDatabase is null)
-            {
-                return type.GetCustomAttribute<TableAttribute>()?.Name ?? type.Name;
-            }
-            else
-            {
-                return FilterQueryDatabase.GetMapping(type).TableName;
-            }
-        }
         public ContractErrorLevel ContractErrorLevel { get; set; } = ContractErrorLevel.ThrowSoft;
 
         protected sealed class SQLiteConnectionMapper
