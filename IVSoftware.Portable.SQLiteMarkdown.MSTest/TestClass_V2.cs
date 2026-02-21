@@ -444,6 +444,25 @@ SELECT * FROM items WHERE
 
 
     [TestMethod]
+    public void Test_UtcEpoch()
+    {
+        string actual, expected;
+        List<string> builder = new();
+
+        var prime = new SelectableQFPrimeModel();
+        Assert.IsNull(prime.UtcEpochMode, "Expecting null by default.");
+
+        prime.UtcEpochMode = UtcEpochMode.Fixed;
+        Assert.IsNull(prime.UtcEpochMode, "Expecting null because UTC Start is not set.");
+
+        prime.UtcStart = DateTimeOffset.UnixEpoch;
+        Assert.AreEqual(UtcEpochMode.Fixed, prime.UtcEpochMode, "Expecting not null because UTC Start is set.");
+
+
+        { }
+    }
+
+    [TestMethod]
     public async Task Test_ModularQuery()
     {
         string actual, expected;
