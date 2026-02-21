@@ -28,6 +28,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 if (!Equals(_duration, value))
                 {
                     _duration = value;
+                    // Duration performs a hard reset on Remaining.
+                    Remaining = value;
                     OnPropertyChanged();
                 }
             }

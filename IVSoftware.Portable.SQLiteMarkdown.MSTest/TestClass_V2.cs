@@ -451,6 +451,8 @@ SELECT * FROM items WHERE
 
         var prime = new SelectableQFPrimeModel();
         Assert.IsNull(prime.UtcEpochMode, "Expecting null by default.");
+        Assert.IsNull(prime.Duration, "Expecting null by default.");
+        Assert.IsNull(prime.Remaining, "Expecting null by default.");
 
         prime.UtcEpochMode = UtcEpochMode.Fixed;
         Assert.IsNull(prime.UtcEpochMode, "Expecting null because UTC Start is not set.");
@@ -458,6 +460,8 @@ SELECT * FROM items WHERE
         prime.UtcStart = DateTimeOffset.UnixEpoch;
         Assert.AreEqual(UtcEpochMode.Fixed, prime.UtcEpochMode, "Expecting not null because UTC Start is set.");
 
+        prime.Duration = TimeSpan.FromMinutes(5);
+        Assert.AreEqual(TimeSpan.FromMinutes(5), prime.Remaining, "Expecting Remaining tracks changed duration.");
 
         { }
     }
