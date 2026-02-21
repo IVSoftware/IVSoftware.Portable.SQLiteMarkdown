@@ -40,6 +40,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             get => _remaining;
             set
             {
+                if(value is { } remaining && remaining < TimeSpan.Zero)
+                {
+                    value = TimeSpan.Zero;
+                }
                 if (!Equals(_remaining, value))
                 {
                     _remaining = value;
@@ -112,7 +116,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             }
         }
 
-        public bool? IsDone => throw new NotImplementedException();
+        public bool? IsDone =>
+            Remaining is { } remaining
+            ? remaining.Ticks == 0
+            : null; 
 
         public UtcEpochTimeDomain? UtcEpochTimeDomain => throw new NotImplementedException();
 
