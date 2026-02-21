@@ -1,36 +1,63 @@
-﻿using System;
+﻿using IVSoftware.Portable.Common.Exceptions;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
-    public class ChainOfCustody : IEnumerable<KeyValuePair<string, ChainOfCustodyEntry>>
+    public class ChainOfCustody : IEnumerable<KeyValuePair<string, ChainOfCustodyToken>>
     {
-        public DateTime Created { get; set; } = DateTime.UtcNow;
-        public DateTime BeginModify(string modifiedBy)
+        public DateTimeOffset Created { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Local principal presets its identity (e.g., guid).
+        /// </summary>
+        public DateTimeOffset GetToken(string identity)
         {
             var now = DateTime.UtcNow;
 
-            var entry = _coc.TryGetValue(modifiedBy, out var exists) && exists is not null
-            ? exists
-            : new();
-
-            entry.EpochStart = now;
-
-            // This is set after a round trip to the 'cloud' where
-            // the transaction yields an authoritative time stamp.
-            entry.EpochEnd = null;
-
-            _coc[modifiedBy] = entry;
-
-            return now;
+            if(!_coc.TryGetValue(identity, out var token))
+            {
+                token = new();
+                _coc[identity] = token;
+            }
+            else
+            {
+                // Otherwise, a "closed" epoch will have a remote receipt
+                // timestamped more recently than the local timestamp.
+                if(token.LocalTimestamp <= token.RemoteTimestamp)
+                {
+                    token.LocalTimestamp = now;;
+                    _coc[identity] = token;
+                }
+                else
+                {   /* G T K */
+                    // N O O P
+                    // Local change epoch is already in progress.
+                }
+            }
+            return token.LocalTimestamp;
         }
 
-        private readonly Dictionary<string, ChainOfCustodyEntry> _coc = new();
-
-        public IEnumerator<KeyValuePair<string, ChainOfCustodyEntry>> GetEnumerator()
+        public ChainOfCustodyToken CommitToken(string identity, DateTimeOffset remoteTimeStamp)
         {
-            return ((IEnumerable<KeyValuePair<string, ChainOfCustodyEntry>>)_coc).GetEnumerator();
+            if (_coc.TryGetValue(identity, out var token))
+            {
+                token.RemoteTimestamp = remoteTimeStamp;
+                return token;
+            }
+            else
+            {
+                this.ThrowHard<InvalidOperationException>();
+                return null!;
+            }
+        }
+
+        private readonly Dictionary<string, ChainOfCustodyToken> _coc = new();
+
+        public IEnumerator<KeyValuePair<string, ChainOfCustodyToken>> GetEnumerator()
+        {
+            return ((IEnumerable<KeyValuePair<string, ChainOfCustodyToken>>)_coc).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -39,21 +66,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
     }
 
-    public class ChainOfCustodyEntry
+    public class ChainOfCustodyToken
     {
         /// <summary>
-        /// The local device page token when this record becomes modified.
+        /// The local device commits an edit and asserts a claim of ownership.
         /// </summary>
-        public string EpochStart { get; set; } = string.Empty;
+        public DateTimeOffset LocalTimestamp { get; set; } = DateTimeOffset.UtcNow;
 
         /// <summary>
-        /// The remote device page token receipt when upload is acknowledged.
+        /// The timestamp of the remote file transaction as obtained in the upload receipt meta.
         /// </summary>
-        public string EpochEnd { get; set; } = string.Empty;
+        public DateTimeOffset? RemoteTimestamp { get; set; }
 
         /// <summary>
-        /// User-mappable flags for merge granularity.
+        /// User-mappable flags that may be used for merge granularity.
         /// </summary>
+        /// <remarks>
+        /// When INPC is mapped to specific flags, it means that
+        /// - PrincipleA can change PropertyA
+        /// - PrincipleB can change PropertyB
+        /// - The merge will be lossless even if epochs overlap.
+        /// </remarks>
         public long ModifiedFlags { get; set; }
     }
 }
