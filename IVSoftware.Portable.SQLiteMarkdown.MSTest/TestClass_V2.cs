@@ -452,8 +452,9 @@ SELECT * FROM items WHERE
         SelectableQFPrimeModel prime, utcParent;
 
         subtest_CreateUtcParentInstance();
+        subtest_Asap();
 
-        subtest_FixedEpoch();
+        subtest_UtcEpochClock();
 
         #region S U B T E S T S
         void subtest_CreateUtcParentInstance()
@@ -463,14 +464,20 @@ SELECT * FROM items WHERE
                 utcParent.UtcEpochMode,
                 "Expecting null because nothing is set.");
 
-            utcParent.UtcStart = DateTimeOffset.UnixEpoch;
+            utcParent.UtcStart = StdIvsEpoch.IvsEpoch.ToDateTimeOffset();
             Assert.AreEqual(
                 UtcEpochMode.Fixed,
                 utcParent.UtcEpochMode,
                 "Expecting FIXED because UTC Start is set.");
+
+            utcParent.Duration = TimeSpan.FromMinutes(5);
+            Assert.AreEqual(
+                TimeSpan.FromMinutes(5),
+                utcParent.Remaining,
+                "Expecting FIXED even though DURATION is set because UTC Start is set and FIXED is higher priority that ASAP.");
         }
 
-        void subtest_FixedEpoch()
+        void subtest_Asap()
         {
             prime = new SelectableQFPrimeModel();
             Assert.IsNull(
@@ -493,9 +500,13 @@ SELECT * FROM items WHERE
 
             Assert.AreEqual(
                 UtcEpochMode.Asap,
-                utcParent.UtcEpochMode,
-                "Expecting ASAP because Duration is set and UtcStart is *not*.");
+                prime.UtcEpochMode,
+                "Expecting ASAP because Duration is set and UtcStart is NULL.");
+        }
 
+        void subtest_UtcEpochClock()
+        {
+            SelectableQFPrimeModel.UtcEpochClock.UtcEpochNow = StdIvsEpoch.January1.ToDateTimeOffset();
         }
         #endregion S U B T E S T S
     }

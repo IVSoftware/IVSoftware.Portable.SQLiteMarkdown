@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
-    public static class SQLiteMarkdownTestExtensions
+    public static partial class SQLiteMarkdownTestExtensions
     {
         public static T DequeueSingle<T>(this Queue<T> queue)
             => queue.Count switch

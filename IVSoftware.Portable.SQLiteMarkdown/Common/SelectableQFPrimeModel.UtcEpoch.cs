@@ -121,7 +121,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         public List<UtcEpochSlot> Slots { get; } = new List<UtcEpochSlot>();
 
-        public IUtcEpochClock UtcEpochClock
+        public static IUtcEpochClock UtcEpochClock
         {
             get
             {
@@ -132,6 +132,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 return _utcEpochClock;
             }
         }
-        IUtcEpochClock? _utcEpochClock = null;
+        static IUtcEpochClock? _utcEpochClock = null;
     }
 }
