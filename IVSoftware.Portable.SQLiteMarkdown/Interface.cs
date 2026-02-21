@@ -247,6 +247,34 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         IDictionary<string, string?> CustomProperties { get; }
     }
 
+    /// <summary>
+    /// Intermediary snapshot of a moment in time that must complete before advancing.
+    /// </summary>
+    /// <remarks>
+    /// Allows IUtcEpoch to operate without race conditions.
+    /// </remarks>
+    public interface UtcEpochClock
+    {
+        /// <summary>
+        /// Captured epoch reference.
+        /// </summary>
+        DateTimeOffset? UtcEpochNow { get; set; }
+
+        int Second { get; }
+        int Minute { get; }
+        int Hour { get; }
+        int Day { get; }
+        int Month { get; }
+        int Year { get; }
+
+        event EventHandler NewSecond;
+        event EventHandler NewMinute;
+        event EventHandler NewHour;
+        event EventHandler NewDay;
+        event EventHandler NewMonth;
+        event EventHandler NewYear;
+    }
+
     public enum UtcEpochTimeDomain
     {
         /// <summary>
@@ -281,34 +309,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         AsapBefore = Asap | Asap << 1,
 
         AsapAfter =  Asap | Asap << 2,
-    }
-
-    /// <summary>
-    /// Intermediary snapshot of a moment in time that must complete before advancing.
-    /// </summary>
-    /// <remarks>
-    /// Allows IUtcEpoch to operate without race conditions.
-    /// </remarks>
-    public interface UtcEpochClock
-    {
-        /// <summary>
-        /// Captured epoch reference.
-        /// </summary>
-        DateTimeOffset? UtcEpochNow { get; set; }
-
-        int Second { get; }
-        int Minute { get; }
-        int Hour { get; }
-        int Day { get; }
-        int Month { get; }
-        int Year { get; }
-
-        event EventHandler NewSecond;
-        event EventHandler NewMinute;
-        event EventHandler NewHour;
-        event EventHandler NewDay;
-        event EventHandler NewMonth;
-        event EventHandler NewYear;
     }
 
     /// <summary>
@@ -364,5 +364,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Reference PK for UtcEpochMode.Before and UtcEpochMode.After
         /// </summary>
         string? Parent { get; }
+
+        /// <summary>
+        /// Partial epochs that float around fixed epochs.
+        /// </summary>
+        IList<IUtcEpochSlot> Slots { get; }
+    }
+
+    public interface IUtcEpochSlot
+    {
+        /// <summary>
+        /// Earliest available start time in context,
+        /// </summary>
+        DateTimeOffset UtcStart { get; set; }
+
+        /// <summary>
+        /// Latest available start time in context,
+        /// </summary>
+        DateTimeOffset UtcEnd { get; set; }
+
+        /// <summary>
+        /// UtcEnd - UtcStart
+        /// </summary>
+        TimeSpan AvailableTime { get; }
     }
 }
