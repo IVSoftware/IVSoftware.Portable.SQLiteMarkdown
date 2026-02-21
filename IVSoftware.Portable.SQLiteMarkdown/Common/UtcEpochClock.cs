@@ -62,6 +62,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 if (!Equals(_utcEpochNow, value))
                 {
                     _utcEpochNow = value;
+                    OnPropertyChanged();
 
                     Second = _utcEpochNow.Second;
                     Minute = _utcEpochNow.Minute;
@@ -69,8 +70,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                     Day = _utcEpochNow.Day;
                     Month = _utcEpochNow.Month;
                     Year = _utcEpochNow.Year;
-
-                    OnPropertyChanged();
                 }
             }
         }
