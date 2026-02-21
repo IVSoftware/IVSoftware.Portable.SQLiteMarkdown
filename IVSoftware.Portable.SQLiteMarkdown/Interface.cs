@@ -286,7 +286,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Future,
     }
 
-    [Flags]
     public enum UtcEpochMode
     {
         /// <summary>
@@ -297,11 +296,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Begins as soon as possible relative to UtcNow and Position.
         /// </summary>
-        Asap = 0x1,
+        Asap = 0x1
+    }
 
-        AsapBefore = Asap | Asap << 1,
+    [Flags]
+    public enum UtcChildMode
+    {
+        /// <summary>
+        /// Begins at a specified UtcStart and ends Remaining later.
+        /// </summary>
+        Above = -1,
 
-        AsapAfter = Asap | Asap << 2,
+        /// <summary>
+        /// Begins as soon as possible relative to UtcNow and Position.
+        /// </summary>
+        Below = +1,
     }
 
     /// <summary>
@@ -339,9 +348,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         bool? IsDone { get; }
 
         /// <summary>
-        /// Aspirational mode that requires UtcStart
+        /// Derived mode when UtcStart and/or Duration are not null.
         /// </summary>
-        UtcEpochMode? UtcEpochMode { get; set; }
+        UtcEpochMode? UtcEpochMode { get; }
+
+        /// <summary>
+        /// Derived mode when UtcParent is not null.
+        /// </summary>
+        UtcChildMode? UtcChildMode { get; set; }
 
         /// <summary>
         /// Aspirational mode that requires UtcStart

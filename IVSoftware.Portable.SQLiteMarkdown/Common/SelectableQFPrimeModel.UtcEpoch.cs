@@ -59,43 +59,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         /// <summary>
         /// Self-qualifying heuristic for mode.
         /// </summary>
-        public UtcEpochMode? UtcEpochMode
-        {
-            get
-            {
-                switch (_utcEpochMode)
-                {
-                    case SQLiteMarkdown.UtcEpochMode.Fixed:
-                        // Requires a fixed start time.
-                        if(UtcStart is null)
-                        {
-                            return null;
-                        }
-                        break;                        
-                    case SQLiteMarkdown.UtcEpochMode.Asap:
-                        break;
-                    case SQLiteMarkdown.UtcEpochMode.AsapBefore:
-                    case SQLiteMarkdown.UtcEpochMode.AsapAfter:
-                        // Requires a parent to pin to.
-                        if (UtcParent is null)
-                        {
-                            return SQLiteMarkdown.UtcEpochMode.Asap;
-                        }
-                        break;
-                }
-                return _utcEpochMode;
-            }
-            set
-            {
-                if (!Equals(_utcEpochMode, value))
-                {
-                    _utcEpochMode = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        UtcEpochMode? _utcEpochMode = default;
-
+        public UtcEpochMode? UtcEpochMode =>
+            UtcStart is not null
+            ? SQLiteMarkdown.UtcEpochMode.Fixed
+            : Duration is not null
+                ? SQLiteMarkdown.UtcEpochMode.Asap
+                : null;
 
         public DateTimeOffset? UtcEnd
         {
@@ -107,12 +76,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                         break;
                     case SQLiteMarkdown.UtcEpochMode.Asap:
                         break;
-                    case SQLiteMarkdown.UtcEpochMode.AsapBefore:
-                        break;
-                    case SQLiteMarkdown.UtcEpochMode.AsapAfter:
-                        break;
-                    default:
-                        break;
                 }
                 return null;
             }
@@ -123,11 +86,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             ? remaining.Ticks == 0
             : null; 
 
-        public UtcEpochTimeDomain? UtcEpochTimeDomain => throw new NotImplementedException();
 
         public bool? IsRunning { get; set; }
 
-        public string? UtcParent { get; set; }
+        public string? UtcParent
+        {
+            get => _utcParent;
+            set
+            {
+                if (!Equals(_utcParent, value))
+                {
+                    _utcParent = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        string? _utcParent = string.Empty;
+
+        public UtcChildMode? UtcChildMode
+        {
+            get => _utcChildMode;
+            set
+            {
+                if (!Equals(_utcChildMode, value))
+                {
+                    _utcChildMode = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        UtcChildMode? _utcChildMode = default;
+
+        public UtcEpochTimeDomain? UtcEpochTimeDomain => throw new NotImplementedException();
 
         public List<UtcEpochSlot> Slots { get; } = new List<UtcEpochSlot>();
 

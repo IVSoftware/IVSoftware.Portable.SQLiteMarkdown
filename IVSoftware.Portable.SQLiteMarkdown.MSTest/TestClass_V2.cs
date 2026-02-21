@@ -449,21 +449,55 @@ SELECT * FROM items WHERE
         string actual, expected;
         List<string> builder = new();
 
-        var prime = new SelectableQFPrimeModel();
-        Assert.IsNull(prime.UtcEpochMode, "Expecting null by default.");
-        Assert.IsNull(prime.Duration, "Expecting null by default.");
-        Assert.IsNull(prime.Remaining, "Expecting null by default.");
+        SelectableQFPrimeModel prime, utcParent;
 
-        prime.UtcEpochMode = UtcEpochMode.Fixed;
-        Assert.IsNull(prime.UtcEpochMode, "Expecting null because UTC Start is not set.");
+        subtest_CreateUtcParentInstance();
 
-        prime.UtcStart = DateTimeOffset.UnixEpoch;
-        Assert.AreEqual(UtcEpochMode.Fixed, prime.UtcEpochMode, "Expecting not null because UTC Start is set.");
+        subtest_FixedEpoch();
 
-        prime.Duration = TimeSpan.FromMinutes(5);
-        Assert.AreEqual(TimeSpan.FromMinutes(5), prime.Remaining, "Expecting Remaining tracks changed duration.");
+        #region S U B T E S T S
+        void subtest_CreateUtcParentInstance()
+        {
+            utcParent = new SelectableQFPrimeModel();
+            Assert.IsNull(
+                utcParent.UtcEpochMode,
+                "Expecting null because nothing is set.");
 
-        { }
+            utcParent.UtcStart = DateTimeOffset.UnixEpoch;
+            Assert.AreEqual(
+                UtcEpochMode.Fixed,
+                utcParent.UtcEpochMode,
+                "Expecting FIXED because UTC Start is set.");
+        }
+
+        void subtest_FixedEpoch()
+        {
+            prime = new SelectableQFPrimeModel();
+            Assert.IsNull(
+                prime.UtcEpochMode, 
+                "Expecting null because nothing is set.");
+
+            Assert.IsNull(
+                prime.Duration, 
+                "Expecting null by default.");
+
+            Assert.IsNull(
+                prime.Remaining,
+                "Expecting null by default.");
+
+            prime.Duration = TimeSpan.FromMinutes(5);
+            Assert.AreEqual(
+                TimeSpan.FromMinutes(5),
+                prime.Remaining,
+                "Expecting hard reset on Remaining.");
+
+            Assert.AreEqual(
+                UtcEpochMode.Asap,
+                utcParent.UtcEpochMode,
+                "Expecting ASAP because Duration is set and UtcStart is *not*.");
+
+        }
+        #endregion S U B T E S T S
     }
 
     [TestMethod]
