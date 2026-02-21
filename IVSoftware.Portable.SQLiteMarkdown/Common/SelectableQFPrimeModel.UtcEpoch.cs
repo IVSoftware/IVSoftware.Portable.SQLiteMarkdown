@@ -6,21 +6,119 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
     partial class SelectableQFPrimeModel
     {
-        public DateTimeOffset? UtcStart { get; set; }
-        public TimeSpan? Duration { get; set; }
-        public TimeSpan? Remaining { get; set; }
+        public DateTimeOffset? UtcStart
+        {
+            get => _utcStart;
+            set
+            {
+                if (!Equals(_utcStart, value))
+                {
+                    _utcStart = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        DateTimeOffset? _utcStart = default;
 
-        public DateTimeOffset? UtcEnd => throw new NotImplementedException();
+        public TimeSpan? Duration
+        {
+            get => _duration;
+            set
+            {
+                if (!Equals(_duration, value))
+                {
+                    _duration = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        TimeSpan? _duration = default;
+
+
+        public TimeSpan? Remaining
+        {
+            get => _remaining;
+            set
+            {
+                if (!Equals(_remaining, value))
+                {
+                    _remaining = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        TimeSpan? _remaining = default;
+
+
+        /// <summary>
+        /// Self-qualifying heuristic for mode.
+        /// </summary>
+        public UtcEpochMode? UtcEpochMode
+        {
+            get
+            {
+                switch (_utcEpochMode)
+                {
+                    case SQLiteMarkdown.UtcEpochMode.Fixed:
+                        // Requires a fixed start time.
+                        if(UtcStart is null)
+                        {
+                            return null;
+                        }
+                        break;                        
+                    case SQLiteMarkdown.UtcEpochMode.Asap:
+                        break;
+                    case SQLiteMarkdown.UtcEpochMode.AsapBefore:
+                    case SQLiteMarkdown.UtcEpochMode.AsapAfter:
+                        // Requires a parent to pin to.
+                        if (UtcParent is null)
+                        {
+                            return SQLiteMarkdown.UtcEpochMode.Asap;
+                        }
+                        break;
+                }
+                return _utcEpochMode;
+            }
+            set
+            {
+                if (!Equals(_utcEpochMode, value))
+                {
+                    _utcEpochMode = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        UtcEpochMode? _utcEpochMode = default;
+
+
+        public DateTimeOffset? UtcEnd
+        {
+            get
+            {
+                switch (UtcEpochMode)
+                {
+                    case SQLiteMarkdown.UtcEpochMode.Fixed:
+                        break;
+                    case SQLiteMarkdown.UtcEpochMode.Asap:
+                        break;
+                    case SQLiteMarkdown.UtcEpochMode.AsapBefore:
+                        break;
+                    case SQLiteMarkdown.UtcEpochMode.AsapAfter:
+                        break;
+                    default:
+                        break;
+                }
+                return null;
+            }
+        }
 
         public bool? IsDone => throw new NotImplementedException();
 
-        public UtcEpochMode? EpochMode { get; set; }
+        public UtcEpochTimeDomain? UtcEpochTimeDomain => throw new NotImplementedException();
 
-        public UtcEpochTimeDomain? EpochTimeDomain => throw new NotImplementedException();
+        public bool? IsRunning { get; set; }
 
-        public bool? IsRunning => throw new NotImplementedException();
-
-        public string? Parent => throw new NotImplementedException();
+        public string? UtcParent { get; set; }
 
         public List<UtcEpochSlot> Slots { get; } = new List<UtcEpochSlot>();
 

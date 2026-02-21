@@ -341,12 +341,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Aspirational mode that requires UtcStart
         /// </summary>
-        UtcEpochMode? EpochMode { get; set; }
+        UtcEpochMode? UtcEpochMode { get; set; }
 
         /// <summary>
         /// Aspirational mode that requires UtcStart
         /// </summary>
-        UtcEpochTimeDomain? EpochTimeDomain { get; }
+        UtcEpochTimeDomain? UtcEpochTimeDomain { get; }
 
         /// <summary>
         /// Returns false if !(UtcEpochMode.ASAP). 'Net True' decrements Remaining when item is UtcEpochTimeDomain.Present.
@@ -356,7 +356,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Reference PK for UtcEpochMode.Before and UtcEpochMode.After
         /// </summary>
-        string? Parent { get; }
+        string? UtcParent { get; }
 
         /// <summary>
         /// Partial epochs that float around fixed epochs.
