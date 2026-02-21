@@ -1,11 +1,13 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
 using Newtonsoft.Json;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
+    [Table("items")]
     public partial class SelectableQFPrimeModel 
         : SelectableQFModel
         , IGenesis

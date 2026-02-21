@@ -450,7 +450,7 @@ SELECT * FROM items WHERE
         List<string> builder = new();
 
 
-        var mdc = new MarkdownContext<SelectableQFModel>();
+        var mdc = new MarkdownContext<SelectableQFPrimeModel>();
 
 
         await subtest_ModularQuery1();

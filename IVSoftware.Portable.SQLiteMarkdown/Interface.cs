@@ -301,7 +301,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         AsapBefore = Asap | Asap << 1,
 
-        AsapAfter =  Asap | Asap << 2,
+        AsapAfter = Asap | Asap << 2,
     }
 
     /// <summary>
@@ -361,27 +361,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Partial epochs that float around fixed epochs.
         /// </summary>
-        IList<IUtcEpochSlot> Slots { get; }
-    }
-
-    /// <summary>
-    /// Partial epoch that is constrained by fixed time epochs in the collection.
-    /// </summary>
-    public interface IUtcEpochSlot
-    {
-        /// <summary>
-        /// Earliest available start time in context,
-        /// </summary>
-        DateTimeOffset UtcStart { get; set; }
-
-        /// <summary>
-        /// Latest available start time in context,
-        /// </summary>
-        DateTimeOffset UtcEnd { get; set; }
-
-        /// <summary>
-        /// UtcEnd - UtcStart
-        /// </summary>
-        TimeSpan AvailableTime { get; }
+        List<UtcEpochSlot> Slots { get; }
     }
 }

@@ -22,8 +22,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         public string? Parent => throw new NotImplementedException();
 
-        public IList<IUtcEpochSlot> Slots => throw new NotImplementedException();
+        public List<UtcEpochSlot> Slots { get; } = new List<UtcEpochSlot>();
 
-        IUtcEpochClock
+        public IUtcEpochClock UtcEpochClock
+        {
+            get
+            {
+                if (_utcEpochClock is null)
+                {
+                    _utcEpochClock = new UtcEpochClock();
+                }
+                return _utcEpochClock;
+            }
+        }
+        IUtcEpochClock? _utcEpochClock = null;
     }
 }
