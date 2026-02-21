@@ -371,6 +371,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         IList<IUtcEpochSlot> Slots { get; }
     }
 
+    /// <summary>
+    /// Partial epoch that is constrained by fixed time epochs in the collection.
+    /// </summary>
     public interface IUtcEpochSlot
     {
         /// <summary>
