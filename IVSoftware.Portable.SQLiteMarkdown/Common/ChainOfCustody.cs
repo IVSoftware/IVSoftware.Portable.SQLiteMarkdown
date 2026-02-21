@@ -15,11 +15,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             ? exists
             : new();
 
-            entry.ModifiedIn = now;
+            entry.EpochStart = now;
 
             // This is set after a round trip to the 'cloud' where
             // the transaction yields an authoritative time stamp.
-            entry.ModifiedOut = null;
+            entry.EpochEnd = null;
 
             _coc[modifiedBy] = entry;
 
@@ -38,10 +38,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             return ((IEnumerable)_coc).GetEnumerator();
         }
     }
+
     public class ChainOfCustodyEntry
     {
-        public DateTime ModifiedIn { get; set; }
+        /// <summary>
+        /// The local device page token when this record becomes modified.
+        /// </summary>
+        public string EpochStart { get; set; } = string.Empty;
 
-        public DateTime? ModifiedOut { get; set; }
+        /// <summary>
+        /// The remote device page token receipt when upload is acknowledged.
+        /// </summary>
+        public string EpochEnd { get; set; } = string.Empty;
+
+        /// <summary>
+        /// User-mappable flags for merge granularity.
+        /// </summary>
+        public long ModifiedFlags { get; set; }
     }
 }
