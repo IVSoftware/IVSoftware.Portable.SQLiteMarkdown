@@ -1,22 +1,52 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
-    public interface IChainOfCustody
-    {
-        DateTime Created { get; }
-        string ChainOfCustody { get; }
-    }
-
     public partial class SelectableQFPrimeModel 
         : SelectableQFModel
+        , IGenesis
+        , IPositional
+        , IUtcEpoch
+        , ICustomProperties
         , IChainOfCustody
     {
-        public DateTime Created { get; set; }
+        public DateTimeOffset Created { get; set; } = DateTimeOffset.Now;
 
-        [SQLite.Column("ChainOfCustody")]
+        /// <summary>
+        /// General purpose optional date-time epoch.
+        /// </summary>
+        public DateTimeOffset? UtcStart { get; set; } = DateTimeOffset.UtcNow;
+        public DateTimeOffset? UtcEnd { get; set; } = DateTimeOffset.Now;
+
+        public long Position
+        {
+            get
+            { 
+                if(_position == 0)
+                {
+                    _position = Created.UtcTicks;
+                }
+                return _position; 
+            }
+            set
+            {
+                if (!Equals(_position, value))
+                {
+                    _position = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        long _position = 0;
+
+        public IDictionary<string, string?> CustomProperties { get; protected set; } = new Dictionary<string, string?>();
+
+
+        [SQLite.Column("ChainOfCustody"), JsonProperty]
         public string ChainOfCustodyJSON 
         {
             get => JsonConvert.SerializeObject(ChainOfCustody, Formatting.Indented);
@@ -38,9 +68,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         [SQLite.Ignore, JsonIgnore]
         public ChainOfCustody ChainOfCustody { get; protected set; } = new();
-        string IChainOfCustody.ChainOfCustody 
-        { 
-            get => ChainOfCustodyJSON;
-        }
+
+        public Task<DateTimeOffset> CommitLocalEdit(string identity) =>
+            ((IChainOfCustody)ChainOfCustody).CommitLocalEdit(identity);
+
+        public Task<ChainOfCustodyToken> CommitRemoteReceipt(string identity, DateTimeOffset remoteTimeStamp) =>
+            ((IChainOfCustody)ChainOfCustody).CommitRemoteReceipt(identity, remoteTimeStamp);
     }
 }

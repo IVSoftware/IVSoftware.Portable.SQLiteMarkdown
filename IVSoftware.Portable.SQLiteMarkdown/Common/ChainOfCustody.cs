@@ -18,7 +18,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     /// Global serialization is acceptable because mutation frequency is low
     /// and custody integrity is prioritized over throughput.
     /// </remarks>
-    public class ChainOfCustody : IEnumerable<KeyValuePair<string, ChainOfCustodyToken>>
+    public class ChainOfCustody
+        : IChainOfCustody
+        , IEnumerable<KeyValuePair<string, ChainOfCustodyToken>>
     {
         public DateTimeOffset Created { get; set; } = DateTime.UtcNow;
 
@@ -65,7 +67,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             }
         }
 
-        public async Task<ChainOfCustodyToken> CommitCloudReceipt(string identity, DateTimeOffset remoteTimeStamp)
+        public async Task<ChainOfCustodyToken> CommitRemoteReceipt(string identity, DateTimeOffset remoteTimeStamp)
         {
             try
             {
