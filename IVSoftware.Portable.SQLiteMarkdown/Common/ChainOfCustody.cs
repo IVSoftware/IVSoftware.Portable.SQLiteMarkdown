@@ -1,33 +1,31 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
     public class ChainOfCustody : IEnumerable<KeyValuePair<string, ChainOfCustodyEntry>>
     {
         public DateTime Created { get; set; } = DateTime.UtcNow;
-        public ChainOfCustodyEntry this[string key]
+        public DateTime BeginModify(string modifiedBy)
         {
-            set
-            {
-                if (value is null)
-                {
-                    _coc.Remove(key);
-                }
-                else
-                {
-                    var entry = _coc.TryGetValue(key, out var exists) && exists is not null
-                    ? exists
-                    : new();
+            var now = DateTime.UtcNow;
 
-                    JsonConvert.PopulateObject(JsonConvert.SerializeObject(value), entry);
-                    _coc[key] = entry;
-                }
-            }
+            var entry = _coc.TryGetValue(modifiedBy, out var exists) && exists is not null
+            ? exists
+            : new();
+
+            entry.ModifiedIn = now;
+
+            // This is set after a round trip to the 'cloud' where
+            // the transaction yields an authoritative time stamp.
+            entry.ModifiedOut = null;
+
+            _coc[modifiedBy] = entry;
+
+            return now;
         }
+
         private readonly Dictionary<string, ChainOfCustodyEntry> _coc = new();
 
         public IEnumerator<KeyValuePair<string, ChainOfCustodyEntry>> GetEnumerator()
@@ -42,16 +40,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     }
     public class ChainOfCustodyEntry
     {
-        /// <summary>
-        /// Current GUID
-        /// </summary>
-        public string ModifiedByIn { get; set; } = string.Empty;
         public DateTime ModifiedIn { get; set; }
 
-        /// <summary>
-        /// Modified GUID
-        /// </summary>
-        public string ModifiedByOut { get; set; } = string.Empty;
-        public DateTime ModifiedOut { get; set; }
+        public DateTime? ModifiedOut { get; set; }
     }
 }
