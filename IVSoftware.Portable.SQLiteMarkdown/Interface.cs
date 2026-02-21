@@ -253,12 +253,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <remarks>
     /// Allows IUtcEpoch to operate without race conditions.
     /// </remarks>
-    public interface UtcEpochClock
+    public interface IUtcEpochClock : INotifyPropertyChanged
     {
         /// <summary>
         /// Captured epoch reference.
         /// </summary>
-        DateTimeOffset? UtcEpochNow { get; set; }
+        DateTimeOffset UtcEpochNow { get; set; }
 
         int Second { get; }
         int Minute { get; }
@@ -266,13 +266,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         int Day { get; }
         int Month { get; }
         int Year { get; }
-
-        event EventHandler NewSecond;
-        event EventHandler NewMinute;
-        event EventHandler NewHour;
-        event EventHandler NewDay;
-        event EventHandler NewMonth;
-        event EventHandler NewYear;
     }
 
     public enum UtcEpochTimeDomain

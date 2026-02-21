@@ -16,12 +16,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     {
         public DateTimeOffset Created { get; set; } = DateTimeOffset.Now;
 
-        /// <summary>
-        /// General purpose optional date-time epoch.
-        /// </summary>
-        public DateTimeOffset? UtcStart { get; set; } = DateTimeOffset.UtcNow;
-        public DateTimeOffset? UtcEnd { get; set; } = DateTimeOffset.Now;
-
         public long Position
         {
             get
