@@ -507,6 +507,7 @@ SELECT * FROM items WHERE
         void subtest_UtcEpochClock()
         {
             SelectableQFPrimeModel.UtcEpochClock.UtcEpochNow = StdIvsEpoch.January1.ToDateTimeOffset();
+            SelectableQFPrimeModel.UtcEpochClock.UtcEpochNow += TimeSpan.FromMinutes(1);
         }
         #endregion S U B T E S T S
     }

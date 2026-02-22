@@ -120,18 +120,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         public UtcEpochTimeDomain? UtcEpochTimeDomain => throw new NotImplementedException();
 
         public List<UtcEpochSlot> Slots { get; } = new List<UtcEpochSlot>();
-
-        public static IUtcEpochClock UtcEpochClock
-        {
-            get
-            {
-                if (_utcEpochClock is null)
-                {
-                    _utcEpochClock = new UtcEpochClock();
-                }
-                return _utcEpochClock;
-            }
-        }
-        static IUtcEpochClock? _utcEpochClock = null;
     }
 }

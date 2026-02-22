@@ -1,10 +1,12 @@
-﻿using IVSoftware.Portable.Disposable;
+﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Disposable;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
-namespace IVSoftware.Portable.SQLiteMarkdown.Common
+namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {
     /// <summary>
     /// Concrete implementation of <see cref="IUtcEpochClock"/> that exposes
@@ -18,62 +20,93 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     /// This design allows consumers to reason against a stable, externally
     /// supplied moment in time, preventing race conditions that can arise
     /// from repeatedly querying <see cref="DateTimeOffset.UtcNow"/>.
-    /// 
-    /// The clock is intentionally passive; it does not advance itself.
-    /// Time progression must be driven by the host.
     /// </remarks>
     public class UtcEpochClock : IUtcEpochClock
     {
-        public virtual void Start() 
+        private static readonly IUtcEpochClock _system = new UtcEpochClock();
+        public static IUtcEpochClock System => _system;
+
+        protected int _run = 0;
+
+        public virtual void Start()
         {
-            bool start;
-            lock(_lock)
-            {
-                start = !_run;
-                _run = true;
-            }
-            if (start)
+            if (Interlocked.Exchange(ref _run, 1) == 0)
             {
                 _ = RunAsync();
             }
         }
-        public virtual void Stop() => _run = false;
+
+        public virtual void Stop()
+        {
+            Volatile.Write(ref _run, 0);
+        }
 
         private async Task RunAsync()
         {
-            while(_run)
+            while(Volatile.Read(ref _run) == 1)
             {
-                UtcEpochNow = DateTimeOffset.UtcNow;
-                await Task.Delay(TimeSpan.FromSeconds(0.25));
+                DisplayTime = UtcEpochNow = DateTimeOffset.UtcNow;
+                await Task.Delay(250);
             }
         }
 
         public DisposableHost DHostSuspend { get; } = new();
-
-        protected bool _run = false;
-
-        private readonly object _lock = new();
 
         public DateTimeOffset UtcEpochNow
         {
             get => _utcEpochNow;
             set
             {
-                if (!Equals(_utcEpochNow, value))
+                if (DHostSuspend.IsZero())
                 {
-                    _utcEpochNow = value;
-                    OnPropertyChanged();
+                    if (Interlocked.Exchange(ref _busy, 1) == 0)
+                    { 
+                        try
+                        {
+                            if (!Equals(_utcEpochNow, value))
+                            {
+                                _utcEpochNow = value;
 
-                    Second = _utcEpochNow.Second;
-                    Minute = _utcEpochNow.Minute;
-                    Hour = _utcEpochNow.Hour;
-                    Day = _utcEpochNow.Day;
-                    Month = _utcEpochNow.Month;
-                    Year = _utcEpochNow.Year;
+                                Second = _utcEpochNow.Second;
+                                Minute = _utcEpochNow.Minute;
+                                Hour = _utcEpochNow.Hour;
+                                Day = _utcEpochNow.Day;
+                                Month = _utcEpochNow.Month;
+                                Year = _utcEpochNow.Year;
+                                OnPropertyChanged();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            this.RethrowSoft(ex);
+                        }
+                        finally
+                        {
+                            Volatile.Write(ref _busy, 0);
+                        }
+                    }
                 }
             }
         }
-        DateTimeOffset _utcEpochNow = default;
+        private int _busy = 0;
+
+        DateTimeOffset _utcEpochNow = default; 
+
+        public DateTimeOffset DisplayTime
+        {
+            get => _displayTime;
+            set
+            {
+                value = new DateTimeOffset(value.Ticks - (value.Ticks % TimeSpan.TicksPerSecond), value.Offset);
+                if (!Equals(_displayTime, value))
+                {
+                    _displayTime = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        DateTimeOffset _displayTime;
+
 
         public int Second
         {
@@ -88,7 +121,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             }
         }
         int _second = default;
-        bool _newSecond = false;
+
         public int Minute
         {
             get => _minute;
