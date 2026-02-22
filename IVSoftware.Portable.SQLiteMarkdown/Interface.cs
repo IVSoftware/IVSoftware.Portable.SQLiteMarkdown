@@ -222,6 +222,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Task<DateTimeOffset> CommitLocalEdit(string identity);
         Task<ChainOfCustodyToken> CommitRemoteReceipt(string identity, DateTimeOffset remoteTimeStamp);
     }
+    /// <summary>
+    /// User area where value strings are indexed by key strings.
+    /// Are the values JSON? XML? You tell me! 
+    /// </summary>
+    public interface ICustomProperties
+    {
+        IDictionary<string, string?> CustomProperties { get; }
+    }
 
     /// <summary>
     /// Identifies an item that exposes a single, sortable position value.
@@ -240,11 +248,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public interface IPositional
     {
         long Position { get; set; }
-    }
-
-    public interface ICustomProperties
-    {
-        IDictionary<string, string?> CustomProperties { get; }
     }
 
     /// <summary>
