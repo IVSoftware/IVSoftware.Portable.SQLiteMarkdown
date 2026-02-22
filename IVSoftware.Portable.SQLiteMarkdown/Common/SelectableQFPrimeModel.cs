@@ -19,8 +19,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         {
             get
             {
-                this.OnAwaited();
-                return _created;
+                var e = new AwaitedEventArgs
+                {
+                   { nameof(Created), _created }
+                };
+                // Expose just the string, not the item, as sender.
+                nameof(Created).OnAwaited();
+                return (DateTimeOffset) e[nameof(Created)];
             }
             set
             {

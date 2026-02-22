@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IVSoftware.Portable.Common.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,26 +7,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
     partial class SelectableQFPrimeModel : IAffinityItem
     {
-        public DateTimeOffset? UtcStart
-        {
-            get
-            {
-                if (_utcStart is null)
-                {
-                    _utcStart = Created;
-                }
-                return _utcStart;
-            }
-            set
-            {
-                if (!Equals(_utcStart, value))
-                {
-                    _utcStart = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        DateTimeOffset? _utcStart = default;
 
         public long Position
         {
@@ -47,6 +28,52 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             }
         }
         long _position = 0;
+
+        /// <summary>
+        /// Globally-unique identifier that defaults to Materialized Path Policy.
+        /// </summary>
+        public string Path
+        {
+            get => _path ?? Id;
+            set
+            {
+                if (value?.EndsWith(Id) == true)
+                {
+                    if (!Equals(_path, value))
+                    {
+                        _path = value;
+                        OnPropertyChanged();
+                    }
+                }
+                else
+                {
+                    this.ThrowHard<InvalidOperationException>(
+                        $"Policy violation for {nameof(SelectableQFPrimeModel)}.{nameof(Path)}: This value must end with Id");
+                }
+            }
+        }
+        string _path = string.Empty;
+
+        public DateTimeOffset? UtcStart
+        {
+            get
+            {
+                if (_utcStart is null)
+                {
+                    _utcStart = Created;
+                }
+                return _utcStart;
+            }
+            set
+            {
+                if (!Equals(_utcStart, value))
+                {
+                    _utcStart = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        DateTimeOffset? _utcStart = default;
 
         public TimeSpan? Duration
         {
@@ -96,7 +123,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                     {
                         case null:
                             break;
-                        case SQLiteMarkdown.AffinityMode.Fixed:
+                        case SQLiteMarkdown.AffinityMode.FixedDateAndTime:
                             break;
                         case SQLiteMarkdown.AffinityMode.Asap:
                             break;
@@ -117,7 +144,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 {
                     case null:
                         break;
-                    case SQLiteMarkdown.AffinityMode.Fixed:
+                    case SQLiteMarkdown.AffinityMode.FixedDateAndTime:
                         break;
                     case SQLiteMarkdown.AffinityMode.Asap:
                         break;

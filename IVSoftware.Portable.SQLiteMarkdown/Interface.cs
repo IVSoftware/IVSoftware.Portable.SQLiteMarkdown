@@ -347,7 +347,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Specifying the Duration is strictly optional.
         /// </remarks>
-        FixedDateTime = FixedDate | FixedTime,
+        FixedDateAndTime = FixedDate | FixedTime,
     }
 
     /// <summary>

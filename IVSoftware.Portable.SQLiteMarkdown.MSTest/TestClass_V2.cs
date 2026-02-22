@@ -447,6 +447,16 @@ SELECT * FROM items WHERE
     [TestMethod]
     public void Test_UtcEpoch()
     {
+
+        #region L o c a l F x 
+        using var local = this.WithOnDispose(
+            onInit: (sender, e) => Threading.Extensions.Awaited += localOnAwaited,
+            onDispose: (sender, e) => Threading.Extensions.Awaited -= localOnAwaited);
+        void localOnAwaited(object? sender, AwaitedEventArgs e)
+        {
+        }
+        #endregion L o c a l F x
+
         string actual, expected;
         List<string> builder = new();
 
@@ -466,9 +476,9 @@ SELECT * FROM items WHERE
                 "Expecting null because nothing is set.");
 
             // This will pull Position into UtcStart.
-            utcParent.AffinityMode = AffinityMode.Fixed;
+            utcParent.AffinityMode = AffinityMode.FixedDateAndTime;
             Assert.AreEqual(
-                AffinityMode.Fixed,
+                AffinityMode.FixedDateAndTime,
                 utcParent.AffinityMode,
                 "Expecting FIXED because UTC Start is set.");
 
