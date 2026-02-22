@@ -316,7 +316,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Represents a time slice snapshot using a captured UtcEpochNow that preempts race conditions.
     /// </summary>
-    public interface IUtcEpoch
+    public interface IUtcEpoch : IPositional
     {
         /// <summary>
         /// Reference point for UtcEpochMode.Fixed.

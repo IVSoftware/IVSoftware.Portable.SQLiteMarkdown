@@ -4,11 +4,18 @@ using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
-    partial class SelectableQFPrimeModel
+    partial class SelectableQFPrimeModel : IUtcEpoch
     {
         public DateTimeOffset? UtcStart
         {
-            get => _utcStart;
+            get
+            {
+                if (_utcStart is null)
+                {
+                    _utcStart = Created;
+                }
+                return _utcStart;
+            }
             set
             {
                 if (!Equals(_utcStart, value))
@@ -19,6 +26,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             }
         }
         DateTimeOffset? _utcStart = default;
+
+        public long Position
+        {
+            get
+            {
+                if (_position == 0)
+                {
+                    _position = Created.UtcTicks;
+                }
+                return _position;
+            }
+            set
+            {
+                if (!Equals(_position, value))
+                {
+                    _position = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        long _position = 0;
 
         public TimeSpan? Duration
         {
@@ -56,15 +84,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         TimeSpan? _remaining = default;
 
 
-        /// <summary>
-        /// Self-qualifying heuristic for mode.
-        /// </summary>
-        public UtcEpochMode? UtcEpochMode =>
-            UtcStart is not null
-            ? SQLiteMarkdown.UtcEpochMode.Fixed
-            : Duration is not null
-                ? SQLiteMarkdown.UtcEpochMode.Asap
-                : null;
+        public UtcEpochMode? UtcEpochMode
+        {
+            get => _utcEpochMode;
+            set
+            {
+                if (!Equals(_utcEpochMode, value))
+                {
+                    _utcEpochMode = value;
+                    switch (UtcEpochMode)
+                    {
+                        case null:
+                            break;
+                        case SQLiteMarkdown.UtcEpochMode.Fixed:
+                            break;
+                        case SQLiteMarkdown.UtcEpochMode.Asap:
+                            break;
+                    }
+                    OnPropertyChanged();
+                }
+            }
+        }
+        UtcEpochMode? _utcEpochMode = default;
+
+
 
         public DateTimeOffset? UtcEnd
         {
@@ -72,11 +115,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             {
                 switch (UtcEpochMode)
                 {
+                    case null:
+                        break;
                     case SQLiteMarkdown.UtcEpochMode.Fixed:
                         break;
                     case SQLiteMarkdown.UtcEpochMode.Asap:
                         break;
                 }
+                throw new NotImplementedException("ToDo");
                 return null;
             }
         }

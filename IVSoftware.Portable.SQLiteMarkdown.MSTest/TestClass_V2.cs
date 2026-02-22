@@ -2,6 +2,7 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
@@ -464,7 +465,8 @@ SELECT * FROM items WHERE
                 utcParent.UtcEpochMode,
                 "Expecting null because nothing is set.");
 
-            utcParent.UtcStart = StdIvsEpoch.IvsEpoch.ToDateTimeOffset();
+            // This will pull Position into UtcStart.
+            utcParent.UtcEpochMode = UtcEpochMode.Fixed;
             Assert.AreEqual(
                 UtcEpochMode.Fixed,
                 utcParent.UtcEpochMode,
@@ -506,8 +508,8 @@ SELECT * FROM items WHERE
 
         void subtest_UtcEpochClock()
         {
-            SelectableQFPrimeModel.UtcEpochClock.UtcEpochNow = StdIvsEpoch.January1.ToDateTimeOffset();
-            SelectableQFPrimeModel.UtcEpochClock.UtcEpochNow += TimeSpan.FromMinutes(1);
+            UtcEpochClock.System.UtcEpochNow = StdIvsEpoch.January1.ToDateTimeOffset();
+            UtcEpochClock.System.UtcEpochNow += TimeSpan.FromMinutes(1);
         }
         #endregion S U B T E S T S
     }

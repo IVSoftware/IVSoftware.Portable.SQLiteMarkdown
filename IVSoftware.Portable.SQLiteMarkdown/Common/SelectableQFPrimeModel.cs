@@ -11,33 +11,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     public partial class SelectableQFPrimeModel 
         : SelectableQFModel
         , IGenesis
-        , IPositional
-        , IUtcEpoch
         , ICustomProperties
         , IChainOfCustody
     {
         public DateTimeOffset Created { get; set; } = DateTimeOffset.Now;
-
-        public long Position
-        {
-            get
-            { 
-                if(_position == 0)
-                {
-                    _position = Created.UtcTicks;
-                }
-                return _position; 
-            }
-            set
-            {
-                if (!Equals(_position, value))
-                {
-                    _position = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        long _position = 0;
 
         public IDictionary<string, string?> CustomProperties { get; protected set; } = new Dictionary<string, string?>();
 
