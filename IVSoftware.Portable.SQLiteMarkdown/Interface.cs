@@ -338,8 +338,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Conditional semantics that are mutually exclusive to FIXED.
     /// </summary>
+    /// <remarks>
+    /// Child items *are not* required to be temporal, but if they *are* then thay are ASAP and never FIXED.
+    /// </remarks>
     [Flags]
-    public enum UtcChildMode
+    public enum ChildAffinityMode
     {
         /// <summary>
         /// Begins at a specified UtcStart and ends Remaining later.
@@ -427,7 +430,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Derived mode when UtcParent is not null.
         /// </summary>
-        UtcChildMode? UtcChildMode { get; set; }
+        ChildAffinityMode? UtcChildMode { get; set; }
 
         /// <summary>
         /// Aspirational mode that requires UtcStart

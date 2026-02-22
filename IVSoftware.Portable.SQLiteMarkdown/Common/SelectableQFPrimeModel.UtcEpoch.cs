@@ -149,7 +149,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         string? _utcParent = string.Empty;
 
-        public UtcChildMode? UtcChildMode
+        public ChildAffinityMode? UtcChildMode
         {
             get => _utcChildMode;
             set
@@ -161,7 +161,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 }
             }
         }
-        UtcChildMode? _utcChildMode = default;
+        ChildAffinityMode? _utcChildMode = default;
 
         public AffinityTimeDomain? UtcEpochTimeDomain => throw new NotImplementedException();
 
