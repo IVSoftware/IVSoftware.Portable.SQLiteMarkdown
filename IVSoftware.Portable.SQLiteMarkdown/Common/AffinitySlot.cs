@@ -7,7 +7,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     /// <summary>
     /// Partial epoch that is constrained by fixed time epochs in the collection.
     /// </summary>
-    public class UtcEpochSlot
+    public class AffinitySlot
     {
         /// <summary>
         /// Earliest available start time in context,

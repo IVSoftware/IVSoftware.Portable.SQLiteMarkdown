@@ -462,14 +462,14 @@ SELECT * FROM items WHERE
         {
             utcParent = new SelectableQFPrimeModel();
             Assert.IsNull(
-                utcParent.UtcEpochMode,
+                utcParent.AffinityMode,
                 "Expecting null because nothing is set.");
 
             // This will pull Position into UtcStart.
-            utcParent.UtcEpochMode = AffinityMode.Fixed;
+            utcParent.AffinityMode = AffinityMode.Fixed;
             Assert.AreEqual(
                 AffinityMode.Fixed,
-                utcParent.UtcEpochMode,
+                utcParent.AffinityMode,
                 "Expecting FIXED because UTC Start is set.");
 
             utcParent.Duration = TimeSpan.FromMinutes(5);
@@ -483,7 +483,7 @@ SELECT * FROM items WHERE
         {
             prime = new SelectableQFPrimeModel();
             Assert.IsNull(
-                prime.UtcEpochMode, 
+                prime.AffinityMode, 
                 "Expecting null because nothing is set.");
 
             Assert.IsNull(
@@ -502,7 +502,7 @@ SELECT * FROM items WHERE
 
             Assert.AreEqual(
                 AffinityMode.Asap,
-                prime.UtcEpochMode,
+                prime.AffinityMode,
                 "Expecting ASAP because Duration is set and UtcStart is NULL.");
         }
 

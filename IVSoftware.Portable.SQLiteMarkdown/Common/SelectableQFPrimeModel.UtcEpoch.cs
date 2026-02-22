@@ -84,7 +84,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         TimeSpan? _remaining = default;
 
 
-        public AffinityMode? UtcEpochMode
+        public AffinityMode? AffinityMode
         {
             get => _utcEpochMode;
             set
@@ -92,7 +92,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 if (!Equals(_utcEpochMode, value))
                 {
                     _utcEpochMode = value;
-                    switch (UtcEpochMode)
+                    switch (AffinityMode)
                     {
                         case null:
                             break;
@@ -113,7 +113,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         {
             get
             {
-                switch (UtcEpochMode)
+                switch (AffinityMode)
                 {
                     case null:
                         break;
@@ -135,7 +135,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         public bool? IsRunning { get; set; }
 
-        public string? UtcParent
+        public string? AffinityParent
         {
             get => _utcParent;
             set
@@ -149,7 +149,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         string? _utcParent = string.Empty;
 
-        public ChildAffinityMode? UtcChildMode
+        public ChildAffinityMode? AffinityChildMode
         {
             get => _utcChildMode;
             set
@@ -163,8 +163,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         ChildAffinityMode? _utcChildMode = default;
 
-        public AffinityTimeDomain? UtcEpochTimeDomain => throw new NotImplementedException();
+        public AffinityTimeDomain? AffinityTimeDomain => throw new NotImplementedException();
 
-        public List<UtcEpochSlot> Slots { get; } = new List<UtcEpochSlot>();
+        public List<AffinitySlot> Slots { get; } = new List<AffinitySlot>();
     }
 }

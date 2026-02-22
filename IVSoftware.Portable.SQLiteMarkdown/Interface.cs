@@ -222,6 +222,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Task<DateTimeOffset> CommitLocalEdit(string identity);
         Task<ChainOfCustodyToken> CommitRemoteReceipt(string identity, DateTimeOffset remoteTimeStamp);
     }
+
     /// <summary>
     /// User area where value strings are indexed by key strings.
     /// Are the values JSON? XML? You tell me! 
@@ -290,7 +291,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// - This state enforces a deadline for the fixed epoch.
     /// - Child items below can now also react to Running.
     /// </remarks>
-    public enum AffinityTimeDomain
+    public enum AffinityTimeDomain : byte
     {
         /// <summary>
         /// UtcEnd <= UtcNow
@@ -314,7 +315,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <remarks> 
     /// Typically, the property is nullable and represents an OPT-IN to temporal characteristics.
     /// </remarks>
-    public enum AffinityMode
+    [Flags]
+    public enum AffinityMode : byte
     {
         /// <summary>
         /// Begins as soon as possible relative to UtcNow and Position.
@@ -345,7 +347,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Specifying the Duration is strictly optional.
         /// </remarks>
-        FixedDateTime = 0x3,
+        FixedDateTime = FixedDate | FixedTime,
     }
 
     /// <summary>
@@ -354,8 +356,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <remarks>
     /// Child items *are not* required to be temporal, but if they *are* then thay are ASAP and never FIXED.
     /// </remarks>
-    [Flags]
-    public enum ChildAffinityMode
+    public enum ChildAffinityMode : sbyte
     {
         /// <summary>
         /// Begins at a specified UtcStart and ends Remaining later.
@@ -407,7 +408,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         long Position { get; set; }
 
         /// <summary>
-        /// Reference point for UtcEpochMode.Fixed.
+        /// Reference point for AffinityMode.Fixed.
         /// </summary>
         DateTimeOffset? UtcStart { get; set; }
 
@@ -415,7 +416,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Total epoch length, if any.
         /// </summary>
         /// <remarks>
-        /// UtcEpochMode.Fixed + (Duration != TimeSpan.Zero) means a
+        /// AffinityMode.Fixed + (Duration != TimeSpan.Zero) means a
         /// deadline of UtcStart + Duration for AsapBelow items.. 
         /// </remarks>
         TimeSpan? Duration { get; set; }
@@ -438,31 +439,31 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Derived mode when UtcStart and/or Duration are not null.
         /// </summary>
-        AffinityMode? UtcEpochMode { get; }
+        AffinityMode? AffinityMode { get; }
+
+        /// <summary>
+        /// Reference PK for AffinityMode.Before and AffinityMode.After
+        /// </summary>
+        string? AffinityParent { get; }
 
         /// <summary>
         /// Derived mode when UtcParent is not null.
         /// </summary>
-        ChildAffinityMode? UtcChildMode { get; set; }
+        ChildAffinityMode? AffinityChildMode { get; set; }
 
         /// <summary>
         /// Aspirational mode that requires UtcStart
         /// </summary>
-        AffinityTimeDomain? UtcEpochTimeDomain { get; }
+        AffinityTimeDomain? AffinityTimeDomain { get; }
 
         /// <summary>
-        /// Returns false if !(UtcEpochMode.ASAP). 'Net True' decrements Remaining when item is UtcEpochTimeDomain.Present.
+        /// Returns false if !(AffinityMode.ASAP). 'Net True' decrements Remaining when item is AffinityTimeDomain.Present.
         /// </summary>
         bool? IsRunning { get; }
 
         /// <summary>
-        /// Reference PK for UtcEpochMode.Before and UtcEpochMode.After
-        /// </summary>
-        string? UtcParent { get; }
-
-        /// <summary>
         /// Partial epochs that float around fixed epochs.
         /// </summary>
-        List<UtcEpochSlot> Slots { get; }
+        List<AffinitySlot> Slots { get; }
     }
 }
