@@ -7,7 +7,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
     partial class SelectableQFPrimeModel : IAffinityItem
     {
-
         public long Position
         {
             get

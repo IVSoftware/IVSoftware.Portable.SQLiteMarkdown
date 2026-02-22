@@ -102,7 +102,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="IVSoftware.Portable.Threading" Version="*" />
-		<PackageReference Include="IVSoftware.Portable.Common" Version="1.0.0" />
+		<PackageReference Include="IVSoftware.Portable.Common" Version="1.0.1-beta" />
 		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="*" />
 		<PackageReference Include="Newtonsoft.Json" Version="*" />
 		<PackageReference Include="sqlite-net-pcl" Version="*" />

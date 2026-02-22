@@ -6,27 +6,15 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
-using Newtonsoft.Json;
 using SQLite;
-using System.Configuration;
-using System.Security.Cryptography;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
 [TestClass]
 public class TestClass_V2
 {
-#if false
-    /// <summary>
-    /// Exercise the 2.0.0 parameterless CTor which we describe as Anonymous.
-    /// </summary>
-    /// <remarks>
-    /// When constructed in this manner, the ContractType is null and will
-    /// throw hard if accessed. But this is not a breaking change because
-    /// previous versions simply did not allow instantiation in this condition.
-    /// </remarks>
     [TestMethod]
-    public void Test_Anonymous()
+    public void Test_PolicyException()
     {
         string actual, expected;
 
@@ -34,7 +22,7 @@ public class TestClass_V2
         var builderThrow = new List<string>();
         void localOnBeginThrowOrAdvise(object? sender, Throw e)
         {
-            builderThrow.Add(e.Message);
+            builderThrow.Add(e.ToString());
             e.Handled = true;
         }
         #endregion L o c a l F x
@@ -48,22 +36,19 @@ public class TestClass_V2
                 Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
             });
 
-        MarkdownContext mdc = new();
-        Assert.IsNull(mdc.ContractType);
-
-        actual = JsonConvert.SerializeObject(builderThrow, Formatting.Indented);
+        this.ThrowPolicyException(AffinityPolicy.MaterializedPathMustEndWithId);
+        actual = string.Join(Environment.NewLine, builderThrow);
         expected = @" 
-[
-  ""ContractType cannot be null.""
-]";
+Id: AffinityPolicy.MaterializedPathMustEndWithId
+Materialized Path Policy violation: Path must end with Id."
+        ;
 
         Assert.AreEqual(
             expected.NormalizeResult(),
             actual.NormalizeResult(),
-            "Expecting ContractType cannot be null."
+            "Expecting builder content to match."
         );
     }
-#endif
 
     [TestMethod]
     public void Test_Contract()
@@ -447,7 +432,6 @@ SELECT * FROM items WHERE
     [TestMethod]
     public void Test_UtcEpoch()
     {
-
         #region L o c a l F x 
         using var local = this.WithOnDispose(
             onInit: (sender, e) => Threading.Extensions.Awaited += localOnAwaited,
