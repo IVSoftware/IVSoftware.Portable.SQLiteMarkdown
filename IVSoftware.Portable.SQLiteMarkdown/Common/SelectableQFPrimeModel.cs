@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Threading;
 using Newtonsoft.Json;
 using SQLite;
 using System;
@@ -14,7 +15,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         , ICustomProperties
         , IChainOfCustody
     {
-        public DateTimeOffset Created { get; set; } = DateTimeOffset.Now;
+        public DateTimeOffset Created
+        {
+            get
+            {
+                this.OnAwaited();
+                return _created;
+            }
+            set
+            {
+                if (!Equals(_created, value))
+                {
+                    _created = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        DateTimeOffset _created = DateTimeOffset.UtcNow;
 
         public IDictionary<string, string?> CustomProperties { get; protected set; } = new Dictionary<string, string?>();
 
