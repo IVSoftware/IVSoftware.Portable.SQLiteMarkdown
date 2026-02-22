@@ -518,7 +518,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// authoritative.
     ///
     /// The snapshot is guaranteed to be internally consistent, though in rare
-    /// cases it may lag behind real time.
+    /// cases it may lag behind real time. When scarcity requires allocation among 
+    /// competing items, resolution strategies are deterministic, idempotent, and 
+    /// applied only through explicit, opt-in arbitration policies.
     /// </remarks>
     public interface IAffinityField : INotifyPropertyChanged
     {
