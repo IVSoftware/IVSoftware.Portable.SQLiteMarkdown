@@ -466,9 +466,9 @@ SELECT * FROM items WHERE
                 "Expecting null because nothing is set.");
 
             // This will pull Position into UtcStart.
-            utcParent.UtcEpochMode = UtcEpochMode.Fixed;
+            utcParent.UtcEpochMode = AffinityMode.Fixed;
             Assert.AreEqual(
-                UtcEpochMode.Fixed,
+                AffinityMode.Fixed,
                 utcParent.UtcEpochMode,
                 "Expecting FIXED because UTC Start is set.");
 
@@ -501,7 +501,7 @@ SELECT * FROM items WHERE
                 "Expecting hard reset on Remaining.");
 
             Assert.AreEqual(
-                UtcEpochMode.Asap,
+                AffinityMode.Asap,
                 prime.UtcEpochMode,
                 "Expecting ASAP because Duration is set and UtcStart is NULL.");
         }

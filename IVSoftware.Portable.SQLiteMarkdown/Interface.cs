@@ -232,25 +232,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// Identifies an item that exposes a single, sortable position value.
-    /// </summary>
-    /// <remarks>
-    /// <see cref="Position"/> represents a canonical ordering index relative
-    /// to peer items within a given collection. The value establishes a
-    /// total ordering and is intended for deterministic sorting or stable
-    /// reordering scenarios.
-    /// 
-    /// This contract defines a single intrinsic ordering axis only. It does
-    /// not imply multi-dimensional coordinates, contextual sorting rules,
-    /// or view-specific projections. Such concerns belong to the hosting
-    /// collection or projection layer.
-    /// </remarks>
-    public interface IPositional
-    {
-        long Position { get; set; }
-    }
-
-    /// <summary>
     /// Intermediary snapshot of a moment in time that must complete before advancing.
     /// </summary>
     /// <remarks>
@@ -271,7 +252,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         int Year { get; }
     }
 
-    public enum UtcEpochTimeDomain
+    /// <summary>
+    /// Relational distinction that behaves differently for fixed and floating items.
+    /// </summary>
+    /// <remarks>
+    /// ABSTRACT
+    /// - An AffinityField can be in an active Running state, i.e., "I'm working on it".
+    /// - In UI terms, this is often expressed in Play-Pause visual states.
+    /// FIXED Root Example - 'Available Time Before' is inherently bounded:
+    /// - Available time compresses as the fixed time approaches, and child items above react.
+    /// - When the affinity field is in a Running state, child items adjust remaining time accordingly.
+    /// - However, in a !Running state, child items can fall into the past with unsatisfied remaining times.
+    /// - Such items are effectively past due or delinquent.
+    /// 
+    /// FIXED Root Example - When 'Available Time After' is explicitly bounded using Duration property.
+    /// - This state enforces a deadline for the fixed epoch.
+    /// - Child items below can now also react to Running.
+    /// </remarks>
+    public enum AffinityTimeDomain
     {
         /// <summary>
         /// UtcEnd <= UtcNow
@@ -289,7 +287,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Future,
     }
 
-    public enum UtcEpochMode
+    public enum AffinityMode
     {
         /// <summary>
         /// Begins at a specified UtcStart and ends Remaining later.
@@ -319,8 +317,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Represents a time slice snapshot using a captured UtcEpochNow that preempts race conditions.
     /// </summary>
-    public interface IUtcEpoch : IPositional
+    public interface IAffinityItem
     {
+        /// <summary>
+        /// Sortable key that is typically based on DateTimeOffset.Ticks.
+        /// </summary>
+        /// <remarks>
+        /// While not exactly a time and date quantity, consider
+        /// that DateTime.Now.Ticks will place an item last, but
+        /// also that one might insert Item B as "halfway between"
+        /// Item A and Item C.
+        /// </remarks>
+        long Position { get; set; }
+
         /// <summary>
         /// Reference point for UtcEpochMode.Fixed.
         /// </summary>
@@ -353,7 +362,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Derived mode when UtcStart and/or Duration are not null.
         /// </summary>
-        UtcEpochMode? UtcEpochMode { get; }
+        AffinityMode? UtcEpochMode { get; }
 
         /// <summary>
         /// Derived mode when UtcParent is not null.
@@ -363,7 +372,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Aspirational mode that requires UtcStart
         /// </summary>
-        UtcEpochTimeDomain? UtcEpochTimeDomain { get; }
+        AffinityTimeDomain? UtcEpochTimeDomain { get; }
 
         /// <summary>
         /// Returns false if !(UtcEpochMode.ASAP). 'Net True' decrements Remaining when item is UtcEpochTimeDomain.Present.

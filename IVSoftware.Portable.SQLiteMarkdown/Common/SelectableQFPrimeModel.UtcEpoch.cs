@@ -4,7 +4,7 @@ using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
-    partial class SelectableQFPrimeModel : IUtcEpoch
+    partial class SelectableQFPrimeModel : IAffinityItem
     {
         public DateTimeOffset? UtcStart
         {
@@ -84,7 +84,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         TimeSpan? _remaining = default;
 
 
-        public UtcEpochMode? UtcEpochMode
+        public AffinityMode? UtcEpochMode
         {
             get => _utcEpochMode;
             set
@@ -96,16 +96,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                     {
                         case null:
                             break;
-                        case SQLiteMarkdown.UtcEpochMode.Fixed:
+                        case SQLiteMarkdown.AffinityMode.Fixed:
                             break;
-                        case SQLiteMarkdown.UtcEpochMode.Asap:
+                        case SQLiteMarkdown.AffinityMode.Asap:
                             break;
                     }
                     OnPropertyChanged();
                 }
             }
         }
-        UtcEpochMode? _utcEpochMode = default;
+        AffinityMode? _utcEpochMode = default;
 
 
 
@@ -117,9 +117,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 {
                     case null:
                         break;
-                    case SQLiteMarkdown.UtcEpochMode.Fixed:
+                    case SQLiteMarkdown.AffinityMode.Fixed:
                         break;
-                    case SQLiteMarkdown.UtcEpochMode.Asap:
+                    case SQLiteMarkdown.AffinityMode.Asap:
                         break;
                 }
                 throw new NotImplementedException("ToDo");
@@ -163,7 +163,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         UtcChildMode? _utcChildMode = default;
 
-        public UtcEpochTimeDomain? UtcEpochTimeDomain => throw new NotImplementedException();
+        public AffinityTimeDomain? UtcEpochTimeDomain => throw new NotImplementedException();
 
         public List<UtcEpochSlot> Slots { get; } = new List<UtcEpochSlot>();
     }
