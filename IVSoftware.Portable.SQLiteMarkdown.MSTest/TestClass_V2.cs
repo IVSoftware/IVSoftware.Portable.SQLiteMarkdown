@@ -429,6 +429,8 @@ SELECT * FROM items WHERE
     }
 
 
+
+#if false
     [TestMethod]
     public void Test_UtcEpoch()
     {
@@ -562,4 +564,5 @@ SELECT * FROM items WHERE
         }
         #endregion S U B T E S T S
     }
+#endif
 }

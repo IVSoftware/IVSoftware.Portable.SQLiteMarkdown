@@ -233,40 +233,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// Quantizes DateTimeOffset and emits pulses in an intentionally lossy manner.
-    /// </summary>
-    /// <remarks>
-    /// Allows IAffinityField to operate without race conditions.
-    /// TYPICAL POLICY:
-    /// - Start signal is issued on the UI thread and modifies an interlocked 'run' value.
-    /// - Sub-second intervals raise UtcEpochNow
-    /// </remarks>
-    public interface IAffinitySliceEmitter : INotifyPropertyChanged
-    {
-        /// <summary>
-        /// Captured epoch reference.
-        /// </summary>
-        DateTimeOffset AffinityEpochTime { get; set; }
-
-        /// <summary>
-        /// Fast twitch display time.
-        /// </summary>
-        /// <remarks>
-        /// TYPICAL POLICY:
-        /// - Intended for minimal workload (e.g., update a single clock time display string).
-        /// - Be mindful of the synchronous UI-thread load on this property.
-        /// </remarks>
-        DateTimeOffset DisplayTime { get; set; }
-
-        int Second { get; }
-        int Minute { get; }
-        int Hour { get; }
-        int Day { get; }
-        int Month { get; }
-        int Year { get; }
-    }
-
-    /// <summary>
     /// Relational distinction that behaves differently for fixed and floating items.
     /// </summary>
     /// <remarks>
@@ -370,6 +336,40 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
+    /// Quantizes DateTimeOffset and emits pulses in an intentionally lossy manner.
+    /// </summary>
+    /// <remarks>
+    /// Allows IAffinityField to operate without race conditions.
+    /// TYPICAL POLICY:
+    /// - Start signal is issued on the UI thread and modifies an interlocked 'run' value.
+    /// - Sub-second intervals raise UtcEpochNow
+    /// </remarks>
+    public interface IAffinitySliceEmitter : INotifyPropertyChanged
+    {
+        /// <summary>
+        /// Captured epoch reference.
+        /// </summary>
+        DateTimeOffset AffinityEpochTime { get; set; }
+
+        /// <summary>
+        /// Fast twitch display time.
+        /// </summary>
+        /// <remarks>
+        /// TYPICAL POLICY:
+        /// - Intended for minimal workload (e.g., update a single clock time display string).
+        /// - Be mindful of the synchronous UI-thread load on this property.
+        /// </remarks>
+        DateTimeOffset DisplayTime { get; set; }
+
+        int Second { get; }
+        int Minute { get; }
+        int Hour { get; }
+        int Day { get; }
+        int Month { get; }
+        int Year { get; }
+    }
+
+    /// <summary>
     /// Represents a time slice snapshot using a captured UtcEpochNow that preempts race conditions.
     /// </summary>
     public interface IAffinityItem
@@ -413,18 +413,54 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         DateTimeOffset? UtcStart { get; set; }
 
         /// <summary>
-        /// Total epoch length, if any.
+        /// Represents the original time commitment associated with this item.
         /// </summary>
         /// <remarks>
-        /// AffinityMode.Fixed + (Duration != TimeSpan.Zero) means a
-        /// deadline of UtcStart + Duration for AsapBelow items.. 
+        /// Duration is the promised allocation of effort or engagement,
+        /// independent of current progress or temporal compression.
+        /// 
+        /// It does not shrink simply because wall-clock time advances.
+        /// Instead, it reflects the contractual scope of the commitment,
+        /// while Remaining reflects the balance due.
+        /// 
+        /// In constrained epochs, Duration may exceed Available time,
+        /// indicating that the commitment can no longer be satisfied
+        /// within the current window.
         /// </remarks>
         TimeSpan? Duration { get; set; }
 
         /// <summary>
-        /// Uncompleted epoch length, if any.
+        /// Represents the remaining balance due on this commitment.
         /// </summary>
+        /// <remarks>
+        /// Remaining reflects the unfulfilled portion of the original Duration.
+        /// When the field is running, this value decreases as effort is applied.
+        /// 
+        /// It is independent of wall-clock passage when the field is paused.
+        /// If Remaining exceeds Available time within a fixed epoch,
+        /// the item is effectively past due.
+        /// </remarks>
         TimeSpan? Remaining { get; set; }
+
+        /// <summary>
+        /// Unlike Duration (the commitment) and Remaining (the balance due),
+        /// Available represents the constraint window imposed by fixed epochs
+        /// within the field.
+        /// </summary>
+        /// <remarks>
+        /// Free-floating items without a fixed ancestor have effectively
+        /// unbounded Available time and therefore no scarcity.
+        ///
+        /// Items positioned Above a fixed root are constrained by the
+        /// approach to its start and always live within a finite window.
+        ///
+        /// Items positioned Below a fixed root are unconstrained unless
+        /// the root defines a bounded Duration, in which case scarcity
+        /// is imposed by the closing interval.
+        ///
+        /// Duration is aspirational. Availability is (sometimes harsh) reality.
+        /// </remarks>
+        TimeSpan? Available { get; }
 
         /// <summary>
         /// UtcStart + UtcRemaining.
@@ -465,5 +501,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Partial epochs that float around fixed epochs.
         /// </summary>
         List<AffinitySlot> Slots { get; }
+    }
+
+    public interface IAffinityField : INotifyPropertyChanged
+    {
+        bool IsRunning { get; set; }
     }
 }
