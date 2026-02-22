@@ -295,6 +295,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Future,
     }
 
+    /// <summary>
+    /// Supports temporal semantics for AffinityItem.
+    /// </summary>
+    /// <remarks> 
+    /// Typically, the property is nullable and represents an OPT-IN to temporal characteristics.
+    /// </remarks>
     public enum AffinityMode
     {
         /// <summary>
@@ -319,8 +325,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Begins daily at zero hour and has no concept of Now.
         /// </summary>
         FixedDate = 0x2,
+
+        /// <summary>
+        /// You have an appointment.
+        /// </summary>
+        /// <remarks>
+        /// Specifying the Duration is strictly optional.
+        /// </remarks>
+        FixedDateTime = 0x3,
     }
 
+    /// <summary>
+    /// Conditional semantics that are mutually exclusive to FIXED.
+    /// </summary>
     [Flags]
     public enum UtcChildMode
     {
@@ -340,6 +357,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </summary>
     public interface IAffinityItem
     {
+        /// <summary>
+        /// Globally unique identifier.
+        /// </summary>
+        /// <remarks>
+        /// Typically, this refers to the primary key of the model.
+        /// </remarks>
+        string Id { get; set; }
+
+        /// <summary>
+        /// Defines a hierarchal position where user definse the policy.
+        /// </summary>
+        /// <remarks>
+        /// TYPICAL POLICIES
+        /// - Materialized Path Policy (preferred):
+        ///     Forward-slash delimited values always end with Id 
+        ///     where more memory allows fewer queries.
+        /// - Adjacency List Policy:
+        ///     Stored only parent Id (if any) and requires recursive
+        ///     calls to compute full path.
+        /// </remarks>
+        string Path { get; set; }
+
         /// <summary>
         /// Sortable key that is typically based on DateTimeOffset.Ticks.
         /// </summary>
