@@ -232,12 +232,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// Intermediary snapshot of a moment in time that must complete before advancing.
+    /// Quantizes DateTimeOffset and emits pulses in an intentionally lossy manner.
     /// </summary>
     /// <remarks>
     /// Allows IUtcEpoch to operate without race conditions.
     /// </remarks>
-    public interface IUtcEpochClock : INotifyPropertyChanged
+    public interface IAffinitySliceEmitter : INotifyPropertyChanged
     {
         /// <summary>
         /// Captured epoch reference.

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {
     /// <summary>
-    /// Concrete implementation of <see cref="IUtcEpochClock"/> that exposes
+    /// Concrete implementation of <see cref="IAffinitySliceEmitter"/> that exposes
     /// a captured UTC timestamp and its component parts.
     /// </summary>
     /// <remarks>
@@ -21,10 +21,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
     /// supplied moment in time, preventing race conditions that can arise
     /// from repeatedly querying <see cref="DateTimeOffset.UtcNow"/>.
     /// </remarks>
-    public class UtcEpochClock : IUtcEpochClock
+    public class UtcEpochClock : IAffinitySliceEmitter
     {
-        private static readonly IUtcEpochClock _system = new UtcEpochClock();
-        public static IUtcEpochClock System => _system;
+        private static readonly IAffinitySliceEmitter _system = new UtcEpochClock();
+        public static IAffinitySliceEmitter System => _system;
 
         protected int _run = 0;
 
