@@ -235,14 +235,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// Quantizes DateTimeOffset and emits pulses in an intentionally lossy manner.
     /// </summary>
     /// <remarks>
-    /// Allows IUtcEpoch to operate without race conditions.
+    /// Allows IAffinityField to operate without race conditions.
+    /// TYPICAL POLICY:
+    /// - Start signal is issued on the UI thread and modifies an interlocked 'run' value.
+    /// - Sub-second intervals raise UtcEpochNow
     /// </remarks>
     public interface IAffinitySliceEmitter : INotifyPropertyChanged
     {
         /// <summary>
         /// Captured epoch reference.
         /// </summary>
-        DateTimeOffset UtcEpochNow { get; set; }
+        DateTimeOffset AffinityEpochTime { get; set; }
+
+        /// <summary>
+        /// Fast twitch display time.
+        /// </summary>
+        /// <remarks>
+        /// TYPICAL POLICY:
+        /// - Intended for minimal workload (e.g., update a single clock time display string).
+        /// - Be mindful of the synchronous UI-thread load on this property.
+        /// </remarks>
+        DateTimeOffset DisplayTime { get; set; }
 
         int Second { get; }
         int Minute { get; }

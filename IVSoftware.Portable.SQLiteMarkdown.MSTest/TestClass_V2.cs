@@ -508,8 +508,8 @@ SELECT * FROM items WHERE
 
         void subtest_UtcEpochClock()
         {
-            UtcEpochClock.System.UtcEpochNow = StdIvsEpoch.January1.ToDateTimeOffset();
-            UtcEpochClock.System.UtcEpochNow += TimeSpan.FromMinutes(1);
+            UtcEpochClock.System.AffinityEpochTime = StdIvsEpoch.January1.ToDateTimeOffset();
+            UtcEpochClock.System.AffinityEpochTime += TimeSpan.FromMinutes(1);
         }
         #endregion S U B T E S T S
     }
