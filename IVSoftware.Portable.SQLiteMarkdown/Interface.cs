@@ -336,40 +336,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// Quantizes DateTimeOffset and emits pulses in an intentionally lossy manner.
-    /// </summary>
-    /// <remarks>
-    /// Allows IAffinityField to operate without race conditions.
-    /// TYPICAL POLICY:
-    /// - Start signal is issued on the UI thread and modifies an interlocked 'run' value.
-    /// - Sub-second intervals raise UtcEpochNow
-    /// </remarks>
-    public interface IAffinitySliceEmitter : INotifyPropertyChanged
-    {
-        /// <summary>
-        /// Captured epoch reference.
-        /// </summary>
-        DateTimeOffset AffinityEpochTime { get; set; }
-
-        /// <summary>
-        /// Fast twitch display time.
-        /// </summary>
-        /// <remarks>
-        /// TYPICAL POLICY:
-        /// - Intended for minimal workload (e.g., update a single clock time display string).
-        /// - Be mindful of the synchronous UI-thread load on this property.
-        /// </remarks>
-        DateTimeOffset DisplayTime { get; set; }
-
-        int Second { get; }
-        int Minute { get; }
-        int Hour { get; }
-        int Day { get; }
-        int Month { get; }
-        int Year { get; }
-    }
-
-    /// <summary>
     /// Represents a time slice snapshot using a captured UtcEpochNow that preempts race conditions.
     /// </summary>
     public interface IAffinityItem
@@ -503,8 +469,89 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         List<AffinitySlot> Slots { get; }
     }
 
+    /// <summary>
+    /// Quantizes DateTimeOffset and emits pulses in an intentionally lossy manner.
+    /// </summary>
+    /// <remarks>
+    /// Allows IAffinityField to operate without race conditions.
+    /// TYPICAL POLICY:
+    /// - Start signal is issued on the UI thread and modifies an interlocked 'run' value.
+    /// - Sub-second intervals raise UtcEpochNow
+    /// </remarks>
+    public interface IAffinitySliceEmitter : INotifyPropertyChanged
+    {
+        /// <summary>
+        /// Captured epoch reference.
+        /// </summary>
+        DateTimeOffset AffinityEpochTimeSource { get; set; }
+
+        /// <summary>
+        /// Fast twitch display time.
+        /// </summary>
+        /// <remarks>
+        /// TYPICAL POLICY:
+        /// - Intended for minimal workload (e.g., update a single clock time display string).
+        /// - Be mindful of the synchronous UI-thread load on this property.
+        /// </remarks>
+        DateTimeOffset DisplayTime { get; set; }
+
+        int Second { get; }
+        int Minute { get; }
+        int Hour { get; }
+        int Day { get; }
+        int Month { get; }
+        int Year { get; }
+    }
+
+    /// <summary>
+    /// Represents a temporal constraint field responsible for interpreting
+    /// scarcity, compression, and constraint inheritance across Affinity items.
+    /// </summary>
+    /// <remarks>
+    /// The field is insulated from direct exposure to the wall clock and listens
+    /// for quantized pulses from IAffinitySliceEmitter. These pulses are advisory
+    /// and discardable.
+    ///
+    /// The field attempts to reconcile each injected snapshot coherently. If it
+    /// cannot keep pace with the emitter, intermediate pulses are ignored rather
+    /// than queued. Time does not accumulate; only the most recent snapshot is
+    /// authoritative.
+    ///
+    /// The snapshot is guaranteed to be internally consistent, though in rare
+    /// cases it may lag behind real time.
+    /// </remarks>
     public interface IAffinityField : INotifyPropertyChanged
     {
+        /// <summary>
+        /// Colloquially speaking, this is another way of saying "I'm Working On It!"
+        /// </summary>
+        /// <remarks>
+        /// RUNNING:
+        /// This represents an aspirational approximation, that every second of effort
+        /// reduces the "balance due" on the "commitment" by the same amount.
+        /// 
+        /// NOT RUNNING (unconstrained):
+        /// In contrast, every second that transpires pushes back the delivery time.
+        /// 
+        /// NOT RUNNING (constrained):
+        /// Fixed items in the field can impose an availability vector, making it
+        /// possible for an item to "go into the red" in terms of a shortfall of
+        /// what can be delivered compared to what was promised
+        /// </remarks>
         bool IsRunning { get; set; }
+
+        /// <summary>
+        /// Canonical receptor of time emissions from arbitrary sources.
+        /// </summary>
+        /// <remarks>
+        /// TYPICAL:
+        /// - A periodic emitter is running.
+        /// - @This is listening and injects those time updates into this property.
+        /// - When changes are detected, if we're done with the last tick, then we process the new tick.
+        /// COMMON:
+        /// - A periodic emitter is present but stopped.
+        /// - A unit test injects known time constants for testing.
+        /// </remarks>
+        DateTimeOffset AffinityEpochTimeSink { get; set; }
     }
 }

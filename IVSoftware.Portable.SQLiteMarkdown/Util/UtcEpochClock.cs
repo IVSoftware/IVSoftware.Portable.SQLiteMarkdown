@@ -13,7 +13,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
     /// a captured UTC timestamp and its component parts.
     /// </summary>
     /// <remarks>
-    /// <see cref="AffinityEpochTime"/> acts as the authoritative snapshot of time.
+    /// <see cref="AffinityEpochTimeSource"/> acts as the authoritative snapshot of time.
     /// When updated, all derived temporal components (Year, Month, Day,
     /// Hour, Minute, Second) are synchronized and raise change notifications.
     /// 
@@ -45,14 +45,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         {
             while(Volatile.Read(ref _run) == 1)
             {
-                DisplayTime = AffinityEpochTime = DateTimeOffset.UtcNow;
+                DisplayTime = AffinityEpochTimeSource = DateTimeOffset.UtcNow;
                 await Task.Delay(250);
             }
         }
 
         public DisposableHost DHostSuspend { get; } = new();
 
-        public DateTimeOffset AffinityEpochTime
+        public DateTimeOffset AffinityEpochTimeSource
         {
             get => _utcEpochNow;
             set
