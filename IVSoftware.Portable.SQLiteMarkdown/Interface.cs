@@ -256,14 +256,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// Relational distinction that behaves differently for fixed and floating items.
     /// </summary>
     /// <remarks>
-    /// ABSTRACT
+    /// AFFINITY FIELD
     /// - An AffinityField can be in an active Running state, i.e., "I'm working on it".
     /// - In UI terms, this is often expressed in Play-Pause visual states.
+    /// 
+    /// FIXED v FLOAT
+    /// - First of all, an AFFINITY ITEM isn't required to be temporal, but if it opts in:
+    /// - FLOAT refers to positioning relative to Now.
+    /// - However, a root item can be designated as FIXED to a time, a date, or a fully-qualified DateTimeOffset.
+    /// - FIXED items have an "available time before" dictated by the time-space continuum.
+    /// - FIXED items have an "available time after" that is infinite, unless constrained by the Duration property.
+    /// 
     /// FIXED Root Example - 'Available Time Before' is inherently bounded:
     /// - Available time compresses as the fixed time approaches, and child items above react.
     /// - When the affinity field is in a Running state, child items adjust remaining time accordingly.
     /// - However, in a !Running state, child items can fall into the past with unsatisfied remaining times.
-    /// - Such items are effectively past due or delinquent.
+    /// - In UI terms, past due affinity items are often flagged in red.
     /// 
     /// FIXED Root Example - When 'Available Time After' is explicitly bounded using Duration property.
     /// - This state enforces a deadline for the fixed epoch.
@@ -290,14 +298,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public enum AffinityMode
     {
         /// <summary>
-        /// Begins at a specified UtcStart and ends Remaining later.
-        /// </summary>
-        Fixed = 0x0,
-
-        /// <summary>
         /// Begins as soon as possible relative to UtcNow and Position.
         /// </summary>
-        Asap = 0x1
+        Asap = 0x0, 
+
+        /// <summary>
+        /// Begins daily at a specified UtcStart and ends Duration later.
+        /// </summary>
+        /// <remarks>
+        /// The containing AFFINITY FIELD can be:
+        /// - RUNNING where time compression shrinks both Duration and Remaining in
+        ///   the sense that "things are going according to plan" and "we will
+        ///   begin and end on time". Deadlines respected, promises kept.
+        /// - !RUNNING where Remaining shrinks while the Duration (i.e., the time 
+        ///   commitment) does not. Such items can fall into the red.
+        /// </remarks>
+        FixedTime = 0x1,
+
+        /// <summary>
+        /// Begins daily at zero hour and has no concept of Now.
+        /// </summary>
+        FixedDate = 0x2,
     }
 
     [Flags]
