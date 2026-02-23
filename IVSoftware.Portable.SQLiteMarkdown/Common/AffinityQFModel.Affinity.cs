@@ -3,6 +3,7 @@ using SQLite;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using EphemeralAttribute = SQLite.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
@@ -17,9 +18,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             _affinityUtcNow = affinityUtcNow;
             if (affinities.Count == 0)
             {
-                UtcStart = affinityUtcNow;
+                UtcStart = affinityUtcNow?.FloorToSecond();
             }
         }
+
         /// <summary>
         /// Local copy for internals to build against and that detects initial or non-affinity states.
         /// </summary>
@@ -272,7 +274,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         bool _isDone = false;
 
-
         [Ephemeral]
         public bool? IsDonePendingConfirmation =>
             IsDone switch
@@ -306,7 +307,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
 
         TimeSpan? _available = default;
-
         #endregion A F F I N I T Y    E P H E M E R A L
+
+        protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            base.OnPropertyChanged(propertyName);
+        }
     }
 }

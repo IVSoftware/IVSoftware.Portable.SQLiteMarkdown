@@ -78,7 +78,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         public static string ParseSqlMarkdown<T>(
-            this string @this, 
+            this string @this,
             QueryFilterMode qfMode,
             out XElement xast)
         {
@@ -102,7 +102,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Type type,
             QueryFilterMode qfMode,
             Predicate<string>? validationPredicate,
-            out XElement xexpr) => 
+            out XElement xexpr) =>
                 new MarkdownContext(
                 type)
                 {
@@ -122,7 +122,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Non-breaking compatible filter term attribute getter.
         /// </summary>
         public static MarkdownTermAttribute GetFilterTermAttribute(this PropertyInfo pi)
-            => 
+            =>
             pi.GetCustomAttribute<FilterLikeTermAttribute>() is FilterLikeTermAttribute flt
             ? flt
             : pi.GetCustomAttribute<FilterContainsTermAttribute>(); // Non-breaking compatible filter term
@@ -184,7 +184,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             TermDelimiter termDelimiter = TermDelimiter.Comma,
             StringCasing stringCasing = StringCasing.Lower)
         {
-            if(@this.Any(_=>_ == '[' || _ == ']'))
+            if (@this.Any(_ => _ == '[' || _ == ']'))
             {
                 throw new ArgumentException("Square brackets must be removed before calling this method.");
             }
@@ -433,5 +433,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             return $"json_extract({columnName}, '$.{key}')";
         }
+
+        /// <summary>
+        /// Nullable overload.
+        /// </summary>
+        public static DateTimeOffset? FloorToSecond(this DateTimeOffset? @this)
+            => @this.HasValue
+                ? @this.Value.FloorToSecond()
+                : @this;
+
+        /// <summary>
+        /// Truncates sub-second precision (milliseconds and below).
+        /// </summary>
+        public static DateTimeOffset FloorToSecond(this DateTimeOffset @this)
+            => new DateTimeOffset(
+                @this.Ticks - (@this.Ticks % TimeSpan.TicksPerSecond),
+                @this.Offset);
     }
 }

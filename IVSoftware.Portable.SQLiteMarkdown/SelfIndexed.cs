@@ -198,7 +198,7 @@ CustomProperties (subclass property) is a user-defined metadata property bag.")]
 
 
         #region P R O P E R T Y    C H A N G E S
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             switch (propertyName)
