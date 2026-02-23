@@ -1,12 +1,10 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
 using System;
 using System.Collections.Generic;
-using System.Net.Http.Headers;
-using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
-    partial class SelectableQFPrimeModel : IAffinityItem
+    partial class SelectableQFAffinityModel : IAffinityItem
     {
         public long Position
         {
@@ -48,7 +46,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 else
                 {
                     this.ThrowHard<InvalidOperationException>(
-                        $"Policy violation for {nameof(SelectableQFPrimeModel)}.{nameof(Path)}: This value must end with Id");
+                        $"Policy violation for {nameof(SelectableQFAffinityModel)}.{nameof(Path)}: This value must end with Id");
                 }
             }
         }

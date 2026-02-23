@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
     [Table("items")]
-    public partial class SelectableQFPrimeModel 
+    public partial class SelectableQFAffinityModel 
         : SelectableQFModel
         , IGenesis
         , ICustomProperties
