@@ -335,23 +335,106 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Below = +1,
     }
 
-    public enum SpareTimeMode
+    #region F I X E D    E P O C H
+    /// <summary>
+    /// Strategy options for Fixed + Duration field when early item completion creates a surplus.
+    /// </summary>
+    /// <remarks>
+    /// Mental Model: In every scenario, "Topics A-E must be covered inside of TimeSpan T".
+    /// </remarks>
+    public enum FreeTimeMode
     {
-        TakeRecessNow,
+        /// <summary>
+        /// Use free time surplus now, within the Present affinity time domain.
+        /// </summary>
+        /// Mental Model: 
+        /// - "We got through Topic A more quickly than expected."
+        /// - "We will take a short break and come back on time for Topic B."
+        /// </remarks>
+        FreeTimeAtStart,
 
-        GoHomeEarly,
+        /// <summary>
+        /// Distribute free time surplus uniformly.
+        /// </summary>
+        /// Mental Model: 
+        /// - "We got through Topic A more quickly than expected."
+        /// - "We can slow the pace for B-E and, for example, allow more discussion."
+        /// </remarks>
+        FreeTimeDistributed,
 
-        YieldToField,
+        /// <summary>
+        /// Use free time surplus at the end.
+        /// </summary>
+        /// Mental Model: 
+        /// - "We can go home early."
+        /// - "The room will be free between T1 and T2 where we had planned to use it."
+        /// - Here, the distinction is Duration. Without it, tasks would take their course
+        ///   and any surplus time would be yielded to the field. But having duration means,
+        ///   colloquially speaking, that "the room was reserved" and finishing early doesn't
+        ///   mean that the next session can start any earlier than scheduled.
+        /// </remarks>
+        FreeTimeAtEnd,
     }
 
+    /// <summary>
+    /// Strategy options for Fixed + Duration field that creates scarcity by Not running.
+    /// </summary>
+    /// <remarks>
+    /// Mental Model: "There is less time than we planned to complete the promised deliverable."
+    /// 
+    /// - Items that are ChildAffinityMode.Below can feel the squeeze when AffinityParent has Duration.
+    /// - When IsRunning (or "Play" in the UI) is active, it signals that everything is proceeding
+    ///   according to plan; the Remaining time will be consumed creating no deficits. Conversely,
+    ///   when !IsRunning (or "Pause" in the UI) this will categorically produce deficits as remaining 
+    ///   time inevitably shrinks.
+    /// </remarks>
     public enum ScarceTimeMode
     {
+        /// <summary>
+        /// Items at the head of the epoch are marked PastDue as remaining time shrinks.
+        /// </summary>
+        /// <remarks>
+        /// This is the default, and behaves the same as ChildAffinityMode.Above.
+        /// Mental Model: 
+        /// - "In order to get to B-E, topic A might need to be cut short."
+        /// </remarks>
         LossOccursAtStart,
 
+        /// <summary>
+        /// Items uniformly shrink as deadline approaches.
+        /// </summary>
+        /// Mental Model: 
+        /// - "We got started late, and will have to move at a faster pace generally."
+        /// </remarks>
         LossIsDistributed,
 
+        /// <summary>
+        /// Items at the tail of the epoch are marked PastDue as remaining time shrinks.
+        /// </summary>
+        /// Mental Model: 
+        /// - "Topics are progressive; A must be covered, even if we can't get to E."
+        /// </remarks>
         LossOccursAtEnd,
     }
+
+    /// <summary>
+    /// Strategy options for fixed epochs that overlap.
+    /// </summary>
+    public enum OverlapTimeMode
+    {
+        /// <summary>
+        /// Displaced older items are marked PastDue as remaining time shrinks.
+        /// </summary>
+        /// Mental Model: 
+        /// - Here, the PastDue flag is interpreted more broadly
+        ///   as "This item, as it stands, is not going to get done."
+        /// </remarks>
+        FutureDisplacesPast,
+
+        PastDisplacesFuture,
+    }
+
+    #endregion F I X E D    E P O C H
 
     /// <summary>
     /// Represents a time slice snapshot using a captured UtcEpochNow that preempts race conditions.
