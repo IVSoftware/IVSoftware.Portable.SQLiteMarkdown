@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml.Linq;
@@ -421,54 +422,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 inherit: false // CRITICAL! Does not produce an accurate result otherwise.
         )?.Name!);
 
-#if ABSTRACT
-var recordset = cnx.Query<SelectableQFModelTOQO>($@"
-Select *
-From items 
-Where PropertyValue({nameof(SelectableQFModelTOQO.Properties)}, '{nameof(SelectableQFModelTOQO.Description)}') LIKE '%brown dog%'");
-#endif
         /// <summary>
-        /// Ensures SQLitePCL provider initialization and registers the PropertyValue function
-        /// on this connection.
+        /// Return string formatted as: json_extract(Properties, '$.Description');
         /// </summary>
-        public static SQLiteConnection WithDictionaryQuery(this SQLiteConnection cnx)
-        {
-            if (Interlocked.Exchange(ref _providerInitialized, 1) == 0)
-            {
-                lock (_sync)
-                {
-                    raw.SetProvider(new SQLite3Provider_e_sqlite3());
-                    Batteries.Init();
-                    Batteries_V2.Init();
-                }
-            }
-
-            // Arg0: The Column (*is not* literal)
-            // Arg1: The 'Key'  (*is* literal)
-            SQLitePCL.raw.sqlite3_create_function(
-                db: cnx.Handle,
-                name: "PropertyValue",
-                2,  // NArgs = 2
-                1,
-                null,
-                (ctx, user_data, args) =>
-                {
-                    var json = SQLitePCL.raw.sqlite3_value_text(args[0]).utf8_to_string();
-                    var key = SQLitePCL.raw.sqlite3_value_text(args[1]).utf8_to_string();
-
-                    // O U T
-                    string? value = null;
-
-                    (JsonConvert.DeserializeObject<Dictionary<string, string>>(json) as IDictionary<string, string>)
-                    ?.TryGetValue (key, out value);
-
-                    SQLitePCL.raw.sqlite3_result_text(ctx, value ?? string.Empty);
-                }
-            );
-            return cnx;
-        }
-
-        private static int _providerInitialized;
-        private static readonly object _sync = new();
+        public static string JsonExtract(this string columnName, string key) =>
+            $@"json_extract({columnName}, '$.{key}')";
     }
 }

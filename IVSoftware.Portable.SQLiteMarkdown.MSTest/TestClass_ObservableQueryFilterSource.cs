@@ -2653,13 +2653,31 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%Tom ""safe inner"" Tester%')"
 
                 // Arg0: The Column (*is not* literal)
                 // Arg1: The 'Key'  (*is* literal)
-                var recordset = cnx.Query<SelectableQFModelTOQO>($@"
+                IList recordset;
+                recordset = cnx.Query<SelectableQFModelTOQO>($@"
 Select *
 From items 
 Where JsonExtract(Properties, 'Description') LIKE '%brown dog%'");
 
                 Assert.AreEqual(1, recordset.Count, "Expecting successful query using custom function.");
-                { }
+
+
+                // BUT THIS IS HOW YOU DO IT!
+                // Arg0: The Column (*is not* literal)
+                // Arg1: The 'Key'  (*is* literal and the $. is the ROOT SELECTOR)
+                recordset = cnx.Query<SelectableQFModelTOQO>($@"
+Select *
+From items 
+Where json_extract(Properties, '$.Description') LIKE '%brown dog%'");
+
+                // And this makes it readable.
+                // Arg0: The Column (*is not* literal)
+                // Arg1: The 'Key'  (*is* literal and the $. is the ROOT SELECTOR)
+                recordset = cnx.Query<SelectableQFModelTOQO>($@"
+Select *
+From items 
+Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
+
             }
         }
 
