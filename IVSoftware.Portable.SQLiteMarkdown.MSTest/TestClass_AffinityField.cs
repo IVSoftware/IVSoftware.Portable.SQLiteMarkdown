@@ -78,7 +78,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual.NormalizeResult(),
                 "Expecting json serialization to match."
             );
-            item.UpdateUtc(utcTest);
+            item.UpdateAffinityUtcNow(utcTest);
 
 
             actual = JsonConvert.SerializeObject(item, Formatting.Indented);

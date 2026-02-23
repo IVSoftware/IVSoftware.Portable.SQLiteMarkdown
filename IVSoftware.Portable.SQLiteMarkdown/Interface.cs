@@ -456,14 +456,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
     #endregion F I X E D    E P O C H
 
+    public enum AffinityRole
+    {
+        Prev,
+    }
+
     /// <summary>
     /// Represents a time slice snapshot using a captured UtcEpochNow that preempts race conditions.
     /// </summary>
     public interface IAffinityItem
     {
-        void UpdateUtc(
+        void UpdateAffinityUtcNow(
             DateTimeOffset? affinityUtcNow,
-            Dictionary<string, object?>? affinities = null);
+            Dictionary<AffinityRole, object?>? affinities = null);
 
         /// <summary>
         /// Globally unique identifier.

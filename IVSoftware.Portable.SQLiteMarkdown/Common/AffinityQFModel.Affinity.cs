@@ -10,22 +10,49 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
     partial class AffinityQFModel : IAffinityItem
     {
-        public void UpdateUtc(
+        public void UpdateAffinityUtcNow(
             DateTimeOffset? affinityUtcNow,
-            Dictionary<string, object?>? affinities = null)
+            Dictionary<AffinityRole, object?>? affinities = null)
         {
-            affinities ??= new Dictionary<string, object?>();
+            _affinities ??= new Dictionary<AffinityRole, object?>();
             _affinityUtcNow = affinityUtcNow;
-            if (affinities.Count == 0)
-            {
-                UtcStart = affinityUtcNow?.FloorToSecond();
-            }
+        }
+
+        protected virtual void UpdateAffinityUtcNow()
+        {
+
         }
 
         /// <summary>
-        /// Local copy for internals to build against and that detects initial or non-affinity states.
+        /// Active affinity context for temporal and role-based coordination.
         /// </summary>
-        private DateTimeOffset? _affinityUtcNow;
+        /// <remarks>
+        /// Never null. Replaced atomically.
+        /// </remarks>
+        protected Dictionary<AffinityRole, object?> Affinities
+        {
+            get => _affinities!;
+            set => _affinities = value ??= new();
+        }
+        Dictionary<AffinityRole, object?> _affinities = new();
+
+
+        /// <summary>
+        /// Captured affinity time for protected calculations.
+        /// </summary>
+        protected DateTimeOffset? AffinityUtcNow
+        {
+            get => _affinityUtcNow;
+            set
+            {
+                if (!Equals(_affinityUtcNow, value))
+                {
+                    _affinityUtcNow = value;
+                    UpdateAffinityUtcNow();
+                }
+            }
+        }
+        protected DateTimeOffset? _affinityUtcNow = default;
 
         public long Position
         {
@@ -187,15 +214,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 if (!Equals(_utcEpochMode, value))
                 {
                     _utcEpochMode = value;
-                    switch (AffinityMode)
-                    {
-                        case null:
-                            break;
-                        case SQLiteMarkdown.AffinityMode.FixedDateAndTime:
-                            break;
-                        case SQLiteMarkdown.AffinityMode.Asap:
-                            break;
-                    }
+                    UpdateAffinityUtcNow();
                     OnPropertyChanged();
                 }
             }
