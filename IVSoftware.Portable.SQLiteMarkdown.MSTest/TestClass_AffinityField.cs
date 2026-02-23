@@ -10,7 +10,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     {
 
         [TestMethod]
-        public void Test_TestableEpoch()
+        public void Test_AffinityQFModelBootstrap()
         {
             string actual, expected;
             DateTimeOffset utcTest = AffinityTestableEpoch.UtcReset;
@@ -75,13 +75,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual.NormalizeResult(),
                 "Expecting json serialization to match."
             );
-        }
-
-
-        [TestMethod]
-        public void Test_AffinityFieldModel101()
-        {
-            string actual, expected;
         }
     }
 }
