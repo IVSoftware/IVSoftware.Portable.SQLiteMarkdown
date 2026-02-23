@@ -25,7 +25,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                     _dhostTokenDispenser = new DisposableHost();
                     _dhostTokenDispenser.BeginUsing += (sender, e) =>
                     {
-                        _guidCurrent = _guidReset;
+                        _guidCurrent = GuidReset;
                     };
                 }
                 return _dhostTokenDispenser;
@@ -33,12 +33,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         }
         static DisposableHost? _dhostTokenDispenser = null;
 
-        static readonly Guid _guidReset =
+        public static Guid GuidReset { get; } =
             new Guid("312D1C21-0000-0000-0000-000000000000");
 
-        static Guid _guidCurrent = _guidReset;
-
-        public static Guid WithTestability(this Guid @this)
+        public static Guid WithTestability(
+            this Guid @this,
+            AffinityIncrMode? mode = AffinityIncrMode.Postfix)
         {
             if (DHostTokenDispenser.IsZero())
             {
@@ -46,22 +46,42 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
             }
             else
             {
-                // Deterministic increment
-                var bytes = _guidCurrent.ToByteArray();
+                mode ??= AffinityIncrMode.Postfix;
 
-                for (int i = bytes.Length - 1; i >= 0; i--)
+                switch ((AffinityIncrMode)mode)
                 {
-                    if (++bytes[i] != 0)
-                        break; // carry complete
+                    case AffinityIncrMode.Current:
+                        return _guidCurrent;
+                    case AffinityIncrMode.Prefix:
+                    case AffinityIncrMode.Postfix:
+                        // Deterministic increment
+                        var bytes = _guidCurrent.ToByteArray();
+                        for (int i = bytes.Length - 1; i >= 0; i--)
+                        {
+                            if (++bytes[i] != 0)
+                                break; // carry complete
+                        }
+                        if(mode == AffinityIncrMode.Postfix)
+                        {
+                            var pre = new Guid(bytes);
+                            _guidCurrent = pre;
+                            return pre;
+                        }
+                        else
+                        {
+                            _guidCurrent = new Guid(bytes);
+                            return _guidCurrent;
+                        }
+                        
+                    default:
+                        @this.ThrowHard<NotSupportedException>($"The {mode.ToFullKey()} case is not supported.");
+                        return new Guid();
                 }
-                _guidCurrent = new Guid(bytes);
-                return _guidCurrent;
             }
         }
 
-        static readonly DateTimeOffset _utcReset = 
+        public static DateTimeOffset UtcReset { get; } =
             new DateTimeOffset(2000, 1, 1, 9, 0, 0, TimeSpan.FromHours(7));
-        static DateTimeOffset _utcCurrent = _utcReset;
 
         public static TimeSpan DefaultIncr
         {
@@ -75,6 +95,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
             }
         }
         static TimeSpan _defaultIncr = TimeSpan.FromMinutes(5);
+
+        static DateTimeOffset _utcCurrent = UtcReset;
+
+        static Guid _guidCurrent = GuidReset;
+
         static readonly TimeSpan _minIncr = TimeSpan.FromSeconds(1);
 
         public static DateTimeOffset WithTestability(

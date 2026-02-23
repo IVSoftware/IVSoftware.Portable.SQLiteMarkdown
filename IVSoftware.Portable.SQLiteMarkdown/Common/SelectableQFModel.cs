@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 using Newtonsoft.Json;
 using SQLite;
 using System;
@@ -36,7 +37,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     public partial class SelectableQFModel : SelfIndexed, ISelectable
     {
         [PrimaryKey]
-        public override string Id { get; set; } = Guid.NewGuid().ToString();
+        public override string Id { get; set; } = 
+            Guid.NewGuid().WithTestability().ToString();
 
 
         [SelfIndexed]

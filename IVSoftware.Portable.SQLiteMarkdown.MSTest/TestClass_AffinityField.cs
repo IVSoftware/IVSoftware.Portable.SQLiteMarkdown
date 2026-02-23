@@ -1,14 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
     [TestClass]
     public class TestClass_AffinityField
     {
+
+        [TestMethod]
+        public void Test_TestableEpoch()
+        {
+            string actual, expected;
+
+            using var local = this.TestableEpoch();
+
+            SelectableQFModel item;
+
+            item = new();
+            { }
+        }
+
 
         [TestMethod]
         public void Test_AffinityFieldModel101()
