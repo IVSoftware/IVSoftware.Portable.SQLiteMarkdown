@@ -2674,15 +2674,14 @@ Where JsonExtract(Properties, 'Description') LIKE '%brown dog%'");
 Select *
 From items 
 Where json_extract(Properties, '$.Description') LIKE '%brown dog%'");
+                Assert.AreEqual(1, recordset.Count, "Expecting successful query using json_extract.");
 
                 // And this makes it readable.
-                // Arg0: The Column (*is not* literal)
-                // Arg1: The 'Key'  (*is* literal and the $. is the ROOT SELECTOR)
                 recordset = cnx.Query<SelectableQFModelTOQO>($@"
 Select *
 From items 
 Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
-
+                Assert.AreEqual(1, recordset.Count, "Expecting successful query using JsonExtract helper extension.");
             }
         }
 

@@ -17,7 +17,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             using var local = this.TestableEpoch();
 
-            SelectableQFAffinityModel item;
+            AffinityQFModel item;
 
             item = new();
             Assert.AreEqual(

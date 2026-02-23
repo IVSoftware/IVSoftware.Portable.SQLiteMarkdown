@@ -128,10 +128,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
 
 #if ABSTRACT
-var recordset = cnx.Query<SelfIndexing>($@"
-Select *
-From items 
-Where PropertyValue({nameof(SelfIndexing.Properties)}, '{nameof(SelectableQFModelTOQO.Description)}') LIKE '%brown dog%'");
+recordset = cnx.Query<SelectableQFModelTOQO>($@"
+    Select *
+    From items 
+    Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
 #endif
         /// <summary>
         /// SQLite Column that encapsulates user-defined custom values that can be queried.
@@ -470,7 +470,7 @@ Where PropertyValue({nameof(SelfIndexing.Properties)}, '{nameof(SelectableQFMode
                 return _indexedProperties;
             }
         }
-        Dictionary<IndexingMode, List<PropertyInfo>> _indexedProperties = null;
+        Dictionary<IndexingMode, List<PropertyInfo>>? _indexedProperties = null;
 
         /// <summary>
         /// Maps properties to their associated <see cref="PersistenceMode"/> roles for serialization.

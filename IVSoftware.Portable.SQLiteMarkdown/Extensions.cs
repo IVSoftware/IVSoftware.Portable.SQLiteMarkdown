@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable;
 using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -425,7 +426,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Return string formatted as: json_extract(Properties, '$.Description');
         /// </summary>
-        public static string JsonExtract(this string columnName, string key) =>
-            $@"json_extract({columnName}, '$.{key}')";
+        public static string JsonExtract(this string columnName, string key)
+        {
+            if (key.Contains('\''))
+                columnName.ThrowHard<ArgumentException>("Key must not contain single quotes.", nameof(key));
+
+            return $"json_extract({columnName}, '$.{key}')";
+        }
     }
 }

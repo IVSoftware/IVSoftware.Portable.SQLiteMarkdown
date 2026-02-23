@@ -219,17 +219,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </remarks>
     public interface IChainOfCustody
     {
+        ChainOfCustody ChainOfCustody { get; }
         Task<DateTimeOffset> CommitLocalEdit(string identity);
         Task<ChainOfCustodyToken> CommitRemoteReceipt(string identity, DateTimeOffset remoteTimeStamp);
     }
 
     /// <summary>
-    /// User area where value strings are indexed by key strings.
-    /// Are the values JSON? XML? You tell me! 
+    /// Json property bag for user-defined value;
     /// </summary>
     public interface ICustomProperties
     {
-        IDictionary<string, string> Properties { get; }
+        IDictionary<string, string> CustomProperties { get; }
     }
 
     /// <summary>
@@ -450,7 +450,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         PastDisplacesFuture,
     }
-
     #endregion F I X E D    E P O C H
 
     /// <summary>
@@ -598,7 +597,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Partial epochs that float around fixed epochs.
         /// </summary>
-        List<AffinitySlot> Slots { get; }
+        IList<AffinitySlot> Slots { get; }
     }
 
     /// <summary>

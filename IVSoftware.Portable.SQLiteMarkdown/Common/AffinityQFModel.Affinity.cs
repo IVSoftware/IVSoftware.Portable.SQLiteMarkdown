@@ -6,7 +6,7 @@ using EphemeralAttribute = SQLite.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
-    partial class SelectableQFAffinityModel : IAffinityItem
+    partial class AffinityQFModel : IAffinityItem
     {
         public void UpdateUtc(
             DateTimeOffset? affinityUtcNow,
@@ -56,7 +56,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 else
                 {
                     this.ThrowHard<InvalidOperationException>(
-                        $"Policy violation for {nameof(SelectableQFAffinityModel)}.{nameof(Path)}: This value must end with Id");
+                        $"Policy violation for {nameof(AffinityQFModel)}.{nameof(Path)}: This value must end with Id");
                 }
             }
         }
@@ -165,6 +165,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         ChildAffinityMode? _utcChildMode = default;
 
+
+        IList<AffinitySlot> IAffinityItem.Slots => Slots;
         public List<AffinitySlot> Slots { get; } = new List<AffinitySlot>();
 
         #region A F F I N I T Y    E P H E M E R A L
@@ -246,6 +248,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 }
             }
         }
+
         TimeSpan? _available = default;
 
         #endregion A F F I N I T Y    E P H E M E R A L

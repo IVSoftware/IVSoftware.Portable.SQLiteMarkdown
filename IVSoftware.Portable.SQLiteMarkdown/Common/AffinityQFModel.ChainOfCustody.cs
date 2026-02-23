@@ -10,17 +10,18 @@ using System.Threading.Tasks;
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
     [Table("items")]
-    public partial class SelectableQFAffinityModel 
+    public partial class AffinityQFModel 
         : SelectableQFModel
         , IGenesis
-        , ICustomProperties
         , IChainOfCustody
     {
         public DateTimeOffset Created { get; } = DateTimeOffset.UtcNow.WithTestability();
 
-
+        /// <summary>
+        /// SQLite backing store where column name is ChainOfCustody.
+        /// </summary>
         [SQLite.Column("ChainOfCustody"), JsonProperty]
-        public string ChainOfCustodyJSON 
+        public string ChainOfCustody_JSON 
         {
             get => JsonConvert.SerializeObject(ChainOfCustody, Formatting.Indented);
             set
@@ -47,7 +48,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         public Task<ChainOfCustodyToken> CommitRemoteReceipt(string identity, DateTimeOffset remoteTimeStamp) =>
             ((IChainOfCustody)ChainOfCustody).CommitRemoteReceipt(identity, remoteTimeStamp);
-
-        IDictionary<string, string> ICustomProperties.Properties => throw new NotImplementedException();
     }
 }
