@@ -423,9 +423,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </summary>
     /// <remarks>
     /// Mental Model: 
-    /// - Here, the PastDue flag is interpreted more broadly.
-    /// - "This item, as it stands, is simply not going to get done."
-    /// - Typically, a UI will "indicate red: for this collectin item.
+    /// - Here, the PastDue flag is interpreted more broadly: "This item, as it stands, is simply not going to get done."
+    /// - Typically, a UI will make this item "go into the red" with an appropriate visual state.
+    /// Remember: 
+    /// - Most collections are populated by queries, and overlaps can occur when a well-meaning 
+    ///   query fails to return the conflicting epoch. It falls to the user implementation, to
+    ///   manage this, and often involves the ability to perform a DateTimeRange x Resource matrix query.
     /// </remarks>
     public enum OverlapTimeMode
     {
@@ -549,11 +552,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         DateTimeOffset? UtcEnd { get; }
 
         /// <summary>
-        /// Math.Max(TimeSpan.Zero, Remaining) == TimeSpan.Zero 
-        /// </summary>
-        bool? IsDone { get; }
-
-        /// <summary>
         /// Derived mode when UtcStart and/or Duration are not null.
         /// </summary>
         AffinityMode? AffinityMode { get; }
@@ -577,6 +575,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Returns false if !(AffinityMode.ASAP). 'Net True' decrements Remaining when item is AffinityTimeDomain.Present.
         /// </summary>
         bool? IsRunning { get; }
+
+        /// <summary>
+        /// Available < Remaining.
+        /// </summary>
+        bool? IsPastDue { get; }
+
+        /// <summary>
+        /// Two-Way binding.
+        /// </summary>
+        /// <remarks>
+        /// 1. The IsDone flag "goes true" when remaining time hits TimeSpan.Zero.
+        /// 2. Setting IsDone, affirmatively, clears remaining time to TimeSpan.Zero.
+        /// Mental Model:
+        /// - The UI can opt to visually "go yellow" in a figurative, purgatory sense to
+        ///   indicate a "Run-Not-Done". This shorthand term for a run-induced done state
+        ///   is acknowleding a reality: The item ran out of time. But is it really done
+        ///   to where "I can check it off my list?" This checkbox [X] is exactly what
+        ///   many UI implementations allow the user to do.
+        /// </remarks>
+        bool? IsDone { get; set; }
 
         /// <summary>
         /// Partial epochs that float around fixed epochs.
@@ -652,8 +670,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// 
         /// NOT RUNNING (constrained):
         /// Fixed items in the field can impose an availability vector, making it
-        /// possible for an item to "go into the red" in terms of a shortfall of
-        /// what can be delivered compared to what was promised
+        /// possible for an item to figuratively or visually "go into the red" in 
+        /// terms of a shortfall of what can be delivered compared to promises made.
         /// </remarks>
         bool IsRunning { get; set; }
 
