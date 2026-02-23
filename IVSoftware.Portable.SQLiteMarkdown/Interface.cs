@@ -335,6 +335,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Below = +1,
     }
 
+    public enum SpareTimeMode
+    {
+        TakeRecessNow,
+
+        GoHomeEarly,
+
+        YieldToField,
+    }
+
     /// <summary>
     /// Represents a time slice snapshot using a captured UtcEpochNow that preempts race conditions.
     /// </summary>
