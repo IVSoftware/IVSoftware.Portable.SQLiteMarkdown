@@ -344,6 +344,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         YieldToField,
     }
 
+    public enum ScarceTimeMode
+    {
+        LossOccursAtStart,
+
+        LossIsDistributed,
+
+        LossOccursAtEnd,
+    }
+
     /// <summary>
     /// Represents a time slice snapshot using a captured UtcEpochNow that preempts race conditions.
     /// </summary>
