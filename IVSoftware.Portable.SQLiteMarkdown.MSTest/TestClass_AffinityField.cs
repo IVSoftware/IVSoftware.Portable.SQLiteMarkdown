@@ -34,7 +34,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             actual = JsonConvert.SerializeObject(item, Formatting.Indented);
             actual.ToClipboardExpected();
             { }
-
             expected = @" 
 {
   ""Position"": 630822888000000000,
@@ -43,7 +42,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
   ""Duration"": ""00:00:00"",
   ""Remaining"": ""00:00:00"",
   ""AffinityMode"": null,
-  ""AffinityParent"": """",
+  ""AffinityParent"": null,
   ""AffinityChildMode"": null,
   ""Slots"": [],
   ""AffinityTimeDomain"": null,
@@ -53,43 +52,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
   ""IsPastDue"": null,
   ""Available"": null,
   ""Created"": ""2000-01-01T09:00:00+07:00"",
-  ""CustomProperties"": {},
-  ""ChainOfCustodyJSON"": ""[]"",
-  ""Id"": ""312d1c21-0000-0000-0000-000000000000"",
-  ""Description"": ""New Item"",
-  ""Keywords"": ""[]"",
-  ""KeywordsDisplay"": """",
-  ""Tags"": """",
-  ""IsChecked"": false,
-  ""Selection"": 0,
-  ""IsEditing"": false,
-  ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000000"",
-  ""QueryTerm"": ""new~item"",
-  ""FilterTerm"": ""new~item"",
-  ""TagMatchTerm"": """",
-  ""Properties"": ""{}""
-}"
-            ;
-
-            expected = @" 
-{
-  ""Position"": 630822888000000000,
-  ""Path"": """",
-  ""UtcStart"": null,
-  ""Duration"": ""00:00:00"",
-  ""Remaining"": ""00:00:00"",
-  ""AffinityMode"": null,
-  ""UtcEnd"": null,
-  ""IsDone"": false,
-  ""IsPastDue"": null,
-  ""Available"": null,
-  ""AffinityParent"": """",
-  ""AffinityChildMode"": null,
-  ""AffinityTimeDomain"": null,
-  ""Slots"": [],
-  ""Created"": ""2000-01-01T09:00:00+07:00"",
-  ""CustomProperties"": {},
-  ""ChainOfCustodyJSON"": ""[]"",
+  ""ChainOfCustody"": ""[]"",
+  ""CustomProperties"": ""{}"",
   ""Id"": ""312d1c21-0000-0000-0000-000000000000"",
   ""Description"": ""New Item"",
   ""Keywords"": ""[]"",

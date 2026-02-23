@@ -134,7 +134,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 }
             }
         }
-        AffinityMode? _utcEpochMode = default;
+        AffinityMode? _utcEpochMode = null;
 
 
         public string? AffinityParent
@@ -149,7 +149,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 }
             }
         }
-        string? _utcParent = string.Empty;
+        string? _utcParent = null;
 
         public ChildAffinityMode? AffinityChildMode
         {

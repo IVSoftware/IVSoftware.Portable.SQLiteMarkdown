@@ -55,12 +55,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         string TagMatchTerm { get; set; }
 
         /// <summary>
-        /// Persisted JSON representation of the Values dictionary, stored for efficient access.
+        /// Engine-managed JSON persistence envelope.
         /// </summary>
+        /// <remarks>
+        /// Serialized projection of properties decorated with [SelfIndexed]
+        /// where PersistenceMode includes Json. This column exists to support
+        /// indexing and search (e.g. json_extract) and is not a general-purpose
+        /// user metadata store.
+        /// </remarks>
         string Properties
         {
-            // When IsSerializationRequired is true due to changes in the dictionary, 
-            // a private accessor re-serializes the dictionary to JSON to avoid circular references.
             get;
             set;
         }

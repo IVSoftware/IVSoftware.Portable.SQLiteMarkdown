@@ -20,7 +20,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         /// <summary>
         /// SQLite backing store where column name is ChainOfCustody.
         /// </summary>
-        [SQLite.Column("ChainOfCustody"), JsonProperty]
+        [SQLite.Column("ChainOfCustody"), JsonProperty("ChainOfCustody")]
         public string ChainOfCustody_JSON 
         {
             get => JsonConvert.SerializeObject(ChainOfCustody, Formatting.Indented);

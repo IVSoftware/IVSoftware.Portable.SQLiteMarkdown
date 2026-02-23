@@ -133,9 +133,20 @@ recordset = cnx.Query<SelectableQFModelTOQO>($@"
     From items 
     Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
 #endif
+
         /// <summary>
-        /// SQLite Column that encapsulates user-defined custom values that can be queried.
+        /// Engine-managed JSON persistence envelope.
         /// </summary>
+        /// <remarks>
+        /// Serialized projection of properties decorated with [SelfIndexed]
+        /// where PersistenceMode includes Json. This column exists to support
+        /// indexing and search (e.g. json_extract) and is not a general-purpose
+        /// user metadata store.
+        /// </remarks>
+        [Careful(@"
+These are DIFFERENT:
+SelfIndexed.Properties (this property) is single self-indexed term for query.
+CustomProperties (subclass property) is a user-defined metadata property bag.")]
         public string Properties
         {
             get
