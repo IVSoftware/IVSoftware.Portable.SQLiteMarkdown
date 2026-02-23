@@ -26,6 +26,7 @@ using static SQLite.SQLite3;
 using static System.Net.Mime.MediaTypeNames;
 using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 using static IVSoftware.Portable.Threading.Extensions;
+using IVSoftware.Portable.Common.Attributes;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {   
@@ -2622,6 +2623,10 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%Tom ""safe inner"" Tester%')"
         /// PFAW!
         /// </summary>
         [TestMethod]
+        [Careful(@"
+Shows how to register a custom function. 
+But for JsonExtract don't do that!
+Use 'json_extract' as shown or wrap it with the string.JsonExtract helper.")]
         public void Test_CustomSQLiteFunction()
         {
             using (var cnx = InitializeInMemoryDatabase())
