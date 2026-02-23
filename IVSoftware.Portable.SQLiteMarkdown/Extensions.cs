@@ -443,10 +443,12 @@ Where PropertyValue({nameof(SelectableQFModelTOQO.Properties)}, '{nameof(Selecta
                 }
             }
 
+            // Arg0: The Column (*is not* literal)
+            // Arg1: The 'Key'  (*is* literal)
             SQLitePCL.raw.sqlite3_create_function(
-                cnx.Handle,
-                "PropertyValue",
-                2,
+                db: cnx.Handle,
+                name: "PropertyValue",
+                2,  // NArgs = 2
                 1,
                 null,
                 (ctx, user_data, args) =>

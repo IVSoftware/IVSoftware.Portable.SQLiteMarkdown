@@ -2632,7 +2632,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%Tom ""safe inner"" Tester%')"
 
                 SQLitePCL.raw.sqlite3_create_function(
                     cnx.Handle,
-                    "PropertyValue",
+                    "JsonExtract",
                     2,
                     1,
                     null,
@@ -2641,30 +2641,22 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%Tom ""safe inner"" Tester%')"
                         var json = SQLitePCL.raw.sqlite3_value_text(args[0]).utf8_to_string();
                         var key = SQLitePCL.raw.sqlite3_value_text(args[1]).utf8_to_string();
 
-
+                        // O U T
                         string? value = null;
-                        try
-                        {
-                            if (JsonConvert.DeserializeObject<Dictionary<string, string>>(json) is { } dict)
-                            {
-                                if (dict.TryGetValue(key, out value))
-                                { }
-                            }
-                            else throw new InvalidOperationException("Dictionary not found.");
-                        }
-                        catch
-                        {
-                            Debug.Fail("ADVISORY - Something went wrong..");
-                        }
+
+                        (JsonConvert.DeserializeObject<Dictionary<string, string>>(json) as IDictionary<string, string>)
+                        ?.TryGetValue(key, out value);
+
                         SQLitePCL.raw.sqlite3_result_text(ctx, value ?? string.Empty);
                     }
                 );
 
-                var recordset = cnx.Query<SelectableQFModelTOQO>(
-                    $@"
+                // Arg0: The Column (*is not* literal)
+                // Arg1: The 'Key'  (*is* literal)
+                var recordset = cnx.Query<SelectableQFModelTOQO>($@"
 Select *
 From items 
-Where PropertyValue({nameof(SelectableQFModelTOQO.Properties)}, '{nameof(SelectableQFModelTOQO.Description)}') LIKE '%brown dog%'");
+Where JsonExtract(Properties, 'Description') LIKE '%brown dog%'");
 
                 Assert.AreEqual(1, recordset.Count, "Expecting successful query using custom function.");
                 { }
