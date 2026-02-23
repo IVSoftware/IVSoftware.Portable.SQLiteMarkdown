@@ -287,7 +287,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Begins as soon as possible relative to UtcNow and Position.
         /// </summary>
-        Asap = 0x0, 
+        Asap = 0x0,
 
         /// <summary>
         /// Begins daily at a specified UtcStart and ends Duration later.
@@ -555,5 +555,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - A unit test injects known time constants for testing.
         /// </remarks>
         DateTimeOffset AffinityEpochTimeSink { get; set; }
+
+
+        /// <summary>
+        /// Customizable finite state machine definition.
+        /// </summary>
+        Enum AffinityFSM { get; }
+    }
+
+    public enum AffinityStateMachine
+    {
+        /// <summary>
+        /// Root affinities that are designated AffinityMode? > 0
+        /// </summary>
+        PlaceFixed,
+
+        /// <summary>
+        /// Calculate child affinities to N depth.
+        /// </summary>
+        /// <remarks>
+        /// When scarcity is present due to a duration specification,
+        /// the child affinities must be compressed in this state.
+        /// </remarks>
+        PlaceChildAffinitiesBelow,
     }
 }
