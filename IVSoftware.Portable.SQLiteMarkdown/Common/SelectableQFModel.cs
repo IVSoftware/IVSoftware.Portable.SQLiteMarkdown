@@ -32,7 +32,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     /// </summary>
     [DebuggerDisplay("{Description}")]
     [Table("items")]
-    public class SelectableQFModel : SelfIndexed, ISelectable
+    public partial class SelectableQFModel : SelfIndexed, ISelectable
     {
         [PrimaryKey]
         public override string Id { get; set; } = Guid.NewGuid().ToString();

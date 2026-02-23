@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
@@ -134,7 +135,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         AffinityMode? _utcEpochMode = default;
 
 
-
         public DateTimeOffset? UtcEnd
         {
             get
@@ -153,13 +153,36 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             }
         }
 
-        public bool? IsDone =>
-            Remaining is { } remaining
-            ? remaining.Ticks == 0
-            : null; 
+        public bool? IsDone
+        {
+            get => _isDone && Remaining?.Ticks == 0;
+            set
+            {
+                if (!Equals(_isDone, value))
+                {
+                    _isDone = value == true;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        bool _isDone = false;
 
+        public bool? IsPastDue => throw new NotImplementedException("ToDo");
 
-        public bool? IsRunning { get; set; }
+        public TimeSpan? Available
+        {
+            get => _Name;
+            set
+            {
+                if (!Equals(_Name, value))
+                {
+                    _Name = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        TimeSpan? _Name = default;
+
 
         public string? AffinityParent
         {
@@ -190,6 +213,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         ChildAffinityMode? _utcChildMode = default;
 
         public AffinityTimeDomain? AffinityTimeDomain => throw new NotImplementedException();
+
+
+        public void UpdateUtc(
+            DateTimeOffset? affinityUtcNow,
+            Dictionary<string, DateTimeOffset> affinities)
+        {
+            _affinityUtcNow = affinityUtcNow;
+        }
+        private DateTimeOffset? _affinityUtcNow;
 
         public List<AffinitySlot> Slots { get; } = new List<AffinitySlot>();
     }

@@ -4,21 +4,6 @@ using IVSoftware.Portable.Common.Exceptions;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
-    public enum StdIvsEpoch
-    {
-        [Description("2019-02-22T08:55:00+07:00")]
-        IvsEpochMinus5,
-
-        [Description("2019-02-22T09:00:00+07:00")]
-        IvsEpoch,
-
-        [Description("2019-02-22T09:05:00+07:00")]
-        IvsEpochPlus5,
-
-        [Description("2026-01-01T09:00:00+07:00")]
-        January1,
-    }
-
     public static partial class SQLiteMarkdownTestExtensions
     {
         public static DateTimeOffset ToDateTimeOffset(this Enum @this)

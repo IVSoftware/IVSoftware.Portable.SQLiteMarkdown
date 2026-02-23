@@ -458,6 +458,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </summary>
     public interface IAffinityItem
     {
+        void UpdateUtc(
+            DateTimeOffset? affinityUtcNow,
+            Dictionary<string, DateTimeOffset> affinities);
+
         /// <summary>
         /// Globally unique identifier.
         /// </summary>
@@ -570,11 +574,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Aspirational mode that requires UtcStart
         /// </summary>
         AffinityTimeDomain? AffinityTimeDomain { get; }
-
-        /// <summary>
-        /// Returns false if !(AffinityMode.ASAP). 'Net True' decrements Remaining when item is AffinityTimeDomain.Present.
-        /// </summary>
-        bool? IsRunning { get; }
 
         /// <summary>
         /// Available < Remaining.
