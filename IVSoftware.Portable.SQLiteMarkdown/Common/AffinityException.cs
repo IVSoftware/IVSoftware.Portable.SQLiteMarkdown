@@ -13,6 +13,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         [Description("Materialized Path Policy violation: Path must end with Id.")]
         [PolicyEnforcement(ThrowOrAdvise.ThrowHard)]
         MaterializedPathMustEndWithId,
+
+        [Description("Identity invariant violation: Id must be a valid Guid.")]
+        [PolicyEnforcement(ThrowOrAdvise.ThrowHard)]
+        IdMustBeGuid,
     }
     public class AffinityException : Exception 
     {

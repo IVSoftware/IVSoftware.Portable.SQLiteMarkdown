@@ -2,6 +2,7 @@
 using SQLite;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using EphemeralAttribute = SQLite.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
@@ -42,7 +43,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         /// </summary>
         public string Path
         {
-            get => _path ?? Id;
+            get
+            {
+                if(TryGetSafePath(_path, Id, out var safePath))
+                {
+                    _path = safePath;
+                }
+                else
+                {
+                    this.ThrowPolicyException(AffinityPolicy.IdMustBeGuid);
+                }
+                return _path;
+            }
             set
             {
                 if (value?.EndsWith(Id) == true)
@@ -61,6 +73,40 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             }
         }
         string _path = string.Empty;
+
+        private static bool TryGetSafePath(string path, string id, out string safePath)
+        {
+            safePath = id; // default fallback
+
+            // Id must be a valid Guid
+            Guid idGuid;
+            if (!Guid.TryParse(id, out idGuid))
+                return false;
+
+            var raw = string.IsNullOrWhiteSpace(path) ? id : path;
+
+            var parts = raw.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (parts.Length == 0)
+                return true; // fallback already set to id
+
+            // Every segment must be a Guid
+            for (int i = 0; i < parts.Length; i++)
+            {
+                Guid parsed;
+                if (!Guid.TryParse(parts[i], out parsed))
+                    return true; // fallback to id
+            }
+
+            // Last segment must match Id
+            var last = parts[parts.Length - 1];
+            if (!string.Equals(last, id, StringComparison.OrdinalIgnoreCase))
+                return true; // fallback to id
+
+            safePath = string.Join("/", parts);
+            return true;
+        }
+
 
         public DateTimeOffset? UtcStart
         {

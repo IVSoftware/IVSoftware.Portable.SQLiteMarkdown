@@ -37,7 +37,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             expected = @" 
 {
   ""Position"": 630822888000000000,
-  ""Path"": """",
+  ""Path"": ""312d1c21-0000-0000-0000-000000000000"",
   ""UtcStart"": null,
   ""Duration"": ""00:00:00"",
   ""Remaining"": ""00:00:00"",
