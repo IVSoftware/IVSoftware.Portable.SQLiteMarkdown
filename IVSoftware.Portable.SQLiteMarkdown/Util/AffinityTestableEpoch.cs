@@ -1,0 +1,112 @@
+﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using System;
+
+namespace IVSoftware.Portable.SQLiteMarkdown.Util
+{
+    public enum AffinityIncrMode
+    {
+        Prefix,
+        Current,
+        Postfix,
+    }
+    public static class AffinityTestableEpoch
+    {
+        public static IDisposable TestableEpoch(this object? @this)
+            => DHostTokenDispenser.GetToken(sender: @this);
+
+        static DisposableHost DHostTokenDispenser
+        {
+            get
+            {
+                if (_dhostTokenDispenser is null)
+                {
+                    _dhostTokenDispenser = new DisposableHost();
+                    _dhostTokenDispenser.BeginUsing += (sender, e) =>
+                    {
+                        _guidCurrent = _guidReset;
+                    };
+                }
+                return _dhostTokenDispenser;
+            }
+        }
+        static DisposableHost? _dhostTokenDispenser = null;
+
+        static readonly Guid _guidReset =
+            new Guid("312D1C21-0000-0000-0000-000000000000");
+
+        static Guid _guidCurrent = _guidReset;
+
+        public static Guid WithTestability(this Guid @this)
+        {
+            if (DHostTokenDispenser.IsZero())
+            {
+                return @this;
+            }
+            else
+            {
+                // Deterministic increment
+                var bytes = _guidCurrent.ToByteArray();
+
+                for (int i = bytes.Length - 1; i >= 0; i--)
+                {
+                    if (++bytes[i] != 0)
+                        break; // carry complete
+                }
+                _guidCurrent = new Guid(bytes);
+                return _guidCurrent;
+            }
+        }
+
+        static readonly DateTimeOffset _utcReset = 
+            new DateTimeOffset(2000, 1, 1, 9, 0, 0, TimeSpan.FromHours(7));
+        static DateTimeOffset _utcCurrent = _utcReset;
+
+        public static TimeSpan DefaultIncr
+        {
+            get
+            {
+                return _defaultIncr < _minIncr ? _minIncr : _defaultIncr;
+            }
+            set
+            {
+                _defaultIncr = value;
+            }
+        }
+        static TimeSpan _defaultIncr = TimeSpan.FromMinutes(5);
+        static readonly TimeSpan _minIncr = TimeSpan.FromSeconds(1);
+
+        public static DateTimeOffset WithTestability(
+            this DateTimeOffset @this, 
+            TimeSpan? incr = null, 
+            AffinityIncrMode? mode = AffinityIncrMode.Postfix)
+        {
+            if (DHostTokenDispenser.IsZero())
+            {
+                return @this;
+            }
+            else
+            {
+                incr ??= DefaultIncr;
+                mode ??= AffinityIncrMode.Postfix;
+
+                switch ((AffinityIncrMode)mode)
+                {
+                    case AffinityIncrMode.Prefix:
+                        var pre = _utcCurrent;
+                        _utcCurrent += (TimeSpan)incr;
+                        return pre;
+                    case AffinityIncrMode.Current:
+                        return _utcCurrent;
+                    case AffinityIncrMode.Postfix:
+                        _utcCurrent += (TimeSpan)incr;
+                        return _utcCurrent;
+                    default:
+                        @this.ThrowHard<NotSupportedException>($"The {mode.ToFullKey()} case is not supported.");
+                        return DateTimeOffset.MinValue;
+                }
+            }
+        }
+    }
+}

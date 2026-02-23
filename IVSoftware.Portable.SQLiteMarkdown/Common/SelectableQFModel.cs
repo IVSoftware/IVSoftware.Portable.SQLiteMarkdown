@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using IVSoftware.Portable.Disposable;
+using Newtonsoft.Json;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -36,6 +37,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     {
         [PrimaryKey]
         public override string Id { get; set; } = Guid.NewGuid().ToString();
+
 
         [SelfIndexed]
         public string Description
