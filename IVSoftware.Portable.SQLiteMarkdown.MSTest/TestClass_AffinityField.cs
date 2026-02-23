@@ -18,6 +18,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             item = new();
             { }
+            Assert.AreEqual(AffinityTestableEpoch.GuidReset.ToString(), item.Id);
         }
 
 

@@ -63,8 +63,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                         }
                         if(mode == AffinityIncrMode.Postfix)
                         {
-                            var pre = new Guid(bytes);
-                            _guidCurrent = pre;
+                            var pre = _guidCurrent;
+                            _guidCurrent = new Guid(bytes);
                             return pre;
                         }
                         else
