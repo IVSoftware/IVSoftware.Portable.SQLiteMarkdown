@@ -4,6 +4,9 @@ using System.Runtime.CompilerServices;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
 {
+    /// <summary>
+    /// Internal collection prototype for test.
+    /// </summary>
     class ObservableAffinityField<T>
         : ObservableCollection<T>
         , IAffinityField
@@ -91,8 +94,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
         }
 
         private DateTimeOffset _affinityEpochTimeSink = default;
-
-
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
             OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
