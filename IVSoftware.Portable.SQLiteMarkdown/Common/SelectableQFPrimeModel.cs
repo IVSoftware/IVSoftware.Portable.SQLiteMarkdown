@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using Newtonsoft.Json;
 using SQLite;
@@ -15,28 +16,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         , ICustomProperties
         , IChainOfCustody
     {
-        public DateTimeOffset Created
-        {
-            get
-            {
-                var e = new AwaitedEventArgs
-                {
-                   { nameof(Created), _created }
-                };
-                // Expose just the string, not the item, as sender.
-                nameof(Created).OnAwaited();
-                return (DateTimeOffset) e[nameof(Created)];
-            }
-            set
-            {
-                if (!Equals(_created, value))
-                {
-                    _created = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        DateTimeOffset _created = DateTimeOffset.UtcNow;
+        public DateTimeOffset Created { get; } = DateTimeOffset.UtcNow.WithTestability();
 
         public IDictionary<string, string?> CustomProperties { get; protected set; } = new Dictionary<string, string?>();
 

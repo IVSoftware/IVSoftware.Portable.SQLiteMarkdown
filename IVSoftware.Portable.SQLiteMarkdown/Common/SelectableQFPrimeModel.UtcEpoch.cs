@@ -148,7 +148,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                     case SQLiteMarkdown.AffinityMode.Asap:
                         break;
                 }
-                throw new NotImplementedException("ToDo");
                 return null;
             }
         }
@@ -167,7 +166,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         bool _isDone = false;
 
-        public bool? IsPastDue => throw new NotImplementedException("ToDo");
+        public bool? IsPastDue => null;
 
         public TimeSpan? Available
         {
@@ -212,7 +211,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         ChildAffinityMode? _utcChildMode = default;
 
-        public AffinityTimeDomain? AffinityTimeDomain => throw new NotImplementedException();
+        public AffinityTimeDomain? AffinityTimeDomain => null;
 
 
         public void UpdateUtc(

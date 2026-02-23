@@ -33,6 +33,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         }
         static DisposableHost? _dhostTokenDispenser = null;
 
+        #region G U I D
         public static Guid GuidReset { get; } =
             new Guid("312D1C21-0000-0000-0000-000000000000");
 
@@ -80,6 +81,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
             }
         }
 
+        #endregion G U I D
+
+        #region U T C
         public static DateTimeOffset UtcReset { get; } =
             new DateTimeOffset(2000, 1, 1, 9, 0, 0, TimeSpan.FromHours(7));
 
@@ -119,19 +123,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                 switch ((AffinityIncrMode)mode)
                 {
                     case AffinityIncrMode.Prefix:
-                        var pre = _utcCurrent;
                         _utcCurrent += (TimeSpan)incr;
-                        return pre;
+                        return _utcCurrent;
                     case AffinityIncrMode.Current:
                         return _utcCurrent;
                     case AffinityIncrMode.Postfix:
+                        var pre = _utcCurrent;
                         _utcCurrent += (TimeSpan)incr;
-                        return _utcCurrent;
+                        return pre;
                     default:
                         @this.ThrowHard<NotSupportedException>($"The {mode.ToFullKey()} case is not supported.");
                         return DateTimeOffset.MinValue;
                 }
             }
         }
+        #endregion U T C
     }
 }
