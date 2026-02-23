@@ -33,25 +33,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
                 if (!Equals(_affinityEpochTimeSink, value))
                 {
                     _affinityEpochTimeSink = value;
-                    OnPropertyChanged();
-
-                    // Attempt non-queued reconciliation
                     if (Interlocked.Exchange(ref _busy, 1) == 0)
                     {
-                        try
-                        {
-                            UpdateAffinities();
-                        }
-                        finally
-                        {
-                            Volatile.Write(ref _busy, 0);
-                        }
+                        _ = ExecAffinityFsm();
                     }
-                    // else: pulse discarded by design
+                    else
+                    {   /* G T K */
+                        // N O O P 
+                        // Pulse is discarded by design.
+                    }
+                    OnPropertyChanged();
                 }
             }
         }
-        private DateTimeOffset _affinityEpochTimeSink = default;
 
         /// <summary>
         /// Reconciles all Affinity items against the current injected epoch snapshot.
@@ -70,11 +64,34 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
         /// intermediate snapshots are discarded and only the most recent epoch
         /// is considered authoritative.
         /// </remarks>
-        [Obsolete("I've got a better idea")]
-        protected virtual void UpdateAffinities()
+        public virtual async Task ExecAffinityFsm()
         {
-            // Recalculate Available, Remaining, compression, etc.
+            // Attempt non-queued reconciliation
+            try
+            {
+                AffinityFsm state = AffinityFsm.PlaceFixed;
+                
+                while(!Equals(ReservedAffinityStateMachine.Idle, (ReservedAffinityStateMachine)AffinityFsmState))
+                {
+                    state = (AffinityFsm) await ExecAffinityState(state);
+                }
+            }
+            finally
+            {
+                Volatile.Write(ref _busy, 0);
+            }
         }
+
+        public Enum AffinityFsmState { get; protected set; } = ReservedAffinityStateMachine.Idle;
+
+        public virtual async Task<Enum> ExecAffinityState(Enum state)
+        {
+            // PLACEHOLDER - ToDo
+            return ReservedAffinityStateMachine.Idle;
+        }
+
+        private DateTimeOffset _affinityEpochTimeSink = default;
+
 
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>

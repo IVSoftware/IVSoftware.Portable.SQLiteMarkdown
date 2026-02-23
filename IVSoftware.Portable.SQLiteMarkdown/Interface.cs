@@ -691,12 +691,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
 
         /// <summary>
-        /// Customizable finite state machine definition.
+        /// Current State for a customizable finite state machine .
         /// </summary>
-        Enum AffinityFSM { get; }
+        Enum AffinityFsmState { get; }
+    }
+    public enum ReservedAffinityStateMachine
+    { 
+        Idle = -1, 
     }
 
-    public enum AffinityStateMachine
+    public enum AffinityFsm
     {
         /// <summary>
         /// Root affinities that are designated AffinityMode? > 0
