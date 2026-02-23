@@ -463,7 +463,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         void UpdateUtc(
             DateTimeOffset? affinityUtcNow,
-            Dictionary<string, DateTimeOffset> affinities);
+            Dictionary<string, object?>? affinities = null);
 
         /// <summary>
         /// Globally unique identifier.
@@ -486,6 +486,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///     calls to compute full path.
         /// </remarks>
         string Path { get; set; }
+
+        bool IsRoot { get; }
 
         /// <summary>
         /// Sortable key that is typically based on DateTimeOffset.Ticks.

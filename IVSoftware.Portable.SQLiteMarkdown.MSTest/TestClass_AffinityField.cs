@@ -1,6 +1,8 @@
 ﻿using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine;
 using Newtonsoft.Json;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
@@ -20,6 +22,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             AffinityQFModel item;
 
             item = new();
+
             Assert.AreEqual(
                 AffinityTestableEpoch.GuidReset.ToString(), 
                 item.Id,
@@ -30,14 +33,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 item.Created,
                 "Expecting epoch initialized to first.");
 
-
             actual = JsonConvert.SerializeObject(item, Formatting.Indented);
             actual.ToClipboardExpected();
-            { }
+
             expected = @" 
 {
   ""Position"": 630822888000000000,
   ""Path"": ""312d1c21-0000-0000-0000-000000000000"",
+  ""IsRoot"": true,
   ""UtcStart"": null,
   ""Duration"": ""00:00:00"",
   ""Remaining"": ""00:00:00"",
@@ -69,6 +72,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
   ""Properties"": ""{}""
 }"
             ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting json serialization to match."
+            );
+            item.UpdateUtc(utcTest);
+
+
+            actual = JsonConvert.SerializeObject(item, Formatting.Indented);
+            actual.ToClipboardExpected();
+            { }
 
             Assert.AreEqual(
                 expected.NormalizeResult(),

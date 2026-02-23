@@ -11,10 +11,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     {
         public void UpdateUtc(
             DateTimeOffset? affinityUtcNow,
-            Dictionary<string, DateTimeOffset> affinities)
+            Dictionary<string, object?>? affinities = null)
         {
+            affinities ??= new Dictionary<string, object?>();
             _affinityUtcNow = affinityUtcNow;
+            if (affinities.Count == 0)
+            {
+                UtcStart = affinityUtcNow;
+            }
         }
+        /// <summary>
+        /// Local copy for internals to build against and that detects initial or non-affinity states.
+        /// </summary>
         private DateTimeOffset? _affinityUtcNow;
 
         public long Position
@@ -45,7 +53,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         {
             get
             {
-                if(TryGetSafePath(_path, Id, out var safePath))
+                if (TryGetSafePath(_path, Id, out var safePath))
                 {
                     _path = safePath;
                 }
@@ -73,6 +81,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             }
         }
         string _path = string.Empty;
+
+        public bool IsRoot => string.Equals(Path, Id, StringComparison.OrdinalIgnoreCase);
 
         private static bool TryGetSafePath(string path, string id, out string safePath)
         {
@@ -107,7 +117,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             return true;
         }
 
-
         public DateTimeOffset? UtcStart
         {
             get => _utcStart;
@@ -122,7 +131,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         DateTimeOffset? _utcStart = default;
 
-        
+        /// <summary>
+        /// Authoritative duration commitment for the item.
+        /// </summary>
+        /// <remarks>
+        /// - Duration and Remaaining are unlike other temporal fields; they do not 
+        ///   yield, reset, or null in response to affinity mode itself becoming null.
+        /// - This way, should the item come back into the temporal field domain it
+        ///   will find the promise - and any partial delivery - intact.
+        /// - Setting Duration resets Remaining to maintain internal consistency.
+        /// </remarks>
         public TimeSpan Duration
         {
             get => _duration;
@@ -145,7 +163,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             get => _remaining;
             set
             {
-                if(value is { } remaining && remaining < TimeSpan.Zero)
+                if (value is { } remaining && remaining < TimeSpan.Zero)
                 {
                     value = TimeSpan.Zero;
                 }
@@ -224,22 +242,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         {
             get
             {
-                if (_utcStart is null)
+                if (AffinityMode is null
+                    || _utcStart is null)
                 {
                     return null;
                 }
                 else
                 {
-                    switch (AffinityMode)
-                    {
-                        case null:
-                            break;
-                        case SQLiteMarkdown.AffinityMode.FixedDateAndTime:
-                            break;
-                        case SQLiteMarkdown.AffinityMode.Asap:
-                            break;
-                    }
-                    throw new NotImplementedException("ToDo");
+                    return UtcStart + Duration;
                 }
             }
         }
@@ -249,7 +259,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         {
             get =>
                 _affinityUtcNow is null
-                ? null 
+                ? null
                 : _isDone;
             set
             {
