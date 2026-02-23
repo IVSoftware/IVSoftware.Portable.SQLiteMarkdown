@@ -13,6 +13,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         public void Test_TestableEpoch()
         {
             string actual, expected;
+            DateTimeOffset utcTest = AffinityTestableEpoch.UtcReset;
 
             using var local = this.TestableEpoch();
 
@@ -25,7 +26,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 "Expecting id initialized to first.");
 
             Assert.AreEqual(
-                AffinityTestableEpoch.UtcReset,
+                utcTest,
                 item.Created,
                 "Expecting epoch initialized to first.");
 
@@ -38,9 +39,45 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
   ""Position"": 630822888000000000,
   ""Path"": """",
-  ""UtcStart"": ""2000-01-01T09:00:00+07:00"",
-  ""Duration"": null,
-  ""Remaining"": null,
+  ""UtcStart"": null,
+  ""Duration"": ""00:00:00"",
+  ""Remaining"": ""00:00:00"",
+  ""AffinityMode"": null,
+  ""AffinityParent"": """",
+  ""AffinityChildMode"": null,
+  ""Slots"": [],
+  ""AffinityTimeDomain"": null,
+  ""UtcEnd"": null,
+  ""IsDone"": null,
+  ""IsDonePendingConfirmation"": null,
+  ""IsPastDue"": null,
+  ""Available"": null,
+  ""Created"": ""2000-01-01T09:00:00+07:00"",
+  ""CustomProperties"": {},
+  ""ChainOfCustodyJSON"": ""[]"",
+  ""Id"": ""312d1c21-0000-0000-0000-000000000000"",
+  ""Description"": ""New Item"",
+  ""Keywords"": ""[]"",
+  ""KeywordsDisplay"": """",
+  ""Tags"": """",
+  ""IsChecked"": false,
+  ""Selection"": 0,
+  ""IsEditing"": false,
+  ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000000"",
+  ""QueryTerm"": ""new~item"",
+  ""FilterTerm"": ""new~item"",
+  ""TagMatchTerm"": """",
+  ""Properties"": ""{}""
+}"
+            ;
+
+            expected = @" 
+{
+  ""Position"": 630822888000000000,
+  ""Path"": """",
+  ""UtcStart"": null,
+  ""Duration"": ""00:00:00"",
+  ""Remaining"": ""00:00:00"",
   ""AffinityMode"": null,
   ""UtcEnd"": null,
   ""IsDone"": false,
@@ -66,7 +103,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
   ""FilterTerm"": ""new~item"",
   ""TagMatchTerm"": """",
   ""Properties"": ""{}""
-}";
+}"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),

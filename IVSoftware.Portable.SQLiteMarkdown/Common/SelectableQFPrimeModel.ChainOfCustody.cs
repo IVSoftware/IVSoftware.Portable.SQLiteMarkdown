@@ -18,8 +18,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     {
         public DateTimeOffset Created { get; } = DateTimeOffset.UtcNow.WithTestability();
 
-        public IDictionary<string, string?> CustomProperties { get; protected set; } = new Dictionary<string, string?>();
-
 
         [SQLite.Column("ChainOfCustody"), JsonProperty]
         public string ChainOfCustodyJSON 
@@ -49,5 +47,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         public Task<ChainOfCustodyToken> CommitRemoteReceipt(string identity, DateTimeOffset remoteTimeStamp) =>
             ((IChainOfCustody)ChainOfCustody).CommitRemoteReceipt(identity, remoteTimeStamp);
+
+        IDictionary<string, string> ICustomProperties.Properties => throw new NotImplementedException();
     }
 }

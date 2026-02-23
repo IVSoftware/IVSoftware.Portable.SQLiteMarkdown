@@ -2641,6 +2641,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%Tom ""safe inner"" Tester%')"
                         var json = SQLitePCL.raw.sqlite3_value_text(args[0]).utf8_to_string();
                         var key = SQLitePCL.raw.sqlite3_value_text(args[1]).utf8_to_string();
 
+
                         string? value = null;
                         try
                         {
@@ -2664,6 +2665,8 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%Tom ""safe inner"" Tester%')"
 Select *
 From items 
 Where PropertyValue({nameof(SelectableQFModelTOQO.Properties)}, '{nameof(SelectableQFModelTOQO.Description)}') LIKE '%brown dog%'");
+
+                Assert.AreEqual(1, recordset.Count, "Expecting successful query using custom function.");
                 { }
             }
         }

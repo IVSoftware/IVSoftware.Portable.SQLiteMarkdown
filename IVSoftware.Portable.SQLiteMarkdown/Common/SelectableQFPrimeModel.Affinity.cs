@@ -1,11 +1,21 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
+using SQLite;
 using System;
 using System.Collections.Generic;
+using EphemeralAttribute = SQLite.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
     partial class SelectableQFAffinityModel : IAffinityItem
     {
+        public void UpdateUtc(
+            DateTimeOffset? affinityUtcNow,
+            Dictionary<string, DateTimeOffset> affinities)
+        {
+            _affinityUtcNow = affinityUtcNow;
+        }
+        private DateTimeOffset? _affinityUtcNow;
+
         public long Position
         {
             get
@@ -54,14 +64,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         public DateTimeOffset? UtcStart
         {
-            get
-            {
-                if (_utcStart is null)
-                {
-                    _utcStart = Created;
-                }
-                return _utcStart;
-            }
+            get => _utcStart;
             set
             {
                 if (!Equals(_utcStart, value))
@@ -73,7 +76,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         DateTimeOffset? _utcStart = default;
 
-        public TimeSpan? Duration
+        
+        public TimeSpan Duration
         {
             get => _duration;
             set
@@ -87,10 +91,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 }
             }
         }
-        TimeSpan? _duration = default;
+        TimeSpan _duration = default;
 
 
-        public TimeSpan? Remaining
+        public TimeSpan Remaining
         {
             get => _remaining;
             set
@@ -106,7 +110,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 }
             }
         }
-        TimeSpan? _remaining = default;
+        TimeSpan _remaining = default;
 
 
         public AffinityMode? AffinityMode
@@ -131,54 +135,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             }
         }
         AffinityMode? _utcEpochMode = default;
-
-
-        public DateTimeOffset? UtcEnd
-        {
-            get
-            {
-                switch (AffinityMode)
-                {
-                    case null:
-                        break;
-                    case SQLiteMarkdown.AffinityMode.FixedDateAndTime:
-                        break;
-                    case SQLiteMarkdown.AffinityMode.Asap:
-                        break;
-                }
-                return null;
-            }
-        }
-
-        public bool? IsDone
-        {
-            get => _isDone && Remaining?.Ticks == 0;
-            set
-            {
-                if (!Equals(_isDone, value))
-                {
-                    _isDone = value == true;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        bool _isDone = false;
-
-        public bool? IsPastDue => null;
-
-        public TimeSpan? Available
-        {
-            get => _Name;
-            set
-            {
-                if (!Equals(_Name, value))
-                {
-                    _Name = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        TimeSpan? _Name = default;
 
 
         public string? AffinityParent
@@ -209,17 +165,89 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         ChildAffinityMode? _utcChildMode = default;
 
+        public List<AffinitySlot> Slots { get; } = new List<AffinitySlot>();
+
+        #region A F F I N I T Y    E P H E M E R A L
+        [Ephemeral]
         public AffinityTimeDomain? AffinityTimeDomain => null;
 
-
-        public void UpdateUtc(
-            DateTimeOffset? affinityUtcNow,
-            Dictionary<string, DateTimeOffset> affinities)
+        [Ephemeral]
+        public DateTimeOffset? UtcEnd
         {
-            _affinityUtcNow = affinityUtcNow;
+            get
+            {
+                if (_utcStart is null)
+                {
+                    return null;
+                }
+                else
+                {
+                    switch (AffinityMode)
+                    {
+                        case null:
+                            break;
+                        case SQLiteMarkdown.AffinityMode.FixedDateAndTime:
+                            break;
+                        case SQLiteMarkdown.AffinityMode.Asap:
+                            break;
+                    }
+                    throw new NotImplementedException("ToDo");
+                }
+            }
         }
-        private DateTimeOffset? _affinityUtcNow;
 
-        public List<AffinitySlot> Slots { get; } = new List<AffinitySlot>();
+        [Ephemeral]
+        public bool? IsDone
+        {
+            get =>
+                _affinityUtcNow is null
+                ? null 
+                : _isDone;
+            set
+            {
+                if (!Equals(_isDone, value))
+                {
+                    _isDone = value == true;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        bool _isDone = false;
+
+
+        [Ephemeral]
+        public bool? IsDonePendingConfirmation =>
+            IsDone switch
+            {
+                // Not officially IsDone, but the time has ticked down to zero.
+                false => Remaining == TimeSpan.Zero,
+
+                // Affirmatively IsDone (this affirmatively *also* sets remaining to zero.
+                true => false,
+
+                // IsDone is presumed null and so is this.
+                _ => null,
+            };
+
+
+        [Ephemeral]
+        public bool? IsPastDue => null;
+
+        [Ephemeral]
+        public TimeSpan? Available
+        {
+            get => _available;
+            set
+            {
+                if (!Equals(_available, value))
+                {
+                    _available = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        TimeSpan? _available = default;
+
+        #endregion A F F I N I T Y    E P H E M E R A L
     }
 }

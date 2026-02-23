@@ -118,6 +118,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         private string ensure(ref string indexedProperty)
         {
             if (_isIndexingRequired)
+            if (_isIndexingRequired)
+
             {
                 internalExecuteIndexing();
             }
@@ -125,7 +127,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
 
-        // This 'is' a SQLiteColumn.
+#if ABSTRACT
+var recordset = cnx.Query<SelfIndexing>($@"
+Select *
+From items 
+Where PropertyValue({nameof(SelfIndexing.Properties)}, '{nameof(SelectableQFModelTOQO.Description)}') LIKE '%brown dog%'");
+#endif
+        /// <summary>
+        /// SQLite Column that encapsulates user-defined custom values that can be queried.
+        /// </summary>
         public string Properties
         {
             get
@@ -134,7 +144,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             set
             {
-                internalProperties = JsonConvert.DeserializeObject<Dictionary<string, object>>(value);
+                if (value is null)
+                {
+                    internalProperties.Clear();
+                }
+                else
+                {
+                    internalProperties = JsonConvert.DeserializeObject<Dictionary<string, object>>(value)!;
+                }
             }
         }
 
@@ -151,7 +168,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             set => _internalProperties = value;
         }
-        Dictionary<string, object> _internalProperties = null;
+        Dictionary<string, object>? _internalProperties = null;
 
         bool _isIndexingRequired = true;
 #if false
@@ -202,7 +219,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private void internalExecuteIndexing()
         {

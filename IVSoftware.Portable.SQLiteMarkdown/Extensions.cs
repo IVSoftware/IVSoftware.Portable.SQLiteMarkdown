@@ -1,14 +1,19 @@
 ﻿using IVSoftware.Portable;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SQLite;
+using SQLitePCL;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
@@ -42,7 +47,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public static partial class Extensions
     {
         #region V E R S I O N    1 . 0
-
         public static string ParseSqlMarkdown<T>(
             this string @this,
             byte minInputLength,
@@ -416,5 +420,53 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             => !string.IsNullOrWhiteSpace(tableName = @this.GetCustomAttribute<TableAttribute>(
                 inherit: false // CRITICAL! Does not produce an accurate result otherwise.
         )?.Name!);
+
+#if ABSTRACT
+var recordset = cnx.Query<SelectableQFModelTOQO>($@"
+Select *
+From items 
+Where PropertyValue({nameof(SelectableQFModelTOQO.Properties)}, '{nameof(SelectableQFModelTOQO.Description)}') LIKE '%brown dog%'");
+#endif
+        /// <summary>
+        /// Ensures SQLitePCL provider initialization and registers the PropertyValue function
+        /// on this connection.
+        /// </summary>
+        public static SQLiteConnection WithDictionaryQuery(this SQLiteConnection cnx)
+        {
+            if (Interlocked.Exchange(ref _providerInitialized, 1) == 0)
+            {
+                lock (_sync)
+                {
+                    raw.SetProvider(new SQLite3Provider_e_sqlite3());
+                    Batteries.Init();
+                    Batteries_V2.Init();
+                }
+            }
+
+            SQLitePCL.raw.sqlite3_create_function(
+                cnx.Handle,
+                "PropertyValue",
+                2,
+                1,
+                null,
+                (ctx, user_data, args) =>
+                {
+                    var json = SQLitePCL.raw.sqlite3_value_text(args[0]).utf8_to_string();
+                    var key = SQLitePCL.raw.sqlite3_value_text(args[1]).utf8_to_string();
+
+                    // O U T
+                    string? value = null;
+
+                    (JsonConvert.DeserializeObject<Dictionary<string, string>>(json) as IDictionary<string, string>)
+                    ?.TryGetValue (key, out value);
+
+                    SQLitePCL.raw.sqlite3_result_text(ctx, value ?? string.Empty);
+                }
+            );
+            return cnx;
+        }
+
+        private static int _providerInitialized;
+        private static readonly object _sync = new();
     }
 }

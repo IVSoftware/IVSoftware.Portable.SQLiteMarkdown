@@ -229,7 +229,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </summary>
     public interface ICustomProperties
     {
-        IDictionary<string, string?> CustomProperties { get; }
+        IDictionary<string, string> Properties { get; }
     }
 
     /// <summary>
@@ -515,7 +515,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// indicating that the commitment can no longer be satisfied
         /// within the current window.
         /// </remarks>
-        TimeSpan? Duration { get; set; }
+        TimeSpan Duration { get; set; }
 
         /// <summary>
         /// Represents the remaining balance due on this commitment.
@@ -528,7 +528,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// If Remaining exceeds Available time within a fixed epoch,
         /// the item is effectively past due.
         /// </remarks>
-        TimeSpan? Remaining { get; set; }
+        TimeSpan Remaining { get; set; }
 
         /// <summary>
         /// Unlike Duration (the commitment) and Remaining (the balance due),
@@ -556,9 +556,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         DateTimeOffset? UtcEnd { get; }
 
         /// <summary>
-        /// Derived mode when UtcStart and/or Duration are not null.
+        /// Affinity behavior
         /// </summary>
-        AffinityMode? AffinityMode { get; }
+        AffinityMode? AffinityMode { get; set; }
 
         /// <summary>
         /// Reference PK for AffinityMode.Before and AffinityMode.After
