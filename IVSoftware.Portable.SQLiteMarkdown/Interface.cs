@@ -380,7 +380,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// Strategy options for Fixed + Duration field that creates scarcity by Not running.
     /// </summary>
     /// <remarks>
-    /// Mental Model: "There is less time than we planned to complete the promised deliverable."
+    /// Mental Model:
+    /// "There is less time than we planned to complete the promised deliverable."
     /// 
     /// - Items that are ChildAffinityMode.Below can feel the squeeze when AffinityParent has Duration.
     /// - When IsRunning (or "Play" in the UI) is active, it signals that everything is proceeding
@@ -420,17 +421,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Strategy options for fixed epochs that overlap.
     /// </summary>
+    /// <remarks>
+    /// Mental Model: 
+    /// - Here, the PastDue flag is interpreted more broadly.
+    /// - "This item, as it stands, is simply not going to get done."
+    /// - Typically, a UI will "indicate red: for this collectin item.
+    /// </remarks>
     public enum OverlapTimeMode
     {
         /// <summary>
         /// Displaced older items are marked PastDue as remaining time shrinks.
         /// </summary>
+        /// <remarks>
         /// Mental Model: 
-        /// - Here, the PastDue flag is interpreted more broadly
-        ///   as "This item, as it stands, is not going to get done."
+        /// "We simply must move onto B, leaving A in its present state of (e.g., partial) completion."
         /// </remarks>
         FutureDisplacesPast,
 
+        /// <summary>
+        /// Displaced newer items are marked PastDue as remaining time shrinks.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: 
+        /// "We simply cannot move onto B without first completing A."
+        /// </remarks>
         PastDisplacesFuture,
     }
 
