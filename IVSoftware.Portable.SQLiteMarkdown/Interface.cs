@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Disposable;
+﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
@@ -90,6 +91,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         event EventHandler? InputTextSettled;
 
         event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
+
+
+        /// <summary>
+        /// Sets the authoritative recordset used to establish or refresh the filtering universe.
+        /// </summary>
+        /// <remarks>
+        /// This property is set-only and does not imply ownership or long-term storage.
+        /// 
+        /// In <see cref="QueryFilterConfig.QueryAndFilter"/>, a committed query result
+        /// is assigned here to declare the canonical population and arm filter behavior.
+        /// 
+        /// In <see cref="QueryFilterConfig.Filter"/>, the host supplies the
+        /// authoritative population explicitly, avoiding ambiguity about source of truth.
+        /// 
+        /// The assigned recordset defines the universe within which subsequent
+        /// settled input refinements operate.
+        /// </remarks>
+        [Probationary]
+        IList Recordset { set; }
     }
     public interface IObservableQueryFilterSource<T>
         : IObservableQueryFilterSource

@@ -34,7 +34,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Advisory,
     }
 
-    partial class MarkdownContext
+    partial class MarkdownContext : IMarkdownContext
     {
         /// <summary>
         /// Gets the contract type associated with this context.
@@ -113,7 +113,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             get
             {
-                if(string.IsNullOrWhiteSpace(_tableName))
+                if (string.IsNullOrWhiteSpace(_tableName))
                 {
                     this.ThrowFramework<NullReferenceException>(
                         $"{nameof(TableAttribute)} is 'guaranteed by design' to never yield null. " +
@@ -190,11 +190,11 @@ Rationale     : The contract database must be held stable for this inheritance t
             void localWarnOnceForType(Action warn)
             {
                 bool allowWarn;
-                lock(_warnLock)
+                lock (_warnLock)
                 {
                     allowWarn = _warnedOnType.Add(type);
                 }
-                if(allowWarn)
+                if (allowWarn)
                 {
                     warn();
                 }

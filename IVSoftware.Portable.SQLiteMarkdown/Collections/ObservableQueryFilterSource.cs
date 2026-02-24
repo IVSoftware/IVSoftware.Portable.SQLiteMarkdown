@@ -95,6 +95,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public IReadOnlyList<T> UnfilteredItems => _unfilteredItems;
 
+        public virtual IList Recordset { set { } }
+
         /// <summary>
         /// Replaces the entire current dataset after a query.
         /// Not valid in Filter-only mode. Raises CollectionChanged and sets FilteringState based on count.
