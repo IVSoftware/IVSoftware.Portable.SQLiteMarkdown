@@ -470,6 +470,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             DateTimeOffset? affinityUtcNow,
             Dictionary<AffinityRole, object?>? affinities = null);
 
+        bool IsTimeDomainEnabled { get; }
+
         /// <summary>
         /// Globally unique identifier.
         /// </summary>

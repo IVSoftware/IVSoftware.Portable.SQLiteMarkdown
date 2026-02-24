@@ -52,7 +52,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 }
             }
         }
-        protected DateTimeOffset? _affinityUtcNow = default;
+        private DateTimeOffset? _affinityUtcNow = default;
 
         public long Position
         {
@@ -110,8 +110,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             }
         }
         string _path = string.Empty;
-
-        public bool IsRoot => string.Equals(Path, Id, StringComparison.OrdinalIgnoreCase);
 
         private static bool TryGetSafePath(string path, string id, out string safePath)
         {
@@ -250,7 +248,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         ChildAffinityMode? _utcChildMode = default;
 
-
         IList<AffinitySlot> IAffinityItem.Slots => Slots;
         public List<AffinitySlot> Slots { get; } = new List<AffinitySlot>();
 
@@ -259,18 +256,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         public AffinityTimeDomain? AffinityTimeDomain => null;
 
         [Ephemeral]
+        public bool IsRoot => string.Equals(Path, Id, StringComparison.OrdinalIgnoreCase); 
+        
+        [Ephemeral]
+        public bool IsTimeDomainEnabled => !(_affinityUtcNow is null || AffinityMode is null);
+
+        [Ephemeral]
         public DateTimeOffset? UtcEnd
         {
             get
             {
-                if (AffinityMode is null
-                    || _utcStart is null)
+                if (IsTimeDomainEnabled)
                 {
-                    return null;
+                    return UtcStart + Duration;
                 }
                 else
                 {
-                    return UtcStart + Duration;
+                    return null;
                 }
             }
         }
@@ -278,10 +280,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         [Ephemeral]
         public bool? IsDone
         {
-            get =>
-                _affinityUtcNow is null
-                ? null
-                : _isDone;
+            get
+            {
+                if (IsTimeDomainEnabled)
+                {
+                    return _isDone;
+                }
+                else
+                {
+                    return null;
+                }
+            }
             set
             {
                 if (!Equals(_isDone, value))
@@ -291,7 +300,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 }
             }
         }
-        bool _isDone = false;
+        bool? _isDone = false;
 
         [Ephemeral]
         public bool? IsDonePendingConfirmation =>
@@ -331,6 +340,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             base.OnPropertyChanged(propertyName);
+            switch (propertyName)
+            {
+                case nameof(AffinityMode):
+                    UpdateAffinityUtcNow();
+                    break;
+            }
         }
     }
 }

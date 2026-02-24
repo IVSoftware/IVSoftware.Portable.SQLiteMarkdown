@@ -35,12 +35,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             actual = JsonConvert.SerializeObject(item, Formatting.Indented);
             actual.ToClipboardExpected();
-
+            { }
             expected = @" 
 {
   ""Position"": 630822888000000000,
   ""Path"": ""312d1c21-0000-0000-0000-000000000000"",
-  ""IsRoot"": true,
   ""UtcStart"": null,
   ""Duration"": ""00:00:00"",
   ""Remaining"": ""00:00:00"",
@@ -49,6 +48,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
   ""AffinityChildMode"": null,
   ""Slots"": [],
   ""AffinityTimeDomain"": null,
+  ""IsRoot"": true,
+  ""IsTimeDomainEnabled"": false,
   ""UtcEnd"": null,
   ""IsDone"": null,
   ""IsDonePendingConfirmation"": null,
@@ -79,16 +80,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 "Expecting json serialization to match."
             );
             item.UpdateAffinityUtcNow(utcTest);
-
-
             actual = JsonConvert.SerializeObject(item, Formatting.Indented);
-            actual.ToClipboardExpected();
-            { }
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting json serialization to match."
+                "Expecting NO CHANGE."
             );
         }
     }
