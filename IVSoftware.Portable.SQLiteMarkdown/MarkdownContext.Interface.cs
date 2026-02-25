@@ -83,7 +83,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             protected get => _recordset;
             set
             {
-                _recordset = value?.OfType<object>().ToList() ?? [];
+                _recordset.Clear();
+                if(value is not null)
+                {
+                    foreach (var item in value)
+                    {
+                        _recordset.Add(item);
+                    }
+                }
                 OnRecordsetChanged();
             }
         }

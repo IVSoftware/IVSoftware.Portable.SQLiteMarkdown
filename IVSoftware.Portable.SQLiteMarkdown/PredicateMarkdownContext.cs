@@ -7,7 +7,7 @@ using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public class PredicateMarkdownContext 
+    public abstract class PredicateMarkdownContext 
         : MarkdownContext
         , IPredicateMarkdownContext
     {
@@ -34,8 +34,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return _dhostAtomic;
             }
         }
-
-        public IEnumerable Recordset { set => throw new NotImplementedException(); }
         public INotifyCollectionChanged ItemsSource { set => throw new NotImplementedException(); }
 
         private DisposableHost? _dhostAtomic = null;
