@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Disposable;
+﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
@@ -133,10 +134,41 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         IsUnchecked,
     }
 
-    public interface IMarkdownContext
+    /// <summary>
+    /// MarkdownContext role for implementation by composition.
+    /// </summary>
+    /// <remarks>
+    /// Epistemically:
+    /// - State can be managed even though the 'query' database is unknown.
+    /// - Filtering, is different. Items of any type can be set as the canonical
+    ///   unfiltered source. Using markdown semantics, an internal sqlite database
+    ///   it typically wired to produce PKs that match the query (reusing the 
+    ///   actual references of the canonical list). When a filtered collection
+    ///   is modified by UI interaction, the canonical unfiltered items must track.
+    /// </remarks>
+    [Probationary("Maintain as Internal until stable.")]
+    internal interface IMarkdownContext
     {
         uint DefaultLimit { get; set; }
+
+        /// <summary>
+        /// Bindable property that notifies when the "net filtered" list
+        /// departs from sequence equals, based on primary keys.
+        /// </summary>
+        bool IsFiltering { get; }
+
+        /// <summary>
+        /// Nuanced state that takes InputText length into account.
+        /// </summary>
+        /// <remarks>
+        /// As a defining feature, the Clear method is a progressive state 
+        /// demotion. An actively filtering collection UI will take:
+        /// [X] to clear the filter term IME while armed for a new filter term.
+        /// [X] to return to query state, leaving the list items (if any) populated.
+        /// [X] to clear the visible list, ready for a new query.
+        /// </remarks>
         FilteringState FilteringState { get; }
+
         string InputText { get; set; }
         QueryFilterConfig QueryFilterConfig { get; set; }
         SearchEntryState SearchEntryState { get; }
@@ -147,16 +179,48 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast);
         string ParseSqlMarkdown<T>();
         string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query);
+
+        /// <summary>
+        /// Initializes the canonical unfiltered collection.
+        /// </summary>
+        /// <remarks>
+        /// This property is not intended for binding; this is enforced as set only 
+        /// and represents a stateful and semantically meaningful replacement.
+        /// </remarks>
+        IEnumerable Recordset { set; }
+
+        /// <summary>
+        /// Represents an observable collection representing 'net visible' filtered items.
+        /// </summary>
+        /// <remarks>
+        /// This property is not intended for binding; this is enforced as 
+        /// set only and will be detached if set to null..
+        /// </remarks>
+        INotifyCollectionChanged UIChangeSource { set; }
+
+        /// <summary>
+        /// Guards receptivity of the unfiltered items collection.
+        /// </summary>
+        IDisposable BeginUIAction();
+
+        int UnfilteredCount { get; }
     }
 
     /// <summary>
-    /// Represents property-based filter semantics that take precedence over Markdown-based query and filter results.
+    /// Extends MarkdownContext with a predicate AND clause that is property-based.
     /// </summary>
     /// <remarks>
-    /// Property-based predicates produce a trailing AND clause in the SQL in both query and filter modes.
-    /// EXAMPLE: 
+    /// Query and filter modes are equally affected.
+    /// EXAMPLE:
+    /// Activating this StdPredicate value will hide checked items in queries 
+    /// and filters, and checking the item in the UI will filter that item out.
+    /// <c>
+    /// [Where("IsChecked", WherePredicate.IsFalse)]
+    /// IsUnchecked,
+    /// </c>
     /// </remarks>
-    public interface IPropertyFilterSource
+    [Probationary("Maintain as Internal until stable.")]
+    internal interface IPredicateMarkdownContext
     {
         /// <summary>
         /// Obtain a token that suspends updates.
@@ -167,11 +231,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         IDisposable BeginFilterAtom();
 
-        /// <summary>
-        /// Guards receptivity of the unfiltered items collection.
-        /// </summary>
-        IDisposable BeginUIAction();
-
         IReadOnlyDictionary<string, Enum> ActiveFilters { get; }
 
         void ActivateFilters(Enum stdPredicate, params Enum[] more);
@@ -179,20 +238,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         void DeactivateFilters(Enum stdPredicate, params Enum[] more);
 
         void ClearFilters(bool clearInputText = true);
-
-        int UnfilteredCount { get; }
-
-        bool IsFiltering { get; }
-
-        /// <summary>
-        /// Initializes the canonical unfiltered collection.
-        /// </summary>
-        IEnumerable Recordset { set; }
-
-        /// <summary>
-        /// Represents an observable collection representing 'net visible' filtered items.
-        /// </summary>
-        INotifyCollectionChanged ItemsSource { set; }
     }
 
     /// <summary>
