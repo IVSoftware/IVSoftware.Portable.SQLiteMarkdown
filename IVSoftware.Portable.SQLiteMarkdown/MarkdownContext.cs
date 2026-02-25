@@ -1332,40 +1332,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Support for inheritance model for Collection.
         /// </summary>
-        /// <remarks>
-        /// - "The ephemeral backing store for this collection’s contract."
-        /// - Like any other SQLite database this can be configured with N tables.
-        ///   However, the semantic constraints on contract parsing (where ContractType 
-        ///   is assumed to be the item type of the collection that subclasses it) will
-        ///   provide an advisory stream should this be called upon to service more
-        ///   that the implicit single table for the collection.
-        /// </remarks>
-        protected SQLiteConnection FilterQueryDatabase
-        {
-            get
-            {
-                if (_filterQueryDatabase is null)
-                {
-                    _filterQueryDatabase = new SQLiteConnection(":memory:");
-                    _filterQueryDatabase.CreateTable(ContractType);
-                }
-                return _filterQueryDatabase;
-            }
-            set
-            {
-                if (!Equals(_filterQueryDatabase, value))
-                {
-                    _filterQueryDatabase = value;
-                    OnPropertyChanged();
-                    this.OnAwaited();
-                }
-            }
-        }
-        SQLiteConnection? _filterQueryDatabase = default;
-
-        /// <summary>
-        /// Support for inheritance model for Collection.
-        /// </summary>
         public SQLiteConnection? MemoryDatabase
         {
             get => _memoryDatabase;

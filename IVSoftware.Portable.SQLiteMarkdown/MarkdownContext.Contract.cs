@@ -102,6 +102,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
+                _ = TryCreateTableForContractType();
                 TableName = ResolveTableNameForPass(ContractType);
             }
         }

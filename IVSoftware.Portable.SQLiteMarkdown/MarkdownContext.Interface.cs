@@ -1,4 +1,8 @@
-﻿using System;
+﻿using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.Threading;
+using SQLite;
+using SQLitePCL;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -9,6 +13,71 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 {
     partial class MarkdownContext : IMarkdownContext
     {
+        /// <summary>
+        /// The ephemeral backing store for this collection's contract filtering.
+        /// </summary>
+        /// <remarks>
+        /// - Like any other SQLite database this can be configured with N tables.
+        ///   However, the semantic constraints on contract parsing (where ContractType 
+        ///   is assumed to be the item type of the collection that subclasses it) will
+        ///   provide an advisory stream should this be called upon to service more
+        ///   that the implicit single table for the collection.
+        /// </remarks>
+        protected SQLiteConnection FilterQueryDatabase
+        {
+            get
+            {
+                if (_filterQueryDatabase is null)
+                {
+                    _filterQueryDatabase = new SQLiteConnection(":memory:");
+                    _ = TryCreateTableForContractType();
+                }
+                return _filterQueryDatabase;
+            }
+            set
+            {
+                if (!Equals(_filterQueryDatabase, value))
+                {
+                    _filterQueryDatabase = value;
+                    if(_filterQueryDatabase is not null )
+                    {
+                        _ = TryCreateTableForContractType();
+                    }
+                    OnPropertyChanged();
+                    this.OnAwaited();
+                }
+            }
+        }
+
+        SQLiteConnection? _filterQueryDatabase = default;
+
+        private bool TryCreateTableForContractType()
+        {
+            if( _filterQueryDatabase is not null 
+                && ContractType?.GetConstructor(Type.EmptyTypes) is not null)
+            {
+                ContractTypeTableMapping = _filterQueryDatabase.GetMapping(ContractType);
+                _filterQueryDatabase.CreateTable(ContractType);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public TableMapping ContractTypeTableMapping
+        {
+            get => _contractTypeTableMapping;
+            set
+            {
+                if (!Equals(_contractTypeTableMapping, value))
+                {
+                    _contractTypeTableMapping = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        TableMapping _contractTypeTableMapping = default;
         public IEnumerable Recordset
         {
             protected get => _recordset;
@@ -45,14 +114,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     if (_observableProjection is not null)
                     {
-                        _observableProjection.CollectionChanged -= OnCollectionPresentationChanged;
+                        _observableProjection.CollectionChanged -= OnObservableProjectionCollectionChanged;
                     }
 
                     _observableProjection = value;
 
                     if (_observableProjection is not null)
                     {
-                        _observableProjection.CollectionChanged += OnCollectionPresentationChanged;
+                        _observableProjection.CollectionChanged += OnObservableProjectionCollectionChanged;
                     }
                 }
             }
@@ -60,16 +129,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         INotifyCollectionChanged? _observableProjection = null;
 
-        protected virtual void OnCollectionPresentationChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected virtual void OnObservableProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             throw new NotImplementedException();
         }
 
-        public int UnfilteredCount => _recordset?.Count ?? 0;
+        public int UnfilteredCount => _recordset.Count;
 
-        public IDisposable BeginUIAction()
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// UI changes for tracking must be wrapped in using block in order to be tracked.
+        /// </summary>
+        /// <remarks>
+        /// Even though we do not act on this collection directly, this circularity guard
+        /// prevents this object from reacting to its own pushed filter states.
+        /// </remarks>
+        public IDisposable BeginUIAction() => _dhostUIAction.GetToken();
+        private readonly DisposableHost _dhostUIAction = new();
     }
 }
