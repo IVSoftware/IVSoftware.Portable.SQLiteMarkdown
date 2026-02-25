@@ -90,7 +90,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         IList _recordset = new List<object>();
         protected virtual void OnRecordsetChanged()
         {
-            throw new NotImplementedException();
+            switch (_recordset.Count)
+            {
+                case 0:
+                    SearchEntryState = SearchEntryState.QueryCompleteNoResults;
+                    FilteringState = FilteringState.Ineligible;
+                    break;
+                case 1:
+                    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                    FilteringState = FilteringState.Ineligible;
+                    break;
+                default:
+                    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                    FilteringState = FilteringState.Armed;
+                    break;
+            }
         }
 
         /// <summary>

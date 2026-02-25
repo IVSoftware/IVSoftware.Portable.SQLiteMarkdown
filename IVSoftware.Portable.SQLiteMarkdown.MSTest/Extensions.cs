@@ -79,7 +79,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 #endif
             @this.InsertAll(list);
         }
-        public static List<T> Populate<T>(this List<T>? @this, bool includeLiveDemo = false)
+        public static IList<T> Populate<T>(this IList<T>? @this, bool includeLiveDemo = false)
             where T : new()
         {
             if (@this is null)
