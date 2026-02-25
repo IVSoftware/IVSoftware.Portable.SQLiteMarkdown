@@ -140,7 +140,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <remarks>
     /// Epistemically:
     /// - State can be managed even though the 'query' database is unknown.
-    /// - Filtering, is different. Items of any type can be set as the canonical
+    /// - Filtering is different. Items of any type can be set as the canonical
     ///   unfiltered source. Using markdown semantics, an internal sqlite database
     ///   it typically wired to produce PKs that match the query (reusing the 
     ///   actual references of the canonical list). When a filtered collection
@@ -222,24 +222,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </c>
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
-    internal interface IPredicateMarkdownContext
+    internal interface IPredicateMarkdownContext : IMarkdownContext
     {
         /// <summary>
         /// Obtain a token that suspends updates.
         /// </summary>
         /// <remarks>
-        /// Avoids intermediate transitions when multiple filters change state 
+        /// Avoids intermediate transitions when multiple predicates change state 
         /// simultaneously (e.g., ShowChecked v ShowUnchecked radio buttons).
         /// </remarks>
-        IDisposable BeginFilterAtom();
+        IDisposable BeginPredicateAtom();
 
         IReadOnlyDictionary<string, Enum> ActiveFilters { get; }
 
-        void ActivateFilters(Enum stdPredicate, params Enum[] more);
+        void ActivatePredicates(Enum stdPredicate, params Enum[] more);
 
-        void DeactivateFilters(Enum stdPredicate, params Enum[] more);
+        void DeactivatePredicates(Enum stdPredicate, params Enum[] more);
 
-        void ClearFilters(bool clearInputText = true);
+        void ClearPredicates(bool clearInputText = true);
     }
 
     /// <summary>

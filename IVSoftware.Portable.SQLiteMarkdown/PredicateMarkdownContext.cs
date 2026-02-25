@@ -7,11 +7,11 @@ using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public class FilteredMarkdownContext 
+    public class PredicateMarkdownContext 
         : MarkdownContext
-        , IPropertyFilterSource
+        , IPredicateMarkdownContext
     {
-        public FilteredMarkdownContext(Type type) : base(type) { }
+        public PredicateMarkdownContext(Type type) : base(type) { }
 
         public IReadOnlyDictionary<string, Enum> ActiveFilters => throw new NotImplementedException();
 
