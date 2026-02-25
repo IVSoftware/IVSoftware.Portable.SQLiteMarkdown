@@ -7,20 +7,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 public class TestClass_FilteredMarkdownContext
 {
     [TestMethod]
-    public void Test_FMDCFSOL()
+    public void Test_PMDCFSOL()
     {
         var opc = new ObservableCollection<AffinityQFModel>();
         Assert.AreEqual(31, opc.Populate().Count, "Expecting initial population.");
 
-        var fmdc = new FilteredMarkdownContext<int>
+        var pmdc = new PredicateMarkdownContext<int>
         {
             QueryFilterConfig = QueryFilterConfig.Filter,
             ObservableProjection = opc,
         };
-        fmdc.Recordset = opc;
+        pmdc.Recordset = opc;
 
-        Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, fmdc.SearchEntryState);
-        Assert.AreEqual(FilteringState.Armed, fmdc.FilteringState);
+        Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, pmdc.SearchEntryState);
+        Assert.AreEqual(FilteringState.Armed, pmdc.FilteringState);
         { }
     }
 }

@@ -76,9 +76,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             throw new NotImplementedException();
         }
     }
-    public class FilteredMarkdownContext<T> 
+    public class PredicateMarkdownContext<T> 
         : MarkdownContext
     {
-        public FilteredMarkdownContext() : base(typeof(T)) { }
+        public PredicateMarkdownContext() : base(typeof(T)) { }
     }
 }
