@@ -198,7 +198,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// This property is not intended for binding; this is enforced as 
         /// set only and will be detached if set to null..
         /// </remarks>
-        INotifyCollectionChanged UIChangeSource { set; }
+        INotifyCollectionChanged ObservableProjection { set; }
 
         /// <summary>
         /// Guards receptivity of the unfiltered items collection.

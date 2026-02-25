@@ -55,6 +55,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             throw new NotImplementedException();
         }
+
+        public IDisposable BeginPredicateAtom()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ActivatePredicates(Enum stdPredicate, params Enum[] more)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DeactivatePredicates(Enum stdPredicate, params Enum[] more)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ClearPredicates(bool clearInputText = true)
+        {
+            throw new NotImplementedException();
+        }
     }
     public class FilteredMarkdownContext<T> 
         : MarkdownContext

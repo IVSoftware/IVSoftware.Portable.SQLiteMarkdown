@@ -31,7 +31,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     [DebuggerDisplay("ContractType={ContractType} ProxyType={ProxyType}")]
     public partial class MarkdownContext
         : WatchdogTimer
-        , IMarkdownContext
         , INotifyPropertyChanged
     {
         /// <summary>
