@@ -1412,6 +1412,8 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
         {
             var id1 = Thread.CurrentThread.ManagedThreadId;
 
+            var builder = new List<string>();
+
             string actual, expected, sql;
             NotifyCollectionChangedEventArgs ecc;
             PropertyChangedEventArgs epc;
@@ -1445,6 +1447,12 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
 
                 items.PropertyChanged += (sender, e) =>
                 {
+                    switch (e.PropertyName)
+                    {
+                        case nameof(SearchEntryState):
+                            builder.Add($"{e.PropertyName}='{items.SearchEntryState}'");
+                            break;
+                    }
                     eventQueue.Enqueue((sender, e));
                 };
                 using (var cnx = InitializeInMemoryDatabase())
@@ -1640,7 +1648,10 @@ Running";
                             items.SearchEntryState,
                             "Expecting specific state UNCHANGED."
                         );
+
+                        // S T I M
                         // Based on UI interaction like return key pressed
+                        builder.Clear();
                         sql = items.InputText.ParseSqlMarkdown<T>();
                         recordset = cnx.Query<T>(sql);
                         await items.ReplaceItemsAsync(recordset);
@@ -1691,20 +1702,34 @@ Busy"
                         Assert.AreEqual(
                             expected.NormalizeResult(),
                             actual.NormalizeResult(),
-                            "Expecting specific property changes."
+                            "Expecting specific PROPERTY CHANGES."
                         );
                         eventQueue.Clear();
 
                         Assert.AreEqual(
                             SearchEntryState.QueryCompleteWithResults,
                             items.SearchEntryState,
-                            "Expecting notified entry state change."
+                            "Expecting notified entry SEARCH STATE CHANGE."
                         );
 
                         Assert.AreEqual(
                             FilteringState.Armed,
                             items.FilteringState,
-                            "Expecting notified entry state change."
+                            "Expecting notified entry FILTER STATE CHANGE."
+                        );
+
+
+                        actual = string.Join(Environment.NewLine, builder);
+                        actual.ToClipboardExpected();
+                        { }
+                        expected = @" 
+SearchEntryState='Cleared'
+SearchEntryState='QueryCompleteWithResults'";
+
+                        Assert.AreEqual(
+                            expected.NormalizeResult(),
+                            actual.NormalizeResult(),
+                            "Expecting TWO INPCs for SearchEntryState because the Replace makes a Clear before Repopulating."
                         );
 
                         items.Clear();
