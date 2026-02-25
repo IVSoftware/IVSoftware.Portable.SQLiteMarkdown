@@ -142,11 +142,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public interface IPropertyFilterSource
     {
         /// <summary>
-        /// Suspends updates. This can be useful when multiple filters change 
-        /// state simultaneously (e.g., ShowChecked v ShowUnchecked radio buttons
-        /// which would otherwise transition through a ShowAll update.
+        /// Obtain a token that suspends updates.
         /// </summary>
+        /// <remarks>
+        /// Avoids intermediate transitions when multiple filters change state 
+        /// simultaneously (e.g., ShowChecked v ShowUnchecked radio buttons).
+        /// </remarks>
         IDisposable BeginFilterAtom();
+
+        /// <summary>
+        /// Guards receptivity of the unfiltered items collection.
+        /// </summary>
+        IDisposable BeginUIAction();
 
         IReadOnlyDictionary<string, Enum> ActiveFilters { get; }
 
@@ -159,6 +166,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         int UnfilteredCount { get; }
 
         bool IsFiltering { get; }
+
+        /// <summary>
+        /// Initializes the canonical unfiltered collection.
+        /// </summary>
+        IEnumerable Recordset { set; }
+
+        /// <summary>
+        /// Represents an observable collection representing 'net visible' filtered items.
+        /// </summary>
+        INotifyCollectionChanged ItemsSource { set; }
     }
 
     /// <summary>

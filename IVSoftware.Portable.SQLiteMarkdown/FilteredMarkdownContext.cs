@@ -1,0 +1,64 @@
+﻿using IVSoftware.Portable.Disposable;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Text;
+
+namespace IVSoftware.Portable.SQLiteMarkdown
+{
+    public class FilteredMarkdownContext 
+        : MarkdownContext
+        , IPropertyFilterSource
+    {
+        public FilteredMarkdownContext(Type type) : base(type) { }
+
+        public IReadOnlyDictionary<string, Enum> ActiveFilters => throw new NotImplementedException();
+
+        public int UnfilteredCount => throw new NotImplementedException();
+
+        public void ActivateFilters(Enum stdPredicate, params Enum[] more)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IDisposable BeginFilterAtom() => DHostAtomic.GetToken();
+
+        protected DisposableHost DHostAtomic
+        {
+            get
+            {
+                if (_dhostAtomic is null)
+                {
+                    _dhostAtomic = new DisposableHost();
+                }
+                return _dhostAtomic;
+            }
+        }
+
+        public IEnumerable Recordset { set => throw new NotImplementedException(); }
+        public INotifyCollectionChanged ItemsSource { set => throw new NotImplementedException(); }
+
+        private DisposableHost? _dhostAtomic = null;
+
+        public void ClearFilters(bool clearInputText = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DeactivateFilters(Enum stdPredicate, params Enum[] more)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IDisposable BeginUIAction()
+        {
+            throw new NotImplementedException();
+        }
+    }
+    public class FilteredMarkdownContext<T> 
+        : MarkdownContext
+    {
+        public FilteredMarkdownContext() : base(typeof(T)) { }
+    }
+}
