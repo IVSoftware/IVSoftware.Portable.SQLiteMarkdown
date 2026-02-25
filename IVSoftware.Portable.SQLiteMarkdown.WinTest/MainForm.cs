@@ -48,7 +48,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                     }
                 };
                 qfs.MemoryDatabase = new SQLiteConnection(":memory:"); 
-                qfs.MemoryDatabase.PopulateDemoDatabase<SelectableQFModel>();
+                qfs.MemoryDatabase.PopulateDemoDatabase<SelectableQFModel>(includeLive: true);
                 qfs.PropertyChanged += (sender, e) =>
                 {
                     switch (e.PropertyName)
