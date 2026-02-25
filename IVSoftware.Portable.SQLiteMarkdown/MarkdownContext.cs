@@ -29,8 +29,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// and guiding final SQL generation via attribute-aware hydration.
     /// </summary>
     [DebuggerDisplay("ContractType={ContractType} ProxyType={ProxyType}")]
-    public partial class MarkdownContext 
+    public partial class MarkdownContext
         : WatchdogTimer
+        , IMarkdownContext
         , INotifyPropertyChanged
     {
         /// <summary>
@@ -56,7 +57,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
             => ParseSqlMarkdown(
-                expr, typeof(T), 
+                expr, typeof(T),
                 qfMode,
                 out XElement _);
 
@@ -76,8 +77,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public string ParseSqlMarkdown<T>()
             => ParseSqlMarkdown(
                 InputText,
-                typeof(T), 
-                IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query, 
+                typeof(T),
+                IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query,
                 out XElement _);
 
         /// <summary>
@@ -109,7 +110,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // Guard reentrancy by making sure to clear previous passes.
             XAST.RemoveNodes();
             _activeQFMode = qfMode;
-            if(ValidationPredicate?.Invoke(expr) == false)
+            if (ValidationPredicate?.Invoke(expr) == false)
             {
                 xast = XAST;
                 return string.Empty;
@@ -526,7 +527,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 bool localAppendChar(char newChar, char previewChar)
                 {
                     bool isLastChar;
-                    if(indexingMode == 0)
+                    if (indexingMode == 0)
                     {
                         isLastChar =
                             previewChar == '\0'
@@ -565,7 +566,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             {
                                 if (!rehydrated.Contains(','))
                                 {
-                                    switch(selfIndexingMode)
+                                    switch (selfIndexingMode)
                                     {
                                         case IndexingMode.QueryLikeTerm:
                                             _parsedIndexTerms[IndexingMode.QueryLikeTerm].Add(rehydrated);
@@ -1097,7 +1098,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     builder.Add(PrimaryKeyClause());
                 }
-                if(Limit > 0)
+                if (Limit > 0)
                 {
                     builder.Add($"LIMIT {Limit}");
                 }
@@ -1159,8 +1160,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             if (clauses.Count == 0)
                 return string.Empty;
 
-            return string.Join(" AND ", clauses); 
-            
+            return string.Join(" AND ", clauses);
+
             static string localFormatPrimaryKeyLiteral(object pk)
             {
                 return pk switch
@@ -1187,14 +1188,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public uint DefaultLimit { get; set; } = uint.MinValue;
 
         public uint Limit =>
-            _dhostLimit.Tokens.LastOrDefault()?.Sender is uint limit 
-            ? limit 
+            _dhostLimit.Tokens.LastOrDefault()?.Sender is uint limit
+            ? limit
             : DefaultLimit;
 
         private readonly DisposableHost _dhostLimit = new();
 
         public IDisposable BeginLimit(uint limit) => _dhostLimit.GetToken(sender: limit);
-        private string LimitTerm => Limit == uint.MaxValue ? string.Empty: $"LIMIT {Limit}";
+        private string LimitTerm => Limit == uint.MaxValue ? string.Empty : $"LIMIT {Limit}";
         #endregion L I M I T S
 
         #region N A M E D    S U P P O R T
@@ -1278,7 +1279,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         Predicate<string>? _validationPredicate = null;
-        
+
         private QueryFilterMode _activeQFMode = QueryFilterMode.Query;
 
         #endregion P O S I T I O N A L    S U P P O R T
@@ -1344,7 +1345,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             get
             {
-                if(_filterQueryDatabase is null)
+                if (_filterQueryDatabase is null)
                 {
                     _filterQueryDatabase = new SQLiteConnection(":memory:");
                     _filterQueryDatabase.CreateTable(ContractType);
@@ -1362,7 +1363,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         SQLiteConnection? _filterQueryDatabase = default;
-        
+
         /// <summary>
         /// Support for inheritance model for Collection.
         /// </summary>
@@ -1373,7 +1374,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (!Equals(_memoryDatabase, value))
                 {
-                    if(_memoryDatabase != null)
+                    if (_memoryDatabase != null)
                     {
                         _memoryDatabase.Dispose();
                     }
@@ -1389,10 +1390,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         #region N A V    S E A R C H    S T A T E    M A C H I N E
 
-        protected FilteringState FilteringStatePrev { get; set;  }
+        protected FilteringState FilteringStatePrev { get; set; }
         public FilteringState FilteringState
         {
-            get =>_filteringState;
+            get => _filteringState;
             // {461B2298-3E0A-49F8-AE52-EB43F70699AD}
             // CONTROLLED ACCESS
             // To obtain set access to this property, make a subclass.
@@ -1421,7 +1422,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         break;
                     case QueryFilterConfig.Filter:
                         // Filter-only is always either armed or active.
-                        if(value == FilteringState.Ineligible)
+                        if (value == FilteringState.Ineligible)
                         {
                             value = FilteringState.Armed;
                         }
@@ -1601,7 +1602,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 nonTransientInputText = nonTransientInputText.TrimEnd(@"!|&".ToCharArray());
             }
-            if( _nonTransientInputText != nonTransientInputText)
+            if (_nonTransientInputText != nonTransientInputText)
             {
                 _nonTransientInputText = nonTransientInputText;
                 StartOrRestart();
@@ -1681,7 +1682,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {
             await base.OnEpochFinalizingAsync(e);
-            if(!e.Cancel)
+            if (!e.Cancel)
             {
                 OnInputTextSettled(new CancelEventArgs());
             }

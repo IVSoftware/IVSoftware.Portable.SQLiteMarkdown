@@ -11,6 +11,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -130,6 +131,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         [Where("IsChecked", WherePredicate.IsFalse)]
         IsUnchecked,
+    }
+
+    public interface IMarkdownContext
+    {
+        uint DefaultLimit { get; set; }
+        FilteringState FilteringState { get; }
+        string InputText { get; set; }
+        QueryFilterConfig QueryFilterConfig { get; set; }
+        SearchEntryState SearchEntryState { get; }
+
+        event EventHandler? InputTextSettled;
+
+        string ParseSqlMarkdown();
+        string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast);
+        string ParseSqlMarkdown<T>();
+        string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query);
     }
 
     /// <summary>
