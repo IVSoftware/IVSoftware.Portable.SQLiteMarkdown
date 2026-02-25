@@ -70,6 +70,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
     }
 
+    /// <summary>
+    /// Represents a bindable collection governed by Markdown-based query and filter semantics.
+    /// </summary>
     public interface IObservableQueryFilterSource
         : IList
         , INotifyCollectionChanged
@@ -87,10 +90,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         SQLiteConnection MemoryDatabase { get; set; }
         FilteringState Clear(bool all = false);
         void Commit();
-        event EventHandler? InputTextSettled;
 
+        event EventHandler? InputTextSettled;
         event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
     }
+
+    /// <summary>
+    /// Strongly typed variant of IObservableQueryFilterSource.
+    /// </summary>
     public interface IObservableQueryFilterSource<T>
         : IObservableQueryFilterSource
     {
@@ -98,11 +105,60 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         void ReplaceItems(IEnumerable<T> items);
         Task ReplaceItemsAsync(IEnumerable<T> items);
         DisposableHost DHostBusy { get; }
+    }
 
-#if false
-        new IList<T> SelectedItems { get; }
-        event EventHandler SelectionChanged;
-#endif
+    /// <summary>
+    /// Lightweight mapper that eliminates guesswork e.g. as
+    /// to how the `Selection` property contributes to filter.
+    /// </summary>
+    public enum StdPredicate
+    {
+        /// <summary>
+        /// Selected items without regard to e.g. Primary, Multi, Exclusive etc.
+        /// </summary>
+        [Where("Selection", WherePredicate.IsNotZero)]
+        IsSelected,
+
+        /// <summary>
+        /// Items that are affirmatively checked. As in "show only the items that are checked".
+        /// </summary>
+        [Where("IsChecked", WherePredicate.IsTrue)]
+        IsChecked,
+
+        /// <summary>
+        /// Items that are affirmatively unchecked. As in "show only the items that are unchecked".
+        /// </summary>
+        [Where("IsChecked", WherePredicate.IsFalse)]
+        IsUnchecked,
+    }
+
+    /// <summary>
+    /// Represents property-based filter semantics that take precedence over Markdown-based query and filter results.
+    /// </summary>
+    /// <remarks>
+    /// Property-based predicates produce a trailing AND clause in the SQL in both query and filter modes.
+    /// EXAMPLE: 
+    /// </remarks>
+    public interface IPropertyFilterSource
+    {
+        /// <summary>
+        /// Suspends updates. This can be useful when multiple filters change 
+        /// state simultaneously (e.g., ShowChecked v ShowUnchecked radio buttons
+        /// which would otherwise transition through a ShowAll update.
+        /// </summary>
+        IDisposable BeginFilterAtom();
+
+        IReadOnlyDictionary<string, Enum> ActiveFilters { get; }
+
+        void ActivateFilters(Enum stdPredicate, params Enum[] more);
+
+        void DeactivateFilters(Enum stdPredicate, params Enum[] more);
+
+        void ClearFilters(bool clearInputText = true);
+
+        int UnfilteredCount { get; }
+
+        bool IsFiltering { get; }
     }
 
     /// <summary>

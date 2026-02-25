@@ -1547,8 +1547,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             break;
                         case FilteringState.Armed:
                         case FilteringState.Active:
-                            // If the text is already empty and
-                            // you click again, it's a hard reset!
+                            // Text is already empty and clear is invoked (clicked) again - this is a hard reset.
                             FilteringState = FilteringState.Ineligible;
                             break;
                         default:
@@ -1650,11 +1649,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
-        /// Consumers that maintain dual collections (not typical) may override
-        /// this property to route between Full (canonical) and Filtered versions.
+        /// True when InputText is empty regardless of IsFiltering.
         /// </summary>
         /// <remarks>
-        /// This is distinct from the SyncAuthority which governs DDX direction. 
+        /// - Distinct from IsFiltering which captures the FilterQueryDatabase on
+        ///   its positive edge, this is a lightweight signal to the canonical items.
+        /// - This is distinct from the SyncAuthority which governs DDX direction.
         /// </remarks>
         public virtual bool RouteToFullRecordset => true;
 

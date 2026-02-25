@@ -449,5 +449,44 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             => new DateTimeOffset(
                 @this.Ticks - (@this.Ticks % TimeSpan.TicksPerSecond),
                 @this.Offset);
+
+        /// <summary>
+        /// Gets the first custom attribute of the specified type applied to an enum value.
+        /// </summary>
+        public static TAttribute? GetCustomAttribute<TAttribute>(
+            this Enum value)
+            where TAttribute : Attribute
+            => GetDeclaredEnumField(value)?
+                .GetCustomAttributes(typeof(TAttribute), false)
+                .OfType<TAttribute>()
+                .FirstOrDefault();
+
+        /// <summary>
+        /// Gets all custom attributes of the specified type applied to an enum value.
+        /// </summary>
+        public static IEnumerable<TAttribute> GetCustomAttributes<TAttribute>(
+            this Enum value)
+            where TAttribute : Attribute
+            => GetDeclaredEnumField(value)?
+               .GetCustomAttributes(typeof(TAttribute), false)
+                .OfType<TAttribute>()
+                ?? Enumerable.Empty<TAttribute>();
+
+        private static FieldInfo GetDeclaredEnumField(Enum value)
+        {
+            var type = value.GetType();
+
+            if (Enum.IsDefined(type, value))
+            {
+                return type.GetField(value.ToString())!;
+            }
+            else
+            {
+                var numeric = Convert.ToInt64(value);
+                value.ThrowHard<InvalidOperationException>(
+                    $"Enum value '{value}' (underlying {numeric}) does not correspond to a declared field on '{type.FullName}'.");
+                return null!; // We warned you.
+            }
+        }
     }
 }
