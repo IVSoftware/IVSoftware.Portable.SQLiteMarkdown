@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SQLite;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -42,15 +43,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// The initial type must be known and captured regardless of GF mode.
         /// A parameterless CTOR would not be appropriate so avoid that.
         /// </remarks>
+
         [Canonical]
-        public MarkdownContext(Type type)
+        public MarkdownContext(Type type, IList? projection)
         {
             Interval = TimeSpan.FromSeconds(0.25);          // Default. Consumer can change.
             XAST = new
                 XElement(nameof(StdAstNode.ast))
                 .WithBoundAttributeValue(this);
             ContractType = type;
+            Projection = projection;
         }
+        public MarkdownContext(Type type) : this(type, null) { }
 
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
 
@@ -1787,5 +1791,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public class MarkdownContext<T> : MarkdownContext
     {
         public MarkdownContext() : base(typeof(T)) { }
+        public MarkdownContext(IList projection) : base(typeof(T), projection) { }
     }
 }

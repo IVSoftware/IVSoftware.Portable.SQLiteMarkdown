@@ -12,10 +12,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         , IPredicateMarkdownContext
     {
         public PredicateMarkdownContext(Type type) : base(type) { }
+        public PredicateMarkdownContext(Type type, IList projection) : base(type, projection) { }
 
         public IReadOnlyDictionary<string, Enum> ActiveFilters => throw new NotImplementedException();
-
-        public int UnfilteredCount => throw new NotImplementedException();
 
         public void ActivateFilters(Enum stdPredicate, params Enum[] more)
         {
@@ -51,11 +50,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             throw new NotImplementedException();
         }
 
-        public IDisposable BeginUIAction()
-        {
-            throw new NotImplementedException();
-        }
-
         public IDisposable BeginPredicateAtom()
         {
             throw new NotImplementedException();
@@ -78,7 +72,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
     public class PredicateMarkdownContext<T> 
         : MarkdownContext
+        where T : class, new()
     {
         public PredicateMarkdownContext() : base(typeof(T)) { }
+        public PredicateMarkdownContext(IList projection) : base(typeof(T), projection) { }
     }
 }

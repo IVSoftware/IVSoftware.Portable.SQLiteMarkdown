@@ -143,6 +143,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         INotifyCollectionChanged? _observableProjection = null;
 
+        protected IList? Projection { get; }
+
         protected virtual void OnObservableProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             throw new NotImplementedException();
