@@ -5,6 +5,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -27,8 +28,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// clause by accumulating  parsing state, managing AST nodes, tracking substitutions,
     /// and guiding final SQL generation via attribute-aware hydration.
     /// </summary>
-    [DebuggerDisplay("ContractType={ContractType}")]
-    public partial class MarkdownContext 
+    [DebuggerDisplay("ContractType={ContractType} ProxyType={ProxyType}")]
+    public partial class MarkdownContext
         : WatchdogTimer
         , INotifyPropertyChanged
     {
@@ -41,10 +42,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// The initial type must be known and captured regardless of GF mode.
         /// A parameterless CTOR would not be appropriate so avoid that.
         /// </remarks>
-        public MarkdownContext(Type type) : this(type, false) { }
-
         [Canonical]
-        public MarkdownContext(Type type, bool disableQuerySemantics)
+        public MarkdownContext(Type type)
         {
             Interval = TimeSpan.FromSeconds(0.25);          // Default. Consumer can change.
             XAST = new
@@ -57,12 +56,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
             => ParseSqlMarkdown(
-                expr, typeof(T), 
+                expr, typeof(T),
                 qfMode,
                 out XElement _);
 
         /// <summary>
-        /// Run from internal values using ContractType
+        /// Parse the current InputText expr and build it against ContractType.
         /// </summary>
         public string ParseSqlMarkdown()
             => ParseSqlMarkdown(
@@ -77,10 +76,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public string ParseSqlMarkdown<T>()
             => ParseSqlMarkdown(
                 InputText,
-                typeof(T), 
-                IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query, 
+                typeof(T),
+                IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query,
                 out XElement _);
 
+        /// <summary>
+        /// Canonical entry point for parsing an expression against a specified proxy type and query/filter mode.
+        /// </summary>
+        /// <remarks>
+        /// Resolves the effective table identity for the pass, builds the AST, and produces the final SQL expression.
+        /// This overload is the semantic root used by all other ParseSqlMarkdown entry points.
+        /// 
+        /// The supplied proxyType must evaluate to the canonical contract table name. This is achieved by:
+        /// 1. Omitting a [Table] attribute so inheritance resolution applies, or
+        /// 2. Declaring an explicit [Table] attribute that agrees with the canonical base contract.
+        /// 
+        /// Conflicting table declarations are handled according to ContractErrorLevel.
+        /// </remarks>
         [Canonical]
         public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
         {
@@ -90,7 +102,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 xast = null!; // We warned you.
                 return string.Empty;
             }
-            ProxyType = proxyType;
 #if DEBUG
             if (expr == "animal b")
             { }
@@ -98,16 +109,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // Guard reentrancy by making sure to clear previous passes.
             XAST.RemoveNodes();
             _activeQFMode = qfMode;
-            if(ValidationPredicate?.Invoke(expr) == false)
+            if (ValidationPredicate?.Invoke(expr) == false)
             {
                 xast = XAST;
                 return string.Empty;
             }
 
+            // Properties are valid for the current parse flow
+            // and are *not* bound to the ContractType.
             Raw = expr;
             Transform = Raw;
+            TableName = ResolveTableNameForPass(proxyType);
 
-            Preamble = $"SELECT * FROM {localGetTableName()} WHERE";
+            Preamble = $"SELECT * FROM {TableName} WHERE";
+
             xast = XAST;
             uint quoteId = 0xFEFE0000;
             uint tagId = 0xFDFD0000;
@@ -131,21 +146,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return localBuildExpression();
 
             #region L o c a l F x
-            string localGetTableName()
-            {
-                var tableAttr = proxyType
-                    .GetCustomAttributes(inherit: true)
-                    .FirstOrDefault(attr => attr.GetType().Name == "TableAttribute");
-
-                if (tableAttr != null)
-                {
-                    var nameProp = tableAttr.GetType().GetProperty("Name");
-                    if (nameProp != null && nameProp.GetValue(tableAttr) is string name)
-                        return name;
-                }
-                return proxyType.Name;
-            }
-
             // Preemptive explicit escapes (query syntax)
             void localEscape()
             {
@@ -526,7 +526,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 bool localAppendChar(char newChar, char previewChar)
                 {
                     bool isLastChar;
-                    if(indexingMode == 0)
+                    if (indexingMode == 0)
                     {
                         isLastChar =
                             previewChar == '\0'
@@ -565,7 +565,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             {
                                 if (!rehydrated.Contains(','))
                                 {
-                                    switch(selfIndexingMode)
+                                    switch (selfIndexingMode)
                                     {
                                         case IndexingMode.QueryLikeTerm:
                                             _parsedIndexTerms[IndexingMode.QueryLikeTerm].Add(rehydrated);
@@ -767,8 +767,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             string localBuildExpression()
             {
                 string childClauseE, childClauseN;
-                string
-                    table = ProxyType.GetCustomAttribute<TableAttribute>()?.Name ?? ProxyType.Name;
                 var nArgs =
                     XAST
                     .DescendantsAndSelf()
@@ -812,13 +810,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     childClauseN);
                                 break;
                             case StdAstNode.term:
-                                var likeTerms = ProxyType
+                                var likeTerms = proxyType
                                     .GetProperties()
                                     .Where(p =>
                                         (qfMode == QueryFilterMode.Query && p.GetCustomAttribute<QueryLikeTermAttribute>() != null) ||
                                         (qfMode == QueryFilterMode.Filter && p.GetCustomAttribute<FilterLikeTermAttribute>() != null))
                                     .ToArray();
-                                var tagTerms = ProxyType
+                                var tagTerms = proxyType
                                     .GetProperties()
                                     .Where(p =>
                                         (p.GetCustomAttribute<TagMatchTermAttribute>() != null))
@@ -1023,72 +1021,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public string Raw { get; private set; } = string.Empty;
 
         /// <summary>
-        /// The attributed CLR type used to resolve which properties participate in term matching.
-        /// </summary>
-        public Type? ContractType
-        {
-            get => _contractType;
-            set
-            {
-                if (value is null)
-                {
-                    this.ThrowHard<NullReferenceException>($"{nameof(ContractType)} cannot be null.");
-                }
-                else
-                {
-                    switch (_activeQFMode)
-                    {
-                        case QueryFilterMode.Query:
-                            // Allow unconditional
-                            if (!Equals(_contractType, value))
-                            {
-                                _contractType = value;
-                                OnContractTypeChanged();
-                                OnPropertyChanged();
-                            }
-                            break;
-                        case QueryFilterMode.Filter:
-
-                            // Allow only if Type not set by previous query.
-                            Debug.Assert(
-                                QueryFilterConfig == QueryFilterConfig.Filter,
-                                "Expecting Query before Filter in any other mode!"
-                            );
-
-                            if (_contractType is null)
-                            {
-                                _contractType = value;
-                                OnContractTypeChanged();
-                                OnPropertyChanged();
-                            }
-                            break;
-                    }
-                }
-            }
-        }
-
-        Type? _contractType = default;
-
-        protected virtual void OnContractTypeChanged()
-        {
-            if (ContractType is null)
-            {
-                this.ThrowHard<NullReferenceException>($"{nameof(ContractType)} cannot be null.");
-            }
-            else
-            {
-                if (FilterQueryDatabase != null)
-                {
-                    FilterQueryDatabase.Dispose();
-                }
-                FilterQueryDatabase  = new SQLiteConnection(":memory:");
-                FilterQueryDatabase.CreateTable(ContractType);
-            }
-        }
-
-        public Type? ProxyType { get; private set; }
-
-        /// <summary>
         /// Caches values from [SelfIndexed] properties grouped by IndexingMode.
         /// Populated on ParseSqlMarkdown(...), used to generate QueryTerm, FilterTerm, and TagMatchTerm.
         /// </summary>
@@ -1150,14 +1082,120 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
+        /// The assembled SQL expression.
+        /// </summary>
+        public string Query
+        {
+            get
+            {
+                var builder = new List<string> { Preamble };
+                if (!string.IsNullOrWhiteSpace(WherePredicate))
+                {
+                    builder.Add(WherePredicate);
+                }
+                if (CanExecutePrimaryKeyClause())
+                {
+                    builder.Add(PrimaryKeyClause());
+                }
+                if (Limit > 0)
+                {
+                    builder.Add($"LIMIT {Limit}");
+                }
+                var preview = string.Join(Environment.NewLine, builder);
+                return preview;
+            }
+        }
+
+        /// <summary>
         /// The SQL WHERE clause preamble, e.g. "SELECT * FROM tablename WHERE".
         /// </summary>
-        public string Preamble { get; internal set; } = string.Empty;
-        public string WherePredicate { get; protected set; } = string.Empty;
-        public string Query => $@"
-{Preamble} 
-{WherePredicate}"
-.Trim();
+        public string Preamble { get; protected set; } = string.Empty;
+
+        public string? WherePredicate { get; protected set; }
+        public string? PrimaryKeyPredicate { get; protected set; } = string.Empty;
+
+        public bool CanExecutePrimaryKeyClause()
+        {
+            int total = AllowedPrimaryKeys.Count + DisallowedPrimaryKeys.Count;
+
+            return
+                total != 0
+                && total <= MaxPrimaryKeyTermCount
+                && FilteringState != FilteringState.Ineligible
+                && !string.IsNullOrWhiteSpace(PrimaryKeyColumnName);
+        }
+
+        /// <summary>
+        /// Builds a primary key predicate using IN and/or NOT IN clauses
+        /// based on AllowedPrimaryKeys and DisallowedPrimaryKeys.
+        /// Does not include leading AND; caller is responsible for composition.
+        /// Returns an empty string if no predicate can be constructed.
+        /// </summary>
+        public string PrimaryKeyClause()
+        {
+            if (!CanExecutePrimaryKeyClause())
+                return string.Empty;
+
+            var clauses = new List<string>();
+
+            if (AllowedPrimaryKeys.Count > 0)
+            {
+                string allowedList = string.Join(
+                    ", ",
+                    AllowedPrimaryKeys.Select(pk => localFormatPrimaryKeyLiteral(pk)));
+
+                clauses.Add($"{PrimaryKeyColumnName} IN ({allowedList})");
+            }
+
+            if (DisallowedPrimaryKeys.Count > 0)
+            {
+                string disallowedList = string.Join(
+                    ", ",
+                    DisallowedPrimaryKeys.Select(pk => localFormatPrimaryKeyLiteral(pk)));
+
+                clauses.Add($"{PrimaryKeyColumnName} NOT IN ({disallowedList})");
+            }
+
+            if (clauses.Count == 0)
+                return string.Empty;
+
+            return string.Join(" AND ", clauses);
+
+            static string localFormatPrimaryKeyLiteral(object pk)
+            {
+                return pk switch
+                {
+                    uint or int or long => pk.ToString()!,
+                    string s => $"'{s.Replace("'", "''")}'",
+                    _ => throw new InvalidOperationException("Unsupported primary key type.")
+                };
+            }
+        }
+
+        public string? PrimaryKeyColumnName { get; protected set; }
+
+
+        #region L I M I T S 
+        /// <summary>
+        /// The maximum count of included and excluded predicates.
+        /// </summary>
+        public uint MaxPrimaryKeyTermCount { get; set; } = 1024;
+
+        /// <summary>
+        /// To exclude this term from query, set to 0.
+        /// </summary>
+        public uint DefaultLimit { get; set; } = uint.MinValue;
+
+        public uint Limit =>
+            _dhostLimit.Tokens.LastOrDefault()?.Sender is uint limit
+            ? limit
+            : DefaultLimit;
+
+        private readonly DisposableHost _dhostLimit = new();
+
+        public IDisposable BeginLimit(uint limit) => _dhostLimit.GetToken(sender: limit);
+        private string LimitTerm => Limit == uint.MaxValue ? string.Empty : $"LIMIT {Limit}";
+        #endregion L I M I T S
 
         #region N A M E D    S U P P O R T
         /// <summary>
@@ -1240,7 +1278,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         Predicate<string>? _validationPredicate = null;
-        
+
         private QueryFilterMode _activeQFMode = QueryFilterMode.Query;
 
         #endregion P O S I T I O N A L    S U P P O R T
@@ -1291,37 +1329,36 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public DisposableHost DHostSelfIndexing { get; } = new();
 
-        protected virtual SQLiteConnection? FilterQueryDatabase { get; set; }
-
-        
-        public SQLiteConnection MemoryDatabase
+        /// <summary>
+        /// Support for inheritance model for Collection.
+        /// </summary>
+        public SQLiteConnection? MemoryDatabase
         {
             get => _memoryDatabase;
             set
             {
                 if (!Equals(_memoryDatabase, value))
                 {
-                    if(_memoryDatabase != null)
+                    if (_memoryDatabase != null)
                     {
                         _memoryDatabase.Dispose();
                     }
                     _memoryDatabase = value;
                     OnPropertyChanged();
+                    this.OnAwaited();
                 }
             }
         }
-        // Nullable property, but we're not in
-        // a target framework that supports it.
         SQLiteConnection? _memoryDatabase = default;
 
         #endregion C O N F I G
 
         #region N A V    S E A R C H    S T A T E    M A C H I N E
-        public virtual bool RouteToFullRecordset => true;
-        protected FilteringState FilteringStatePrev { get; set;  }
+
+        protected FilteringState FilteringStatePrev { get; set; }
         public FilteringState FilteringState
         {
-            get =>_filteringState;
+            get => _filteringState;
             // {461B2298-3E0A-49F8-AE52-EB43F70699AD}
             // CONTROLLED ACCESS
             // To obtain set access to this property, make a subclass.
@@ -1350,7 +1387,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         break;
                     case QueryFilterConfig.Filter:
                         // Filter-only is always either armed or active.
-                        if(value == FilteringState.Ineligible)
+                        if (value == FilteringState.Ineligible)
                         {
                             value = FilteringState.Armed;
                         }
@@ -1476,8 +1513,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             break;
                         case FilteringState.Armed:
                         case FilteringState.Active:
-                            // If the text is already empty and
-                            // you click again, it's a hard reset!
+                            // Text is already empty and clear is invoked (clicked) again - this is a hard reset.
                             FilteringState = FilteringState.Ineligible;
                             break;
                         default:
@@ -1531,7 +1567,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 nonTransientInputText = nonTransientInputText.TrimEnd(@"!|&".ToCharArray());
             }
-            if( _nonTransientInputText != nonTransientInputText)
+            if (_nonTransientInputText != nonTransientInputText)
             {
                 _nonTransientInputText = nonTransientInputText;
                 StartOrRestart();
@@ -1579,24 +1615,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
-        /// Returns the current synchronization authority between the
-        /// canonical collection and its projection.
+        /// True when InputText is empty regardless of IsFiltering.
         /// </summary>
         /// <remarks>
-        /// Mental Model (typical):
-        /// - The filtered collection represents the current visible projection, and
-        ///   user-facing {add, edit, remove} operations occur against this projection.
-        /// - SyncAuthority anchors one side as authoritative during collection change
-        ///   propagation, suppressing re-entrant updates from the opposing side.
-        /// - When a refinement epoch is active, authority shifts to the canonical
-        ///   collection to prevent circular propagation while the projection settles.
-        /// - In the quiescent state, the projection is authoritative.
+        /// - Distinct from IsFiltering which captures the FilterQueryDatabase on
+        ///   its positive edge, this is a lightweight signal to the canonical items.
+        /// - This is distinct from the SyncAuthority which governs DDX direction.
         /// </remarks>
-        public CollectionSyncAuthority SyncAuthority =>
-            Running && (FilteringState != FilteringState.Ineligible)
-            ? CollectionSyncAuthority.Unfiltered
-            : CollectionSyncAuthority.Filtered;
-                
+        public virtual bool RouteToFullRecordset => true;
+
 
         public SearchEntryState SearchEntryState
         {
@@ -1620,7 +1647,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {
             await base.OnEpochFinalizingAsync(e);
-            if(!e.Cancel)
+            if (!e.Cancel)
             {
                 OnInputTextSettled(new CancelEventArgs());
             }
@@ -1746,6 +1773,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public string TagMatchTerm => string.Join(" ", _parsedIndexTerms[IndexingMode.TagMatchTerm].Select(_ => $"[{_}]"));
 
         #endregion S E L F    I N D E X E D
+
+        /// <summary>
+        /// Produce a IN clause with positive polarity that applies the specified PKs.
+        /// </summary>
+        public HashSet<object> AllowedPrimaryKeys { get; } = new();
+
+        /// <summary>
+        /// Produce a IN clause with negative polarity that applies the specified PKs.
+        /// </summary>
+        public HashSet<object> DisallowedPrimaryKeys { get; } = new();
     }
     public class MarkdownContext<T> : MarkdownContext
     {

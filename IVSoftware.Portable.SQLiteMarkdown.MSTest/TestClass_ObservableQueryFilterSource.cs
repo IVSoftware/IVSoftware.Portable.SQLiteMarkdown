@@ -26,6 +26,7 @@ using static SQLite.SQLite3;
 using static System.Net.Mime.MediaTypeNames;
 using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 using static IVSoftware.Portable.Threading.Extensions;
+using IVSoftware.Portable.Common.Attributes;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {   
@@ -1411,6 +1412,8 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
         {
             var id1 = Thread.CurrentThread.ManagedThreadId;
 
+            var builder = new List<string>();
+
             string actual, expected, sql;
             NotifyCollectionChangedEventArgs ecc;
             PropertyChangedEventArgs epc;
@@ -1444,6 +1447,12 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
 
                 items.PropertyChanged += (sender, e) =>
                 {
+                    switch (e.PropertyName)
+                    {
+                        case nameof(SearchEntryState):
+                            builder.Add($"{e.PropertyName}='{items.SearchEntryState}'");
+                            break;
+                    }
                     eventQueue.Enqueue((sender, e));
                 };
                 using (var cnx = InitializeInMemoryDatabase())
@@ -1639,7 +1648,10 @@ Running";
                             items.SearchEntryState,
                             "Expecting specific state UNCHANGED."
                         );
+
+                        // S T I M
                         // Based on UI interaction like return key pressed
+                        builder.Clear();
                         sql = items.InputText.ParseSqlMarkdown<T>();
                         recordset = cnx.Query<T>(sql);
                         await items.ReplaceItemsAsync(recordset);
@@ -1678,6 +1690,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                         { }
                         expected = @" 
 Busy
+ContractTypeTableMapping
 SearchEntryState
 SearchEntryState
 FilteringState
@@ -1689,20 +1702,34 @@ Busy"
                         Assert.AreEqual(
                             expected.NormalizeResult(),
                             actual.NormalizeResult(),
-                            "Expecting specific property changes."
+                            "Expecting specific PROPERTY CHANGES."
                         );
                         eventQueue.Clear();
 
                         Assert.AreEqual(
                             SearchEntryState.QueryCompleteWithResults,
                             items.SearchEntryState,
-                            "Expecting notified entry state change."
+                            "Expecting notified entry SEARCH STATE CHANGE."
                         );
 
                         Assert.AreEqual(
                             FilteringState.Armed,
                             items.FilteringState,
-                            "Expecting notified entry state change."
+                            "Expecting notified entry FILTER STATE CHANGE."
+                        );
+
+
+                        actual = string.Join(Environment.NewLine, builder);
+                        actual.ToClipboardExpected();
+                        { }
+                        expected = @" 
+SearchEntryState='Cleared'
+SearchEntryState='QueryCompleteWithResults'";
+
+                        Assert.AreEqual(
+                            expected.NormalizeResult(),
+                            actual.NormalizeResult(),
+                            "Expecting TWO INPCs for SearchEntryState because the Replace makes a Clear before Repopulating."
                         );
 
                         items.Clear();
@@ -2622,6 +2649,10 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%Tom ""safe inner"" Tester%')"
         /// PFAW!
         /// </summary>
         [TestMethod]
+        [Careful(@"
+Shows how to register a custom function. 
+But for JsonExtract don't do that!
+Use 'json_extract' as shown or wrap it with the string.JsonExtract helper.")]
         public void Test_CustomSQLiteFunction()
         {
             using (var cnx = InitializeInMemoryDatabase())
@@ -2632,7 +2663,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%Tom ""safe inner"" Tester%')"
 
                 SQLitePCL.raw.sqlite3_create_function(
                     cnx.Handle,
-                    "PropertyValue",
+                    "JsonExtract",
                     2,
                     1,
                     null,
@@ -2641,30 +2672,42 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%Tom ""safe inner"" Tester%')"
                         var json = SQLitePCL.raw.sqlite3_value_text(args[0]).utf8_to_string();
                         var key = SQLitePCL.raw.sqlite3_value_text(args[1]).utf8_to_string();
 
+                        // O U T
                         string? value = null;
-                        try
-                        {
-                            if (JsonConvert.DeserializeObject<Dictionary<string, string>>(json) is { } dict)
-                            {
-                                if (dict.TryGetValue(key, out value))
-                                { }
-                            }
-                            else throw new InvalidOperationException("Dictionary not found.");
-                        }
-                        catch
-                        {
-                            Debug.Fail("ADVISORY - Something went wrong..");
-                        }
+
+                        (JsonConvert.DeserializeObject<Dictionary<string, string>>(json) as IDictionary<string, string>)
+                        ?.TryGetValue(key, out value);
+
                         SQLitePCL.raw.sqlite3_result_text(ctx, value ?? string.Empty);
                     }
                 );
 
-                var recordset = cnx.Query<SelectableQFModelTOQO>(
-                    $@"
+                // Arg0: The Column (*is not* literal)
+                // Arg1: The 'Key'  (*is* literal)
+                IList recordset;
+                recordset = cnx.Query<SelectableQFModelTOQO>($@"
 Select *
 From items 
-Where PropertyValue({nameof(SelectableQFModelTOQO.Properties)}, '{nameof(SelectableQFModelTOQO.Description)}') LIKE '%brown dog%'");
-                { }
+Where JsonExtract(Properties, 'Description') LIKE '%brown dog%'");
+
+                Assert.AreEqual(1, recordset.Count, "Expecting successful query using custom function.");
+
+
+                // BUT THIS IS HOW YOU DO IT!
+                // Arg0: The Column (*is not* literal)
+                // Arg1: The 'Key'  (*is* literal and the $. is the ROOT SELECTOR)
+                recordset = cnx.Query<SelectableQFModelTOQO>($@"
+Select *
+From items 
+Where json_extract(Properties, '$.Description') LIKE '%brown dog%'");
+                Assert.AreEqual(1, recordset.Count, "Expecting successful query using json_extract.");
+
+                // And this makes it readable.
+                recordset = cnx.Query<SelectableQFModelTOQO>($@"
+Select *
+From items 
+Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
+                Assert.AreEqual(1, recordset.Count, "Expecting successful query using JsonExtract helper extension.");
             }
         }
 

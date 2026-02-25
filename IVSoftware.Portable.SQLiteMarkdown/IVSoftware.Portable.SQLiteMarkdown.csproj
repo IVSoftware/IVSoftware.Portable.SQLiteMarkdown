@@ -30,67 +30,67 @@
 			Initial 1.0.0 stable release.
 			- Deprecated APIs (marked [Obsolete] or suffixed with OR) are excluded from future guarantees.
 			- Fully tested against standard workflows, including query-then-filter.
-			- Query-only and filter-only modes are functional but flagged for further test expansion.
+			- Query-only and filter-only modes are functional; test coverage will continue to expand.
 			- See the repo for a functional demo (WinForms) that will run out of the box.
-
-			Initial 1.0.0 stable release.
-			- Deprecated APIs (marked [Obsolete] or suffixed with OR) are excluded from future guarantees.
-			- Fully tested against standard workflows, including query-then-filter.
-			- Query-only and filter-only modes are functional but flagged for further test expansion.
-			- See the repo for a functional demo (WinForms) you can run out of the box.
 
 			Release 1.0.1
 
-			- StringWrapper - Promoted to a general-purpose model for simple item-binding scenarios.
+			- StringWrapper promoted to a general-purpose item-binding model.
 			Now raises PropertyChanged when Value changes, making it suitable for MVVM-style UIs.
 
-			- SelectableQFModel - A fully attributed, self-indexing query/filter model providing a
-			schema-ready SQLite row type with integrated tag, keyword, and description indexing,
+			- SelectableQFModel formalized as a fully attributed, self-indexing query/filter model.
+			Provides a schema-ready SQLite row type with integrated tag, keyword, and description indexing,
 			plus built-in selection semantics.
 
-			- Unit test (in repo) updated to confirm the correct FSM behavior:
-			1. After a query completes (term still visible), FilteringState = Armed.
-			2. After the first clear (term becomes blank), FilteringState remains Armed.
-			3. From here, the FSM branches:
-			- Clearing again resets the engine for a new query, OR
-			- Typing characters promotes FilteringState to Active.
+			- FSM behavior verified by expanded unit tests:
+			1. After query completes (term visible), FilteringState = Armed.
+			2. After first clear (term blank), FilteringState remains Armed.
+			3. From there:
+			- Clear again resets for new query, or
+			- Typing promotes FilteringState to Active.
 
-			Release 1.0.2 rc
-			- Added: NormalizeTags() extension.
-			- Made 3 changes to SelectableQFModel class
-			1. Tags property setter uses NormalizeTags() to lint the value before writing the backing store.
-			2. [Obsolete, JsonIgnore] public string TagsDisplay => Tags; // Remove redundant property from JSON
-			3. [Ignore] public bool IsEditing // This property is not intended for database persistence.
-			- Unit testing (in repo) for edge cases for split contract inheritance Test_TablePropertyInheritance().
-			- SearchEntryState now correctly returns to SearchEntryState.Cleared when:
-			1. FilteringState = FilteringState.Ineligible
+			Release 1.0.2-rc
+
+			- Added NormalizeTags() extension.
+			- SelectableQFModel refinements:
+			1. Tags setter now lints via NormalizeTags().
+			2. Removed redundant JSON surface via [Obsolete, JsonIgnore] TagsDisplay.
+			3. Marked IsEditing as [Ignore] (non-persistent).
+
+			- Added inheritance edge-case test: Test_TablePropertyInheritance().
+			- SearchEntryState now returns to Cleared when:
+			1. FilteringState = Ineligible
 			2. MarkdownContext.Clear() is invoked.
 
 			Release 2.0.0
 
-			Together, these provide an awaitable epoch wherein the context can await e.g. an async database query prior to resuming:
+			Introduces an awaitable epoch model, allowing the context to await asynchronous work (e.g., database queries) before resuming state transitions.
 
-			- MarkdownContext now *is-a* WatchdogTimer v 2.0.0 making it intrisically awaitable.
-			- WatchdogTimer v 2.0.0 features an awaitable async queue that is awaited before signalling GetAwaiter().
+			- MarkdownContext now derives from WatchdogTimer v2.0.0 and is intrinsically awaitable.
+			- WatchdogTimer v2.0.0 includes an awaitable async settlement queue completed before GetAwaiter() returns.
 
-			WherePredicate property allows for greater precision when extending the query e.g. for filtering.
+			Primary key filtering is now native:
+			- AllowPrimaryKey and DisallowPrimaryKey hash sets.
+			- Integrated PrimaryKeyPredicateTerm in composed queries.
 
-			- Query consists of Preamble + WherePredicate.
-			- Preamble is the first portion of the Query up to and *including* the WHERE keyword.
-			- WherePredicate is generated from QueryTerm, FilterTerm, and TagTerm based on state.
+			Query composition modularized to allow subclasses to participate in query construction without overriding the full expression.
+			Query => $"{Preamble} {WherePredicate} {PrimaryKeyPredicateTerm} {LimitTerm}"
 
-			SyncAuthority establishes a direction-vector paradigm for collection synchronization.
+			- WherePredicate is now { get; protected set; }.
+			- Preamble includes the WHERE keyword.
+			- WherePredicate derives from QueryTerm, FilterTerm, and TagTerm based on state.
 
-			- Synchronization authority between canonical and projected collections is declarative.
-			- Authority shifts automatically during refinement epochs to suppress upstream propagation.
-			- Circular collection change events are prevented through authority semantics rather than guard flags.
+			SelfIndexed improvements:
+			- Indexed values may contain operators.
+			- Escaped characters are preserved.
+			- Escaped input terms produce expected matches (e.g., trailing '!').
 
-			[SelfIndexed] Properties
-			
-			- Values included in may now contain operators.
-			- The terms will preserve the escaped characters.
-			- A complementary escaped input text term will produce a match, e.g. a description that ends with an exclamation point.
+			Performance:
+			- Eliminated unconditional SQLite in-memory database creation during string-based ParseSqlMarkdown calls.
+			FilterQueryDatabase now instantiates only when filtering is explicitly engaged.
 
+			Diagnostics:
+			- Advisory stream subscribable via IVSoftware.Portable.Common.Exceptions.BeginThrowOrAdvise.
 		</PackageReleaseNotes>
 
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
@@ -102,7 +102,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="IVSoftware.Portable.Threading" Version="*" />
-		<PackageReference Include="IVSoftware.Portable.Common" Version="1.0.0-rc1" />
+		<PackageReference Include="IVSoftware.Portable.Common" Version="1.0.1-beta" />
 		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="*" />
 		<PackageReference Include="Newtonsoft.Json" Version="*" />
 		<PackageReference Include="sqlite-net-pcl" Version="*" />

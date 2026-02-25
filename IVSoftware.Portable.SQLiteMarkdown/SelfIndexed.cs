@@ -118,6 +118,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         private string ensure(ref string indexedProperty)
         {
             if (_isIndexingRequired)
+            if (_isIndexingRequired)
+
             {
                 internalExecuteIndexing();
             }
@@ -125,7 +127,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
 
-        // This 'is' a SQLiteColumn.
+#if ABSTRACT
+recordset = cnx.Query<SelectableQFModelTOQO>($@"
+    Select *
+    From items 
+    Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
+#endif
+
+        /// <summary>
+        /// Engine-managed JSON persistence envelope.
+        /// </summary>
+        /// <remarks>
+        /// Serialized projection of properties decorated with [SelfIndexed]
+        /// where PersistenceMode includes Json. This column exists to support
+        /// indexing and search (e.g. json_extract) and is not a general-purpose
+        /// user metadata store.
+        /// </remarks>
+        [Careful(@"
+These are DIFFERENT:
+SelfIndexed.Properties (this property) is single self-indexed term for query.
+CustomProperties (subclass property) is a user-defined metadata property bag.")]
         public string Properties
         {
             get
@@ -134,7 +155,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             set
             {
-                internalProperties = JsonConvert.DeserializeObject<Dictionary<string, object>>(value);
+                if (value is null)
+                {
+                    internalProperties.Clear();
+                }
+                else
+                {
+                    internalProperties = JsonConvert.DeserializeObject<Dictionary<string, object>>(value)!;
+                }
             }
         }
 
@@ -151,7 +179,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             set => _internalProperties = value;
         }
-        Dictionary<string, object> _internalProperties = null;
+        Dictionary<string, object>? _internalProperties = null;
 
         bool _isIndexingRequired = true;
 #if false
@@ -170,7 +198,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
 
         #region P R O P E R T Y    C H A N G E S
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             switch (propertyName)
@@ -202,7 +230,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private void internalExecuteIndexing()
         {
@@ -210,7 +238,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 // Used in old and new ways.
                 var props = GetType().GetProperties();
-                var localMC = new MarkdownContext(GetType(), disableQuerySemantics: true);
+                var localMC = new MarkdownContext(GetType());
 
 #if true || NEW_WAY
                 for (int i = 0; i < props.Length; i++)
@@ -453,7 +481,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return _indexedProperties;
             }
         }
-        Dictionary<IndexingMode, List<PropertyInfo>> _indexedProperties = null;
+        Dictionary<IndexingMode, List<PropertyInfo>>? _indexedProperties = null;
 
         /// <summary>
         /// Maps properties to their associated <see cref="PersistenceMode"/> roles for serialization.

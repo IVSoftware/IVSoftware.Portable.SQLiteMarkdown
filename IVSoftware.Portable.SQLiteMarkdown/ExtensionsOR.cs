@@ -511,7 +511,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         static object _lock = new object();
 
         public static bool PromptEachStep { get; set; }
-        public static event EventHandler StackPrompt;
+        public static event EventHandler? StackPrompt;
         class AtomicStack : Stack<KeyValuePair<string, string>>
         {
             public void Push(string key, string value)

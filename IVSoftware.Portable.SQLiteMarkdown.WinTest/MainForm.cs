@@ -1,5 +1,6 @@
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.MSTest;
 using IVSoftware.Portable.SQLiteMarkdown.WinTest.OP;
 using Newtonsoft.Json;
 using SQLite;
@@ -46,7 +47,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                             break;
                     }
                 };
-                qfs.MemoryDatabase = CreateDemoDatabase<SelectableQFModel>();
+                qfs.MemoryDatabase = new SQLiteConnection(":memory:"); 
+                qfs.MemoryDatabase.PopulateDemoDatabase<SelectableQFModel>(includeLive: true);
                 qfs.PropertyChanged += (sender, e) =>
                 {
                     switch (e.PropertyName)
@@ -179,70 +181,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         /// QSF Under Test for ad hoc states and expr evals.
         /// </summary>
         private ObservableQueryFilterSource<SelectableQFModel> QFSUT { get; } 
-
-        private SQLiteConnection CreateDemoDatabase<T>() where T : new()
-        {
-            var imdb = new SQLiteConnection(":memory:");
-            imdb.CreateTable<T>();
-
-            var list = new List<T>();
-
-            void Add(string description, string tags, bool isChecked, List<string> keywords = null)
-            {
-                var instance = new T();
-                typeof(T).GetProperty("Description")?.SetValue(instance, description);
-                typeof(T).GetProperty("Tags")?.SetValue(instance, tags);
-                typeof(T).GetProperty("IsChecked")?.SetValue(instance, isChecked);
-                if (keywords != null)
-                {
-                    var json = JsonConvert.SerializeObject(keywords);
-                    typeof(T).GetProperty("Keywords")?.SetValue(instance, json);
-                }
-                list.Add(instance);
-            }
-            // Unit tested
-            Add("Brown Dog", "[canine] [color]", false, new() { "loyal", "friend", "furry" });
-            Add("Green Apple", "[fruit] [color]", false, new() { "tart", "snack", "healthy" });
-            Add("Yellow Banana", "[fruit] [color]", false);
-            Add("Blue Bird", "[bird] [color]", false, new() { "sky", "feathered", "song" });
-            Add("Red Cherry", "[fruit] [color]", false, new() { "sweet", "summer", "dessert" });
-            Add("Black Cat", "[animal] [color]", false);
-            Add("Orange Fox", "[animal] [color]", false);
-            Add("White Rabbit", "[animal] [color]", false, new() { "bunny", "soft", "jump" });
-            Add("Purple Grape", "[fruit] [color]", false);
-            Add("Gray Wolf", "[animal] [color]", false, new() { "pack", "howl", "wild" });
-            Add("Pink Flamingo", "[bird] [color]", false);
-            Add("Golden Lion", "[animal] [color]", false);
-            Add("Brown Bear", "[animal] [color]", false, new() { "strong", "wild", "forest" });
-            Add("Green Pear", "[fruit] [color]", false);
-            Add("Red Strawberry", "[fruit] [color]", false);
-            Add("Black Panther", "[animal] [color]", false, new() { "stealthy", "feline", "night" });
-            Add("Yellow Lemon", "[fruit] [color]", false);
-            Add("White Swan", "[bird] [color]", false);
-            Add("Purple Plum", "[fruit] [color]", false);
-            Add("Blue Whale", "[marine-mammal] [ocean]", false, new() { "ocean", "mammal", "giant" });
-            Add("Elephant", "[animal]", false, new() { "trunk", "herd", "safari" });
-            Add("Pineapple", "[fruit]", false);
-            Add("Shark", "[fish]", false);
-            Add("Owl", "[bird]", false);
-            Add("Giraffe", "[animal]", false);
-            Add("Coconut", "[fruit]", false);
-            Add("Kangaroo", "[animal]", false, new() { "bounce", "outback", "marsupial" });
-            Add("Dragonfruit", "[fruit]", false);
-            Add("Turtle", "[animal]", false);
-            Add("Mango", "[fruit]", false);
-            Add("Should NOT match an expression with an \"animal\" tag.", "[not animal]", false);
-            // Live-demo specific.
-            Add("Appetizer Plate", "[dish]", false, new() { "starter", "appealing", "snack" });
-            Add("Errata", "[notes]", false, new() { "crunchy", "green", "appended" });
-            Add("Happy Camper", "[phrase]", false, new() { "joyful", "camp", "approach-west" });
-            Add("Great example - Markdown Demo", "[app] [portable]", false, new() { "digital", "mobile", "software" });
-            Add("Application Form", "[document]", false, new() { "paperwork", "apply" });
-            Add("App Store", "[app]", false, new() { "digital", "mobile", "software" });
-
-
-            imdb.InsertAll(list);
-            return imdb;
-        }
     }
 }

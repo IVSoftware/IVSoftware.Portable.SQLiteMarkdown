@@ -1,12 +1,17 @@
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
+using IVSoftware.Portable.Threading;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SQLite;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
 using System.Reflection;
@@ -1002,16 +1007,35 @@ FilterTerm";
             );
         }
 
-
         /// <summary>
         /// By design, the ParseSQLiteMarkdown method employs inheritance to determine table identity for parsing.
         /// </summary>
         /// <remarks>
         /// SQLite itself, when invoking CreateTable on subclass T, does *not* drill down for table inheritance
+        /// This is the original test. There is also a newer streamlined version.
+        /// #{B593ED5F-684A-4EF1-AA45-66E3766C7277}
         /// </remarks>
         [TestMethod]
-        public void Test_TablePropertyInheritance()
+        public void Test_TableAttributeInheritance()
         {
+            #region L o c a l F x
+            var builderThrow = new List<string>();
+            void localOnBeginThrowOrAdvise(object? sender, Throw e)
+            {
+                builderThrow.Add(e.Message);
+                e.Handled = true;
+            }
+            #endregion L o c a l F x
+            using var local = this.WithOnDispose(
+                onInit: (sender, e) =>
+                {
+                    Throw.BeginThrowOrAdvise += localOnBeginThrowOrAdvise;
+                },
+                onDispose: (sender, e) =>
+                {
+                    Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
+                });
+
             string actual, expected;
             List<string> tableNames;
             var query = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%';";
@@ -1039,9 +1063,8 @@ FilterTerm";
                 );
 
                 // Whereas the parser is deliberately going to pick up the `[Table("items"]` from the BC.
+                builderThrow.Clear();
                 actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclassG>();
-                actual.ToClipboardExpected();
-                { }
                 expected = @" 
 SELECT * FROM items WHERE 
 (QueryTerm LIKE '%animal%')";
@@ -1050,6 +1073,20 @@ SELECT * FROM items WHERE
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Expecting 'items' table identity."
+                );
+
+                actual = string.Join(Environment.NewLine, builderThrow);
+                actual.ToClipboardExpected();
+                { } // <- FIRST TIME ONLY: Adjust the message.
+                actual.ToClipboardAssert("Expecting builder content to match.");
+                { }
+                expected = @" 
+Type 'SelectableQFModelSubclassG' is explicitly mapped to [Table(""items"")] in base class.";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
                 );
             }
             #endregion T H I S    I S    T H E    C O N C E R N
@@ -1128,229 +1165,30 @@ SELECT * FROM items WHERE
             }
 
             // Now check parser where declared table identity is INCONSISTENT WITH the BC
+            // v2.0+ "TO AVOID SPURIOUS TABLE CREATION - BASE CLASS WINS"
+            // v1.0  "Explicit [Table] attribute MUST BE RESPECTED."
             actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclassA>();
             actual.ToClipboardExpected();
             { }
+
+            expected = @" 
+SELECT * FROM items WHERE
+(QueryTerm LIKE '%animal%')"
+            ;
+
+#if false && VERSION_1_CONTRACT
+            "Explicit [Table] attribute MUST BE RESPECTED."            
+
             expected = @" 
 SELECT * FROM itemsA WHERE 
 (QueryTerm LIKE '%animal%')";
+#endif
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting 'itemsA' table identity."
             );
-        }
-
-
-
-        [TestMethod]
-        public void Test_SelfIndexingIllegalChars()
-        {
-            string actual, expected;
-
-            // subtest_SafeCharsOnly();
-            subtest_ExclamationPoint();
-
-            #region S U B T E S T S 
-            void subtest_SafeCharsOnly()
-            {
-                var model = new SelectableQFModel
-                {
-                    Description = "Hello World",
-                    Keywords = "standard greeting",
-                    Tags = "intro, 101",
-                };
-                actual = model.QueryTerm;
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-hello~world~standard~greeting~[intro][101]"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting resolved controversial term generation."
-                );
-
-                actual = model.FilterTerm;
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-hello~world~standard~greeting~[intro][101]"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting resolved controversial term generation."
-                );
-
-                actual = model.TagMatchTerm;
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-[intro][101]"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting resolved controversial term generation."
-                );
-            }
-            void subtest_ExclamationPoint()
-            {
-                var model = new SelectableQFModel
-                {
-                    Description = "Hello World!",
-                    Keywords = "standard greeting",
-                    Tags = "intro, 101",
-                };
-                actual = model.QueryTerm;
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-hello~world!~standard~greeting~[intro][101]"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting resolved controversial term generation."
-                );
-
-                actual = model.FilterTerm;
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-hello~world!~standard~greeting~[intro][101]"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting resolved controversial term generation."
-                );
-
-                actual = model.TagMatchTerm;
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-[intro][101]"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting uncontroversial term generation."
-                );
-            }
-            #endregion S U B T E S T S
-        }
-
-        /// <summary>
-        /// Tests transient e.g. 'filter time out' queries with trailing operators.
-        /// </summary>
-        [TestMethod]
-        public async Task Test_TrailingOperator()
-        {
-            string actual, expected, sql;
-
-            var mdc = new MarkdownContext<SelectableQFModel>();
-
-            using (var cnx = new SQLiteConnection(":memory:"))
-            {
-                cnx.CreateTable<SelectableQFModel>();
-
-                await subtest_TrailingBackslash();
-                await subtest_TrailingAnd();
-                await subtest_TrailingOr();
-                await subtest_TrailingNot();
-
-                #region S U B T E S T S
-                async Task subtest_TrailingBackslash()
-                {
-                    mdc.InputText = @"animal\";
-                    await mdc;
-                    sql = mdc.ParseSqlMarkdown();
-                    actual = sql;
-
-                    actual.ToClipboardExpected();
-                    { }
-                    expected = @" 
-SELECT * FROM items WHERE 
-(QueryTerm LIKE '%animal%')"
-                    ;
-
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting trailing operator uncertainty."
-                    );
-                    // Ensure no exceptions on actual query.
-                    _ = cnx.Query<SelectableQFModel>(sql);
-                }
-                async Task subtest_TrailingAnd()
-                {
-                    mdc.InputText = @"animal&";
-                    await mdc;
-                    sql = mdc.ParseSqlMarkdown();
-
-                    actual = sql;
-                    expected = @" 
-SELECT * FROM items WHERE 
-(QueryTerm LIKE '%animal%')"
-                    ;
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting trailing operator uncertainty."
-                    );
-                    // Ensure no exceptions on actual query.
-                    _ = cnx.Query<SelectableQFModel>(sql);
-                }
-                async Task subtest_TrailingOr()
-                {
-                    mdc.InputText = @"animal|";
-                    await mdc;
-                    sql = mdc.ParseSqlMarkdown();
-
-                    actual = sql;
-                    expected = @" 
-SELECT * FROM items WHERE 
-(QueryTerm LIKE '%animal%')"
-                    ;
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting trailing operator uncertainty."
-                    );
-                    // Ensure no exceptions on actual query.
-                    _ = cnx.Query<SelectableQFModel>(sql);
-                }
-                async Task subtest_TrailingNot()
-                {
-                    mdc.InputText = @"animal!";
-                    await mdc;
-                    sql = mdc.ParseSqlMarkdown();
-
-                    actual = sql;
-                    expected = @" 
-SELECT * FROM items WHERE 
-(QueryTerm LIKE '%animal%')"
-                    ;
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting trailing operator uncertainty."
-                    );
-                    // Ensure no exceptions on actual query.
-                    _ = cnx.Query<SelectableQFModel>(sql);
-                }
-                #endregion S U B T E S T S
-            }
         }
     }
 }

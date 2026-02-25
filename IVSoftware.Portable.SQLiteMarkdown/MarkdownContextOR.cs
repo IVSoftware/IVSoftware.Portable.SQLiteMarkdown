@@ -1,14 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using IVSoftware.Portable.Disposable;
 using System;
-using System.IO.Pipes;
-using SQLite;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using IVSoftware.Portable.Disposable;
-using System.Diagnostics;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
+    [Obsolete("Used only in 1.0.0 alpha-beta releases. Preserved for early adopters.")]
     public class MarkdownContextOR
     {
         public MarkdownContextOR(string query, List<KeyValuePair<string, object>> args)

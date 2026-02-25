@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.11.35327.3
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11505.172 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IVSoftware.Portable.SQLiteMarkdown", "IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown.csproj", "{02C76299-0889-4032-B8FE-1BD788C363BE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.SQLiteMarkdown.MSTest", "IVSoftware.Portable.SQLiteMarkdown.MSTest\IVSoftware.Portable.SQLiteMarkdown.MSTest.csproj", "{F1C051AC-98A8-4344-B275-1815C287BCAB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.SQLiteMarkdown.WinTest", "IVSoftware.Portable.SQLiteMarkdown.WinTest\IVSoftware.Portable.SQLiteMarkdown.WinTest.csproj", "{6F13BCBE-FDF0-48F7-9A8E-622EC8755267}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.SQLiteMarkdown.MSTest.V1", "IVSoftware.Portable.SQLiteMarkdown.MSTest.V1\IVSoftware.Portable.SQLiteMarkdown.MSTest.V1.csproj", "{848C0330-86D9-43CF-9F79-9E4FCE89809F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{6F13BCBE-FDF0-48F7-9A8E-622EC8755267}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F13BCBE-FDF0-48F7-9A8E-622EC8755267}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F13BCBE-FDF0-48F7-9A8E-622EC8755267}.Release|Any CPU.Build.0 = Release|Any CPU
+		{848C0330-86D9-43CF-9F79-9E4FCE89809F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{848C0330-86D9-43CF-9F79-9E4FCE89809F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{848C0330-86D9-43CF-9F79-9E4FCE89809F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{848C0330-86D9-43CF-9F79-9E4FCE89809F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

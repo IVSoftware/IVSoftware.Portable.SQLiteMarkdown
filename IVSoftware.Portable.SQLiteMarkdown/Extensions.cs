@@ -1,12 +1,21 @@
 ﻿using IVSoftware.Portable;
+using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SQLite;
+using SQLitePCL;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
@@ -39,9 +48,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
     public static partial class Extensions
     {
-
         #region V E R S I O N    1 . 0
-
         public static string ParseSqlMarkdown<T>(
             this string @this,
             byte minInputLength,
@@ -71,7 +78,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         public static string ParseSqlMarkdown<T>(
-            this string @this, 
+            this string @this,
             QueryFilterMode qfMode,
             out XElement xast)
         {
@@ -84,21 +91,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 out xast);
         }
 
+        [Canonical("Common target for string extensions to ParseSqlMarkdown.")]
+        public static string ParseSqlMarkdown(this string @this, Type type, QueryFilterMode qfMode, out XElement xast)
+            => new MarkdownContext(type).ParseSqlMarkdown(@this, type, qfMode, out xast);
+
+        [Canonical("Standalone target for string extensions to ParseSqlMarkdown with validation flow.")]
         private static string ParseSqlMarkdown(
             this string @this,
             ref ValidationState validationState,
             Type type,
             QueryFilterMode qfMode,
             Predicate<string>? validationPredicate,
-            out XElement xexpr) => 
-                new MarkdownContext(type)
+            out XElement xexpr) =>
+                new MarkdownContext(
+                type)
                 {
                     ValidationPredicate = validationPredicate!, // Setting to null sets the VP to its default (which isn't null).
                 }.ParseSqlMarkdown(@this, type, qfMode, out xexpr);
-        public static string ParseSqlMarkdown(this string @this, Type type, QueryFilterMode qfMode, out XElement xast)
-            => new MarkdownContext(type).ParseSqlMarkdown(@this, type, qfMode, out xast);
-        public static string ParseSqlMarkdown(this MarkdownContext @this, string expr, Type type, QueryFilterMode qfMode, out XElement xast)
-            => @this.ParseSqlMarkdown(expr, type, qfMode, out xast);
 
         /// <summary>
         /// Non-breaking compatible filter term attribute getter.
@@ -113,7 +122,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Non-breaking compatible filter term attribute getter.
         /// </summary>
         public static MarkdownTermAttribute GetFilterTermAttribute(this PropertyInfo pi)
-            => 
+            =>
             pi.GetCustomAttribute<FilterLikeTermAttribute>() is FilterLikeTermAttribute flt
             ? flt
             : pi.GetCustomAttribute<FilterContainsTermAttribute>(); // Non-breaking compatible filter term
@@ -175,7 +184,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             TermDelimiter termDelimiter = TermDelimiter.Comma,
             StringCasing stringCasing = StringCasing.Lower)
         {
-            if(@this.Any(_=>_ == '[' || _ == ']'))
+            if (@this.Any(_ => _ == '[' || _ == ']'))
             {
                 throw new ArgumentException("Square brackets must be removed before calling this method.");
             }
@@ -372,5 +381,112 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public static bool CanParseAsJson(this string @this)
             => Regex.IsMatch(@this, @"^\s*\[\s*(""(?:[^""\\]|\\.)*""\s*,\s*)*(""[^""\\]*""\s*)\]\s*$");
+
+        /// <summary>
+        /// Enumerates base classes of the specified subclass.
+        /// </summary>
+        public static IEnumerable<Type> BaseTypes(
+            this Type type,
+            bool includeSelf = false)
+        {
+            for (var current = includeSelf ? type : type.BaseType;
+                 current is not null;
+                 current = current.BaseType)
+            {
+                yield return current;
+            }
+        }
+
+        public static bool TryGetTableNameFromBaseClass(this Type @this, out string tableName)
+            => @this.TryGetTableNameFromBaseClass(out tableName, out _);
+
+        public static bool TryGetTableNameFromBaseClass(this Type @this, out string tableName, out Type baseClass)
+        {
+            foreach (var @base in @this.BaseTypes().Reverse())
+            {
+                tableName = @base.GetCustomAttribute<TableAttribute>(inherit: false)?.Name!;
+                if (!string.IsNullOrWhiteSpace(tableName))
+                {
+                    baseClass = @base;
+                    return true;
+                }
+            }
+            baseClass = @this;
+            tableName = @this.GetCustomAttribute<TableAttribute>(
+                inherit: false // CRITICAL! Does not produce an accurate result otherwise.
+            )?.Name ?? @this.Name;
+            return false;
+        }
+
+        public static bool TryGetTableNameFromTableAttribute(this Type @this, out string tableName)
+            => !string.IsNullOrWhiteSpace(tableName = @this.GetCustomAttribute<TableAttribute>(
+                inherit: false // CRITICAL! Does not produce an accurate result otherwise.
+        )?.Name!);
+
+        /// <summary>
+        /// Return string formatted as: json_extract(Properties, '$.Description');
+        /// </summary>
+        public static string JsonExtract(this string columnName, string key)
+        {
+            if (key.Contains('\''))
+                columnName.ThrowHard<ArgumentException>("Key must not contain single quotes.", nameof(key));
+
+            return $"json_extract({columnName}, '$.{key}')";
+        }
+
+        /// <summary>
+        /// Nullable overload.
+        /// </summary>
+        public static DateTimeOffset? FloorToSecond(this DateTimeOffset? @this)
+            => @this.HasValue
+                ? @this.Value.FloorToSecond()
+                : @this;
+
+        /// <summary>
+        /// Truncates sub-second precision (milliseconds and below).
+        /// </summary>
+        public static DateTimeOffset FloorToSecond(this DateTimeOffset @this)
+            => new DateTimeOffset(
+                @this.Ticks - (@this.Ticks % TimeSpan.TicksPerSecond),
+                @this.Offset);
+
+        /// <summary>
+        /// Gets the first custom attribute of the specified type applied to an enum value.
+        /// </summary>
+        public static TAttribute? GetCustomAttribute<TAttribute>(
+            this Enum value)
+            where TAttribute : Attribute
+            => GetDeclaredEnumField(value)?
+                .GetCustomAttributes(typeof(TAttribute), false)
+                .OfType<TAttribute>()
+                .FirstOrDefault();
+
+        /// <summary>
+        /// Gets all custom attributes of the specified type applied to an enum value.
+        /// </summary>
+        public static IEnumerable<TAttribute> GetCustomAttributes<TAttribute>(
+            this Enum value)
+            where TAttribute : Attribute
+            => GetDeclaredEnumField(value)?
+               .GetCustomAttributes(typeof(TAttribute), false)
+                .OfType<TAttribute>()
+                ?? Enumerable.Empty<TAttribute>();
+
+        private static FieldInfo GetDeclaredEnumField(Enum value)
+        {
+            var type = value.GetType();
+
+            if (Enum.IsDefined(type, value))
+            {
+                return type.GetField(value.ToString())!;
+            }
+            else
+            {
+                var numeric = Convert.ToInt64(value);
+                value.ThrowHard<InvalidOperationException>(
+                    $"Enum value '{value}' (underlying {numeric}) does not correspond to a declared field on '{type.FullName}'.");
+                return null!; // We warned you.
+            }
+        }
     }
 }
