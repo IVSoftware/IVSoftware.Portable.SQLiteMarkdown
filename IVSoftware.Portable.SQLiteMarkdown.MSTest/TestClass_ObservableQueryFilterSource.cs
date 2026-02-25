@@ -1679,6 +1679,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                         { }
                         expected = @" 
 Busy
+ContractTypeTableMapping
 SearchEntryState
 SearchEntryState
 FilteringState
