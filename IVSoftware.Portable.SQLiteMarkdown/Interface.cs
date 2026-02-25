@@ -160,6 +160,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Nuanced state that takes InputText length into account.
         /// </summary>
+        FilteringState FilteringState { get; }
+
         /// <remarks>
         /// As a defining feature, the Clear method is a progressive state 
         /// demotion. An actively filtering collection UI will take:
@@ -167,7 +169,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// [X] to return to query state, leaving the list items (if any) populated.
         /// [X] to clear the visible list, ready for a new query.
         /// </remarks>
-        FilteringState FilteringState { get; }
+        FilteringState Clear(bool all = false);
 
         string InputText { get; set; }
         QueryFilterConfig QueryFilterConfig { get; set; }
