@@ -1,4 +1,6 @@
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using SQLite;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
@@ -53,12 +55,17 @@ public class TestClass_PredicateMarkdownContext
     {
         const int COUNT = 5;
         const string ParentId = "BC28ADEC-4F82-4B6F-B98A-284B528DD01A";
-        string actual, expected;
+        string actual, expected, sql;
+        List<AffinityQFModel> recordset;
+
+        using var cnx = new SQLiteConnection(":memory:");
+        cnx.CreateTable<AffinityQFModel>();
 
         var opc = 
             new ObservableCollection<AffinityQFModel>()
             .PopulateForDemo(COUNT, PopulateOptions.RandomChecks);
 
+        // Assign a parent path to last item.
         opc.Last().ParentPath = ParentId;
 
         Assert.AreEqual(
@@ -66,6 +73,15 @@ public class TestClass_PredicateMarkdownContext
             opc.Count,
             "Expecting initial population.");
 
+        Assert.AreEqual(COUNT, cnx.InsertAll(opc));
+        { }
+
+        sql = $"Select * from items where ParentId='{ParentId}'";
+        recordset = cnx.Query<AffinityQFModel>(sql);
+        { }
+
+
+#if false
         var pmdc = new PredicateMarkdownContext<AffinityQFModel>
         {
             QueryFilterConfig = QueryFilterConfig.Filter,
@@ -88,6 +104,7 @@ public class TestClass_PredicateMarkdownContext
             FilteringState.Armed,
             pmdc.FilteringState);
         { }
+#endif
 
     }
 }

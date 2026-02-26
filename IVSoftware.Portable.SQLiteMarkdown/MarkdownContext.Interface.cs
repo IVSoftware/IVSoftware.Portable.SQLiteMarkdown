@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.Threading;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json.Serialization;
 using SQLite;
 using SQLitePCL;
@@ -158,6 +159,10 @@ Recordset assignment is atomic; no changes were applied."
                     catch (Exception ex)
                     {
                         this.RethrowHard(ex, "The SQLite transaction resulted in a rollback.");
+                    }
+                    foreach (var record in recordset)
+                    {
+                       // Model.Place()
                     }
                 }
                 UnfilteredCount = success;

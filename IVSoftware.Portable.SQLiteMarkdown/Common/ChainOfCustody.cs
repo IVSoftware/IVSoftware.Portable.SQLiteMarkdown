@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -124,7 +125,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         /// <summary>
         /// The local device commits an edit and asserts a claim of ownership.
         /// </summary>
-        public DateTimeOffset LocalTimestamp { get; set; } = DateTimeOffset.UtcNow;
+        public DateTimeOffset LocalTimestamp { get; set; } = DateTimeOffset.UtcNow.WithTestability();
 
         /// <summary>
         /// The timestamp of the remote file transaction as obtained from 
