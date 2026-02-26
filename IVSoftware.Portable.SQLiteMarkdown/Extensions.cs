@@ -63,7 +63,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 out XElement _);
         }
 
-
         public static string ParseSqlMarkdown<T>(
             this string @this,
             QueryFilterMode qfMode = QueryFilterMode.Query)
@@ -91,10 +90,42 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 out xast);
         }
 
+        /// <summary>
+        /// Performs SQL generation only, using an ad hoc MDC instance created for this purpose.
+        /// </summary>
+        /// <remarks>
+        /// CONFIG
+        /// - The QueryFilterConfig is locked to Query to prevent instantiation of 
+        ///   the built-in FilterQueryDatabase factory, or filtering against it.
+        /// MODE
+        /// - This is distinct from the QueryFilterMode argument, which is a router between
+        ///   the [QueryLikeTerm] and the [FilterLikeTerm] which impacts the SQL generation.
+        /// </remarks>
         [Canonical("Common target for string extensions to ParseSqlMarkdown.")]
         public static string ParseSqlMarkdown(this string @this, Type type, QueryFilterMode qfMode, out XElement xast)
-            => new MarkdownContext(type).ParseSqlMarkdown(@this, type, qfMode, out xast);
+            => new MarkdownContext(
+                type
+                )
+            {
+                QueryFilterConfig = QueryFilterConfig.Query,    // For ad hoc parsing, be sure to lock out filtering. 
+            }.ParseSqlMarkdown(
+                @this,
+                type,
+                qfMode,
+                out xast);
 
+
+        /// <summary>
+        /// Performs SQL parsing only using a custom validation predicate.
+        /// </summary>
+        /// <remarks>
+        /// CONFIG
+        /// - The QueryFilterConfig is locked to Query to prevent instantiation of 
+        ///   the built-in FilterQueryDatabase factory, or filtering against it.
+        /// MODE
+        /// - This is distinct from the QueryFilterMode argument, which is a router between
+        ///   the [QueryLikeTerm] and the [FilterLikeTerm] which impacts the SQL generation.
+        /// </remarks>
         [Canonical("Standalone target for string extensions to ParseSqlMarkdown with validation flow.")]
         private static string ParseSqlMarkdown(
             this string @this,
@@ -106,7 +137,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 new MarkdownContext(
                 type)
                 {
-                    ValidationPredicate = validationPredicate!, // Setting to null sets the VP to its default (which isn't null).
+                    QueryFilterConfig = QueryFilterConfig.Query,    // For ad hoc parsing, be sure to lock out filtering. 
+                    ValidationPredicate = validationPredicate!,     // Setting to null sets the VP to its default (which isn't null).
                 }.ParseSqlMarkdown(@this, type, qfMode, out xexpr);
 
         /// <summary>

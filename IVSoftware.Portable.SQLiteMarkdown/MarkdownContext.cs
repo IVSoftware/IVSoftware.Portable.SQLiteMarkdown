@@ -1578,6 +1578,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         string _nonTransientInputText = string.Empty;
 
+        protected override void OnEpochInitialized()
+        {
+            if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
+                || FilteringState == FilteringState.Ineligible)
+            {
+                Debug.Fail($@"IFD ADVISORY - You should not be here.");
+
+                // Does not throw, but consumer can escalate to exception.
+                this.ThrowSoft<InvalidOperationException>(
+                    messageOrId: "IllegalStartOrRestart",
+                    messageOnly: $@"
+Code should be modified. StartOrRestart should not be called in a non-filtering context.
+OPTION 1: Un-handle this Throw to raise {nameof(InvalidOperationException)}.
+OPTION 2: (default): The timer restart WILL PROCEED".TrimStart());
+            }
+            base.OnEpochInitialized();
+        }
+
 
         [Careful("Trimming or modifying the raw InputText is not allowed.")]
         protected virtual void OnInputTextChanged()
@@ -1604,6 +1622,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     {
                         FilteringState = FilteringState.Active;
                     }
+                    RestartIfSemanticInputChanged();
                     break;
                 case FilteringState.Active:
                     if (InputText.Length == 0)
@@ -1611,13 +1630,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         // Downgrade but stay armed.
                         FilteringState = FilteringState.Armed;
                     }
+                    RestartIfSemanticInputChanged();
                     break;
                 default:
                     throw new NotImplementedException($"Bad case: {FilteringState}");
-            }
-            if(FilteringState != FilteringState.Ineligible)
-            {
-                RestartIfSemanticInputChanged();
             }
         }
 
