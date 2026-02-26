@@ -1542,7 +1542,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     _inputText = value;
                     OnInputTextChanged();
                     OnPropertyChanged();
-                    RestartIfSemanticInputChanged();
                 }
             }
         }
@@ -1616,6 +1615,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 default:
                     throw new NotImplementedException($"Bad case: {FilteringState}");
             }
+            if(FilteringState != FilteringState.Ineligible)
+            {
+                RestartIfSemanticInputChanged();
+            }
         }
 
         /// <summary>
@@ -1650,57 +1653,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {
+            var sql = ParseSqlMarkdown();
+            { }
+
             await base.OnEpochFinalizingAsync(e);
             if (!e.Cancel)
             {
                 OnInputTextSettled(new CancelEventArgs());
             }
         }
-#if false
-        protected WatchdogTimer WDTInputTextSettled
-        {
-            get
-            {
-                if (_wdtInputTextSettled is null)
-                {
-                    _wdtInputTextSettled =
-                        new WatchdogTimer(
-                            defaultInitialAction: () =>
-                            {
-                                // Do this.
-                                // Otherwise fail Test_TrackProgressiveInputState() {...}
-                                // See also: {24048258-8BE4-40C4-BF85-8863E98BED51}
-                                Debug.WriteLine($"210206.Z defaultInitialAction");
-                                _ready.Wait(0);
-                                _wdtEpochToken ??= DHostEpochReferenceCount.GetToken();
-                            },
-                            defaultCompleteAction: () =>
-                            {
-                                OnInputTextSettled(new CancelEventArgs());
-                                localSafeRelease();
-                            })
-                        {
-                            Interval = InputTextSettleInterval
-                        };
-                    _wdtInputTextSettled.Cancelled += (sender, e) =>
-                    {
-                        localSafeRelease();
-                    };
-                    void localSafeRelease()
-                    {
-                        _ready.Wait(0);
-                        _ready.Release();
-                        _wdtEpochToken?.Dispose();
-                        _wdtEpochToken = null;
-                    }
-                }
-                return _wdtInputTextSettled;
-            }
-        }
-
-        WatchdogTimer? _wdtInputTextSettled = null;
-        IDisposable? _wdtEpochToken = null;
-#endif
 
         /// <summary>
         /// Reference counter for Busy property.
@@ -1786,7 +1747,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Produce a IN clause with negative polarity that applies the specified PKs.
         /// </summary>
-        public HashSet<object> DisallowedPrimaryKeys { get; } = new();
+        public HashSet<object> DisallowedPrimaryKeys { get; } = new();        
     }
     public class MarkdownContext<T> : MarkdownContext
     {
