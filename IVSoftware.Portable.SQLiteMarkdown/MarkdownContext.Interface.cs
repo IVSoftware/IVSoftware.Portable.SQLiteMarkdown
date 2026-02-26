@@ -92,12 +92,48 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 else
                 {
-                    // ToDo: Deduplicate using PK instead of reference equality, but it's a start.
-                    var candidate = new HashSet<object>();
-                    int rawCount = 0;
+                    var recordset = value.Cast<object>().ToArray();
+                    var invalidItems = recordset
+                        .Where(_ => !ContractType.IsAssignableFrom(_.GetType()))
+                        .Select(_ => _.GetType().FullName)
+                        .Distinct()
+                        .ToArray();
+
+                    if (invalidItems.Length != 0)
+                    {
+                        this.ThrowHard<InvalidCastException>($@"
+Recordset rejected (rolled back):
+{invalidItems.Length} item(s) are not assignable to the current ContractType '{ContractType.FullName}'.
+
+Invalid type(s):
+- {string.Join("\n- ", invalidItems)}
+
+Recordset assignment is atomic; no changes were applied."
+                        .TrimStart());
+                        return;
+                    }
+
+#if false
+                    int success = 0;
+//                    FilterQueryDatabase.RunInTransaction(() =>
+//                    {
+//                          FilterQueryDatabase.DeleteAll(ContractTypeTableMapping);
+////                        if (_recordset.Count != 0)
+////                        {
+////                            int success = FilterQueryDatabase.InsertAll(_recordset);
+////                            if (success != _recordset.Count)
+////                            {
+////                                this.ThrowHard<SQLiteException>($@"
+////{success} of {_recordset.Count} succeeded in {nameof(FilterQueryDatabase.InsertAll)} ");
+////                            }
+////                        }
+//                    });
+
+
+
+
                     foreach (var item in value)
                     {
-                        rawCount++;
                         if (ContractType?.IsAssignableFrom(item.GetType()) == true)
                         {
                             candidate.Add(item);
@@ -112,12 +148,14 @@ is not assignable to the current ContractType '{ContractType?.FullName ?? "Null 
                             return;
                         }
                     }
-                    var removedCount = rawCount - candidate.Count;
-                    if(removedCount > 0)
-                    {
-                        this.Advisory($@"{removedCount} duplicate items have beel removed.");
-                    }
+                    //var removedCount = rawCount - candidate.Count;
+                    //if(removedCount > 0)
+                    //{
+                    //    this.Advisory($@"{removedCount} duplicate items have been removed.");
+                    //}
                     _recordset = candidate.ToList();
+
+#endif
                 }
                 OnRecordsetChanged();
             }

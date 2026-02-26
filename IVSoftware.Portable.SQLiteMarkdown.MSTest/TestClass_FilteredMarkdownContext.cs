@@ -12,7 +12,7 @@ public class TestClass_FilteredMarkdownContext
         var opc = new ObservableCollection<AffinityQFModel>();
         Assert.AreEqual(
             31,
-            opc.Populate().Count, 
+            opc.PopulateForDemo().Count, 
             "Expecting initial population.");
 
         var pmdc = new PredicateMarkdownContext<AffinityQFModel>
