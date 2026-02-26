@@ -55,6 +55,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         private DateTimeOffset? _affinityUtcNow = default;
 
+        [Ephemeral]
+        public string FullPath =>
+                ParentPath.LintCombinedSegments(Id);
+
         /// <summary>
         /// Materialized Path Policy.
         /// </summary>
@@ -63,7 +67,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             get => _parentPath;
             set
             {
-                value ??= string.Empty;
+                value = value.LintCombinedSegments();
                 if (!Equals(_parentPath, value))
                 {
                     _parentPath = value;

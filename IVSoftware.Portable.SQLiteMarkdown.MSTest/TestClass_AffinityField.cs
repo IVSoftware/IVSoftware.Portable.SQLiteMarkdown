@@ -38,15 +38,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             { }
             expected = @" 
 {
-  ""Position"": 630822888000000000,
-  ""Path"": ""312d1c21-0000-0000-0000-000000000000"",
-  ""UtcStart"": null,
+  ""ParentPath"": """",
+  ""ParentId"": """",
   ""Duration"": ""00:00:00"",
   ""Remaining"": ""00:00:00"",
   ""AffinityMode"": null,
   ""AffinityParent"": null,
   ""AffinityChildMode"": null,
   ""Slots"": [],
+  ""Priority"": 630822888000000000,
+  ""UtcStart"": null,
   ""AffinityTimeDomain"": null,
   ""IsRoot"": true,
   ""IsTimeDomainEnabled"": false,
@@ -56,7 +57,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
   ""IsPastDue"": null,
   ""Available"": null,
   ""Created"": ""2000-01-01T09:00:00+07:00"",
-  ""ChainOfCustody"": ""[]"",
+  ""ChainOfCustody"": ""{\r\n  \""Created\"": \""2000-01-01T09:01:00+07:00\"",\r\n  \""Coc\"": {}\r\n}"",
   ""CustomProperties"": ""{}"",
   ""Id"": ""312d1c21-0000-0000-0000-000000000000"",
   ""Description"": ""New Item"",

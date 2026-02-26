@@ -504,6 +504,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 .OfType<TAttribute>()
                 ?? Enumerable.Empty<TAttribute>();
 
+        /// <summary>
+        /// Returns the declared FieldInfo corresponding to a defined enum value.
+        /// </summary>
+        /// <remarks>
+        /// Ensures that the supplied enum value maps to a named constant declared on its type.
+        /// If the value represents an undefined numeric backing (e.g., casted integral or invalid flag),
+        /// an InvalidOperationException is thrown via ThrowHard.
+        /// This method does not support composite flag values unless explicitly declared.
+        /// </remarks>
         private static FieldInfo GetDeclaredEnumField(Enum value)
         {
             var type = value.GetType();
@@ -519,6 +528,57 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     $"Enum value '{value}' (underlying {numeric}) does not correspond to a declared field on '{type.FullName}'.");
                 return null!; // We warned you.
             }
+        }
+
+        /// <summary>
+        /// Normalizes and concatenates materialized path segments using '\' as the canonical separator.
+        /// </summary>
+        /// <remarks>
+        /// - Accepts null or mixed '/' and '\' input.
+        /// - Trims whitespace.
+        /// - Removes empty segments.
+        /// - Always emits a canonical '\' separated path.
+        /// - If root is null or empty, only segments are considered.
+        /// </remarks>
+        public static string LintCombinedSegments(this string? root, params string[] segments)
+        {
+            var concat = new List<string>();
+
+            void Append(string? value)
+            {
+                var linted = localLintSinglePath(value);
+                if (!string.IsNullOrEmpty(linted))
+                {
+                    concat.AddRange(linted.Split('\\'));
+                }
+            }
+
+            Append(root);
+
+            if (segments != null)
+            {
+                foreach (var segment in segments)
+                {
+                    Append(segment);
+                }
+            }
+
+            return string.Join("\\", concat);
+
+            #region L o c a l F x
+            string localLintSinglePath(string? path)
+            {
+                if (string.IsNullOrWhiteSpace(path))
+                    return string.Empty;
+
+                var parts = path
+                    .Split(new[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => s.Trim())
+                    .Where(s => s.Length > 0);
+
+                return string.Join("\\", parts);
+            }
+            #endregion
         }
     }
 }

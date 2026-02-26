@@ -106,7 +106,7 @@ public class TestClass_PredicateMarkdownContext
             expected = @" 
 [
   {
-    ""Position"": 630822892800000000,
+    ""Priority"": 630822892800000000,
     ""ParentPath"": ""312d1c21-0000-0000-0000-000000000000"",
     ""ParentId"": ""312d1c21-0000-0000-0000-000000000000"",
     ""UtcStart"": null,
