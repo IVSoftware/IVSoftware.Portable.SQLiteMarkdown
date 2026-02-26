@@ -1,4 +1,6 @@
-﻿using IVSoftware.Portable.Disposable;
+﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.Threading;
 using SQLite;
 using SQLitePCL;
@@ -78,25 +80,65 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         TableMapping _contractTypeTableMapping = default;
+
         public IEnumerable Recordset
         {
             protected get => _recordset;
             set
             {
-                _recordset.Clear();
-                if(value is not null)
+                if (value is null)
                 {
+                    _recordset.Clear();
+                }
+                else
+                {
+                    // ToDo: Deduplicate using PK instead of reference equality, but it's a start.
+                    var candidate = new HashSet<object>();
+                    int rawCount = 0;
                     foreach (var item in value)
                     {
-                        _recordset.Add(item);
+                        rawCount++;
+                        if (ContractType?.IsAssignableFrom(item.GetType()) == true)
+                        {
+                            candidate.Add(item);
+                        }
+                        else
+                        {
+                            this.ThrowHard<InvalidCastException>($@"
+Recordset rejected (rolled back): 
+Item of type '{item.GetType().FullName}'
+is not assignable to the current ContractType '{ContractType?.FullName ?? "Null Type"}'."
+    .TrimStart());
+                            return;
+                        }
                     }
+                    var removedCount = rawCount - candidate.Count;
+                    if(removedCount > 0)
+                    {
+                        this.Advisory($@"{removedCount} duplicate items have beel removed.");
+                    }
+                    _recordset = candidate.ToList();
                 }
                 OnRecordsetChanged();
             }
         }
-        IList _recordset = new List<object>();
+        List<object> _recordset = new();
         protected virtual void OnRecordsetChanged()
         {
+            FilterQueryDatabase.RunInTransaction(() =>
+            {
+                FilterQueryDatabase.DeleteAll(ContractTypeTableMapping);
+                if (_recordset.Count != 0)
+                {
+                    int success = FilterQueryDatabase.InsertAll(_recordset);
+                    if (success != _recordset.Count)
+                    {
+                        this.ThrowHard<SQLiteException>($@"
+{success} of {_recordset.Count} succeeded in {nameof(FilterQueryDatabase.InsertAll)} ");
+                    }
+                }
+            });
+
             switch (_recordset.Count)
             {
                 case 0:
