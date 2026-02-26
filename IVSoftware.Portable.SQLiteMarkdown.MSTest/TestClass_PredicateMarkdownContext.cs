@@ -1,5 +1,8 @@
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.WinOS.MSTest.Extensions;
+using Newtonsoft.Json;
 using SQLite;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -53,58 +56,150 @@ public class TestClass_PredicateMarkdownContext
     [TestMethod]
     public async Task Test_5_Items()
     {
+        using var te = this.TestableEpoch();
+
         const int COUNT = 5;
-        const string ParentId = "BC28ADEC-4F82-4B6F-B98A-284B528DD01A";
+        string ParentId = new Guid().WithTestability().ToString();
         string actual, expected, sql;
         List<AffinityQFModel> recordset;
 
         using var cnx = new SQLiteConnection(":memory:");
         cnx.CreateTable<AffinityQFModel>();
 
-        var opc = 
-            new ObservableCollection<AffinityQFModel>()
-            .PopulateForDemo(COUNT, PopulateOptions.RandomChecks);
+        IList<AffinityQFModel> opc;
 
-        // Assign a parent path to last item.
-        opc.Last().ParentPath = ParentId;
+        await subtest_5_Items1();
+        await subtest_5_Items2();
+        await subtest_5_Items3();
+        await subtest_5_Items4();
+        await subtest_5_Items5();
+        await subtest_5_Items6();
+        await subtest_5_Items7();
+        await subtest_5_Items8();
+        await subtest_5_Items9();
+        await subtest_5_Items10();
 
-        Assert.AreEqual(
-            COUNT,
-            opc.Count,
-            "Expecting initial population.");
-
-        Assert.AreEqual(COUNT, cnx.InsertAll(opc));
-        { }
-
-        sql = $"Select * from items where ParentId='{ParentId}'";
-        recordset = cnx.Query<AffinityQFModel>(sql);
-        { }
-
-
-#if false
-        var pmdc = new PredicateMarkdownContext<AffinityQFModel>
+        #region S U B T E S T S
+        async Task subtest_5_Items1()
         {
-            QueryFilterConfig = QueryFilterConfig.Filter,
-            ObservableProjection = (INotifyCollectionChanged)opc,
-            Recordset = opc,
-        };
+            opc =
+               new ObservableCollection<AffinityQFModel>()
+               .PopulateForDemo(COUNT, PopulateOptions.RandomChecks);
+            // Assign a parent path to last item.
+            opc.Last().ParentPath = ParentId;
 
-        var az = pmdc.ObservableProjection;
+            Assert.AreEqual(
+                COUNT,
+                opc.Count,
+                "Expecting initial population.");
 
-        Assert.AreEqual(
-            COUNT,
-            pmdc.UnfilteredCount,
-            "Expecting UNFILTERED COUNT is correct meaning RECORDSET is initialized.");
+            Assert.AreEqual(COUNT, cnx.InsertAll(opc));
+            { }
 
-        Assert.AreEqual(
-            SearchEntryState.QueryCompleteWithResults,
-            pmdc.SearchEntryState,
-            "Expecting state reflects recordset.");
-        Assert.AreEqual(
-            FilteringState.Armed,
-            pmdc.FilteringState);
-        { }
+            sql = $"Select * from items where ParentId='{ParentId}'";
+            recordset = cnx.Query<AffinityQFModel>(sql);
+            actual = JsonConvert.SerializeObject(recordset, Formatting.Indented);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[
+  {
+    ""Position"": 630822892800000000,
+    ""ParentPath"": ""312d1c21-0000-0000-0000-000000000000"",
+    ""ParentId"": ""312d1c21-0000-0000-0000-000000000000"",
+    ""UtcStart"": null,
+    ""Duration"": ""00:00:00"",
+    ""Remaining"": ""00:00:00"",
+    ""AffinityMode"": null,
+    ""AffinityParent"": null,
+    ""AffinityChildMode"": null,
+    ""Slots"": [],
+    ""AffinityTimeDomain"": null,
+    ""IsRoot"": false,
+    ""IsTimeDomainEnabled"": false,
+    ""UtcEnd"": null,
+    ""IsDone"": null,
+    ""IsDonePendingConfirmation"": null,
+    ""IsPastDue"": null,
+    ""Available"": null,
+    ""Created"": ""2000-01-01T09:10:00+07:00"",
+    ""ChainOfCustody"": ""{\r\n  \""Created\"": \""2000-01-01T09:09:00+07:00\"",\r\n  \""Coc\"": {}\r\n}"",
+    ""CustomProperties"": ""{}"",
+    ""Id"": ""312d1c21-0000-0000-0000-000000000005"",
+    ""Description"": ""Item05"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": """",
+    ""IsChecked"": true,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000005"",
+    ""QueryTerm"": ""item05"",
+    ""FilterTerm"": ""item05"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item05\""\r\n}""
+  }
+]";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting json serialization to match with Testable Guids and DateTimeOffset."
+            );
+        }
+
+        async Task subtest_5_Items2()
+        {
+#if false
+            var pmdc = new PredicateMarkdownContext<AffinityQFModel>
+            {
+                QueryFilterConfig = QueryFilterConfig.Filter,
+                ObservableProjection = (INotifyCollectionChanged)opc,
+                Recordset = opc,
+            };
+
+            var az = pmdc.ObservableProjection;
+
+            Assert.AreEqual(
+                COUNT,
+                pmdc.UnfilteredCount,
+                "Expecting UNFILTERED COUNT is correct meaning RECORDSET is initialized.");
+
+            Assert.AreEqual(
+                SearchEntryState.QueryCompleteWithResults,
+                pmdc.SearchEntryState,
+                "Expecting state reflects recordset.");
+            Assert.AreEqual(
+                FilteringState.Armed,
+                pmdc.FilteringState);
+            { }
 #endif
+        }
+        async Task subtest_5_Items3()
+        {
+        }
+        async Task subtest_5_Items4()
+        {
+        }
+        async Task subtest_5_Items5()
+        {
+        }
+        async Task subtest_5_Items6()
+        {
+        }
+        async Task subtest_5_Items7()
+        {
+        }
+        async Task subtest_5_Items8()
+        {
+        }
+        async Task subtest_5_Items9()
+        {
+        }
+        async Task subtest_5_Items10()
+        {
+        }
+        #endregion S U B T E S T S
 
     }
 }
