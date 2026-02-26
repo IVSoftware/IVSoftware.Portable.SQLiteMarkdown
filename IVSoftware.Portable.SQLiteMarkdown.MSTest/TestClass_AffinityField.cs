@@ -38,8 +38,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             { }
             expected = @" 
 {
-  ""ParentPath"": """",
-  ""ParentId"": """",
   ""Duration"": ""00:00:00"",
   ""Remaining"": ""00:00:00"",
   ""AffinityMode"": null,
@@ -56,6 +54,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
   ""IsDonePendingConfirmation"": null,
   ""IsPastDue"": null,
   ""Available"": null,
+  ""FullPath"": ""312d1c21-0000-0000-0000-000000000000"",
+  ""ParentPath"": """",
+  ""ParentId"": """",
   ""Created"": ""2000-01-01T09:00:00+07:00"",
   ""ChainOfCustody"": ""{\r\n  \""Created\"": \""2000-01-01T09:01:00+07:00\"",\r\n  \""Coc\"": {}\r\n}"",
   ""CustomProperties"": ""{}"",

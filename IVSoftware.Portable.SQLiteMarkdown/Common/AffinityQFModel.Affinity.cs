@@ -56,8 +56,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         private DateTimeOffset? _affinityUtcNow = default;
 
         [Ephemeral]
-        public string FullPath =>
-                ParentPath.LintCombinedSegments(Id);
+        public string FullPath => ParentPath.LintCombinedSegments(Id);
 
         /// <summary>
         /// Materialized Path Policy.
@@ -86,44 +85,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         string _parentId = string.Empty;
 
 
-        private static bool TryGetSafePath(string path, string id, out string safePath)
-        {
-            safePath = id; // default fallback
-
-            // Id must be a valid Guid
-            Guid idGuid;
-            if (!Guid.TryParse(id, out idGuid))
-                return false;
-
-            var raw = string.IsNullOrWhiteSpace(path) ? id : path;
-
-            var parts = raw.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-
-            if (parts.Length == 0)
-                return true; // fallback already set to id
-
-            // Every segment must be a Guid
-            for (int i = 0; i < parts.Length; i++)
-            {
-                Guid parsed;
-                if (!Guid.TryParse(parts[i], out parsed))
-                    return true; // fallback to id
-            }
-
-            // Last segment must match Id
-            var last = parts[parts.Length - 1];
-            if (!string.Equals(last, id, StringComparison.OrdinalIgnoreCase))
-                return true; // fallback to id
-
-            safePath = string.Join("/", parts);
-            return true;
-        }
-
         /// <summary>
         /// Authoritative duration commitment for the item.
         /// </summary>
         /// <remarks>
-        /// - Duration and Remaaining are unlike other temporal fields; they do not 
+        /// - Duration and Remaining are unlike other temporal fields; they do not 
         ///   yield, reset, or null in response to affinity mode itself becoming null.
         /// - This way, should the item come back into the temporal field domain it
         ///   will find the promise - and any partial delivery - intact.

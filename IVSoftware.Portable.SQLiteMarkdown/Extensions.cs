@@ -553,7 +553,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
 
-            Append(root);
+            // Root may be null. In that case it contributes nothing.
+            if (!string.IsNullOrWhiteSpace(root))
+            {
+                Append(root);
+            }
 
             if (segments != null)
             {
