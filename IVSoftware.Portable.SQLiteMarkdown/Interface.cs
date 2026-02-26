@@ -149,6 +149,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     [Probationary("Maintain as Internal until stable.")]
     internal interface IMarkdownContext
     {
+        XElement Model { get; }
         uint DefaultLimit { get; set; }
 
         /// <summary>
@@ -618,18 +619,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         string Id { get; set; }
 
         /// <summary>
-        /// Defines a hierarchal position where user definse the policy.
+        /// Materialized Path Policy defines a hierarchal position.
         /// </summary>
-        /// <remarks>
-        /// TYPICAL POLICIES
-        /// - Materialized Path Policy (preferred):
-        ///     Forward-slash delimited values always end with Id 
-        ///     where more memory allows fewer queries.
-        /// - Adjacency List Policy:
-        ///     Stored only parent Id (if any) and requires recursive
-        ///     calls to compute full path.
-        /// </remarks>
-        string Path { get; set; }
+        public string ParentPath { get; set; }
+
+        /// <summary>
+        /// Adjacency List Policy defines a hierarchal position.
+        /// </summary>
+        string ParentId { get; }
 
         bool IsRoot { get; }
 

@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -106,6 +107,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 xast = null!; // We warned you.
                 return string.Empty;
             }
+            ProxyType = proxyType;
 #if DEBUG
             if (expr == "animal b")
             { }
@@ -1578,24 +1580,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         string _nonTransientInputText = string.Empty;
 
-        protected override void OnEpochInitialized()
-        {
-            if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
-                || FilteringState == FilteringState.Ineligible)
-            {
-                Debug.Fail($@"IFD ADVISORY - You should not be here.");
-
-                // Does not throw, but consumer can escalate to exception.
-                this.ThrowSoft<InvalidOperationException>(
-                    messageOrId: "IllegalStartOrRestart",
-                    messageOnly: $@"
-Code should be modified. StartOrRestart should not be called in a non-filtering context.
-OPTION 1: Un-handle this Throw to raise {nameof(InvalidOperationException)}.
-OPTION 2: (default): The timer restart WILL PROCEED".TrimStart());
-            }
-            base.OnEpochInitialized();
-        }
-
 
         [Careful("Trimming or modifying the raw InputText is not allowed.")]
         protected virtual void OnInputTextChanged()
@@ -1667,14 +1651,35 @@ OPTION 2: (default): The timer restart WILL PROCEED".TrimStart());
 
         protected virtual void OnSearchEntryStateChanged() { }
 
+
+        protected override void OnEpochInitialized()
+        {
+            if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
+                || FilteringState == FilteringState.Ineligible)
+            {
+                Debug.Fail($@"IFD ADVISORY - You should not be here.");
+
+                // Does not throw, but consumer can escalate to exception.
+                this.ThrowSoft<InvalidOperationException>(
+                    messageOrId: "IllegalStartOrRestart",
+                    messageOnly: $@"
+Code should be modified. StartOrRestart should not be called in a non-filtering context.
+OPTION 1: Un-handle this Throw to raise {nameof(InvalidOperationException)}.
+OPTION 2: (default): The timer restart WILL PROCEED".TrimStart());
+            }
+
+            // Call base to set Running and fire initial action and event.
+            base.OnEpochInitialized();
+        }
+
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {
-            var sql = ParseSqlMarkdown();
-            { }
-
             await base.OnEpochFinalizingAsync(e);
             if (!e.Cancel)
             {
+                var sql = ParseSqlMarkdown();
+                var recordset = FilterQueryDatabase.Query(ProxyType.GetMapping(), sql);
+
                 OnInputTextSettled(new CancelEventArgs());
             }
         }

@@ -239,4 +239,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         WM_RBUTTONUP = 0x0205,
         WM_CONTEXTMENU = 0x007B,
     }
+
+    internal enum StdElement
+    {
+        model,
+    }
 }

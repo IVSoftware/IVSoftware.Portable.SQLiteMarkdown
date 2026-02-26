@@ -12,11 +12,35 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
     partial class MarkdownContext : IMarkdownContext
     {
+        /// <summary>
+        /// If set, the MDC puppeteers the visible projection directly.
+        /// </summary>
+        /// <remarks>
+        /// WHAT IT IS: The handle to the ItemsSource that is bound to (what is presumed to be) the UI.
+        /// WHAT IT IS NOT: A readable list to sync to.
+        /// </remarks>
+        protected IList? Projection { get; }
+
+        public XElement Model
+        {
+            get
+            {
+                if (_model is null)
+                {
+                    _model = new XElement(nameof(StdElement.model));
+                }
+                return _model;
+            }
+        }
+        XElement? _model = null;
+
+
         /// <summary>
         /// The ephemeral backing store for this collection's contract filtering.
         /// </summary>
@@ -87,11 +111,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             set
             {
-                if (value is null)
-                {
-                    UnfilteredCount = 0;
-                }
-                else
+                int success = 0;
+                if (value is not null)
                 {
                     var recordset = value.Cast<object>().ToArray();
                     var invalidItems = recordset
@@ -99,8 +120,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         .Select(_ => _.GetType().FullName)
                         .Distinct()
                         .ToArray();
-                    if(typeof(IAffinityItem).IsAssignableFrom(ContractType))
-                    {
+
+                    if (typeof(IAffinityItem).IsAssignableFrom(ContractType))
+                    {   /* G T K */
                     }
 
                     if (invalidItems.Length != 0)
@@ -121,12 +143,10 @@ Recordset assignment is atomic; no changes were applied."
                         FilterQueryDatabase.RunInTransaction(() =>
                         {
                             FilterQueryDatabase.DeleteAll(ContractTypeTableMapping);
-                            int success = 0;
                             foreach (var item in recordset)
                             {
                                 success += FilterQueryDatabase.InsertOrReplace(item);
                             }
-                            UnfilteredCount = success;
                             var nDuplicates = recordset.Length - UnfilteredCount;
                             if(nDuplicates != 0)
                             {
@@ -140,27 +160,7 @@ Recordset assignment is atomic; no changes were applied."
                         this.RethrowHard(ex, "The SQLite transaction resulted in a rollback.");
                     }
                 }
-                OnRecordsetChanged();
-            }
-        }
-
-
-        protected virtual void OnRecordsetChanged()
-        {
-            switch (UnfilteredCount)
-            {
-                case 0:
-                    SearchEntryState = SearchEntryState.QueryCompleteNoResults;
-                    FilteringState = FilteringState.Ineligible;
-                    break;
-                case 1:
-                    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                    FilteringState = FilteringState.Ineligible;
-                    break;
-                default:
-                    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                    FilteringState = FilteringState.Armed;
-                    break;
+                UnfilteredCount = success;
             }
         }
 
@@ -200,14 +200,40 @@ Recordset assignment is atomic; no changes were applied."
 
         INotifyCollectionChanged? _observableProjection = null;
 
-        protected IList? Projection { get; }
-
         protected virtual void OnObservableProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             throw new NotImplementedException();
         }
 
-        public int UnfilteredCount { get; protected set; }
+        public int UnfilteredCount
+        {
+            get => _unfilteredCount;
+            set
+            {
+                if (!Equals(_unfilteredCount, value))
+                {
+                    _unfilteredCount = value; 
+                    switch (_unfilteredCount)
+                    {
+                        case 0:
+                            SearchEntryState = SearchEntryState.QueryCompleteNoResults;
+                            FilteringState = FilteringState.Ineligible;
+                            break;
+                        case 1:
+                            SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                            FilteringState = FilteringState.Ineligible;
+                            break;
+                        default:
+                            SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                            FilteringState = FilteringState.Armed;
+                            break;
+                    }
+                    OnPropertyChanged();
+                }
+            }
+        }
+        int _unfilteredCount = default;
+
 
         /// <summary>
         /// UI changes for tracking must be wrapped in using block in order to be tracked.

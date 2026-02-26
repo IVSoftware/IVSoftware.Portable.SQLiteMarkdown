@@ -3,6 +3,7 @@ using SQLite;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using EphemeralAttribute = SQLite.IgnoreAttribute;
 
@@ -76,40 +77,31 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         long _position = 0;
 
         /// <summary>
-        /// Globally-unique identifier that defaults to Materialized Path Policy.
+        /// Materialized Path Policy.
         /// </summary>
-        public string Path
+        public string ParentPath
         {
-            get
-            {
-                if (TryGetSafePath(_path, Id, out var safePath))
-                {
-                    _path = safePath;
-                }
-                else
-                {
-                    this.ThrowPolicyException(AffinityPolicy.IdMustBeGuid);
-                }
-                return _path;
-            }
+            get => _parentPath;
             set
             {
-                if (value?.EndsWith(Id) == true)
+                value ??= string.Empty;
+                if (!Equals(_parentPath, value))
                 {
-                    if (!Equals(_path, value))
-                    {
-                        _path = value;
-                        OnPropertyChanged();
-                    }
-                }
-                else
-                {
-                    this.ThrowHard<InvalidOperationException>(
-                        $"Policy violation for {nameof(AffinityQFModel)}.{nameof(Path)}: This value must end with Id");
+                    _parentPath = value;
+                    _parentId = _parentPath.Split('\\').Last();
+                    OnPropertyChanged();
                 }
             }
         }
-        string _path = string.Empty;
+        string _parentPath = string.Empty;
+
+        public string ParentId
+        {
+            get => _parentId;
+            set { }
+        }
+        string _parentId = string.Empty;
+
 
         private static bool TryGetSafePath(string path, string id, out string safePath)
         {
@@ -256,7 +248,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         public AffinityTimeDomain? AffinityTimeDomain => null;
 
         [Ephemeral]
-        public bool IsRoot => string.Equals(Path, Id, StringComparison.OrdinalIgnoreCase); 
+        public bool IsRoot => string.IsNullOrWhiteSpace(ParentId); 
         
         [Ephemeral]
         public bool IsTimeDomainEnabled => !(_affinityUtcNow is null || AffinityMode is null);

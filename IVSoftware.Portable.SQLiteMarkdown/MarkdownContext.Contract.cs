@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
 using System;
@@ -89,7 +90,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-        Type? _contractType = default;
+        Type? _contractType = null;
 
         /// <summary>
         /// Creates or recreates a memory database containing a table for the ContractType
@@ -106,6 +107,55 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 TableName = ResolveTableNameForPass(ContractType);
             }
         }
+        public Type ProxyType
+        {
+            get => _proxyType;
+            set
+            {
+                if (value is null)
+                {
+                    this.ThrowHard<NullReferenceException>(("Proxy type cannot be null."));
+                }
+                else if (value.IsInterface)
+                {
+                    this.ThrowHard<NullReferenceException>(("Proxy type must be concrete (abstract is ok)."));
+                }
+                else
+                {
+                    if (!Equals(_proxyType, value))
+                    {
+                        _proxyType = value;
+                        if (_proxyType != ContractType)
+                        {
+                            var mapping = FilterQueryDatabase.GetMapping(_proxyType);
+                            if (mapping.TableName == ContractTypeTableMapping.TableName)
+                            {
+                                throw new NotImplementedException("ToDo");
+                            }
+                            else
+                            {
+                                this.ThrowPolicyException(SQLiteMarkdownPolicy.ProxyTableMapping);
+                            }
+                        }
+                        OnPropertyChanged();
+                    }
+                }
+            }
+        }
+        Type _proxyType = null!;
+        public TableMapping ProxyTypeTableMapping
+        {
+            get => _proxyTypeTableMapping;
+            set
+            {
+                if (!Equals(_proxyTypeTableMapping, value))
+                {
+                    _proxyTypeTableMapping = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        TableMapping _proxyTypeTableMapping = null!;    // Nulls are guarded.
 
         /// <summary>
         /// The table name for the current parse flow.
@@ -134,6 +184,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         string _tableName = string.Empty;
 
+        [Obsolete("Get table name from dedicated SQLite Connection.")]
         protected virtual string ResolveTableNameForPass(Type type)
         {
             if (type.TryGetTableNameFromBaseClass(out var bcTableName, out var bc))

@@ -25,39 +25,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// This property contributes to LIKE expressions in Query mode .
     /// </summary>
-    public class QueryLikeTermAttribute : MarkdownTermAttribute
-    {
-    }
+    public class QueryLikeTermAttribute : MarkdownTermAttribute { }
 
     /// <summary>
     /// This property contributes to LIKE expressions in Filter mode .
     /// </summary>
-    public class FilterLikeTermAttribute : MarkdownTermAttribute
-    {
-    }
+    public class FilterLikeTermAttribute : MarkdownTermAttribute { }
+
 
     /// <summary>
     /// Derived attribute for properties that should participate in tag-based match searches.
     /// </summary>
-    public class TagMatchTermAttribute : MarkdownTermAttribute
-    {
-    }
+    public class TagMatchTermAttribute : MarkdownTermAttribute { }
+
 
     /// <summary>
     /// Derived attribute for properties that should participate in SQL-like search functionality.
     /// </summary>
     [Obsolete("Use [QueryLikeTerm] instead.")]
-    public class SqlLikeTermAttribute : QueryLikeTermAttribute
-    {
-    }
+    public class SqlLikeTermAttribute : QueryLikeTermAttribute { }
+
 
     /// <summary>
     /// Derived attribute for properties that should participate in "Contains" search functionality.
     /// </summary>
     [Obsolete("Use [FilterLikeTerm] instead.")]
-    public class FilterContainsTermAttribute : FilterLikeTermAttribute
-    {
-    }
+    public class FilterContainsTermAttribute : FilterLikeTermAttribute { }
+
 
     /// <summary>
     /// Custom attribute that works synergistically with <see cref="SQLite.IgnoreAttribute"/> to exclude properties from 
@@ -242,5 +236,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public string Binding { get; } = null!;
         public string Predicate { get; } = null!;
         public string Expr => $"{Binding} {Predicate}";
+    }
+
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    public class ExtendMappingAttribute : Attribute
+    {
+        public bool Allow { get; set; } = true;
     }
 }
