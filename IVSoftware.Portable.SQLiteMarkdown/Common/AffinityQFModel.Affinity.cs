@@ -55,27 +55,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         private DateTimeOffset? _affinityUtcNow = default;
 
-        public long Position
-        {
-            get
-            {
-                if (_position == 0)
-                {
-                    _position = Created.UtcTicks;
-                }
-                return _position;
-            }
-            set
-            {
-                if (!Equals(_position, value))
-                {
-                    _position = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        long _position = 0;
-
         /// <summary>
         /// Materialized Path Policy.
         /// </summary>
@@ -135,20 +114,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             safePath = string.Join("/", parts);
             return true;
         }
-
-        public DateTimeOffset? UtcStart
-        {
-            get => _utcStart;
-            set
-            {
-                if (!Equals(_utcStart, value))
-                {
-                    _utcStart = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        DateTimeOffset? _utcStart = default;
 
         /// <summary>
         /// Authoritative duration commitment for the item.
@@ -211,7 +176,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         AffinityMode? _utcEpochMode = null;
 
-
         public string? AffinityParent
         {
             get => _utcParent;
@@ -243,7 +207,66 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         IList<AffinitySlot> IAffinityItem.Slots => Slots;
         public List<AffinitySlot> Slots { get; } = new List<AffinitySlot>();
 
+        /// <summary>
+        /// Priority ticks that are also the timebase for AffinityMode.Fixed flags.
+        /// </summary>
+        public long Priority
+        {
+            get
+            {
+                if (_priority == 0)
+                {
+                    _priority = Created.UtcTicks;
+                }
+                return _priority;
+            }
+            set
+            {
+                if (!Equals(_priority, value))
+                {
+                    _priority = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        long _priority = 0;
+
         #region A F F I N I T Y    E P H E M E R A L
+
+
+        [Ephemeral]
+        public DateTimeOffset? UtcStart
+        {
+            get
+            {
+                switch (AffinityMode)
+                {
+                    case null:
+                        break;
+                    case SQLiteMarkdown.AffinityMode.Asap:
+                        break;
+                    case SQLiteMarkdown.AffinityMode.FixedTime:
+                        break;
+                    case SQLiteMarkdown.AffinityMode.FixedDate:
+                        break;
+                    case SQLiteMarkdown.AffinityMode.FixedDateAndTime:
+                        break;
+                    default:
+                        break;
+                }
+                return _utcStart; 
+            }
+            set
+            {
+                if (!Equals(_utcStart, value))
+                {
+                    _utcStart = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        DateTimeOffset? _utcStart = default;
+
         [Ephemeral]
         public AffinityTimeDomain? AffinityTimeDomain => null;
 

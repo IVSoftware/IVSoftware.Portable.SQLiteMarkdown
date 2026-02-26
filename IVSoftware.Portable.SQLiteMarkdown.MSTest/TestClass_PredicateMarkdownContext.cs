@@ -68,7 +68,7 @@ public class TestClass_PredicateMarkdownContext
 
         IList<AffinityQFModel> opc;
 
-        await subtest_5_Items1();
+        await subtest_EnsureParentIdSetterWorksDRY();
         await subtest_5_Items2();
         await subtest_5_Items3();
         await subtest_5_Items4();
@@ -80,7 +80,7 @@ public class TestClass_PredicateMarkdownContext
         await subtest_5_Items10();
 
         #region S U B T E S T S
-        async Task subtest_5_Items1()
+        async Task subtest_EnsureParentIdSetterWorksDRY()
         {
             opc =
                new ObservableCollection<AffinityQFModel>()
@@ -94,10 +94,12 @@ public class TestClass_PredicateMarkdownContext
                 "Expecting initial population.");
 
             Assert.AreEqual(COUNT, cnx.InsertAll(opc));
-            { }
 
+            // Query SPECIFICALLY on ParentId alone.
             sql = $"Select * from items where ParentId='{ParentId}'";
             recordset = cnx.Query<AffinityQFModel>(sql);
+
+
             actual = JsonConvert.SerializeObject(recordset, Formatting.Indented);
             actual.ToClipboardExpected();
             { }

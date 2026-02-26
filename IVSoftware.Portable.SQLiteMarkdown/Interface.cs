@@ -639,7 +639,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// also that one might insert Item B as "halfway between"
         /// Item A and Item C.
         /// </remarks>
-        long Position { get; set; }
+        long Priority { get; set; }
 
         /// <summary>
         /// Reference point for AffinityMode.Fixed.
