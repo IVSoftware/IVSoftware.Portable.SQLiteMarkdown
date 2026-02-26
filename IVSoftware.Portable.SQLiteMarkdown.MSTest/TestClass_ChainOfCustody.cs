@@ -9,17 +9,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 public class TestClass_ChainOfCustody
 {
     [TestMethod]
-    public void Test_SerializeToken()
+    public void Test_SerializeCOCToken()
     {
         using var te = this.TestableEpoch();
 
         string actual, expected;
 
-        var entryCOC = new ChainOfCustodyToken();
+        var cocToken = new ChainOfCustodyToken();
 
-        actual = JsonConvert.SerializeObject(entryCOC, Formatting.Indented);
-        actual.ToClipboardExpected();
-        { }
+        actual = JsonConvert.SerializeObject(cocToken, Formatting.Indented);
         expected = @" 
 {
   ""LocalTimestamp"": ""2000-01-01T09:00:00+07:00"",
@@ -33,5 +31,31 @@ public class TestClass_ChainOfCustody
     actual.NormalizeResult(),
     "Expecting json serialization to succeed."
 );
+    }
+
+    [TestMethod]
+    public void Test_SerializeCOC()
+    {
+        using var te = this.TestableEpoch();
+        string actual, expected;
+        ChainOfCustody coc;
+
+        coc = new ChainOfCustody();
+
+        actual = JsonConvert.SerializeObject(coc, Formatting.Indented);
+        actual.ToClipboardExpected();
+        { }
+        expected = @" 
+[]"
+        ;
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting json serialization to succeed."
+        );
+
+        // Test empty loopback.
+        Assert.IsNotNull(JsonConvert.DeserializeObject<ChainOfCustody>("[]"));
     }
 }

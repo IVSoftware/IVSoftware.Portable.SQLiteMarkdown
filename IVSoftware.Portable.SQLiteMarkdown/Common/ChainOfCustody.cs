@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     /// </remarks>
     public class ChainOfCustody
         : IChainOfCustody
-        , IEnumerable<KeyValuePair<string, ChainOfCustodyToken>>
+        , ICollection<KeyValuePair<string, ChainOfCustodyToken>>
     {
         public DateTimeOffset Created { get; set; } = DateTime.UtcNow;
 
@@ -106,9 +107,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             return ((IEnumerable)_coc).GetEnumerator();
         }
 
+        public void Add(KeyValuePair<string, ChainOfCustodyToken> item)
+        {
+            ((ICollection<KeyValuePair<string, ChainOfCustodyToken>>)_coc).Add(item);
+        }
+
+        public void Clear()
+        {
+            ((ICollection<KeyValuePair<string, ChainOfCustodyToken>>)_coc).Clear();
+        }
+
+        public bool Contains(KeyValuePair<string, ChainOfCustodyToken> item)
+        {
+            return ((ICollection<KeyValuePair<string, ChainOfCustodyToken>>)_coc).Contains(item);
+        }
+
+        public void CopyTo(KeyValuePair<string, ChainOfCustodyToken>[] array, int arrayIndex)
+        {
+            ((ICollection<KeyValuePair<string, ChainOfCustodyToken>>)_coc).CopyTo(array, arrayIndex);
+        }
+
+        public bool Remove(KeyValuePair<string, ChainOfCustodyToken> item)
+        {
+            return ((ICollection<KeyValuePair<string, ChainOfCustodyToken>>)_coc).Remove(item);
+        }
+
         private readonly SemaphoreSlim _busy = new SemaphoreSlim(1, 1);
 
         ChainOfCustody IChainOfCustody.ChainOfCustody => this;
+
+        public int Count => ((ICollection<KeyValuePair<string, ChainOfCustodyToken>>)_coc).Count;
+
+        public bool IsReadOnly => ((ICollection<KeyValuePair<string, ChainOfCustodyToken>>)_coc).IsReadOnly;
     }
 
     /// <summary>
