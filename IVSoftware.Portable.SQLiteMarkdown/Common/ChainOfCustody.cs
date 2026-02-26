@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,11 +21,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     /// Global serialization is acceptable because mutation frequency is low
     /// and custody integrity is prioritized over throughput.
     /// </remarks>
-    public class ChainOfCustody
-        : IChainOfCustody
-        , ICollection<KeyValuePair<string, ChainOfCustodyToken>>
+    public class ChainOfCustody : IChainOfCustody
     {
-        public DateTimeOffset Created { get; set; } = DateTime.UtcNow;
+        public DateTimeOffset Created { get; set; } = DateTimeOffset.UtcNow.WithTestability();
 
         /// <summary>
         /// Local principal presets its identity (e.g., guid).
@@ -95,50 +94,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             }
         }
 
-        private readonly Dictionary<string, ChainOfCustodyToken> _coc = new();
-
-        public IEnumerator<KeyValuePair<string, ChainOfCustodyToken>> GetEnumerator()
-        {
-            return ((IEnumerable<KeyValuePair<string, ChainOfCustodyToken>>)_coc).GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IEnumerable)_coc).GetEnumerator();
-        }
-
-        public void Add(KeyValuePair<string, ChainOfCustodyToken> item)
-        {
-            ((ICollection<KeyValuePair<string, ChainOfCustodyToken>>)_coc).Add(item);
-        }
-
-        public void Clear()
-        {
-            ((ICollection<KeyValuePair<string, ChainOfCustodyToken>>)_coc).Clear();
-        }
-
-        public bool Contains(KeyValuePair<string, ChainOfCustodyToken> item)
-        {
-            return ((ICollection<KeyValuePair<string, ChainOfCustodyToken>>)_coc).Contains(item);
-        }
-
-        public void CopyTo(KeyValuePair<string, ChainOfCustodyToken>[] array, int arrayIndex)
-        {
-            ((ICollection<KeyValuePair<string, ChainOfCustodyToken>>)_coc).CopyTo(array, arrayIndex);
-        }
-
-        public bool Remove(KeyValuePair<string, ChainOfCustodyToken> item)
-        {
-            return ((ICollection<KeyValuePair<string, ChainOfCustodyToken>>)_coc).Remove(item);
-        }
-
         private readonly SemaphoreSlim _busy = new SemaphoreSlim(1, 1);
 
         ChainOfCustody IChainOfCustody.ChainOfCustody => this;
 
-        public int Count => ((ICollection<KeyValuePair<string, ChainOfCustodyToken>>)_coc).Count;
-
-        public bool IsReadOnly => ((ICollection<KeyValuePair<string, ChainOfCustodyToken>>)_coc).IsReadOnly;
+        // Json.NET will populate this.
+        // Not publicly writable.
+        [JsonProperty]
+        private Dictionary<string, ChainOfCustodyToken> Coc
+        {
+            get => _coc;
+            set => _coc = value ?? new();
+        }
+        private Dictionary<string, ChainOfCustodyToken> _coc = new();
     }
 
     /// <summary>

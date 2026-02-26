@@ -98,7 +98,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                 _defaultIncr = value;
             }
         }
-        static TimeSpan _defaultIncr = TimeSpan.FromMinutes(5);
+
+        // The DEFAULT for the DEFAULT INCREMENTER
+        static TimeSpan _defaultIncr = TimeSpan.FromMinutes(1);
 
         static DateTimeOffset _utcCurrent = UtcReset;
 
