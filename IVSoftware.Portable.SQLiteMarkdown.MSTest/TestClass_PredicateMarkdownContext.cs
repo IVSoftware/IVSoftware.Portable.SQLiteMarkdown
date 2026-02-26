@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
 [TestClass]
-public class TestClass_FilteredMarkdownContext
+public class TestClass_PredicateMarkdownContext
 {
     [TestMethod]
     public async Task Test_PMDCFSOL()

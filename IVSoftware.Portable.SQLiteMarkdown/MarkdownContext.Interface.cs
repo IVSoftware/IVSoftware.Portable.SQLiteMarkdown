@@ -2,12 +2,14 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.Threading;
+using Newtonsoft.Json.Serialization;
 using SQLite;
 using SQLitePCL;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -83,12 +85,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public IEnumerable Recordset
         {
-            protected get => _recordset;
             set
             {
                 if (value is null)
                 {
-                    _recordset.Clear();
+                    UnfilteredCount = 0;
                 }
                 else
                 {
@@ -98,6 +99,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         .Select(_ => _.GetType().FullName)
                         .Distinct()
                         .ToArray();
+                    if(typeof(IAffinityItem).IsAssignableFrom(ContractType))
+                    {
+                    }
 
                     if (invalidItems.Length != 0)
                     {
@@ -112,72 +116,38 @@ Recordset assignment is atomic; no changes were applied."
                         .TrimStart());
                         return;
                     }
-
-#if false
-                    int success = 0;
-//                    FilterQueryDatabase.RunInTransaction(() =>
-//                    {
-//                          FilterQueryDatabase.DeleteAll(ContractTypeTableMapping);
-////                        if (_recordset.Count != 0)
-////                        {
-////                            int success = FilterQueryDatabase.InsertAll(_recordset);
-////                            if (success != _recordset.Count)
-////                            {
-////                                this.ThrowHard<SQLiteException>($@"
-////{success} of {_recordset.Count} succeeded in {nameof(FilterQueryDatabase.InsertAll)} ");
-////                            }
-////                        }
-//                    });
-
-
-
-
-                    foreach (var item in value)
+                    try
                     {
-                        if (ContractType?.IsAssignableFrom(item.GetType()) == true)
+                        FilterQueryDatabase.RunInTransaction(() =>
                         {
-                            candidate.Add(item);
-                        }
-                        else
-                        {
-                            this.ThrowHard<InvalidCastException>($@"
-Recordset rejected (rolled back): 
-Item of type '{item.GetType().FullName}'
-is not assignable to the current ContractType '{ContractType?.FullName ?? "Null Type"}'."
-    .TrimStart());
-                            return;
-                        }
+                            FilterQueryDatabase.DeleteAll(ContractTypeTableMapping);
+                            int success = 0;
+                            foreach (var item in recordset)
+                            {
+                                success += FilterQueryDatabase.InsertOrReplace(item);
+                            }
+                            UnfilteredCount = success;
+                            var nDuplicates = recordset.Length - UnfilteredCount;
+                            if(nDuplicates != 0)
+                            {
+                                Debug.Fail($@"IFD ADVISORY - First Time.");
+                                this.Advisory($"{nDuplicates} were identified and removed in recordset.");
+                            }
+                        });
                     }
-                    //var removedCount = rawCount - candidate.Count;
-                    //if(removedCount > 0)
-                    //{
-                    //    this.Advisory($@"{removedCount} duplicate items have been removed.");
-                    //}
-                    _recordset = candidate.ToList();
-
-#endif
+                    catch (Exception ex)
+                    {
+                        this.RethrowHard(ex, "The SQLite transaction resulted in a rollback.");
+                    }
                 }
                 OnRecordsetChanged();
             }
         }
-        List<object> _recordset = new();
+
+
         protected virtual void OnRecordsetChanged()
         {
-            FilterQueryDatabase.RunInTransaction(() =>
-            {
-                FilterQueryDatabase.DeleteAll(ContractTypeTableMapping);
-                if (_recordset.Count != 0)
-                {
-                    int success = FilterQueryDatabase.InsertAll(_recordset);
-                    if (success != _recordset.Count)
-                    {
-                        this.ThrowHard<SQLiteException>($@"
-{success} of {_recordset.Count} succeeded in {nameof(FilterQueryDatabase.InsertAll)} ");
-                    }
-                }
-            });
-
-            switch (_recordset.Count)
+            switch (UnfilteredCount)
             {
                 case 0:
                     SearchEntryState = SearchEntryState.QueryCompleteNoResults;
@@ -237,7 +207,7 @@ is not assignable to the current ContractType '{ContractType?.FullName ?? "Null 
             throw new NotImplementedException();
         }
 
-        public int UnfilteredCount => _recordset.Count;
+        public int UnfilteredCount { get; protected set; }
 
         /// <summary>
         /// UI changes for tracking must be wrapped in using block in order to be tracked.
