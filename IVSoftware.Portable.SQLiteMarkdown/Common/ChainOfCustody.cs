@@ -2,11 +2,10 @@
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using Newtonsoft.Json;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
@@ -21,6 +20,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     /// Global serialization is acceptable because mutation frequency is low
     /// and custody integrity is prioritized over throughput.
     /// </remarks>
+
     public class ChainOfCustody : IChainOfCustody
     {
         public DateTimeOffset Created { get; set; } = DateTimeOffset.UtcNow.WithTestability();
