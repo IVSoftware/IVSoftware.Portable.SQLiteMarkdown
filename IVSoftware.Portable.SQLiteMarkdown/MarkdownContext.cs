@@ -1738,7 +1738,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
 
                 if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
-                    && FilteringState == FilteringState.Ineligible)
+                    && FilteringState != FilteringState.Ineligible)
                 {
                     await ApplyFilter();
                 }

@@ -1445,16 +1445,20 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     }
                 };
 
+                // E V E N T    Q U E U E
                 items.PropertyChanged += (sender, e) =>
                 {
                     switch (e.PropertyName)
                     {
+                        case nameof(items.ProxyType):
+                            break;
                         case nameof(SearchEntryState):
                             builder.Add($"{e.PropertyName}='{items.SearchEntryState}'");
                             break;
                     }
                     eventQueue.Enqueue((sender, e));
                 };
+
                 using (var cnx = InitializeInMemoryDatabase())
                 {
                     subtestClearedToFirstChar();
@@ -1485,14 +1489,16 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                             .Select(_ => _.PropertyName));
                         expected = @" 
 SearchEntryState
-InputText
-Running"
+Running
+InputText"
                         ;
 
                         Assert.AreEqual(
                             expected.NormalizeResult(),
                             actual.NormalizeResult(),
-                            "Expecting specific property changes."
+                            "Expecting " +
+                            "1. OnInputTextChanged runs FIRST and restarts Running." +
+                            "2. OnPropertyChanged() notifies generically."
                         );
                         eventQueue.Clear();
                         Assert.AreEqual(
@@ -1626,15 +1632,20 @@ InputText";
                         // "animal"
                         items.InputText += "mal";
                         await items;
+
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
                             .OfType<PropertyChangedEventArgs>()
                             .Select(_ => _.PropertyName));
                         actual.ToClipboardExpected();
-                        expected = @"
+                        { }
+                        expected = @" 
 InputText
-Running";
+Running
+ProxyType
+ContractTypeTableMapping"
+                        ;
 
                         Assert.AreEqual(
                             expected.NormalizeResult(),
