@@ -1667,10 +1667,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             await base.OnEpochFinalizingAsync(e);
             if (!e.Cancel)
             {
-                var sql = ParseSqlMarkdown();
-                var recordset = FilterQueryDatabase.Query(ProxyType.GetMapping(), sql);
-
-                OnInputTextSettled(new CancelEventArgs());
+                await OnInputTextSettled(new CancelEventArgs());
             }
         }
 
@@ -1734,7 +1731,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
         public bool Busy { get; private set; }
 
-        protected virtual void OnInputTextSettled(CancelEventArgs e)
+        protected virtual async Task OnInputTextSettled(CancelEventArgs e)
         {
             InputTextSettled?.Invoke(this, e);
             if(!e.Cancel)
@@ -1743,15 +1740,49 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
                     && FilteringState == FilteringState.Ineligible)
                 {
-                    ApplyFilter();
+                    await ApplyFilter();
                 }
             }
         }
-        protected virtual void ApplyFilter()
+        protected virtual async Task ApplyFilter()
         {
+            string sql;
+            IList recordset;
+
+            await Task.Run(() =>
+            {
+                sql = ParseSqlMarkdown();
+                recordset = FilterQueryDatabase.Query(ProxyType.GetMapping(), sql);
+            });
+            if (typeof(IPrioritized).IsAssignableFrom(ProxyType))
+            {
+                await ApplyAffinities();
+            }
+            else if (typeof(IPrioritized).IsAssignableFrom(ProxyType))
+            {
+                await ApplyPriorities();
+            }
+            ModelUpdated?.Invoke(this, EventArgs.Empty);
+        }
+
+
+        /// <summary>
+        /// Apply priorities where Priority and EphemeralPriority scope is regional to siblings.
+        /// </summary>
+        protected virtual async Task ApplyPriorities() 
+        { 
+        }
+
+        /// <summary>
+        /// Apply priorities where temporality may be involved.
+        /// </summary>
+        protected virtual async Task ApplyAffinities() 
+        {
+            await ApplyPriorities();
         }
 
         public event EventHandler? InputTextSettled;
+        public event EventHandler? ModelUpdated;
 
         #endregion N A V    S E A R C H    S T A T E    M A C H I N E
 
