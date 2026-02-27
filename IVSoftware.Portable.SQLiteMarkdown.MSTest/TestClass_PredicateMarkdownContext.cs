@@ -53,7 +53,7 @@ public class TestClass_PredicateMarkdownContext
     }
 
 
-    [TestMethod]
+    [TestMethod, DoNotParallelize]
     public async Task Test_5_Items()
     {
         using var te = this.TestableEpoch();

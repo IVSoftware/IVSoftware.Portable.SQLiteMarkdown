@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
@@ -13,6 +14,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
     }
     public static class AffinityTestableEpoch
     {
+        [Careful(@"
+TestableEpoch is single-threaded.
+You MUST use [DoNotParallelize] for tests that employ it")]
         public static IDisposable TestableEpoch(this object? @this)
             => DHostTokenDispenser.GetToken(sender: @this);
 

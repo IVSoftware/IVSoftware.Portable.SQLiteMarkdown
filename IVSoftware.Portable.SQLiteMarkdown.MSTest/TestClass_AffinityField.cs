@@ -11,10 +11,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     public class TestClass_AffinityField
     {
 
-        [TestMethod]
+        [TestMethod, DoNotParallelize]
         public void Test_AffinityQFModelBootstrap()
         {
-            string actual, expected;
+            string actual, expected, loopback;
             DateTimeOffset utcTest = AffinityTestableEpoch.UtcReset;
 
             using var local = this.TestableEpoch();
@@ -80,14 +80,60 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual.NormalizeResult(),
                 "Expecting json serialization to match."
             );
-            // This is going to leave a mark...
-            // item.UpdateAffinityUtcNow(utcTest);
+
+            // Test idempotence by serializing again.
             actual = JsonConvert.SerializeObject(item, Formatting.Indented);
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting NO CHANGE."
+                "Expecting json serialization to match."
+            );
+
+            loopback = @" 
+{
+  ""FullPath"": ""312d1c21-0000-0000-0000-000000000000"",
+  ""ParentPath"": """",
+  ""ParentId"": """",
+  ""Duration"": ""00:00:00"",
+  ""Remaining"": ""00:00:00"",
+  ""TemporalAffinity"": null,
+  ""TemporalChildAffinity"": null,
+  ""TemporalAffinityCurrentTimeDomain"": null,
+  ""Slots"": [],
+  ""Priority"": 630822888000000000,
+  ""PriorityOverride"": null,
+  ""UtcStart"": null,
+  ""UtcEnd"": null,
+  ""AvailableTimeSpan"": null,
+  ""IsRoot"": true,
+  ""IsDone"": null,
+  ""OutOfTime"": false,
+  ""IsPastDue"": null,
+  ""Created"": ""2000-01-01T09:00:00+07:00"",
+  ""ChainOfCustody"": ""{\r\n  \""Created\"": \""2000-01-01T09:00:00+07:00\"",\r\n  \""Coc\"": {}\r\n}"",
+  ""CustomProperties"": ""{}"",
+  ""Id"": ""312d1c21-0000-0000-0000-000000000000"",
+  ""Description"": ""New Item"",
+  ""Keywords"": ""[]"",
+  ""KeywordsDisplay"": """",
+  ""Tags"": """",
+  ""IsChecked"": false,
+  ""Selection"": 0,
+  ""IsEditing"": false,
+  ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000000"",
+  ""QueryTerm"": ""new~item"",
+  ""FilterTerm"": ""new~item"",
+  ""TagMatchTerm"": """",
+  ""Properties"": ""{}""
+}"
+            ;
+
+
+            Assert.AreEqual(
+                expected, 
+                loopback,
+                "Expecting REGENERATED serialization matches original expect."
             );
         }
     }

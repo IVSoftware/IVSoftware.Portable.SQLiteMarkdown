@@ -8,7 +8,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 [TestClass]
 public class TestClass_ChainOfCustody
 {
-    [TestMethod]
+    [TestMethod, DoNotParallelize]
     public void Test_SerializeCOCToken()
     {
         using var te = this.TestableEpoch();
@@ -35,7 +35,7 @@ public class TestClass_ChainOfCustody
         );
     }
 
-    [TestMethod]
+    [TestMethod, DoNotParallelize]
     public async Task Test_SerializeCOC()
     {
         using var te = this.TestableEpoch();
@@ -46,6 +46,10 @@ public class TestClass_ChainOfCustody
         coc = new ChainOfCustody();
 
         actual = JsonConvert.SerializeObject(coc, Formatting.Indented);
+
+
+        actual.ToClipboardExpected();
+        { }
         expected = @" 
 {
   ""Created"": ""2000-01-01T09:00:00+07:00"",
