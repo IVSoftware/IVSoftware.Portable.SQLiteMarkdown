@@ -30,6 +30,7 @@ You MUST use [DoNotParallelize] for tests that employ it")]
                     _dhostTokenDispenser.BeginUsing += (sender, e) =>
                     {
                         _guidCurrent = GuidReset;
+                        _utcCurrent = UtcReset;
                     };
                 }
                 return _dhostTokenDispenser;
