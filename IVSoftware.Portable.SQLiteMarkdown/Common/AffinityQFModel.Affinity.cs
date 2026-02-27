@@ -200,45 +200,35 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         public TemporalAffinity? TemporalAffinity
         {
-            get => _utcEpochMode;
+            get => _TemporalAffinity;
             set
             {
-                if (!Equals(_utcEpochMode, value))
+                if (!Equals(_TemporalAffinity, value))
                 {
-                    _utcEpochMode = value;
+                    _TemporalAffinity = value;
                     OnPropertyChanged();
                 }
             }
         }
-        TemporalAffinity? _utcEpochMode = null;
+        TemporalAffinity? _TemporalAffinity = null;
 
-        public string? AffinityParent
+        public TemporalChildAffinity? TemporalChildAffinity
         {
-            get => _utcParent;
+            get => _temporalChildAffinity;
             set
             {
-                if (!Equals(_utcParent, value))
+                if (!Equals(_temporalChildAffinity, value))
                 {
-                    _utcParent = value;
+                    _temporalChildAffinity = value;
                     OnPropertyChanged();
                 }
             }
         }
-        string? _utcParent = null;
+        TemporalChildAffinity? _temporalChildAffinity = default;
 
-        public ChildAffinityMode? AffinityChildMode
-        {
-            get => _utcChildMode;
-            set
-            {
-                if (!Equals(_utcChildMode, value))
-                {
-                    _utcChildMode = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        ChildAffinityMode? _utcChildMode = default;
+
+        [Ephemeral]
+        public TemporalAffinityTimeDomain? TemporalAffinityCurrentTimeDomain => null;
 
         IList<AffinitySlot> ITemporalAffinity.Slots => Slots;
         public List<AffinitySlot> Slots { get; } = new List<AffinitySlot>();
@@ -317,12 +307,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         DateTimeOffset? _utcStart = default;
 
         [Ephemeral]
-        public AffinityTimeDomain? AffinityTimeDomain => null;
-
-        [Ephemeral]
-        public bool IsRoot => string.IsNullOrWhiteSpace(ParentId); 
-
-        [Ephemeral]
 
         public DateTimeOffset? UtcEnd
         {
@@ -340,6 +324,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             }
         }
         DateTimeOffset? _utcEnd = default;
+
+        [Ephemeral]
+        public TimeSpan? AvailableTimeSpan
+        {
+            get => _available;
+            set
+            {
+                if (!Equals(_available, value))
+                {
+                    _available = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        [Ephemeral]
+        public bool IsRoot => string.IsNullOrWhiteSpace(ParentId); 
 
 
         [Ephemeral]
@@ -390,20 +391,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         [Ephemeral]
         public bool? IsPastDue => null;
-
-        [Ephemeral]
-        public TimeSpan? Available
-        {
-            get => _available;
-            set
-            {
-                if (!Equals(_available, value))
-                {
-                    _available = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
 
         TimeSpan? _available = default;
         #endregion A F F I N I T Y    E P H E M E R A L

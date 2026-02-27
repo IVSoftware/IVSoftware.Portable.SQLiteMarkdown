@@ -1,23 +1,21 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
-using IVSoftware.Portable.Threading;
 using Newtonsoft.Json;
-using SQLite;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using Ephemeral = SQLite.IgnoreAttribute;
+using Column = SQLite.ColumnAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
     partial class TemporalAffinityQFModel 
         : IChainOfCustody
     {
-        public DateTimeOffset Created { get; } = DateTimeOffset.UtcNow.WithTestability();
+        public DateTimeOffset Created => ChainOfCustody.Created;
 
         /// <summary>
         /// SQLite backing store where column name is ChainOfCustody.
         /// </summary>
-        [SQLite.Column("ChainOfCustody"), JsonProperty("ChainOfCustody")]
+        [Column("ChainOfCustody"), JsonProperty("ChainOfCustody")]
         public string ChainOfCustody_JSON 
         {
             get => JsonConvert.SerializeObject(ChainOfCustody, Formatting.Indented);
@@ -37,7 +35,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             }
         }
 
-        [SQLite.Ignore, JsonIgnore]
+        [Ephemeral, JsonIgnore]
         public ChainOfCustody ChainOfCustody { get; protected set; } = new();
 
         public Task<DateTimeOffset> CommitLocalEdit(string identity) =>

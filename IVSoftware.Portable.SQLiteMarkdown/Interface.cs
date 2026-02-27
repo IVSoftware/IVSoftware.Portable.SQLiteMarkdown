@@ -397,7 +397,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// - This state enforces a deadline for the fixed epoch.
     /// - Child items below can now also react to Running.
     /// </remarks>
-    internal enum AffinityTimeDomain : byte
+    internal enum TemporalAffinityTimeDomain : byte
     {
         /// <summary>
         /// UtcEnd <= UtcNow
@@ -462,7 +462,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <remarks>
     /// Child items *are not* required to be temporal, but if they *are* then thay are ASAP and never FIXED.
     /// </remarks>
-    internal enum ChildAffinityMode : sbyte
+    internal enum TemporalChildAffinity : sbyte
     {
         /// <summary>
         /// Begins at a specified UtcStart and ends Remaining later.
@@ -730,7 +730,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Duration is aspirational. Availability is (sometimes harsh) reality.
         /// </remarks>
         [Ephemeral]
-        TimeSpan? Available { get; }
+        TimeSpan? AvailableTimeSpan { get; }
 
         /// <summary>
         /// UtcStart + UtcRemaining.
@@ -747,13 +747,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Derived mode when UtcParent is not null.
         /// </summary>
         [Ephemeral]
-        ChildAffinityMode? AffinityChildMode { get; }
+        TemporalChildAffinity? TemporalChildAffinity { get; }
 
         /// <summary>
         /// Aspirational mode that requires UtcStart and UtcEnd
         /// </summary>
         [Ephemeral]
-        AffinityTimeDomain? AffinityTimeDomain { get; }
+        TemporalAffinityTimeDomain? TemporalAffinityCurrentTimeDomain { get; }
 
         /// <summary>
         /// Available < Remaining.

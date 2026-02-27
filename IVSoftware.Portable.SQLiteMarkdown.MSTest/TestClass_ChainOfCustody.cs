@@ -18,6 +18,8 @@ public class TestClass_ChainOfCustody
         var cocToken = new ChainOfCustodyToken();
 
         actual = JsonConvert.SerializeObject(cocToken, Formatting.Indented);
+        actual.ToClipboardExpected();
+        { }
         expected = @" 
 {
   ""LocalTimestamp"": ""2000-01-01T09:00:00+07:00"",
@@ -27,10 +29,10 @@ public class TestClass_ChainOfCustody
         ;
 
         Assert.AreEqual(
-    expected.NormalizeResult(),
-    actual.NormalizeResult(),
-    "Expecting json serialization to succeed."
-);
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting json serialization to succeed."
+        );
     }
 
     [TestMethod]
