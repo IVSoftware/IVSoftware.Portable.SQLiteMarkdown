@@ -1,10 +1,15 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SQLite;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Xml.Linq;
 using EphemeralAttribute = SQLite.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
@@ -15,10 +20,100 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 #else
     internal 
 #endif
-    partial class AffinityQFModel 
-        : PrioritizedQFModel
+    partial class TemporalAffinityQFModel 
+        : PrioritizedAffinityQFModel
         , ITemporalAffinity
     {
+        /// <summary>
+        /// Assign or consolidate the XOP associated with this model.
+        /// </summary>
+        /// <remarks>
+        /// A parented XOP is authoritative and cannot be replaced.
+        /// - Replacement is allowed only while the current XOP is unparented.
+        /// - If the current XOP is already parented, only attribute consolidation may occur.
+        /// - An error is raised if both the current XOP and the incoming value are already parented.
+        /// </remarks>
+        [Ephemeral, JsonIgnore]
+        public XElement XAF
+        {
+            get => _model;
+            set => SetXAFAuthority(value);
+        }
+
+        protected virtual void SetXAFAuthority(XElement value)
+        {
+            if (value is null)
+            {
+                this.ThrowHard<ArgumentNullException>(
+                    $"{nameof(XAF)} cannot be set to null.");
+            }
+            else
+            {
+                if (ReferenceEquals(value, _model))
+                {   /* G T K */
+                    // Unexpected but benign.
+                }
+                else
+                {
+                    if (_model.Parent is not null && value.Parent is not null)
+                    {
+                        this.ThrowHard<InvalidOperationException>(
+                            $"{nameof(XAF)} cannot be consolidated because both the current and" +
+                            $" incoming {nameof(XAF)} instances are already parented. " +
+                            $"A parented {nameof(XAF)} is authoritative and cannot be replaced.");
+                    }
+                    else
+                    {
+                        if (value.Parent is not null)
+                        {
+                            var xopSwap = _model;
+                            _model = value;
+                            value = xopSwap;
+                        }
+                        TransferXAFXBOAuthority(value.Attributes().ToArray());
+                    }
+                }
+            }
+        }
+
+        XElement _model = new XElement(nameof(StdElement.model));
+
+        protected virtual void TransferXAFXBOAuthority(XAttribute[] srce)
+        {
+            foreach (var attrSrce in srce)
+            {
+#if ABSTRACT_FORWARD_REFERENCE
+                // OnePage snippet for unifying OPID.
+                if (attrSrce.Name.LocalName == nameof(StdXAttributeName.opid))
+                {
+                    if (attrSrce is XBoundAttribute xba && xba.Tag is Enum opid)
+                    {
+                        // Subject to immutability rules.
+                        OPID = opid;
+                    }
+                    else
+                    {
+                        // Ignore this attribute without correcting it.
+                        continue;
+                    }
+                }
+#endif
+                switch (attrSrce)
+                {
+                    case XBoundAttribute xba:
+                        if (_model.Attribute(attrSrce.Name) is { } xReplace)
+                        {
+                            xReplace.Remove();
+                        }
+                        _model.Add(new XBoundAttribute(xba));
+                        break;
+                    default:
+                        _model.SetAttributeValue(attrSrce.Name, attrSrce.Value);
+                        break;
+                }
+            }
+        }
+
         public void UpdateAffinityUtcNow(
             DateTimeOffset? affinityUtcNow,
             Dictionary<AffinityRole, object?>? affinities = null)
@@ -139,7 +234,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         TimeSpan _remaining = default;
 
 
-        public AffinityMode? AffinityMode
+        public TemporalAffinity? AffinityMode
         {
             get => _utcEpochMode;
             set
@@ -152,7 +247,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 }
             }
         }
-        AffinityMode? _utcEpochMode = null;
+        TemporalAffinity? _utcEpochMode = null;
 
         public string? AffinityParent
         {
@@ -209,7 +304,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         long _priority = 0;
 
-        public long PriorityOverride
+        public long? PriorityOverride
         {
             get => _transientPriority;
             set
@@ -221,7 +316,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 }
             }
         }
-        long _transientPriority = default;
+        long? _transientPriority = default;
 
 
         #region A F F I N I T Y    E P H E M E R A L
@@ -234,13 +329,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 {
                     case null:
                         break;
-                    case SQLiteMarkdown.AffinityMode.Asap:
+                    case SQLiteMarkdown.TemporalAffinity.Asap:
                         break;
-                    case SQLiteMarkdown.AffinityMode.FixedTime:
+                    case SQLiteMarkdown.TemporalAffinity.FixedTime:
                         break;
-                    case SQLiteMarkdown.AffinityMode.FixedDate:
+                    case SQLiteMarkdown.TemporalAffinity.FixedDate:
                         break;
-                    case SQLiteMarkdown.AffinityMode.FixedDateAndTime:
+                    case SQLiteMarkdown.TemporalAffinity.FixedDateAndTime:
                         break;
                     default:
                         break;

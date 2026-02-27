@@ -19,7 +19,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             using var local = this.TestableEpoch();
 
-            AffinityQFModel item;
+            TemporalAffinityQFModel item;
 
             item = new();
 

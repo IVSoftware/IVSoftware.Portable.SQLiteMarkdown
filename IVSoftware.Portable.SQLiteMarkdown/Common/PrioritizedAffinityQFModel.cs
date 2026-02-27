@@ -10,7 +10,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 #else
     internal 
 #endif
-    class PrioritizedQFModel : SelectableQFModel
+    class PrioritizedAffinityQFModel : SelectableQFModel
     {
     }
 }

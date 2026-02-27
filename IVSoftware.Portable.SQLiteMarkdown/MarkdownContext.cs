@@ -1754,11 +1754,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 sql = ParseSqlMarkdown();
                 recordset = FilterQueryDatabase.Query(ProxyType.GetMapping(), sql);
             });
-            if (typeof(IPrioritized).IsAssignableFrom(ProxyType))
+            if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
             {
                 await ApplyAffinities();
             }
-            else if (typeof(IPrioritized).IsAssignableFrom(ProxyType))
+            else if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
             {
                 await ApplyPriorities();
             }

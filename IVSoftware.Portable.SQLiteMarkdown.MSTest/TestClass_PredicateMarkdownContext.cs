@@ -17,13 +17,13 @@ public class TestClass_PredicateMarkdownContext
     {
         const int COUNT = 31;
 
-        var opc = new ObservableCollection<AffinityQFModel>();
+        var opc = new ObservableCollection<TemporalAffinityQFModel>();
         Assert.AreEqual(
             COUNT,
             opc.PopulateForDemo().Count, 
             "Expecting initial population.");
 
-        var pmdc = new PredicateMarkdownContext<AffinityQFModel>
+        var pmdc = new PredicateMarkdownContext<TemporalAffinityQFModel>
         {
             QueryFilterConfig = QueryFilterConfig.Filter,
             ObservableProjection = opc,
@@ -61,12 +61,12 @@ public class TestClass_PredicateMarkdownContext
         const int COUNT = 5;
         string ParentId = new Guid().WithTestability().ToString();
         string actual, expected, sql;
-        List<AffinityQFModel> recordset;
+        List<TemporalAffinityQFModel> recordset;
 
         using var cnx = new SQLiteConnection(":memory:");
-        cnx.CreateTable<AffinityQFModel>();
+        cnx.CreateTable<TemporalAffinityQFModel>();
 
-        IList<AffinityQFModel> opc;
+        IList<TemporalAffinityQFModel> opc;
 
         await subtest_EnsureParentIdSetterWorksDRY();
         await subtest_5_Items2();
@@ -83,7 +83,7 @@ public class TestClass_PredicateMarkdownContext
         async Task subtest_EnsureParentIdSetterWorksDRY()
         {
             opc =
-               new ObservableCollection<AffinityQFModel>()
+               new ObservableCollection<TemporalAffinityQFModel>()
                .PopulateForDemo(COUNT, PopulateOptions.RandomChecks);
             // Assign a parent path to last item.
             opc.Last().ParentPath = ParentId;
@@ -97,7 +97,7 @@ public class TestClass_PredicateMarkdownContext
 
             // Query SPECIFICALLY on ParentId alone.
             sql = $"Select * from items where ParentId='{ParentId}'";
-            recordset = cnx.Query<AffinityQFModel>(sql);
+            recordset = cnx.Query<TemporalAffinityQFModel>(sql);
 
 
             actual = JsonConvert.SerializeObject(recordset, Formatting.Indented);

@@ -427,7 +427,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// Typically, the property is nullable and represents an OPT-IN to temporal characteristics.
     /// </remarks>
     [Flags]
-    public enum AffinityMode : byte
+    public enum TemporalAffinity : byte
     {
         /// <summary>
         /// Begins as soon as possible relative to UtcNow and Position.
@@ -602,14 +602,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Prev,
     }
 
-
-
 #if DEBUG
     public
 #else
     internal 
 #endif
-    interface IPrioritized
+
+    /// <summary>
+    /// Represents a prioritized node whose relational context ("affinity") is 
+    /// implicitly restored when materialized from a query.
+    /// </summary>
+    /// <remarks>
+    /// EXAMPLE:
+    /// If the raw recordset of a query returns ONE child item at depth = 2, then the
+    /// net query returns THREE. The UI now has greater opportunity to display context.
+    /// </remarks>
+    interface IPrioritizedAffinity
     {
         /// <summary>
         /// Provides access to the hierarchical structure and hosts lateral expansion.
@@ -617,7 +625,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// XBoundObject is used extensively to attach service objects to XAttributes of this node.
         /// </remarks>
-        XElement Model { get; }
+        XElement XAF { get; } // Xml affinity model.
 
         /// <summary>
         /// Globally unique identifier.
@@ -676,17 +684,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Represents a time slice snapshot using a captured UtcEpochNow that preempts race conditions.
     /// </summary>
-    interface ITemporalAffinity : IPrioritized
+    interface ITemporalAffinity : IPrioritizedAffinity
     {
-        void UpdateAffinityUtcNow(
-            DateTimeOffset? affinityUtcNow,
-            Dictionary<AffinityRole, object?>? affinities = null);
+        /// <summary>
+        /// Affinity behavior
+        /// </summary>
+        TemporalAffinity? AffinityMode { get; set; }
 
         bool IsTimeDomainEnabled { get; }
 
         /// <summary>
-        /// Reference point for AffinityMode.Fixed.
+        /// Marks the beginning of this item's epoch and may be floating or fixed.
         /// </summary>
+        [Ephemeral]
         DateTimeOffset? UtcStart { get; set; }
 
         /// <summary>
@@ -720,6 +730,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         TimeSpan Remaining { get; set; }
 
         /// <summary>
+        /// Partial epochs that float around fixed epochs.
+        /// </summary>
+        IList<AffinitySlot> Slots { get; }
+
+        /// <summary>
         /// Unlike Duration (the commitment) and Remaining (the balance due),
         /// Available represents the constraint window imposed by fixed epochs
         /// within the field.
@@ -737,40 +752,35 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///
         /// Duration is aspirational. Availability is (sometimes harsh) reality.
         /// </remarks>
+        [Ephemeral]
         TimeSpan? Available { get; }
 
         /// <summary>
         /// UtcStart + UtcRemaining.
         /// </summary>
+        [Ephemeral]
         DateTimeOffset? UtcEnd { get; }
-
-        /// <summary>
-        /// Affinity behavior
-        /// </summary>
-        AffinityMode? AffinityMode { get; set; }
-
-        /// <summary>
-        /// Reference PK for AffinityMode.Before and AffinityMode.After
-        /// </summary>
-        string? AffinityParent { get; }
 
         /// <summary>
         /// Derived mode when UtcParent is not null.
         /// </summary>
-        ChildAffinityMode? AffinityChildMode { get; set; }
+        [Ephemeral]
+        ChildAffinityMode? AffinityChildMode { get; }
 
         /// <summary>
-        /// Aspirational mode that requires UtcStart
+        /// Aspirational mode that requires UtcStart and UtcEnd
         /// </summary>
+        [Ephemeral]
         AffinityTimeDomain? AffinityTimeDomain { get; }
 
         /// <summary>
         /// Available < Remaining.
         /// </summary>
+        [Ephemeral]
         bool? IsPastDue { get; }
 
         /// <summary>
-        /// Two-Way binding.
+        /// Ephemeral two way binding that typically maps to a persistent IsChecked style property.
         /// </summary>
         /// <remarks>
         /// 1. The IsDone flag "goes true" when remaining time hits TimeSpan.Zero.
@@ -782,12 +792,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///   to where "I can check it off my list?" This checkbox [X] is exactly what
         ///   many UI implementations allow the user to do.
         /// </remarks>
+        [Ephemeral]
         bool? IsDone { get; set; }
-
-        /// <summary>
-        /// Partial epochs that float around fixed epochs.
-        /// </summary>
-        IList<AffinitySlot> Slots { get; }
     }
 
     /// <summary>

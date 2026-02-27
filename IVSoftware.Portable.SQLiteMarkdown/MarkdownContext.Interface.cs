@@ -28,6 +28,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         protected IList? Projection { get; }
 
+        /// <summary>
+        /// Immutable once set.
+        /// </summary>
         public XElement Model
         {
             get

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
-    partial class AffinityQFModel : ICustomProperties
+    partial class TemporalAffinityQFModel : ICustomProperties
     {
 
 #if ABSTRACT
