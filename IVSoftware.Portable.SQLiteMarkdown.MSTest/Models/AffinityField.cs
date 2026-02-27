@@ -10,7 +10,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     class ObservableAffinityField<T>
         : ObservableCollection<T>
         , IAffinityField
-        where T : IAffinityItem
+        where T : ITemporalAffinity
     {
         public bool IsRunning
         {

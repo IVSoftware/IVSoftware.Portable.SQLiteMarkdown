@@ -122,7 +122,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         .Distinct()
                         .ToArray();
 
-                    if (typeof(IAffinityItem).IsAssignableFrom(ContractType))
+                    if (typeof(ITemporalAffinity).IsAssignableFrom(ContractType))
                     {   /* G T K */
                     }
 

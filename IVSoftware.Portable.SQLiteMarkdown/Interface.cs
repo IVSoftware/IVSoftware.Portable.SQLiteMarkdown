@@ -660,7 +660,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         long? PriorityOverride { get; set; }
     }
 
-
 #if DEBUG
     public
 #else
@@ -669,7 +668,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Represents a time slice snapshot using a captured UtcEpochNow that preempts race conditions.
     /// </summary>
-    interface IAffinityItem : IPrioritized
+    interface ITemporalAffinity : IPrioritized
     {
         void UpdateAffinityUtcNow(
             DateTimeOffset? affinityUtcNow,

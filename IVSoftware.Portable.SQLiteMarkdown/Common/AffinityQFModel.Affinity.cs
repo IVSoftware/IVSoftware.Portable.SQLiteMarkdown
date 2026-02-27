@@ -17,7 +17,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 #endif
     partial class AffinityQFModel 
         : PrioritizedQFModel
-        , IAffinityItem
+        , ITemporalAffinity
     {
         public void UpdateAffinityUtcNow(
             DateTimeOffset? affinityUtcNow,
@@ -182,7 +182,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         ChildAffinityMode? _utcChildMode = default;
 
-        IList<AffinitySlot> IAffinityItem.Slots => Slots;
+        IList<AffinitySlot> ITemporalAffinity.Slots => Slots;
         public List<AffinitySlot> Slots { get; } = new List<AffinitySlot>();
 
         /// <summary>
