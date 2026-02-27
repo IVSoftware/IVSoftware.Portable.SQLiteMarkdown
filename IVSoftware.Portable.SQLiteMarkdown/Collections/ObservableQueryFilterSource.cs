@@ -486,9 +486,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     break;
             }
         }
-        protected override void OnInputTextSettled(CancelEventArgs e)
+        protected override async Task OnInputTextSettled(CancelEventArgs e)
         {
-            base.OnInputTextSettled(e);
+            await base.OnInputTextSettled(e);
             if (!e.Cancel)
             {
                 if (FilteringState == FilteringState.Active)

@@ -612,6 +612,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     interface IPrioritized
     {
         /// <summary>
+        /// Provides access to the hierarchical structure and hosts lateral expansion.
+        /// </summary>
+        /// <remarks>
+        /// XBoundObject is used extensively to attach service objects to XAttributes of this node.
+        /// </remarks>
+        XElement Model { get; }
+
+        /// <summary>
         /// Globally unique identifier.
         /// </summary>
         /// <remarks>
