@@ -1642,9 +1642,7 @@ InputText";
                         { }
                         expected = @" 
 InputText
-Running
-ProxyType
-ContractTypeTableMapping"
+Running"
                         ;
 
                         Assert.AreEqual(
@@ -1666,6 +1664,32 @@ ContractTypeTableMapping"
                         sql = items.InputText.ParseSqlMarkdown<T>();
                         recordset = cnx.Query<T>(sql);
                         await items.ReplaceItemsAsync(recordset);
+                        actual =
+                            string
+                            .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
+                            .OfType<PropertyChangedEventArgs>()
+                            .Select(_ => _.PropertyName));
+                        actual.ToClipboardExpected();
+                        { }
+                        expected = @" 
+Busy
+ContractTypeTableMapping
+SearchEntryState
+SearchEntryState
+FilteringState
+RouteToFullRecordset
+IsFiltering
+Busy"
+                        ;
+
+                        Assert.AreEqual(
+                            expected.NormalizeResult(),
+                            actual.NormalizeResult(),
+                            "Expecting " +
+                            "1. The ReplaceItemsAsync runs inside a busy flag, so set Busy = true." +
+                            "2. OnPropertyChanged() notifies generically."
+                        );
+                        eventQueue.Clear();
 
                         Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, items.SearchEntryState);
                         Assert.AreEqual(FilteringState.Armed, items.FilteringState);
@@ -1692,30 +1716,6 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                             actual.NormalizeResult(),
                             "Expecting filtered results to match."
                         );
-                        actual =
-                            string
-                            .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
-                            .OfType<PropertyChangedEventArgs>()
-                            .Select(_ => _.PropertyName));
-                        actual.ToClipboardExpected();
-                        { }
-                        expected = @" 
-Busy
-ContractTypeTableMapping
-SearchEntryState
-SearchEntryState
-FilteringState
-RouteToFullRecordset
-IsFiltering
-Busy"
-                        ;
-
-                        Assert.AreEqual(
-                            expected.NormalizeResult(),
-                            actual.NormalizeResult(),
-                            "Expecting specific PROPERTY CHANGES."
-                        );
-                        eventQueue.Clear();
 
                         Assert.AreEqual(
                             SearchEntryState.QueryCompleteWithResults,
