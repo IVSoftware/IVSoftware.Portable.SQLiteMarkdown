@@ -209,7 +209,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         long _priority = 0;
 
-        public long TransientPriority
+        public long PriorityOverride
         {
             get => _transientPriority;
             set

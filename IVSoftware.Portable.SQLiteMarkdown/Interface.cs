@@ -650,14 +650,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         long Priority { get; set; }
 
         /// <summary>
-        /// Temporary priority used for non-persistent ordering scenarios.
+        /// Contextual priority used for non-persistent ordering scenarios.
         /// </summary>
         /// <remarks>
         /// Supports UI-driven ordering such as column-header sorting.
         /// Does not modify or replace the canonical Priority value.
         /// </remarks>
         [Ephemeral]
-        long TransientPriority { get; set; }
+        long? PriorityOverride { get; set; }
     }
 
 
