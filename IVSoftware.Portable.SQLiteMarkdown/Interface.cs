@@ -13,6 +13,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Ephemeral = SQLite.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -335,10 +336,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// permissions, or external identity semantics (for example,
     /// Google Drive–style ownership models) are separate concerns.
     /// </remarks>
-    public interface IGenesis
-    {
-        DateTimeOffset Created { get; }
-    }
+
 
 #if DEBUG
     public
@@ -366,6 +364,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </remarks>
     interface IChainOfCustody
     {
+        DateTimeOffset Created { get; }
         Task<DateTimeOffset> CommitLocalEdit(string identity);
         Task<ChainOfCustodyToken> CommitRemoteReceipt(string identity, DateTimeOffset remoteTimeStamp);
     }
@@ -610,17 +609,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #else
     internal 
 #endif
-    /// <summary>
-    /// Represents a time slice snapshot using a captured UtcEpochNow that preempts race conditions.
-    /// </summary>
-    interface IAffinityItem
+    interface IPrioritized
     {
-        void UpdateAffinityUtcNow(
-            DateTimeOffset? affinityUtcNow,
-            Dictionary<AffinityRole, object?>? affinities = null);
-
-        bool IsTimeDomainEnabled { get; }
-
         /// <summary>
         /// Globally unique identifier.
         /// </summary>
@@ -630,9 +620,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         string Id { get; set; }
 
         /// <summary>
-        /// Linted concatenation of ParentPath and Id
+        /// Adjacency List Policy defines a hierarchal position.
         /// </summary>
-        string FullPath { get; }
+        string ParentId { get; }
 
         /// <summary>
         /// Materialized Path Policy defines a hierarchal position.
@@ -640,10 +630,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public string ParentPath { get; set; }
 
         /// <summary>
-        /// Adjacency List Policy defines a hierarchal position.
+        /// Linted concatenation of ParentPath and Id
         /// </summary>
-        string ParentId { get; }
+        [Ephemeral]
+        string FullPath { get; }
 
+        [Ephemeral]
         bool IsRoot { get; }
 
         /// <summary>
@@ -656,6 +648,34 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Item A and Item C.
         /// </remarks>
         long Priority { get; set; }
+
+        /// <summary>
+        /// Temporary priority used for non-persistent ordering scenarios.
+        /// </summary>
+        /// <remarks>
+        /// Supports UI-driven ordering such as column-header sorting.
+        /// Does not modify or replace the canonical Priority value.
+        /// </remarks>
+        [Ephemeral]
+        long TransientPriority { get; set; }
+    }
+
+
+#if DEBUG
+    public
+#else
+    internal 
+#endif
+    /// <summary>
+    /// Represents a time slice snapshot using a captured UtcEpochNow that preempts race conditions.
+    /// </summary>
+    interface IAffinityItem : IPrioritized
+    {
+        void UpdateAffinityUtcNow(
+            DateTimeOffset? affinityUtcNow,
+            Dictionary<AffinityRole, object?>? affinities = null);
+
+        bool IsTimeDomainEnabled { get; }
 
         /// <summary>
         /// Reference point for AffinityMode.Fixed.

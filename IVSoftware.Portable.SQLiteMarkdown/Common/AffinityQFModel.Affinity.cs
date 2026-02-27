@@ -17,7 +17,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 #endif
     partial class AffinityQFModel 
         : PrioritizedQFModel
-        , IGenesis
         , IAffinityItem
     {
         public void UpdateAffinityUtcNow(
@@ -210,9 +209,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         long _priority = 0;
 
+        public long TransientPriority
+        {
+            get => _transientPriority;
+            set
+            {
+                if (!Equals(_transientPriority, value))
+                {
+                    _transientPriority = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        long _transientPriority = default;
+
+
         #region A F F I N I T Y    E P H E M E R A L
-
-
         [Ephemeral]
         public DateTimeOffset? UtcStart
         {

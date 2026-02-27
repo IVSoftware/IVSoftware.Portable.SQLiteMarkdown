@@ -428,10 +428,47 @@ SELECT * FROM items WHERE
         #endregion S U B T E S T S
     }
 
-
+    /// <summary>
+    /// Verifies that assigning InputText initiates an unconditional settle 
+    /// cycle and raises InputTextSettled within the expected timeout.
+    /// </summary>
+    /// <remarks>
+    /// #{AC826718-2B0C-4846-9F85-B028BAD3CC10}
+    /// </remarks>
     [TestMethod]
     public async Task Test_InputTextUnconditionalSettle()
     {
-        var mdc = new MarkdownContext<SelectableQFModel>();
+        var mdc = new MarkdownContext<SelectableQFModel>
+        {
+            // HERE'S THE THING:
+            // In query mode, the ui *typically* awaits Commit, not Settle,
+            // and this is epistemic because the primary database "could be
+            // anything" and take a year to return a query for all we know.
+            // NEVERTHELESS:
+            // The awaiter, and the process of settling text, is a separate concern.
+            // IN THIS TEST:
+            // We are responding to a BUGIRL that got these confused, and
+            // would await forever on the stimulus below.
+            QueryFilterConfig = QueryFilterConfig.Query,
+        };
+        var eventAwaiter = new SemaphoreSlim(0, 1);
+        mdc.InputTextSettled += (sender, e) =>
+        {
+            eventAwaiter.Release();
+        };
+
+        mdc.InputText = "animal";
+
+        // NOTE:
+        // - We are *not* testing the awaiter of mdc here, because if the
+        //   epoch never starts then the await will return immediately.
+        // - Success here depends on receiving an actual *event* which
+        //   affirms that the change on input text actually started the epoch.
+        await eventAwaiter.WaitAsync(new CancellationTokenSource(TimeSpan.FromSeconds(1)).Token);
+        { }
+
+        // We don't *have* to dispose the awaiter, just remember
+        // that it's currently blocked if extending this test.
+        eventAwaiter.Dispose();
     }
 }

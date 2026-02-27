@@ -1606,7 +1606,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     {
                         FilteringState = FilteringState.Active;
                     }
-                    RestartIfSemanticInputChanged();
                     break;
                 case FilteringState.Active:
                     if (InputText.Length == 0)
@@ -1614,11 +1613,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         // Downgrade but stay armed.
                         FilteringState = FilteringState.Armed;
                     }
-                    RestartIfSemanticInputChanged();
                     break;
                 default:
                     throw new NotImplementedException($"Bad case: {FilteringState}");
             }
+
+            // #{AC826718-2B0C-4846-9F85-B028BAD3CC10}
+            // Please *do not move* (as has been done many times before).
+            // HERE'S THE THING:
+            // In query mode, the ui *typically* awaits Commit, not Settle,
+            // and this is epistemic because the primary database "could be
+            // anything" and take a year to return a query for all we know.
+            // NEVERTHELESS:
+            // The awaiter, and the process of settling text, is a separate concern.
+            // MENTAL MODEL (CORRECTED):
+            // Check the filtering state in OnInputTextSettled instead, and
+            // gate the 'apply filter' there, not here.
+            RestartIfSemanticInputChanged();
         }
 
         /// <summary>
@@ -1650,27 +1661,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         SearchEntryState _searchEntryState = default;
 
         protected virtual void OnSearchEntryStateChanged() { }
-
-
-        protected override void OnEpochInitialized()
-        {
-            if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
-                || FilteringState == FilteringState.Ineligible)
-            {
-                Debug.Fail($@"IFD ADVISORY - You should not be here.");
-
-                // Does not throw, but consumer can escalate to exception.
-                this.ThrowSoft<InvalidOperationException>(
-                    messageOrId: "IllegalStartOrRestart",
-                    messageOnly: $@"
-Code should be modified. StartOrRestart should not be called in a non-filtering context.
-OPTION 1: Un-handle this Throw to raise {nameof(InvalidOperationException)}.
-OPTION 2: (default): The timer restart WILL PROCEED".TrimStart());
-            }
-
-            // Call base to set Running and fire initial action and event.
-            base.OnEpochInitialized();
-        }
 
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {
@@ -1747,6 +1737,18 @@ OPTION 2: (default): The timer restart WILL PROCEED".TrimStart());
         protected virtual void OnInputTextSettled(CancelEventArgs e)
         {
             InputTextSettled?.Invoke(this, e);
+            if(!e.Cancel)
+            {
+
+                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
+                    && FilteringState == FilteringState.Ineligible)
+                {
+                    ApplyFilter();
+                }
+            }
+        }
+        protected virtual void ApplyFilter()
+        {
         }
 
         public event EventHandler? InputTextSettled;
