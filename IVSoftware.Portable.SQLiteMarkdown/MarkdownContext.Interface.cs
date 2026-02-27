@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json.Serialization;
@@ -59,10 +60,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             get
             {
+                // HYBRID - factory getter.
                 if (_filterQueryDatabase is null)
                 {
                     _filterQueryDatabase = new SQLiteConnection(":memory:");
-                    _ = TryCreateTableForContractType();
+                    // ContractType is set at construction and cannot be null.
+                    _filterQueryDatabase.CreateTable(ContractType);
                 }
                 return _filterQueryDatabase;
             }
@@ -71,9 +74,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (!Equals(_filterQueryDatabase, value))
                 {
                     _filterQueryDatabase = value;
-                    if(_filterQueryDatabase is not null )
+                    if(_filterQueryDatabase is not null)
                     {
-                        _ = TryCreateTableForContractType();
+                        _filterQueryDatabase.CreateTable(ContractType);
                     }
                     OnPropertyChanged();
                     this.OnAwaited();
@@ -83,6 +86,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         SQLiteConnection? _filterQueryDatabase = default;
 
+#if false
         private bool TryCreateTableForContractType()
         {
             if( _filterQueryDatabase is not null 
@@ -110,6 +114,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         TableMapping _contractTypeTableMapping = default;
+#endif
 
         public IEnumerable Recordset
         {
@@ -146,7 +151,7 @@ Recordset assignment is atomic; no changes were applied."
                     {
                         FilterQueryDatabase.RunInTransaction(() =>
                         {
-                            FilterQueryDatabase.DeleteAll(ContractTypeTableMapping);
+                            FilterQueryDatabase.DeleteAll(ContractType.GetMapping());
                             foreach (var item in recordset)
                             {
                                 success += FilterQueryDatabase.InsertOrReplace(item);

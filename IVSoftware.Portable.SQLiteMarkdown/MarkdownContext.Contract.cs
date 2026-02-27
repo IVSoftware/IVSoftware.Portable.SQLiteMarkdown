@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
 using System;
@@ -68,7 +69,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             if (!Equals(_contractType, value))
                             {
                                 _contractType = value;
-                                OnContractTypeChanged();
+                                // OnContractTypeChanged();
                                 OnPropertyChanged();
                             }
                             break;
@@ -82,7 +83,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             if (_contractType is null)
                             {
                                 _contractType = value;
-                                OnContractTypeChanged();
+                                // OnContractTypeChanged();
                                 OnPropertyChanged();
                             }
                             break;
@@ -91,6 +92,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         Type? _contractType = null;
+
+#if false
 
         /// <summary>
         /// Creates or recreates a memory database containing a table for the ContractType
@@ -107,6 +110,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 TableName = ResolveTableNameForPass(ContractType);
             }
         }
+#endif
         public Type ProxyType
         {
             get => _proxyType;
@@ -127,8 +131,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         _proxyType = value;
                         if (_proxyType != ContractType)
                         {
-                            var mapping = FilterQueryDatabase.GetMapping(_proxyType);
-                            if (mapping.TableName == ContractTypeTableMapping.TableName)
+                            TableMapping
+                                contractMapping = ContractType.GetMapping(),
+                                proxyMapping = _proxyType.GetMapping();
+
+                            if (contractMapping.TableName == proxyMapping.TableName)
                             {
                                 throw new NotImplementedException("ToDo");
                             }
