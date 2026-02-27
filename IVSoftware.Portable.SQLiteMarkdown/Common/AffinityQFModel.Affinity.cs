@@ -9,7 +9,16 @@ using EphemeralAttribute = SQLite.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
-    partial class AffinityQFModel : IAffinityItem
+    [Table("items")]
+#if DEBUG
+    public 
+#else
+    internal 
+#endif
+    partial class AffinityQFModel 
+        : PrioritizedQFModel
+        , IGenesis
+        , IAffinityItem
     {
         public void UpdateAffinityUtcNow(
             DateTimeOffset? affinityUtcNow,

@@ -340,6 +340,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         DateTimeOffset Created { get; }
     }
 
+#if DEBUG
+    public
+#else
+    internal 
+#endif
     /// <summary>
     /// Defines ledger-style custody tracking for local edits and remote receipts.
     /// </summary>
@@ -359,7 +364,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// Conflict detection is supported, but conflict resolution is intentionally
     /// left to the consumer.
     /// </remarks>
-    public interface IChainOfCustody
+    interface IChainOfCustody
     {
         ChainOfCustody ChainOfCustody { get; }
         Task<DateTimeOffset> CommitLocalEdit(string identity);
@@ -599,10 +604,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Prev,
     }
 
+
+
+#if DEBUG
+    public
+#else
+    internal 
+#endif
     /// <summary>
     /// Represents a time slice snapshot using a captured UtcEpochNow that preempts race conditions.
     /// </summary>
-    public interface IAffinityItem
+    interface IAffinityItem
     {
         void UpdateAffinityUtcNow(
             DateTimeOffset? affinityUtcNow,

@@ -9,11 +9,8 @@ using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
-    [Table("items")]
-    public partial class AffinityQFModel 
-        : SelectableQFModel
-        , IGenesis
-        , IChainOfCustody
+    partial class AffinityQFModel 
+        : IChainOfCustody
     {
         public DateTimeOffset Created { get; } = DateTimeOffset.UtcNow.WithTestability();
 

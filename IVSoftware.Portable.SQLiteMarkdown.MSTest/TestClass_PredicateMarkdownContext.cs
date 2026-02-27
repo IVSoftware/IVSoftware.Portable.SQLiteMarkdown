@@ -106,16 +106,17 @@ public class TestClass_PredicateMarkdownContext
             expected = @" 
 [
   {
-    ""Priority"": 630822892800000000,
+    ""FullPath"": ""312d1c21-0000-0000-0000-000000000000\\312d1c21-0000-0000-0000-000000000005"",
     ""ParentPath"": ""312d1c21-0000-0000-0000-000000000000"",
     ""ParentId"": ""312d1c21-0000-0000-0000-000000000000"",
-    ""UtcStart"": null,
     ""Duration"": ""00:00:00"",
     ""Remaining"": ""00:00:00"",
     ""AffinityMode"": null,
     ""AffinityParent"": null,
     ""AffinityChildMode"": null,
     ""Slots"": [],
+    ""Priority"": 630822892800000000,
+    ""UtcStart"": null,
     ""AffinityTimeDomain"": null,
     ""IsRoot"": false,
     ""IsTimeDomainEnabled"": false,
@@ -141,7 +142,8 @@ public class TestClass_PredicateMarkdownContext
     ""TagMatchTerm"": """",
     ""Properties"": ""{\r\n  \""Description\"": \""Item05\""\r\n}""
   }
-]";
+]"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),

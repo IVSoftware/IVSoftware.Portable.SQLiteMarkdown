@@ -427,4 +427,11 @@ SELECT * FROM items WHERE
         }
         #endregion S U B T E S T S
     }
+
+
+    [TestMethod]
+    public async Task Test_InputTextUnconditionalSettle()
+    {
+        var mdc = new MarkdownContext<SelectableQFModel>();
+    }
 }
