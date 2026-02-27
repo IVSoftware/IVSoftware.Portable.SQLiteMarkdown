@@ -10,7 +10,9 @@
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-  </PropertyGroup>
+	  <AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
+	  <SignAssembly>True</SignAssembly>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="coverlet.collector" Version="6.0.0" />

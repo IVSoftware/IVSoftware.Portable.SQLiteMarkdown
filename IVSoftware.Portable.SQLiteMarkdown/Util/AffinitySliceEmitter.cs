@@ -21,7 +21,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
     /// supplied moment in time, preventing race conditions that can arise
     /// from repeatedly querying <see cref="DateTimeOffset.UtcNow"/>.
     /// </remarks>
-    public class AffinitySliceEmitter : IAffinitySliceEmitter
+    internal class AffinitySliceEmitter : IAffinitySliceEmitter
     {
         private static readonly IAffinitySliceEmitter _system = new AffinitySliceEmitter();
         public static IAffinitySliceEmitter System => _system;

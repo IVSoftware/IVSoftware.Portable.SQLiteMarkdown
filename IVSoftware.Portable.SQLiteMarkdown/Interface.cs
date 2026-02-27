@@ -1,20 +1,19 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
-using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Text;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Ephemeral = SQLite.IgnoreAttribute;
 
+[assembly: InternalsVisibleTo("IVSoftware.Portable.SQLiteMarkdown.MSTest, PublicKey=0024000004800000940000000602000000240000525341310004000001000100e1f164d857333dfcf4553776c3113969fc04991b6e0d72a969cd4c2d53341fd200e8c850935fd1e11adf7eac3fd9d50de3198aebbe2b6486c72ca205603fd12dc794bbd315e404e3d1f2e1256895a5e9739006d1f69b45de219c738f0c70cd0d6de5cff93f31e361907c09a653c584a51b9ff5201cde3c7ae681c16caa4579ce")]
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
     /// <summary>
@@ -338,11 +337,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </remarks>
 
 
-#if DEBUG
-    public
-#else
-    internal 
-#endif
     /// <summary>
     /// Defines ledger-style custody tracking for local edits and remote receipts.
     /// </summary>
@@ -362,7 +356,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// Conflict detection is supported, but conflict resolution is intentionally
     /// left to the consumer.
     /// </remarks>
-    interface IChainOfCustody
+    internal interface IChainOfCustody
     {
         DateTimeOffset Created { get; }
         Task<DateTimeOffset> CommitLocalEdit(string identity);
@@ -372,10 +366,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Json property bag for user-defined value;
     /// </summary>
-    public interface ICustomProperties
+    internal interface ICustomProperties
     {
         IDictionary<string, string> CustomProperties { get; }
     }
+
 
     /// <summary>
     /// Relational distinction that behaves differently for fixed and floating items.
@@ -402,7 +397,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// - This state enforces a deadline for the fixed epoch.
     /// - Child items below can now also react to Running.
     /// </remarks>
-    public enum AffinityTimeDomain : byte
+    internal enum AffinityTimeDomain : byte
     {
         /// <summary>
         /// UtcEnd <= UtcNow
@@ -427,7 +422,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// Typically, the property is nullable and represents an OPT-IN to temporal characteristics.
     /// </remarks>
     [Flags]
-    public enum TemporalAffinity : byte
+    internal enum TemporalAffinity : byte
     {
         /// <summary>
         /// Begins as soon as possible relative to UtcNow and Position.
@@ -467,7 +462,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <remarks>
     /// Child items *are not* required to be temporal, but if they *are* then thay are ASAP and never FIXED.
     /// </remarks>
-    public enum ChildAffinityMode : sbyte
+    internal enum ChildAffinityMode : sbyte
     {
         /// <summary>
         /// Begins at a specified UtcStart and ends Remaining later.
@@ -487,7 +482,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <remarks>
     /// Mental Model: In every scenario, "Topics A-E must be covered inside of TimeSpan T".
     /// </remarks>
-    public enum FreeTimeMode
+    internal enum FreeTimeMode
     {
         /// <summary>
         /// Use free time surplus now, within the Present affinity time domain.
@@ -534,7 +529,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     ///   when !IsRunning (or "Pause" in the UI) this will categorically produce deficits as remaining 
     ///   time inevitably shrinks.
     /// </remarks>
-    public enum ScarceTimeMode
+    internal enum ScarceTimeMode
     {
         /// <summary>
         /// Items at the head of the epoch are marked PastDue as remaining time shrinks.
@@ -575,7 +570,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     ///   query fails to return the conflicting epoch. It falls to the user implementation, to
     ///   manage this, and often involves the ability to perform a DateTimeRange x Resource matrix query.
     /// </remarks>
-    public enum OverlapTimeMode
+    internal enum OverlapTimeMode
     {
         /// <summary>
         /// Displaced older items are marked PastDue as remaining time shrinks.
@@ -597,16 +592,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
     #endregion F I X E D    E P O C H
 
-    public enum AffinityRole
+    internal enum AffinityRole
     {
         Prev,
     }
-
-#if DEBUG
-    public
-#else
-    internal 
-#endif
 
     /// <summary>
     /// Represents a prioritized node whose relational context ("affinity") is 
@@ -617,7 +606,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// If the raw recordset of a query returns ONE child item at depth = 2, then the
     /// net query returns THREE. The UI now has greater opportunity to display context.
     /// </remarks>
-    interface IPrioritizedAffinity
+    internal interface IPrioritizedAffinity
     {
         /// <summary>
         /// Provides access to the hierarchical structure and hosts lateral expansion.
@@ -676,28 +665,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         long? PriorityOverride { get; set; }
     }
 
-#if DEBUG
-    public
-#else
-    internal 
-#endif
     /// <summary>
     /// Represents a time slice snapshot using a captured UtcEpochNow that preempts race conditions.
     /// </summary>
-    interface ITemporalAffinity : IPrioritizedAffinity
+    internal interface ITemporalAffinity : IPrioritizedAffinity
     {
         /// <summary>
         /// Affinity behavior
         /// </summary>
-        TemporalAffinity? AffinityMode { get; set; }
+        TemporalAffinity? TemporalAffinity { get; set; }
 
-        bool IsTimeDomainEnabled { get; }
-
-        /// <summary>
-        /// Marks the beginning of this item's epoch and may be floating or fixed.
-        /// </summary>
-        [Ephemeral]
-        DateTimeOffset? UtcStart { get; set; }
 
         /// <summary>
         /// Represents the original time commitment associated with this item.
@@ -728,11 +705,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// the item is effectively past due.
         /// </remarks>
         TimeSpan Remaining { get; set; }
-
         /// <summary>
-        /// Partial epochs that float around fixed epochs.
+        /// Marks the beginning of this item's epoch and may be floating or fixed.
         /// </summary>
-        IList<AffinitySlot> Slots { get; }
+        [Ephemeral]
+        DateTimeOffset? UtcStart { get; set; }
 
         /// <summary>
         /// Unlike Duration (the commitment) and Remaining (the balance due),
@@ -762,6 +739,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         DateTimeOffset? UtcEnd { get; }
 
         /// <summary>
+        /// Partial epochs that float around fixed epochs.
+        /// </summary>
+        IList<AffinitySlot> Slots { get; }
+
+        /// <summary>
         /// Derived mode when UtcParent is not null.
         /// </summary>
         [Ephemeral]
@@ -776,8 +758,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Available < Remaining.
         /// </summary>
+        /// <remarks>
+        /// Signals a pathological time scarcity where the available time has
+        /// fallen below the promised commitment. Typically this occurs when
+        /// the AffinityField is paused (i.e., not going according to plan).
+        /// </remarks>
         [Ephemeral]
         bool? IsPastDue { get; }
+
+        /// <summary>
+        /// Remaining = TimeSpan.Zero but !IsChecked.
+        /// </summary>
+        /// <remarks>
+        /// Signals the benign version of running out of time, where 
+        /// the affinity field has been running and decrementing remaining.
+        /// </remarks>
+        [Ephemeral]
+        bool? OutOfTime { get; }
 
         /// <summary>
         /// Ephemeral two way binding that typically maps to a persistent IsChecked style property.
@@ -805,7 +802,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// - Start signal is issued on the UI thread and modifies an interlocked 'run' value.
     /// - Sub-second intervals raise UtcEpochNow
     /// </remarks>
-    public interface IAffinitySliceEmitter : INotifyPropertyChanged
+    internal interface IAffinitySliceEmitter : INotifyPropertyChanged
     {
         /// <summary>
         /// Captured epoch reference.
@@ -849,7 +846,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// competing items, resolution strategies are deterministic, idempotent, and 
     /// applied only through explicit, opt-in arbitration policies.
     /// </remarks>
-    public interface IAffinityField : INotifyPropertyChanged
+    internal interface IAffinityField : INotifyPropertyChanged
     {
         /// <summary>
         /// Colloquially speaking, this is another way of saying "I'm Working On It!"
@@ -889,12 +886,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         Enum AffinityFsmState { get; }
     }
-    public enum ReservedAffinityStateMachine
+    internal enum ReservedAffinityStateMachine
     { 
         Idle = -1, 
     }
 
-    public enum AffinityFsm
+    internal enum AffinityFsm
     {
         /// <summary>
         /// Root affinities that are designated AffinityMode? > 0

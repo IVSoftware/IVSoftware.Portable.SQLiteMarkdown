@@ -15,12 +15,7 @@ using EphemeralAttribute = SQLite.IgnoreAttribute;
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
     [Table("items")]
-#if DEBUG
-    public 
-#else
-    internal 
-#endif
-    partial class TemporalAffinityQFModel 
+    internal partial class TemporalAffinityQFModel 
         : PrioritizedAffinityQFModel
         , ITemporalAffinity
     {
@@ -114,19 +109,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             }
         }
 
-        public void UpdateAffinityUtcNow(
-            DateTimeOffset? affinityUtcNow,
-            Dictionary<AffinityRole, object?>? affinities = null)
-        {
-            _affinities ??= new Dictionary<AffinityRole, object?>();
-            _affinityUtcNow = affinityUtcNow;
-        }
-
-        protected virtual void UpdateAffinityUtcNow()
-        {
-
-        }
-
         /// <summary>
         /// Active affinity context for temporal and role-based coordination.
         /// </summary>
@@ -139,24 +121,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             set => _affinities = value ??= new();
         }
         Dictionary<AffinityRole, object?> _affinities = new();
-
-
-        /// <summary>
-        /// Captured affinity time for protected calculations.
-        /// </summary>
-        protected DateTimeOffset? AffinityUtcNow
-        {
-            get => _affinityUtcNow;
-            set
-            {
-                if (!Equals(_affinityUtcNow, value))
-                {
-                    _affinityUtcNow = value;
-                    UpdateAffinityUtcNow();
-                }
-            }
-        }
-        private DateTimeOffset? _affinityUtcNow = default;
 
         [Ephemeral]
         public string FullPath => ParentPath.LintCombinedSegments(Id);
@@ -234,7 +198,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         TimeSpan _remaining = default;
 
 
-        public TemporalAffinity? AffinityMode
+        public TemporalAffinity? TemporalAffinity
         {
             get => _utcEpochMode;
             set
@@ -242,7 +206,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 if (!Equals(_utcEpochMode, value))
                 {
                     _utcEpochMode = value;
-                    UpdateAffinityUtcNow();
                     OnPropertyChanged();
                 }
             }
@@ -325,7 +288,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         {
             get
             {
-                switch (AffinityMode)
+                switch (TemporalAffinity)
                 {
                     case null:
                         break;
@@ -358,64 +321,71 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         [Ephemeral]
         public bool IsRoot => string.IsNullOrWhiteSpace(ParentId); 
-        
-        [Ephemeral]
-        public bool IsTimeDomainEnabled => !(_affinityUtcNow is null || AffinityMode is null);
 
         [Ephemeral]
+
         public DateTimeOffset? UtcEnd
         {
-            get
-            {
-                if (IsTimeDomainEnabled)
-                {
-                    return UtcStart + Duration;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-        }
-
-        [Ephemeral]
-        public bool? IsDone
-        {
-            get
-            {
-                if (IsTimeDomainEnabled)
-                {
-                    return _isDone;
-                }
-                else
-                {
-                    return null;
-                }
-            }
+            get => 
+                TemporalAffinity is null
+                ? null 
+                : _utcEnd;
             set
             {
-                if (!Equals(_isDone, value))
+                if (!Equals(_utcEnd, value))
                 {
-                    _isDone = value == true;
+                    _utcEnd = value;
                     OnPropertyChanged();
                 }
             }
         }
-        bool? _isDone = false;
+        DateTimeOffset? _utcEnd = default;
+
 
         [Ephemeral]
-        public bool? IsDonePendingConfirmation =>
-            IsDone switch
+        public bool? IsDone
+        {
+            get =>
+                TemporalAffinity is null
+                ? null
+                : IsChecked;
+            set
             {
-                // Not officially IsDone, but the time has ticked down to zero.
-                false => Remaining == TimeSpan.Zero,
+                if (value is not null && !Equals(IsChecked, value))
+                {
+                    IsChecked = value == true;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
-                // Affirmatively IsDone (this affirmatively *also* sets remaining to zero.
-                true => false,
-
-                // IsDone is presumed null and so is this.
-                _ => null,
-            };
+        /// <summary>
+        /// Set the IsDone = True to explicitly check an item off the list.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: 
+        /// - Fixed items eventually run out of remaining time. 
+        /// - Such items can be auto-checked but that must be opt-in.
+        /// - The danger is that, due to filtering, an auto checked item
+        ///   might silently fall out of visiblity, without a human
+        ///   confirmation that the task was actually completed.
+        /// - This property supports a keep alive that can signal warning 
+        ///   semantics when the determinate state of OOT is true.
+        /// </remarks>
+        [Ephemeral]
+        public bool? OutOfTime
+        {
+            get => _outOfTime;
+            set
+            {
+                if (!Equals(_outOfTime, value))
+                {
+                    _outOfTime = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        bool? _outOfTime = false;
 
 
         [Ephemeral]
@@ -441,12 +411,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             base.OnPropertyChanged(propertyName);
-            switch (propertyName)
-            {
-                case nameof(AffinityMode):
-                    UpdateAffinityUtcNow();
-                    break;
-            }
         }
     }
 }

@@ -81,7 +81,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual.NormalizeResult(),
                 "Expecting json serialization to match."
             );
-            item.UpdateAffinityUtcNow(utcTest);
+            // This is going to leave a mark...
+            // item.UpdateAffinityUtcNow(utcTest);
             actual = JsonConvert.SerializeObject(item, Formatting.Indented);
 
             Assert.AreEqual(
