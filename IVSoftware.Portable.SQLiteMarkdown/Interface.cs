@@ -619,6 +619,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         string Id { get; set; }
 
         /// <summary>
+        /// Linted concatenation of ParentPath and Id
+        /// </summary>
+        string FullPath { get; }
+
+        /// <summary>
         /// Materialized Path Policy defines a hierarchal position.
         /// </summary>
         public string ParentPath { get; set; }
