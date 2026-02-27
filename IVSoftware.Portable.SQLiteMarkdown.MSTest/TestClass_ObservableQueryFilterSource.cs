@@ -1806,9 +1806,6 @@ Kangaroo ""bounce"",""outback"",""marsupial"" [animal]";
                         Assert.IsTrue(items.RouteToFullRecordset);
                         { }
                     }
-
-                    // G Z
-
                     #endregion S U B T E S T S
                 }
             }

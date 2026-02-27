@@ -59,7 +59,7 @@ public class TestClass_PredicateMarkdownContext
         using var te = this.TestableEpoch();
 
         const int COUNT = 5;
-        string ParentId = new Guid().WithTestability().ToString();
+        string parentId;
         string actual, expected, sql;
         List<TemporalAffinityQFModel> recordset;
 
@@ -85,8 +85,10 @@ public class TestClass_PredicateMarkdownContext
             opc =
                new ObservableCollection<TemporalAffinityQFModel>()
                .PopulateForDemo(COUNT, PopulateOptions.RandomChecks);
+
             // Assign a parent path to last item.
-            opc.Last().ParentPath = ParentId;
+            parentId = new Guid().WithTestability().ToString();
+            opc.Last().ParentPath = parentId;
 
             Assert.AreEqual(
                 COUNT,
@@ -96,7 +98,7 @@ public class TestClass_PredicateMarkdownContext
             Assert.AreEqual(COUNT, cnx.InsertAll(opc));
 
             // Query SPECIFICALLY on ParentId alone.
-            sql = $"Select * from items where ParentId='{ParentId}'";
+            sql = $"Select * from items where ParentId='{parentId}'";
             recordset = cnx.Query<TemporalAffinityQFModel>(sql);
 
 
@@ -106,29 +108,28 @@ public class TestClass_PredicateMarkdownContext
             expected = @" 
 [
   {
-    ""FullPath"": ""312d1c21-0000-0000-0000-000000000000\\312d1c21-0000-0000-0000-000000000005"",
-    ""ParentPath"": ""312d1c21-0000-0000-0000-000000000000"",
-    ""ParentId"": ""312d1c21-0000-0000-0000-000000000000"",
+    ""FullPath"": ""312d1c21-0000-0000-0000-000000000005\\312d1c21-0000-0000-0000-000000000004"",
+    ""ParentPath"": ""312d1c21-0000-0000-0000-000000000005"",
+    ""ParentId"": ""312d1c21-0000-0000-0000-000000000005"",
     ""Duration"": ""00:00:00"",
     ""Remaining"": ""00:00:00"",
-    ""AffinityMode"": null,
-    ""AffinityParent"": null,
-    ""AffinityChildMode"": null,
+    ""TemporalAffinity"": null,
+    ""TemporalChildAffinity"": null,
+    ""TemporalAffinityCurrentTimeDomain"": null,
     ""Slots"": [],
-    ""Priority"": 630822892800000000,
+    ""Priority"": 630822890400000000,
+    ""PriorityOverride"": null,
     ""UtcStart"": null,
-    ""AffinityTimeDomain"": null,
-    ""IsRoot"": false,
-    ""IsTimeDomainEnabled"": false,
     ""UtcEnd"": null,
+    ""AvailableTimeSpan"": null,
+    ""IsRoot"": false,
     ""IsDone"": null,
-    ""IsDonePendingConfirmation"": null,
+    ""OutOfTime"": false,
     ""IsPastDue"": null,
-    ""Available"": null,
-    ""Created"": ""2000-01-01T09:10:00+07:00"",
-    ""ChainOfCustody"": ""{\r\n  \""Created\"": \""2000-01-01T09:09:00+07:00\"",\r\n  \""Coc\"": {}\r\n}"",
+    ""Created"": ""2000-01-01T09:04:00+07:00"",
+    ""ChainOfCustody"": ""{\r\n  \""Created\"": \""2000-01-01T09:04:00+07:00\"",\r\n  \""Coc\"": {}\r\n}"",
     ""CustomProperties"": ""{}"",
-    ""Id"": ""312d1c21-0000-0000-0000-000000000005"",
+    ""Id"": ""312d1c21-0000-0000-0000-000000000004"",
     ""Description"": ""Item05"",
     ""Keywords"": ""[]"",
     ""KeywordsDisplay"": """",
@@ -136,7 +137,7 @@ public class TestClass_PredicateMarkdownContext
     ""IsChecked"": true,
     ""Selection"": 0,
     ""IsEditing"": false,
-    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000005"",
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000004"",
     ""QueryTerm"": ""item05"",
     ""FilterTerm"": ""item05"",
     ""TagMatchTerm"": """",
@@ -148,7 +149,9 @@ public class TestClass_PredicateMarkdownContext
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting json serialization to match with Testable Guids and DateTimeOffset."
+                "Expecting " +
+                "1. Testable Guids and DateTimeOffset." +
+                "2. Specifically, Last item is #...004 and ParentId is #...005."
             );
         }
 

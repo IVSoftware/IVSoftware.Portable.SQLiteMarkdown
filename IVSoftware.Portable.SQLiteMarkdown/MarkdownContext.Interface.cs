@@ -121,9 +121,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             set
             {
                 int success = 0;
+                var recordset = value?.Cast<object>().ToArray() ?? [];
                 if (value is not null)
                 {
-                    var recordset = value.Cast<object>().ToArray();
                     var invalidItems = recordset
                         .Where(_ => !ContractType.IsAssignableFrom(_.GetType()))
                         .Select(_ => _.GetType().FullName)
@@ -156,12 +156,6 @@ Recordset assignment is atomic; no changes were applied."
                             {
                                 success += FilterQueryDatabase.InsertOrReplace(item);
                             }
-                            var nDuplicates = recordset.Length - UnfilteredCount;
-                            if(nDuplicates != 0)
-                            {
-                                Debug.Fail($@"IFD ADVISORY - First Time.");
-                                this.Advisory($"{nDuplicates} were identified and removed in recordset.");
-                            }
                         });
                     }
                     catch (Exception ex)
@@ -172,6 +166,12 @@ Recordset assignment is atomic; no changes were applied."
                     {
                        // Model.Place()
                     }
+                }
+                var nDuplicates = recordset.Length - success;
+                if (nDuplicates != 0)
+                {
+                    Debug.Fail($@"IFD ADVISORY - First Time.");
+                    this.Advisory($"{nDuplicates} were identified and removed in recordset.");
                 }
                 UnfilteredCount = success;
             }
