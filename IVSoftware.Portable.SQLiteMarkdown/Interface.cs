@@ -366,7 +366,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </remarks>
     interface IChainOfCustody
     {
-        ChainOfCustody ChainOfCustody { get; }
         Task<DateTimeOffset> CommitLocalEdit(string identity);
         Task<ChainOfCustodyToken> CommitRemoteReceipt(string identity, DateTimeOffset remoteTimeStamp);
     }

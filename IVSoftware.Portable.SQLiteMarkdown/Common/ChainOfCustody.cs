@@ -96,8 +96,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         private readonly SemaphoreSlim _busy = new SemaphoreSlim(1, 1);
 
-        ChainOfCustody IChainOfCustody.ChainOfCustody => this;
-
         // Json.NET will populate this.
         // Not publicly writable.
         [JsonProperty]
