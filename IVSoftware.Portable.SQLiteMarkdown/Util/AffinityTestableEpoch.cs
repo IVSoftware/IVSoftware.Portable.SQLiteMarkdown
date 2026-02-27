@@ -14,11 +14,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
     }
     public static class AffinityTestableEpoch
     {
-        [Careful(@"
-TestableEpoch is single-threaded.
-You MUST use [DoNotParallelize] for tests that employ it")]
         public static IDisposable TestableEpoch(this object? @this)
-            => DHostTokenDispenser.GetToken(sender: @this);
+        {
+            if (DHostTokenDispenser.IsZero())
+            {
+                return DHostTokenDispenser.GetToken(sender: @this);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    "TestableEpoch is single-threaded. Mark the test with [DoNotParallelize].");
+            }
+        }
 
         static DisposableHost DHostTokenDispenser
         {
