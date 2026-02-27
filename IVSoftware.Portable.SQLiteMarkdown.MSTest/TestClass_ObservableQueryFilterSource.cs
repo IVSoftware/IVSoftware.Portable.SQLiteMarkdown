@@ -1673,7 +1673,15 @@ Running"
                         { }
                         expected = @" 
 Busy
-ContractTypeTableMapping
+SearchEntryState
+SearchEntryState
+FilteringState
+RouteToFullRecordset
+IsFiltering
+Busy"
+                        ;
+                        expected = @" 
+Busy
 SearchEntryState
 SearchEntryState
 FilteringState
@@ -1686,8 +1694,12 @@ Busy"
                             expected.NormalizeResult(),
                             actual.NormalizeResult(),
                             "Expecting " +
-                            "1. The ReplaceItemsAsync runs inside a busy flag, so set Busy = true." +
-                            "2. OnPropertyChanged() notifies generically."
+                            "1. ReplaceItemsAsync method gets a busy flag token." +
+                            "2. Non-atomic response to clearing." +
+                            "3. Non-atomic response to add range." +
+                            "4. Armed filter since the non-empty input text hasn't been touched." +
+                            "5. Routing change based on filter where recordset > 1 results." +
+                            "6. ReplaceItemsAsync method releases the busy flag token."
                         );
                         eventQueue.Clear();
 
