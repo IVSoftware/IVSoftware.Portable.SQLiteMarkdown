@@ -4,6 +4,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using SQLite;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
@@ -23,8 +24,6 @@ public class TestClass_PredicateMarkdownContext
         string actual, expected;
         List<string> builder = new();
 
-        var opc = new ObservableCollection<SelectableQFModel>().PopulateForDemo(10);
-
         subtest_TriggerBy_ProjectionBeforeState();
         subtest_TriggerBy_StateBeforeProjection();
         subtest_TriggerBy_FilteringState();
@@ -33,10 +32,17 @@ public class TestClass_PredicateMarkdownContext
         #region S U B T E S T S
         void subtest_TriggerBy_ProjectionBeforeState()
         {
+            var opc = 
+                new ObservableCollection<SelectableQFModel>()
+                .PopulateForDemo(10);
+
             var mdc = new MarkdownContext<SelectableQFModel>
             {
                 ObservableNetProjection = (INotifyCollectionChanged)opc,
             };
+
+            // In this test, the items are already populated
+            // before switching into filter mode.
             mdc.QueryFilterConfig = QueryFilterConfig.Filter;
             Assert.IsTrue(mdc.IsFiltering);
 
