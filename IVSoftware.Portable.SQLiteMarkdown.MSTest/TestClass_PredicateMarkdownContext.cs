@@ -21,9 +21,7 @@ public class TestClass_PredicateMarkdownContext
         string actual, expected;
         List<string> builder = new();
 
-        var opc =
-            new ObservableCollection<SelectableQFModel>()
-            .PopulateForDemo(10);
+        var opc = new ObservableCollection<SelectableQFModel>().PopulateForDemo(10);
 
         subtest_TriggerBy_ProjectionBeforeState();
         subtest_TriggerBy_StateBeforeProjection();
@@ -35,8 +33,11 @@ public class TestClass_PredicateMarkdownContext
         {
             var mdc = new MarkdownContext<SelectableQFModel>
             {
-                ObservableNetProjection = opc,
+                ObservableNetProjection = (INotifyCollectionChanged)opc,
             };
+            mdc.QueryFilterConfig = QueryFilterConfig.Filter;
+            Assert.IsTrue(mdc.IsFiltering);
+            { }
         }
         void subtest_TriggerBy_StateBeforeProjection()
         {

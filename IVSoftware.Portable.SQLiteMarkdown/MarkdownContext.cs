@@ -1410,28 +1410,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     OnFilteringStateChanged();
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(RouteToFullRecordset)); 
-                    OnPropertyChanged(nameof(IsFiltering));
-                }
-
-                switch (QueryFilterConfig)
-                {
-                    case QueryFilterConfig.Query:
-                        // This config is *never* filtering.
-                        IsFiltering = false;
-                        break;
-                    case QueryFilterConfig.Filter:
-                        // This config is *always* filtering.
-                        IsFiltering = true;
-                        break;
-                    case QueryFilterConfig.QueryAndFilter:
-                        // Apply hysteresis
-                        IsFiltering =
-                            FilteringState == FilteringState.Active
-                            || FilteringStatePrev == FilteringState.Active;
-                        break;
-                    default:
-                        this.ThrowFramework<NotSupportedException>($"The {QueryFilterConfig.ToFullKey()} case is not supported.");
-                        break;
                 }
             }
         }
@@ -1488,10 +1466,66 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (!Equals(_isFiltering, value))
                 {
                     _isFiltering = value;
+                    OnIsFilteringChanged();
                     OnPropertyChanged();
                 }
             }
         }
+
+
+        protected virtual void OnIsFilteringChanged()
+        {
+            if(IsFiltering)
+            {
+                if (ObservableNetProjection is not null)
+                { 
+                    Type listType = ObservableNetProjection.GetType();
+                    if (listType.IsGenericType && listType.GetGenericArguments().Single() is { } itemType)
+                    {
+                        FilterQueryDatabase.CreateTable(itemType);
+                        if (itemType.GetMapping() is { } mapping)
+                        {
+                            if (ObservableNetProjection is ITemporalAffinity temporal)
+                            {
+                                foreach (ExitFilterFSM item in Enum.GetValues(typeof(ExitFilterFSM)))
+                                {
+
+                                }
+                                throw new NotImplementedException("ToDo");
+                            }
+                            else if (ObservableNetProjection is IPrioritizedAffinity prioritized)
+                            {
+                                foreach (ExitFilterFSM item in Enum.GetValues(typeof(ExitFilterFSM)))
+                                {
+
+                                }
+                                throw new NotImplementedException("ToDo");
+                            }
+                            else
+                            {
+                                PropertyInfo? pk = mapping.PK?.PropertyInfo;
+                                if (pk is null)
+                                {
+                                    throw new NotSupportedException($"Type '{itemType.Name}' has no PK and such types are not (yet) supported.");
+                                }
+                                foreach (ExitFilterFSM item in Enum.GetValues(typeof(ExitFilterFSM)))
+                                {
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                foreach (ExitFilterFSM item in Enum.GetValues(typeof(ExitFilterFSM)))
+                {
+
+                }
+            }
+        }
+
         bool _isFiltering = false;
 
 
@@ -1560,7 +1594,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return FilteringState;
         }
 
-        protected virtual void OnFilteringStateChanged() { }
+        protected virtual void OnFilteringStateChanged()
+        {
+            switch (QueryFilterConfig)
+            {
+                case QueryFilterConfig.Query:
+                    // This config is *never* filtering.
+                    IsFiltering = false;
+                    break;
+                case QueryFilterConfig.Filter:
+                    // This config is *always* filtering.
+                    IsFiltering = true;
+                    break;
+                case QueryFilterConfig.QueryAndFilter:
+                    // Apply hysteresis
+                    IsFiltering =
+                        FilteringState == FilteringState.Active
+                        || FilteringStatePrev == FilteringState.Active;
+                    break;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {QueryFilterConfig.ToFullKey()} case is not supported.");
+                    break;
+            }
+        }
 
         public string InputText
         {

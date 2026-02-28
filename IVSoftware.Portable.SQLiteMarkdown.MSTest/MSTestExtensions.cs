@@ -20,23 +20,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 _ => throw new InvalidOperationException("Multiple items in queue."),
             };
 
-        public static void PopulateDemoDatabase<TItem>(this SQLiteConnection @this, bool includeLive = false, PopulateOptions? options = null) 
-            where TItem : new()
+        public static void PopulateDemoDatabase<T>(this SQLiteConnection @this, bool includeLive = false, PopulateOptions? options = null) 
+            where T : new()
         {
-            @this.CreateTable<TItem>();
+            @this.CreateTable<T>();
 
-            var list = new List<TItem>().PopulateForDemo<List<TItem>,TItem>(includeLiveDemo: includeLive, options);
+            var list = new List<T>().PopulateForDemo(includeLiveDemo: includeLive, options);
             @this.InsertAll(list);
         }
-        public static TList PopulateForDemo<TList, TItem>(this TList @this, bool includeLiveDemo = false, PopulateOptions? options = null)
-            where TList : IList<TItem>, new()
-            where TItem : new()
+        public static IList<T> PopulateForDemo<T>(this IList<T>? @this, bool includeLiveDemo = false, PopulateOptions? options = null)
+            where T : new()
         {
             Random rando = new(10);
 
             if (@this is null)
             {
-                @this = Activator.CreateInstance<TList>();
+                @this = new List<T>();
             }
             else
             {
@@ -49,14 +48,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 {
                     isChecked = rando.Next(2) == 1;
                 }
-                var instance = new TItem();
-                typeof(TItem).GetProperty("Description")?.SetValue(instance, description);
-                typeof(TItem).GetProperty("Tags")?.SetValue(instance, tags);
-                typeof(TItem).GetProperty("IsChecked")?.SetValue(instance, isChecked);
+                var instance = new T();
+                typeof(T).GetProperty("Description")?.SetValue(instance, description);
+                typeof(T).GetProperty("Tags")?.SetValue(instance, tags);
+                typeof(T).GetProperty("IsChecked")?.SetValue(instance, isChecked);
                 if (keywords != null)
                 {
                     var json = JsonConvert.SerializeObject(keywords);
-                    typeof(TItem).GetProperty("Keywords")?.SetValue(instance, json);
+                    typeof(T).GetProperty("Keywords")?.SetValue(instance, json);
                 }
                 @this.Add(instance);
             }
@@ -105,14 +104,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             }
             return @this;
         }
-        public static TList PopulateForDemo<TList,TItem>(this TList @this, int count, PopulateOptions? options = null)
-            where TList : IList<TItem>, new()
-            where TItem : new()
+        public static IList<T> PopulateForDemo<T>(this IList<T>? @this, int count, PopulateOptions? options = null)
+            where T : new()
         {
             Random rando = new(10);
             if (@this is null)
             {
-                @this = Activator.CreateInstance<TList>();
+                @this = new List<T>();
             }
             else
             {
