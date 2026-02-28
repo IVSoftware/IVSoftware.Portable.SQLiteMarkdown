@@ -170,7 +170,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// [X] to return to query state, leaving the list items (if any) populated.
         /// [X] to clear the visible list, ready for a new query.
         /// </remarks>
-        FilteringState Clear(bool all = false);
+        FilteringState Clear(bool all);
 
         string InputText { get; set; }
         QueryFilterConfig QueryFilterConfig { get; set; }
@@ -199,14 +199,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// This property is not intended for binding; this is enforced as 
         /// set only and will be detached if set to null..
         /// </remarks>
-        INotifyCollectionChanged ObservableProjection { set; }
+        INotifyCollectionChanged ObservableNetProjection { set; }
 
         /// <summary>
         /// Guards receptivity of the unfiltered items collection.
         /// </summary>
-        IDisposable BeginUIAction();
+        IDisposable BeginAuthorityClaim();
 
         int UnfilteredCount { get; }
+
+
     }
 
     /// <summary>

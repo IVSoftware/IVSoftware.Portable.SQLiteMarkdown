@@ -26,7 +26,7 @@ public class TestClass_PredicateMarkdownContext
         var pmdc = new PredicateMarkdownContext<TemporalAffinityQFModel>
         {
             QueryFilterConfig = QueryFilterConfig.Filter,
-            ObservableProjection = opc,
+            ObservableNetProjection = opc,
         };
         Assert.AreEqual(
             0, 

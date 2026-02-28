@@ -244,4 +244,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         model,
     }
+
+    /// <summary>
+    /// States authority inside a NotifyCollectionChanged event handler.
+    /// </summary>
+    public enum NotifyCollectionChangedEventAuthority
+    {
+        /// <summary>
+        /// The user has effected a (presumably UI-related) change to a filtered collection.
+        /// </summary>
+        /// <remarks>
+        /// During filtering, the MarkdownContext tracks a 'canonical' unfiltered
+        /// list which now (counterinuitively) must be updated to remain canonical.
+        /// </remarks>
+        NetProjection,
+
+        /// <summary>
+        /// The markdown context is notifying a change to the net
+        /// projection, the (presumably visible) collection.
+        /// </summary>
+        MarkdownContext,
+    }
 }

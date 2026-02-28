@@ -1662,15 +1662,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnSearchEntryStateChanged() { }
 
-        protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
-        {
-            await base.OnEpochFinalizingAsync(e);
-            if (!e.Cancel)
-            {
-                await OnInputTextSettled(new CancelEventArgs());
-            }
-        }
-
         /// <summary>
         /// Reference counter for Busy property.
         /// </summary>
@@ -1701,6 +1692,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         DisposableHost? _dhostBusy = null;
 
+#if false
         public DisposableHost DHostEpochReferenceCount
         {
             get
@@ -1723,6 +1715,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         DisposableHost? _dhostEpochReferenceCount = null;
+#endif
 
 #if DEBUG
         protected SemaphoreSlimWithTrace _ready { get; } = new SemaphoreSlimWithTrace(1, 1);
@@ -1802,10 +1795,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Produce a IN clause with negative polarity that applies the specified PKs.
         /// </summary>
         public HashSet<object> DisallowedPrimaryKeys { get; } = new();        
-    }
-    public class MarkdownContext<T> : MarkdownContext
-    {
-        public MarkdownContext() : base(typeof(T)) { }
-        public MarkdownContext(IList projection) : base(typeof(T), projection) { }
     }
 }

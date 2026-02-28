@@ -11,9 +11,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
@@ -182,14 +184,25 @@ Recordset assignment is atomic; no changes were applied."
         /// (net visible) collection after markdown and predicate filtering.
         /// </summary>
         /// <remarks>
-        /// The observable projection is the post-filter view derived from the canonical
-        /// recordset and serves as the authoritative source of change notifications.
-        /// When assigned, this context subscribes to CollectionChanged to track
-        /// structural mutations originating from the projection layer.
+        /// Mental Model: "ItemsSource for a CollectionView with both initial query and subsequent filter refinement.
+        /// - OBSERVABLE: This is an INCC object that can be tracked.
+        /// - NET       : The items in this collection depend on the net result of the recordset and any state-dependent filters.
+        /// - PROJECTION: Conveys that this 'filtering' produces a PCL collection, albeit one that is likely to be visible.
+        ///
+        /// When assigned, this context subscribes to CollectionChanged as a
+        /// reconciliation sink. During refinement epochs, structural changes
+        /// made against the filtered projection are absorbed into the canonical
+        /// backing store so that the canon remains complete and relevant.
+        ///
+        /// The projection is an interaction surface, not a storage authority.
+        /// Its mutations are normalized and merged into the canonical collection
+        /// according to the active authority contract.
+        ///
         /// Replacing this property detaches the previous projection and attaches the new one.
+        ///
         /// This property is infrastructure wiring and is not intended for data binding.
         /// </remarks>
-        public INotifyCollectionChanged? ObservableProjection
+        public INotifyCollectionChanged? ObservableNetProjection
         {
             get => _observableProjection;
             set
@@ -213,10 +226,8 @@ Recordset assignment is atomic; no changes were applied."
 
         INotifyCollectionChanged? _observableProjection = null;
 
-        protected virtual void OnObservableProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
+        protected virtual void OnObservableProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) { }
+
 
         public int UnfilteredCount
         {
@@ -247,15 +258,37 @@ Recordset assignment is atomic; no changes were applied."
         }
         int _unfilteredCount = default;
 
+        protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
+        {
+            using (BeginAuthorityClaim())
+            {
+                await base.OnEpochFinalizingAsync(e);
+                if (!e.Cancel)
+                {
+                    await OnInputTextSettled(new CancelEventArgs());
+                }
+            }
+        }
 
-        /// <summary>
-        /// UI changes for tracking must be wrapped in using block in order to be tracked.
-        /// </summary>
-        /// <remarks>
-        /// Even though we do not act on this collection directly, this circularity guard
-        /// prevents this object from reacting to its own pushed filter states.
-        /// </remarks>
-        public IDisposable BeginUIAction() => _dhostUIAction.GetToken();
-        private readonly DisposableHost _dhostUIAction = new();
+        public IDisposable BeginAuthorityClaim() => DHostClaimAuthority.GetToken();
+
+        DisposableHost DHostClaimAuthority
+        {
+            get
+            {
+                if (_dhostClaimAuthority is null)
+                {
+                    _dhostClaimAuthority = new DisposableHost();
+                    _dhostClaimAuthority.BeginUsing += (sender, e)
+                        => CollectionChangeAuthority = NotifyCollectionChangedEventAuthority.MarkdownContext;
+                    _dhostClaimAuthority.FinalDispose += (sender, e)
+                        => CollectionChangeAuthority = NotifyCollectionChangedEventAuthority.NetProjection;
+                }
+                return _dhostClaimAuthority;
+            }
+        }
+        DisposableHost? _dhostClaimAuthority = null;
+
+        public NotifyCollectionChangedEventAuthority CollectionChangeAuthority { get; private set; }
     }
 }
