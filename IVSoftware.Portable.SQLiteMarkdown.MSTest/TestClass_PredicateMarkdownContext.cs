@@ -7,6 +7,7 @@ using SQLite;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -23,6 +24,9 @@ public class TestClass_PredicateMarkdownContext
 
         string actual, expected;
         List<string> builder = new();
+        IList<SelectableQFModel> opc = 
+            new ObservableCollection<SelectableQFModel>()
+            .PopulateForDemo(10);
 
         subtest_TriggerBy_ProjectionBeforeState();
         subtest_TriggerBy_StateBeforeProjection();
@@ -32,9 +36,6 @@ public class TestClass_PredicateMarkdownContext
         #region S U B T E S T S
         void subtest_TriggerBy_ProjectionBeforeState()
         {
-            var opc = 
-                new ObservableCollection<SelectableQFModel>()
-                .PopulateForDemo(10);
 
             var mdc = new MarkdownContext<SelectableQFModel>
             {
@@ -44,7 +45,7 @@ public class TestClass_PredicateMarkdownContext
             // In this test, the items are already populated
             // before switching into filter mode.
             mdc.QueryFilterConfig = QueryFilterConfig.Filter;
-            Assert.IsTrue(mdc.IsFiltering);
+            Assert.IsTrue(mdc.IsFiltering, "Expecting ALWAYS TRUE in Filter mode.");
 
             actual = mdc.Model.ToString();
             actual.ToClipboardExpected();
@@ -68,15 +69,46 @@ public class TestClass_PredicateMarkdownContext
                 actual.NormalizeResult(),
                 "Expecting 10 examples of UNKNOWN ITEM WITH PRIMARY KEY."
             );
-
-            { }
         }
         void subtest_TriggerBy_StateBeforeProjection()
         {
             var mdc = new MarkdownContext<SelectableQFModel>
             {
-
+                QueryFilterConfig = QueryFilterConfig.Filter,
             };
+            Assert.IsTrue(mdc.IsFiltering, "Expecting ALWAYS TRUE in Filter mode.");
+            actual = mdc.Model.ToString();
+            actual.ToClipboardExpected();
+            { } // <- FIRST TIME ONLY: Adjust the message.
+            actual.ToClipboardAssert("Expecting EMPTY because ONP is not assigned yet.");
+            { }
+
+            mdc.ObservableNetProjection = (INotifyCollectionChanged)opc;
+
+            actual.ToClipboardExpected();
+            { }
+
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 2, 28).Date, "Don't forget disabled");
+            expected = @" 
+<model>
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000008"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" xitem=""[SelectableQFModel]"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting 10 examples of UNKNOWN ITEM WITH PRIMARY KEY.");
+
+#endif
         }
         void subtest_TriggerBy_FilteringState()
         {
