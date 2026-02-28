@@ -12,6 +12,48 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 [TestClass]
 public class TestClass_PredicateMarkdownContext
 {
+
+
+
+    [TestMethod]
+    public void Test_IsFilteringEdgeTests()
+    {
+        string actual, expected;
+        List<string> builder = new();
+
+        var opc =
+            new ObservableCollection<SelectableQFModel>()
+            .PopulateForDemo(10);
+
+        subtest_TriggerBy_ProjectionBeforeState();
+        subtest_TriggerBy_StateBeforeProjection();
+        subtest_TriggerBy_FilteringState();
+        subtest_TriggerBy_RecordsetProperty();
+
+        #region S U B T E S T S
+        void subtest_TriggerBy_ProjectionBeforeState()
+        {
+            var mdc = new MarkdownContext<SelectableQFModel>
+            {
+                ObservableNetProjection = opc,
+            };
+        }
+        void subtest_TriggerBy_StateBeforeProjection()
+        {
+            var mdc = new MarkdownContext<SelectableQFModel>
+            {
+
+            };
+        }
+        void subtest_TriggerBy_FilteringState()
+        {
+        }
+        void subtest_TriggerBy_RecordsetProperty()
+        {
+        }
+        #endregion S U B T E S T S
+    }
+
     [TestMethod]
     public async Task Test_PMDCFSOL()
     {
