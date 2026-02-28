@@ -79,12 +79,19 @@ public class TestClass_PredicateMarkdownContext
             Assert.IsTrue(mdc.IsFiltering, "Expecting ALWAYS TRUE in Filter mode.");
             actual = mdc.Model.ToString();
             actual.ToClipboardExpected();
-            { } // <- FIRST TIME ONLY: Adjust the message.
-            actual.ToClipboardAssert("Expecting EMPTY because ONP is not assigned yet.");
             { }
+            expected = @" 
+<model />";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting EMPTY because ONP is not assigned yet."
+            );
 
             mdc.ObservableNetProjection = (INotifyCollectionChanged)opc;
 
+            actual = mdc.Model.ToString();
             actual.ToClipboardExpected();
             { }
 
@@ -107,8 +114,6 @@ public class TestClass_PredicateMarkdownContext
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting 10 examples of UNKNOWN ITEM WITH PRIMARY KEY.");
-
-#endif
         }
         void subtest_TriggerBy_FilteringState()
         {
