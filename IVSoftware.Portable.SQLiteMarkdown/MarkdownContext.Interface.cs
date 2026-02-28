@@ -226,7 +226,9 @@ Recordset assignment is atomic; no changes were applied."
 
         INotifyCollectionChanged? _observableProjection = null;
 
-        protected virtual void OnObservableProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) { }
+        protected virtual void OnObservableProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) 
+        { 
+        }
 
 
         public int UnfilteredCount

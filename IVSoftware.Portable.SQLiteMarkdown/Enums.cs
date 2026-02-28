@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IVSoftware.Portable.Common.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -264,5 +265,40 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// projection, the (presumably visible) collection.
         /// </summary>
         MarkdownContext,
+    }
+
+
+    /// <summary>
+    /// 260228 inprog
+    /// </summary>
+    internal enum EnterFilterFSM
+    {
+
+    }
+
+    /// <summary>
+    /// 260228 inprog
+    /// </summary>
+    /// <remarks>
+    /// When the IsFiltering edge goes low, it means that text changes
+    /// in the IME will no longer settle and filter -  it will take an
+    /// actual Commit or icon click to return to a filtering state.
+    /// #{E053A227-2FD9-4326-B470-0F476D93C5FA}
+    /// </remarks>
+    internal enum ExitFilterFSM
+    {
+        CaptureUnfilteredItemsArray,
+
+        [Obsolete]
+        InitializeUnfilteredItemsCollection,
+
+        InitializeFilterQueryDatabase,
+
+        [Probationary("XML Model")]
+        InitializeModel,
+
+        SuppressedReplace,
+
+        RaiseResetEvent,
     }
 }

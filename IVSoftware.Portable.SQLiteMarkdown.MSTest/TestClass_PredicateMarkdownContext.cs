@@ -26,13 +26,19 @@ public class TestClass_PredicateMarkdownContext
         var pmdc = new PredicateMarkdownContext<TemporalAffinityQFModel>
         {
             QueryFilterConfig = QueryFilterConfig.Filter,
+            // This *does* set the listener but *does not* inject a recordset.
             ObservableNetProjection = opc,
         };
         Assert.AreEqual(
             0, 
             pmdc.UnfilteredCount, 
             "Expecting recordset IS NOT initialized.");
+
+        // Let's figure this out, once and for all.
+        Assert.IsTrue(pmdc.IsFiltering);
+
         pmdc.Recordset = opc;
+
         Assert.AreEqual(
             COUNT, 
             pmdc.UnfilteredCount, 

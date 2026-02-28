@@ -1409,8 +1409,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     _filteringState = value;
                     OnFilteringStateChanged();
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(RouteToFullRecordset));
+                    OnPropertyChanged(nameof(RouteToFullRecordset)); 
                     OnPropertyChanged(nameof(IsFiltering));
+                }
+
+                switch (QueryFilterConfig)
+                {
+                    case QueryFilterConfig.Query:
+                        // This config is *never* filtering.
+                        IsFiltering = false;
+                        break;
+                    case QueryFilterConfig.Filter:
+                        // This config is *always* filtering.
+                        IsFiltering = true;
+                        break;
+                    case QueryFilterConfig.QueryAndFilter:
+                        // Apply hysteresis
+                        IsFiltering =
+                            FilteringState == FilteringState.Active
+                            || FilteringStatePrev == FilteringState.Active;
+                        break;
+                    default:
+                        this.ThrowFramework<NotSupportedException>($"The {QueryFilterConfig.ToFullKey()} case is not supported.");
+                        break;
                 }
             }
         }
@@ -1428,7 +1449,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// use the protected setter instead. Alternatively, the throw may be handled to 
         /// enable controlled legacy behavior, but such usage should be limited to tests.
         /// </remarks>
-        [Obsolete("Use a subclass to gain access to the protected setter for FilteringState.")]
+        [Obsolete("Make a subclass instead. This provides access to the protected setter for FilteringState.")]
         public FilteringState FilteringStateForTest
         {
             get => FilteringState;
@@ -1447,8 +1468,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Indicates whether the collection is operating in latched filtering mode.
         /// </summary>
         /// <remarks>
-        /// Filtering mode exhibits hysteresis behavior to preserve user intent.
-        /// 
+        /// Mental Model: "Take a snapshot of the full recordset in order to filter it."
+        /// - HYSTERESIS BEHAVIOR: 
         /// After a successful query yielding sufficient results, filtering becomes
         /// eligible and transitions to Active upon the next IME input.
         /// 
@@ -1460,11 +1481,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// transient empty input and preserves refinement context.
         /// </remarks>
         public bool IsFiltering
-            => FilteringState == FilteringState.Ineligible
-                ? false
-                : FilteringState == FilteringState.Active
-                    ? true
-                    : FilteringStatePrev == FilteringState.Active;
+        {
+            get => _isFiltering;
+            protected set
+            {
+                if (!Equals(_isFiltering, value))
+                {
+                    _isFiltering = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        bool _isFiltering = false;
+
 
         // Canonical {5932CB31-B914-4DE8-9457-7A668CDB7D08}
         public FilteringState Clear(bool all = false)

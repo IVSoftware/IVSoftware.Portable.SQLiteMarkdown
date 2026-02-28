@@ -207,8 +207,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         IDisposable BeginAuthorityClaim();
 
         int UnfilteredCount { get; }
-
-
     }
 
     /// <summary>
