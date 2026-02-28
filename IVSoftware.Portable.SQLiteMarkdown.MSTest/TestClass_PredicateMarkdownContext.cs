@@ -15,9 +15,11 @@ public class TestClass_PredicateMarkdownContext
 
 
 
-    [TestMethod]
+    [TestMethod, DoNotParallelize]
     public void Test_IsFilteringEdgeTests()
     {
+        using var te = this.TestableEpoch();
+
         string actual, expected;
         List<string> builder = new();
 
@@ -37,6 +39,30 @@ public class TestClass_PredicateMarkdownContext
             };
             mdc.QueryFilterConfig = QueryFilterConfig.Filter;
             Assert.IsTrue(mdc.IsFiltering);
+
+            actual = mdc.Model.ToString();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model>
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000008"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" xitem=""[SelectableQFModel]"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting 10 examples of UNKNOWN ITEM WITH PRIMARY KEY."
+            );
+
             { }
         }
         void subtest_TriggerBy_StateBeforeProjection()

@@ -71,7 +71,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             }
         }
 
-        XElement _model = new XElement(nameof(StdElement.model));
+        XElement _model = new XElement(nameof(StdMarkdownElement.model));
 
         protected virtual void TransferXAFXBOAuthority(XAttribute[] srce)
         {

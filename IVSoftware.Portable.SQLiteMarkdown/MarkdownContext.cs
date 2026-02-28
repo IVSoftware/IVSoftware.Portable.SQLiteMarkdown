@@ -1472,7 +1472,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-
+        /// <summary>
+        /// Catch and release heuristic for canonical ObservableNetProjection entering and leaving IsFiltered state.
+        /// </summary>
         protected virtual void OnIsFilteringChanged()
         {
             if(IsFiltering)
@@ -1487,7 +1489,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         {
                             if (ObservableNetProjection is ITemporalAffinity temporal)
                             {
-                                foreach (ExitFilterFSM item in Enum.GetValues(typeof(ExitFilterFSM)))
+                                foreach (ExitFilterFSM state in Enum.GetValues(typeof(ExitFilterFSM)))
                                 {
 
                                 }
@@ -1501,19 +1503,63 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 }
                                 throw new NotImplementedException("ToDo");
                             }
-                            else
+                            else if (ObservableNetProjection is IList collection)
                             {
                                 PropertyInfo? pk = mapping.PK?.PropertyInfo;
                                 if (pk is null)
                                 {
                                     throw new NotSupportedException($"Type '{itemType.Name}' has no PK and such types are not (yet) supported.");
                                 }
-                                foreach (ExitFilterFSM item in Enum.GetValues(typeof(ExitFilterFSM)))
+                                foreach (ExitFilterFSM state in Enum.GetValues(typeof(ExitFilterFSM)))
                                 {
-
+                                    switch (state)
+                                    {
+                                        case ExitFilterFSM.CaptureUnfilteredItemsArray:
+                                            break;
+                                        case ExitFilterFSM.InitializeUnfilteredItemsCollection:
+                                            break;
+                                        case ExitFilterFSM.InitializeModel:
+                                            foreach(var item in collection)
+                                            {
+                                                Model.Add(localMakeXel(pk, item));
+                                            }
+                                            break;
+                                        case ExitFilterFSM.InitializeFilterQueryDatabase:
+                                            break;
+                                        case ExitFilterFSM.SuppressedReplace:
+                                            break;
+                                        case ExitFilterFSM.RaiseResetEvent:
+                                            break;
+                                        default:
+                                            this.ThrowHard<NotSupportedException>($"The {state.ToFullKey()} case is not supported.");
+                                            break;
+                                    }
                                 }
                             }
+                            else
+                            {
+                                throw new NotSupportedException();
+                            }
                         }
+                        #region L o c a l F x
+                        XElement localMakeXel(PropertyInfo pk, object item)
+                        {
+                            if (pk.GetValue(item)?.ToString() is { } id && !string.IsNullOrWhiteSpace(id))
+                            {
+                                var xel = new XElement(
+                                    nameof(StdMarkdownElement.xitem),
+                                    new XAttribute(nameof(StdMarkdownAttribute.text), id));
+
+                                xel.SetBoundAttributeValue(
+                                    tag: item,
+                                    name: nameof(StdMarkdownElement.xitem));
+
+                                return xel;
+                            }
+                            this.ThrowHard<NullReferenceException>();
+                            return null!;
+                        }
+                        #endregion L o c a l F x
                     }
                 }
             }

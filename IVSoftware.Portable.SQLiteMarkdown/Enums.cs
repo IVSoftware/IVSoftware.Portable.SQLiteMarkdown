@@ -241,9 +241,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         WM_CONTEXTMENU = 0x007B,
     }
 
-    internal enum StdElement
+    internal enum StdMarkdownElement
     {
         model,
+        xitem,
+    }
+
+    internal enum StdMarkdownAttribute
+    {
+        text,
     }
 
     /// <summary>
@@ -292,10 +298,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [Obsolete]
         InitializeUnfilteredItemsCollection,
 
-        InitializeFilterQueryDatabase,
-
         [Probationary("XML Model")]
         InitializeModel,
+
+        InitializeFilterQueryDatabase,
 
         SuppressedReplace,
 

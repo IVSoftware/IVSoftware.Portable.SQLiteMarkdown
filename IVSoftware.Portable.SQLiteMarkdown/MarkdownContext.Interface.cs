@@ -40,7 +40,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (_model is null)
                 {
-                    _model = new XElement(nameof(StdElement.model));
+                    _model = new XElement(nameof(StdMarkdownElement.model));
                 }
                 return _model;
             }
