@@ -1457,27 +1457,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (!Equals(_isFiltering, value))
                 {
-                    if (value)
-                    {
-                        var e = new CancelEventArgs();
-                        // Use the projection count if available.
-                        if (ObservableNetProjection is IList projection)
-                        {
-                            e.Cancel = IsFiltering = projection.Count < 2;
-                        }
-                        BeforeEnterFilterState?.Invoke(this, e);
-                        if(e.Cancel)
-                        {
-                            // Do not allow filtering to go true because this
-                            // recordset does not meet minimum requirements.
-                            return;
-                        }
-                    }
                     _isFiltering = value;
                     OnIsFilteringChanged();
                     OnPropertyChanged();
                 }
             }
+        }
+        protected virtual void OnBeforeEnterFilterState(CancelEventArgs e)
+        {
+            BeforeEnterFilterState?.Invoke(this, e);
         }
         public event CancelEventHandler BeforeEnterFilterState;
         /// <summary>
