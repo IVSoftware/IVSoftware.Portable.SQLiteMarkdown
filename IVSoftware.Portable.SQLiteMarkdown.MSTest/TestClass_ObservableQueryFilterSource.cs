@@ -1774,7 +1774,7 @@ SearchEntryState='QueryCompleteWithResults'";
                         );
 
 #if ABSTRACT
-                        // SEE FULL CONTEXT: Canonical {5932CB31-B914-4DE8-9457-7A668CDB7D08}
+                        // SEE FULL CONTEXT: Canonical #{5932CB31-B914-4DE8-9457-7A668CDB7D08}
                         
                         // Basically, if there is entry text but the filtering
                         // is still only armed not active, that indicates that
