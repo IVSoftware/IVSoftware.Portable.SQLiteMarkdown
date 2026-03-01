@@ -1324,7 +1324,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     _queryFilterConfig = value;
 
-
                     switch (_queryFilterConfig)
                     {
                         case QueryFilterConfig.Query:
@@ -1336,11 +1335,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             IsFiltering = true;
                             break;
                         default:
-                            // [Obsolete("Deprecation in progress")]
-                            // Seems odd, right? But this actually does something.
-                            // It forces a review of of its current state to make
-                            // sure that it's still legal with the new QFC.
-                            FilteringState = FilteringState;
+                            // Reset FSM to first cause.
+                            Clear(all: true);
                             break;
                     }
 
@@ -1829,7 +1825,31 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         SearchEntryState _searchEntryState = default;
 
-        protected virtual void OnSearchEntryStateChanged() { }
+        protected virtual void OnSearchEntryStateChanged()
+        {
+            if (SearchEntryState == SearchEntryState.QueryCompleteNoResults)
+            {
+                IsFiltering = false;
+            }
+            else
+            {
+                var e = new CancelEventArgs();
+                // Use the projection count if available.
+                if (ObservableNetProjection is IList projection)
+                {
+                    e.Cancel = IsFiltering = projection.Count < 2;
+                }
+                BeforeEnterFilterState?.Invoke(this, e);
+                if (e.Cancel)
+                {   /* G T K - N O O P */
+                    // Do not allow filtering to go true because this
+                    // recordset does not meet minimum requirements.
+                }
+                else
+                {
+                }
+            }
+        }
 
         /// <summary>
         /// Reference counter for Busy property.
