@@ -1456,10 +1456,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
-        /// Indicates whether the collection is operating in latched filtering mode.
+        /// Returns true when the canonical recordset contains 2 or more items.
         /// </summary>
         /// <remarks>
-        /// Mental Model
+        /// Mental Model: "Choose placeholder text - 'Search' or'Filter'. Icon, too."
+        /// Functional Model (internal):
         /// "On -> true : Take a snapshot of the full recordset in order to filter it."
         /// "On -> false: Relinquish."
         /// </remarks>
@@ -1470,6 +1471,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (!Equals(_isFiltering, value))
                 {
+                    if(QueryFilterConfig == QueryFilterConfig.Filter)
+                    {
+                        if(!value)
+                        {
+                            this.ThrowSoft<InvalidOperationException>(
+    $"{nameof(IsFiltering)} = false will be ignored because {nameof(QueryFilterConfig)} is {QueryFilterConfig.Filter}.");
+                        }
+                    }
                     _isFiltering = value;
                     OnIsFilteringChanged();
                     OnPropertyChanged();

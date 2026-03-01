@@ -136,6 +136,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         TableMapping _contractTypeTableMapping = default;
 #endif
 
+        /// <summary>
+        /// Model the canonical recordset as hierarchal xml.
+        /// </summary>
         public IEnumerable Recordset
         {
             set
