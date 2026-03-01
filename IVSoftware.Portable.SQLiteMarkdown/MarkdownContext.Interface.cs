@@ -151,7 +151,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     Model.RemoveNodes();
                     object[] recordset = value?.Cast<object>().ToArray() ?? [];
 
-                    int 
+                    int
                         countDistinct = 0,
                         countDuplicate = 0;
                     if (itemType.GetMapping() is { } mapping)
@@ -208,6 +208,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             this.Advisory($"{countDuplicate} were identified and removed in recordset.");
                         }
                         UnfilteredCount = countDistinct;
+                        
+                        RouteToFullRecordset = true;
 #if false
                         if (unfilteredItems is ITemporalAffinity temporal)
                         {
@@ -280,25 +282,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
 
 
+#if false
                     XElement localMakeXel(PropertyInfo pk, object item)
+                    {
+                        if (pk.GetValue(item)?.ToString() is { } id && !string.IsNullOrWhiteSpace(id))
                         {
-                            if (pk.GetValue(item)?.ToString() is { } id && !string.IsNullOrWhiteSpace(id))
-                            {
-                                var xel = new XElement(
-                                    nameof(StdMarkdownElement.xitem),
-                                    new XAttribute(nameof(StdMarkdownAttribute.text), id));
+                            var xel = new XElement(
+                                nameof(StdMarkdownElement.xitem),
+                                new XAttribute(nameof(StdMarkdownAttribute.text), id));
 
-                                xel.SetBoundAttributeValue(
-                                    tag: item,
-                                    name: nameof(StdMarkdownElement.xitem));
+                            xel.SetBoundAttributeValue(
+                                tag: item,
+                                name: nameof(StdMarkdownElement.xitem));
 
-                                return xel;
-                            }
-                            this.ThrowHard<NullReferenceException>();
-                            return null!;
+                            return xel;
                         }
+                        this.ThrowHard<NullReferenceException>();
+                        return null!;
                     }
-                    #endregion L o c a l F x
+#endif
+                }
+                #endregion L o c a l F x
                 return;
 
                 int success = 0;
@@ -413,7 +417,7 @@ Recordset assignment is atomic; no changes were applied."
         public int UnfilteredCount
         {
             get => _unfilteredCount;
-            set
+            protected set
             {
                 if (!Equals(_unfilteredCount, value))
                 {
@@ -423,14 +427,26 @@ Recordset assignment is atomic; no changes were applied."
                         case 0:
                             SearchEntryState = SearchEntryState.QueryCompleteNoResults;
                             FilteringState = FilteringState.Ineligible;
+                            if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
+                            {
+                                IsFiltering = false;
+                            }
                             break;
                         case 1:
                             SearchEntryState = SearchEntryState.QueryCompleteWithResults;
                             FilteringState = FilteringState.Ineligible;
+                            if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
+                            {
+                                IsFiltering = false;
+                            }
                             break;
                         default:
                             SearchEntryState = SearchEntryState.QueryCompleteWithResults;
                             FilteringState = FilteringState.Armed;
+                            if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
+                            {
+                                IsFiltering = true;
+                            }
                             break;
                     }
                     OnPropertyChanged();

@@ -515,6 +515,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         protected override async Task OnInputTextSettled(CancelEventArgs e)
         {
             await base.OnInputTextSettled(e);
+            RouteToFullRecordset = string.IsNullOrWhiteSpace(InputText);
             if (!e.Cancel)
             {
                 if (FilteringState == FilteringState.Active)

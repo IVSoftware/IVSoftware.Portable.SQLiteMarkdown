@@ -1422,7 +1422,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     _filteringState = value;
                     OnFilteringStateChanged();
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(RouteToFullRecordset));
                 }
             }
         }
@@ -1459,7 +1458,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Returns true when the canonical recordset contains 2 or more items.
         /// </summary>
         /// <remarks>
-        /// Mental Model: "Choose placeholder text - 'Search' or'Filter'. Icon, too."
+        /// Mental Model: 
+        /// "Choose placeholder text - 'Search' or'Filter'. Icon, too."
         /// Functional Model (internal):
         /// "On -> true : Take a snapshot of the full recordset in order to filter it."
         /// "On -> false: Relinquish."
@@ -1490,8 +1490,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// True when InputText is empty regardless of IsFiltering.
         /// </summary>
         /// <remarks>
-        /// - Distinct from IsFiltering which captures the FilterQueryDatabase on
-        ///   its positive edge, this is a lightweight signal to the canonical items.
+        /// Mental Model:
+        /// "If the input text is empty, just swap the handle instead of recalculating."
+        /// Functional Behavior:
+        /// - External predicate filters must still run even if IME doesn't contribute.
+        /// - This is the purview of the subclass. Override for full control.
         /// </remarks>
         public virtual bool RouteToFullRecordset
         {

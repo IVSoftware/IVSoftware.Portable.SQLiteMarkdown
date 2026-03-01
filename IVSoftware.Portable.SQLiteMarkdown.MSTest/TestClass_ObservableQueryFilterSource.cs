@@ -1473,6 +1473,12 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
 
                             }
                             break;
+                        case nameof(items.RouteToFullRecordset):
+                            if (caller == "subtestCommit")
+                            {
+
+                            }
+                            break;
                         case nameof(items.ProxyType):
                             break;
                     }
@@ -1703,38 +1709,21 @@ Running"
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
                             .OfType<PropertyChangedEventArgs>()
                             .Select(_ => _.PropertyName));
-                        actual.ToClipboardExpected();
-                        { }
-                        // NEW
+
+                        // Limit Touched 260301
                         expected = @" 
 Busy
 SearchEntryState
-SearchEntryState
 FilteringState
-RouteToFullRecordset
-Busy"
-                        ;
-                        // GZ
-                        expected = @" 
-Busy
-SearchEntryState
-SearchEntryState
-FilteringState
-RouteToFullRecordset
 IsFiltering
+UnfilteredCount
 Busy"
                         ;
 
                         Assert.AreEqual(
                             expected.NormalizeResult(),
                             actual.NormalizeResult(),
-                            "Expecting " +
-                            "1. ReplaceItemsAsync method gets a busy flag token." +
-                            "2. Non-atomic response to clearing." +
-                            "3. Non-atomic response to add range." +
-                            "4. Armed filter since the non-empty input text hasn't been touched." +
-                            "5. Routing change based on filter where recordset > 1 results." +
-                            "6. ReplaceItemsAsync method releases the busy flag token."
+                            "Expecting property changes in order."
                         );
                         eventQueue.Clear();
 
@@ -1764,24 +1753,10 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                             "Expecting filtered results to match."
                         );
 
-                        Assert.AreEqual(
-                            SearchEntryState.QueryCompleteWithResults,
-                            items.SearchEntryState,
-                            "Expecting notified entry SEARCH STATE CHANGE."
-                        );
-
-                        Assert.AreEqual(
-                            FilteringState.Armed,
-                            items.FilteringState,
-                            "Expecting notified entry FILTER STATE CHANGE."
-                        );
-
-
                         actual = string.Join(Environment.NewLine, builder);
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-SearchEntryState='Cleared'
 SearchEntryState='QueryCompleteWithResults'";
 
                         Assert.AreEqual(
@@ -1790,6 +1765,7 @@ SearchEntryState='QueryCompleteWithResults'";
                             "Expecting TWO INPCs for SearchEntryState because the Replace makes a Clear before Repopulating."
                         );
 
+                        // Now clear
                         items.Clear();
 
                         Assert.AreEqual(
@@ -1838,7 +1814,9 @@ Kangaroo ""bounce"",""outback"",""marsupial"" [animal]";
                             "Expecting filtered items containing filter expr"
                         );
 
-                        Assert.IsTrue(items.RouteToFullRecordset);
+                        // [Careful("This polarity was wrong, and has been fixed.")]
+                        // Limit touched 260301
+                        Assert.IsFalse(items.RouteToFullRecordset);
                         { }
                     }
                     #endregion S U B T E S T S
