@@ -1674,6 +1674,15 @@ Running"
                             .Select(_ => _.PropertyName));
                         actual.ToClipboardExpected();
                         { }
+                        // NEW
+                        expected = @" 
+Busy
+SearchEntryState
+SearchEntryState
+FilteringState
+RouteToFullRecordset
+Busy"
+                        ;
                         // GZ
                         expected = @" 
 Busy

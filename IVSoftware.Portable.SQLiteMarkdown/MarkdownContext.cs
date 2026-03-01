@@ -1446,17 +1446,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Indicates whether the collection is operating in latched filtering mode.
         /// </summary>
         /// <remarks>
-        /// Mental Model: "Take a snapshot of the full recordset in order to filter it."
-        /// - HYSTERESIS BEHAVIOR: 
-        /// After a successful query yielding sufficient results, filtering becomes
-        /// eligible and transitions to Active upon the next IME input.
-        /// 
-        /// Clearing the IME does not immediately revert to query mode. If filtering
-        /// was previously Active, the state remains latched until an explicit second
-        /// clear action signals intent to exit filtering.
-        /// 
-        /// This prevents oscillation between Query and Filter modes caused by
-        /// transient empty input and preserves refinement context.
+        /// Mental Model
+        /// "On -> true : Take a snapshot of the full recordset in order to filter it."
+        /// "On -> false: Relinquish."
         /// </remarks>
         public bool IsFiltering
         {
@@ -1465,13 +1457,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (!Equals(_isFiltering, value))
                 {
+                    if (value)
+                    {
+                        var e = new CancelEventArgs();
+                        // Use the projection count if available.
+                        if (ObservableNetProjection is IList projection)
+                        {
+                            e.Cancel = IsFiltering = projection.Count < 2;
+                        }
+                        BeforeEnterFilterState?.Invoke(this, e);
+                        if(e.Cancel)
+                        {
+                            // Do not allow filtering to go true because this
+                            // recordset does not meet minimum requirements.
+                            return;
+                        }
+                    }
                     _isFiltering = value;
                     OnIsFilteringChanged();
                     OnPropertyChanged();
                 }
             }
         }
-
+        public event CancelEventHandler BeforeEnterFilterState;
         /// <summary>
         /// True when InputText is empty regardless of IsFiltering.
         /// </summary>
