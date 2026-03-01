@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.Threading;
@@ -617,35 +618,43 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// This is a router for whether to show the unfiltered set or the filtered one.
         /// The override allows some intelligence WRT the number of filterable items in the list.
         /// </summary>
+
+
+        /// <summary>
+        /// This is a router for whether to show the unfiltered set or the filtered one.
+        /// The override allows some intelligence WRT the number of filterable items in the list.
+        /// </summary>
+        [Careful("This polarity was wrong, and has been fixed.")]
         public override bool RouteToFullRecordset
         {
             get
             {
                 if (_unfilteredItems.Count < 2) // Filtering state ineligible. Show all items.
                 {
-                    return false;
+                    return true;
                 }
                 else
                 {
                     if (InputText.Length == 0)
                     {
-                        return false;         // Show all items. Full stop.
+                        return true;         // Show all items. Full stop.
                     }
                     else
                     {
-                        return FilteringState == FilteringState.Active;
+                        return FilteringState != FilteringState.Active;
                     }
                 }
             }
-            protected set 
+            protected set
             {
                 this.ThrowSoft<InvalidOperationException>(
                     $"{nameof(RouteToFullRecordset)}.Set is a NOOP in the derived class and should not be called.");
             }
         }
 
+        [Careful("This polarity was wrong, and has been fixed.")]
         private IList<T> _RoutedItems_ =>
-            RouteToFullRecordset ? _filteredItems : _unfilteredItems;
+            RouteToFullRecordset ? _unfilteredItems : _filteredItems;
 
         public IEnumerator<T> GetEnumerator() => _RoutedItems_.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
