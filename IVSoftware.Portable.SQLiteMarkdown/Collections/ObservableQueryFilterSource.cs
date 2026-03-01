@@ -127,16 +127,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 {
                     // --------------
                     // UPGRADE 260301
+                    // Sets UnfilteredCount
+                    // -> Sets SearchEntryState
                     Recordset = items;
                     // --------------
 
                     // This causes a Reset on the main INCC
                     _unfilteredItems.Clear();
-                    if(UnfilteredCount == 0)
-                    {
-                        SearchEntryState = SearchEntryState.QueryCompleteNoResults;
-                    }
-                    else
+                    if(UnfilteredCount != 0)
                     {
                         foreach (var xel in Model.Descendants())
                         {
@@ -151,7 +149,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                     _unfilteredItems.ToList() // snapshot as IList
                                 )
                             );
-                            SearchEntryState = SearchEntryState.QueryCompleteWithResults;
                         }
                     }
                     //if (items.Any())
@@ -564,7 +561,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 switch (eUnk.Action)
                 {
                     case NotifyCollectionChangedAction.Reset:
-                        SearchEntryState = SearchEntryState.Cleared;
+
+                        // 260301
+                        // SearchEntryState = SearchEntryState.Cleared;
+
                         break;
                     default:
                         if (eUnk is NotifyQueryFilterCollectionChangedEventArgs e)
@@ -581,10 +581,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                         FilterQueryDatabase.InsertAll(items);
                                     }
 
-                                    SearchEntryState =
-                                        items.Count == 0
-                                        ? SearchEntryState.QueryCompleteNoResults
-                                        : SearchEntryState.QueryCompleteWithResults;
+                                    // 260301
+                                    // SearchEntryState =
+                                    //    items.Count == 0
+                                    //    ? SearchEntryState.QueryCompleteNoResults
+                                    //    : SearchEntryState.QueryCompleteWithResults;
 
                                     // Once we go into Armed, it takes 2 clears not one.
                                     FilteringState =

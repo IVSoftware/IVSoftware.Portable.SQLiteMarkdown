@@ -28,6 +28,7 @@ using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 using static IVSoftware.Portable.Threading.Extensions;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.Disposable;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {   
@@ -1434,6 +1435,9 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 Queue<SenderEventPair> eventQueue = new();
                 List<T> recordset;
                 var items = new ObservableQueryFilterSource<T>();
+                string caller = string.Empty;
+
+
                 items.InputTextSettled += async (sender, e) =>
                 {
                     if (e is CancelEventArgs eCancel)
@@ -1449,15 +1453,21 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     }
                 };
 
-                // E V E N T    Q U E U E
+                // P R O P E R T Y   E V E N T    Q U E U E
                 items.PropertyChanged += (sender, e) =>
                 {
                     switch (e.PropertyName)
                     {
-                        case nameof(items.ProxyType):
+                        case nameof(items.Busy):
                             break;
                         case nameof(SearchEntryState):
+                            if(caller == "subtestCommit")
+                            {
+
+                            }
                             builder.Add($"{e.PropertyName}='{items.SearchEntryState}'");
+                            break;
+                        case nameof(items.ProxyType):
                             break;
                     }
                     eventQueue.Enqueue((sender, e));
@@ -1470,7 +1480,19 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     subtestEmptyToFirstChar();
                     subtestSecondChar();
                     subtestThirdCharEnableQuery();
-                    await subtestCommit();
+
+                    using (this.WithOnDispose(
+                        onInit: (sender, e) =>
+                        {
+                            caller = nameof(subtestCommit);
+                        },
+                        onDispose: (sender, e) =>
+                        {
+                            caller = string.Empty;
+                        }))
+                    {
+                        await subtestCommit();
+                    }
 
                     #region S U B T E S T S
 
