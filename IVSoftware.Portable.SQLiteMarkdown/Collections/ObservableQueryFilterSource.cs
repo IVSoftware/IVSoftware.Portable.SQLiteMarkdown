@@ -557,15 +557,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                     }
 
                                     SearchEntryState =
-                                        items.Count > 0
-                                        ? SearchEntryState.QueryCompleteWithResults
-                                        : SearchEntryState.QueryCompleteNoResults;
+                                        items.Count == 0
+                                        ? SearchEntryState.QueryCompleteNoResults
+                                        : SearchEntryState.QueryCompleteWithResults;
 
                                     // Once we go into Armed, it takes 2 clears not one.
                                     FilteringState =
                                         items.Count < 2
                                         ? FilteringState.Ineligible
                                         : FilteringState.Armed;
+
                                     break;
                                 case NotifyQueryFilterCollectionChangedAction.ApplyFilter:
                                     break;

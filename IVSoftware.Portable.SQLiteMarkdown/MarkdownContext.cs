@@ -1323,10 +1323,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (!Equals(_queryFilterConfig, value))
                 {
                     _queryFilterConfig = value;
-                    // Seems odd, right? But this actually does something.
-                    // It forces a review of of its current state to make
-                    // sure that it's still legal with the new QFC.
-                    FilteringState = FilteringState;
+
+
+                    switch (_queryFilterConfig)
+                    {
+                        case QueryFilterConfig.Query:
+                            // This config is *never* filtering.
+                            IsFiltering = false;
+                            break;
+                        case QueryFilterConfig.Filter:
+                            // This config is *always* filtering.
+                            IsFiltering = true;
+                            break;
+                        default:
+                            // [Obsolete("Deprecation in progress")]
+                            // Seems odd, right? But this actually does something.
+                            // It forces a review of of its current state to make
+                            // sure that it's still legal with the new QFC.
+                            FilteringState = FilteringState;
+                            break;
+                    }
+
                     OnPropertyChanged();
                 }
             }
