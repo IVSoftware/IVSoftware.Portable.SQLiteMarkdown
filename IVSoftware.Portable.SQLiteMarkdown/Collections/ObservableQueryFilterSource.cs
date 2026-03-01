@@ -124,6 +124,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 try
                 {
+                    // --------------
+                    // UPGRADE 260301
+                    Recordset = items;
+                    // --------------
+
                     // This causes a Reset on the main INCC
                     _unfilteredItems.Clear();
                     if (items.Any())

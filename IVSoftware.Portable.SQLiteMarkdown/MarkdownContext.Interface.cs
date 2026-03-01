@@ -3,6 +3,7 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json.Serialization;
 using SQLite;
@@ -10,10 +11,12 @@ using SQLitePCL;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -41,6 +44,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (_model is null)
                 {
                     _model = new XElement(nameof(StdMarkdownElement.model));
+                    _model.Changed += (sender, e) =>
+                    {
+                        switch (sender)
+                        {
+                            case XElement:
+                                switch (e.ObjectChange)
+                                {
+                                    case XObjectChange.Add:
+                                        break;
+                                    case XObjectChange.Remove:
+                                        break;
+                                }
+                                break;
+                        }
+                    };
                 }
                 return _model;
             }
@@ -122,6 +140,125 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             set
             {
+                Type listType = value?.GetType() ?? typeof(object);
+                if (listType.IsGenericType && listType.GetGenericArguments().Single() is { } itemType)
+                {
+                    FilterQueryDatabase.CreateTable(itemType);
+
+                    Model.RemoveNodes();
+                    object[] unfilteredItems = value?.Cast<object>().ToArray() ?? [];
+
+                    if (itemType.GetMapping() is { } mapping)
+                    {
+                        PropertyInfo? pk = mapping.PK?.PropertyInfo;
+                        if (pk is null)
+                        {
+                            throw new NotSupportedException($"Type '{itemType.Name}' has no PK and such types are not (yet) supported.");
+                        }
+                        foreach (ExitFilterFSM state in Enum.GetValues(typeof(ExitFilterFSM)))
+                        {
+                            switch (state)
+                            {
+                                case ExitFilterFSM.CaptureUnfilteredItemsArray:
+                                    break;
+                                case ExitFilterFSM.InitializeUnfilteredItemsCollection:
+                                    break;
+                                case ExitFilterFSM.InitializeModel:
+                                    foreach (var item in unfilteredItems)
+                                    {
+                                        Model.Add(localMakeXel(pk, item));
+                                    }
+                                    break;
+                                case ExitFilterFSM.InitializeFilterQueryDatabase:
+                                    break;
+                                case ExitFilterFSM.SuppressedReplace:
+                                    break;
+                                case ExitFilterFSM.RaiseResetEvent:
+                                    break;
+                                default:
+                                    this.ThrowHard<NotSupportedException>($"The {state.ToFullKey()} case is not supported.");
+                                    break;
+                            }
+                        }
+
+#if false
+                        if (unfilteredItems is ITemporalAffinity temporal)
+                        {
+                            foreach (ExitFilterFSM state in Enum.GetValues(typeof(ExitFilterFSM)))
+                            {
+
+                            }
+                            throw new NotImplementedException("ToDo");
+                        }
+                        else if (unfilteredItems is IPrioritizedAffinity prioritized)
+                        {
+                            foreach (ExitFilterFSM item in Enum.GetValues(typeof(ExitFilterFSM)))
+                            {
+
+                            }
+                            throw new NotImplementedException("ToDo");
+                        }
+                        else if (unfilteredItems is IList collection)
+                        {
+                            PropertyInfo? pk = mapping.PK?.PropertyInfo;
+                            if (pk is null)
+                            {
+                                throw new NotSupportedException($"Type '{itemType.Name}' has no PK and such types are not (yet) supported.");
+                            }
+                            foreach (ExitFilterFSM state in Enum.GetValues(typeof(ExitFilterFSM)))
+                            {
+                                switch (state)
+                                {
+                                    case ExitFilterFSM.CaptureUnfilteredItemsArray:
+                                        break;
+                                    case ExitFilterFSM.InitializeUnfilteredItemsCollection:
+                                        break;
+                                    case ExitFilterFSM.InitializeModel:
+                                        foreach (var item in collection)
+                                        {
+                                            Model.Add(localMakeXel(pk, item));
+                                        }
+                                        break;
+                                    case ExitFilterFSM.InitializeFilterQueryDatabase:
+                                        break;
+                                    case ExitFilterFSM.SuppressedReplace:
+                                        break;
+                                    case ExitFilterFSM.RaiseResetEvent:
+                                        break;
+                                    default:
+                                        this.ThrowHard<NotSupportedException>($"The {state.ToFullKey()} case is not supported.");
+                                        break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            throw new NotSupportedException();
+                        }
+#endif
+                    }
+                    #region L o c a l F x
+                    XElement localMakeXel(PropertyInfo pk, object item)
+                        {
+                            if (pk.GetValue(item)?.ToString() is { } id && !string.IsNullOrWhiteSpace(id))
+                            {
+                                var xel = new XElement(
+                                    nameof(StdMarkdownElement.xitem),
+                                    new XAttribute(nameof(StdMarkdownAttribute.text), id));
+
+                                xel.SetBoundAttributeValue(
+                                    tag: item,
+                                    name: nameof(StdMarkdownElement.xitem));
+
+                                return xel;
+                            }
+                            this.ThrowHard<NullReferenceException>();
+                            return null!;
+                        }
+                    }
+                    #endregion L o c a l F x
+                return;
+
                 int success = 0;
                 var recordset = value?.Cast<object>().ToArray() ?? [];
                 if (value is not null)
@@ -166,7 +303,7 @@ Recordset assignment is atomic; no changes were applied."
                     }
                     foreach (var record in recordset)
                     {
-                       // Model.Place()
+                        // Model.Place()
                     }
                 }
                 var nDuplicates = recordset.Length - success;

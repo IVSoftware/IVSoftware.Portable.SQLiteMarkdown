@@ -1476,11 +1476,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-        protected virtual void OnBeforeEnterFilterState(CancelEventArgs e)
-        {
-            BeforeEnterFilterState?.Invoke(this, e);
-        }
-        public event CancelEventHandler BeforeEnterFilterState;
+
         /// <summary>
         /// True when InputText is empty regardless of IsFiltering.
         /// </summary>
@@ -1508,7 +1504,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         protected virtual void OnIsFilteringChanged()
         {
-            if(IsFiltering)
+            if(false && IsFiltering)
             {
                 if (ObservableNetProjection is not null)
                 { 
@@ -1825,31 +1821,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         SearchEntryState _searchEntryState = default;
 
-        protected virtual void OnSearchEntryStateChanged()
-        {
-            if (SearchEntryState == SearchEntryState.QueryCompleteNoResults)
-            {
-                IsFiltering = false;
-            }
-            else
-            {
-                var e = new CancelEventArgs();
-                // Use the projection count if available.
-                if (ObservableNetProjection is IList projection)
-                {
-                    e.Cancel = IsFiltering = projection.Count < 2;
-                }
-                BeforeEnterFilterState?.Invoke(this, e);
-                if (e.Cancel)
-                {   /* G T K - N O O P */
-                    // Do not allow filtering to go true because this
-                    // recordset does not meet minimum requirements.
-                }
-                else
-                {
-                }
-            }
-        }
+        protected virtual void OnSearchEntryStateChanged() { }
 
         /// <summary>
         /// Reference counter for Busy property.

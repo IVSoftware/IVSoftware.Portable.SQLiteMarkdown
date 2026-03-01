@@ -93,7 +93,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         FilteringState Clear(bool all = false);
         void Commit();
 
-        event CancelEventHandler? BeforeEnterFilterState;
         event EventHandler? InputTextSettled;
         event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
     }

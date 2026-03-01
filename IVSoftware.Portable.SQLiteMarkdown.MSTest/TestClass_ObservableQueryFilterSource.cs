@@ -27,6 +27,7 @@ using static System.Net.Mime.MediaTypeNames;
 using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 using static IVSoftware.Portable.Threading.Extensions;
 using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {   
@@ -1408,10 +1409,12 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
         }
 
         // [TestMethod, Ignore]
-        [TestMethod]
+        [TestMethod, DoNotParallelize]
         public async Task Test_TrackProgressiveInputState()
         {
             var id1 = Thread.CurrentThread.ManagedThreadId;
+
+            using var te = this.TestableEpoch();
 
             var builder = new List<string>();
 

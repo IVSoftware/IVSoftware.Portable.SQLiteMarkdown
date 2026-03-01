@@ -3,6 +3,7 @@ using SQLite;
 using System.Diagnostics;
 using System.Reflection;
 using System.Xml.Linq;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
 {
@@ -14,7 +15,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     public class SelectableQFModelTOQO : SelfIndexed, ISelectable
     {
         [PrimaryKey]
-        public override string Id { get; set; } = Guid.NewGuid().ToString();
+        public override string Id { get; set; } = Guid.NewGuid().WithTestability().ToString();
 
         [SelfIndexed]
         public string Description
