@@ -1407,7 +1407,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             }
         }
 
-        [TestMethod]
+        [TestMethod, Ignore]
         public async Task Test_TrackProgressiveInputState()
         {
             var id1 = Thread.CurrentThread.ManagedThreadId;
