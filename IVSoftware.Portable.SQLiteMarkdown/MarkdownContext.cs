@@ -1482,9 +1482,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public virtual bool RouteToFullRecordset
         {
             get => _routeToFullRecordset;
-            protected set { }
+            protected set
+            {
+                if (!Equals(_routeToFullRecordset, value))
+                {
+                    _routeToFullRecordset = value;
+                    OnPropertyChanged();
+                }
+            }
         }
-        bool _routeToFullRecordset = true;
+        bool _routeToFullRecordset = false;
+
 
         /// <summary>
         /// Catch and release heuristic for canonical ObservableNetProjection entering and leaving IsFiltered state.

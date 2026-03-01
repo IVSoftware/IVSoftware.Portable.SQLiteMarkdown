@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.SQLiteMarkdown.Common;
+﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.Threading;
 using System;
@@ -635,6 +636,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         return FilteringState == FilteringState.Active;
                     }
                 }
+            }
+            protected set 
+            {
+                this.ThrowSoft<InvalidOperationException>(
+                    $"{nameof(RouteToFullRecordset)}.Set is a NOOP in the derived class and should not be called.");
             }
         }
 
