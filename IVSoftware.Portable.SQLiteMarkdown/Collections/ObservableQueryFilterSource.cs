@@ -3,6 +3,7 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.Threading;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -133,34 +134,42 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     _unfilteredItems.Clear();
                     if(UnfilteredCount == 0)
                     {
-
+                        SearchEntryState = SearchEntryState.QueryCompleteNoResults;
                     }
                     else
                     {
                         foreach (var xel in Model.Descendants())
                         {
+                            if(xel.To<T>() is { } item)
+                            {
+                                _unfilteredItems.Add(item);
+                            }
+                            CollectionChanged?.Invoke(
+                                this,
+                                new NotifyQueryFilterCollectionChangedEventArgs(
+                                    NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
+                                    _unfilteredItems.ToList() // snapshot as IList
+                                )
+                            );
+                            SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                        }
+                    }
+                    //if (items.Any())
+                    //{
+                    //    foreach (T item in items.ToArray())
+                    //    {
+                    //        _unfilteredItems.Add(item);
+                    //    }
+                    //    CollectionChanged?.Invoke(
+                    //        this,
+                    //        new NotifyQueryFilterCollectionChangedEventArgs(
+                    //            NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
+                    //            _unfilteredItems.ToList() // snapshot as IList
+                    //        )
+                    //    );
+                    //    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                    //}
 
-                        }
-                    }
-                    if (items.Any())
-                    {
-                        foreach (T item in items.ToArray())
-                        {
-                            _unfilteredItems.Add(item);
-                        }
-                        CollectionChanged?.Invoke(
-                            this,
-                            new NotifyQueryFilterCollectionChangedEventArgs(
-                                NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
-                                _unfilteredItems.ToList() // snapshot as IList
-                            )
-                        );
-                        SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                    }
-                    else
-                    {
-                        SearchEntryState = SearchEntryState.QueryCompleteNoResults;
-                    }
                     FilteringState =
                         _unfilteredItems.Count < 2
                         ? FilteringState.Ineligible
