@@ -131,6 +131,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                     // This causes a Reset on the main INCC
                     _unfilteredItems.Clear();
+                    if(UnfilteredCount == 0)
+                    {
+
+                    }
+                    else
+                    {
+                        foreach (var xel in Model.Descendants())
+                        {
+
+                        }
+                    }
                     if (items.Any())
                     {
                         foreach (T item in items.ToArray())

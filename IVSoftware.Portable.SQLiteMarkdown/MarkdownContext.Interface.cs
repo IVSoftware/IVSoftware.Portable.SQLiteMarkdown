@@ -146,8 +146,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     FilterQueryDatabase.CreateTable(itemType);
 
                     Model.RemoveNodes();
-                    object[] unfilteredItems = value?.Cast<object>().ToArray() ?? [];
+                    object[] recordset = value?.Cast<object>().ToArray() ?? [];
 
+                    int 
+                        countDistinct = 0,
+                        countDuplicate = 0;
                     if (itemType.GetMapping() is { } mapping)
                     {
                         PropertyInfo? pk = mapping.PK?.PropertyInfo;
@@ -164,9 +167,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 case ExitFilterFSM.InitializeUnfilteredItemsCollection:
                                     break;
                                 case ExitFilterFSM.InitializeModel:
-                                    foreach (var item in unfilteredItems)
+                                    foreach (var item in recordset)
                                     {
-                                        Model.Add(localMakeXel(pk, item));
+                                        var placerResult = Model.Place(path: localGetFullPath(pk, item), out var xel);
+                                        switch (placerResult)
+                                        {
+                                            case PlacerResult.Exists:
+                                                countDuplicate++;
+                                                break;
+                                            case PlacerResult.Created:
+                                                xel.SetBoundAttributeValue(
+                                                    tag: item,
+                                                    name: nameof(StdMarkdownElement.xitem));
+                                                countDistinct++;
+                                                break;
+                                            default:
+                                                this.ThrowFramework<NotSupportedException>(
+                                                    $"Unexpected result: `{placerResult.ToFullKey()}`. Expected options are {PlacerResult.Created} or {PlacerResult.Exists}");
+                                                break;
+                                        }
                                     }
                                     break;
                                 case ExitFilterFSM.InitializeFilterQueryDatabase:
@@ -180,7 +199,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     break;
                             }
                         }
-
+                        if (countDuplicate != 0)
+                        {
+                            Debug.Fail($@"IFD ADVISORY - First Time.");
+                            this.Advisory($"{countDuplicate} were identified and removed in recordset.");
+                        }
+                        UnfilteredCount = countDistinct;
 #if false
                         if (unfilteredItems is ITemporalAffinity temporal)
                         {
@@ -238,6 +262,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
                     }
                     #region L o c a l F x
+                    string localGetFullPath(PropertyInfo pk, object unk)
+                    {
+                        if (pk.GetValue(unk)?.ToString() is { } id && !string.IsNullOrWhiteSpace(id))
+                        {
+                            return id;
+                        }
+                        else
+                        {
+                            this.ThrowHard<NullReferenceException>(
+                                $"Expecting a non-empty value for PrimaryKey '{pk.Name}'.");
+                            return null!;
+                        }
+                    }
+
+
                     XElement localMakeXel(PropertyInfo pk, object item)
                         {
                             if (pk.GetValue(item)?.ToString() is { } id && !string.IsNullOrWhiteSpace(id))
@@ -260,9 +299,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return;
 
                 int success = 0;
-                var recordset = value?.Cast<object>().ToArray() ?? [];
                 if (value is not null)
                 {
+                    object[] recordset = value?.Cast<object>().ToArray() ?? [];
                     var invalidItems = recordset
                         .Where(_ => !ContractType.IsAssignableFrom(_.GetType()))
                         .Select(_ => _.GetType().FullName)
@@ -305,12 +344,12 @@ Recordset assignment is atomic; no changes were applied."
                     {
                         // Model.Place()
                     }
-                }
-                var nDuplicates = recordset.Length - success;
-                if (nDuplicates != 0)
-                {
-                    Debug.Fail($@"IFD ADVISORY - First Time.");
-                    this.Advisory($"{nDuplicates} were identified and removed in recordset.");
+                    var nDuplicates = recordset.Length - success;
+                    if (nDuplicates != 0)
+                    {
+                        Debug.Fail($@"IFD ADVISORY - First Time.");
+                        this.Advisory($"{nDuplicates} were identified and removed in recordset.");
+                    }
                 }
                 UnfilteredCount = success;
             }
