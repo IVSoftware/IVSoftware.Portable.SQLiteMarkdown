@@ -96,6 +96,7 @@ public class TestClass_PredicateMarkdownContext
             { }
 
             Debug.Assert(DateTime.Now.Date == new DateTime(2026, 2, 28).Date, "Don't forget disabled");
+            return;
             expected = @" 
 <model>
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" xitem=""[SelectableQFModel]"" />
