@@ -1430,8 +1430,8 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 @"\& \| \! \( \) \[ \] \' \"" \\".ParseSqlMarkdown<PetProfileN>();
                 Queue<SenderEventPair> eventQueue = new();
                 List<T> recordset;
-                var items = new ObservableQueryFilterSource<T>();
-                items.InputTextSettled += async (sender, e) =>
+                var opc = new ObservableQueryFilterSource<T>();
+                opc.InputTextSettled += async (sender, e) =>
                 {
                     if (e is CancelEventArgs eCancel)
                     {
@@ -1447,14 +1447,16 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 };
 
                 // E V E N T    Q U E U E
-                items.PropertyChanged += (sender, e) =>
+                opc.PropertyChanged += (sender, e) =>
                 {
                     switch (e.PropertyName)
                     {
-                        case nameof(items.ProxyType):
+                        case nameof(opc.RouteToFullRecordset):
+                            break;
+                        case nameof(opc.ProxyType):
                             break;
                         case nameof(SearchEntryState):
-                            builder.Add($"{e.PropertyName}='{items.SearchEntryState}'");
+                            builder.Add($"{e.PropertyName}='{opc.SearchEntryState}'");
                             break;
                     }
                     eventQueue.Enqueue((sender, e));
@@ -1475,14 +1477,14 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     {
                         Assert.AreEqual(
                             SearchEntryState.Cleared,
-                            items.SearchEntryState,
+                            opc.SearchEntryState,
                             "Expecting starting state is Cleared."
                         );
                         Assert.AreEqual(
                             "Search Items",
-                            items.Placeholder);
+                            opc.Placeholder);
                         // "a"
-                        items.InputText += 'a';
+                        opc.InputText += 'a';
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1504,7 +1506,7 @@ InputText"
                         eventQueue.Clear();
                         Assert.AreEqual(
                             SearchEntryState.QueryENB,
-                            items.SearchEntryState,
+                            opc.SearchEntryState,
                             "Expecting ending state is ENB."
                         );
                     }
@@ -1513,15 +1515,15 @@ InputText"
                     {
                         Assert.AreEqual(
                             SearchEntryState.QueryENB,
-                            items.SearchEntryState,
+                            opc.SearchEntryState,
                             "Expecting starting state is ENB."
                         );
-                        items.InputText = string.Empty;
+                        opc.InputText = string.Empty;
                         // Empty is distinct from cleared because
                         // a state of cleared takes out the whole list.
                         Assert.AreEqual(
                             SearchEntryState.QueryEmpty,
-                            items.SearchEntryState,
+                            opc.SearchEntryState,
                             "Expecting ending state is Empty."
                         );
                         eventQueue.Clear();
@@ -1531,14 +1533,14 @@ InputText"
                     {
                         Assert.AreEqual(
                             SearchEntryState.QueryEmpty,
-                            items.SearchEntryState,
+                            opc.SearchEntryState,
                             "Expecting starting state is Empty."
                         );
                         Assert.AreEqual(
                             "Search Items",
-                            items.Placeholder);
+                            opc.Placeholder);
                         // "a"
-                        items.InputText += 'a';
+                        opc.InputText += 'a';
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1556,7 +1558,7 @@ InputText";
                         );
                         Assert.AreEqual(
                             SearchEntryState.QueryENB,
-                            items.SearchEntryState,
+                            opc.SearchEntryState,
                             "Expecting ending state is ENB."
                         );
                         eventQueue.Clear();
@@ -1566,12 +1568,12 @@ InputText";
                     {
                         Assert.AreEqual(
                             SearchEntryState.QueryENB,
-                            items.SearchEntryState,
+                            opc.SearchEntryState,
                             "Expecting starting state is ENB."
                         );
 
                         // "an"
-                        items.InputText += 'n';
+                        opc.InputText += 'n';
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1588,7 +1590,7 @@ InputText";
                         );
                         Assert.AreEqual(
                             SearchEntryState.QueryENB,
-                            items.SearchEntryState,
+                            opc.SearchEntryState,
                             "Expecting ending state is 'still' ENB."
                         );
                         eventQueue.Clear();
@@ -1598,12 +1600,12 @@ InputText";
                     {
                         Assert.AreEqual(
                             SearchEntryState.QueryENB,
-                            items.SearchEntryState,
+                            opc.SearchEntryState,
                             "Expecting starting state is ENB."
                         );
 
                         // "ani"
-                        items.InputText += 'i';
+                        opc.InputText += 'i';
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1623,7 +1625,7 @@ InputText";
 
                         Assert.AreEqual(
                             SearchEntryState.QueryEN,
-                            items.SearchEntryState,
+                            opc.SearchEntryState,
                             "Expecting specific state has now CHANGED."
                         );
                     }
@@ -1631,8 +1633,8 @@ InputText";
                     async Task subtestCommit()
                     {
                         // "animal"
-                        items.InputText += "mal";
-                        await items;
+                        opc.InputText += "mal";
+                        await opc;
 
                         actual =
                             string
@@ -1655,18 +1657,18 @@ Running"
 
                         Assert.AreEqual(
                             SearchEntryState.QueryEN,
-                            items.SearchEntryState,
+                            opc.SearchEntryState,
                             "Expecting specific state UNCHANGED."
                         );
 
                         // S T I M
                         // Based on UI interaction like return key pressed
                         builder.Clear();
-                        sql = items.InputText.ParseSqlMarkdown<T>();
+                        sql = opc.InputText.ParseSqlMarkdown<T>();
                         recordset = cnx.Query<T>(sql);
 
                         // 260301.A REGRESSION
-                        await items.ReplaceItemsAsync(recordset);
+                        await opc.ReplaceItemsAsync(recordset);
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1674,14 +1676,12 @@ Running"
                             .Select(_ => _.PropertyName));
                         actual.ToClipboardExpected();
                         { }
-                        // GZ
                         expected = @" 
 Busy
 SearchEntryState
+IsFiltering
 SearchEntryState
 FilteringState
-RouteToFullRecordset
-IsFiltering
 Busy"
                         ;
 
@@ -1690,20 +1690,21 @@ Busy"
                             actual.NormalizeResult(),
                             "Expecting " +
                             "1. ReplaceItemsAsync method gets a busy flag token." +
-                            "2. Non-atomic response to clearing." +
-                            "3. Non-atomic response to add range." +
-                            "4. Armed filter since the non-empty input text hasn't been touched." +
-                            "5. Routing change based on filter where recordset > 1 results." +
+                            "2a. Response to add range." +
+                            "2b. Response to clear is ABSENT because list is empty." +
+                            "4. Ineligible->Armed. (the non-empty input text hasn't been touched)." +
+                            "5a. IsFiltering, based on QueryState, snapshots the canonical items." +
+                            "5b. RouteToFullRecordset is ABSENT because still true." +
                             "6. ReplaceItemsAsync method releases the busy flag token."
                         );
                         eventQueue.Clear();
 
-                        Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, items.SearchEntryState);
-                        Assert.AreEqual(FilteringState.Armed, items.FilteringState);
+                        Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, opc.SearchEntryState);
+                        Assert.AreEqual(FilteringState.Armed, opc.FilteringState);
                         Assert.AreNotEqual(0, recordset.Count);
-                        Assert.AreNotEqual(0, items.Count);
+                        Assert.AreNotEqual(0, opc.Count);
 
-                        actual = string.Join(Environment.NewLine, items.OfType<object>().Select(_ => _.ToString()));
+                        actual = string.Join(Environment.NewLine, opc.OfType<object>().Select(_ => _.ToString()));
                         expected = @" 
 Black Cat  [animal] [color]
 Orange Fox  [animal] [color]
@@ -1726,13 +1727,13 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
 
                         Assert.AreEqual(
                             SearchEntryState.QueryCompleteWithResults,
-                            items.SearchEntryState,
+                            opc.SearchEntryState,
                             "Expecting notified entry SEARCH STATE CHANGE."
                         );
 
                         Assert.AreEqual(
                             FilteringState.Armed,
-                            items.FilteringState,
+                            opc.FilteringState,
                             "Expecting notified entry FILTER STATE CHANGE."
                         );
 
@@ -1750,17 +1751,17 @@ SearchEntryState='QueryCompleteWithResults'";
                             "Expecting TWO INPCs for SearchEntryState because the Replace makes a Clear before Repopulating."
                         );
 
-                        items.Clear();
+                        opc.Clear();
 
                         Assert.AreEqual(
                             string.Empty,
-                            items.InputText,
+                            opc.InputText,
                             "Expecting empty input text."
                         );
 
                         Assert.AreEqual(
                             FilteringState.Armed,
-                            items.FilteringState,
+                            opc.FilteringState,
                             "Expecting nuanced behavior:"
                         );
 
@@ -1778,10 +1779,10 @@ SearchEntryState='QueryCompleteWithResults'";
                         // animal.b
                         // Expecting Filter mode and an internal query.
                         // See also: {24048258-8BE4-40C4-BF85-8863E98BED51}
-                        items.InputText += "b";
-                        await items;
+                        opc.InputText += "b";
+                        await opc;
 
-                        actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
+                        actual = string.Join(Environment.NewLine, opc.Select(_ => _.ToString()));
                         actual.ToClipboardExpected();
                         { }
 
@@ -1798,7 +1799,8 @@ Kangaroo ""bounce"",""outback"",""marsupial"" [animal]";
                             "Expecting filtered items containing filter expr"
                         );
 
-                        Assert.IsTrue(items.RouteToFullRecordset);
+                        // [Careful] Polatity fixed 260301
+                        Assert.IsFalse(opc.RouteToFullRecordset);
                         { }
                     }
                     #endregion S U B T E S T S
@@ -2816,6 +2818,8 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 async Task subtestQueryInitial()
                 {
                     await localCommitOnSettle("animal");
+
+                    Assert.AreEqual(2, eventQueue.Count, "Expecting only 2 events: NEW REGRESSION 260301");
 
                     Assert.IsNotNull((ecc = (NotifyCollectionChangedEventArgs?)eventQueue.Dequeue()?.e));
                     {

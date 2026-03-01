@@ -88,7 +88,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public enum FilteringState
     {
         /// <summary>
-        /// One of:
+        /// Is one of:
         /// - Filtering is either globally disabled.
         /// - The minimum item count of 2 UNFILTERED items is not present.
         /// </summary>

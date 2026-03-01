@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.Threading;
@@ -175,7 +176,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// occurring after the initial query. Operates on the in-memory SQLite store
         /// when in QueryAndFilter or Filter mode. Override to customize filter behavior.
         /// </summary>
-        protected virtual void ApplyFilter()
+        protected override async Task ApplyFilter()
         {
             using (DHostBusy.GetToken())
             {
@@ -617,23 +618,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// This is a router for whether to show the unfiltered set or the filtered one.
         /// The override allows some intelligence WRT the number of filterable items in the list.
         /// </summary>
+        [Careful("This polarity was wrong, and has been fixed.")]
         public override bool RouteToFullRecordset
         {
             get
             {
                 if (_unfilteredItems.Count < 2) // Filtering state ineligible. Show all items.
                 {
-                    return false;
+                    return true;
                 }
                 else
                 {
                     if (InputText.Length == 0)
                     {
-                        return false;         // Show all items. Full stop.
+                        return true;         // Show all items. Full stop.
                     }
                     else
                     {
-                        return FilteringState == FilteringState.Active;
+                        return FilteringState != FilteringState.Active;
                     }
                 }
             }
@@ -644,8 +646,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
+        [Careful("This polarity was wrong, and has been fixed.")]
         private IList<T> _RoutedItems_ =>
-            RouteToFullRecordset ? _filteredItems : _unfilteredItems;
+            RouteToFullRecordset ? _unfilteredItems : _filteredItems;
 
         public IEnumerator<T> GetEnumerator() => _RoutedItems_.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }

@@ -12,7 +12,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         , IPredicateMarkdownContext
     {
         public PredicateMarkdownContext(Type type) : base(type) { }
-        public PredicateMarkdownContext(Type type, IList projection) : base(type, projection) { }
 
         public IReadOnlyDictionary<string, Enum> ActiveFilters => throw new NotImplementedException();
 
@@ -73,6 +72,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         where T : class, new()
     {
         public PredicateMarkdownContext() : base(typeof(T)) { }
-        public PredicateMarkdownContext(IList projection) : base(typeof(T), projection) { }
     }
 }

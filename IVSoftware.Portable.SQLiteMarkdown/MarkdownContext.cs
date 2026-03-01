@@ -35,6 +35,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         : WatchdogTimer
         , INotifyPropertyChanged
     {
+#if true
+        /// <summary>
+        /// Creates a self-contained expression parsing environment, binding it
+        /// to an XML-based AST using the IVSoftware.Portable.XBoundObject NuGet.
+        /// </summary>
+        /// <remarks>
+        /// [Careful] 
+        /// The initial type must be known and captured regardless of GF mode.
+        /// A parameterless CTOR would not be appropriate so avoid that.
+        /// </remarks>
+
+        [Canonical]
+        public MarkdownContext(Type type)
+        {
+            Interval = TimeSpan.FromSeconds(0.25);          // Default. Consumer can change.
+            XAST = new
+                XElement(nameof(StdAstNode.ast))
+                .WithBoundAttributeValue(this);
+            ContractType = type;
+        }
+#else
         /// <summary>
         /// Creates a self-contained expression parsing environment, binding it
         /// to an XML-based AST using the IVSoftware.Portable.XBoundObject NuGet.
@@ -55,7 +76,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             ContractType = type;
             Projection = projection;
         }
+        protected IList? Projection { get; }
         public MarkdownContext(Type type) : this(type, null) { }
+#endif
 
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
 
@@ -1323,10 +1346,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (!Equals(_queryFilterConfig, value))
                 {
                     _queryFilterConfig = value;
-                    // Seems odd, right? But this actually does something.
-                    // It forces a review of of its current state to make
-                    // sure that it's still legal with the new QFC.
-                    FilteringState = FilteringState;
+                    switch (_queryFilterConfig)
+                    {
+                        case QueryFilterConfig.Query:
+                            IsFiltering = false;
+                            break;
+                        case QueryFilterConfig.Filter:
+                            IsFiltering = true;
+                            break;
+                    }
                     OnPropertyChanged();
                 }
             }
@@ -1409,7 +1437,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     _filteringState = value;
                     OnFilteringStateChanged();
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(RouteToFullRecordset));
                 }
             }
         }
@@ -1447,16 +1474,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         /// <remarks>
         /// Mental Model: "Take a snapshot of the full recordset in order to filter it."
-        /// - HYSTERESIS BEHAVIOR: 
-        /// After a successful query yielding sufficient results, filtering becomes
-        /// eligible and transitions to Active upon the next IME input.
-        /// 
-        /// Clearing the IME does not immediately revert to query mode. If filtering
-        /// was previously Active, the state remains latched until an explicit second
-        /// clear action signals intent to exit filtering.
-        /// 
-        /// This prevents oscillation between Query and Filter modes caused by
-        /// transient empty input and preserves refinement context.
+        /// -
         /// </remarks>
         public bool IsFiltering
         {
@@ -1465,19 +1483,37 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (!Equals(_isFiltering, value))
                 {
+                    if (value)
+                    {
+                        var e = new CancelEventArgs();
+                        // Use the projection count if available.
+                        if(ObservableNetProjection is IList projection)
+                        {
+                            e.Cancel = IsFiltering = projection.Count < 2;
+                        }
+                        BeforeFilter?.Invoke(this, e);
+                    }
                     _isFiltering = value;
                     OnIsFilteringChanged();
                     OnPropertyChanged();
                 }
             }
         }
+        public event CancelEventHandler BeforeFilter;
 
         /// <summary>
-        /// True when InputText is empty regardless of IsFiltering.
+        /// Non-Hysteresis representation of IsFiltering.
         /// </summary>
         /// <remarks>
-        /// - Distinct from IsFiltering which captures the FilterQueryDatabase on
-        ///   its positive edge, this is a lightweight signal to the canonical items.
+        /// Mental Model: "The IME is empty, so swap ItemsSource references and reset the current one."
+        /// Unlike <see cref="IsFiltering"/>, this property does not participate in
+        /// hysteresis or mode transitions. It exists as a lightweight routing decision
+        /// for UI implementations that maintain two discrete collection references
+        /// (e.g., full vs filtered).
+        /// 
+        /// Because it does not trigger filtering lifecycle behavior, state transitions,
+        /// or snapshot logic, evaluating this property is less expensive than toggling
+        /// <see cref="IsFiltering"/>.
         /// </remarks>
         public virtual bool RouteToFullRecordset
         {
@@ -1491,7 +1527,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-        bool _routeToFullRecordset = false;
+        bool _routeToFullRecordset = true;
 
 
         /// <summary>
@@ -1662,34 +1698,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return FilteringState;
         }
 
-        protected virtual void OnFilteringStateChanged()
-        {
-            switch (QueryFilterConfig)
-            {
-                case QueryFilterConfig.Query:
-                    // This config is *never* filtering.
-                    IsFiltering = false;
-                    break;
-                case QueryFilterConfig.Filter:
-                    // This config is *always* filtering.
-                    IsFiltering = true;
-                    break;
-                case QueryFilterConfig.QueryAndFilter:
-#if false
-                    OnPropertyChanged(nameof(RouteToFullRecordset));
-                    IsFiltering = FilteringState != FilteringState.Ineligible;
-#else
-                    // Apply hysteresis
-                    IsFiltering =
-                        FilteringState == FilteringState.Active
-                        || FilteringStatePrev == FilteringState.Active;
-#endif
-                    break;
-                default:
-                    this.ThrowFramework<NotSupportedException>($"The {QueryFilterConfig.ToFullKey()} case is not supported.");
-                    break;
-            }
-        }
+        protected virtual void OnFilteringStateChanged() { }
 
         public string InputText
         {
@@ -1808,7 +1817,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         SearchEntryState _searchEntryState = default;
 
-        protected virtual void OnSearchEntryStateChanged() { }
+        protected virtual void OnSearchEntryStateChanged() 
+        {
+            switch (SearchEntryState)
+            {
+                case SearchEntryState.QueryCompleteNoResults:
+                    IsFiltering = false;
+                    break;
+                case SearchEntryState.QueryCompleteWithResults:
+                    if(QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
+                    {
+                        IsFiltering = true;
+                    }
+                    break;
+            }
+        }
 
         /// <summary>
         /// Reference counter for Busy property.

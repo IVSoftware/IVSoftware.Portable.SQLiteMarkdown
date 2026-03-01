@@ -23,15 +23,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     partial class MarkdownContext : IMarkdownContext
     {
         /// <summary>
-        /// If set, the MDC puppeteers the visible projection directly.
-        /// </summary>
-        /// <remarks>
-        /// WHAT IT IS: The handle to the ItemsSource that is bound to (what is presumed to be) the UI.
-        /// WHAT IT IS NOT: A readable list to sync to.
-        /// </remarks>
-        protected IList? Projection { get; }
-
-        /// <summary>
         /// Immutable once set.
         /// </summary>
         public XElement Model
