@@ -1479,7 +1479,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - Distinct from IsFiltering which captures the FilterQueryDatabase on
         ///   its positive edge, this is a lightweight signal to the canonical items.
         /// </remarks>
-        public virtual bool RouteToFullRecordset => true;
+        public virtual bool RouteToFullRecordset
+        {
+            get => _routeToFullRecordset;
+            protected set { }
+        }
+        bool _routeToFullRecordset = true;
 
         /// <summary>
         /// Catch and release heuristic for canonical ObservableNetProjection entering and leaving IsFiltered state.

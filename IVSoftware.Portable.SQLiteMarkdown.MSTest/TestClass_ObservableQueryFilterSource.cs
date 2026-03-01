@@ -1664,6 +1664,8 @@ Running"
                         builder.Clear();
                         sql = items.InputText.ParseSqlMarkdown<T>();
                         recordset = cnx.Query<T>(sql);
+
+                        // 260301.A REGRESSION
                         await items.ReplaceItemsAsync(recordset);
                         actual =
                             string
