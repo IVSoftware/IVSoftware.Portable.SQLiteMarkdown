@@ -1409,7 +1409,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     _filteringState = value;
                     OnFilteringStateChanged();
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(RouteToFullRecordset)); 
+                    OnPropertyChanged(nameof(RouteToFullRecordset));
                 }
             }
         }
@@ -1471,6 +1471,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+
+        /// <summary>
+        /// True when InputText is empty regardless of IsFiltering.
+        /// </summary>
+        /// <remarks>
+        /// - Distinct from IsFiltering which captures the FilterQueryDatabase on
+        ///   its positive edge, this is a lightweight signal to the canonical items.
+        /// </remarks>
+        public virtual bool RouteToFullRecordset => true;
 
         /// <summary>
         /// Catch and release heuristic for canonical ObservableNetProjection entering and leaving IsFiltered state.
@@ -1653,10 +1662,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     IsFiltering = true;
                     break;
                 case QueryFilterConfig.QueryAndFilter:
+#if false
+                    OnPropertyChanged(nameof(RouteToFullRecordset));
+                    IsFiltering = FilteringState != FilteringState.Ineligible;
+#else
                     // Apply hysteresis
                     IsFiltering =
                         FilteringState == FilteringState.Active
                         || FilteringStatePrev == FilteringState.Active;
+#endif
                     break;
                 default:
                     this.ThrowFramework<NotSupportedException>($"The {QueryFilterConfig.ToFullKey()} case is not supported.");
@@ -1762,16 +1776,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // gate the 'apply filter' there, not here.
             RestartIfSemanticInputChanged();
         }
-
-        /// <summary>
-        /// True when InputText is empty regardless of IsFiltering.
-        /// </summary>
-        /// <remarks>
-        /// - Distinct from IsFiltering which captures the FilterQueryDatabase on
-        ///   its positive edge, this is a lightweight signal to the canonical items.
-        /// - This is distinct from the SyncAuthority which governs DDX direction.
-        /// </remarks>
-        public virtual bool RouteToFullRecordset => true;
 
 
         public SearchEntryState SearchEntryState
