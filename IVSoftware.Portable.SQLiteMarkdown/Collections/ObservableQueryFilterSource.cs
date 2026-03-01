@@ -46,7 +46,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 if (_unfilteredItems.Count < 2)
                 {
-                    FilteringState = FilteringState.Ineligible;
+                    // 260301
+                    // FilteringState = FilteringState.Ineligible;
                 }
                 switch (e.Action)
                 {
@@ -167,10 +168,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     //    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
                     //}
 
-                    FilteringState =
-                        _unfilteredItems.Count < 2
-                        ? FilteringState.Ineligible
-                        : FilteringState.Armed;
+                    // 260301
+                    // FilteringState =
+                    //    _unfilteredItems.Count < 2
+                    //    ? FilteringState.Ineligible
+                    //    : FilteringState.Armed;
                 }
                 finally
                 {
@@ -588,10 +590,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                     //    : SearchEntryState.QueryCompleteWithResults;
 
                                     // Once we go into Armed, it takes 2 clears not one.
-                                    FilteringState =
-                                        items.Count < 2
-                                        ? FilteringState.Ineligible
-                                        : FilteringState.Armed;
+
+                                    // 260301
+                                    // FilteringState =
+                                    //    items.Count < 2
+                                    //    ? FilteringState.Ineligible
+                                    //    : FilteringState.Armed;
 
                                     break;
                                 case NotifyQueryFilterCollectionChangedAction.ApplyFilter:

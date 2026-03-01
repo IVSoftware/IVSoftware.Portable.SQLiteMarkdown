@@ -1467,6 +1467,12 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                             }
                             builder.Add($"{e.PropertyName}='{items.SearchEntryState}'");
                             break;
+                        case nameof(FilteringState):
+                            if(caller == "subtestCommit")
+                            {
+
+                            }
+                            break;
                         case nameof(items.ProxyType):
                             break;
                     }
