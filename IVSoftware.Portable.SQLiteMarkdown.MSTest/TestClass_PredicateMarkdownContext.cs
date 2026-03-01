@@ -95,7 +95,7 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
 
-            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 2, 28).Date, "Don't forget disabled");
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 01).Date, "Don't forget disabled");
             return;
             expected = @" 
 <model>

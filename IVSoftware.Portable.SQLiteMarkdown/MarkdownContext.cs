@@ -1653,10 +1653,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     IsFiltering = true;
                     break;
                 case QueryFilterConfig.QueryAndFilter:
+#if true
+                    // Simpler approach - IsFiltering = !Ineligible
+                    // The backing stores load as a result of the query status.
+                    // The risk would be if somehow this workload queues before
+                    // the visual collection update, slowing it.
+                    IsFiltering = FilteringState != FilteringState.Ineligible;
+#else
                     // Apply hysteresis
+                    // Doing it this way defers the setup of the filtering backing 
+                    // stores until the first subsequent input settle demands it.
+                    // The risk is slowing that first filter response.
                     IsFiltering =
                         FilteringState == FilteringState.Active
                         || FilteringStatePrev == FilteringState.Active;
+#endif
                     break;
                 default:
                     this.ThrowFramework<NotSupportedException>($"The {QueryFilterConfig.ToFullKey()} case is not supported.");

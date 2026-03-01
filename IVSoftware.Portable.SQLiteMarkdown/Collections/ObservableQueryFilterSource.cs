@@ -143,6 +143,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     {
                         SearchEntryState = SearchEntryState.QueryCompleteNoResults;
                     }
+
+                    Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 01).Date, "Don't forget disabled");
+                    // GZ 260301 - Filtering state has already arbitrated. This may be redundant and too late.
                     FilteringState =
                         _unfilteredItems.Count < 2
                         ? FilteringState.Ineligible
