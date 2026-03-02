@@ -1577,25 +1577,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     throw new NotImplementedException($"Bad case: {FilteringState}");
             }
         }
-
-        /// <summary>
-        /// Returns the current synchronization authority between the
-        /// canonical collection and its projection.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model (typical):
-        /// - The filtered collection represents the current visible projection, and
-        ///   user-facing {add, edit, remove} operations occur against this projection.
-        /// - SyncAuthority anchors one side as authoritative during collection change
-        ///   propagation, suppressing re-entrant updates from the opposing side.
-        /// - When a refinement epoch is active, authority shifts to the canonical
-        ///   collection to prevent circular propagation while the projection settles.
-        /// - In the quiescent state, the projection is authoritative.
-        /// </remarks>
-        public CollectionSyncAuthority SyncAuthority =>
-            Running && (FilteringState != FilteringState.Ineligible)
-            ? CollectionSyncAuthority.Unfiltered
-            : CollectionSyncAuthority.Filtered;
                 
 
         public SearchEntryState SearchEntryState

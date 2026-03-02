@@ -1421,7 +1421,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             // Test for current version scheme
             await localTest<SelectableQFModelTOQO>();
 
-            async Task localTest<T>() where T : new()
+            async Task localTest<T>() where T : class, new()
             {
                 @"\& \| \! \( \) \[ \] \' \"" \\".ParseSqlMarkdown<PetProfileN>();
                 Queue<SenderEventPair> eventQueue = new();

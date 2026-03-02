@@ -33,7 +33,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         : MarkdownContext<T>
         , IObservableQueryFilterSource<T>
         , IList<T>
-        where T : new()
+        where T : class, new()
     {
         public ObservableQueryFilterSource()
         {
