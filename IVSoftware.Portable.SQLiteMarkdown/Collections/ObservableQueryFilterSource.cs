@@ -40,7 +40,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterSource()
         {
-            CollectionChanged += OnCollectionChanged;
+            CollectionChangedCounted += OnCollectionChanged;
 
             _unfilteredItems.CollectionChanged += (sender, e) =>
             {
@@ -63,7 +63,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         {
                             if (FilteringState != FilteringState.Active)
                             {
-                                CollectionChanged?.Invoke(this, e);
+                                CollectionChangedCounted?.Invoke(this, e);
                             }
                         }
                         break;
@@ -77,7 +77,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         }
                         else
                         {
-                            CollectionChanged?.Invoke(this, e);
+                            CollectionChangedCounted?.Invoke(this, e);
                         }
                         break;
                     case NotifyCollectionChangedAction.Reset:
@@ -87,7 +87,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             inpc.PropertyChanged -= OnItemPropertyChanged;
                         }
                         FilterQueryDatabase?.DeleteAll<T>();
-                        CollectionChanged?.Invoke(this, e);
+                        CollectionChangedCounted?.Invoke(this, e);
                         break;
                 }
                 _unsubscribeItems = _unfilteredItems.OfType<INotifyPropertyChanged>().ToArray();
@@ -143,7 +143,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             {
                                 _unfilteredItems.Add(item);
                             }
-                            CollectionChanged?.Invoke(
+                            CollectionChangedCounted?.Invoke(
                                 this,
                                 new NotifyQueryFilterCollectionChangedEventArgs(
                                     NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
@@ -279,7 +279,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         // count < 2 we're not supposed to be here in the first place.
                         Debug.Assert(_unfilteredItems.Count >= 2, "ADVISORY - Filterable source is required.");
                         FilteringState = FilteringState.Active;
-                        CollectionChanged?.Invoke(
+                        CollectionChangedCounted?.Invoke(
                             this,
                             new NotifyQueryFilterCollectionChangedEventArgs(
                                 NotifyQueryFilterCollectionChangedAction.ApplyFilter,
@@ -310,7 +310,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             if (FilteringState < FilteringState.Armed)
             {
 #if DEBUG
-                CollectionChanged += localCollectionChanged;
+                CollectionChangedCounted += localCollectionChanged;
 
                 // [Careful] 
                 // If we're responding to FilteringState changed to clear the
@@ -320,7 +320,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                 void localCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
                 {
-                    CollectionChanged -= localCollectionChanged;
+                    CollectionChangedCounted -= localCollectionChanged;
                 }
 #else
                 // [Careful] 
@@ -440,7 +440,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         #endregion I L I S T
 
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
+        public event NotifyCollectionChangedEventHandler CollectionChanged
+        {
+            add
+            {
+                CollectionChangedCounted += value;
+            }
+            remove
+            {
+                CollectionChangedCounted += value;
+            }
+        }
+        protected event NotifyCollectionChangedEventHandler CollectionChangedCounted;
 
         /// <summary>
         /// No client data connection is assumed, but if a persistent
@@ -501,7 +512,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     // but the UI visuals might change e.g. icon glyph and/or color.
                     if (InputText.Length == 0 && FilteringStatePrev == FilteringState.Active)
                     {
-                        CollectionChanged?.Invoke(
+                        CollectionChangedCounted?.Invoke(
                             this,
                             new NotifyQueryFilterCollectionChangedEventArgs(
                                 NotifyQueryFilterCollectionChangedAction.RemoveFilter | NotifyQueryFilterCollectionChangedAction.Add,
@@ -631,7 +642,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     // Clear, then event ADHOC. That is, it's not always
                     // in our best interest to simply forward the clear.
                     _unfilteredItems.Clear();
-                    CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    CollectionChangedCounted?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                     break;
                 case FilteringState.Armed:
                     if (FilteringStatePrev == FilteringState.Ineligible)

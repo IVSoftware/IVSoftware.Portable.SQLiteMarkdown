@@ -2807,6 +2807,23 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 };
                 items.CollectionChanged += (sender, e) =>
                 {
+                    if(ReferenceEquals(sender, items.UnfilteredItems))
+                    { 
+                    }
+                    else if(ReferenceEquals(sender, items))
+                    {
+
+                    }
+                    else
+                    {
+                        throw new NotImplementedException("UNEXPECTED - What is it then?");
+                    }
+                    if (e is NotifyQueryFilterCollectionChangedEventArgs)
+                    {   /* G T K */
+                    }
+                    else
+                    {   /* G T K */
+                    }
                     eventQueue.Enqueue((sender, e));
                     // FYI:
                     switch (e.Action)
