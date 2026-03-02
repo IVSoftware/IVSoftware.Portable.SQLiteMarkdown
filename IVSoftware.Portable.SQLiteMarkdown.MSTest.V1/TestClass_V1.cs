@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.WinOS.MSTest.Extensions;
+using System.Reflection;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.V1
 {
@@ -12,7 +13,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.V1
         /// confirmation of what was and wasn't visible in v1.
         /// </summary>
         [TestMethod]
-        public void Test_Capabilities()
+        public void Test_V1Capabilities()
         {
             string actual, expected;
 
@@ -27,7 +28,7 @@ IVSoftware.Portable.SQLiteMarkdown, Version=1.0.1.0, Culture=neutral, PublicKeyT
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting result to match."
+                "Expecting Version=1.0.1.0."
             );
 
             MarkdownContext<SelectableQFModel> mdc = new();
@@ -39,11 +40,48 @@ IVSoftware.Portable.SQLiteMarkdown, Version=1.0.1.0, Culture=neutral, PublicKeyT
             var tn = mdc.TableName;
 #endif            
             var builder = new List<string>();
-            foreach (var pi in typeof(IObservableQueryFilterSource).GetProperties())
+            Type[] types;
+            PropertyInfo[] pis;
+
+            types = [typeof(IObservableQueryFilterSource), typeof(IObservableQueryFilterSource<object>)];
+            pis =
+                 types
+                .SelectMany(t => t.GetProperties())
+                .DistinctBy(p => p.Name)
+                .OrderBy(p => p.Name)
+                .ToArray();
+
+            foreach (var pi in pis)
             {
                 builder.Add($"{pi.Name}: {pi.PropertyType.Name}");
             }
-            foreach (var pi in typeof(IObservableQueryFilterSource<object>).GetProperties())
+
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Busy: Boolean
+DHostBusy: DisposableHost
+FilteringState: FilteringState
+InputText: String
+IsFiltering: Boolean
+MemoryDatabase: SQLiteConnection
+Placeholder: String
+QueryFilterConfig: QueryFilterConfig
+SearchEntryState: SearchEntryState
+SQL: String
+Title: String"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting Version=1.0.1.0 contract only."
+            );
+
+            pis = typeof(MarkdownContext<object>).GetProperties();
+            builder.Clear();
+            foreach (var pi in pis)
             {
                 builder.Add($"{pi.Name}: {pi.PropertyType.Name}");
             }
@@ -54,18 +92,61 @@ IVSoftware.Portable.SQLiteMarkdown, Version=1.0.1.0, Culture=neutral, PublicKeyT
             actual.ToClipboardAssert("Expecting builder content to match.");
             { }
             expected = @" 
+Raw: String
+ContractType: Type
+ProxyType: Type
+Preamble: String
+Transform: String
+XAST: XElement
+Atomics: Dictionary`2
+Query: String
+NamedQuery: String
+NamedArgs: Dictionary`2
+PositionalQuery: String
+PositionalArgs: Object[]
+ValidationPredicate: Predicate`1
+QueryFilterConfig: QueryFilterConfig
+DHostSelfIndexing: DisposableHost
+MemoryDatabase: SQLiteConnection
+RouteToFullRecordset: Boolean
+FilteringState: FilteringState
+FilteringStateForTest: FilteringState
 IsFiltering: Boolean
 InputText: String
 SearchEntryState: SearchEntryState
-FilteringState: FilteringState
-Placeholder: String
+DHostBusy: DisposableHost
 Busy: Boolean
-QueryFilterConfig: QueryFilterConfig
-Title: String
-SQL: String
-MemoryDatabase: SQLiteConnection
-DHostBusy: DisposableHost"
+InputTextSettleInterval: TimeSpan
+QueryTerm: String
+FilterTerm: String
+TagMatchTerm: String"
             ;
+
+            var mdcAsm =
+                AppDomain
+                .CurrentDomain
+                .GetAssemblies()
+                 .Where(_ => _.GetName().Name == "IVSoftware.Portable.SQLiteMarkdown");
+            builder.Clear();
+            foreach (var asm in mdcAsm)
+            {
+                var name = asm.GetName();
+                builder.Add(
+                    $"{name.Name} | Version={name.Version}");
+            }
+
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { } 
+            expected = @" 
+IVSoftware.Portable.SQLiteMarkdown | Version=1.0.1.0"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting Version=1.0.1.0"
+            );
 
             var opc = new ObservableQueryFilterSource<object>();
             Assert.IsTrue(
