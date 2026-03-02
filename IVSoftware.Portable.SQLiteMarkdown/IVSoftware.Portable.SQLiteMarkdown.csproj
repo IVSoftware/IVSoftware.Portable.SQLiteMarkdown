@@ -66,7 +66,7 @@
 			1. FilteringState = FilteringState.Ineligible
 			2. MarkdownContext.Clear() is invoked.
 
-			Release 2.0.0
+			Release 1.2.0 stable
 
 			Together, these provide an awaitable epoch wherein the context can await e.g. an async database query prior to resuming:
 

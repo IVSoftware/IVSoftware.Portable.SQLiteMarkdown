@@ -25,7 +25,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// - Most queries operate on the exposed indexed values, reducing the need for each property to consume 
     ///   individual columns (e.g., in an SQLite schema).
     /// </remarks>
-    public interface ISelfIndexedMarkdown : INotifyPropertyChanged
+    public interface ISelfIndexedMarkdown : INotifyPropertyChanged // V1 Published Contract
     {
         [PrimaryKey]
         string PrimaryKey { get; }
@@ -63,8 +63,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             set;
         }
     }
-
-    public interface IObservableQueryFilterSource
+    public interface IObservableQueryFilterSource // V1 Published Contract
         : IList
         , INotifyCollectionChanged
         , INotifyPropertyChanged
@@ -85,7 +84,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
     }
-    public interface IObservableQueryFilterSource<T>
+    public interface IObservableQueryFilterSource<T>    // V1 Published Contract
         : IObservableQueryFilterSource
     {
         void InitializeFilterOnlyMode(IEnumerable<T> items);
@@ -151,13 +150,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Multiple
     }
 
-    public interface ISelectable
+    public interface ISelectable    // V1 Published Contract
     {
         ItemSelection Selection { get; set; }
         bool IsEditing { get; set; }
-    }
-
-    public interface IEditableQueryFilterItem
-    {
     }
 }
