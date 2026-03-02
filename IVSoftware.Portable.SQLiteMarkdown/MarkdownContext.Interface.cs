@@ -5,6 +5,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using SQLite;
 using SQLitePCL;
@@ -63,16 +64,98 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         XElement? _model = null;
 
-        protected async Task RunFSM<Tfsm>()
+        protected async Task RunFSM<Tfsm>(object? context = null)
         {
             foreach (Enum state in typeof(Tfsm).GetEnumValues())
             {
-                await ExecStateAsync(state);
+                await ExecStateAsync(state, context);
             }
         }
-        protected async Task<Enum> ExecStateAsync(Enum state) 
+        protected async Task<Enum> ExecStateAsync(Enum state, object? context = null) 
         {
-            return ReservedAffinityState.None;
+            switch (state)
+            {
+                case EnterFilterFSM.InitializeUnfilteredItemsCollection:
+                    return ReservedAffinityState.Next;
+                case EnterFilterFSM.InitializeModel:
+                    await localInitialiseFilterEpoch(context);
+                    break;
+                case EnterFilterFSM.InitializeFilterQueryDatabase:
+                    Debug.Fail($@"ADVISORY - ToDo.");
+                    break;
+                case EnterFilterFSM.SuppressedReplace:
+                    Debug.Fail($@"ADVISORY - ToDo.");
+                    break;
+                case EnterFilterFSM.RaiseResetEvent:
+                    Debug.Fail($@"ADVISORY - ToDo.");
+                    break;
+                default:
+                    var msg = $@"ADVISORY - ToDo {state.ToFullKey()}.";
+                    Debug.Fail(msg);
+                    break;
+            }
+            return ReservedAffinityState.Next;
+
+            #region L o c a l F x
+            async Task<Enum> localInitialiseFilterEpoch(object? context)
+            {
+                if (context is IEnumerable)
+                {
+                    object[] canonical = ((IEnumerable)context).Cast<object>().ToArray() ?? [];
+                    FilterQueryDatabase.CreateTable(ContractType);
+                    if (ContractType.GetMapping() is { } mapping)
+                    {
+                        Model.RemoveNodes();
+                        int
+                            countDistinct = 0,
+                            countDuplicate = 0;
+
+                        PropertyInfo? pk = mapping.PK?.PropertyInfo;
+                        if (pk is null)
+                        {
+                            throw new NotSupportedException($"Type '{ContractType.Name}' has no PK and such types are not (yet) supported.");
+                        }
+                        foreach (var item in canonical)
+                        {
+                            var placerResult = Model.Place(path: localGetFullPath(pk, item), out var xel);
+                            switch (placerResult)
+                            {
+                                case PlacerResult.Exists:
+                                    countDuplicate++;
+                                    break;
+                                case PlacerResult.Created:
+                                    xel.SetBoundAttributeValue(
+                                        tag: item,
+                                        name: nameof(StdMarkdownElement.xitem));
+                                    countDistinct++;
+                                    break;
+                                default:
+                                    this.ThrowFramework<NotSupportedException>(
+                                        $"Unexpected result: `{placerResult.ToFullKey()}`. Expected options are {PlacerResult.Created} or {PlacerResult.Exists}");
+                                    break;
+                            }
+                        }
+                        return ReservedAffinityState.Next;
+                    }
+                }
+                // Default fall through.
+                this.ThrowHard<OperationCanceledException>();
+                return ReservedAffinityState.Canceled;
+            }
+            string localGetFullPath(PropertyInfo pk, object unk)
+            {
+                if (pk.GetValue(unk)?.ToString() is { } id && !string.IsNullOrWhiteSpace(id))
+                {
+                    return id;
+                }
+                else
+                {
+                    this.ThrowHard<NullReferenceException>(
+                        $"Expecting a non-empty value for PrimaryKey '{pk.Name}'.");
+                    return null!;
+                }
+            }
+            #endregion L o c a l F x
         }
 
         /// <summary>
@@ -287,8 +370,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             return null!;
                         }
                     }
-
-
 #if false
                     XElement localMakeXel(PropertyInfo pk, object item)
                     {

@@ -14,9 +14,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 [TestClass]
 public class TestClass_PredicateMarkdownContext
 {
-
-
-
     [TestMethod, DoNotParallelize]
     public void Test_IsFilteringEdgeTests()
     {

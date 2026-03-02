@@ -1536,62 +1536,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         FilterQueryDatabase.CreateTable(itemType);
                         if (itemType.GetMapping() is { } mapping)
                         {
-                            RunFSM<EnterFilterFSM>();
-#if false
-                            if (ObservableNetProjection is ITemporalAffinity temporal)
-                            {
-                                foreach (ExitFilterFSM state in Enum.GetValues(typeof(ExitFilterFSM)))
-                                {
-
-                                }
-                                throw new NotImplementedException("ToDo");
-                            }
-                            else if (ObservableNetProjection is IPrioritizedAffinity prioritized)
-                            {
-                                foreach (ExitFilterFSM item in Enum.GetValues(typeof(ExitFilterFSM)))
-                                {
-
-                                }
-                                throw new NotImplementedException("ToDo");
-                            }
-                            else if (ObservableNetProjection is IList collection)
-                            {
-                                PropertyInfo? pk = mapping.PK?.PropertyInfo;
-                                if (pk is null)
-                                {
-                                    throw new NotSupportedException($"Type '{itemType.Name}' has no PK and such types are not (yet) supported.");
-                                }
-                                foreach (ExitFilterFSM state in Enum.GetValues(typeof(ExitFilterFSM)))
-                                {
-                                    switch (state)
-                                    {
-                                        case ExitFilterFSM.CaptureUnfilteredItemsArray:
-                                            break;
-                                        case ExitFilterFSM.InitializeUnfilteredItemsCollection:
-                                            break;
-                                        case ExitFilterFSM.InitializeModel:
-                                            foreach(var item in collection)
-                                            {
-                                                Model.Add(localMakeXel(pk, item));
-                                            }
-                                            break;
-                                        case ExitFilterFSM.InitializeFilterQueryDatabase:
-                                            break;
-                                        case ExitFilterFSM.SuppressedReplace:
-                                            break;
-                                        case ExitFilterFSM.RaiseResetEvent:
-                                            break;
-                                        default:
-                                            this.ThrowHard<NotSupportedException>($"The {state.ToFullKey()} case is not supported.");
-                                            break;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                throw new NotSupportedException();
-                            }
-#endif
+                            RunFSM<EnterFilterFSM>(ObservableNetProjection);
                         }
                         #region L o c a l F x
                         XElement localMakeXel(PropertyInfo pk, object item)
