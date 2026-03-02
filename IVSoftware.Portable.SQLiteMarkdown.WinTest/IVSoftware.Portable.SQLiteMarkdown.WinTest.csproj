@@ -27,9 +27,9 @@
 		<ProjectReference Include="..\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown.csproj" />
 	</ItemGroup>
 
-	<!-- Release mode uses NuGet prerelease version -->
+	<!-- Release mode uses NuGet -->
 	<ItemGroup Condition="'$(Configuration)' == 'Release'">
-		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="2.0.0-alpha06" />
+		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="1.2.0" />
 	</ItemGroup>
 
 </Project>

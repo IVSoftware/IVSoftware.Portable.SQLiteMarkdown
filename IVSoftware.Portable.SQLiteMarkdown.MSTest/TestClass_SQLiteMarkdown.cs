@@ -493,7 +493,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             #endregion S U B T E S T S
         }
 
-        class TestableMarkdownContext<T> : MarkdownContext<T>
+        class TestableMarkdownContext<T> : MarkdownContext<T> where T : class, new()
         {
             public new FilteringState FilteringState
             {

@@ -84,6 +84,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [Canonical]
         public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
         {
+            if (string.IsNullOrWhiteSpace(expr))
+            {
+                this.ThrowHard<ArgumentException>("Empty string cannot be parsed.");
+                xast = null!; // We warned you.
+                return string.Empty;
+            }
             if (proxyType is null)
             {
                 this.ThrowHard<ArgumentNullException>(("Proxy type must be specified"));
@@ -1728,7 +1734,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         #endregion S E L F    I N D E X E D
     }
-    public class MarkdownContext<T> : MarkdownContext
+    public class MarkdownContext<T>
+        : MarkdownContext
+        where T : class, new()
     {
         public MarkdownContext() : base(typeof(T)) { }
     }
