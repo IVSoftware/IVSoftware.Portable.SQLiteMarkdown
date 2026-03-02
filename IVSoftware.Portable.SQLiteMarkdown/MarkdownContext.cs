@@ -46,16 +46,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
 
         [Canonical]
-        public MarkdownContext(Type type, IList? projection)
+        public MarkdownContext(Type type)
         {
             Interval = TimeSpan.FromSeconds(0.25);          // Default. Consumer can change.
             XAST = new
                 XElement(nameof(StdAstNode.ast))
                 .WithBoundAttributeValue(this);
             ContractType = type;
-            Projection = projection;
         }
-        public MarkdownContext(Type type) : this(type, null) { }
 
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
 

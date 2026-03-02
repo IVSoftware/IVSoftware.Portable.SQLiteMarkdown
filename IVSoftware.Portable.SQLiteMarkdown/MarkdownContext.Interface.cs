@@ -23,17 +23,15 @@ using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
+    [Flags]
+    internal enum NetProjectionOption
+    {
+        ObservableOnly,
+        AllowDirectChanges = 0x1,
+    }
+
     partial class MarkdownContext : IMarkdownContext
     {
-        /// <summary>
-        /// If set, the MDC puppeteers the visible projection directly.
-        /// </summary>
-        /// <remarks>
-        /// WHAT IT IS: The handle to the ItemsSource that is bound to (what is presumed to be) the UI.
-        /// WHAT IT IS NOT: A readable list to sync to.
-        /// </remarks>
-        protected IList? Projection { get; }
-
         /// <summary>
         /// Immutable once set.
         /// </summary>
@@ -361,6 +359,11 @@ Recordset assignment is atomic; no changes were applied."
                 UnfilteredCount = success;
             }
         }
+
+        /// <summary>
+        /// Determines whether MDC is allowed to pupetteer the projection directly.
+        /// </summary>
+        internal NetProjectionOption ProjectionOptions { get; set; }
 
         /// <summary>
         /// Gets or sets the observable projection representing the effective

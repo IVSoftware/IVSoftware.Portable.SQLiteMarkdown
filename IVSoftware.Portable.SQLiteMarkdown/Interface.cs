@@ -201,6 +201,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         INotifyCollectionChanged ObservableNetProjection { set; }
 
+        // [Probationary("Maintain NetProjectionOption enum type as Internal until stable.")]
+        // NetProjectionOption ProjectionOptions { get; }
+
         /// <summary>
         /// Guards receptivity of the unfiltered items collection.
         /// </summary>
