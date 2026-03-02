@@ -2850,7 +2850,11 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 #region S U B T E S T S
                 async Task subtestQueryInitial()
                 {
+                    Assert.AreEqual(0, eventQueue.Count, "YES. It's zero.");
+
                     await localCommitOnSettle("animal");
+
+                    Assert.AreEqual(2, eventQueue.Count, "NO. More is not OK.");
 
                     Assert.IsNotNull((ecc = (NotifyCollectionChangedEventArgs?)eventQueue.Dequeue()?.e));
                     {

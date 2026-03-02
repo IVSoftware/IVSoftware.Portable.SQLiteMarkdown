@@ -531,6 +531,42 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
+        /// Produces the normalized semantic form of the input by trimming trailing
+        /// whitespace and transient logical operators (!, |, &) unless they are
+        /// explicitly escaped.
+        /// </summary>
+        public static string TrimEndTransients(this string? input)
+        {
+            input ??= string.Empty;
+            var text = input.TrimEnd();
+            bool hasTrailingEscapedOperator = false;
+
+            if (text.Length >= 2)
+            {
+                int len = text.Length;
+                char c1 = text[len - 2];
+                char c2 = text[len - 1];
+
+                if (c1 == '\\' && (c2 == '\\' || c2 == '!' || c2 == '|' || c2 == '&'))
+                {
+                    hasTrailingEscapedOperator = true;
+                }
+            }
+
+            if (!hasTrailingEscapedOperator)
+            {
+                text = text.TrimEnd('!', '|', '&');
+            }
+            return text;
+        }
+
+        /// <summary>
+        /// Returns true when the normalized semantic input contains no effective terms.
+        /// </summary>
+        public static bool IsSemanticallyEmpty(this string? input)
+            => input.TrimEndTransients().Length == 0;
+
+        /// <summary>
         /// Normalizes and concatenates materialized path segments using '\' as the canonical separator.
         /// </summary>
         /// <remarks>

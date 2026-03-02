@@ -1743,6 +1743,35 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         string _inputText = string.Empty;
 
         /// <summary>
+        /// Returns true when the normalized semantic input contains no effective terms.
+        /// </summary>
+        protected virtual bool IsSemanticallyEmpty()
+        {
+            var nonTransientInputText = InputText.TrimEnd();
+            bool hasTrailingEscapedOperator = false;
+
+            if (nonTransientInputText.Length >= 2)
+            {
+                int len = nonTransientInputText.Length;
+                char c1 = nonTransientInputText[len - 2];
+                char c2 = nonTransientInputText[len - 1];
+
+                if (c1 == '\\' && (c2 == '\\' || c2 == '!' || c2 == '|' || c2 == '&'))
+                {
+                    hasTrailingEscapedOperator = true;
+                }
+            }
+
+            if (!hasTrailingEscapedOperator)
+            {
+                nonTransientInputText =
+                    nonTransientInputText.TrimEnd('!', '|', '&');
+            }
+
+            return nonTransientInputText.Length == 0;
+        }
+
+        /// <summary>
         /// Normalizes trailing transient operators and restarts the debounce cycle
         /// only if the resulting semantic input differs from the previous value.
         /// </summary>
@@ -1781,11 +1810,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             switch (FilteringState)
             {
                 case FilteringState.Ineligible:
-                    if (InputText.Length == 0)
+                    if (InputText.IsSemanticallyEmpty())
                     {
                         SearchEntryState = SearchEntryState.QueryEmpty;
                     }
-                    else if (InputText.Length < 3)
+                    else if (InputText.TrimEndTransients().Length < 3)
                     {
                         SearchEntryState = SearchEntryState.QueryENB;
                     }
@@ -1795,13 +1824,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                     break;
                 case FilteringState.Armed:
-                    if (InputText.Length != 0)
+                    if (!InputText.IsSemanticallyEmpty())
                     {
                         FilteringState = FilteringState.Active;
                     }
                     break;
                 case FilteringState.Active:
-                    if (InputText.Length == 0)
+                    if (InputText.IsSemanticallyEmpty())
                     {
                         // Downgrade but stay armed.
                         FilteringState = FilteringState.Armed;
@@ -1912,11 +1941,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             InputTextSettled?.Invoke(this, e);
             if(!e.Cancel)
             {
-
+                // [Remember]
+                // - The distinction of 'Ineligible' is that
+                //   there aren't enough items to filter.
+                // - It's got nothing to do with InputText length.
                 if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
                     && FilteringState != FilteringState.Ineligible)
                 {
-                    await ApplyFilter();
+                    if (InputText.IsSemanticallyEmpty())
+                    {   /* G T K - N O O P */
+                    }
+                    else
+                    {
+                        await ApplyFilter();
+                    }
                 }
             }
         }
