@@ -1536,6 +1536,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         FilterQueryDatabase.CreateTable(itemType);
                         if (itemType.GetMapping() is { } mapping)
                         {
+                            RunFSM<EnterFilterFSM>();
+#if false
                             if (ObservableNetProjection is ITemporalAffinity temporal)
                             {
                                 foreach (ExitFilterFSM state in Enum.GetValues(typeof(ExitFilterFSM)))
@@ -1589,6 +1591,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             {
                                 throw new NotSupportedException();
                             }
+#endif
                         }
                         #region L o c a l F x
                         XElement localMakeXel(PropertyInfo pk, object item)

@@ -63,9 +63,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         XElement? _model = null;
 
-        protected async Task RunFSM(Type fsm)
+        protected async Task RunFSM<Tfsm>()
         {
-            foreach (Enum state in fsm.GetEnumValues())
+            foreach (Enum state in typeof(Tfsm).GetEnumValues())
             {
                 await ExecStateAsync(state);
             }
@@ -174,8 +174,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         {
                             switch (state)
                             {
-                                case EnterFilterFSM.CaptureUnfilteredItemsArray:
-                                    break;
                                 case EnterFilterFSM.InitializeUnfilteredItemsCollection:
                                     break;
                                 case EnterFilterFSM.InitializeModel:
