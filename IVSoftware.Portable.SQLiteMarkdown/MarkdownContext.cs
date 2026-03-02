@@ -1526,7 +1526,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         protected virtual void OnIsFilteringChanged()
         {
-            if(false && IsFiltering)
+            if(IsFiltering)
             {
                 if (ObservableNetProjection is not null)
                 { 

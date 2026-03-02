@@ -894,6 +894,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     { 
         Idle = -1, 
     }
+    internal enum ReservedAffinityState
+    { 
+        None = -1, 
+    }
 
     internal enum AffinityFsm
     {

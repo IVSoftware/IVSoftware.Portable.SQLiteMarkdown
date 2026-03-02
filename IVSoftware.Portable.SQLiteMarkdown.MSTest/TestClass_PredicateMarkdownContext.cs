@@ -36,7 +36,6 @@ public class TestClass_PredicateMarkdownContext
         #region S U B T E S T S
         void subtest_TriggerBy_ProjectionBeforeState()
         {
-
             var mdc = new MarkdownContext<SelectableQFModel>
             {
                 ObservableNetProjection = (INotifyCollectionChanged)opc,
@@ -94,9 +93,6 @@ public class TestClass_PredicateMarkdownContext
             actual = mdc.Model.ToString();
             actual.ToClipboardExpected();
             { }
-
-            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 01).Date, "Don't forget disabled");
-            return;
             expected = @" 
 <model>
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" xitem=""[SelectableQFModel]"" />

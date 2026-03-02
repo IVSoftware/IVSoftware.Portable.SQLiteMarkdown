@@ -63,6 +63,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         XElement? _model = null;
 
+        protected async Task RunFSM(Type fsm)
+        {
+            foreach (Enum state in fsm.GetEnumValues())
+            {
+                await ExecStateAsync(state);
+            }
+        }
+        protected async Task<Enum> ExecStateAsync(Enum state) 
+        {
+            return ReservedAffinityState.None;
+        }
 
         /// <summary>
         /// The ephemeral backing store for this collection's contract filtering.
@@ -159,15 +170,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         {
                             throw new NotSupportedException($"Type '{itemType.Name}' has no PK and such types are not (yet) supported.");
                         }
-                        foreach (ExitFilterFSM state in Enum.GetValues(typeof(ExitFilterFSM)))
+                        foreach (EnterFilterFSM state in Enum.GetValues(typeof(EnterFilterFSM)))
                         {
                             switch (state)
                             {
-                                case ExitFilterFSM.CaptureUnfilteredItemsArray:
+                                case EnterFilterFSM.CaptureUnfilteredItemsArray:
                                     break;
-                                case ExitFilterFSM.InitializeUnfilteredItemsCollection:
+                                case EnterFilterFSM.InitializeUnfilteredItemsCollection:
                                     break;
-                                case ExitFilterFSM.InitializeModel:
+                                case EnterFilterFSM.InitializeModel:
                                     foreach (var item in recordset)
                                     {
                                         var placerResult = Model.Place(path: localGetFullPath(pk, item), out var xel);
@@ -189,11 +200,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                         }
                                     }
                                     break;
-                                case ExitFilterFSM.InitializeFilterQueryDatabase:
+                                case EnterFilterFSM.InitializeFilterQueryDatabase:
                                     break;
-                                case ExitFilterFSM.SuppressedReplace:
+                                case EnterFilterFSM.SuppressedReplace:
                                     break;
-                                case ExitFilterFSM.RaiseResetEvent:
+                                case EnterFilterFSM.RaiseResetEvent:
                                     break;
                                 default:
                                     this.ThrowHard<NotSupportedException>($"The {state.ToFullKey()} case is not supported.");
@@ -395,13 +406,16 @@ Recordset assignment is atomic; no changes were applied."
             {
                 if (!Equals(_observableProjection, value))
                 {
+                    // Unsubscribe INCC
                     if (_observableProjection is not null)
                     {
                         _observableProjection.CollectionChanged -= OnObservableProjectionCollectionChanged;
                     }
 
                     _observableProjection = value;
+                    OnObservableProjectionChanged();
 
+                    // Subscribe INCC
                     if (_observableProjection is not null)
                     {
                         _observableProjection.CollectionChanged += OnObservableProjectionCollectionChanged;
@@ -412,9 +426,41 @@ Recordset assignment is atomic; no changes were applied."
 
         INotifyCollectionChanged? _observableProjection = null;
 
-        protected virtual void OnObservableProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) 
-        { 
+        /// <summary>
+        /// Raised when the handle to the ObservableNetCollection changes.
+        /// </summary>
+        /// 
+        /// MentalMode (Query          config): "Do not track changes on this INCC."
+        /// MentalMode (QueryAndFilter config): "The system must be reset to root cause in order to be stable."
+        /// MentalMode (Filter         config): "The contents of the new projection must be regarded as a new canon."
+        protected virtual void OnObservableProjectionChanged() 
+        {
+            switch (QueryFilterConfig)
+            {
+                case QueryFilterConfig.Filter:
+                    if (ObservableNetProjection is IEnumerable recordset)
+                    {
+                        Recordset = recordset;
+                    }
+                    else
+                    {
+                        Recordset = recordset = Array.Empty<object>();
+                    }
+                    break;
+                case QueryFilterConfig.Query:
+                case QueryFilterConfig.QueryAndFilter:
+                    Clear(all: true);
+                    break;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {QueryFilterConfig.ToFullKey()} case is not supported.");
+                    break;
+            }
         }
+
+        /// <summary>
+        /// Raised when the collection - that is the ObservableNetProjection - is modified in some way.
+        /// </summary>
+        protected virtual void OnObservableProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) { } 
 
 
         public int UnfilteredCount

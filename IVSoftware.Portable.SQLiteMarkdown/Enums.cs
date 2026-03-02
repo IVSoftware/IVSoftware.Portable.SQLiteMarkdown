@@ -279,7 +279,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </summary>
     internal enum EnterFilterFSM
     {
+        [Obsolete]
+        InitializeUnfilteredItemsCollection,
 
+        [Probationary("XML Model")]
+        InitializeModel,
+
+        InitializeFilterQueryDatabase,
+
+        SuppressedReplace,
+
+        RaiseResetEvent,
     }
 
     /// <summary>
@@ -293,18 +303,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </remarks>
     internal enum ExitFilterFSM
     {
-        CaptureUnfilteredItemsArray,
-
-        [Obsolete]
-        InitializeUnfilteredItemsCollection,
-
-        [Probationary("XML Model")]
-        InitializeModel,
-
-        InitializeFilterQueryDatabase,
-
-        SuppressedReplace,
-
-        RaiseResetEvent,
     }
 }
