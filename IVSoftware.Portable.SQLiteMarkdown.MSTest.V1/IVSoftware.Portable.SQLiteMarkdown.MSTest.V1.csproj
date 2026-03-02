@@ -1,15 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<!-- Critical configuration -->
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<UseWindowsForms>True</UseWindowsForms>
+		<!-- Win32 and STA threading is now enabled for this test project -->
+	</PropertyGroup>
 
   <ItemGroup>
 	  <!--Do not change version- this is the whole point.-->
     <PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="1.0.1" />
+    <PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="1.0.8" />
 	  
     <PackageReference Include="MSTest" Version="4.0.1" />
   </ItemGroup>

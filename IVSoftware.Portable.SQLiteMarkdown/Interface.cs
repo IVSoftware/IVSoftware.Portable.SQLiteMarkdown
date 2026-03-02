@@ -75,6 +75,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Represents a bindable collection governed by Markdown-based query and filter semantics.
     /// </summary>
+    [Canonical("Contract published in v1")]
     public interface IObservableQueryFilterSource
         : IList
         , INotifyCollectionChanged

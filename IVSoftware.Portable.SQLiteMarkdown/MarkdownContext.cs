@@ -1354,11 +1354,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public DisposableHost DHostSelfIndexing { get; } = new();
 
         /// <summary>
-        /// Support for inheritance model for Collection.
+        /// Memory connection on-demand.
         /// </summary>
-        public SQLiteConnection? MemoryDatabase
+        /// <remarks>
+        /// 
+        /// User may inject a persistent connection if:
+        /// <c>using(MemoryDatabase = new SQLiteConnection("UserPath")); </c>
+        /// </remarks>
+        public SQLiteConnection MemoryDatabase
         {
-            get => _memoryDatabase;
+            get => _memoryDatabase!;    // For compatibility with interface contract, this property must be null checked.
             set
             {
                 if (!Equals(_memoryDatabase, value))
