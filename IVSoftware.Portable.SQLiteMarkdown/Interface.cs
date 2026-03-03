@@ -910,6 +910,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         Canceled = -2,
         Next = -1,
+        None = 0,
     }
 
     internal enum AffinityFsm

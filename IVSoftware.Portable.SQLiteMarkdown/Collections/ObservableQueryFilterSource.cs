@@ -107,7 +107,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // UPGRADE 260301
                 // Sets UnfilteredCount
                 // -> Sets SearchEntryState
-                await base.LoadCanonAsync(items);
+                base.LoadCanon(items);
                 // --------------
 
 

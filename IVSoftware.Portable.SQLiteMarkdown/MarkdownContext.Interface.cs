@@ -113,24 +113,42 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        protected async Task RunFSM<Tfsm>(object? context = null)
+        protected async Task<Enum> RunFSMAsync<TFsm>(object? context = null) where TFsm : struct, Enum
         {
-            foreach (Enum state in typeof(Tfsm).GetEnumValues())
+            Enum result = ReservedAffinityState.None;
+            foreach (Enum state in typeof(TFsm).GetEnumValues())
             {
-                await ExecStateAsync(state, context);
+                result = await ExecStateAsync(state, context);
             }
+            return result;
         }
-        protected async Task<Enum> ExecStateAsync(Enum state, object? context = null) 
+
+        protected virtual async Task<Enum> ExecStateAsync(Enum state, object? context = null)
+        {
+            return ReservedAffinityState.Canceled;
+        }
+
+        protected Enum RunFSM<TFsm>(object? context = null) where TFsm : struct, Enum
+        {
+            Enum result = ReservedAffinityState.None;
+            foreach (Enum state in typeof(TFsm).GetEnumValues())
+            {
+                result = ExecState(state, context);
+            }
+            return result;
+        }
+
+        protected Enum ExecState(Enum state, object? context = null)
         {
             switch (state)
             {
                 case EnterFilterFSM.InitializeUnfilteredItemsCollection:
                     return ReservedAffinityState.Next;
                 case EnterFilterFSM.InitializeFilterQueryDatabase when context is IEnumerable canonical:
-                    await localInitialiseFilterQueryDatabase(canonical);
+                    localInitialiseFilterQueryDatabase(canonical);
                     break;
                 case EnterFilterFSM.InitializeModel when context is IEnumerable canonical:
-                    await localInitializeModel(canonical);
+                    localInitializeModel(canonical);
                     break;
                 case EnterFilterFSM.SuppressedReplace:
                     break;
@@ -145,7 +163,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             #region L o c a l F x
 
-            async Task<Enum> localInitialiseFilterQueryDatabase(IEnumerable canonical)
+            Enum localInitialiseFilterQueryDatabase(IEnumerable canonical)
             {
                 try
                 {
@@ -163,7 +181,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return ReservedAffinityState.Next;
             }
 
-            async Task<Enum> localInitializeModel(IEnumerable canonical)
+            Enum localInitializeModel(IEnumerable canonical)
             {
                 PropertyInfo? pk = ContractType.GetMapping().PK?.PropertyInfo;
                 Model.RemoveNodes();
@@ -292,7 +310,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public virtual async Task LoadCanonAsync(IEnumerable recordset)
         {
-            await RunFSM<EnterFilterFSM>(recordset);
+            await RunFSMAsync<EnterFilterFSM>(recordset);
+
+            // Need optimize - low hanging fruit!
+
+            UnfilteredCount = Model.Descendants().Count();
+            RouteToFullRecordset = true;
+        }
+
+        /// <summary>
+        /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
+        /// </remarks>
+        public virtual void LoadCanon(IEnumerable recordset)
+        {
+             RunFSM<EnterFilterFSM>(recordset);
 
             // Need optimize - low hanging fruit!
 
@@ -588,16 +622,17 @@ Recordset assignment is atomic; no changes were applied."
         /// MentalMode (Filter         config): "The contents of the new projection must be regarded as a new canon."
         protected virtual async Task OnObservableProjectionChanged() 
         {
+            // ToDo run in task
             switch (QueryFilterConfig)
             {
                 case QueryFilterConfig.Filter:
                     if (ObservableNetProjection is IEnumerable recordset)
                     {
-                        await LoadCanonAsync(recordset);
+                        LoadCanon(recordset);
                     }
                     else
                     {
-                        await LoadCanonAsync(recordset = Array.Empty<object>());
+                        LoadCanon(recordset = Array.Empty<object>());
                     }
                     break;
                 case QueryFilterConfig.Query:
