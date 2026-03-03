@@ -285,12 +285,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
 
         /// <summary>
+        /// Loads the canonical recordset for the current query context.
+        /// </summary>
+        /// <remarks>
+        /// Conceptually analogous to establishing the "unfiltered" collection,
+        /// but not limited to that scenario. This method materializes and
+        /// installs the authoritative baseline from which subsequent
+        /// filtering or refinement operations proceed.
+        /// </remarks>
+        async Task LoadCanonAsync()
+        {
+
+        }
+        /// <summary>
         /// Model the canonical recordset as hierarchal xml.
         /// </summary>
         public IEnumerable Recordset
         {
             set
             {
+                _ = RunFSM<EnterFilterFSM>(value);
+
                 Type listType = value?.GetType() ?? typeof(object);
                 if (listType.IsGenericType && listType.GetGenericArguments().Single() is { } itemType)
                 {
@@ -445,8 +460,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         return null!;
                     }
 #endif
+                    #endregion L o c a l F x
                 }
-                #endregion L o c a l F x
                 return;
 
                 int success = 0;
