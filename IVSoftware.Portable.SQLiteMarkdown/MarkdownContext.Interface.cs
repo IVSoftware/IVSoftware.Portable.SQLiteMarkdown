@@ -184,6 +184,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             countDuplicate++;
                             break;
                         case PlacerResult.Created:
+                            xel.Name = nameof(StdMarkdownElement.xitem);
                             xel.SetBoundAttributeValue(
                                 tag: item,
                                 name: nameof(StdMarkdownElement.xitem));
