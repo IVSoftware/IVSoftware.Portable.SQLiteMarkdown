@@ -238,9 +238,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public string Expr => $"{Binding} {Predicate}";
     }
 
+    /// <summary>
+    /// For a proxy types or subclasses, specifies whether to call CreateTable and possibly extend the schema.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class ExtendMappingAttribute : Attribute
     {
         public bool Allow { get; set; } = true;
     }
+
+    /// <summary>
+    /// Indicates that the annotated method is intended to execute off the UI thread.
+    /// </summary>
+    /// <remarks>
+    /// Avoid property changes intended for the virtual UI.
+    /// </remarks>
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    public class BackgroundWorkAttribute : Attribute { }
 }

@@ -2,6 +2,10 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Switcheroo;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.WinOS.MSTest.Extensions;
+using Newtonsoft.Json;
+using SQLite;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -9,6 +13,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
+using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
@@ -42,83 +47,111 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             #region S U B T E S T S
             void subtest_Inheritor()
             {
-                var mdcc = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
+                var mdci = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
 
                 Assert.AreEqual(
                     ProjectionTopology.Inheritance,
-                    mdcc.ProjectionTopology,
+                    mdci.ProjectionTopology,
                     "Expecting INHERITANCE is detectable from the start.");
-
             }
 
             void subtest_Compositor()
             {
-                var mdci = new ObservableNetProjectionWithComposition<SelectableQFModel>();
+                var mdcc = new ObservableNetProjectionWithComposition<SelectableQFModel>();
 
                 Assert.AreEqual(
                     ProjectionTopology.None,
-                    mdci.ProjectionTopology,
+                    mdcc.ProjectionTopology,
                     "Expecting NONE is the epistemic default.");
 
                 var oc = new ObservableCollection<SelectableQFModel>();
-                mdci.ObservableNetProjection = oc;
+                mdcc.ObservableNetProjection = oc;
 
                 Assert.AreEqual(
                     ProjectionTopology.Composition,
-                    mdci.ProjectionTopology,
+                    mdcc.ProjectionTopology,
                     "Expecting promotion to COMPOSITION now that assignment has been made.");
             }
             #endregion S U B T E S T S
         }
 
-        [TestMethod, Ignore]
-        public void Test_RouteEnumeratorAndReset()
-        {
-            string actual, expected;
-            List<string> builder = new();
-            subtest_RouteEnumeratorAndReset1();
-            subtest_RouteEnumeratorAndReset2();
-            subtest_RouteEnumeratorAndReset3();
-            subtest_RouteEnumeratorAndReset4();
-            subtest_RouteEnumeratorAndReset5();
-            subtest_RouteEnumeratorAndReset6();
-            subtest_RouteEnumeratorAndReset7();
-            subtest_RouteEnumeratorAndReset8();
-            subtest_RouteEnumeratorAndReset9();
-            subtest_RouteEnumeratorAndReset10();
 
-            #region S U B T E S T S
-            void subtest_RouteEnumeratorAndReset1()
-            {
-            }
-            void subtest_RouteEnumeratorAndReset2()
-            {
-            }
-            void subtest_RouteEnumeratorAndReset3()
-            {
-            }
-            void subtest_RouteEnumeratorAndReset4()
-            {
-            }
-            void subtest_RouteEnumeratorAndReset5()
-            {
-            }
-            void subtest_RouteEnumeratorAndReset6()
-            {
-            }
-            void subtest_RouteEnumeratorAndReset7()
-            {
-            }
-            void subtest_RouteEnumeratorAndReset8()
-            {
-            }
-            void subtest_RouteEnumeratorAndReset9()
-            {
-            }
-            void subtest_RouteEnumeratorAndReset10()
-            {
-            }
-            #endregion S U B T E S T S
+        [TestMethod, DoNotParallelize]
+        public void TestMethod_RouteInheritance()
+        {
+            using var te = this.TestableEpoch();
+            string actual, expected;
+            int nResult;
+
+            var mdci = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
+
+            Assert.AreEqual(
+                ProjectionTopology.Inheritance,
+                mdci.ProjectionTopology,
+                "Expecting INHERITANCE is detectable from the start.");
+
+            var oc = new ObservableCollection<SelectableQFModel>().PopulateForDemo(2);
+            mdci.ObservableNetProjection = (INotifyCollectionChanged)oc;
+
+
+            actual = JsonConvert.SerializeObject(oc, Formatting.Indented);
+            expected = @" 
+[
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000000"",
+    ""Description"": ""Item01"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": """",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000000"",
+    ""QueryTerm"": ""item01"",
+    ""FilterTerm"": ""item01"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item01\""\r\n}""
+  },
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000001"",
+    ""Description"": ""Item02"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": """",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000001"",
+    ""QueryTerm"": ""item02"",
+    ""FilterTerm"": ""item02"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item02\""\r\n}""
+  }
+]";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting TWO items on display."
+            );
+
+            actual = mdci.Model.ToString();
+            expected = @" 
+<model>
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" xitem=""[SelectableQFModel]"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" xitem=""[SelectableQFModel]"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting updated model."
+            );
+            Assert.AreEqual(2, mdci.UnfilteredCount);
+
+            nResult = mdci.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
+            { }
+
         }
 
 
@@ -174,11 +207,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     }
     namespace Switcheroo
     {
+        /// <summary>
+        /// Uses routing for the net projection.
+        /// </summary>
         class ObservableNetProjectionInheritsMDC<T>
             : MarkdownContext<T>
             , INotifyCollectionChanged
         {
             public event NotifyCollectionChangedEventHandler? CollectionChanged;
+
+            // Expose for test.
+            public new SQLiteConnection FilterQueryDatabase => base.FilterQueryDatabase;
         }
 
         /// <summary>

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Ephemeral = SQLite.IgnoreAttribute;
@@ -220,7 +221,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         /// <summary>
         /// Guards receptivity of the unfiltered items collection.
-        /// </summary>
+        /// </summary> 
+        /// <remarks>
+        /// Intended use: EpochFinalizing should be wrapped with this reference counter.
+        /// </remarks>
         IDisposable BeginAuthorityClaim();
 
         int UnfilteredCount { get; }

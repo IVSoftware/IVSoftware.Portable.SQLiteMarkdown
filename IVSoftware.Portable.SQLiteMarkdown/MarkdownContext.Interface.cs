@@ -317,7 +317,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public virtual void LoadCanon(IEnumerable recordset)
         {
-             RunFSM<EnterFilterFSM>(recordset);
+            RunFSM<EnterFilterFSM>(recordset);
 
             // Need optimize - low hanging fruit!
 
@@ -601,69 +601,42 @@ Recordset assignment is atomic; no changes were applied."
                         _ => ProjectionTopology.None,
                     };
 
-                    // Allow the async handler to complete.
-                    // Then, subscribe to any subsequent changes.
-                    OnObservableProjectionChanged()
-                        .GetAwaiter()
-                        .OnCompleted(() =>
-                        {
-                            // Subscribe INCC
-                            if (_observableProjection is not null)
-                            {
-                                _observableProjection.CollectionChanged += OnObservableProjectionCollectionChanged;
-                            }
-                        });
+                    // Run the handler then subscribe to any subsequent changes.
+                    OnObservableProjectionChanged();
+
+                    // Subscribe INCC
+                    if (_observableProjection is not null)
+                    {
+                        _observableProjection.CollectionChanged += OnObservableProjectionCollectionChanged;
+                    }
                 }
             }
         }
         INotifyCollectionChanged? _observableProjection = null;
 
-        public ProjectionTopology ProjectionTopology
-        {
-            get => _projectionMode;
-            set
-            {
-                if (!Equals(_projectionMode, value))
-                {
-                    _projectionMode = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        ProjectionTopology _projectionMode = default;
-
 
         /// <summary>
         /// Raised when the handle to the ObservableNetCollection changes.
         /// </summary>
-        /// 
+        /// <remarks>
+        /// SYNCHRONOUS - Do *not* mess around. This is information we need *now* and will have to wait for.
         /// MentalMode (Query          config): "Do not track changes on this INCC."
         /// MentalMode (QueryAndFilter config): "The system must be reset to root cause in order to be stable."
         /// MentalMode (Filter         config): "The contents of the new projection must be regarded as a new canon."
-        protected virtual async Task OnObservableProjectionChanged() 
+        /// </remarks>
+        protected virtual void OnObservableProjectionChanged()
         {
-            // ToDo run in task
-            switch (QueryFilterConfig)
+            if (ObservableNetProjection is IEnumerable recordset)
             {
-                case QueryFilterConfig.Filter:
-                    if (ObservableNetProjection is IEnumerable recordset)
-                    {
-                        LoadCanon(recordset);
-                    }
-                    else
-                    {
-                        LoadCanon(recordset = Array.Empty<object>());
-                    }
-                    break;
-                case QueryFilterConfig.Query:
-                case QueryFilterConfig.QueryAndFilter:
-                    Clear(all: true);
-                    break;
-                default:
-                    this.ThrowFramework<NotSupportedException>($"The {QueryFilterConfig.ToFullKey()} case is not supported.");
-                    break;
+                LoadCanon(recordset);
+            }
+            else
+            {
+                LoadCanon(recordset = Array.Empty<object>());
             }
         }
+
+        public ProjectionTopology ProjectionTopology { get; protected set; }
 
         /// <summary>
         /// Raised when the collection - that is the ObservableNetProjection - is modified in some way.
