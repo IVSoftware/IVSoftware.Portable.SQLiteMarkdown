@@ -95,11 +95,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #if DEBUG
             var derivedType = GetType();
 #endif
-
-            ProjectionMode =
-                typeof(INotifyCollectionChanged).IsAssignableFrom(GetType())
-                ? ProjectionMode.Inheritance
-                : ProjectionMode.Composition;
+            // Promote the ProjectionMode here if subclass *is-a* MarkdownContext.
+            if (typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
+            {
+                ProjectionMode = ProjectionMode.Inheritance;
+            }
+            else
+            {   /* G T K - N O O P */
+                // We have to wait and see if this gets assigned.
+            }
         }
 
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
@@ -1398,8 +1402,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         QueryFilterConfig _queryFilterConfig = QueryFilterConfig.QueryAndFilter;
 
-        public DisposableHost DHostSelfIndexing { get; } = new();
-
         /// <summary>
         /// Memory connection on-demand.
         /// </summary>
@@ -1868,61 +1870,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         SearchEntryState _searchEntryState = default;
 
         protected virtual void OnSearchEntryStateChanged() { }
-
-        /// <summary>
-        /// Reference counter for Busy property.
-        /// </summary>
-        /// <remarks>
-        /// This does not hold the awaiter and should be used
-        /// for visual activity indicator only.
-        /// </remarks>
-        public DisposableHost DHostBusy
-        {
-            get
-            {
-                if (_dhostBusy is null)
-                {
-                    _dhostBusy = new DisposableHost();
-                    _dhostBusy.BeginUsing += (sender, e) =>
-                    {
-                        Busy = true;
-                        OnPropertyChanged(nameof(Busy));
-                    };
-                    _dhostBusy.FinalDispose += (sender, e) =>
-                    {
-                        Busy = false;
-                        OnPropertyChanged(nameof(Busy));
-                    };
-                }
-                return _dhostBusy;
-            }
-        }
-        DisposableHost? _dhostBusy = null;
-
-#if false
-        public DisposableHost DHostEpochReferenceCount
-        {
-            get
-            {
-                if (_dhostEpochReferenceCount is null)
-                {
-                    _dhostEpochReferenceCount = new DisposableHost();
-                    _dhostEpochReferenceCount.BeginUsing += (sender, e) =>
-                    {
-                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 2, 7).Date, "Don't forget disabled");
-                        _ready.Wait(0);
-                    };
-                    _dhostEpochReferenceCount.FinalDispose += (sender, e) =>
-                    {
-                        _ready.Wait(0);
-                        _ready.Release();
-                    };
-                }
-                return _dhostEpochReferenceCount;
-            }
-        }
-        DisposableHost? _dhostEpochReferenceCount = null;
-#endif
 
 #if DEBUG
         protected SemaphoreSlimWithTrace _ready { get; } = new SemaphoreSlimWithTrace(1, 1);

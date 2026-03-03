@@ -159,7 +159,7 @@ public class TestClass_PredicateMarkdownContext
         { }
 
 
-        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 2).Date, "Don't forget disabled");
+        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 3).Date, "Don't forget disabled");
         return;
         // InProg.
         // This should filter, but it's not doing that yet.

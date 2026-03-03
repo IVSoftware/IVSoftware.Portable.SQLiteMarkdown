@@ -1,3 +1,5 @@
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Switcheroo;
 using System.Collections.ObjectModel;
@@ -14,8 +16,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         [TestMethod]
         public void Test_DetectInheritance()
         {
-            var mdci = new MDCSubclass<SelectableQFModel>();
-            Assert.AreEqual(ProjectionMode.Inheritance, mdci.ProjectionMode);
+            #region L o c a l F x
+            var builderThrow = new List<string>();
+            void localOnBeginThrowOrAdvise(object? sender, Throw e)
+            {
+                builderThrow.Add(e.Message);
+                e.Handled = true;
+            }
+            #endregion L o c a l F x
+            using var local = this.WithOnDispose(
+                onInit: (sender, e) =>
+                {
+                    Throw.BeginThrowOrAdvise += localOnBeginThrowOrAdvise;
+                },
+                onDispose: (sender, e) =>
+                {
+                    Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
+                });
+            var mdcr = new MDCCompositor<SelectableQFModel>();
+
+            Assert.AreEqual(ProjectionMode.None, mdcr.ProjectionMode);
+
+            var oc = new ObservableCollection<SelectableQFModel>();
+
         }
 
         [TestMethod]
@@ -121,13 +144,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     }
     namespace Switcheroo
     {
-        class MDCSubclass<T> : MarkdownContext<T>
+        class MDCCompositor<T> : MarkdownContext<T>
         {
         }
 
-        class MDCSwitchclass<T> : ObservableCollection<T>, INotifyPropertyChanged
+        class MDCInheritor<T> : ObservableCollection<T>, INotifyPropertyChanged
         {
-            public MDCSwitchclass()
+            public MDCInheritor()
             {
                 base.PropertyChanged += (sender, e) =>
                 {

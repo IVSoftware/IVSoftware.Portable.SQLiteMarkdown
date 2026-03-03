@@ -600,13 +600,19 @@ Recordset assignment is atomic; no changes were applied."
                     }
 
                     _observableProjection = value;
-                    OnObservableProjectionChanged();
 
-                    // Subscribe INCC
-                    if (_observableProjection is not null)
-                    {
-                        _observableProjection.CollectionChanged += OnObservableProjectionCollectionChanged;
-                    }
+                    // Allow the async handler to complete.
+                    // Then, subscribe to any subsequent changes.
+                    OnObservableProjectionChanged()
+                        .GetAwaiter()
+                        .OnCompleted(() =>
+                        {
+                            // Subscribe INCC
+                            if (_observableProjection is not null)
+                            {
+                                _observableProjection.CollectionChanged += OnObservableProjectionCollectionChanged;
+                            }
+                        });
                 }
             }
         }
@@ -720,6 +726,7 @@ Recordset assignment is atomic; no changes were applied."
 
         public IDisposable BeginAuthorityClaim() => DHostClaimAuthority.GetToken();
 
+        [Probationary]
         DisposableHost DHostClaimAuthority
         {
             get
