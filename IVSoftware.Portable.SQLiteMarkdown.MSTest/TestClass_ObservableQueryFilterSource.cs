@@ -2808,8 +2808,20 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 };
                 items.CollectionChanged += (sender, e) =>
                 {
+                    if(ReferenceEquals(sender, items.UnfilteredItems))
+                    {
+                        Debug.Fail($@"ADVISORY - First Time.");
+                    }
                     eventQueue.Enqueue((sender, e));
-                    builder.Add($"{e.Action} NewItems={e.NewItems?.Count ?? 0}");
+
+                    string senderId = sender switch 
+                    {
+                        object o when ReferenceEquals(o, items.UnfilteredItems) => nameof(items.UnfilteredItems),
+                        object o when ReferenceEquals(o, items) => "Projection",
+                        _ => "Unknown", 
+                    };
+
+                    builder.Add($"{senderId}.{e.Action} NewItems={e.NewItems?.Count ?? 0}");
 
                     // G T K
                     switch (e.Action)
@@ -2842,19 +2854,11 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
 
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
-                    { } // <- FIRST TIME ONLY: Adjust the message.
-                    actual.ToClipboardAssert("Expecting Two events.");
                     { }
                     expected = @" 
-Reset NewItems=0
-Add NewItems=12
-Add NewItems=1";
-
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting Two events."
-                    );
+Projection.Reset NewItems=0
+Projection.Add NewItems=12
+Projection.Add NewItems=1";
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
