@@ -179,31 +179,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         event EventHandler? InputTextSettled;
 
+        #region P A R S E
         string ParseSqlMarkdown();
         string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast);
         string ParseSqlMarkdown<T>();
         string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query);
+        #endregion P A R S E
 
-
-        /// <summary>
-        /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
-        /// </remarks>
-        Task LoadCanonAsync(IEnumerable recordset);
-
-#if false
-        /// <summary>
-        /// Initializes the canonical unfiltered collection.
-        /// </summary>
-        /// <remarks>
-        /// This property is not intended for binding; this is enforced as set only 
-        /// and represents a stateful and semantically meaningful replacement.
-        /// </remarks>
-        IEnumerable Recordset { set; }
-#endif
-
+        #region P R O J E C T I O N
         /// <summary>
         /// Represents an observable collection representing 'net visible' filtered items.
         /// </summary>
@@ -212,6 +195,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// set only and will be detached if set to null..
         /// </remarks>
         INotifyCollectionChanged ObservableNetProjection { set; }
+
+        /// <summary>
+        /// Describes the wiring between the canonical XML model and the net ("seen") projection.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "What is 'this'?"
+        /// If 'this' *is-a* MarkdownContext,
+        /// Then canon is projected by redirecting enumeration.
+        /// If 'this' *has-a* MarkdownContext and *is-a* bound enumerable,
+        /// Then the surface is always net, and canon is projected by copying as needed.
+        /// </remarks>
+        ProjectionTopology ProjectionTopology { get; }
+
+        /// <summary>
+        /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
+        /// </remarks>
+        Task LoadCanonAsync(IEnumerable recordset);
+        #endregion P R O J E C T I O N
+
 
         // [Probationary("Maintain NetProjectionOption enum type as Internal until stable.")]
         // NetProjectionOption ProjectionOptions { get; }

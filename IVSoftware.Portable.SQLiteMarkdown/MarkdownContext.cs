@@ -22,46 +22,6 @@ using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public enum ProjectionMode
-    {
-        /// <summary>
-        /// No ObservableNetProjection has been assigned.
-        /// </summary>
-        None,
-
-        /// <summary>
-        /// *NOT* an ObservableNetProjection - Instead it inherits MarkdownContext and routes the enumerator.
-        /// </summary>
-        /// IsFiltering => 
-        /// 1. DHostSuppress.GetToken to suppress INCC.
-        /// 2. Copy 'this' to a canonical backing store and DB.
-        /// 3. Query DB for term and populate _filteredItems.
-        ///*4. Route the enumerator to _filteredItens.
-        /// 5. Relinquish DHostSuppress to raise Reset.
-        /// IsFiltering <=
-        /// 1. DHostSuppress.GetToken to suppress INCC.
-        ///*2. Route the enumerator to canonical.
-        /// 3. Relinquish DHostSuppress to raise Reset.
-        /// </remarks>
-        Inheritance,
-
-        /// <summary>
-        /// The ObservableNetProjection inherits INotifyCollectionChanged - flitering employs copying not routing.
-        /// </summary>
-        /// <remarks>
-        /// IsFiltering => 
-        /// 1. DHostSuppress.GetToken to suppress INCC.
-        /// 2. Copy 'this' to a canonical backing store and DB.
-        /// 3. Query DB for term and populate _filteredItems.
-        /// 4. Copy _filteredItems to 'this'.
-        /// 5. Relinquish DHostSuppress to raise Reset.
-        /// IsFiltering <=
-        /// 1. DHostSuppress.GetToken to suppress INCC.
-        /// 2. Copy canonical backing store to 'this'
-        /// 3. Relinquish DHostSuppress to raise Reset.
-        /// </remarks>
-        Composition,
-    }
     /// <summary>
     /// Represents the full parsing and transformation context for converting a user
     /// expression  (in lightweight markdown syntax) into an executable SQL WHERE
@@ -98,7 +58,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // Promote the ProjectionMode here if subclass *is-a* MarkdownContext.
             if (typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
             {
-                ProjectionMode = ProjectionMode.Inheritance;
+                ProjectionTopology = ProjectionTopology.Inheritance;
             }
             else
             {   /* G T K - N O O P */

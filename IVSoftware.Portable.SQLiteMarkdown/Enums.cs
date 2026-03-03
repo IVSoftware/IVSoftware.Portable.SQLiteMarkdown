@@ -23,14 +23,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         DisableMinLength = 0x8,
     }
-
     public enum TermDelimiter
     {
         Comma,
         Semicolon,
         Tilde,
     }
-
     public enum PersistenceMode
     {
         /// <summary>
@@ -302,5 +300,53 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </remarks>
     internal enum ExitFilterFSM
     {
+    }
+
+    public enum ProjectionTopology
+    {
+        /// <summary>
+        /// No ObservableNetProjection has been assigned.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// *NOT* an ObservableNetProjection - Instead it inherits MarkdownContext and routes the enumerator.
+        /// </summary>
+        /// IsFiltering => 
+        /// 1. DHostSuppress.GetToken to suppress INCC.
+        /// 2. Copy 'this' to a canonical backing store and DB.
+        /// 3. Query DB for term and populate _filteredItems.
+        ///*4. Route the enumerator to _filteredItens.
+        /// 5. Relinquish DHostSuppress to raise Reset.
+        /// IsFiltering <=
+        /// 1. DHostSuppress.GetToken to suppress INCC.
+        ///*2. Route the enumerator to canonical.
+        /// 3. Relinquish DHostSuppress to raise Reset.
+        /// </remarks>
+        Inheritance,
+
+        /// <summary>
+        /// The ObservableNetProjection inherits INotifyCollectionChanged - flitering employs copying not routing.
+        /// </summary>
+        /// <remarks>
+        /// IsFiltering => 
+        /// 1. DHostSuppress.GetToken to suppress INCC.
+        /// 2. Copy 'this' to a canonical backing store and DB.
+        /// 3. Query DB for term and populate _filteredItems.
+        /// 4. Copy _filteredItems to 'this'.
+        /// 5. Relinquish DHostSuppress to raise Reset.
+        /// IsFiltering <=
+        /// 1. DHostSuppress.GetToken to suppress INCC.
+        /// 2. Copy canonical backing store to 'this'
+        /// 3. Relinquish DHostSuppress to raise Reset.
+        /// </remarks>
+        Composition,
+    }
+
+    [Flags, Probationary]
+    internal enum NetProjectionOption
+    {
+        ObservableOnly,
+        AllowDirectChanges = 0x1,
     }
 }

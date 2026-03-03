@@ -2,11 +2,13 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Switcheroo;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
@@ -36,20 +38,36 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             subtest_Compositor();
 
+            subtest_Inheritor();
+
             #region S U B T E S T S
             void subtest_Compositor()
             {
-                var mdcr = new MDCCompositor<SelectableQFModel>();
+                var mdcc = new MDCCompositor<SelectableQFModel>();
 
                 Assert.AreEqual(
-                    ProjectionMode.None,
-                    mdcr.ProjectionMode,
-                    "Expecting the compositor to wait for assignment of the ONP");
+                    ProjectionTopology.None,
+                    mdcc.ProjectionTopology,
+                    "Expecting NONE - the compositor must wait for assignment of the ONP");
 
                 var oc = new ObservableCollection<SelectableQFModel>();
-                mdcr.ObservableNetProjection = oc;
+                mdcc.ObservableNetProjection = oc;
 
-                Assert.AreEqual(ProjectionMode.Composition, mdcr.ProjectionMode);
+                Assert.AreEqual(
+                    ProjectionTopology.Composition,
+                    mdcc.ProjectionTopology,
+                    "Expecting promotion to COMPOSITION now that assignment has been made.");
+            }
+            void subtest_Inheritor()
+            {
+                var mdci = new MDCInheritor<SelectableQFModel>();
+
+                Assert.AreEqual(
+                    ProjectionTopology.None,
+                    mdci.ProjectionTopology,
+                    "Expecting INHERITANCE from the start.");
+
+                Assert.AreEqual(ProjectionTopology.Inheritance, mdci.ProjectionTopology);
             }
             #endregion S U B T E S T S
         }
@@ -158,10 +176,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     namespace Switcheroo
     {
         class MDCCompositor<T> : MarkdownContext<T>
-        {
-        }
+        { }
 
-        class MDCInheritor<T> : ObservableCollection<T>, INotifyPropertyChanged
+        /// <summary>
+        /// Extension and general housekeeping.
+        /// </summary>
+        partial class MDCInheritor<T>
+            : ObservableCollection<T>
         {
             public MDCInheritor()
             {
@@ -169,8 +190,81 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 {
                     Debug.WriteLine($"260303 BC PropertyChange '{e.PropertyName}' is advisory only.");
                 };
+                _mdc.PropertyChanged += (sender, e) => OnPropertyChanged(e.PropertyName);
             }
-            public INotifyCollectionChanged ObservableNetProjection
+        }
+
+        /// <summary>
+        /// Implementor of the IMarkdownContext interface.
+        /// </summary>
+        partial class MDCInheritor<T> : IMarkdownContext
+            
+        {
+            private readonly MarkdownContext<T> _mdc = new MarkdownContext<T>();
+
+            public XElement Model => ((IMarkdownContext)_mdc).Model;
+
+            public uint DefaultLimit { get => ((IMarkdownContext)_mdc).DefaultLimit; set => ((IMarkdownContext)_mdc).DefaultLimit = value; }
+
+            public bool IsFiltering => ((IMarkdownContext)_mdc).IsFiltering;
+
+            public FilteringState FilteringState => ((IMarkdownContext)_mdc).FilteringState;
+
+            public string InputText { get => ((IMarkdownContext)_mdc).InputText; set => ((IMarkdownContext)_mdc).InputText = value; }
+            public QueryFilterConfig QueryFilterConfig { get => ((IMarkdownContext)_mdc).QueryFilterConfig; set => ((IMarkdownContext)_mdc).QueryFilterConfig = value; }
+
+            public SearchEntryState SearchEntryState => ((IMarkdownContext)_mdc).SearchEntryState;
+
+            public int UnfilteredCount => ((IMarkdownContext)_mdc).UnfilteredCount;
+
+            public event EventHandler? InputTextSettled
+            {
+                add
+                {
+                    ((IMarkdownContext)_mdc).InputTextSettled += value;
+                }
+
+                remove
+                {
+                    ((IMarkdownContext)_mdc).InputTextSettled -= value;
+                }
+            }
+
+            public IDisposable BeginAuthorityClaim()
+            {
+                return ((IMarkdownContext)_mdc).BeginAuthorityClaim();
+            }
+
+            public FilteringState Clear(bool all)
+            {
+                return ((IMarkdownContext)_mdc).Clear(all);
+            }
+
+            public Task LoadCanonAsync(IEnumerable recordset)
+            {
+                return ((IMarkdownContext)_mdc).LoadCanonAsync(recordset);
+            }
+
+            public string ParseSqlMarkdown()
+            {
+                return ((IMarkdownContext)_mdc).ParseSqlMarkdown();
+            }
+
+            public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
+            {
+                return ((IMarkdownContext)_mdc).ParseSqlMarkdown(expr, proxyType, qfMode, out xast);
+            }
+
+            public string ParseSqlMarkdown<T1>()
+            {
+                return ((IMarkdownContext)_mdc).ParseSqlMarkdown<T1>();
+            }
+
+            public string ParseSqlMarkdown<T1>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
+            {
+                return ((IMarkdownContext)_mdc).ParseSqlMarkdown<T1>(expr, qfMode);
+            }
+            public INotifyCollectionChanged? ObservableNetProjection
             {
                 get => _observableNetProjection;
                 set
@@ -182,14 +276,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     }
                 }
             }
-            INotifyCollectionChanged _observableNetProjection = default;
+
+            public ProjectionTopology ProjectionTopology => ((IMarkdownContext)_mdc).ProjectionTopology;
+
+            INotifyCollectionChanged? _observableNetProjection = default;
 
             protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
             // We do not care about BC events.
             public new event PropertyChangedEventHandler? PropertyChanged;
-
         }
     }
 }

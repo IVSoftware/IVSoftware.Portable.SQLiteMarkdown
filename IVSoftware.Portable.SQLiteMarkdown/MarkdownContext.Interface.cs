@@ -6,38 +6,29 @@ using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using SQLite;
-using SQLitePCL;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    [Flags]
-    internal enum NetProjectionOption
-    {
-        ObservableOnly,
-        AllowDirectChanges = 0x1,
-    }
 
     partial class MarkdownContext : IMarkdownContext
     {
         /// <summary>
         /// Returns the singleton, non-replaceable root XElement, created on demand.
         /// </summary>
+        /// <remarks>
+        /// This represents the canonical ledger.
+        /// </remarks>
         public XElement Model
         {
             get
@@ -602,12 +593,12 @@ Recordset assignment is atomic; no changes were applied."
                     _observableProjection = value;
 
                     // [Careful] This is safest when MDC is first in line.
-                    ProjectionMode = _observableProjection switch
+                    ProjectionTopology = _observableProjection switch
                     {
-                        MarkdownContext _ => ProjectionMode.Inheritance,
+                        MarkdownContext _ => ProjectionTopology.Inheritance,
                         INotifyCollectionChanged _ and not MarkdownContext
-                            => ProjectionMode.Composition,
-                        _ => ProjectionMode.None,
+                            => ProjectionTopology.Composition,
+                        _ => ProjectionTopology.None,
                     };
 
                     // Allow the async handler to complete.
@@ -627,7 +618,7 @@ Recordset assignment is atomic; no changes were applied."
         }
         INotifyCollectionChanged? _observableProjection = null;
 
-        public ProjectionMode ProjectionMode
+        public ProjectionTopology ProjectionTopology
         {
             get => _projectionMode;
             set
@@ -639,7 +630,7 @@ Recordset assignment is atomic; no changes were applied."
                 }
             }
         }
-        ProjectionMode _projectionMode = default;
+        ProjectionTopology _projectionMode = default;
 
 
         /// <summary>
