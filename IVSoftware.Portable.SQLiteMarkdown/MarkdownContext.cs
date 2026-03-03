@@ -1525,7 +1525,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         bool _routeToFullRecordset = false;
 
-
         /// <summary>
         /// Catch and release heuristic for canonical ObservableNetProjection entering and leaving IsFiltered state.
         /// </summary>

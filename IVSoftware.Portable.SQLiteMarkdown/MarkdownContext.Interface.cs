@@ -326,11 +326,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public virtual async Task LoadCanonAsync(IEnumerable? recordset)
         {
             await RunFSMAsync<EnterFilterFSM>(recordset);
-
-            // Need optimize - low hanging fruit!
-
-            CanonicalCount = Model.Descendants().Count();
-            RouteToFullRecordset = true;
+            UpdateCounts();
         }
 
         /// <summary>
@@ -342,251 +338,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public virtual void LoadCanon(IEnumerable? recordset)
         {
             RunFSM<EnterFilterFSM>(recordset);
+            UpdateCounts();
+        }
 
-            int unfiltered = 0, filtered = 0;
-            foreach(var xel in Model.Descendants())
+        void UpdateCounts()
+        {
+            int 
+                canonical = 0, 
+                predicateMatch = 0;
+            foreach (var xel in Model.Descendants())
             {
-                unfiltered++;
+                canonical++;
 
                 bool ismatch = true;
 
                 // Do not combine these clauses.
                 if (xel
                     .Attributes(nameof(StdMarkdownAttribute.ismatch))
-                    .FirstOrDefault() is { } attr 
+                    .FirstOrDefault() is { } attr
                     && bool.TryParse(attr.Value, out var @explicit) && @explicit == false)
                 {
                     ismatch = false;
                 }
-                if (ismatch) filtered++;
+                if (ismatch) predicateMatch++;
             }
-            CanonicalCount = unfiltered;
-            PredicateMatchCount = filtered;
-            RouteToFullRecordset = true;
-        }
-
-        /// <summary>
-        /// Model the canonical recordset as hierarchal xml.
-        /// </summary>
-        [Obsolete("Use LoadCanonAsync() instead.")]
-        public IEnumerable Recordset
-        {
-            set
-            {
-                throw new NotImplementedException("ToDo");
-                Type listType = value?.GetType() ?? typeof(object);
-                if (listType.IsGenericType && listType.GetGenericArguments().Single() is { } itemType)
-                {
-                    FilterQueryDatabase.CreateTable(itemType);
-
-                    Model.RemoveNodes();
-                    object[] recordset = value?.Cast<object>().ToArray() ?? [];
-
-                    int
-                        countDistinct = 0,
-                        countDuplicate = 0;
-                    if (itemType.GetMapping() is { } mapping)
-                    {
-                        PropertyInfo? pk = mapping.PK?.PropertyInfo;
-                        if (pk is null)
-                        {
-                            throw new NotSupportedException($"Type '{itemType.Name}' has no PK and such types are not (yet) supported.");
-                        }
-                        foreach (EnterFilterFSM state in Enum.GetValues(typeof(EnterFilterFSM)))
-                        {
-                            switch (state)
-                            {
-                                case EnterFilterFSM.InitializeUnfilteredItemsCollection:
-                                    break;
-                                case EnterFilterFSM.InitializeModel:
-                                    foreach (var item in recordset)
-                                    {
-                                        var placerResult = Model.Place(path: localGetFullPath(pk, item), out var xel);
-                                        switch (placerResult)
-                                        {
-                                            case PlacerResult.Exists:
-                                                countDuplicate++;
-                                                break;
-                                            case PlacerResult.Created:
-                                                xel.SetBoundAttributeValue(
-                                                    tag: item,
-                                                    name: nameof(StdMarkdownElement.xitem));
-                                                countDistinct++;
-                                                break;
-                                            default:
-                                                this.ThrowFramework<NotSupportedException>(
-                                                    $"Unexpected result: `{placerResult.ToFullKey()}`. Expected options are {PlacerResult.Created} or {PlacerResult.Exists}");
-                                                break;
-                                        }
-                                    }
-                                    break;
-                                case EnterFilterFSM.InitializeFilterQueryDatabase:
-                                    break;
-                                case EnterFilterFSM.SuppressedReplace:
-                                    break;
-                                case EnterFilterFSM.RaiseResetEvent:
-                                    break;
-                                default:
-                                    this.ThrowHard<NotSupportedException>($"The {state.ToFullKey()} case is not supported.");
-                                    break;
-                            }
-                        }
-                        if (countDuplicate != 0)
-                        {
-                            Debug.Fail($@"IFD ADVISORY - First Time.");
-                            this.Advisory($"{countDuplicate} were identified and removed in recordset.");
-                        }
-                        CanonicalCount = countDistinct;
-                        
-                        RouteToFullRecordset = true;
-#if false
-                        if (unfilteredItems is ITemporalAffinity temporal)
-                        {
-                            foreach (ExitFilterFSM state in Enum.GetValues(typeof(ExitFilterFSM)))
-                            {
-
-                            }
-                            throw new NotImplementedException("ToDo");
-                        }
-                        else if (unfilteredItems is IPrioritizedAffinity prioritized)
-                        {
-                            foreach (ExitFilterFSM item in Enum.GetValues(typeof(ExitFilterFSM)))
-                            {
-
-                            }
-                            throw new NotImplementedException("ToDo");
-                        }
-                        else if (unfilteredItems is IList collection)
-                        {
-                            PropertyInfo? pk = mapping.PK?.PropertyInfo;
-                            if (pk is null)
-                            {
-                                throw new NotSupportedException($"Type '{itemType.Name}' has no PK and such types are not (yet) supported.");
-                            }
-                            foreach (ExitFilterFSM state in Enum.GetValues(typeof(ExitFilterFSM)))
-                            {
-                                switch (state)
-                                {
-                                    case ExitFilterFSM.CaptureUnfilteredItemsArray:
-                                        break;
-                                    case ExitFilterFSM.InitializeUnfilteredItemsCollection:
-                                        break;
-                                    case ExitFilterFSM.InitializeModel:
-                                        foreach (var item in collection)
-                                        {
-                                            Model.Add(localMakeXel(pk, item));
-                                        }
-                                        break;
-                                    case ExitFilterFSM.InitializeFilterQueryDatabase:
-                                        break;
-                                    case ExitFilterFSM.SuppressedReplace:
-                                        break;
-                                    case ExitFilterFSM.RaiseResetEvent:
-                                        break;
-                                    default:
-                                        this.ThrowHard<NotSupportedException>($"The {state.ToFullKey()} case is not supported.");
-                                        break;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            throw new NotSupportedException();
-                        }
-#endif
-                    }
-                    #region L o c a l F x
-                    string localGetFullPath(PropertyInfo pk, object unk)
-                    {
-                        if (pk.GetValue(unk)?.ToString() is { } id && !string.IsNullOrWhiteSpace(id))
-                        {
-                            return id;
-                        }
-                        else
-                        {
-                            this.ThrowHard<NullReferenceException>(
-                                $"Expecting a non-empty value for PrimaryKey '{pk.Name}'.");
-                            return null!;
-                        }
-                    }
-#if false
-                    XElement localMakeXel(PropertyInfo pk, object item)
-                    {
-                        if (pk.GetValue(item)?.ToString() is { } id && !string.IsNullOrWhiteSpace(id))
-                        {
-                            var xel = new XElement(
-                                nameof(StdMarkdownElement.xitem),
-                                new XAttribute(nameof(StdMarkdownAttribute.text), id));
-
-                            xel.SetBoundAttributeValue(
-                                tag: item,
-                                name: nameof(StdMarkdownElement.xitem));
-
-                            return xel;
-                        }
-                        this.ThrowHard<NullReferenceException>();
-                        return null!;
-                    }
-#endif
-                    #endregion L o c a l F x
-                }
-                return;
-
-                int success = 0;
-                if (value is not null)
-                {
-                    object[] recordset = value?.Cast<object>().ToArray() ?? [];
-                    var invalidItems = recordset
-                        .Where(_ => !ContractType.IsAssignableFrom(_.GetType()))
-                        .Select(_ => _.GetType().FullName)
-                        .Distinct()
-                        .ToArray();
-
-                    if (typeof(ITemporalAffinity).IsAssignableFrom(ContractType))
-                    {   /* G T K */
-                    }
-
-                    if (invalidItems.Length != 0)
-                    {
-                        this.ThrowHard<InvalidCastException>($@"
-Recordset rejected (rolled back):
-{invalidItems.Length} item(s) are not assignable to the current ContractType '{ContractType.FullName}'.
-
-Invalid type(s):
-- {string.Join("\n- ", invalidItems)}
-
-Recordset assignment is atomic; no changes were applied."
-                        .TrimStart());
-                        return;
-                    }
-                    try
-                    {
-                        FilterQueryDatabase.RunInTransaction(() =>
-                        {
-                            FilterQueryDatabase.DeleteAll(ContractType.GetMapping());
-                            foreach (var item in recordset)
-                            {
-                                success += FilterQueryDatabase.InsertOrReplace(item);
-                            }
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        this.RethrowHard(ex, "The SQLite transaction resulted in a rollback.");
-                    }
-                    foreach (var record in recordset)
-                    {
-                        // Model.Place()
-                    }
-                    var nDuplicates = recordset.Length - success;
-                    if (nDuplicates != 0)
-                    {
-                        Debug.Fail($@"IFD ADVISORY - First Time.");
-                        this.Advisory($"{nDuplicates} were identified and removed in recordset.");
-                    }
-                }
-                CanonicalCount = success;
-            }
+            CanonicalCount = canonical;
+            PredicateMatchCount = predicateMatch;
+            RouteToFullRecordset = CanonicalCount == PredicateMatchCount;
         }
 
         /// <summary>
@@ -716,6 +494,7 @@ Recordset assignment is atomic; no changes were applied."
                 if (!Equals(_canonicalCount, value))
                 {
                     _canonicalCount = value; 
+#if false
                     switch (_canonicalCount)
                     {
                         case 0:
@@ -743,6 +522,7 @@ Recordset assignment is atomic; no changes were applied."
                             }
                             break;
                     }
+#endif
                     OnPropertyChanged();
                 }
             }
