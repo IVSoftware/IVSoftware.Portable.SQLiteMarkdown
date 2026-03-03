@@ -1704,19 +1704,23 @@ Running"
 
                         // 260301.A REGRESSION
                         await items.ReplaceItemsAsync(recordset);
+
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
                             .OfType<PropertyChangedEventArgs>()
                             .Select(_ => _.PropertyName));
 
+                        actual.ToClipboardExpected();
+                        { }
                         // Limit Touched 260301
                         expected = @" 
 Busy
 SearchEntryState
 FilteringState
 IsFiltering
-UnfilteredCount
+CanonicalCount
+PredicateMatchCount
 Busy"
                         ;
 

@@ -81,7 +81,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         }
                         break;
                     case NotifyCollectionChangedAction.Reset:
-                        _filteredSubset.Clear();
+                        _predicateMatchSubset.Clear();
                         foreach (var inpc in _unsubscribeItems)
                         {
                             inpc.PropertyChanged -= OnItemPropertyChanged;
@@ -94,9 +94,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             };
         }
 
-        private readonly ObservableCollection<T> _filteredSubset = new ObservableCollection<T>();
+        private readonly ObservableCollection<T> _predicateMatchSubset = new ObservableCollection<T>();
         private readonly ObservableCollection<T> _canonicalRecordset = new ObservableCollection<T>();
 
+        public IReadOnlyList<T> CanonicalRecordset => _canonicalRecordset;
+
+
+        [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
         public IReadOnlyList<T> UnfilteredItems => _canonicalRecordset;
 
         public async Task ReplaceItemsAsync(IEnumerable<T> items)
@@ -315,10 +319,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                         // This is 'not' the place for a reconciled sync.
                         // We would do that in the UI if at all.
-                        _filteredSubset.Clear();
+                        _predicateMatchSubset.Clear();
                         foreach (var item in filteredRecords)
                         {
-                            _filteredSubset.Add(item);
+                            _predicateMatchSubset.Add(item);
                         }
                         // Active REGARDLESS of result because if unfiltered
                         // count < 2 we're not supposed to be here in the first place.
@@ -328,7 +332,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             this,
                             new NotifyQueryFilterCollectionChangedEventArgs(
                                 NotifyQueryFilterCollectionChangedAction.ApplyFilter,
-                                _filteredSubset.ToList() // snapshot
+                                _predicateMatchSubset.ToList() // snapshot
                             )
                         );
                     }
@@ -734,7 +738,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         [Careful("This polarity was wrong, and has been fixed.")]
         private IList<T> _RoutedItems_ =>
-            RouteToFullRecordset ? _canonicalRecordset : _filteredSubset;
+            RouteToFullRecordset ? _canonicalRecordset : _predicateMatchSubset;
 
         public IEnumerator<T> GetEnumerator() => _RoutedItems_.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }

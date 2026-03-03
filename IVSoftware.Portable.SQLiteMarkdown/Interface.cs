@@ -102,6 +102,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Strongly typed variant of IObservableQueryFilterSource.
     /// </summary>
+    [Canonical("Contract published in v1")]
     public interface IObservableQueryFilterSource<T>
         : IObservableQueryFilterSource
     {
