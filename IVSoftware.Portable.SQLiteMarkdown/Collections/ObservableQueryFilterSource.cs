@@ -99,21 +99,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public IReadOnlyList<T> UnfilteredItems => _unfilteredItems;
 
-        /// <summary>
-        /// Replaces the entire current dataset after a query.
-        /// Not valid in Filter-only mode. Raises CollectionChanged and sets FilteringState based on count.
-        /// </summary>
-        public void ReplaceItems(IEnumerable<T> items)
-        {
-            if (QueryFilterConfig == QueryFilterConfig.Filter)
-            {
-                throw new InvalidOperationException("You must turn off File-Only mode to use this method");
-            }
-            else
-            {
-                ReplaceItemsInternal(items);
-            }
-        }
         public async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
             using (DHostBusy.GetToken())
@@ -125,9 +110,43 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 await base.LoadCanonAsync(items);
                 // --------------
 
-                // Keep for now.
+
+                // This causes a Reset on the main INCC
+                _unfilteredItems.Clear();
+                if (UnfilteredCount != 0)
+                {
+                    foreach (var xel in Model.Descendants())
+                    {
+                        if (xel.To<T>() is { } item)
+                        {
+                            _unfilteredItems.Add(item);
+                        }
+                    }
+                    // Raise single event after completing the loop.
+                    CollectionChangedProtected?.Invoke(
+                        this,
+                        new NotifyQueryFilterCollectionChangedEventArgs(
+                            NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
+                            _unfilteredItems.ToList() // snapshot as IList
+                        )
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Replaces the entire current dataset after a query.
+        /// Not valid in Filter-only mode. Raises CollectionChanged and sets FilteringState based on count.
+        /// </summary>
+        public void ReplaceItems(IEnumerable<T> items)
+        {
+            if (QueryFilterConfig == QueryFilterConfig.Filter)
+            {
+                throw new InvalidOperationException("You must turn off Filter-Only mode to use this method");
+            }
+            else
+            {
                 ReplaceItemsInternal(items);
-                await this;
             }
         }
 
