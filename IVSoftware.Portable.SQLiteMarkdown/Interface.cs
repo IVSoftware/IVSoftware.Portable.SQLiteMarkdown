@@ -235,8 +235,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         IDisposable BeginAuthorityClaim();
 
-        int UnfilteredCount { get; }
-        int FilteredCount { get; }
+        int CanonicalCount { get; }
+        int PredicateMatchCount { get; }
+        bool HasCounts(int canonical, int matches, int? database = null);
     }
 
     /// <summary>

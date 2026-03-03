@@ -329,7 +329,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             // Need optimize - low hanging fruit!
 
-            UnfilteredCount = Model.Descendants().Count();
+            CanonicalCount = Model.Descendants().Count();
             RouteToFullRecordset = true;
         }
 
@@ -360,8 +360,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 if (ismatch) filtered++;
             }
-            UnfilteredCount = unfiltered;
-            FilteredCount = filtered;
+            CanonicalCount = unfiltered;
+            PredicateMatchCount = filtered;
             RouteToFullRecordset = true;
         }
 
@@ -436,7 +436,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             Debug.Fail($@"IFD ADVISORY - First Time.");
                             this.Advisory($"{countDuplicate} were identified and removed in recordset.");
                         }
-                        UnfilteredCount = countDistinct;
+                        CanonicalCount = countDistinct;
                         
                         RouteToFullRecordset = true;
 #if false
@@ -585,7 +585,7 @@ Recordset assignment is atomic; no changes were applied."
                         this.Advisory($"{nDuplicates} were identified and removed in recordset.");
                     }
                 }
-                UnfilteredCount = success;
+                CanonicalCount = success;
             }
         }
 
@@ -699,18 +699,24 @@ Recordset assignment is atomic; no changes were applied."
                 default:
                     break;
             }
-        } 
+        }
 
-
+        [Obsolete("Use CanonicalCount and PredicateMatchCount for precise semantics.")]
         public int UnfilteredCount
         {
-            get => _unfilteredCount;
+            get => CanonicalCount;
+            protected set => CanonicalCount = value;
+        }
+
+        public int CanonicalCount
+        {
+            get => _canonicalCount;
             protected set
             {
-                if (!Equals(_unfilteredCount, value))
+                if (!Equals(_canonicalCount, value))
                 {
-                    _unfilteredCount = value; 
-                    switch (_unfilteredCount)
+                    _canonicalCount = value; 
+                    switch (_canonicalCount)
                     {
                         case 0:
                             SearchEntryState = SearchEntryState.QueryCompleteNoResults;
@@ -741,9 +747,9 @@ Recordset assignment is atomic; no changes were applied."
                 }
             }
         }
-        int _unfilteredCount = default;
+        int _canonicalCount = default;
 
-        public int FilteredCount
+        public int PredicateMatchCount
         {
             get => _filteredCount;
             protected set

@@ -21,6 +21,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 .Select(_=>_.Tag)
                 .GetEnumerator();
         }
+
+        public bool HasCounts(int canonical, int matches, int? database = null)
+        {
+            if(canonical != CanonicalCount)
+            {
+                return false;
+            }
+            if(matches != PredicateMatchCount)
+            {
+                return false;
+            }
+            if(database is not null)
+            {
+                var preview = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
+                if(database != preview)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
     partial class MarkdownContext<T> : IEnumerable<T>
     {

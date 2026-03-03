@@ -147,21 +147,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual.NormalizeResult(),
                 "Expecting updated model."
             );
-
-            Assert.AreEqual(2, mdci.UnfilteredCount);
-            Assert.AreEqual(2, mdci.FilteredCount);
+            Assert.IsTrue(mdci.HasCounts(canonical: 2, matches: 2, database: 2));
 
             nResult = mdci.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
 
             Assert.AreEqual(
-                mdci.UnfilteredCount, 
+                mdci.CanonicalCount, 
                 nResult,
                 "Expecting the database items track the model at all times.");
 
             #region C L E A R
             oc.Clear();
-            Assert.AreEqual(0, mdci.UnfilteredCount);
-            Assert.AreEqual(0, mdci.FilteredCount);
+            Assert.AreEqual(0, mdci.CanonicalCount);
+            Assert.AreEqual(0, mdci.PredicateMatchCount);
             Assert.IsFalse(mdci.Model.HasElements);
             nResult = mdci.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
             Assert.AreEqual(0, nResult);
@@ -272,7 +270,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             public SearchEntryState SearchEntryState => ((IMarkdownContext)_mdc).SearchEntryState;
 
-            public int UnfilteredCount => ((IMarkdownContext)_mdc).UnfilteredCount;
+            public int CanonicalCount => ((IMarkdownContext)_mdc).CanonicalCount;
 
             public event EventHandler? InputTextSettled
             {
@@ -330,7 +328,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 set => ((IMarkdownContext)_mdc).ObservableNetProjection = value;
             }
 
-            public int FilteredCount => ((IMarkdownContext)_mdc).FilteredCount;
+            public int PredicateMatchCount => ((IMarkdownContext)_mdc).PredicateMatchCount;
 
             INotifyCollectionChanged? _observableNetProjection = default;
 
@@ -340,6 +338,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             public void LoadCanon(IEnumerable? recordset)
             {
                 ((IMarkdownContext)_mdc).LoadCanon(recordset);
+            }
+
+            public bool HasCounts(int canonical, int matches, int? database = null)
+            {
+                return ((IMarkdownContext)_mdc).HasCounts(canonical, matches, database);
             }
 
             // We do not care about BC events.

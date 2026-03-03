@@ -113,7 +113,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                 // This causes a Reset on the main INCC
                 _canonicalRecordset.Clear();
-                if (UnfilteredCount != 0)
+                if (CanonicalCount != 0)
                 {
                     foreach (var xel in Model.Descendants())
                     {
@@ -152,7 +152,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                 // This causes a Reset on the main INCC
                 _canonicalRecordset.Clear();
-                if (UnfilteredCount != 0)
+                if (CanonicalCount != 0)
                 {
                     foreach (var xel in Model.Descendants())
                     {
@@ -179,7 +179,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 // This causes a Reset on the main INCC
                 _canonicalRecordset.Clear();
-                if (UnfilteredCount != 0)
+                if (CanonicalCount != 0)
                 {
                     foreach (var xel in Model.Descendants())
                     {

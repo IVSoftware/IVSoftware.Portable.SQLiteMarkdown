@@ -142,7 +142,7 @@ public class TestClass_PredicateMarkdownContext
         Assert.IsTrue(pmdc.IsFiltering);
         Assert.AreEqual(
             COUNT, 
-            pmdc.UnfilteredCount, 
+            pmdc.CanonicalCount, 
             "Expecting UNFILTERED COUNT is correct meaning canon is initialized.");
 
         Assert.AreEqual(
@@ -165,7 +165,7 @@ public class TestClass_PredicateMarkdownContext
         // This should filter, but it's not doing that yet.
         Assert.AreNotEqual(
             COUNT,
-            pmdc.UnfilteredCount,
+            pmdc.CanonicalCount,
             "Expecting UNFILTERED COUNT is correct meaning canon is initialized.");
     }
 
