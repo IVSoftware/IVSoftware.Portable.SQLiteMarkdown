@@ -18,6 +18,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -43,18 +44,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (_model is null)
                 {
                     _model = new XElement(nameof(StdMarkdownElement.model));
+                    _model.Changing += (sender, e) =>
+                    {
+                        if(sender is XElement xel && e.ObjectChange == XObjectChange.Remove)
+                        {
+                            _parentsOfRemoved[xel] = xel.Parent;
+                        }
+                    };
                     _model.Changed += (sender, e) =>
                     {
                         switch (sender)
                         {
-                            case XElement:
-                                switch (e.ObjectChange)
+                            case XElement xel:
+                                OnXElementChanged(xel, e);
+                                if (e.ObjectChange == XObjectChange.Remove)
                                 {
-                                    case XObjectChange.Add:
-                                        break;
-                                    case XObjectChange.Remove:
-                                        break;
+                                    _parentsOfRemoved.Remove(xel);
                                 }
+                                break;
+                            case XAttribute xattr:
+                                OnXAttributeChanged(xattr, e);
                                 break;
                         }
                     };
@@ -63,6 +72,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         XElement? _model = null;
+
+        Dictionary<XElement, XElement> _parentsOfRemoved = new();
+        protected virtual void OnXAttributeChanged (XAttribute xattr, XObjectChangeEventArgs e) { }
+        protected virtual void OnXElementChanged (XElement xel, XObjectChangeEventArgs e) { }
 
         protected async Task RunFSM<Tfsm>(object? context = null)
         {
@@ -77,11 +90,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 case EnterFilterFSM.InitializeUnfilteredItemsCollection:
                     return ReservedAffinityState.Next;
-                case EnterFilterFSM.InitializeModel:
-                    await localInitialiseFilterEpoch(context);
+                case EnterFilterFSM.InitializeFilterQueryDatabase when context is IEnumerable canonical:
+                    await localInitialiseFilterQueryDatabase(canonical);
                     break;
-                case EnterFilterFSM.InitializeFilterQueryDatabase:
-                    Debug.Fail($@"ADVISORY - ToDo.");
+                case EnterFilterFSM.InitializeModel when context is IEnumerable canonical:
+                    await localInitializeModel(canonical);
                     break;
                 case EnterFilterFSM.SuppressedReplace:
                     Debug.Fail($@"ADVISORY - ToDo.");
@@ -97,50 +110,58 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return ReservedAffinityState.Next;
 
             #region L o c a l F x
-            async Task<Enum> localInitialiseFilterEpoch(object? context)
-            {
-                if (context is IEnumerable)
-                {
-                    object[] canonical = ((IEnumerable)context).Cast<object>().ToArray() ?? [];
-                    FilterQueryDatabase.CreateTable(ContractType);
-                    if (ContractType.GetMapping() is { } mapping)
-                    {
-                        Model.RemoveNodes();
-                        int
-                            countDistinct = 0,
-                            countDuplicate = 0;
 
-                        PropertyInfo? pk = mapping.PK?.PropertyInfo;
-                        if (pk is null)
-                        {
-                            throw new NotSupportedException($"Type '{ContractType.Name}' has no PK and such types are not (yet) supported.");
-                        }
-                        foreach (var item in canonical)
-                        {
-                            var placerResult = Model.Place(path: localGetFullPath(pk, item), out var xel);
-                            switch (placerResult)
-                            {
-                                case PlacerResult.Exists:
-                                    countDuplicate++;
-                                    break;
-                                case PlacerResult.Created:
-                                    xel.SetBoundAttributeValue(
-                                        tag: item,
-                                        name: nameof(StdMarkdownElement.xitem));
-                                    countDistinct++;
-                                    break;
-                                default:
-                                    this.ThrowFramework<NotSupportedException>(
-                                        $"Unexpected result: `{placerResult.ToFullKey()}`. Expected options are {PlacerResult.Created} or {PlacerResult.Exists}");
-                                    break;
-                            }
-                        }
-                        return ReservedAffinityState.Next;
+            async Task<Enum> localInitialiseFilterQueryDatabase(IEnumerable canonical)
+            {
+                try
+                {
+                    FilterQueryDatabase.RunInTransaction(() =>
+                    {
+                        FilterQueryDatabase.DeleteAll(ContractType.GetMapping());
+                        FilterQueryDatabase.CreateTable(ContractType);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    this.RethrowHard(ex);
+                    return ReservedAffinityState.Canceled;
+                }
+                return ReservedAffinityState.Next;
+            }
+
+            async Task<Enum> localInitializeModel(IEnumerable canonical)
+            {
+                PropertyInfo? pk = ContractType.GetMapping().PK?.PropertyInfo;
+                Model.RemoveNodes();
+                int
+                    countDistinct = 0,
+                    countDuplicate = 0;
+
+                if (pk is null)
+                {
+                    throw new NotSupportedException($"Type '{ContractType.Name}' has no PK and such types are not (yet) supported.");
+                }
+                foreach (var item in canonical)
+                {
+                    var placerResult = Model.Place(path: localGetFullPath(pk, item), out var xel);
+                    switch (placerResult)
+                    {
+                        case PlacerResult.Exists:
+                            countDuplicate++;
+                            break;
+                        case PlacerResult.Created:
+                            xel.SetBoundAttributeValue(
+                                tag: item,
+                                name: nameof(StdMarkdownElement.xitem));
+                            countDistinct++;
+                            break;
+                        default:
+                            this.ThrowFramework<NotSupportedException>(
+                                $"Unexpected result: `{placerResult.ToFullKey()}`. Expected options are {PlacerResult.Created} or {PlacerResult.Exists}");
+                            break;
                     }
                 }
-                // Default fall through.
-                this.ThrowHard<OperationCanceledException>();
-                return ReservedAffinityState.Canceled;
+                return ReservedAffinityState.Next;
             }
             string localGetFullPath(PropertyInfo pk, object unk)
             {

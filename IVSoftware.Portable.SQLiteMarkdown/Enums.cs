@@ -273,7 +273,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         MarkdownContext,
     }
 
-
     /// <summary>
     /// 260228 inprog
     /// </summary>
@@ -282,10 +281,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [Obsolete]
         InitializeUnfilteredItemsCollection,
 
+        InitializeFilterQueryDatabase,
+
         [Probationary("XML Model")]
         InitializeModel,
-
-        InitializeFilterQueryDatabase,
 
         SuppressedReplace,
 
