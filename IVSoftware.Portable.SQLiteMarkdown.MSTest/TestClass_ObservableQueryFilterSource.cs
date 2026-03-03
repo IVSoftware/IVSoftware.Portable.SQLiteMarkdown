@@ -2754,6 +2754,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 NotifyCollectionChangedEventArgs? ecc;
                 SelectableQFModelTOQO[] newItems = [];
                 Queue<SenderEventPair> eventQueue = new();
+                var builder = new List<string>();
 
                 var items = new ObservableQueryFilterSource<SelectableQFModelTOQO>
                 {
@@ -2807,25 +2808,10 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 };
                 items.CollectionChanged += (sender, e) =>
                 {
-                    if(ReferenceEquals(sender, items.UnfilteredItems))
-                    { 
-                    }
-                    else if(ReferenceEquals(sender, items))
-                    {
-
-                    }
-                    else
-                    {
-                        throw new NotImplementedException("UNEXPECTED - What is it then?");
-                    }
-                    if (e is NotifyQueryFilterCollectionChangedEventArgs)
-                    {   /* G T K */
-                    }
-                    else
-                    {   /* G T K */
-                    }
                     eventQueue.Enqueue((sender, e));
-                    // FYI:
+                    builder.Add($"{e.Action} NewItems={e.NewItems?.Count ?? 0}");
+
+                    // G T K
                     switch (e.Action)
                     {
                         case NotifyCollectionChangedAction.Add:
@@ -2853,6 +2839,28 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                     Assert.AreEqual(0, eventQueue.Count, "YES. It's zero.");
 
                     await localCommitOnSettle("animal");
+
+                    actual = string.Join(Environment.NewLine, builder);
+                    actual.ToClipboardExpected();
+                    { } // <- FIRST TIME ONLY: Adjust the message.
+                    actual.ToClipboardAssert("Expecting Two events.");
+                    { }
+                    expected = @" 
+Reset NewItems=0
+Add NewItems=12
+Add NewItems=1";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting Two events."
+                    );
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting Two events."
+                    );
 
                     Assert.AreEqual(2, eventQueue.Count, "NO. More is not OK.");
 
