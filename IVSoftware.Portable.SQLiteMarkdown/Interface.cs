@@ -184,6 +184,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         string ParseSqlMarkdown<T>();
         string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query);
 
+
+        /// <summary>
+        /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
+        /// </remarks>
+        Task LoadCanonAsync(IEnumerable recordset);
+
+#if false
         /// <summary>
         /// Initializes the canonical unfiltered collection.
         /// </summary>
@@ -191,7 +201,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// This property is not intended for binding; this is enforced as set only 
         /// and represents a stateful and semantically meaningful replacement.
         /// </remarks>
-        IEnumerable RecordsetZ { set; }
+        IEnumerable Recordset { set; }
+#endif
 
         /// <summary>
         /// Represents an observable collection representing 'net visible' filtered items.

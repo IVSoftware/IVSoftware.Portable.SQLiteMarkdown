@@ -118,8 +118,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         private string ensure(ref string indexedProperty)
         {
             if (_isIndexingRequired)
-            if (_isIndexingRequired)
-
             {
                 internalExecuteIndexing();
             }

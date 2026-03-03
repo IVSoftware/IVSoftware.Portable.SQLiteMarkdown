@@ -11,7 +11,7 @@ using SQLite;
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
 [TestClass]
-public class TestClass_V2
+public class TestClass_NuGet_V2
 {
     [TestMethod]
     public void Test_PolicyException()

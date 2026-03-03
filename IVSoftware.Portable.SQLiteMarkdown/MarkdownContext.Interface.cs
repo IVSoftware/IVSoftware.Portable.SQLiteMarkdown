@@ -303,12 +303,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Model the canonical recordset as hierarchal xml.
         /// </summary>
-        public IEnumerable RecordsetZ
+        [Obsolete("Use LoadCanonAsync() instead.")]
+        public IEnumerable Recordset
         {
             set
             {
-                _ = RunFSM<EnterFilterFSM>(value);
-
+                throw new NotImplementedException("ToDo");
                 Type listType = value?.GetType() ?? typeof(object);
                 if (listType.IsGenericType && listType.GetGenericArguments().Single() is { } itemType)
                 {

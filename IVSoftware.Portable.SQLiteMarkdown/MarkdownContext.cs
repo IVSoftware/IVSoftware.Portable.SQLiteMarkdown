@@ -99,9 +99,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [Canonical]
         public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
         {
-            if(string.IsNullOrWhiteSpace(expr))
+            if (IsFiltering && expr.IsSemanticallyEmpty())
             {
-                this.ThrowHard<ArgumentException>("Empty string cannot be parsed.");
+                this.ThrowPolicyException(SQLiteMarkdownPolicy.EmptyFilterString);
                 xast = null!; // We warned you.
                 return string.Empty;
             }
