@@ -35,7 +35,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     partial class MarkdownContext : IMarkdownContext
     {
         /// <summary>
-        /// Immutable once set.
+        /// Returns the singleton, non-replaceable root XElement, created on demand.
         /// </summary>
         public XElement Model
         {
@@ -56,11 +56,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         switch (sender)
                         {
                             case XElement xel:
-                                OnXElementChanged(xel, e);
+                                XElement pxel;
                                 if (e.ObjectChange == XObjectChange.Remove)
                                 {
+                                    if(!_parentsOfRemoved.TryGetValue(xel, out pxel))
+                                    {
+                                        _parentsOfRemoved.ThrowSoft<NullReferenceException>(
+                                            $"Expecting parent for removed XElement was cached prior." +
+                                            $"Unless this throw is escalated, flow will continue with null parent.");
+                                    }
                                     _parentsOfRemoved.Remove(xel);
                                 }
+                                else
+                                {
+                                    pxel = xel.Parent;
+                                }
+                                OnXElementChanged(xel, pxel, e);
                                 break;
                             case XAttribute xattr:
                                 OnXAttributeChanged(xattr, e);
@@ -75,7 +86,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         Dictionary<XElement, XElement> _parentsOfRemoved = new();
         protected virtual void OnXAttributeChanged (XAttribute xattr, XObjectChangeEventArgs e) { }
-        protected virtual void OnXElementChanged (XElement xel, XObjectChangeEventArgs e) { }
+        protected virtual void OnXElementChanged (XElement xel, XElement pxel, XObjectChangeEventArgs e) { }
 
         protected async Task RunFSM<Tfsm>(object? context = null)
         {
