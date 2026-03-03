@@ -82,20 +82,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             using var te = this.TestableEpoch();
             string actual, expected;
             int nResult;
+            IList<SelectableQFModel> oc;
 
             var mdci = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
 
-            Assert.AreEqual(
-                ProjectionTopology.Inheritance,
-                mdci.ProjectionTopology,
-                "Expecting INHERITANCE is detectable from the start.");
+            subtest_DetectTopology();
+            subtest_PopulateAndClearEpoch();
+            subtest_FilterTracking();
 
-            var oc = new ObservableCollection<SelectableQFModel>().PopulateForDemo(2);
-            mdci.ObservableNetProjection = (INotifyCollectionChanged)oc;
+            #region S U B T E S T S
+            void subtest_DetectTopology()
+            {
+                Assert.AreEqual(
+                    ProjectionTopology.Inheritance,
+                    mdci.ProjectionTopology,
+                    "Expecting INHERITANCE is detectable from the start.");
+            }
+            void subtest_PopulateAndClearEpoch()
+            {
+                oc = new ObservableCollection<SelectableQFModel>().PopulateForDemo(2);
+                mdci.ObservableNetProjection = (INotifyCollectionChanged)oc;
 
 
-            actual = JsonConvert.SerializeObject(oc, Formatting.Indented);
-            expected = @" 
+                actual = JsonConvert.SerializeObject(oc, Formatting.Indented);
+                expected = @" 
 [
   {
     ""Id"": ""312d1c21-0000-0000-0000-000000000000"",
@@ -129,42 +139,49 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
   }
 ]";
 
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting TWO items on display."
-            );
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting TWO items on display."
+                );
 
-            actual = mdci.Model.ToString();
-            expected = @" 
+                actual = mdci.Model.ToString();
+                expected = @" 
 <model>
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" xitem=""[SelectableQFModel]"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000001"" xitem=""[SelectableQFModel]"" />
 </model>";
 
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting updated model."
-            );
-            Assert.IsTrue(mdci.HasCounts(canonical: 2, matches: 2, database: 2));
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting updated model."
+                );
+                Assert.IsTrue(mdci.HasCounts(canonical: 2, matches: 2, database: 2));
 
-            nResult = mdci.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
+                nResult = mdci.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
 
-            Assert.AreEqual(
-                mdci.CanonicalCount, 
-                nResult,
-                "Expecting the database items track the model at all times.");
+                Assert.AreEqual(
+                    mdci.CanonicalCount,
+                    nResult,
+                    "Expecting the database items track the model at all times.");
 
-            #region C L E A R
-            oc.Clear();
-            Assert.AreEqual(0, mdci.CanonicalCount);
-            Assert.AreEqual(0, mdci.PredicateMatchCount);
-            Assert.IsFalse(mdci.Model.HasElements);
-            nResult = mdci.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
-            Assert.AreEqual(0, nResult);
-            { }
-            #endregion C L E A R
+                #region C L E A R
+                oc.Clear();
+                Assert.AreEqual(0, mdci.CanonicalCount);
+                Assert.AreEqual(0, mdci.PredicateMatchCount);
+                Assert.IsFalse(mdci.Model.HasElements);
+                nResult = mdci.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
+                Assert.AreEqual(0, nResult);
+                { }
+                #endregion C L E A R
+            }
+
+            void subtest_FilterTracking()
+            {
+                mdci.QueryFilterConfig = QueryFilterConfig.Filter;
+            }
+            #endregion S U B T E S T S
         }
 
 
