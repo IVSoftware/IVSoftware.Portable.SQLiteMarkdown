@@ -285,22 +285,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
 
         /// <summary>
-        /// Loads the canonical recordset for the current query context.
+        /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
         /// </summary>
         /// <remarks>
-        /// Conceptually analogous to establishing the "unfiltered" collection,
-        /// but not limited to that scenario. This method materializes and
-        /// installs the authoritative baseline from which subsequent
-        /// filtering or refinement operations proceed.
+        /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
         /// </remarks>
-        async Task LoadCanonAsync()
+        public virtual async Task LoadCanonAsync(IEnumerable recordset)
         {
+            await RunFSM<EnterFilterFSM>(recordset);
 
+            // Need optimize - low hanging fruit!
+
+            UnfilteredCount = Model.Descendants().Count();
+            RouteToFullRecordset = true;
         }
+
         /// <summary>
         /// Model the canonical recordset as hierarchal xml.
         /// </summary>
-        public IEnumerable Recordset
+        public IEnumerable RecordsetZ
         {
             set
             {
@@ -583,18 +586,18 @@ Recordset assignment is atomic; no changes were applied."
         /// MentalMode (Query          config): "Do not track changes on this INCC."
         /// MentalMode (QueryAndFilter config): "The system must be reset to root cause in order to be stable."
         /// MentalMode (Filter         config): "The contents of the new projection must be regarded as a new canon."
-        protected virtual void OnObservableProjectionChanged() 
+        protected virtual async Task OnObservableProjectionChanged() 
         {
             switch (QueryFilterConfig)
             {
                 case QueryFilterConfig.Filter:
                     if (ObservableNetProjection is IEnumerable recordset)
                     {
-                        Recordset = recordset;
+                        await LoadCanonAsync(recordset);
                     }
                     else
                     {
-                        Recordset = recordset = Array.Empty<object>();
+                        await LoadCanonAsync(recordset = Array.Empty<object>());
                     }
                     break;
                 case QueryFilterConfig.Query:

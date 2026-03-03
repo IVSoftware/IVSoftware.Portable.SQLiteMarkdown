@@ -116,6 +116,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         public async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
+            // --------------
+            // UPGRADE 260301
+            // Sets UnfilteredCount
+            // -> Sets SearchEntryState
+            await base.LoadCanonAsync(items);
+            // --------------
+
+            // Keep for now.
             ReplaceItemsInternal(items);
             await this;
         }
@@ -126,13 +134,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 try
                 {
-                    // --------------
-                    // UPGRADE 260301
-                    // Sets UnfilteredCount
-                    // -> Sets SearchEntryState
-                    Recordset = items;
-                    // --------------
-
                     // This causes a Reset on the main INCC
                     _unfilteredItems.Clear();
                     if(UnfilteredCount != 0)

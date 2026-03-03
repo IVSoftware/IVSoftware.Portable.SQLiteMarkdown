@@ -143,7 +143,7 @@ public class TestClass_PredicateMarkdownContext
         // Let's figure this out, once and for all.
         Assert.IsTrue(pmdc.IsFiltering);
 
-        pmdc.Recordset = opc;
+        await pmdc.LoadCanonAsync(opc);
 
         Assert.AreEqual(
             COUNT, 

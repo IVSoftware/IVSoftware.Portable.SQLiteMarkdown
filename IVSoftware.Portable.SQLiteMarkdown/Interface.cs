@@ -191,7 +191,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// This property is not intended for binding; this is enforced as set only 
         /// and represents a stateful and semantically meaningful replacement.
         /// </remarks>
-        IEnumerable Recordset { set; }
+        IEnumerable RecordsetZ { set; }
 
         /// <summary>
         /// Represents an observable collection representing 'net visible' filtered items.
