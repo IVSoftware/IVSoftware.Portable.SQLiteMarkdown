@@ -88,14 +88,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Dictionary<XElement, XElement> _parentsOfRemoved = new();
         protected virtual void OnXAttributeChanged (XAttribute xattr, XObjectChangeEventArgs e) 
         {
-            if(xattr is XBoundAttribute xbo)
+            if(xattr is XBoundAttribute xbo && xbo.Tag.GetType() == ContractType)
             {
 
             }
         }
         protected virtual void OnXElementChanged (XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
-            foreach (var xbo in xel.Attributes().OfType<XBoundAttribute>())
+            foreach (var xbo in xel.Attributes().OfType<XBoundAttribute>().Where(_=>_.Tag?.GetType() == ContractType))
             {
 
             }
