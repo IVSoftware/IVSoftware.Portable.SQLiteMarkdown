@@ -148,9 +148,12 @@ IVSoftware.Portable.SQLiteMarkdown | Version=1.0.1.0"
                 "Expecting Version=1.0.1.0"
             );
 
-            var opc = new ObservableQueryFilterSource<object>();
+            // In V1, this *should be*, but *is not* constrained: where T :class, new()
+            // Notwithstanding, don't use something like int or object here!
+            // WE'RE LOOKING FOR THE EXISTENCE OF THE CONTRACT ONLY.
+            var opc = new ObservableQueryFilterSource<SelectableQFModel>();
             Assert.IsTrue(
-                opc is IObservableQueryFilterSource<object>,
+                opc is IObservableQueryFilterSource<SelectableQFModel>,
                 @"Asserting the claim: [Canonical(""Contract published in v1"")]");
         }
     }
