@@ -147,7 +147,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual.NormalizeResult(),
                 "Expecting updated model."
             );
+
             Assert.AreEqual(2, mdci.UnfilteredCount);
+            Assert.AreEqual(2, mdci.FilteredCount);
 
             nResult = mdci.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
 
@@ -156,7 +158,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 nResult,
                 "Expecting the database items track the model at all times.");
 
+            #region C L E A R
             oc.Clear();
+            Assert.AreEqual(0, mdci.UnfilteredCount);
+            Assert.AreEqual(0, mdci.FilteredCount);
+            Assert.IsFalse(mdci.Model.HasElements);
+            nResult = mdci.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
+            Assert.AreEqual(0, nResult);
+            { }
+            #endregion C L E A R
         }
 
 

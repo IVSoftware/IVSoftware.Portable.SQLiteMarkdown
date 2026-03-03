@@ -347,11 +347,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             foreach(var xel in Model.Descendants())
             {
                 unfiltered++;
-                if( xel.Attributes(nameof(StdMarkdownAttribute.ismatch))
-                    .FirstOrDefault(_ => bool.TryParse(_.Value, out bool ismatch) && ismatch) is not null)
+
+                bool ismatch = true;
+
+                // Do not combine these clauses.
+                if (xel
+                    .Attributes(nameof(StdMarkdownAttribute.ismatch))
+                    .FirstOrDefault() is { } attr 
+                    && bool.TryParse(attr.Value, out var @explicit) && @explicit == false)
                 {
-                    filtered++;
+                    ismatch = false;
                 }
+                if (ismatch) filtered++;
             }
             UnfilteredCount = unfiltered;
             FilteredCount = filtered;
