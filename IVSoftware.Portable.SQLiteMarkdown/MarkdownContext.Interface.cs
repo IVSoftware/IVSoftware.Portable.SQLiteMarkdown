@@ -3,6 +3,7 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
+using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json.Linq;
@@ -85,8 +86,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         XElement? _model = null;
 
         Dictionary<XElement, XElement> _parentsOfRemoved = new();
-        protected virtual void OnXAttributeChanged (XAttribute xattr, XObjectChangeEventArgs e) { }
-        protected virtual void OnXElementChanged (XElement xel, XElement pxel, XObjectChangeEventArgs e) { }
+        protected virtual void OnXAttributeChanged (XAttribute xattr, XObjectChangeEventArgs e) 
+        {
+            if(xattr is XBoundAttribute xbo)
+            {
+
+            }
+        }
+        protected virtual void OnXElementChanged (XElement xel, XElement pxel, XObjectChangeEventArgs e)
+        {
+            foreach (var xbo in xel.Attributes().OfType<XBoundAttribute>())
+            {
+
+            }
+        }
 
         protected async Task RunFSM<Tfsm>(object? context = null)
         {
