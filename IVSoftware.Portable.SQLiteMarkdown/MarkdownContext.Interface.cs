@@ -339,8 +339,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             RunFSM<EnterFilterFSM>(recordset);
             UpdateCounts();
+            switch (CanonicalCount)
+            {
+                case 0:
+                    SearchEntryState = SearchEntryState.QueryCompleteNoResults;
+                    FilteringState = FilteringState.Ineligible;
+                    if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
+                    {
+                        IsFiltering = false;
+                    }
+                    break;
+                case 1:
+                    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                    FilteringState = FilteringState.Ineligible;
+                    if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
+                    {
+                        IsFiltering = false;
+                    }
+                    break;
+                default:
+                    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                    FilteringState = FilteringState.Armed;
+                    if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
+                    {
+                        IsFiltering = true;
+                    }
+                    break;
+            }
         }
 
+        /// <summary>
+        /// Update the binding properties from the model.
+        /// </summary>
         void UpdateCounts()
         {
             int 
@@ -364,7 +394,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             CanonicalCount = canonical;
             PredicateMatchCount = predicateMatch;
-            RouteToFullRecordset = CanonicalCount == PredicateMatchCount;
         }
 
         /// <summary>
@@ -493,36 +522,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (!Equals(_canonicalCount, value))
                 {
-                    _canonicalCount = value; 
-#if false
-                    switch (_canonicalCount)
-                    {
-                        case 0:
-                            SearchEntryState = SearchEntryState.QueryCompleteNoResults;
-                            FilteringState = FilteringState.Ineligible;
-                            if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
-                            {
-                                IsFiltering = false;
-                            }
-                            break;
-                        case 1:
-                            SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                            FilteringState = FilteringState.Ineligible;
-                            if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
-                            {
-                                IsFiltering = false;
-                            }
-                            break;
-                        default:
-                            SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                            FilteringState = FilteringState.Armed;
-                            if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
-                            {
-                                IsFiltering = true;
-                            }
-                            break;
-                    }
-#endif
+                    _canonicalCount = value;
                     OnPropertyChanged();
                 }
             }
