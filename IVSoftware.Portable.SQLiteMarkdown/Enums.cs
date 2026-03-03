@@ -248,6 +248,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     internal enum StdMarkdownAttribute
     {
         text,
+        ismatch,
     }
 
     /// <summary>

@@ -320,6 +320,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 set => ((IMarkdownContext)_mdc).ObservableNetProjection = value;
             }
 
+            public int FilteredCount => ((IMarkdownContext)_mdc).FilteredCount;
+
             INotifyCollectionChanged? _observableNetProjection = default;
 
             protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>

@@ -343,9 +343,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             RunFSM<EnterFilterFSM>(recordset);
 
-            // Need optimize - low hanging fruit!
-
-            UnfilteredCount = Model.Descendants().Count();
+            int unfiltered = 0, filtered = 0;
+            foreach(var xel in Model.Descendants())
+            {
+                unfiltered++;
+                if( xel.Attributes(nameof(StdMarkdownAttribute.ismatch))
+                    .FirstOrDefault(_ => bool.TryParse(_.Value, out bool ismatch) && ismatch) is not null)
+                {
+                    filtered++;
+                }
+            }
+            UnfilteredCount = unfiltered;
+            FilteredCount = filtered;
             RouteToFullRecordset = true;
         }
 
@@ -726,6 +735,20 @@ Recordset assignment is atomic; no changes were applied."
             }
         }
         int _unfilteredCount = default;
+
+        public int FilteredCount
+        {
+            get => _filteredCount;
+            protected set
+            {
+                if (!Equals(_filteredCount, value))
+                {
+                    _filteredCount = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        int _filteredCount = default;
 
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {
