@@ -1713,14 +1713,14 @@ Running"
 
                         actual.ToClipboardExpected();
                         { }
-                        // Limit Touched 260301
+                        // Limit Touched 260303
                         expected = @" 
 Busy
+CanonicalCount
+PredicateMatchCount
 SearchEntryState
 FilteringState
 IsFiltering
-CanonicalCount
-PredicateMatchCount
 Busy"
                         ;
 
