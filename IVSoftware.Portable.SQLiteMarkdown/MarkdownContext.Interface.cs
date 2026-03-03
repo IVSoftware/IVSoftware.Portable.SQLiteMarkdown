@@ -610,8 +610,22 @@ Recordset assignment is atomic; no changes were applied."
                 }
             }
         }
-
         INotifyCollectionChanged? _observableProjection = null;
+
+        public ProjectionMode ProjectionMode
+        {
+            get => _projectionMode;
+            set
+            {
+                if (!Equals(_projectionMode, value))
+                {
+                    _projectionMode = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        ProjectionMode _projectionMode = default;
+
 
         /// <summary>
         /// Raised when the handle to the ObservableNetCollection changes.

@@ -14,7 +14,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         [TestMethod]
         public void Test_DetectInheritance()
         {
-            var MDCS = new MDCSubclass<SelectableQFModel>();
+            var mdci = new MDCSubclass<SelectableQFModel>();
+            Assert.AreEqual(ProjectionMode.Inheritance, mdci.ProjectionMode);
         }
 
         [TestMethod]

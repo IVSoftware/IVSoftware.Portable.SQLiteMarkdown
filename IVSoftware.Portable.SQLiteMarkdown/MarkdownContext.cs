@@ -6,24 +6,62 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
+    public enum ProjectionMode
+    {
+        /// <summary>
+        /// No ObservableNetProjection has been assigned.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// *NOT* an ObservableNetProjection - Instead it inherits MarkdownContext and routes the enumerator.
+        /// </summary>
+        /// IsFiltering => 
+        /// 1. DHostSuppress.GetToken to suppress INCC.
+        /// 2. Copy 'this' to a canonical backing store and DB.
+        /// 3. Query DB for term and populate _filteredItems.
+        ///*4. Route the enumerator to _filteredItens.
+        /// 5. Relinquish DHostSuppress to raise Reset.
+        /// IsFiltering <=
+        /// 1. DHostSuppress.GetToken to suppress INCC.
+        ///*2. Route the enumerator to canonical.
+        /// 3. Relinquish DHostSuppress to raise Reset.
+        /// </remarks>
+        Inheritance,
+
+        /// <summary>
+        /// The ObservableNetProjection inherits INotifyCollectionChanged - flitering employs copying not routing.
+        /// </summary>
+        /// <remarks>
+        /// IsFiltering => 
+        /// 1. DHostSuppress.GetToken to suppress INCC.
+        /// 2. Copy 'this' to a canonical backing store and DB.
+        /// 3. Query DB for term and populate _filteredItems.
+        /// 4. Copy _filteredItems to 'this'.
+        /// 5. Relinquish DHostSuppress to raise Reset.
+        /// IsFiltering <=
+        /// 1. DHostSuppress.GetToken to suppress INCC.
+        /// 2. Copy canonical backing store to 'this'
+        /// 3. Relinquish DHostSuppress to raise Reset.
+        /// </remarks>
+        Composition,
+    }
     /// <summary>
     /// Represents the full parsing and transformation context for converting a user
     /// expression  (in lightweight markdown syntax) into an executable SQL WHERE
@@ -53,6 +91,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 XElement(nameof(StdAstNode.ast))
                 .WithBoundAttributeValue(this);
             ContractType = type;
+
+#if DEBUG
+            var derivedType = GetType();
+#endif
+
+            ProjectionMode =
+                typeof(INotifyCollectionChanged).IsAssignableFrom(GetType())
+                ? ProjectionMode.Inheritance
+                : ProjectionMode.Composition;
         }
 
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
