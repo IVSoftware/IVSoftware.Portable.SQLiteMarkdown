@@ -148,6 +148,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     ///   is modified by UI interaction, the canonical unfiltered items must track.
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
+    [Careful("Must *never* implement INotifyCollectionChanged - this is reserved to detect inheritance..")]
     internal interface IMarkdownContext
     {
         XElement Model { get; }
@@ -188,13 +189,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         #region P R O J E C T I O N
         /// <summary>
-        /// Represents an observable collection representing 'net visible' filtered items.
+        /// Represents a bindable and observable collection representing 'net visible' filtered items.
         /// </summary>
-        /// <remarks>
-        /// This property is not intended for binding; this is enforced as 
-        /// set only and will be detached if set to null..
-        /// </remarks>
-        INotifyCollectionChanged ObservableNetProjection { set; }
+        INotifyCollectionChanged? ObservableNetProjection { get;  set; }
 
         /// <summary>
         /// Describes the wiring between the canonical XML model and the net ("seen") projection.

@@ -16,7 +16,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     public class TestClass_Switcheroo
     {
         [TestMethod]
-        public void Test_DetectProjectionMode()
+        public void Test_DetectTopology()
         {
             #region L o c a l F x
             var builderThrow = new List<string>();
@@ -36,38 +36,37 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
                 });
 
+            subtest_Inheritor();
             subtest_Compositor();
 
-            subtest_Inheritor();
-
             #region S U B T E S T S
-            void subtest_Compositor()
-            {
-                var mdcc = new MDCCompositor<SelectableQFModel>();
-
-                Assert.AreEqual(
-                    ProjectionTopology.None,
-                    mdcc.ProjectionTopology,
-                    "Expecting NONE - the compositor must wait for assignment of the ONP");
-
-                var oc = new ObservableCollection<SelectableQFModel>();
-                mdcc.ObservableNetProjection = oc;
-
-                Assert.AreEqual(
-                    ProjectionTopology.Composition,
-                    mdcc.ProjectionTopology,
-                    "Expecting promotion to COMPOSITION now that assignment has been made.");
-            }
             void subtest_Inheritor()
             {
-                var mdci = new MDCInheritor<SelectableQFModel>();
+                var mdcc = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
+
+                Assert.AreEqual(
+                    ProjectionTopology.Inheritance,
+                    mdcc.ProjectionTopology,
+                    "Expecting INHERITANCE is detectable from the start.");
+
+            }
+
+            void subtest_Compositor()
+            {
+                var mdci = new ObservableNetProjectionWithComposition<SelectableQFModel>();
 
                 Assert.AreEqual(
                     ProjectionTopology.None,
                     mdci.ProjectionTopology,
-                    "Expecting INHERITANCE from the start.");
+                    "Expecting NONE is the epistemic default.");
 
-                Assert.AreEqual(ProjectionTopology.Inheritance, mdci.ProjectionTopology);
+                var oc = new ObservableCollection<SelectableQFModel>();
+                mdci.ObservableNetProjection = oc;
+
+                Assert.AreEqual(
+                    ProjectionTopology.Composition,
+                    mdci.ProjectionTopology,
+                    "Expecting promotion to COMPOSITION now that assignment has been made.");
             }
             #endregion S U B T E S T S
         }
@@ -175,16 +174,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     }
     namespace Switcheroo
     {
-        class MDCCompositor<T> : MarkdownContext<T>
-        { }
+        class ObservableNetProjectionInheritsMDC<T>
+            : MarkdownContext<T>
+            , INotifyCollectionChanged
+        {
+            public event NotifyCollectionChangedEventHandler? CollectionChanged;
+        }
 
         /// <summary>
         /// Extension and general housekeeping.
         /// </summary>
-        partial class MDCInheritor<T>
+        partial class ObservableNetProjectionWithComposition<T>
             : ObservableCollection<T>
         {
-            public MDCInheritor()
+            public ObservableNetProjectionWithComposition()
             {
                 base.PropertyChanged += (sender, e) =>
                 {
@@ -197,7 +200,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         /// <summary>
         /// Implementor of the IMarkdownContext interface.
         /// </summary>
-        partial class MDCInheritor<T> : IMarkdownContext
+        partial class ObservableNetProjectionWithComposition<T> : IMarkdownContext
             
         {
             private readonly MarkdownContext<T> _mdc = new MarkdownContext<T>();
@@ -264,20 +267,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             {
                 return ((IMarkdownContext)_mdc).ParseSqlMarkdown<T1>(expr, qfMode);
             }
-            public INotifyCollectionChanged? ObservableNetProjection
-            {
-                get => _observableNetProjection;
-                set
-                {
-                    if (!Equals(_observableNetProjection, value))
-                    {
-                        _observableNetProjection = value;
-                        OnPropertyChanged();
-                    }
-                }
-            }
 
             public ProjectionTopology ProjectionTopology => ((IMarkdownContext)_mdc).ProjectionTopology;
+
+            public INotifyCollectionChanged ObservableNetProjection 
+            {
+                get => ((IMarkdownContext)_mdc).ObservableNetProjection;
+                set => ((IMarkdownContext)_mdc).ObservableNetProjection = value;
+            }
 
             INotifyCollectionChanged? _observableNetProjection = default;
 

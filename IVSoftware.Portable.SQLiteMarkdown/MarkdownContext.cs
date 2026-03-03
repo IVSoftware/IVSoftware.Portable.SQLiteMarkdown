@@ -52,10 +52,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 .WithBoundAttributeValue(this);
             ContractType = type;
 
-#if DEBUG
-            var derivedType = GetType();
-#endif
-            // Promote the ProjectionMode here if subclass *is-a* MarkdownContext.
             if (typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
             {
                 ProjectionTopology = ProjectionTopology.Inheritance;
