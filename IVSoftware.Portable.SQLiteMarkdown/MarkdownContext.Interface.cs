@@ -77,28 +77,52 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         XElement? _model = null;
 
         Dictionary<XElement, XElement> _parentsOfRemoved = new();
+
         protected virtual void OnXAttributeChanged (XAttribute xattr, XObjectChangeEventArgs e) 
         {
             if(xattr is XBoundAttribute xbo && xbo.Tag.GetType() == ContractType)
             {
-                switch (e.ObjectChange)
-                {
-                    case XObjectChange.Add:
-                        break;
-                    case XObjectChange.Remove:
-                        break;
-                }
+                OnBoundItemObjectChange(xbo, e);
             }
         }
+
         protected virtual void OnXElementChanged (XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
             foreach (var xbo in xel.Attributes().OfType<XBoundAttribute>().Where(_=>_.Tag?.GetType() == ContractType))
             {
+                OnBoundItemObjectChange(xbo, e);
+            }
+        }
+
+#if DEBUG
+        const bool SQLITE_STRICT = true;
+#else
+        const bool SQLITE_STRICT = false;
+#endif
+        protected virtual void OnBoundItemObjectChange(XBoundAttribute xbo, XObjectChangeEventArgs e)
+        {
+            var item = xbo.Tag;
+            if (SQLITE_STRICT)
+            {
                 switch (e.ObjectChange)
                 {
                     case XObjectChange.Add:
+                        FilterQueryDatabase.Insert(item);
                         break;
                     case XObjectChange.Remove:
+                        FilterQueryDatabase.Delete(item);
+                        break;
+                }
+            }
+            else
+            {
+                switch (e.ObjectChange)
+                {
+                    case XObjectChange.Add:
+                        FilterQueryDatabase.InsertOrReplace(item);
+                        break;
+                    case XObjectChange.Remove:
+                        FilterQueryDatabase.Delete(item);
                         break;
                 }
             }

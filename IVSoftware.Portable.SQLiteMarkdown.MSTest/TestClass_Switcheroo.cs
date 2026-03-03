@@ -150,8 +150,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             Assert.AreEqual(2, mdci.UnfilteredCount);
 
             nResult = mdci.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
-            { }
 
+            Assert.AreEqual(
+                mdci.UnfilteredCount, 
+                nResult,
+                "Expecting the database items track the model at all times.");
         }
 
 
