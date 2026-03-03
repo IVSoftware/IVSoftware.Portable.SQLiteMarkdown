@@ -212,7 +212,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
         /// </remarks>
-        Task LoadCanonAsync(IEnumerable recordset);
+        void LoadCanon(IEnumerable? recordset);
+
+        /// <summary>
+        /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
+        /// </remarks>
+        Task LoadCanonAsync(IEnumerable? recordset);
         #endregion P R O J E C T I O N
 
 

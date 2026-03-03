@@ -246,13 +246,4 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         public bool Allow { get; set; } = true;
     }
-
-    /// <summary>
-    /// Indicates that the annotated method is intended to execute off the UI thread.
-    /// </summary>
-    /// <remarks>
-    /// Avoid property changes intended for the virtual UI.
-    /// </remarks>
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public class BackgroundWorkAttribute : Attribute { }
 }

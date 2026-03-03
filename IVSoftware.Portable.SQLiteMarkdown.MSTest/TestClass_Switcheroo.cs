@@ -155,6 +155,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 mdci.UnfilteredCount, 
                 nResult,
                 "Expecting the database items track the model at all times.");
+
+            oc.Clear();
         }
 
 
@@ -322,6 +324,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+            public void LoadCanon(IEnumerable? recordset)
+            {
+                ((IMarkdownContext)_mdc).LoadCanon(recordset);
+            }
 
             // We do not care about BC events.
             public new event PropertyChangedEventHandler? PropertyChanged;

@@ -323,7 +323,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
         /// </remarks>
-        public virtual async Task LoadCanonAsync(IEnumerable recordset)
+        public virtual async Task LoadCanonAsync(IEnumerable? recordset)
         {
             await RunFSMAsync<EnterFilterFSM>(recordset);
 
@@ -339,7 +339,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
         /// </remarks>
-        public virtual void LoadCanon(IEnumerable recordset)
+        public virtual void LoadCanon(IEnumerable? recordset)
         {
             RunFSM<EnterFilterFSM>(recordset);
 
@@ -665,7 +665,25 @@ Recordset assignment is atomic; no changes were applied."
         /// <summary>
         /// Raised when the collection - that is the ObservableNetProjection - is modified in some way.
         /// </summary>
-        protected virtual void OnObservableProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) { } 
+        protected virtual void OnObservableProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    LoadCanon(sender as IEnumerable);
+                    break;
+                default:
+                    break;
+            }
+        } 
 
 
         public int UnfilteredCount
