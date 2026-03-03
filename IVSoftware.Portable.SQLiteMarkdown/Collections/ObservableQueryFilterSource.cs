@@ -42,9 +42,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             CollectionChangedProtected += OnCollectionChanged;
 
-            _unfilteredItems.CollectionChanged += (sender, e) =>
+            _canonicalRecordset.CollectionChanged += (sender, e) =>
             {
-                if (_unfilteredItems.Count < 2)
+                if (_canonicalRecordset.Count < 2)
                 {
                     // 260301
                     // FilteringState = FilteringState.Ineligible;
@@ -81,7 +81,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         }
                         break;
                     case NotifyCollectionChangedAction.Reset:
-                        _filteredItems.Clear();
+                        _filteredSubset.Clear();
                         foreach (var inpc in _unsubscribeItems)
                         {
                             inpc.PropertyChanged -= OnItemPropertyChanged;
@@ -90,14 +90,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         CollectionChangedProtected?.Invoke(this, e);
                         break;
                 }
-                _unsubscribeItems = _unfilteredItems.OfType<INotifyPropertyChanged>().ToArray();
+                _unsubscribeItems = _canonicalRecordset.OfType<INotifyPropertyChanged>().ToArray();
             };
         }
 
-        private readonly ObservableCollection<T> _filteredItems = new ObservableCollection<T>();
-        private readonly ObservableCollection<T> _unfilteredItems = new ObservableCollection<T>();
+        private readonly ObservableCollection<T> _filteredSubset = new ObservableCollection<T>();
+        private readonly ObservableCollection<T> _canonicalRecordset = new ObservableCollection<T>();
 
-        public IReadOnlyList<T> UnfilteredItems => _unfilteredItems;
+        public IReadOnlyList<T> UnfilteredItems => _canonicalRecordset;
 
         public async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
@@ -112,14 +112,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
 
                 // This causes a Reset on the main INCC
-                _unfilteredItems.Clear();
+                _canonicalRecordset.Clear();
                 if (UnfilteredCount != 0)
                 {
                     foreach (var xel in Model.Descendants())
                     {
                         if (xel.To<T>() is { } item)
                         {
-                            _unfilteredItems.Add(item);
+                            _canonicalRecordset.Add(item);
                         }
                     }
                     // Raise single event after completing the loop.
@@ -127,7 +127,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         this,
                         new NotifyQueryFilterCollectionChangedEventArgs(
                             NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
-                            _unfilteredItems.ToList() // snapshot as IList
+                            _canonicalRecordset.ToList() // snapshot as IList
                         )
                     );
                 }
@@ -151,14 +151,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
 
                 // This causes a Reset on the main INCC
-                _unfilteredItems.Clear();
+                _canonicalRecordset.Clear();
                 if (UnfilteredCount != 0)
                 {
                     foreach (var xel in Model.Descendants())
                     {
                         if (xel.To<T>() is { } item)
                         {
-                            _unfilteredItems.Add(item);
+                            _canonicalRecordset.Add(item);
                         }
                     }
                     // Raise single event after completing the loop.
@@ -166,7 +166,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         this,
                         new NotifyQueryFilterCollectionChangedEventArgs(
                             NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
-                            _unfilteredItems.ToList() // snapshot as IList
+                            _canonicalRecordset.ToList() // snapshot as IList
                         )
                     );
                 }
@@ -178,14 +178,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             try
             {
                 // This causes a Reset on the main INCC
-                _unfilteredItems.Clear();
+                _canonicalRecordset.Clear();
                 if (UnfilteredCount != 0)
                 {
                     foreach (var xel in Model.Descendants())
                     {
                         if (xel.To<T>() is { } item)
                         {
-                            _unfilteredItems.Add(item);
+                            _canonicalRecordset.Add(item);
                         }
                     }
                     // Raise single event after completing the loop.
@@ -193,7 +193,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         this,
                         new NotifyQueryFilterCollectionChangedEventArgs(
                             NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
-                            _unfilteredItems.ToList() // snapshot as IList
+                            _canonicalRecordset.ToList() // snapshot as IList
                         )
                     );
                 }
@@ -315,20 +315,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                         // This is 'not' the place for a reconciled sync.
                         // We would do that in the UI if at all.
-                        _filteredItems.Clear();
+                        _filteredSubset.Clear();
                         foreach (var item in filteredRecords)
                         {
-                            _filteredItems.Add(item);
+                            _filteredSubset.Add(item);
                         }
                         // Active REGARDLESS of result because if unfiltered
                         // count < 2 we're not supposed to be here in the first place.
-                        Debug.Assert(_unfilteredItems.Count >= 2, "ADVISORY - Filterable source is required.");
+                        Debug.Assert(_canonicalRecordset.Count >= 2, "ADVISORY - Filterable source is required.");
                         FilteringState = FilteringState.Active;
                         CollectionChangedProtected?.Invoke(
                             this,
                             new NotifyQueryFilterCollectionChangedEventArgs(
                                 NotifyQueryFilterCollectionChangedAction.ApplyFilter,
-                                _filteredItems.ToList() // snapshot
+                                _filteredSubset.ToList() // snapshot
                             )
                         );
                     }
@@ -344,7 +344,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         #region I L I S T
-        public int IndexOf(T item) { return _unfilteredItems.IndexOf(item); }
+        public int IndexOf(T item) { return _canonicalRecordset.IndexOf(item); }
 
         void IList.Clear() => Clear(all: true);
         void ICollection<T>.Clear() => Clear(all: true);
@@ -361,7 +361,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // If we're responding to FilteringState changed to clear the
                 // unfiltered items list it MIGHT NOT WORK. For example, manual
                 // add-remove changes to Items will bypass the input state machine. 
-                _unfilteredItems.Clear();
+                _canonicalRecordset.Clear();
 
                 void localCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
                 {
@@ -377,36 +377,36 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        public bool Contains(T item) { return _unfilteredItems.Contains(item); }
+        public bool Contains(T item) { return _canonicalRecordset.Contains(item); }
 
-        public void CopyTo(T[] array, int arrayIndex) { _unfilteredItems.CopyTo(array, arrayIndex); }
+        public void CopyTo(T[] array, int arrayIndex) { _canonicalRecordset.CopyTo(array, arrayIndex); }
 
-        bool IList.Contains(object value) { return ((IList)_unfilteredItems).Contains(value); }
+        bool IList.Contains(object value) { return ((IList)_canonicalRecordset).Contains(value); }
 
-        int IList.IndexOf(object value) { return ((IList)_unfilteredItems).IndexOf(value); }
+        int IList.IndexOf(object value) { return ((IList)_canonicalRecordset).IndexOf(value); }
         public void Insert(int index, T item)
         {
-            _unfilteredItems.Insert(index, item);
+            _canonicalRecordset.Insert(index, item);
             OnExternalChange(item);
         }
 
         public void Add(T item)
         {
-            _unfilteredItems.Add(item);
+            _canonicalRecordset.Add(item);
             OnExternalChange(item);
         }
         public void RemoveAt(int index)
         {
             object item;
-            if (index < _unfilteredItems.Count)
+            if (index < _canonicalRecordset.Count)
             {
-                item = _unfilteredItems[index];
+                item = _canonicalRecordset[index];
             }
             else
             {
                 item = null;
             }
-            _unfilteredItems.RemoveAt(index);
+            _canonicalRecordset.RemoveAt(index);
             OnExternalChange(item);
         }
 
@@ -414,17 +414,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             if(item is T itemT)
             {
-                _unfilteredItems.Add(itemT);
+                _canonicalRecordset.Add(itemT);
                 OnExternalChange(item);
-                return _unfilteredItems.IndexOf(itemT);
+                return _canonicalRecordset.IndexOf(itemT);
             }
             if(typeof(T) == typeof(StringWrapper))
             {
                 var wrapper = new StringWrapper(item?.ToString() ?? string.Empty);
                 if (wrapper is T itemTT)
                 {
-                    _unfilteredItems.Add(itemTT);
-                    return _unfilteredItems.IndexOf(itemTT);
+                    _canonicalRecordset.Add(itemTT);
+                    return _canonicalRecordset.IndexOf(itemTT);
                 }
             }
             throw new ArgumentException($"Value of type {item?.GetType()} cannot be added to list of {typeof(T)}");
@@ -432,22 +432,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public bool Remove(T item)
         {
-            var removed = _unfilteredItems.Remove(item);
+            var removed = _canonicalRecordset.Remove(item);
             if (removed) OnExternalChange(item);
             return removed;
         }
 
         void IList.Insert(int index, object item)
         {
-            _unfilteredItems.Insert(index, (T)item);
+            _canonicalRecordset.Insert(index, (T)item);
             OnExternalChange(item);
         }
 
         void IList.Remove(object item)
         {
-            if (_unfilteredItems.Contains((T)item))
+            if (_canonicalRecordset.Contains((T)item))
             {
-                _unfilteredItems.Remove((T)item);
+                _canonicalRecordset.Remove((T)item);
                 OnExternalChange(item);
             }
         }
@@ -477,11 +477,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        void ICollection.CopyTo(Array array, int index) { ((ICollection)_unfilteredItems).CopyTo(array, index); }
+        void ICollection.CopyTo(Array array, int index) { ((ICollection)_canonicalRecordset).CopyTo(array, index); }
 
-        bool ICollection.IsSynchronized { get { return ((ICollection)_unfilteredItems).IsSynchronized; } }
+        bool ICollection.IsSynchronized { get { return ((ICollection)_canonicalRecordset).IsSynchronized; } }
 
-        object ICollection.SyncRoot { get { return ((ICollection)_unfilteredItems).SyncRoot; } }
+        object ICollection.SyncRoot { get { return ((ICollection)_canonicalRecordset).SyncRoot; } }
 
         #endregion I L I S T
 
@@ -560,7 +560,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             this,
                             new NotifyQueryFilterCollectionChangedEventArgs(
                                 NotifyQueryFilterCollectionChangedAction.RemoveFilter | NotifyQueryFilterCollectionChangedAction.Add,
-                                _unfilteredItems.ToList() // snapshot as IList
+                                _canonicalRecordset.ToList() // snapshot as IList
                             )
                         );
                     }
@@ -678,7 +678,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 case FilteringState.Ineligible:
                     // Clear, then event ADHOC. That is, it's not always
                     // in our best interest to simply forward the clear.
-                    _unfilteredItems.Clear();
+                    _canonicalRecordset.Clear();
                     CollectionChangedProtected?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                     break;
                 case FilteringState.Armed:
@@ -686,7 +686,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     {
                         await Task.Delay(TimeSpan.FromTicks(1));
                         FilterQueryDatabase.DeleteAll<T>();
-                        FilterQueryDatabase.InsertAll(_unfilteredItems);
+                        FilterQueryDatabase.InsertAll(_canonicalRecordset);
                     }
                     break;
                 case FilteringState.Active:
@@ -709,7 +709,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             get
             {
-                if (_unfilteredItems.Count < 2) // Filtering state ineligible. Show all items.
+                if (_canonicalRecordset.Count < 2) // Filtering state ineligible. Show all items.
                 {
                     return true;
                 }
@@ -734,7 +734,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         [Careful("This polarity was wrong, and has been fixed.")]
         private IList<T> _RoutedItems_ =>
-            RouteToFullRecordset ? _unfilteredItems : _filteredItems;
+            RouteToFullRecordset ? _canonicalRecordset : _filteredSubset;
 
         public IEnumerator<T> GetEnumerator() => _RoutedItems_.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
@@ -744,12 +744,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <summary>
         /// Required IList support
         /// </summary>
-        public bool IsReadOnly => ((IList)_unfilteredItems).IsReadOnly;
+        public bool IsReadOnly => ((IList)_canonicalRecordset).IsReadOnly;
 
         /// <summary>
         /// Required IList support
         /// </summary>
-        public bool IsFixedSize => ((IList)_unfilteredItems).IsFixedSize;
+        public bool IsFixedSize => ((IList)_canonicalRecordset).IsFixedSize;
 
         public T this[int index]
         {

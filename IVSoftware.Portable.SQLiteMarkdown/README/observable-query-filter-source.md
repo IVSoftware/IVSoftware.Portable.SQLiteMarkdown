@@ -1,6 +1,6 @@
 ## Observable Query Filter Source
 
-This class is a functional drop-in replacement for ObservableCollection&lt;T&gt; and supports `INotifyCollectionChanged`, but it does not inherit from it. Instead, it wraps two collections - one consisting of all items (unfiltered collection) and one consisting of a subset of the full recordset. The routing between there two collections is managed by state variables.
+This class is a functionally compatible with `ObservableCollection<T>` and supports `INotifyCollectionChanged`. It is *not* a subclass of `ObservableCollection<T>`. Instead, it wraps two collections - one consisting of all items (unfiltered collection) and one consisting of a filtered subset of it. The routing between these two collections is managed by state variables.
 
 On one hand, this portable class is completely decoupled from any platform-specific UI controls or views. At the same time, it acknowledges the probable and almost-certain existence of 'some' UI and unapologetically supports the most likely configurations of a UI with these state variables.
 
