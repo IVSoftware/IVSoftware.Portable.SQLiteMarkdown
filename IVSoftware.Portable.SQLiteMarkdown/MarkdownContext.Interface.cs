@@ -601,6 +601,15 @@ Recordset assignment is atomic; no changes were applied."
 
                     _observableProjection = value;
 
+                    // [Careful] This is safest when MDC is first in line.
+                    ProjectionMode = _observableProjection switch
+                    {
+                        MarkdownContext _ => ProjectionMode.Inheritance,
+                        INotifyCollectionChanged _ and not MarkdownContext
+                            => ProjectionMode.Composition,
+                        _ => ProjectionMode.None,
+                    };
+
                     // Allow the async handler to complete.
                     // Then, subscribe to any subsequent changes.
                     OnObservableProjectionChanged()

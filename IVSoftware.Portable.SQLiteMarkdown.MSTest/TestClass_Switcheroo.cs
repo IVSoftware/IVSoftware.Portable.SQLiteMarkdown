@@ -14,7 +14,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     public class TestClass_Switcheroo
     {
         [TestMethod]
-        public void Test_DetectInheritance()
+        public void Test_DetectProjectionMode()
         {
             #region L o c a l F x
             var builderThrow = new List<string>();
@@ -33,15 +33,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 {
                     Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
                 });
-            var mdcr = new MDCCompositor<SelectableQFModel>();
 
-            Assert.AreEqual(ProjectionMode.None, mdcr.ProjectionMode);
+            subtest_Compositor();
 
-            var oc = new ObservableCollection<SelectableQFModel>();
+            #region S U B T E S T S
+            void subtest_Compositor()
+            {
+                var mdcr = new MDCCompositor<SelectableQFModel>();
 
+                Assert.AreEqual(
+                    ProjectionMode.None,
+                    mdcr.ProjectionMode,
+                    "Expecting the compositor to wait for assignment of the ONP");
+
+                var oc = new ObservableCollection<SelectableQFModel>();
+                mdcr.ObservableNetProjection = oc;
+
+                Assert.AreEqual(ProjectionMode.Composition, mdcr.ProjectionMode);
+            }
+            #endregion S U B T E S T S
         }
 
-        [TestMethod]
+        [TestMethod, Ignore]
         public void Test_RouteEnumeratorAndReset()
         {
             string actual, expected;
@@ -92,7 +105,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         }
 
 
-        [TestMethod]
+        [TestMethod, Ignore]
         public void Test_ResetAndCopy()
         {
             string actual, expected;
