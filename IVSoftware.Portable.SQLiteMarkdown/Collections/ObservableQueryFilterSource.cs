@@ -140,13 +140,36 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         public void ReplaceItems(IEnumerable<T> items)
         {
-            if (QueryFilterConfig == QueryFilterConfig.Filter)
+            using (DHostBusy.GetToken())
             {
-                throw new InvalidOperationException("You must turn off Filter-Only mode to use this method");
-            }
-            else
-            {
-                ReplaceItemsInternal(items);
+                // --------------
+                // UPGRADE 260301
+                // Sets UnfilteredCount
+                // -> Sets SearchEntryState
+                base.LoadCanon(items);
+                // --------------
+
+
+                // This causes a Reset on the main INCC
+                _unfilteredItems.Clear();
+                if (UnfilteredCount != 0)
+                {
+                    foreach (var xel in Model.Descendants())
+                    {
+                        if (xel.To<T>() is { } item)
+                        {
+                            _unfilteredItems.Add(item);
+                        }
+                    }
+                    // Raise single event after completing the loop.
+                    CollectionChangedProtected?.Invoke(
+                        this,
+                        new NotifyQueryFilterCollectionChangedEventArgs(
+                            NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
+                            _unfilteredItems.ToList() // snapshot as IList
+                        )
+                    );
+                }
             }
         }
 
