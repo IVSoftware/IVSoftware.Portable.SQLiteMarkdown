@@ -90,14 +90,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if(xattr is XBoundAttribute xbo && xbo.Tag.GetType() == ContractType)
             {
-
+                switch (e.ObjectChange)
+                {
+                    case XObjectChange.Add:
+                        break;
+                    case XObjectChange.Remove:
+                        break;
+                }
             }
         }
         protected virtual void OnXElementChanged (XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
             foreach (var xbo in xel.Attributes().OfType<XBoundAttribute>().Where(_=>_.Tag?.GetType() == ContractType))
             {
-
+                switch (e.ObjectChange)
+                {
+                    case XObjectChange.Add:
+                        break;
+                    case XObjectChange.Remove:
+                        break;
+                }
             }
         }
 
@@ -121,10 +133,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     await localInitializeModel(canonical);
                     break;
                 case EnterFilterFSM.SuppressedReplace:
-                    Debug.Fail($@"ADVISORY - ToDo.");
                     break;
                 case EnterFilterFSM.RaiseResetEvent:
-                    Debug.Fail($@"ADVISORY - ToDo.");
                     break;
                 default:
                     var msg = $@"ADVISORY - ToDo {state.ToFullKey()}.";
