@@ -118,8 +118,11 @@ public class TestClass_PredicateMarkdownContext
         #endregion S U B T E S T S
     }
 
+    /// <summary>
+    /// Try out some basic extenal filters.
+    /// </summary>
     [TestMethod]
-    public async Task Test_PMDCFSOL()
+    public async Task Test_PredicateMarkdownContext101()
     {
         const int COUNT = 31;
 
@@ -129,26 +132,18 @@ public class TestClass_PredicateMarkdownContext
             opc.PopulateForDemo().Count, 
             "Expecting initial population.");
 
+        // Filter-only MDC: Wakes up loaded with opc as canon.
         var pmdc = new PredicateMarkdownContext<TemporalAffinityQFModel>
         {
             QueryFilterConfig = QueryFilterConfig.Filter,
-            // This *does* set the listener but *does not* inject a recordset.
             ObservableNetProjection = opc,
         };
-        Assert.AreEqual(
-            0, 
-            pmdc.UnfilteredCount, 
-            "Expecting recordset IS NOT initialized.");
 
-        // Let's figure this out, once and for all.
         Assert.IsTrue(pmdc.IsFiltering);
-
-        await pmdc.LoadCanonAsync(opc);
-
         Assert.AreEqual(
             COUNT, 
             pmdc.UnfilteredCount, 
-            "Expecting UNFILTERED COUNT is correct meaning RECORDSET is initialized.");
+            "Expecting UNFILTERED COUNT is correct meaning canon is initialized.");
 
         Assert.AreEqual(
             SearchEntryState.QueryCompleteWithResults,
@@ -162,6 +157,13 @@ public class TestClass_PredicateMarkdownContext
         pmdc.InputText = "green";
         await pmdc;
         { }
+
+        // InProg.
+        // This should filter, but it's not doing that yet.
+        Assert.AreNotEqual(
+            COUNT,
+            pmdc.UnfilteredCount,
+            "Expecting UNFILTERED COUNT is correct meaning canon is initialized.");
     }
 
 

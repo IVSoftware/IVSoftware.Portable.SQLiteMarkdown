@@ -116,73 +116,73 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         public async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
-            // --------------
-            // UPGRADE 260301
-            // Sets UnfilteredCount
-            // -> Sets SearchEntryState
-            await base.LoadCanonAsync(items);
-            // --------------
+            using (DHostBusy.GetToken())
+            {
+                // --------------
+                // UPGRADE 260301
+                // Sets UnfilteredCount
+                // -> Sets SearchEntryState
+                await base.LoadCanonAsync(items);
+                // --------------
 
-            // Keep for now.
-            ReplaceItemsInternal(items);
-            await this;
+                // Keep for now.
+                ReplaceItemsInternal(items);
+                await this;
+            }
         }
 
         private void ReplaceItemsInternal(IEnumerable<T> items)
         {
-            using (DHostBusy.GetToken())
+            try
             {
-                try
+                // This causes a Reset on the main INCC
+                _unfilteredItems.Clear();
+                if (UnfilteredCount != 0)
                 {
-                    // This causes a Reset on the main INCC
-                    _unfilteredItems.Clear();
-                    if(UnfilteredCount != 0)
+                    foreach (var xel in Model.Descendants())
                     {
-                        foreach (var xel in Model.Descendants())
+                        if (xel.To<T>() is { } item)
                         {
-                            if(xel.To<T>() is { } item)
-                            {
-                                _unfilteredItems.Add(item);
-                            }
+                            _unfilteredItems.Add(item);
                         }
-                        // Raise single event after completing the loop.
-                        CollectionChangedProtected?.Invoke(
-                            this,
-                            new NotifyQueryFilterCollectionChangedEventArgs(
-                                NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
-                                _unfilteredItems.ToList() // snapshot as IList
-                            )
-                        );
                     }
-
-                    //if (items.Any())
-                    //{
-                    //    foreach (T item in items.ToArray())
-                    //    {
-                    //        _unfilteredItems.Add(item);
-                    //    }
-                    //    CollectionChanged?.Invoke(
-                    //        this,
-                    //        new NotifyQueryFilterCollectionChangedEventArgs(
-                    //            NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
-                    //            _unfilteredItems.ToList() // snapshot as IList
-                    //        )
-                    //    );
-                    //    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                    //}
-
-                    // 260301
-                    // FilteringState =
-                    //    _unfilteredItems.Count < 2
-                    //    ? FilteringState.Ineligible
-                    //    : FilteringState.Armed;
+                    // Raise single event after completing the loop.
+                    CollectionChangedProtected?.Invoke(
+                        this,
+                        new NotifyQueryFilterCollectionChangedEventArgs(
+                            NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
+                            _unfilteredItems.ToList() // snapshot as IList
+                        )
+                    );
                 }
-                finally
+
+                //if (items.Any())
+                //{
+                //    foreach (T item in items.ToArray())
+                //    {
+                //        _unfilteredItems.Add(item);
+                //    }
+                //    CollectionChanged?.Invoke(
+                //        this,
+                //        new NotifyQueryFilterCollectionChangedEventArgs(
+                //            NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
+                //            _unfilteredItems.ToList() // snapshot as IList
+                //        )
+                //    );
+                //    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                //}
+
+                // 260301
+                // FilteringState =
+                //    _unfilteredItems.Count < 2
+                //    ? FilteringState.Ineligible
+                //    : FilteringState.Armed;
+            }
+            finally
+            {
+                lock (_lock)
                 {
-                    lock (_lock)
-                    {
-                        this.OnAwaited();
-                    }
+                    this.OnAwaited();
                 }
             }
         }
