@@ -6,6 +6,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SQLite;
 using System;
 using System.Collections;
@@ -1651,6 +1652,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnFilteringStateChanged()
         {
+#if false
             switch (QueryFilterConfig)
             {
                 case QueryFilterConfig.Query:
@@ -1676,6 +1678,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     this.ThrowFramework<NotSupportedException>($"The {QueryFilterConfig.ToFullKey()} case is not supported.");
                     break;
             }
+#endif
         }
 
         public string InputText

@@ -344,27 +344,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case 0:
                     SearchEntryState = SearchEntryState.QueryCompleteNoResults;
                     FilteringState = FilteringState.Ineligible;
-                    if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
-                    {
-                        IsFiltering = false;
-                    }
                     break;
                 case 1:
                     SearchEntryState = SearchEntryState.QueryCompleteWithResults;
                     FilteringState = FilteringState.Ineligible;
-                    if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
-                    {
-                        IsFiltering = false;
-                    }
                     break;
                 default:
                     SearchEntryState = SearchEntryState.QueryCompleteWithResults;
                     FilteringState = FilteringState.Armed;
-                    if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
-                    {
-                        IsFiltering = true;
-                    }
                     break;
+            }
+            if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
+            {
+                IsFiltering = CanonicalCount > 2;
             }
         }
 
