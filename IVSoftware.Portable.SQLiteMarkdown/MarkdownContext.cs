@@ -1474,11 +1474,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Returns true when the canonical recordset contains 2 or more items.
         /// </summary>
         /// <remarks>
-        /// Mental Model: 
-        /// "Choose placeholder text - 'Search' or'Filter'. Icon, too."
-        /// Functional Model (internal):
-        /// "On -> true : Take a snapshot of the full recordset in order to filter it."
-        /// "On -> false: Relinquish."
+        /// Mental Model: "Choose placeholder text (and the icon, too) - 'Search' or 'Filter'"
         /// </remarks>
         public bool IsFiltering
         {
@@ -1501,6 +1497,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+
+        bool _isFiltering = false;
 
         /// <summary>
         /// True when InputText is empty regardless of IsFiltering.
@@ -1529,52 +1527,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Catch and release heuristic for canonical ObservableNetProjection entering and leaving IsFiltered state.
         /// </summary>
-        protected virtual void OnIsFilteringChanged()
-        {
-            if(IsFiltering)
-            {
-                if (ObservableNetProjection is not null)
-                { 
-                    Type listType = ObservableNetProjection.GetType();
-                    if (listType.IsGenericType && listType.GetGenericArguments().Single() is { } itemType)
-                    {
-                        FilterQueryDatabase.CreateTable(itemType);
-                        if (itemType.GetMapping() is { } mapping)
-                        {
-                            RunFSM<EnterFilterFSM>(ObservableNetProjection);
-                        }
-                        #region L o c a l F x
-                        XElement localMakeXel(PropertyInfo pk, object item)
-                        {
-                            if (pk.GetValue(item)?.ToString() is { } id && !string.IsNullOrWhiteSpace(id))
-                            {
-                                var xel = new XElement(
-                                    nameof(StdMarkdownElement.xitem),
-                                    new XAttribute(nameof(StdMarkdownAttribute.text), id));
-
-                                xel.SetBoundAttributeValue(
-                                    tag: item,
-                                    name: nameof(StdMarkdownElement.xitem));
-
-                                return xel;
-                            }
-                            this.ThrowHard<NullReferenceException>();
-                            return null!;
-                        }
-                        #endregion L o c a l F x
-                    }
-                }
-            }
-            else
-            {
-                foreach (ExitFilterFSM item in Enum.GetValues(typeof(ExitFilterFSM)))
-                {
-
-                }
-            }
-        }
-
-        bool _isFiltering = false;
+        protected virtual void OnIsFilteringChanged() { }
 
 
         /// <summary>
