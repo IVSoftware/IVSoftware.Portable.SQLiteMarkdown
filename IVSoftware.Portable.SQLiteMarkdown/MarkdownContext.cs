@@ -1746,7 +1746,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (InputText.IsSemanticallyEmpty())
                 {
-                    SearchEntryState = SearchEntryState.QueryEmpty;
+                    // Not merely *is* empty. It has *become* empty.
+                    // - Backspace to empty
+                    // = [X] while not empty.
+                    if(CanonicalCount == 0)
+                    {
+                        // If there are no records in the projection,
+                        // then the state has reached first cause.
+                        SearchEntryState = SearchEntryState.Cleared;
+                    }
+                    else
+                    {
+                        // This offers an intermediate step. The IME is now empty, but
+                        // it takes one additional [X] to clear the projected items.
+                        SearchEntryState = SearchEntryState.QueryEmpty;
+                    }
                 }
                 else if (InputText.TrimEndTransients().Length < 3)
                 {
