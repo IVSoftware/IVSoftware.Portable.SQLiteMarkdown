@@ -1612,6 +1612,52 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     break;
                 case QueryFilterConfig.QueryAndFilter:
                     _isFiltering = FilteringState != FilteringState.Ineligible;
+
+                    if(FilteringState == FilteringState.Ineligible)
+                    {
+                        // Apply hysteresis to SearchEntryState; obtain direction from prev state.
+                        switch (FilteringStatePrev)
+                        {
+                            case FilteringState.Ineligible:
+                                break;
+                            case FilteringState.Armed:
+                            case FilteringState.Active:
+                                Debug.Assert(InputText.Length == 0, "Otherwise, we've got a problem.");
+
+                                // IME downgrade FSM.
+                                switch (SearchEntryState)
+                                {
+                                    case SearchEntryState.QueryCompleteWithResults:
+                                        // Leave the projected items for now, while we enable a new Search.
+                                        SearchEntryState = SearchEntryState.QueryEmpty;
+                                        break;
+                                    case SearchEntryState.QueryCompleteNoResults:
+                                        // There aren't any projected items; No intermediate step is needed.
+                                        SearchEntryState = SearchEntryState.Cleared;
+                                        break;
+                                    case SearchEntryState.QueryEmpty:
+                                        // Please do not combine these clauses.
+                                        if( ProjectionOptions.HasFlag(NetProjectionOption.AllowDirectChanges))
+                                        {
+                                            if(ObservableNetProjection is IList list)
+                                            {
+                                                list.Clear();
+                                            }
+                                        }
+                                        else
+                                        {
+                                            var msg = $"In {nameof(OnFilteringStateChanged)}(): {ProjectionOptions.ToFullKey()}";
+                                            Debug.Fail(msg);
+                                            this.Advisory(msg);
+                                        }
+                                        SearchEntryState = SearchEntryState.Cleared;
+                                        break;
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
                     break;
                 default:
                     break;

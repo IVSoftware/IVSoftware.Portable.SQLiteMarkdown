@@ -482,6 +482,30 @@ InputText"
                 Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState);
                 Assert.AreEqual(FilteringState.Armed, mdc.FilteringState);
                 Assert.IsTrue(mdc.IsFiltering);
+
+                mdc.Clear();
+                Assert.AreEqual(string.Empty, mdc.InputText);
+                // Expecting no change; there weren't any additional keystrokes to put it in FilteringState.Active.
+                Assert.AreEqual(FilteringState.Armed, mdc.FilteringState, "NO CHANGE");
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState, "NO CHANGE");
+                Assert.IsTrue(mdc.IsFiltering, "NO CHANGE");
+
+                // This is different. We're expecting a big state regression due to {Empty IME} + {Clear}.
+                mdc.Clear();
+                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "FILTERING STATE REGRESSED.");
+                Assert.AreEqual(SearchEntryState.QueryEmpty, mdc.SearchEntryState, "IME STATE REGRESSED - Where the list was non-empty.");
+                Assert.IsFalse(mdc.IsFiltering, "TURNED OFF");
+
+                // Finally, this is going to CLEAR those two items, leaving the IME at first cause.
+                Assert.IsTrue(mdc.CanonicalCount == 2);
+
+                // GZ GZ GZ GZ GZ GZ GZ 
+                mdc.Clear();
+                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "NO CHANGE");
+                Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "IME STATE CLEARED");
+                Assert.IsFalse(mdc.IsFiltering, "TURNED OFF");
+                Assert.IsTrue(mdc.CanonicalCount == 0);
+                { }
             }
             async Task subtestClearAwaiterOnly()
             {
