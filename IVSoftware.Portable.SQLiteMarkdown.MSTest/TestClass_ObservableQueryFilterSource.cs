@@ -2858,10 +2858,12 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
 
                     actual = string.Join(Environment.NewLine, builder);
 
+                    // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
                     // Limit touched 260304
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
+Projection.Reset NewItems=0
 Projection.Add NewItems=12"
                     ;
 
@@ -2870,8 +2872,6 @@ Projection.Add NewItems=12"
                         actual.NormalizeResult(),
                         "Expecting collection authority clean flow.."
                     );
-
-#if false && SAVE
                     Assert.IsNotNull((ecc = (NotifyCollectionChangedEventArgs?)eventQueue.Dequeue()?.e));
                     {
                         switch (ecc.Action)
@@ -2883,7 +2883,6 @@ Projection.Add NewItems=12"
                                 break;
                         }
                     }
-#endif
 
                     Assert.IsNotNull((ecc = (NotifyCollectionChangedEventArgs?)eventQueue.DequeueSingle()?.e));
                     {

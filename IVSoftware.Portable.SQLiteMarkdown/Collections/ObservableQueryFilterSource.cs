@@ -160,11 +160,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                 var preview = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
 #endif
+
+                // This causes a Reset on the main INCC.
+                // Unit Tests expect this, so leave it outside of the authority.
+                // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
+                // This isn't how we'll do it in Collections, but
+                // leave this particular implementation alone.
+                _canonicalRecordset.Clear();
+
                 using (base.BeginAuthorityClaim())
                 {
-                    // This causes a Reset on the main INCC
-                    _canonicalRecordset.Clear();
-
+                    // Building from the model in V2 is new, however.
                     if (CanonicalCount != 0)
                     {
                         foreach (var xel in Model.Descendants())
