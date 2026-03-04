@@ -175,10 +175,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             switch ((StdFSMState)state)
             {
-                case StdFSMState.ReinitializeFilterQueryDatabase when context is IEnumerable canonical:
+                case StdFSMState.InitFQBDForEpoch when context is IEnumerable canonical:
                     localInitFilterQueryDatabaseEpoch(canonical);
                     break;
-                case StdFSMState.InitializeModel when context is IEnumerable canonical:
+                case StdFSMState.InitModelForEpoch when context is IEnumerable canonical:
                     localInitModelEpoch(canonical);
                     break;
                 case StdFSMState.UpdateCounts:

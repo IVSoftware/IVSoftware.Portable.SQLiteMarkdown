@@ -276,12 +276,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [Obsolete]
         InitializeUnfilteredItemsCollection = 1,
 
-        ReinitializeFilterQueryDatabase,
+        /// <summary>
+        /// Clear or Create Table for ContractType.
+        /// </summary>
+        InitFQBDForEpoch,
 
-        InitializeModel,
+        /// <summary>
+        /// Build the XML model of the canonical recordset.
+        /// </summary>
+        InitModelForEpoch,
 
+        /// <summary>
+        /// Update current values for CanonicalCount and PredicateMatchCount by iterating model.
+        /// </summary>
         UpdateCounts,
 
+        /// <summary>
+        /// Set SearchEntryState and FilteringState contextually.
+        /// </summary>
+        InitStatesForEpoch,
+
+        /// <summary>
+        /// 
+        /// </summary>
         SuppressedReplace,
 
         RaiseResetEvent,
@@ -293,8 +310,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </summary>
     internal enum BeginRecordsetEpochFSM
     {
-        InitializeModel = StdFSMState.InitializeModel,
+        InitFQBDForEpoch = StdFSMState.InitFQBDForEpoch,
+
+        InitModelForEpoch = StdFSMState.InitModelForEpoch,
+
         UpdateCounts = StdFSMState.UpdateCounts,
+
+        
     }
 
     /// <summary>
@@ -305,9 +327,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [Obsolete]
         InitializeUnfilteredItemsCollection = StdFSMState.InitializeUnfilteredItemsCollection,
 
-        ReinitializeFilterQueryDatabase = StdFSMState.ReinitializeFilterQueryDatabase,
+        InitFQBDForEpoch = StdFSMState.InitFQBDForEpoch,
 
-        InitializeModel = StdFSMState.InitializeModel,
+        InitModelForEpoch = StdFSMState.InitModelForEpoch,
 
         SuppressedReplace = StdFSMState.SuppressedReplace,
 
