@@ -187,7 +187,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Enum result = ReservedAffinityState.None;
             foreach (Enum state in GetDeclaredValues<TFsm>())
             {
+                // Expecting 'Next' for linear flow.
                 result = ExecState(state, context);
+
                 if(!Equals(result, ReservedAffinityState.Next))
                 {
                     Enum outOfBand;
@@ -331,7 +333,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         break;
                     default:
                         SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                        FilteringState = FilteringState.Armed;
+                        switch (QueryFilterConfig)
+                        {
+                            case QueryFilterConfig.Query:
+                            case QueryFilterConfig.Filter:
+                            default:
+                                FilteringState = FilteringState.Ineligible;
+                                break;
+                            case QueryFilterConfig.QueryAndFilter:
+                                FilteringState = FilteringState.Armed;
+                                break;
+                        }
                         break;
                 }
             }
