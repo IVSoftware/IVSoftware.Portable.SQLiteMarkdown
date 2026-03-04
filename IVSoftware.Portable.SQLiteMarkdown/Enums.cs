@@ -297,11 +297,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         InitStatesForEpoch,
 
         /// <summary>
-        /// 
+        /// Using a DHostSuppress token, populate the NetProjection. Reset will happen on token release.
         /// </summary>
-        SuppressedReplace,
-
-        RaiseResetEvent,
+        NetProjectWithSuppress,
     }
 
 
@@ -314,9 +312,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         InitModelForEpoch = StdFSMState.InitModelForEpoch,
 
-        UpdateCounts = StdFSMState.UpdateCounts,
-
-        
+        UpdateCounts = StdFSMState.UpdateCounts,        
     }
 
     /// <summary>
@@ -331,9 +327,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         InitModelForEpoch = StdFSMState.InitModelForEpoch,
 
-        SuppressedReplace = StdFSMState.SuppressedReplace,
-
-        RaiseResetEvent = StdFSMState.RaiseResetEvent,
+        SuppressedReplace = StdFSMState.NetProjectWithSuppress,
     }
 
     /// <summary>

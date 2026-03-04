@@ -184,6 +184,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case StdFSMState.UpdateCounts:
                     localUpdateCounts();
                     break;
+                case StdFSMState.InitStatesForEpoch:
+                    break;
             }
             return ReservedAffinityState.Next;
 

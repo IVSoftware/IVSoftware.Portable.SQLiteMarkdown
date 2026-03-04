@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.Threading;
@@ -240,10 +241,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// Ideal for static lists (e.g., preferences, enums).
         /// When a filter is "cleared" it means the collection view returns to "all items visible".
         /// </summary>
+        [PublishedSignature("1.0")]
         public void InitializeFilterOnlyMode(IEnumerable<T> items)
         {
-            ReplaceItemsInternal(items.ToArray());
             QueryFilterConfig = QueryFilterConfig.Filter;
+            LoadCanon(items);
         }
 
         /// <summary>

@@ -246,4 +246,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         public bool Allow { get; set; } = true;
     }
+
+    /// <summary>
+    /// Advisory for signatures that look like they need refactoring. DON'T DO IT!
+    /// </summary>
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = false)]
+    public class PublishedSignatureAttribute : Attribute 
+    {
+        // Do Not Change signature, return type, or argument names.
+        // Do Not Obsolete (if you can help it).
+        public PublishedSignatureAttribute(string? version = null)
+        {
+            Version = version;
+        }
+        public string? Version { get; }
+    }
 }
