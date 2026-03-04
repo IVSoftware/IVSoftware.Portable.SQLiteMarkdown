@@ -1414,24 +1414,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // not work if done in the library itself.
             protected set
             {
-                switch (QueryFilterConfig)
-                {
-                    case QueryFilterConfig.Query:
-                        // Query-only is always ineligible for filtering.
-                        value = FilteringState.Ineligible;
-                        break;
-                    case QueryFilterConfig.Filter:
-                        // Filter-only is always either armed or active.
-                        if (value == FilteringState.Ineligible)
-                        {
-                            value = FilteringState.Armed;
-                        }
-                        break;
-                    case QueryFilterConfig.QueryAndFilter:
-                        break;
-                    default:
-                        break;
-                }
                 if (!Equals(_filteringState, value))
                 {
                     FilteringStatePrev = _filteringState;
@@ -1603,35 +1585,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return FilteringState;
         }
 
+        /// <summary>
+        /// Apply hysteresis to IsFiltering, but only in QueryFilterConfig.QueryAndFilter mode.
+        /// </summary>
         protected virtual void OnFilteringStateChanged()
         {
-#if false
             switch (QueryFilterConfig)
             {
                 case QueryFilterConfig.Query:
-                    // This config is *never* filtering.
                     IsFiltering = false;
                     break;
                 case QueryFilterConfig.Filter:
-                    // This config is *always* filtering.
                     IsFiltering = true;
                     break;
                 case QueryFilterConfig.QueryAndFilter:
-#if false
-                    OnPropertyChanged(nameof(RouteToFullRecordset));
                     IsFiltering = FilteringState != FilteringState.Ineligible;
-#else
-                    // Apply hysteresis
-                    IsFiltering =
-                        FilteringState == FilteringState.Active
-                        || FilteringStatePrev == FilteringState.Active;
-#endif
                     break;
                 default:
-                    this.ThrowFramework<NotSupportedException>($"The {QueryFilterConfig.ToFullKey()} case is not supported.");
                     break;
             }
-#endif
         }
 
         public string InputText

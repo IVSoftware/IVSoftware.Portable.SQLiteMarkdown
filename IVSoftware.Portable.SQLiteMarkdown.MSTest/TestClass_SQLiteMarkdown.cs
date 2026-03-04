@@ -423,7 +423,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 Assert.AreEqual(COUNT, mdc.CanonicalCount);
                 Assert.AreEqual(SearchEntryState.QueryCompleteNoResults, mdc.SearchEntryState);
                 Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState);
-
+                Assert.IsFalse(mdc.IsFiltering);
             }
             async Task subtestExtQueryOneResult()
             {
@@ -432,6 +432,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 Assert.AreEqual(COUNT, mdc.CanonicalCount);
                 Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState);
                 Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState);
+                Assert.IsFalse(mdc.IsFiltering);
             }
             async Task subtestExtQueryTwoResults()
             {
@@ -440,6 +441,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 Assert.AreEqual(COUNT, mdc.CanonicalCount);
                 Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState);
                 Assert.AreEqual(FilteringState.Armed, mdc.FilteringState);
+                Assert.IsTrue(mdc.IsFiltering);
             }
             async Task subtestClearAwaiterOnly()
             {

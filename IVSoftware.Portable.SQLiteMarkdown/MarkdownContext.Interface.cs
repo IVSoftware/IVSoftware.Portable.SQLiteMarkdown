@@ -301,10 +301,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         FilteringState = FilteringState.Armed;
                         break;
                 }
-                if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
-                {
-                    IsFiltering = CanonicalCount > 2;
-                }
             }
             #endregion L o c a l F x
         }
