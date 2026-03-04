@@ -45,52 +45,58 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
             _canonicalRecordset.CollectionChanged += (sender, e) =>
             {
-                if (_canonicalRecordset.Count < 2)
-                {
-                    // 260301
-                    // FilteringState = FilteringState.Ineligible;
+                if (CollectionChangeAuthority == NotifyCollectionChangedEventAuthority.MarkdownContext)
+                {   /* G T K - N O O P */
                 }
-                switch (e.Action)
+                else
                 {
-                    case NotifyCollectionChangedAction.Add:
-                        foreach (var inpc in e.NewItems?.OfType<INotifyPropertyChanged>() ?? [])
-                        {
-                            inpc.PropertyChanged += OnItemPropertyChanged;
-                        }
-                        if (Busy)
-                        {   /* G T K */
-                        }
-                        else
-                        {
-                            if (FilteringState != FilteringState.Active)
+                    if (_canonicalRecordset.Count < 2)
+                    {
+                        // 260301
+                        // FilteringState = FilteringState.Ineligible;
+                    }
+                    switch (e.Action)
+                    {
+                        case NotifyCollectionChangedAction.Add:
+                            foreach (var inpc in e.NewItems?.OfType<INotifyPropertyChanged>() ?? [])
+                            {
+                                inpc.PropertyChanged += OnItemPropertyChanged;
+                            }
+                            if (Busy)
+                            {   /* G T K */
+                            }
+                            else
+                            {
+                                if (FilteringState != FilteringState.Active)
+                                {
+                                    CollectionChangedProtected?.Invoke(this, e);
+                                }
+                            }
+                            break;
+                        case NotifyCollectionChangedAction.Remove:
+                            foreach (var inpc in e.OldItems?.OfType<INotifyPropertyChanged>() ?? [])
+                            {
+                                inpc.PropertyChanged -= OnItemPropertyChanged;
+                            }
+                            if (Busy)
+                            {   /* G T K */
+                            }
+                            else
                             {
                                 CollectionChangedProtected?.Invoke(this, e);
                             }
-                        }
-                        break;
-                    case NotifyCollectionChangedAction.Remove:
-                        foreach (var inpc in e.OldItems?.OfType<INotifyPropertyChanged>() ?? [])
-                        {
-                            inpc.PropertyChanged -= OnItemPropertyChanged;
-                        }
-                        if (Busy)
-                        {   /* G T K */
-                        }
-                        else
-                        {
+                            break;
+                        case NotifyCollectionChangedAction.Reset:
+                            _predicateMatchSubset.Clear();
+                            foreach (var inpc in _unsubscribeItems)
+                            {
+                                inpc.PropertyChanged -= OnItemPropertyChanged;
+                            }
                             CollectionChangedProtected?.Invoke(this, e);
-                        }
-                        break;
-                    case NotifyCollectionChangedAction.Reset:
-                        _predicateMatchSubset.Clear();
-                        foreach (var inpc in _unsubscribeItems)
-                        {
-                            inpc.PropertyChanged -= OnItemPropertyChanged;
-                        }
-                        CollectionChangedProtected?.Invoke(this, e);
-                        break;
+                            break;
+                    }
+                    _unsubscribeItems = _canonicalRecordset.OfType<INotifyPropertyChanged>().ToArray();
                 }
-                _unsubscribeItems = _canonicalRecordset.OfType<INotifyPropertyChanged>().ToArray();
             };
         }
 
@@ -154,28 +160,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                 var preview = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
 #endif
-
-                // This causes a Reset on the main INCC
-                _canonicalRecordset.Clear();
-
-                if (CanonicalCount != 0)
+                using (base.BeginAuthorityClaim())
                 {
-                    foreach (var xel in Model.Descendants())
-                    {
-                        if (xel.To<T>() is { } item)
-                        {
-                            _canonicalRecordset.Add(item);
-                        }
-                    }
+                    // This causes a Reset on the main INCC
+                    _canonicalRecordset.Clear();
 
-                    // Raise single event after completing the loop.
-                    CollectionChangedProtected?.Invoke(
-                        this,
-                        new NotifyQueryFilterCollectionChangedEventArgs(
-                            NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
-                            _canonicalRecordset.ToList() // snapshot as IList
-                        )
-                    );
+                    if (CanonicalCount != 0)
+                    {
+                        foreach (var xel in Model.Descendants())
+                        {
+                            if (xel.To<T>() is { } item)
+                            {
+                                _canonicalRecordset.Add(item);
+                            }
+                        }
+
+                        // Raise single event after completing the loop.
+                        CollectionChangedProtected?.Invoke(
+                            this,
+                            new NotifyQueryFilterCollectionChangedEventArgs(
+                                NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
+                                _canonicalRecordset.ToList() // snapshot as IList
+                            )
+                        );
+                    }
                 }
             }
         }

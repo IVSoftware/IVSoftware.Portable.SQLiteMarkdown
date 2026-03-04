@@ -1483,9 +1483,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (!Equals(_isFiltering, value))
                 {
-                    if(QueryFilterConfig == QueryFilterConfig.Filter)
+                    if (QueryFilterConfig == QueryFilterConfig.Filter)
                     {
-                        if(!value)
+                        if (!value)
                         {
                             this.ThrowSoft<InvalidOperationException>(
     $"{nameof(IsFiltering)} = false will be ignored because {nameof(QueryFilterConfig)} is {QueryFilterConfig.Filter}.");
@@ -1714,7 +1714,58 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [Careful("Trimming or modifying the raw InputText is not allowed.")]
         protected virtual void OnInputTextChanged()
         {
-            var filteringStateB4 = FilteringState;
+            if (SearchEntryState == SearchEntryState.QueryCompleteWithResults && CanonicalCount > 1)
+            {
+                localApplyFilterSemantics();
+            }
+            else
+            {
+                localApplyQuerySemantics();
+            }
+            void localApplyQuerySemantics()
+            {
+                if (InputText.IsSemanticallyEmpty())
+                {
+                    SearchEntryState = SearchEntryState.QueryEmpty;
+                }
+                else if (InputText.TrimEndTransients().Length < 3)
+                {
+                    SearchEntryState = SearchEntryState.QueryENB;
+                }
+                else
+                {
+                    SearchEntryState = SearchEntryState.QueryEN;
+                }
+            }
+            void localApplyFilterSemantics()
+            {
+                switch (FilteringState)
+                {
+                    case FilteringState.Ineligible:
+                        break;
+                    case FilteringState.Armed:
+                        if (!InputText.IsSemanticallyEmpty())
+                        {
+                            FilteringState = FilteringState.Active;
+                        }
+                        break;
+                    case FilteringState.Active:
+                        if (InputText.IsSemanticallyEmpty())
+                        {
+                            // Downgrade but stay armed.
+                            FilteringState = FilteringState.Armed;
+                        }
+                        break;
+                    default:
+                        throw new NotImplementedException($"Bad case: {FilteringState}");
+                }
+                RestartIfSemanticInputChanged();
+            }
+        }
+
+        [Careful("Trimming or modifying the raw InputText is not allowed.")]
+        protected virtual void OnInputTextChangedOR()
+        {
             switch (FilteringState)
             {
                 case FilteringState.Ineligible:

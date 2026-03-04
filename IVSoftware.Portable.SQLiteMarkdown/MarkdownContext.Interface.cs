@@ -560,27 +560,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-
-        public IDisposable BeginAuthorityClaim() => DHostClaimAuthority.GetToken();
-
-        [Probationary]
-        DisposableHost DHostClaimAuthority
-        {
-            get
-            {
-                if (_dhostClaimAuthority is null)
-                {
-                    _dhostClaimAuthority = new DisposableHost();
-                    _dhostClaimAuthority.BeginUsing += (sender, e)
-                        => CollectionChangeAuthority = NotifyCollectionChangedEventAuthority.MarkdownContext;
-                    _dhostClaimAuthority.FinalDispose += (sender, e)
-                        => CollectionChangeAuthority = NotifyCollectionChangedEventAuthority.NetProjection;
-                }
-                return _dhostClaimAuthority;
-            }
-        }
-        DisposableHost? _dhostClaimAuthority = null;
-
-        public NotifyCollectionChangedEventAuthority CollectionChangeAuthority { get; private set; }
     }
 }

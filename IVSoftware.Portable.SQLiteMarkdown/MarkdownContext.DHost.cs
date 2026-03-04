@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Disposable;
+﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Disposable;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -38,5 +39,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         DisposableHost? _dhostBusy = null;
 
         public DisposableHost DHostSelfIndexing { get; } = new();
+
+
+        public IDisposable BeginAuthorityClaim() => DHostClaimAuthority.GetToken();
+
+        [Probationary]
+        protected DisposableHost DHostClaimAuthority
+        {
+            get
+            {
+                if (_dhostClaimAuthority is null)
+                {
+                    _dhostClaimAuthority = new DisposableHost();
+                    _dhostClaimAuthority.BeginUsing += (sender, e)
+                        => CollectionChangeAuthority = NotifyCollectionChangedEventAuthority.MarkdownContext;
+                    _dhostClaimAuthority.FinalDispose += (sender, e)
+                        => CollectionChangeAuthority = NotifyCollectionChangedEventAuthority.NetProjection;
+                }
+                return _dhostClaimAuthority;
+            }
+        }
+        DisposableHost? _dhostClaimAuthority = null;
+
+        public NotifyCollectionChangedEventAuthority CollectionChangeAuthority { get; private set; }
     }
 }
