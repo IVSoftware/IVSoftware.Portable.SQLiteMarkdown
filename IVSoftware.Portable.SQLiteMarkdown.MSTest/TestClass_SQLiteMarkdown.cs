@@ -12,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using SQLite;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
 using System.Reflection;
@@ -398,6 +399,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             // MSTest internal consideration. This is about tests that hang.
             Assert.IsNull(SynchronizationContext.Current);
 
+            string actual, expected;
+            var builder = new List<string>();
             var extQueryHandle = default(List<SelectableQFModel>);
             int COUNT;
 
@@ -436,7 +439,44 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             }
             async Task subtestExtQueryTwoResults()
             {
+                void localMDC_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+                {
+                    builder.Add(e.PropertyName ?? "null");
+                }
+                using var local = this.WithOnDispose(
+                    onInit: (sender, e) =>
+                    {
+                        mdc.PropertyChanged += localMDC_PropertyChanged;
+                    },
+                    onDispose: (sender, e) =>
+                    {
+                        mdc.PropertyChanged -= localMDC_PropertyChanged;
+                    });
+
                 COUNT = 2;
+                builder.Clear();
+
+                mdc.InputText = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+                // The point of this is that there should *not* be any need to settle!
+                // We're giving a window for Running to go true - which it *should not* do!
+                // In other words, we're testing for the absence of something.
+                await Task.Delay(250);
+
+                actual = string.Join(Environment.NewLine, builder);
+                expected = @" 
+SearchEntryState
+InputText"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting *no* changes to Running."
+                );
+
+                Assert.AreEqual(SearchEntryState.QueryEN, mdc.SearchEntryState, "Expecting mdc perceives a valid query.");
+                // SIMULATE - Now perform the external query.
                 mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
                 Assert.AreEqual(COUNT, mdc.CanonicalCount);
                 Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState);
