@@ -393,7 +393,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         /// State machine failed to return to Cleared after consecutive [X].
         /// </remarks>
         [TestMethod]
-        public async Task Test_FSMs()
+        public async Task Test_QueryFilterFSMs()
         {
             Assert.IsNull(SynchronizationContext.Current);
 
@@ -497,6 +497,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             }
             #endregion S U B T E S T S
         }
+
+        [TestMethod, Ignore]
+        public async Task Test_QueryFSMs()
+        { }
+
+        [TestMethod, Ignore]
+        public async Task Test_FilterFSMs()
+        { }
+
 
         class TestableMarkdownContext<T> : MarkdownContext<T>
         {
