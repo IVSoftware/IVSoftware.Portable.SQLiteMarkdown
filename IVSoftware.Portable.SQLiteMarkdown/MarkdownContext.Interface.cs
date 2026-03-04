@@ -382,29 +382,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
-            RunFSM<BeginRecordsetEpochFSM>(recordset);
-            switch (CanonicalCount)
+            using (DHostBusy.GetToken())
             {
-                case 0:
-                    SearchEntryState = SearchEntryState.QueryCompleteNoResults;
-                    FilteringState = FilteringState.Ineligible;
-                    break;
-                case 1:
-                    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                    FilteringState = FilteringState.Ineligible;
-                    break;
-                default:
-                    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                    FilteringState = FilteringState.Armed;
-                    break;
-            }
-            if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
-            {
-                IsFiltering = CanonicalCount > 2;
+                RunFSM<BeginRecordsetEpochFSM>(recordset);
+                switch (CanonicalCount)
+                {
+                    case 0:
+                        SearchEntryState = SearchEntryState.QueryCompleteNoResults;
+                        FilteringState = FilteringState.Ineligible;
+                        break;
+                    case 1:
+                        SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                        FilteringState = FilteringState.Ineligible;
+                        break;
+                    default:
+                        SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                        FilteringState = FilteringState.Armed;
+                        break;
+                }
+                if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
+                {
+                    IsFiltering = CanonicalCount > 2;
+                }
             }
         }
-#if false
-#endif
 
         /// <summary>
         /// Determines whether MDC is allowed to pupetteer the projection directly.

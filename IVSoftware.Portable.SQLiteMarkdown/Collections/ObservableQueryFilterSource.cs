@@ -149,8 +149,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 // --------------
                 // UPGRADE 260301
-                // Sets UnfilteredCount
-                // -> Sets SearchEntryState
                 base.LoadCanon(items);
                 // --------------
 
@@ -176,62 +174,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             _canonicalRecordset.ToList() // snapshot as IList
                         )
                     );
-                }
-            }
-        }
-
-        private void ReplaceItemsInternal(IEnumerable<T> items)
-        {
-            try
-            {
-                // This causes a Reset on the main INCC
-                _canonicalRecordset.Clear();
-                if (CanonicalCount != 0)
-                {
-                    foreach (var xel in Model.Descendants())
-                    {
-                        if (xel.To<T>() is { } item)
-                        {
-                            _canonicalRecordset.Add(item);
-                        }
-                    }
-                    // Raise single event after completing the loop.
-                    CollectionChangedProtected?.Invoke(
-                        this,
-                        new NotifyQueryFilterCollectionChangedEventArgs(
-                            NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
-                            _canonicalRecordset.ToList() // snapshot as IList
-                        )
-                    );
-                }
-
-                //if (items.Any())
-                //{
-                //    foreach (T item in items.ToArray())
-                //    {
-                //        _unfilteredItems.Add(item);
-                //    }
-                //    CollectionChanged?.Invoke(
-                //        this,
-                //        new NotifyQueryFilterCollectionChangedEventArgs(
-                //            NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
-                //            _unfilteredItems.ToList() // snapshot as IList
-                //        )
-                //    );
-                //    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                //}
-
-                // 260301
-                // FilteringState =
-                //    _unfilteredItems.Count < 2
-                //    ? FilteringState.Ineligible
-                //    : FilteringState.Armed;
-            }
-            finally
-            {
-                lock (_lock)
-                {
-                    this.OnAwaited();
                 }
             }
         }
