@@ -180,7 +180,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             labelSearchIcon.Name = "labelSearchIcon";
             labelSearchIcon.Size = new Size(44, 50);
             labelSearchIcon.TabIndex = 3;
-            labelSearchIcon.Text = "🔍";
             labelSearchIcon.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // MainForm
@@ -208,12 +207,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
 
         #endregion
 
+        private ButtonEx buttonClear;
+        private Label labelSearchIcon;
         private TableLayoutPanel Grid;
         private CollectionView vcView;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
         private TextBox textInputText;
-        private ButtonEx buttonClear;
-        private Label labelSearchIcon;
         private ContextMenuStrip contextMenuQueryFilter;
         private ToolStripMenuItem tsmiQuery;
         private ToolStripMenuItem tsmiFilter;

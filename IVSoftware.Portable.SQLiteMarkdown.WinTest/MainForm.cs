@@ -68,23 +68,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                                 : Cursors.Default;
                             break;
                         case nameof(IObservableQueryFilterSource.FilteringState):
-                            switch (qfs.FilteringState)
-                            {
-                                case FilteringState.Ineligible:
-                                    labelSearchIcon.ForeColor = ForeColor;
-                                    break;
-                                case FilteringState.Armed:
-                                    labelSearchIcon.ForeColor = Color.Salmon;
-                                    break;
-                                case FilteringState.Active:
-                                    labelSearchIcon.ForeColor = Color.ForestGreen;
-                                    break;
-                                default:
-                                    throw new NotImplementedException($"Bad case: {qfs.FilteringState}");
-                            }
+                            //switch (qfs.FilteringState)
+                            //{
+                            //    case FilteringState.Ineligible:
+                            //        labelSearchIcon.ForeColor = ForeColor;
+                            //        break;
+                            //    case FilteringState.Armed:
+                            //        labelSearchIcon.ForeColor = Color.Salmon;
+                            //        break;
+                            //    case FilteringState.Active:
+                            //        labelSearchIcon.ForeColor = Color.ForestGreen;
+                            //        break;
+                            //    default:
+                            //        throw new NotImplementedException($"Bad case: {qfs.FilteringState}");
+                            //}
                             break;
                         case nameof(IObservableQueryFilterSource.IsFiltering):
                             textInputText.PlaceholderText = qfs.Placeholder;
+                            labelSearchIcon.Text = 
+                                qfs.IsFiltering
+                                ? GlyphProvider.IconBasics.Filter.ToGlyph()
+                                : GlyphProvider.IconBasics.Search.ToGlyph();
                             break;
                     }
                 };
@@ -187,11 +191,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             if (GlyphProvider.Providers[typeof(GlyphProvider.IconBasics)] is GlyphProvider provider &&
                 provider.GetFontFamily() is FontFamily fontFamily)
             {
-                IconBasics = new Font(fontFamily, 12.5F);
+                IconBasics11 = new Font(fontFamily, 11F);
+                labelSearchIcon.UseCompatibleTextRendering = true;
+                labelSearchIcon.Font = IconBasics11;
+                labelSearchIcon.Margin = new ();
+                labelSearchIcon.Padding = new Padding(2, 5, -1, 0);
             }
             else
             {   /* G T K */
             }
+            labelSearchIcon.Text = GlyphProvider.IconBasics.Search.ToGlyph();
         }
 
         /// <summary>
@@ -199,6 +208,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         /// </summary>
         private ObservableQueryFilterSource<SelectableQFModel> QFSUT { get; }
 
-        public static Font IconBasics { get; private set; }
+        public static Font IconBasics11 { get; private set; }
     }
 }
