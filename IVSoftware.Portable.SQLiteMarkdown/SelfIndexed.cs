@@ -230,13 +230,21 @@ CustomProperties (subclass property) is a user-defined metadata property bag.")]
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        class MarkdownContextForIndexing : MarkdownContext
+        {
+            public MarkdownContextForIndexing(Type type) : base(type) { }
+            protected override void OnInputTextChanged()
+            {
+                // Do not call BC
+            }
+        }
         private void internalExecuteIndexing()
         {
             lock (_lock)
             {
                 // Used in old and new ways.
                 var props = GetType().GetProperties();
-                var localMC = new MarkdownContext(GetType());
+                var localMC = new MarkdownContextForIndexing(GetType());
 
 #if true || NEW_WAY
                 for (int i = 0; i < props.Length; i++)
