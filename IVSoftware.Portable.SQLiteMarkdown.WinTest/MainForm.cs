@@ -67,21 +67,37 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                                 ? Cursors.WaitCursor
                                 : Cursors.Default;
                             break;
+                        case nameof(IObservableQueryFilterSource.SearchEntryState):
+                            switch (qfs.SearchEntryState)
+                            {
+                                case SearchEntryState.Cleared:
+                                case SearchEntryState.QueryEmpty:
+                                    labelSearchIcon.ForeColor = ColorTranslator.FromHtml("444444");
+                                    break;
+                                case SearchEntryState.QueryENB:
+                                    labelSearchIcon.ForeColor = Color.Salmon;
+                                    break;
+                                case SearchEntryState.QueryEN:
+                                    labelSearchIcon.ForeColor = Color.ForestGreen;
+                                    break;
+                                default:
+                                    /* G T K - N O O P */
+                                    break;
+                            }
+                            break;
                         case nameof(IObservableQueryFilterSource.FilteringState):
-                            //switch (qfs.FilteringState)
-                            //{
-                            //    case FilteringState.Ineligible:
-                            //        labelSearchIcon.ForeColor = ForeColor;
-                            //        break;
-                            //    case FilteringState.Armed:
-                            //        labelSearchIcon.ForeColor = Color.Salmon;
-                            //        break;
-                            //    case FilteringState.Active:
-                            //        labelSearchIcon.ForeColor = Color.ForestGreen;
-                            //        break;
-                            //    default:
-                            //        throw new NotImplementedException($"Bad case: {qfs.FilteringState}");
-                            //}
+                            switch (qfs.FilteringState)
+                            {
+                                case FilteringState.Armed:
+                                    labelSearchIcon.ForeColor = Color.ForestGreen;
+                                    break;
+                                case FilteringState.Active:
+                                    labelSearchIcon.ForeColor = Color.Salmon;
+                                    break;
+                                default:
+                                    /* G T K - N O O P */
+                                    break;
+                            }
                             break;
                         case nameof(IObservableQueryFilterSource.IsFiltering):
                             textInputText.PlaceholderText = qfs.Placeholder;

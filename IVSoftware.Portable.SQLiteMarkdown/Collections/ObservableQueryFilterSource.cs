@@ -569,24 +569,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
 
         #region R O U T E D    C O N D I T I O N A L S
-
-        protected override async void OnFilteringStateChanged()
+        protected override void OnFilteringStateChanged()
         {
             base.OnFilteringStateChanged();
+        }
 
-            // Specific to THIS IMPLEMENTAION.
-            switch (FilteringState)
+        protected override void OnSearchEntryStateChanged()
+        {
+            base.OnSearchEntryStateChanged();
+            if(SearchEntryState == SearchEntryState.Cleared)
             {
-                case FilteringState.Ineligible:
-                    // Clear, then event ADHOC. That is, it's not always
-                    // in our best interest to simply forward the clear.
-                    _canonicalRecordset.Clear();
-                    CollectionChangedProtected?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-                    break;
-                case FilteringState.Armed:
-                    break;
-                case FilteringState.Active:
-                    break;
+                // This is old. Do we still need it?
+                _canonicalRecordset.Clear();
+                CollectionChangedProtected?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
         }
 
