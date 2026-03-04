@@ -18,6 +18,7 @@ using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
+using System.Text;
 using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
@@ -595,8 +596,13 @@ InputText"
                 // #2 [X]
                 // User returns to Query without emptying the list.
                 mdc.Clear();
-                Assert.AreEqual(SearchEntryState.QueryEmpty, mdc.SearchEntryState, "Expecting initial state.");
-                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+                Assert.AreEqual(
+                    SearchEntryState.QueryEmpty, // TOUCHED this limit on 260304 - QueryEmpty is the correct value
+                    mdc.SearchEntryState, "Expecting initial state.");
+
+                Assert.AreEqual(
+                    FilteringState.Ineligible,
+                    mdc.FilteringState, "Expecting initial state.");
 
                 // #3 [X]
                 // The MCD can clear its own state heuristically, rather than epistemically.
@@ -610,13 +616,29 @@ InputText"
             #endregion S U B T E S T S
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public async Task Test_QueryFSMs()
         {
             var extQueryHandle = default(List<SelectableQFModel>);
 
-            var mdc = new TestableMarkdownContext<SelectableQFModel>();
-            Assert.AreEqual(QueryFilterConfig.QueryAndFilter, mdc.QueryFilterConfig, "Expecting initial state.");
+            var mdc = new TestableMarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
+
+            Assert.AreEqual(QueryFilterConfig.Query, mdc.QueryFilterConfig, "Expecting initial state.");
+            Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
+            Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+
+            mdc.InputText = "a";
+            Assert.AreEqual(SearchEntryState.QueryENB, mdc.SearchEntryState);
+
+            // Backspace
+            mdc.InputText = string.Empty;
+            Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState);
+
+
+            // Query occurs.
+            mdc.LoadCanon(extQueryHandle.PopulateForDemo(2));
+
+            Assert.AreEqual(QueryFilterConfig.Query, mdc.QueryFilterConfig, "Expecting initial state.");
             Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
             Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
         }
