@@ -1418,8 +1418,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     FilteringStatePrev = _filteringState;
                     _filteringState = value;
+
+                    // This needs to be sequenced in a certain way.
+                    bool isFilteringB4 = _isFiltering;
                     OnFilteringStateChanged();
                     OnPropertyChanged();
+
+                    if(_isFiltering != isFilteringB4)
+                    {
+                        OnPropertyChanged(nameof(IsFiltering));
+                    }
                 }
             }
         }
@@ -1480,7 +1488,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        bool _isFiltering = false;
+        // Different! Protected because it's in play inside OnFilteringStateChanged.
+        protected bool _isFiltering = false;
 
         /// <summary>
         /// True when InputText is empty regardless of IsFiltering.
@@ -1586,20 +1595,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
-        /// Apply hysteresis to IsFiltering, but only in QueryFilterConfig.QueryAndFilter mode.
+        /// Apply hysteresis to the sFiltering, but only in QueryFilterConfig.QueryAndFilter mode.
         /// </summary>
+        /// <remarks>
+        /// INPC sequencing is delicate. Use the backing store here for that reason.
+        /// </remarks>
         protected virtual void OnFilteringStateChanged()
         {
             switch (QueryFilterConfig)
             {
                 case QueryFilterConfig.Query:
-                    IsFiltering = false;
+                    _isFiltering = false;
                     break;
                 case QueryFilterConfig.Filter:
-                    IsFiltering = true;
+                    _isFiltering = true;
                     break;
                 case QueryFilterConfig.QueryAndFilter:
-                    IsFiltering = FilteringState != FilteringState.Ineligible;
+                    _isFiltering = FilteringState != FilteringState.Ineligible;
                     break;
                 default:
                     break;

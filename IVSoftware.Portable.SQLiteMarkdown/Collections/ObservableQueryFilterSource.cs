@@ -572,10 +572,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected override async void OnFilteringStateChanged()
         {
-            // Relies on BC functionality, except where firing the CollectionChanged event is concerned.
             base.OnFilteringStateChanged();
 
-            // List-specific.
+            // Specific to THIS IMPLEMENTAION.
             switch (FilteringState)
             {
                 case FilteringState.Ineligible:

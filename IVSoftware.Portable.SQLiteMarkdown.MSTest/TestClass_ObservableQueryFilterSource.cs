@@ -1717,7 +1717,13 @@ InputText"
 
                         actual.ToClipboardExpected();
                         { }
+
                         // Limit Touched 260303
+                        // - The timing is that backing stores for both _filteringState and _isFiltering change
+                        //   before any events are raised. It's atomic that way.
+                        // - This means that there is *never* a race condition; whether you
+                        //   bind to the INPC for FilteringState or for IsFiltering, the
+                        //   underlying state is always coherent.
                         expected = @" 
 Busy
 CanonicalCount
