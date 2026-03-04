@@ -551,61 +551,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected virtual void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs eUnk)
         {
-            if (sender is IList items)
-            {
-                NotifyQueryFilterCollectionChangedAction actionContext =
-                    (eUnk is NotifyQueryFilterCollectionChangedEventArgs eAz)
-                    ? (NotifyQueryFilterCollectionChangedAction)(((int)eAz.Action) & ~0x7)
-                    : 0;
-
-                switch (eUnk.Action)
-                {
-                    case NotifyCollectionChangedAction.Reset:
-
-                        // 260301
-                        // SearchEntryState = SearchEntryState.Cleared;
-
-                        break;
-                    default:
-                        if (eUnk is NotifyQueryFilterCollectionChangedEventArgs e)
-                        {
-                            switch (actionContext)
-                            {
-                                case 0:     // NOTE: This reads as 'Add'
-                                    break;
-                                case NotifyQueryFilterCollectionChangedAction.QueryResult:
-
-#if DEBUG
-
-                                    var preview = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
-#endif
-
-                                    if (FilterQueryDatabase != null && items.Count > 0)
-                                    {
-                                        // 260303 successful migrate to BC
-                                        // FilterQueryDatabase.DeleteAll<T>();
-                                        // FilterQueryDatabase.InsertAll(items);
-
-#if DEBUG
-                                        var preview2 = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
-#endif
-                                    }
-                                    break;
-                                case NotifyQueryFilterCollectionChangedAction.ApplyFilter:
-                                    break;
-                                case NotifyQueryFilterCollectionChangedAction.RemoveFilter:
-                                    break;
-                                default:
-                                    throw new NotImplementedException($"Bad case: {actionContext}");
-                            }
-                        }
-                        break;
-                }
-            }
-            else
-            {
-                Debug.Fail("ADVISORY - Sender is not IList. Is this intentional?");
-            }
         }
 
 

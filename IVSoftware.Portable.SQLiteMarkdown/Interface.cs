@@ -157,9 +157,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         uint DefaultLimit { get; set; }
 
         /// <summary>
-        /// Bindable property that notifies when the "net filtered" list
-        /// departs from sequence equals, based on primary keys.
+        /// Bindable property intended for UI configuration swaps. 
         /// </summary>
+        /// <remarks>
+        /// - Placeholder text Search or Filter
+        /// - Search Icon or Filter Icon, where colors follow verbose states.
+        /// </remarks>
         bool IsFiltering { get; }
 
         /// <summary>
@@ -236,8 +239,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         IDisposable BeginAuthorityClaim();
 
+        /// <summary>
+        /// Gets the total number of items in the canonical ledger.
+        /// </summary>
         int CanonicalCount { get; }
+
+        /// <summary>
+        /// Gets the number of canonical items that satisfy the active predicate.
+        /// </summary>
         int PredicateMatchCount { get; }
+
+        /// <summary>
+        /// Returns true when the current counts match the expected canonical,
+        /// predicate, and optional database totals.
+        /// </summary>
         bool HasCounts(int canonical, int matches, int? database = null);
     }
 
