@@ -629,26 +629,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                     break;
                                 case NotifyQueryFilterCollectionChangedAction.QueryResult:
 
+#if DEBUG
+
+                                    var preview = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
+#endif
+
                                     if (FilterQueryDatabase != null && items.Count > 0)
                                     {
-                                        FilterQueryDatabase.DeleteAll<T>();
+                                        // 260303 successful migrate to BC
+                                        // FilterQueryDatabase.DeleteAll<T>();
                                         FilterQueryDatabase.InsertAll(items);
                                     }
-
-                                    // 260301
-                                    // SearchEntryState =
-                                    //    items.Count == 0
-                                    //    ? SearchEntryState.QueryCompleteNoResults
-                                    //    : SearchEntryState.QueryCompleteWithResults;
-
-                                    // Once we go into Armed, it takes 2 clears not one.
-
-                                    // 260301
-                                    // FilteringState =
-                                    //    items.Count < 2
-                                    //    ? FilteringState.Ineligible
-                                    //    : FilteringState.Armed;
-
                                     break;
                                 case NotifyQueryFilterCollectionChangedAction.ApplyFilter:
                                     break;

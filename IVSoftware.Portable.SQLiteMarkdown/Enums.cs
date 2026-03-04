@@ -271,6 +271,31 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         MarkdownContext,
     }
+    internal enum StdFSMState
+    {
+        [Obsolete]
+        InitializeUnfilteredItemsCollection = 1,
+
+        ReinitializeFilterQueryDatabase,
+
+        InitializeModel,
+
+        UpdateCounts,
+
+        SuppressedReplace,
+
+        RaiseResetEvent,
+    }
+
+
+    /// <summary>
+    /// 260228 inprog
+    /// </summary>
+    internal enum BeginRecordsetEpochFSM
+    {
+        InitializeModel = StdFSMState.InitializeModel,
+        UpdateCounts = StdFSMState.UpdateCounts,
+    }
 
     /// <summary>
     /// 260228 inprog
@@ -278,16 +303,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     internal enum EnterFilterFSM
     {
         [Obsolete]
-        InitializeUnfilteredItemsCollection,
+        InitializeUnfilteredItemsCollection = StdFSMState.InitializeUnfilteredItemsCollection,
 
-        InitializeFilterQueryDatabase,
+        ReinitializeFilterQueryDatabase = StdFSMState.ReinitializeFilterQueryDatabase,
 
-        [Probationary("XML Model")]
-        InitializeModel,
+        InitializeModel = StdFSMState.InitializeModel,
 
-        SuppressedReplace,
+        SuppressedReplace = StdFSMState.SuppressedReplace,
 
-        RaiseResetEvent,
+        RaiseResetEvent = StdFSMState.RaiseResetEvent,
     }
 
     /// <summary>

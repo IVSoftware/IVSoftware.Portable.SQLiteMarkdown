@@ -82,15 +82,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if(xattr is XBoundAttribute xbo && xbo.Tag.GetType() == ContractType)
             {
-                OnBoundItemObjectChange(xbo, e);
+                OnBoundItemObjectChange(xbo, e.ObjectChange);
             }
         }
 
         protected virtual void OnXElementChanged (XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
-            foreach (var xbo in xel.Attributes().OfType<XBoundAttribute>().Where(_=>_.Tag?.GetType() == ContractType))
+            switch (e.ObjectChange)
             {
-                OnBoundItemObjectChange(xbo, e);
+                case XObjectChange.Add:
+                case XObjectChange.Remove:
+                    var xbo =
+                        xel
+                        .Attributes()
+                        .OfType<XBoundAttribute>()
+                        .FirstOrDefault(_ => _.Tag?.GetType() == ContractType);
+                    if(xbo is not null)
+                    {
+                        OnBoundItemObjectChange(xbo, e.ObjectChange);
+                    }
+                    break;
             }
         }
 
@@ -99,15 +110,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #else
         const bool SQLITE_STRICT = false;
 #endif
-        protected virtual void OnBoundItemObjectChange(XBoundAttribute xbo, XObjectChangeEventArgs e)
+        protected virtual void OnBoundItemObjectChange(XBoundAttribute xbo, XObjectChange action)
         {
             var item = xbo.Tag;
             if (SQLITE_STRICT)
             {
-                switch (e.ObjectChange)
+                switch (action)
                 {
                     case XObjectChange.Add:
-                        FilterQueryDatabase.Insert(item);
+                        if (1 != FilterQueryDatabase.Insert(item))
+                        {
+                            Debug.Fail($@"ADVISORY - Expecting operation to succeed.");
+                        }
                         break;
                     case XObjectChange.Remove:
                         FilterQueryDatabase.Delete(item);
@@ -116,10 +130,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
-                switch (e.ObjectChange)
+                switch (action)
                 {
                     case XObjectChange.Add:
-                        FilterQueryDatabase.InsertOrReplace(item);
+                        if (1 != FilterQueryDatabase.InsertOrReplace(item))
+                        {
+
+                            Debug.Fail($@"ADVISORY - Expecting operation to succeed.");
+                        }
                         break;
                     case XObjectChange.Remove:
                         FilterQueryDatabase.Delete(item);
@@ -155,30 +173,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected Enum ExecState(Enum state, object? context = null)
         {
-            switch (state)
+            switch ((StdFSMState)state)
             {
-                case EnterFilterFSM.InitializeUnfilteredItemsCollection:
-                    return ReservedAffinityState.Next;
-                case EnterFilterFSM.InitializeFilterQueryDatabase when context is IEnumerable canonical:
-                    localInitialiseFilterQueryDatabase(canonical);
+                case StdFSMState.ReinitializeFilterQueryDatabase when context is IEnumerable canonical:
+                    localInitFilterQueryDatabaseEpoch(canonical);
                     break;
-                case EnterFilterFSM.InitializeModel when context is IEnumerable canonical:
-                    localInitializeModel(canonical);
+                case StdFSMState.InitializeModel when context is IEnumerable canonical:
+                    localInitModelEpoch(canonical);
                     break;
-                case EnterFilterFSM.SuppressedReplace:
-                    break;
-                case EnterFilterFSM.RaiseResetEvent:
-                    break;
-                default:
-                    var msg = $@"ADVISORY - ToDo {state.ToFullKey()}.";
-                    Debug.Fail(msg);
+                case StdFSMState.UpdateCounts:
+                    localUpdateCounts();
                     break;
             }
             return ReservedAffinityState.Next;
 
             #region L o c a l F x
-
-            Enum localInitialiseFilterQueryDatabase(IEnumerable canonical)
+            Enum localInitFilterQueryDatabaseEpoch(IEnumerable canonical)
             {
                 try
                 {
@@ -196,7 +206,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return ReservedAffinityState.Next;
             }
 
-            Enum localInitializeModel(IEnumerable canonical)
+            Enum localInitModelEpoch(IEnumerable canonical)
             {
                 PropertyInfo? pk = ContractType.GetMapping().PK?.PropertyInfo;
                 Model.RemoveNodes();
@@ -229,8 +239,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             break;
                     }
                 }
+#if DEBUG
+
+                var preview = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
+                { }
+#endif
                 return ReservedAffinityState.Next;
             }
+
             string localGetFullPath(PropertyInfo pk, object unk)
             {
                 if (pk.GetValue(unk)?.ToString() is { } id && !string.IsNullOrWhiteSpace(id))
@@ -243,6 +259,36 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         $"Expecting a non-empty value for PrimaryKey '{pk.Name}'.");
                     return null!;
                 }
+            }
+
+
+
+            /// <summary>
+            /// Update the binding properties from the model.
+            /// </summary>
+            void localUpdateCounts()
+            {
+                int
+                    canonical = 0,
+                    predicateMatch = 0;
+                foreach (var xel in Model.Descendants())
+                {
+                    canonical++;
+
+                    bool ismatch = true;
+
+                    // Do not combine these clauses.
+                    if (xel
+                        .Attributes(nameof(StdMarkdownAttribute.ismatch))
+                        .FirstOrDefault() is { } attr
+                        && bool.TryParse(attr.Value, out var @explicit) && @explicit == false)
+                    {
+                        ismatch = false;
+                    }
+                    if (ismatch) predicateMatch++;
+                }
+                CanonicalCount = canonical;
+                PredicateMatchCount = predicateMatch;
             }
             #endregion L o c a l F x
         }
@@ -324,10 +370,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
         /// </remarks>
         public virtual async Task LoadCanonAsync(IEnumerable? recordset)
-        {
-            await RunFSMAsync<EnterFilterFSM>(recordset);
-            UpdateCounts();
-        }
+            => await RunFSMAsync<BeginRecordsetEpochFSM>(recordset);
 
         /// <summary>
         /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
@@ -337,8 +380,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
-            RunFSM<EnterFilterFSM>(recordset);
-            UpdateCounts();
+            RunFSM<BeginRecordsetEpochFSM>(recordset);
             switch (CanonicalCount)
             {
                 case 0:
@@ -359,34 +401,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 IsFiltering = CanonicalCount > 2;
             }
         }
-
-        /// <summary>
-        /// Update the binding properties from the model.
-        /// </summary>
-        void UpdateCounts()
-        {
-            int 
-                canonical = 0, 
-                predicateMatch = 0;
-            foreach (var xel in Model.Descendants())
-            {
-                canonical++;
-
-                bool ismatch = true;
-
-                // Do not combine these clauses.
-                if (xel
-                    .Attributes(nameof(StdMarkdownAttribute.ismatch))
-                    .FirstOrDefault() is { } attr
-                    && bool.TryParse(attr.Value, out var @explicit) && @explicit == false)
-                {
-                    ismatch = false;
-                }
-                if (ismatch) predicateMatch++;
-            }
-            CanonicalCount = canonical;
-            PredicateMatchCount = predicateMatch;
-        }
+#if false
+#endif
 
         /// <summary>
         /// Determines whether MDC is allowed to pupetteer the projection directly.
