@@ -648,11 +648,16 @@ InputText"
 
             Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState);
             Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "DOES NOT MOVE IN QUERY-ONLY MODE");
+            Assert.AreEqual(2, mdc.CanonicalCount);
             { }
 
-            Assert.AreEqual(QueryFilterConfig.Query, mdc.QueryFilterConfig, "Expecting initial state.");
-            Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
-            Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+            mdc.Clear();
+
+            Assert.AreEqual(SearchEntryState.QueryEmpty, mdc.SearchEntryState);
+            Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "DOES NOT MOVE IN QUERY-ONLY MODE");
+            Assert.AreEqual(2, mdc.CanonicalCount, "IME EMPTY - Collection is *not* cleared yet.");
+
+            { }
         }
 
         [TestMethod, Ignore]
