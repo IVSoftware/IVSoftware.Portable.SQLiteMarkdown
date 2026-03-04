@@ -634,9 +634,21 @@ InputText"
             mdc.InputText = string.Empty;
             Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState);
 
+            mdc.InputText = "a";
+            Assert.AreEqual(SearchEntryState.QueryENB, mdc.SearchEntryState);
+
+            mdc.InputText = "an";
+            Assert.AreEqual(SearchEntryState.QueryENB, mdc.SearchEntryState);
+
+            mdc.InputText = "ani";
+            Assert.AreEqual(SearchEntryState.QueryEN, mdc.SearchEntryState, "QUERY ENABLED");
 
             // Query occurs.
             mdc.LoadCanon(extQueryHandle.PopulateForDemo(2));
+
+            Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState);
+            Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "DOES NOT MOVE IN QUERY-ONLY MODE");
+            { }
 
             Assert.AreEqual(QueryFilterConfig.Query, mdc.QueryFilterConfig, "Expecting initial state.");
             Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
