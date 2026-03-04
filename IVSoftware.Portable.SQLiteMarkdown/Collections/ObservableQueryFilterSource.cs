@@ -87,7 +87,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         {
                             inpc.PropertyChanged -= OnItemPropertyChanged;
                         }
-                        FilterQueryDatabase?.DeleteAll<T>();
                         CollectionChangedProtected?.Invoke(this, e);
                         break;
                 }
@@ -151,7 +150,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // UPGRADE 260301
                 base.LoadCanon(items);
                 // --------------
+#if DEBUG
 
+                var preview = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
+#endif
 
                 // This causes a Reset on the main INCC
                 _canonicalRecordset.Clear();
@@ -582,7 +584,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                     {
                                         // 260303 successful migrate to BC
                                         // FilterQueryDatabase.DeleteAll<T>();
-                                        FilterQueryDatabase.InsertAll(items);
+                                        // FilterQueryDatabase.InsertAll(items);
+
+#if DEBUG
+                                        var preview2 = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
+#endif
                                     }
                                     break;
                                 case NotifyQueryFilterCollectionChangedAction.ApplyFilter:
@@ -620,12 +626,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     CollectionChangedProtected?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                     break;
                 case FilteringState.Armed:
-                    if (FilteringStatePrev == FilteringState.Ineligible)
-                    {
-                        await Task.Delay(TimeSpan.FromTicks(1));
-                        FilterQueryDatabase.DeleteAll<T>();
-                        FilterQueryDatabase.InsertAll(_canonicalRecordset);
-                    }
                     break;
                 case FilteringState.Active:
                     break;

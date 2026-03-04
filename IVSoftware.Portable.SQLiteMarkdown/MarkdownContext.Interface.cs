@@ -242,11 +242,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             break;
                     }
                 }
-#if DEBUG
-
-                var preview = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
-                { }
-#endif
                 return ReservedAffinityState.Next;
             }
 
