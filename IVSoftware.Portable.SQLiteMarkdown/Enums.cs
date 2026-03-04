@@ -312,7 +312,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         InitModelForEpoch = StdFSMState.InitModelForEpoch,
 
-        UpdateCounts = StdFSMState.UpdateCounts,        
+        UpdateCounts = StdFSMState.UpdateCounts,
+
+        InitStatesForEpoch = StdFSMState.InitStatesForEpoch,
     }
 
     /// <summary>

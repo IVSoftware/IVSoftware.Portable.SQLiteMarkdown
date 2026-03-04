@@ -185,6 +185,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     localUpdateCounts();
                     break;
                 case StdFSMState.InitStatesForEpoch:
+                    localInitStatesForEpoch();
                     break;
             }
             return ReservedAffinityState.Next;
@@ -263,11 +264,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
 
-
-
-            /// <summary>
-            /// Update the binding properties from the model.
-            /// </summary>
             void localUpdateCounts()
             {
                 int
@@ -291,6 +287,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 CanonicalCount = canonical;
                 PredicateMatchCount = predicateMatch;
+            }
+
+            void localInitStatesForEpoch()
+            {
+                switch (CanonicalCount)
+                {
+                    case 0:
+                        SearchEntryState = SearchEntryState.QueryCompleteNoResults;
+                        FilteringState = FilteringState.Ineligible;
+                        break;
+                    case 1:
+                        SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                        FilteringState = FilteringState.Ineligible;
+                        break;
+                    default:
+                        SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                        FilteringState = FilteringState.Armed;
+                        break;
+                }
+                if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
+                {
+                    IsFiltering = CanonicalCount > 2;
+                }
             }
             #endregion L o c a l F x
         }
@@ -385,25 +404,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             using (DHostBusy.GetToken())
             {
                 RunFSM<BeginRecordsetEpochFSM>(recordset);
-                switch (CanonicalCount)
-                {
-                    case 0:
-                        SearchEntryState = SearchEntryState.QueryCompleteNoResults;
-                        FilteringState = FilteringState.Ineligible;
-                        break;
-                    case 1:
-                        SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                        FilteringState = FilteringState.Ineligible;
-                        break;
-                    default:
-                        SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                        FilteringState = FilteringState.Armed;
-                        break;
-                }
-                if (QueryFilterConfig == QueryFilterConfig.QueryAndFilter)
-                {
-                    IsFiltering = CanonicalCount > 2;
-                }
             }
         }
 
