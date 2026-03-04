@@ -248,7 +248,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// Advisory for signatures that look like they need refactoring. DON'T DO IT!
+    /// Advisory for signatures that look like they need refactoring
+    /// but are part of a published contract. Basically, DON'T DO IT!
     /// </summary>
     [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = false)]
     public class PublishedSignatureAttribute : Attribute 
