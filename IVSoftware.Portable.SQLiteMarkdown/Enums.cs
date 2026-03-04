@@ -93,18 +93,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Ineligible,
 
         /// <summary>
-        /// - The list meets the minumum requirement.
-        /// - Now, when the text changes, a query will execute and filtering 
-        ///   will be considered active regardless of the filtered result count.
+        /// - The canonical recordset epoch meets minumum requirement and will now adhere to Filter semantics.
         /// </summary>
         /// <remarks>
-        /// - Pushing Armed will clear the filtered items buffer.
+        /// - Settled text changes now invoke internal filter queries.
+        /// - This epoch cannot fall below Armed without a Clear.
+        /// - Specifically, empty IME alone does not make this happen.
         /// </remarks>
         Armed,
 
         /// <summary>
-        /// The visible list items represent a filtered
-        /// subset of records that match the predicate.
+        /// The 'net projection' items represent a filtered subset of records that match the predicate.
         /// </summary>
         /// <remarks>
         /// When the regressive Clear is called in this state:
