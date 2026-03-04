@@ -143,12 +143,18 @@ public class TestClass_PredicateMarkdownContext
         Assert.AreEqual(
             COUNT, 
             pmdc.CanonicalCount, 
-            "Expecting UNFILTERED COUNT is correct meaning canon is initialized.");
+            "Expecting CANONICAL COUNT is correct meaning canon is initialized.");
+
+        Assert.AreEqual(
+            COUNT, 
+            pmdc.PredicateMatchCount, 
+            "Expecting PREDICATE MATCH COUNT is correct meaning canon is initialized.");
 
         Assert.AreEqual(
             SearchEntryState.QueryCompleteWithResults,
             pmdc.SearchEntryState,
             "Expecting state reflects recordset.");
+
         Assert.AreEqual(
             FilteringState.Armed,
             pmdc.FilteringState);

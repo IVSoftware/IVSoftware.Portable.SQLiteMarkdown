@@ -2857,6 +2857,8 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                     await localCommitOnSettle("animal");
 
                     actual = string.Join(Environment.NewLine, builder);
+
+                    // Regression
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 

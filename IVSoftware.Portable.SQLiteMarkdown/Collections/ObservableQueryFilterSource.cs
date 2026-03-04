@@ -156,6 +156,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                 // This causes a Reset on the main INCC
                 _canonicalRecordset.Clear();
+
                 if (CanonicalCount != 0)
                 {
                     foreach (var xel in Model.Descendants())
@@ -165,6 +166,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             _canonicalRecordset.Add(item);
                         }
                     }
+
                     // Raise single event after completing the loop.
                     CollectionChangedProtected?.Invoke(
                         this,
@@ -605,9 +607,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             if (sender is IList items)
             {
-                NotifyCollectionChangedAction action
-                    = (NotifyCollectionChangedAction)(((int)eUnk.Action) & 0x7);
-
                 NotifyQueryFilterCollectionChangedAction actionContext =
                     (eUnk is NotifyQueryFilterCollectionChangedEventArgs eAz)
                     ? (NotifyQueryFilterCollectionChangedAction)(((int)eAz.Action) & ~0x7)
