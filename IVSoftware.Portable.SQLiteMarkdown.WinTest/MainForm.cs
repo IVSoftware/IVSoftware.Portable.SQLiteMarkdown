@@ -2,8 +2,9 @@ using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest;
 using IVSoftware.Portable.SQLiteMarkdown.WinTest.OP;
-using Newtonsoft.Json;
 using SQLite;
+using IVSoftware.Portable;
+using IVSoftware.WinForms;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
 {
@@ -175,11 +176,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 QFSUT.InputText = tmp;
                 QFSUT.Commit();
             };
+            _ = InitAsync();
+        }
+        async Task InitAsync()
+        {
+            await GlyphProvider.BoostCache();
+
+            // Retrieve the FontFamily from the PrivateFontCollection
+            // (implemented inside the WinForms-specific NuGet package).
+            if (GlyphProvider.Providers[typeof(GlyphProvider.IconBasics)] is GlyphProvider provider &&
+                provider.GetFontFamily() is FontFamily fontFamily)
+            {
+                IconBasics = new Font(fontFamily, 12.5F);
+            }
+            else
+            {   /* G T K */
+            }
         }
 
         /// <summary>
         /// QSF Under Test for ad hoc states and expr evals.
         /// </summary>
-        private ObservableQueryFilterSource<SelectableQFModel> QFSUT { get; } 
+        private ObservableQueryFilterSource<SelectableQFModel> QFSUT { get; }
+
+        public static Font IconBasics { get; private set; }
     }
 }
