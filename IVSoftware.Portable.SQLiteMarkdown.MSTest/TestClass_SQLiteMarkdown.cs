@@ -395,18 +395,45 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         [TestMethod]
         public async Task Test_QueryFilterFSMs()
         {
+            // MSTest internal consideration. This is about tests that hang.
             Assert.IsNull(SynchronizationContext.Current);
 
+            var extQueryHandle = default(List<SelectableQFModel>);
+            int COUNT;
+
             var mdc = new TestableMarkdownContext<SelectableQFModel>();
+            Assert.AreEqual(QueryFilterConfig.QueryAndFilter, mdc.QueryFilterConfig, "Expecting initial state.");
             Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
             Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
 
+
+            await subtestExtQueryNoResult();
+            await subtestExtQueryOneResult();
+            await subtestExtQueryTwoResults();
 
             await subtestClearAwaiterOnly();
             await subtestQueryWithResultsClearSequence();
             await subtestQueryWithFilteredResultsClearSequence();
 
             #region S U B T E S T S 
+            async Task subtestExtQueryNoResult()
+            {
+                COUNT = 0;
+                mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
+                Assert.AreEqual(COUNT, mdc.CanonicalCount);
+            }
+            async Task subtestExtQueryOneResult()
+            {
+                COUNT = 1;
+                mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
+                Assert.AreEqual(COUNT, mdc.CanonicalCount);
+            }
+            async Task subtestExtQueryTwoResults()
+            {
+                COUNT = 2;
+                mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
+                Assert.AreEqual(COUNT, mdc.CanonicalCount);
+            }
             async Task subtestClearAwaiterOnly()
             {
                 mdc.Clear(all: true);
@@ -424,8 +451,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
 
                 // Query occurs.
-                mdc.SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                mdc.FilteringState = FilteringState.Armed;
+                mdc.LoadCanon(extQueryHandle.PopulateForDemo(2));
 
                 // #1 [X]
                 // User clears the input text.
@@ -463,8 +489,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
 
                 // Query occurs.
-                mdc.SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                mdc.FilteringState = FilteringState.Armed;
+                mdc.LoadCanon(extQueryHandle.PopulateForDemo(2));
 
                 // Filtering occurs
                 mdc.InputText = "valid query abc";
@@ -500,11 +525,46 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
         [TestMethod, Ignore]
         public async Task Test_QueryFSMs()
-        { }
+        {
+            var extQueryHandle = default(List<SelectableQFModel>);
+
+            var mdc = new TestableMarkdownContext<SelectableQFModel>();
+            Assert.AreEqual(QueryFilterConfig.QueryAndFilter, mdc.QueryFilterConfig, "Expecting initial state.");
+            Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
+            Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+        }
 
         [TestMethod, Ignore]
         public async Task Test_FilterFSMs()
-        { }
+        {
+            var extQueryHandle = default(List<SelectableQFModel>);
+
+            TestableMarkdownContext<SelectableQFModel> mdc;
+
+            subtest_ConfigureThenLoad();
+
+            subtest_LoadThenConfigure();
+
+            #region S U B T E S T S
+            void subtest_ConfigureThenLoad()
+            {
+                mdc = new() { QueryFilterConfig = QueryFilterConfig.Filter };
+
+                Assert.AreEqual(QueryFilterConfig.Filter, mdc.QueryFilterConfig, "Expecting initial state.");
+                Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+            }
+
+            void subtest_LoadThenConfigure()
+            {
+                mdc = new();
+
+                Assert.AreEqual(QueryFilterConfig.QueryAndFilter, mdc.QueryFilterConfig, "Expecting initial state.");
+                Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+            }
+            #endregion S U B T E S T S
+        }
 
 
         /// <summary>
@@ -512,16 +572,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         /// </summary>
         class TestableMarkdownContext<T> : MarkdownContext<T>
         {
-            public new FilteringState FilteringState
-            {
-                get => base.FilteringState;
-                internal set => base.FilteringState = value;
-            }
-            public new SearchEntryState SearchEntryState
-            {
-                get => base.SearchEntryState;
-                internal set => base.SearchEntryState = value;
-            }
             public new int CanonicalCount
             {
                 get => base.CanonicalCount;
