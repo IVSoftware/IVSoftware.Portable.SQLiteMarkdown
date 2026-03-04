@@ -507,6 +507,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         { }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
         class TestableMarkdownContext<T> : MarkdownContext<T>
         {
             public new FilteringState FilteringState
@@ -519,6 +522,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 get => base.SearchEntryState;
                 internal set => base.SearchEntryState = value;
             }
+            public new int CanonicalCount
+            {
+                get => base.CanonicalCount;
+                set => base.CanonicalCount = value;
+            }
+            public new int PredicateMatchCount
+            {
+                get => base.PredicateMatchCount;
+                set => base.PredicateMatchCount = value;
+            }
+
             public bool IsReady => _ready.CurrentCount > 0;
         }
 
