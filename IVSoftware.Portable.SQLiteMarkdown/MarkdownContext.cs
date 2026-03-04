@@ -1572,10 +1572,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     {
                         case FilteringState.Ineligible:
                             // RELEASE 1.0.2 bug fixed by adding this clause.
+                            // RELEASE 2.0.0 fixes the nosocomial.
                             switch (SearchEntryState)
                             {
+                                // There were never any projected items to clear.
+                                // No intermediate step is needed.
                                 case SearchEntryState.QueryCompleteNoResults:
-                                case SearchEntryState.QueryCompleteWithResults:
+                                case SearchEntryState.QueryEmpty:
                                     SearchEntryState = SearchEntryState.Cleared;
                                     break;
                             }
@@ -1636,20 +1639,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                         SearchEntryState = SearchEntryState.Cleared;
                                         break;
                                     case SearchEntryState.QueryEmpty:
-                                        // Please do not combine these clauses.
-                                        if( ProjectionOptions.HasFlag(NetProjectionOption.AllowDirectChanges))
-                                        {
-                                            if(ObservableNetProjection is IList list)
-                                            {
-                                                list.Clear();
-                                            }
-                                        }
-                                        else
-                                        {
-                                            var msg = $"In {nameof(OnFilteringStateChanged)}(): {ProjectionOptions.ToFullKey()}";
-                                            Debug.Fail(msg);
-                                            this.Advisory(msg);
-                                        }
                                         SearchEntryState = SearchEntryState.Cleared;
                                         break;
                                 }
@@ -1861,7 +1850,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         SearchEntryState _searchEntryState = default;
 
-        protected virtual void OnSearchEntryStateChanged() { }
+        protected virtual void OnSearchEntryStateChanged() 
+        {
+            if(SearchEntryState == SearchEntryState.Cleared)
+            {
+                // Please do not combine these clauses.
+                if (ProjectionOptions.HasFlag(NetProjectionOption.AllowDirectChanges))
+                {
+                    if (ObservableNetProjection is IList list)
+                    {
+                        list.Clear();
+                    }
+                }
+                else
+                {
+                    var msg = $"In {nameof(OnFilteringStateChanged)}(): {ProjectionOptions.ToFullKey()}";
+                    Debug.Fail($"ADVISORY - {msg}");
+                    this.Advisory(msg);
+                }
+                RunFSM<ResetFilterEpochFSM>();
+            }
+        }
 
 #if DEBUG
         protected SemaphoreSlimWithTrace _ready { get; } = new SemaphoreSlimWithTrace(1, 1);

@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SQLite;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -497,6 +498,15 @@ InputText"
                 Assert.IsFalse(mdc.IsFiltering, "TURNED OFF");
 
                 // Finally, this is going to CLEAR those two items, leaving the IME at first cause.
+                IList? projection = mdc.ObservableNetProjection as IList; // [Remember] It's an INCC handle.
+                if(projection is not null)
+                {
+                    Assert.IsTrue(projection.Count == 0);
+                }
+                else
+                {
+                    Debug.WriteLine("The mdc.ObservableNetProjection property has not been assigned.");
+                }
                 Assert.IsTrue(mdc.CanonicalCount == 2);
 
                 // GZ GZ GZ GZ GZ GZ GZ 
@@ -504,6 +514,12 @@ InputText"
                 Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "NO CHANGE");
                 Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "IME STATE CLEARED");
                 Assert.IsFalse(mdc.IsFiltering, "TURNED OFF");
+
+                if (projection is not null)
+                {
+                    Assert.IsTrue(projection.Count == 0);
+                }
+
                 Assert.IsTrue(mdc.CanonicalCount == 0);
                 { }
             }

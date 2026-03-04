@@ -161,10 +161,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return ReservedAffinityState.Canceled;
         }
 
+        protected IEnumerable<TFsm> GetDeclaredValues<TFsm>() where TFsm : Enum
+        {
+            return typeof(TFsm)
+                .GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+                .Select(field => (TFsm)field.GetValue(null)!);
+        }
         protected Enum RunFSM<TFsm>(object? context = null) where TFsm : struct, Enum
         {
             Enum result = ReservedAffinityState.None;
-            foreach (Enum state in typeof(TFsm).GetEnumValues())
+            foreach (Enum state in GetDeclaredValues<TFsm>())
             {
                 result = ExecState(state, context);
             }
@@ -176,7 +182,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             switch ((StdFSMState)state)
             {
                 case StdFSMState.InitFQBDForEpoch when context is IEnumerable canonical:
-                    localInitFilterQueryDatabaseEpoch(canonical);
+                    localInitFQDBEpoch(canonical);
                     break;
                 case StdFSMState.InitModelForEpoch when context is IEnumerable canonical:
                     localInitModelEpoch(canonical);
@@ -187,11 +193,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case StdFSMState.InitStatesForEpoch:
                     localInitStatesForEpoch();
                     break;
+                case StdFSMState.ResetFQBDForEpoch:
+                    localResetFQBDForEpoch();
+                    break;
+                case StdFSMState.ResetModelForEpoch:
+                    localResetModelForEpoch();
+                    break;
             }
             return ReservedAffinityState.Next;
 
             #region L o c a l F x
-            Enum localInitFilterQueryDatabaseEpoch(IEnumerable canonical)
+            Enum localInitFQDBEpoch(IEnumerable canonical)
             {
                 try
                 {
@@ -302,6 +314,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         break;
                 }
             }
+
+            void localResetFQBDForEpoch()
+            {
+                if (FilterQueryDatabase.DeleteAll(ContractType.GetMapping()) == 0)
+                {   /* G T K */
+                }
+                else
+                {   /* G T K */
+                }
+            }
+
+            void localResetModelForEpoch()
+            {
+                Model.RemoveNodes();
+            }
             #endregion L o c a l F x
         }
 
@@ -382,7 +409,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
         /// </remarks>
         public virtual async Task LoadCanonAsync(IEnumerable? recordset)
-            => await RunFSMAsync<BeginRecordsetEpochFSM>(recordset);
+            => await RunFSMAsync<InitFilterEpochFSM>(recordset);
 
         /// <summary>
         /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
@@ -394,14 +421,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             using (DHostBusy.GetToken())
             {
-                RunFSM<BeginRecordsetEpochFSM>(recordset);
+                RunFSM<InitFilterEpochFSM>(recordset);
             }
         }
 
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.
         /// </summary>
-        internal NetProjectionOption ProjectionOptions { get; set; }
+        internal NetProjectionOption ProjectionOptions { get; set; } = NetProjectionOption.AllowDirectChanges;
 
         /// <summary>
         /// Gets or sets the observable projection representing the effective

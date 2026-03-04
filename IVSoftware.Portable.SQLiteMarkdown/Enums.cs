@@ -304,12 +304,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Using a DHostSuppress token, populate the NetProjection. Reset will happen on token release.
         /// </summary>
         NetProjectWithSuppress,
+
+        /// <summary>
+        /// Empty the contents of the contract table.
+        /// </summary>
+        ResetFQBDForEpoch,
+
+        /// <summary>
+        /// Empty the contents of the contract table.
+        /// </summary>
+        ResetModelForEpoch,
     }
 
     /// <summary>
     /// 260228 inprog
     /// </summary>
-    internal enum BeginRecordsetEpochFSM
+    internal enum InitFilterEpochFSM
     {
         InitFQBDForEpoch = StdFSMState.InitFQBDForEpoch,
 
@@ -320,32 +330,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         InitStatesForEpoch = StdFSMState.InitStatesForEpoch,
     }
 
-    /// <summary>
-    /// 260228 inprog
-    /// </summary>
-    internal enum EnterFilterFSM
+    internal enum ResetFilterEpochFSM
     {
-        [Obsolete]
-        InitializeUnfilteredItemsCollection = StdFSMState.InitializeUnfilteredItemsCollection,
+        ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
 
-        InitFQBDForEpoch = StdFSMState.InitFQBDForEpoch,
+        ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
 
-        InitModelForEpoch = StdFSMState.InitModelForEpoch,
-
-        SuppressedReplace = StdFSMState.NetProjectWithSuppress,
-    }
-
-    /// <summary>
-    /// 260228 inprog
-    /// </summary>
-    /// <remarks>
-    /// When the IsFiltering edge goes low, it means that text changes
-    /// in the IME will no longer settle and filter -  it will take an
-    /// actual Commit or icon click to return to a filtering state.
-    /// #{E053A227-2FD9-4326-B470-0F476D93C5FA}
-    /// </remarks>
-    internal enum ExitFilterFSM
-    {
+        UpdateCounts = StdFSMState.UpdateCounts,
     }
 
     public enum ProjectionTopology
@@ -392,7 +383,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     [Flags, Probationary]
     internal enum NetProjectionOption
     {
-        ObservableOnly,
-        AllowDirectChanges = 0x1,
+        /// <summary>
+        /// Default permissive.
+        /// </summary>
+        /// <remarks>
+        /// MentalModel: "The explicit assignment of ObservableNetProjection *is" the OPT-IN."
+        /// </remarks>
+        AllowDirectChanges = 0x0,
+
+        /// <summary>
+        /// Track INCC events but don't attempt to cast IList or make changes on the handle.
+        /// </summary>
+        ObservableOnly     = 0x1,
     }
 }
