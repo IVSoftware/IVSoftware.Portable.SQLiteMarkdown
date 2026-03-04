@@ -291,11 +291,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         InitModelForEpoch,
 
         /// <summary>
-        /// Update current values for CanonicalCount and PredicateMatchCount by iterating model.
-        /// </summary>
-        UpdateCounts,
-
-        /// <summary>
         /// Set SearchEntryState and FilteringState contextually.
         /// </summary>
         InitStatesForEpoch,
@@ -314,6 +309,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Empty the contents of the contract table.
         /// </summary>
         ResetModelForEpoch,
+
+        /// <summary>
+        /// Update current values for CanonicalCount and PredicateMatchCount by iterating model.
+        /// </summary>
+        UpdateCounts,
     }
 
     /// <summary>

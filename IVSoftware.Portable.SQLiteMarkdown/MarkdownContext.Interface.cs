@@ -149,7 +149,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected async Task<Enum> RunFSMAsync<TFsm>(object? context = null) where TFsm : struct, Enum
         {
             Enum result = ReservedAffinityState.None;
-            foreach (Enum state in typeof(TFsm).GetEnumValues())
+            foreach (Enum state in GetDeclaredValues<TFsm>())
             {
                 result = await ExecStateAsync(state, context);
             }
@@ -161,18 +161,39 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return ReservedAffinityState.Canceled;
         }
 
+        /// <summary>
+        /// Enumerates the values of the enum type <typeparamref name="TFsm"/> in their
+        /// declaration order rather than their underlying numeric order. This is used
+        /// by the FSM runner to evaluate states exactly in the sequence authored in
+        /// the enum definition.
+        /// </summary>
         protected IEnumerable<TFsm> GetDeclaredValues<TFsm>() where TFsm : Enum
         {
             return typeof(TFsm)
                 .GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
                 .Select(field => (TFsm)field.GetValue(null)!);
         }
+
+        /// <summary>
+        /// Executes each state in the enum <typeparamref name="TFsm"/> in declaration
+        /// order, invoking <c>ExecState</c> for each. Normal progression continues while
+        /// <see cref="ReservedAffinityState.Next"/> is returned. Any other result
+        /// transitions the runner into an out-of-band loop for the current state until
+        /// <see cref="ReservedAffinityState.None"/> is returned, after which execution
+        /// terminates and the last result is returned.
+        /// </summary>
         protected Enum RunFSM<TFsm>(object? context = null) where TFsm : struct, Enum
         {
             Enum result = ReservedAffinityState.None;
             foreach (Enum state in GetDeclaredValues<TFsm>())
             {
                 result = ExecState(state, context);
+                if(!Equals(result, ReservedAffinityState.Next))
+                {
+                    Enum outOfBand;
+                    while (!Equals(ReservedAffinityState.None, (outOfBand = ExecState(state, context)))) { }
+                    break;
+                }
             }
             return result;
         }

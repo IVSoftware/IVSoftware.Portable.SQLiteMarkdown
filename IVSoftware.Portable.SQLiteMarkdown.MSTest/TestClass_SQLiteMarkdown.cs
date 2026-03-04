@@ -508,8 +508,6 @@ InputText"
                     Debug.WriteLine("The mdc.ObservableNetProjection property has not been assigned.");
                 }
                 Assert.IsTrue(mdc.CanonicalCount == 2);
-
-                // GZ GZ GZ GZ GZ GZ GZ 
                 mdc.Clear();
                 Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "NO CHANGE");
                 Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "IME STATE CLEARED");
@@ -519,9 +517,7 @@ InputText"
                 {
                     Assert.IsTrue(projection.Count == 0);
                 }
-
                 Assert.IsTrue(mdc.CanonicalCount == 0);
-                { }
             }
             async Task subtestClearAwaiterOnly()
             {
@@ -534,7 +530,6 @@ InputText"
             {
                 mdc.Clear(all: true);
                 mdc.InputText = "valid query";
-                await mdc;
 
                 Assert.AreEqual(SearchEntryState.QueryEN, mdc.SearchEntryState, "Expecting initial state.");
                 Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
@@ -542,20 +537,23 @@ InputText"
                 // Query occurs.
                 mdc.LoadCanon(extQueryHandle.PopulateForDemo(2));
 
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Armed, mdc.FilteringState, "Expecting initial state.");
+
                 // #1 [X]
                 // User clears the input text.
                 // In this case FilteringState should remain Armed.
                 // because the transition is from non-empty input text to empty.
 
                 mdc.Clear();
-                await mdc;
+
                 Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState, "Expecting initial state.");
                 Assert.AreEqual(FilteringState.Armed, mdc.FilteringState, "Expecting initial state.");
 
                 // #2 [X]
                 // User returns to Query without emptying the list.
                 mdc.Clear();
-                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(SearchEntryState.QueryEmpty, mdc.SearchEntryState, "Expecting initial state.");
                 Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
 
                 // #3 [X]
@@ -597,7 +595,7 @@ InputText"
                 // #2 [X]
                 // User returns to Query without emptying the list.
                 mdc.Clear();
-                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(SearchEntryState.QueryEmpty, mdc.SearchEntryState, "Expecting initial state.");
                 Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
 
                 // #3 [X]
