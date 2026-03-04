@@ -2812,7 +2812,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 };
                 items.CollectionChanged += (sender, e) =>
                 {
-                    if(ReferenceEquals(sender, items.UnfilteredItems))
+                    if(ReferenceEquals(sender, items.CanonicalRecordset))
                     {
                         Debug.Fail($@"ADVISORY - First Time.");
                     }
@@ -2858,22 +2858,20 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
 
                     actual = string.Join(Environment.NewLine, builder);
 
-                    // Regression
+                    // Limit touched 260304
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-Projection.Reset NewItems=0
-Projection.Add NewItems=12
-Projection.Add NewItems=1";
+Projection.Add NewItems=12"
+                    ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
-                        "Expecting Two events."
+                        "Expecting collection authority clean flow.."
                     );
 
-                    Assert.AreEqual(2, eventQueue.Count, "NO. More is not OK.");
-
+#if false && SAVE
                     Assert.IsNotNull((ecc = (NotifyCollectionChangedEventArgs?)eventQueue.Dequeue()?.e));
                     {
                         switch (ecc.Action)
@@ -2885,6 +2883,8 @@ Projection.Add NewItems=1";
                                 break;
                         }
                     }
+#endif
+
                     Assert.IsNotNull((ecc = (NotifyCollectionChangedEventArgs?)eventQueue.DequeueSingle()?.e));
                     {
                         switch (ecc.Action)

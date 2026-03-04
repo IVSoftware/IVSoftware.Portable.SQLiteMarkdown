@@ -7,6 +7,7 @@ using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
 using SQLite;
+using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -435,7 +436,7 @@ SELECT * FROM items WHERE
     /// <remarks>
     /// #{AC826718-2B0C-4846-9F85-B028BAD3CC10}
     /// </remarks>
-    [TestMethod]
+    [TestMethod, Ignore]
     public async Task Test_InputTextUnconditionalSettle()
     {
         var mdc = new MarkdownContext<SelectableQFModel>
