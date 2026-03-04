@@ -271,6 +271,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         MarkdownContext,
     }
+
+    /// <summary>
+    /// Set of all supported states with canonical indexing.
+    /// </summary>
+    [Canonical("FSM enums should declare members relative to numeric indexes in this set.")]
     internal enum StdFSMState
     {
         [Obsolete]
@@ -301,7 +306,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         NetProjectWithSuppress,
     }
-
 
     /// <summary>
     /// 260228 inprog
