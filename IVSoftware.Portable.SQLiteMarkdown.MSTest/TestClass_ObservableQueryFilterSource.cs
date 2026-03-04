@@ -1525,9 +1525,13 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
                             .OfType<PropertyChangedEventArgs>()
                             .Select(_ => _.PropertyName));
+
+                        // Limits touched 260304
+                        // First, make sure we're testing QueryAndFilter
+                        Assert.AreEqual(QueryFilterConfig.QueryAndFilter, items.QueryFilterConfig);
+                        // Now, this *did* have a Running change showing up but we don't want that.
                         expected = @" 
 SearchEntryState
-Running
 InputText"
                         ;
 
@@ -1676,11 +1680,11 @@ InputText";
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
                             .OfType<PropertyChangedEventArgs>()
                             .Select(_ => _.PropertyName));
-                        actual.ToClipboardExpected();
-                        { }
+
+                        // Limit touched 260304
+                        // Removed Running. We don't want that.
                         expected = @" 
-InputText
-Running"
+InputText"
                         ;
 
                         Assert.AreEqual(
