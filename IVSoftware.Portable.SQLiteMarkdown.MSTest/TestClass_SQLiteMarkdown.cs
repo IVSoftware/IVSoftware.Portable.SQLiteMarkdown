@@ -421,18 +421,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 COUNT = 0;
                 mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
                 Assert.AreEqual(COUNT, mdc.CanonicalCount);
+                Assert.AreEqual(SearchEntryState.QueryCompleteNoResults, mdc.SearchEntryState);
+                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState);
+
             }
             async Task subtestExtQueryOneResult()
             {
                 COUNT = 1;
                 mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
                 Assert.AreEqual(COUNT, mdc.CanonicalCount);
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState);
+                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState);
             }
             async Task subtestExtQueryTwoResults()
             {
                 COUNT = 2;
                 mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
                 Assert.AreEqual(COUNT, mdc.CanonicalCount);
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState);
+                Assert.AreEqual(FilteringState.Armed, mdc.FilteringState);
             }
             async Task subtestClearAwaiterOnly()
             {
