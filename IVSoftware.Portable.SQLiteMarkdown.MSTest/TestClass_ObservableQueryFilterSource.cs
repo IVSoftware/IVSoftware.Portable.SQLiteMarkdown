@@ -1823,18 +1823,32 @@ SearchEntryState='QueryCompleteWithResults'";
                         // that query result, so filtering stays Armed in this case.
 
 #endif
+
+                        // Before
+                        actual = items.StateReport();
+                        actual.ToClipboardExpected();
+                        { }
+                        expected = @" 
+[IME Len: 0, IsFiltering True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Armed]"
+                        ;
+                        Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                         // animal.b
                         // Expecting Filter mode and an internal query.
                         // See also: {24048258-8BE4-40C4-BF85-8863E98BED51}
                         items.InputText += "b";
                         await items;
 
+                        // After
+                        actual = items.StateReport();
+                        actual.ToClipboardExpected();
+                        { }
+                        expected = @" 
+[IME Len: 0, IsFiltering True], [Net: null, CC: 12, PMC: 5], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Armed]"
+                        ;
+                        Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                         actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
                         actual.ToClipboardExpected();
                         { }
-
-                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 5).Date, "Don't forget disabled");
-                        return;
 
                         expected = @" 
 Black Cat  [animal] [color]

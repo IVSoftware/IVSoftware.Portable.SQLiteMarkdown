@@ -252,14 +252,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// but are part of a published contract. Basically, DON'T DO IT!
     /// </summary>
     [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = false)]
-    public class PublishedSignatureAttribute : Attribute 
+    internal class PublishedSignatureAttribute : Attribute 
     {
         // Do Not Change signature, return type, or argument names.
         // Do Not Obsolete (if you can help it).
-        public PublishedSignatureAttribute(string? version = null)
+        public PublishedSignatureAttribute(string? version = null, Type? type = null)
         {
             Version = version;
+            Type = type;
         }
         public string? Version { get; }
+        public Type? Type { get; }
     }
 }

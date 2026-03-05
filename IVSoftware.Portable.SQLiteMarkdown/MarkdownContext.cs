@@ -1277,6 +1277,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// eligibility rules such as minimum length, throttling heuristics,
         /// or restricted character policies.
         /// </remarks>
+        [PublishedSignature("1.0", typeof(MarkdownContext)]
         public Predicate<string> ValidationPredicate
         {
             get
@@ -1784,6 +1785,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 localApplyQuerySemantics();
             }
+
+            #region L o c a l F x
             void localApplyQuerySemantics()
             {
                 if (InputText.IsSemanticallyEmpty())
@@ -1837,6 +1840,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 RestartIfSemanticInputChanged();
             }
+            #endregion L o c a l F x
         }
 
         [Careful("Trimming or modifying the raw InputText is not allowed.")]

@@ -227,7 +227,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Task LoadCanonAsync(IEnumerable? recordset);
         #endregion P R O J E C T I O N
 
-
         // [Probationary("Maintain NetProjectionOption enum type as Internal until stable.")]
         // NetProjectionOption ProjectionOptions { get; }
 
