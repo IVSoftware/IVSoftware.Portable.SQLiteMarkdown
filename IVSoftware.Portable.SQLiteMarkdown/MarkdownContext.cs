@@ -2021,61 +2021,103 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+
         protected virtual async Task ApplyFilter()
         {
             string sql;
             IList matches;
+            string[] matchPaths;
 
             await Task.Run(async () =>
             {
                 Model.RemoveDescendantAttributes(StdMarkdownAttribute.ismatch);
+
+                // Perform internal filter query.
                 sql = ParseSqlMarkdown();
                 matches = FilterQueryDatabase.Query(ProxyType.GetMapping(), sql);
-                if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
-                {
-                    await ApplyAffinities(matches);
-                }
-                else if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
-                {
-                    await ApplyPriorities(matches.Cast<IPrioritizedAffinity>().ToList());
+                if (matches.Count == CanonicalCount)
+                {   /* G T K - N O O P */
+                    // Fast track.
                 }
                 else
                 {
-                    throw new NotSupportedException(ProxyType.Name);
+                    matchPaths = localGetPaths();
+
+                    foreach (var path in matchPaths)
+                    {
+                        switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
+                        {
+                            case PlacerResult.Exists:
+                                xaf.SetAttributeValue(nameof(StdMarkdownAttribute.ismatch), bool.TrueString);
+                                break;
+                            case PlacerResult.Created:
+                                this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                    {
+                        await ApplyAffinities(matches);
+                    }
                 }
             });
             ModelUpdated?.Invoke(this, EventArgs.Empty);
-        }
+            
+            { } // <= L O O K - the model is updated.
 
-        /// <summary>
-        /// Apply priorities where Priority and EphemeralPriority scope is regional to siblings.
-        /// </summary>
-        protected virtual async Task ApplyPriorities(IList recordset) 
-        {
-            var prioritized = recordset.Cast<IPrioritizedAffinity>();
-            foreach (var path in prioritized.Select(_ => _.FullPath))
+#if ABSTRACT
+            // EXAMPLE
+            <model>
+              <xitem text="5b903388-64a9-49eb-a552-f482bd6c014c" xitem="[SelectableQFModel]" ismatch="True" />
+              <xitem text="7fb5a834-c087-44c5-b5ba-712ecdd2a1cc" xitem="[SelectableQFModel]" />
+              <xitem text="8161697b-5191-457e-b43b-3a976c8453ab" xitem="[SelectableQFModel]" />
+              <xitem text="d7d89a27-0c3f-4f90-975f-227fe4f5f66d" xitem="[SelectableQFModel]" ismatch="True" />
+              <xitem text="594a69eb-2797-4659-b7ea-c667309027f2" xitem="[SelectableQFModel]" />
+              <xitem text="2c914347-8fa8-4b0a-9661-40a9acea4427" xitem="[SelectableQFModel]" />
+              <xitem text="84d2adb4-33d8-4cb2-8cae-06ff0f0387f3" xitem="[SelectableQFModel]" ismatch="True" />
+              <xitem text="482e6327-36c3-4690-9215-ca589f22ff47" xitem="[SelectableQFModel]" ismatch="True" />
+              <xitem text="8af5bbbe-3f49-4a19-8a86-9176d9b13c8f" xitem="[SelectableQFModel]" />
+              <xitem text="068027a5-b65e-4bb0-b94c-3bb34de984fd" xitem="[SelectableQFModel]" ismatch="True" />
+              <xitem text="8fbd9000-3ef8-421e-8a4d-fc0465d13b6c" xitem="[SelectableQFModel]" />
+              <xitem text="93623ea7-87c6-43f2-994a-db262d68c7e5" xitem="[SelectableQFModel]" />
+            </model>
+#endif
+
+
+            #region L o c a l F x
+
+            /// <summary>
+            /// Resolves the path identifiers for the matched recordset. When the proxy
+            /// implements <c>IPrioritizedAffinity</c>, paths are taken directly from
+            /// <c>FullPath</c>; otherwise the value of the mapped SQLite primary key is
+            /// used. A missing primary key mapping is treated as a framework error.
+            /// </summary>
+            string[] localGetPaths()
             {
-                switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
+                if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
                 {
-                    case PlacerResult.Exists:
-                        xaf.SetAttributeValue(nameof(StdMarkdownAttribute.ismatch), bool.TrueString);
-                        break;
-                    case PlacerResult.Created:
-                        this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
-                        break;
-                    default:
-                        break;
+                    return matches.Cast<IPrioritizedAffinity>().Select(_ => _.FullPath).ToArray();
+                }
+                else
+                {
+                    if (ProxyType.GetMapping().PK?.PropertyInfo is PropertyInfo pi)
+                    {
+                        return matches.Cast<object>().Select(_ => (string)pi.GetValue(_)).ToArray();
+                    }
+                    // Error fall-through.
+                    this.ThrowHard<InvalidOperationException>();
+                    return [];
                 }
             }
+            #endregion L o c a l F x
         }
 
         /// <summary>
         /// Apply priorities where temporality may be involved.
         /// </summary>
-        protected virtual async Task ApplyAffinities(IList recordset) 
-        {
-            await ApplyPriorities(recordset);
-        }
+        protected virtual async Task ApplyAffinities(IList recordset) { }
 
         public event EventHandler? InputTextSettled;
         public event EventHandler? ModelUpdated;

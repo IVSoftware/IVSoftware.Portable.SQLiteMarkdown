@@ -171,17 +171,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         public long? PriorityOverride
         {
-            get => _transientPriority;
+            get => _priorityOverride;
             set
             {
-                if (!Equals(_transientPriority, value))
+                if (!Equals(_priorityOverride, value))
                 {
-                    _transientPriority = value;
+                    _priorityOverride = value;
                     OnPropertyChanged();
                 }
             }
         }
-        long? _transientPriority = default;
+        long? _priorityOverride = default;
 
         #region A F F I N I T Y    E P H E M E R A L
 

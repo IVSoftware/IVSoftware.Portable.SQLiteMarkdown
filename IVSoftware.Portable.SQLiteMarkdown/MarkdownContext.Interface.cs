@@ -208,7 +208,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     localInitFQDBEpoch(canonical);
                     break;
                 case StdFSMState.InitModelForEpoch when context is IEnumerable canonical:
-                    localInitModelEpoch(canonical);
+                    localInitModelForEpoch(canonical);
                     break;
                 case StdFSMState.UpdateCounts:
                     localUpdateCounts();
@@ -244,7 +244,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return ReservedAffinityState.Next;
             }
 
-            Enum localInitModelEpoch(IEnumerable canonical)
+            Enum localInitModelForEpoch(IEnumerable canonical)
             {
                 PropertyInfo? pk = ContractType.GetMapping().PK?.PropertyInfo;
                 Model.RemoveNodes();
@@ -269,6 +269,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             xel.SetBoundAttributeValue(
                                 tag: item,
                                 name: nameof(StdMarkdownElement.xitem));
+                            xel.SetAttributeValue(nameof(StdMarkdownAttribute.priority), countDistinct);
                             countDistinct++;
                             break;
                         default:

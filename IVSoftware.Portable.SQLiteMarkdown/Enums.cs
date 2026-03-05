@@ -253,8 +253,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
     internal enum StdMarkdownAttribute
     {
+        /// <summary>
+        /// Path segment name.
+        /// </summary>
         text,
+
+        /// <summary>
+        /// This record matches all active predicates.
+        /// </summary>
         ismatch,
+
+        /// <summary>
+        /// Canonical record order.
+        /// </summary>
+        /// <remarks>
+        /// Serialized form of <c>Priority</c>.
+        /// Mental Model: "The canonical sequential order of the records."
+        /// </remarks>
+        order,
+
+        /// <summary>
+        /// Local sort override.
+        /// </summary>
+        /// <remarks>
+        /// Serialized form of <c>PriorityOverride</c>.
+        /// Mental Model: "Temporary UI-driven ordering (e.g., column header sorts)."
+        /// </remarks>
+        sort,
     }
 
     /// <summary>
