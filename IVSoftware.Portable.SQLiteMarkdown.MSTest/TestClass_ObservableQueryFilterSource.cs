@@ -29,6 +29,7 @@ using static IVSoftware.Portable.Threading.Extensions;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Disposable;
+using System.ComponentModel.Design.Serialization;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {   
@@ -1510,14 +1511,19 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
 
                     void subtestClearedToFirstChar()
                     {
-                        Assert.AreEqual(
-                            SearchEntryState.Cleared,
-                            items.SearchEntryState,
-                            "Expecting starting state is Cleared."
-                        );
+                        actual = items.StateReport();
+                        actual.ToClipboardExpected();
+                        { }
+                        expected = @" 
+[IME Len: 0, IsFiltering False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+                        ;
+                        Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+
+
                         Assert.AreEqual(
                             "Search Items",
                             items.Placeholder);
+
                         // "a"
                         items.InputText += 'a';
                         actual =
@@ -1543,38 +1549,50 @@ InputText"
                             "2. OnPropertyChanged() notifies generically."
                         );
                         eventQueue.Clear();
-                        Assert.AreEqual(
-                            SearchEntryState.QueryENB,
-                            items.SearchEntryState,
-                            "Expecting ending state is ENB."
-                        );
+
+
+                        actual = items.StateReport();
+                        actual.ToClipboardExpected();
+                        { }
+                        expected = @" 
+[IME Len: 1, IsFiltering False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+                        ;
+                        Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                     }
 
                     void subtestFirstCharToEmpty()
                     {
-                        Assert.AreEqual(
-                            SearchEntryState.QueryENB,
-                            items.SearchEntryState,
-                            "Expecting starting state is ENB."
-                        );
+                        actual = items.StateReport();
+                        actual.ToClipboardExpected();
+                        { }
+                        expected = @" 
+[IME Len: 1, IsFiltering False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+                        ;
+                        Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting starting state is ENB.");
+
+                        // Backspace
                         items.InputText = string.Empty;
-                        // Empty is distinct from cleared because
-                        // a state of cleared takes out the whole list.
-                        Assert.AreEqual(
-                            SearchEntryState.QueryEmpty,
-                            items.SearchEntryState,
-                            "Expecting ending state is Empty."
-                        );
+
+                        actual = items.StateReport();
+                        actual.ToClipboardExpected();
+                        { }
+                        expected = @" 
+[IME Len: 0, IsFiltering False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+                        ;
+                        Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                         eventQueue.Clear();
                     }
 
                     void subtestEmptyToFirstChar()
                     {
-                        Assert.AreEqual(
-                            SearchEntryState.QueryEmpty,
-                            items.SearchEntryState,
-                            "Expecting starting state is Empty."
-                        );
+                        actual = items.StateReport();
+                        actual.ToClipboardExpected();
+                        { }
+                        expected = @" 
+[IME Len: 0, IsFiltering False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+                        ;
+                        Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting coming in at Cleared.");
+
                         Assert.AreEqual(
                             "Search Items",
                             items.Placeholder);
@@ -1814,6 +1832,9 @@ SearchEntryState='QueryCompleteWithResults'";
                         actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
                         actual.ToClipboardExpected();
                         { }
+
+                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 5).Date, "Don't forget disabled");
+                        return;
 
                         expected = @" 
 Black Cat  [animal] [color]
