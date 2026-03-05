@@ -6,9 +6,8 @@ using System.Collections.Generic;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
-    partial class TemporalAffinityQFModel : ICustomProperties
+    partial class PrioritizedAffinityQFModel : ICustomProperties
     {
-
 #if ABSTRACT
 recordset = cnx.Query<AffinityQFModel>($@"
     Select *
