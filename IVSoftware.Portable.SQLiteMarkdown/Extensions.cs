@@ -645,5 +645,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             return $@"[assembly: InternalsVisibleTo(""{name.Name}, PublicKey={hex}"")]";
         }
+
+
+        /// <summary>
+        /// Removes the specified attribute from all descendant elements,
+        /// optionally including the current element.
+        /// </summary>
+        public static XElement RemoveDescendantAttributes(this XElement @this, Enum stdEnum, bool includeSelf = false)
+        {
+            var name = stdEnum.ToString();
+
+            var query = includeSelf
+                ? @this.DescendantsAndSelf().Attributes(name)
+                : @this.Descendants().Attributes(name);
+
+            foreach (var attr in query.ToList())
+            {
+                attr.Remove();
+            }
+            return @this;
+        }
     }
 }

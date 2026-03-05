@@ -2024,19 +2024,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected virtual async Task ApplyFilter()
         {
             string sql;
-            IList recordset;
+            IList matches;
 
             await Task.Run(async () =>
             {
+                Model.RemoveDescendantAttributes(StdMarkdownAttribute.ismatch);
                 sql = ParseSqlMarkdown();
-                recordset = FilterQueryDatabase.Query(ProxyType.GetMapping(), sql);
+                matches = FilterQueryDatabase.Query(ProxyType.GetMapping(), sql);
                 if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
                 {
-                    await ApplyAffinities(recordset);
+                    await ApplyAffinities(matches);
                 }
                 else if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
                 {
-                    await ApplyPriorities(recordset.Cast<IPrioritizedAffinity>().ToList());
+                    await ApplyPriorities(matches.Cast<IPrioritizedAffinity>().ToList());
                 }
                 else
                 {
@@ -2057,6 +2058,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
                 {
                     case PlacerResult.Exists:
+                        xaf.SetAttributeValue(nameof(StdMarkdownAttribute.ismatch), bool.TrueString);
                         break;
                     case PlacerResult.Created:
                         this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
