@@ -214,6 +214,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             using (DHostBusy.GetToken())
             {
+                await base.ApplyFilter();
                 try
                 {
                     Debug.Assert(IsFiltering);

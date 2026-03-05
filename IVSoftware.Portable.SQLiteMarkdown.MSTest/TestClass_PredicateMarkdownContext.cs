@@ -124,12 +124,13 @@ public class TestClass_PredicateMarkdownContext
     [TestMethod]
     public async Task Test_PredicateMarkdownContext101()
     {
-        const int COUNT = 31;
+        const bool INCLUDE_LIVE_DEMO = true;
+        int COUNT = INCLUDE_LIVE_DEMO ? 37 : 31;
 
         var opc = new ObservableCollection<TemporalAffinityQFModel>();
         Assert.AreEqual(
             COUNT,
-            opc.PopulateForDemo().Count, 
+            opc.PopulateForDemo(includeLiveDemo: true).Count, 
             "Expecting initial population.");
 
         // Filter-only MDC: Wakes up loaded with opc as canon.

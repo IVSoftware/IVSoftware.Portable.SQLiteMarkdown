@@ -1834,9 +1834,7 @@ SearchEntryState='QueryCompleteWithResults'";
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
                         // PLEASE: Do not remove.
-                        Assert.IsTrue(
-                            items.ValidationPredicate("b"), 
-                            "This was a BUGIRL for the test itself.");
+                        Assert.IsTrue( items.ValidationPredicate("b"), "This was a BUGIRL for the test itself.");
 
                         // animal.b
                         // Expecting Filter mode and an internal query.

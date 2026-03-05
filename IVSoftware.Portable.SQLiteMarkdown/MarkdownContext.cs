@@ -2025,19 +2025,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             string sql;
             IList recordset;
 
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 sql = ParseSqlMarkdown();
                 recordset = FilterQueryDatabase.Query(ProxyType.GetMapping(), sql);
+                if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                {
+                    await ApplyAffinities();
+                }
+                else if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                {
+                    await ApplyPriorities();
+                }
             });
-            if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
-            {
-                await ApplyAffinities();
-            }
-            else if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
-            {
-                await ApplyPriorities();
-            }
             ModelUpdated?.Invoke(this, EventArgs.Empty);
         }
 
