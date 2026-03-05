@@ -452,6 +452,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
+            recordset ??= Array.Empty<object>();
             using (DHostBusy.GetToken())
             {
                 RunFSM<InitFilterEpochFSM>(recordset);
@@ -535,14 +536,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         protected virtual void OnObservableProjectionChanged()
         {
-            if (ObservableNetProjection is IEnumerable recordset)
-            {
-                LoadCanon(recordset);
-            }
-            else
-            {
-                LoadCanon(recordset = Array.Empty<object>());
-            }
+            LoadCanon(ObservableNetProjection as IEnumerable);
         }
 
         public ProjectionTopology ProjectionTopology { get; protected set; }

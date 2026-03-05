@@ -1341,12 +1341,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     switch (_queryFilterConfig)
                     {
                         case QueryFilterConfig.Query:
-                            // This config is *never* filtering.
-                            IsFiltering = false;
+                            FilteringState = FilteringState.Ineligible;
                             break;
                         case QueryFilterConfig.Filter:
-                            // This config is *always* filtering.
-                            IsFiltering = true;
+                            // Advance to minimun state for Filter mode.
+                            if(FilteringState == FilteringState.Ineligible)
+                            {
+                                FilteringState = FilteringState.Armed;
+                                Debug.Assert(IsFiltering);
+                            }
                             break;
                         default:
                             // Reset FSM to first cause.
@@ -1415,6 +1418,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // not work if done in the library itself.
             protected set
             {
+                #region I T ' S    T H E    L A W
+                switch (QueryFilterConfig)
+                {
+                    case QueryFilterConfig.Query:
+                        if(value > FilteringState.Ineligible)
+                        {
+                            value = FilteringState.Ineligible;
+                        }
+                        break;
+                    case QueryFilterConfig.Filter:
+                        if (value < FilteringState.Armed)
+                        {
+                            value = FilteringState.Armed;
+                        }
+                        break;
+                }
+                #endregion I T ' S    T H E    L A W
+
                 if (!Equals(_filteringState, value))
                 {
                     FilteringStatePrev = _filteringState;
@@ -1427,6 +1448,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                     if(_isFiltering != isFilteringB4)
                     {
+                        OnIsFilteringChanged();
                         OnPropertyChanged(nameof(IsFiltering));
                     }
                 }
@@ -1470,6 +1492,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public bool IsFiltering
         {
             get => _isFiltering;
+#if false
             protected set
             {
                 if (!Equals(_isFiltering, value))
@@ -1487,6 +1510,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     OnPropertyChanged();
                 }
             }
+#endif
         }
 
         // Different! Protected because it's in play inside OnFilteringStateChanged.
@@ -1602,7 +1626,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Apply hysteresis to the sFiltering, but only in QueryFilterConfig.QueryAndFilter mode.
         /// </summary>
         /// <remarks>
-        /// INPC sequencing is delicate. Use the backing store here for that reason.
+        /// This is the only place that _isFiltering is allowed to change. 
+        /// INPC sequencing is delicate and so the backing store defers the notification.
         /// </remarks>
         protected virtual void OnFilteringStateChanged()
         {
