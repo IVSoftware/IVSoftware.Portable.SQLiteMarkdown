@@ -5,6 +5,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SQLite;
@@ -2039,7 +2040,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 else
                 {
-
+                    throw new NotSupportedException(ProxyType.Name);
                 }
             });
             ModelUpdated?.Invoke(this, EventArgs.Empty);
@@ -2051,7 +2052,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected virtual async Task ApplyPriorities(IList recordset) 
         {
             var prioritized = recordset.Cast<IPrioritizedAffinity>();
-            var paths = prioritized.Select(_ => _.FullPath).ToArray();
+            foreach (var path in prioritized.Select(_ => _.FullPath))
+            {
+                switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
+                {
+                    case PlacerResult.Exists:
+                        break;
+                    case PlacerResult.Created:
+                        this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
 
         /// <summary>
