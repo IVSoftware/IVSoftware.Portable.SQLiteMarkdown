@@ -1345,11 +1345,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             FilteringState = FilteringState.Ineligible;
                             break;
                         case QueryFilterConfig.Filter:
-                            // Advance to minimun state for Filter mode.
+                            // Advance to minimum states for Filter mode.
                             if(FilteringState == FilteringState.Ineligible)
                             {
                                 FilteringState = FilteringState.Armed;
                                 Debug.Assert(IsFiltering);
+                            }
+                            if (SearchEntryState == SearchEntryState.Cleared)
+                            {
+                                SearchEntryState = SearchEntryState.QueryCompleteNoResults;
                             }
                             break;
                         default:
@@ -1784,7 +1788,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [Careful("Trimming or modifying the raw InputText is not allowed.")]
         protected virtual void OnInputTextChanged()
         {
-            if (SearchEntryState == SearchEntryState.QueryCompleteWithResults && CanonicalCount > 1)
+            if (IsFiltering)
             {
                 localApplyFilterSemantics();
             }
@@ -1825,27 +1829,34 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             void localApplyFilterSemantics()
             {
-                switch (FilteringState)
+                // First cut: "There must be at least one item."
+                if (SearchEntryState == SearchEntryState.QueryCompleteWithResults)
                 {
-                    case FilteringState.Ineligible:
-                        break;
-                    case FilteringState.Armed:
-                        if (!InputText.IsSemanticallyEmpty())
-                        {
-                            FilteringState = FilteringState.Active;
-                        }
-                        break;
-                    case FilteringState.Active:
-                        if (InputText.IsSemanticallyEmpty())
-                        {
-                            // Downgrade but stay armed.
-                            FilteringState = FilteringState.Armed;
-                        }
-                        break;
-                    default:
-                        throw new NotImplementedException($"Bad case: {FilteringState}");
+                    switch (FilteringState)
+                    {
+                        case FilteringState.Ineligible:
+                            {   /* G T K - N O O P */
+                                // Second cut: "In fact, there must be at least two items, and we've already checked."
+                            }
+                            break;
+                        case FilteringState.Armed:
+                            if (!InputText.IsSemanticallyEmpty())
+                            {
+                                FilteringState = FilteringState.Active;
+                            }
+                            break;
+                        case FilteringState.Active:
+                            if (InputText.IsSemanticallyEmpty())
+                            {
+                                // Downgrade but stay armed.
+                                FilteringState = FilteringState.Armed;
+                            }
+                            break;
+                        default:
+                            throw new NotImplementedException($"Bad case: {FilteringState}");
+                    }
+                    RestartIfSemanticInputChanged();
                 }
-                RestartIfSemanticInputChanged();
             }
             #endregion L o c a l F x
         }
@@ -1908,6 +1919,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // {461B2298-3E0A-49F8-AE52-EB43F70699AD}
             protected set
             {
+                #region I T ' S    T H E    L A W
+                switch (QueryFilterConfig)
+                {
+                    case QueryFilterConfig.Filter:
+                        if (value < SearchEntryState.QueryCompleteNoResults)
+                        {
+                            value = SearchEntryState.QueryCompleteNoResults;
+                        }
+                        break;
+                }
+                #endregion I T ' S    T H E    L A W
                 if (!Equals(_searchEntryState, value))
                 {
                     _searchEntryState = value;

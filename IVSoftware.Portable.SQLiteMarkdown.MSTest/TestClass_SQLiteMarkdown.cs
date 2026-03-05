@@ -1454,10 +1454,8 @@ SELECT * FROM itemsA WHERE
             var mdc = new MarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Filter };
 
             actual = mdc.StateReport();
-            actual.ToClipboardExpected();
-            { }
             expected = @" 
-[IME Len: 0, IsFiltering True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.Cleared, FilteringState.Armed]"
+[IME Len: 0, IsFiltering True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -1465,12 +1463,20 @@ SELECT * FROM itemsA WHERE
             await mdc; // YBYA you need this in filter mode.
 
             actual = mdc.StateReport();
+            expected = @" 
+[IME Len: 1, IsFiltering True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "STILL ARMED due to NO ITEMS IN PROJECTION");
+
+            // Reset to empty IME. Do not violate minimum SES.
+            mdc.Clear();
+
+            actual = mdc.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 1, IsFiltering True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryENB, FilteringState.Armed]"
+[IME Len: 0, IsFiltering True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
             ;
-            expected = @"";
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
         }
     }
