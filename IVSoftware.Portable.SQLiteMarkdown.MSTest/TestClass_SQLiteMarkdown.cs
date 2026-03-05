@@ -648,7 +648,7 @@ InputText"
 
             Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState);
             Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "DOES NOT MOVE IN QUERY-ONLY MODE");
-            Assert.AreEqual(2, mdc.CanonicalCount);
+            Assert.AreEqual(2, mdc.CanonicalCount, "THERE ARE STILL ITEMS IN THE PROJECTION");
             { }
 
             mdc.Clear();
