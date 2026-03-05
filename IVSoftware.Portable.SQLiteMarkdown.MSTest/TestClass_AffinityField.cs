@@ -35,29 +35,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             actual = JsonConvert.SerializeObject(item, Formatting.Indented);
             actual.ToClipboardExpected();
-            { }
             expected = @" 
 {
-  ""FullPath"": ""312d1c21-0000-0000-0000-000000000000"",
-  ""ParentPath"": """",
-  ""ParentId"": """",
   ""Duration"": ""00:00:00"",
   ""Remaining"": ""00:00:00"",
   ""TemporalAffinity"": null,
   ""TemporalChildAffinity"": null,
   ""TemporalAffinityCurrentTimeDomain"": null,
   ""Slots"": [],
-  ""Priority"": 630822888000000000,
-  ""PriorityOverride"": null,
   ""UtcStart"": null,
   ""UtcEnd"": null,
   ""AvailableTimeSpan"": null,
-  ""IsRoot"": true,
   ""IsDone"": null,
   ""OutOfTime"": false,
   ""IsPastDue"": null,
   ""Created"": ""2000-01-01T09:00:00+07:00"",
   ""ChainOfCustody"": ""{\r\n  \""Created\"": \""2000-01-01T09:00:00+07:00\"",\r\n  \""Coc\"": {}\r\n}"",
+  ""FullPath"": ""312d1c21-0000-0000-0000-000000000000"",
+  ""ParentPath"": """",
+  ""ParentId"": """",
+  ""Priority"": 630822888000000000,
+  ""PriorityOverride"": null,
+  ""IsRoot"": true,
   ""CustomProperties"": ""{}"",
   ""Id"": ""312d1c21-0000-0000-0000-000000000000"",
   ""Description"": ""New Item"",
@@ -83,35 +82,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             // Test idempotence by serializing again.
             actual = JsonConvert.SerializeObject(item, Formatting.Indented);
-
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting json serialization to match."
             );
-
             loopback = @" 
 {
-  ""FullPath"": ""312d1c21-0000-0000-0000-000000000000"",
-  ""ParentPath"": """",
-  ""ParentId"": """",
   ""Duration"": ""00:00:00"",
   ""Remaining"": ""00:00:00"",
   ""TemporalAffinity"": null,
   ""TemporalChildAffinity"": null,
   ""TemporalAffinityCurrentTimeDomain"": null,
   ""Slots"": [],
-  ""Priority"": 630822888000000000,
-  ""PriorityOverride"": null,
   ""UtcStart"": null,
   ""UtcEnd"": null,
   ""AvailableTimeSpan"": null,
-  ""IsRoot"": true,
   ""IsDone"": null,
   ""OutOfTime"": false,
   ""IsPastDue"": null,
   ""Created"": ""2000-01-01T09:00:00+07:00"",
   ""ChainOfCustody"": ""{\r\n  \""Created\"": \""2000-01-01T09:00:00+07:00\"",\r\n  \""Coc\"": {}\r\n}"",
+  ""FullPath"": ""312d1c21-0000-0000-0000-000000000000"",
+  ""ParentPath"": """",
+  ""ParentId"": """",
+  ""Priority"": 630822888000000000,
+  ""PriorityOverride"": null,
+  ""IsRoot"": true,
   ""CustomProperties"": ""{}"",
   ""Id"": ""312d1c21-0000-0000-0000-000000000000"",
   ""Description"": ""New Item"",
