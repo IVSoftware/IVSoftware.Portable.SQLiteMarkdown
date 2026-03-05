@@ -219,7 +219,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         {
             var builder = new List<string>();
             builder.Add($"[IME Len: {@this.InputText.Length}");
-            builder.Add($"IsFiltering {@this.IsFiltering}]");
+            builder.Add($"IsFiltering: {@this.IsFiltering}]");
             builder.Add($"[Net: {(@this.ObservableNetProjection is IList list ? list.Count : "null")}");
             builder.Add($"CC: {@this.CanonicalCount}");
             builder.Add($"PMC: {@this.PredicateMatchCount}]");

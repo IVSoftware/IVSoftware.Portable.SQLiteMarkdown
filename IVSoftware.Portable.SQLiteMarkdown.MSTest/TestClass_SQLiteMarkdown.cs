@@ -494,13 +494,14 @@ InputText"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "NEW RECORDSET 2 ITEMS");
 
-                // This will clear the IME
+                // This will clear the IME.
+                // IsFiltering=TRUE. Don't dip below SearchEntryState.QueryCompleteWithResults.
                 mdc.Clear();
                 actual = mdc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Armed]"
+[IME Len: 0, IsFiltering True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
 
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "IME CLEAR ONLY");
@@ -550,16 +551,15 @@ InputText"
                 Assert.AreEqual(FilteringState.Armed, mdc.FilteringState, "Expecting initial state.");
 
                 // #1 [X]
-                // User clears the input text.
-                // In this case FilteringState should remain Armed.
-                // because the transition is from non-empty input text to empty.
+                // User clears the input text, but *not* the recordset.
+                // FilteringState remains Armed because the transition is from non-empty input text to empty.
+                // IsFiltering
                 mdc.Clear();
 
                 actual = mdc.StateReport();
                 actual.ToClipboardExpected();
-                { }
                 expected = @" 
-[IME Len: 0, IsFiltering True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Armed]"
+[IME Len: 0, IsFiltering True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 

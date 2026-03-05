@@ -1580,6 +1580,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             // RELEASE 2.0.0 fixes the nosocomial.
                             switch (SearchEntryState)
                             {
+                                case SearchEntryState.QueryCompleteWithResults:
+                                    /* G T K - N O O P */
+                                    break;
                                 // There were never any projected items to clear.
                                 // No intermediate step is needed.
                                 case SearchEntryState.QueryCompleteNoResults:
@@ -1592,6 +1595,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         case FilteringState.Active:
                             // Text is already empty and clear is invoked (clicked) again - this is a hard reset.
                             FilteringState = FilteringState.Ineligible;
+                            if(SearchEntryState > SearchEntryState.QueryEmpty)
+                            {
+                                SearchEntryState = SearchEntryState.QueryEmpty;
+                            }
                             break;
                         default:
                             throw new NotImplementedException($"Bad case: {FilteringState}");
@@ -1605,18 +1612,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     // DowngradeToClear: DowngradeToQuery + SearchEntryState is not showing a query result.
                     InputText = string.Empty;
 
-                    switch (SearchEntryState)
-                    {
-                        case SearchEntryState.QueryCompleteWithResults:
-                            // Text has become empty, but don't clear the list in this intermediate step.
-                            SearchEntryState = SearchEntryState.QueryEmpty;
-                            break;
-                        case SearchEntryState.QueryCompleteNoResults:   // Expected
-                        case SearchEntryState.QueryEmpty:               // Unexpected but benign.
-                            // Text has become empty, and there are no items to clear.
-                            SearchEntryState = SearchEntryState.Cleared;
-                            break;
-                    }
+                    // Not Here
+                    // SES is the purview of OnInputTextChanged as far as EMPTY is concerned.
+                    // RATIONALE: The IME can become empty in ways other than Clear().
+
+                    //switch (SearchEntryState)
+                    //{
+                    //    case SearchEntryState.QueryCompleteWithResults:
+                    //        // Text has become empty, but don't clear the list in this intermediate step.
+                    //        SearchEntryState = SearchEntryState.QueryEmpty;
+                    //        break;
+                    //    case SearchEntryState.QueryCompleteNoResults:   // Expected
+                    //    case SearchEntryState.QueryEmpty:               // Unexpected but benign.
+                    //        // Text has become empty, and there are no items to clear.
+                    //        SearchEntryState = SearchEntryState.Cleared;
+                    //        break;
+                    //}
 
 
                     switch (FilteringState)
@@ -1805,7 +1816,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     // Not merely *is* empty. It has *become* empty.
                     // - Backspace to empty
                     // = [X] while not empty.
-                    if(SearchEntryState == SearchEntryState.QueryCompleteWithResults)
+                    if(SearchEntryState == SearchEntryState.QueryCompleteNoResults)
                     {
                         // If there are no records in the projection,
                         // then the state has reached first cause.
@@ -1826,6 +1837,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     SearchEntryState = SearchEntryState.QueryEN;
                 }
+
+
+                //switch (SearchEntryState)
+                //{
+                //    case SearchEntryState.QueryCompleteWithResults:
+                //        // Text has become empty, but don't clear the list in this intermediate step.
+                //        SearchEntryState = SearchEntryState.QueryEmpty;
+                //        break;
+                //    case SearchEntryState.QueryCompleteNoResults:   // Expected
+                //    case SearchEntryState.QueryEmpty:               // Unexpected but benign.
+                //        // Text has become empty, and there are no items to clear.
+                //        SearchEntryState = SearchEntryState.Cleared;
+                //        break;
+                //}
             }
             void localApplyFilterSemantics()
             {
