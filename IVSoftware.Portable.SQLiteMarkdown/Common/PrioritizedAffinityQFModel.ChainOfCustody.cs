@@ -7,7 +7,7 @@ using Column = SQLite.ColumnAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
-    partial class TemporalAffinityQFModel 
+    partial class PrioritizedAffinityQFModel 
         : IChainOfCustody
     {
         public DateTimeOffset Created => ChainOfCustody.Created;

@@ -709,6 +709,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         [Ephemeral]
         long? PriorityOverride { get; set; }
+
+        bool MoveUp();
+        bool MoveDown();
+        bool IndentLess();
+        bool IndentMore();
     }
 
     /// <summary>

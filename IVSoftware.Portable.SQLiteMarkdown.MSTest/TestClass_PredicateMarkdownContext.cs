@@ -121,8 +121,8 @@ public class TestClass_PredicateMarkdownContext
     /// <summary>
     /// Try out some basic extenal filters.
     /// </summary>
-    [TestMethod]
-    public async Task Test_PredicateMarkdownContext101()
+    [TestMethod, DoNotParallelize]
+    public async Task Test_TemporalAffinityQFModel()
     {
         const bool INCLUDE_LIVE_DEMO = true;
         int COUNT = INCLUDE_LIVE_DEMO ? 37 : 31;
@@ -193,15 +193,6 @@ public class TestClass_PredicateMarkdownContext
         IList<TemporalAffinityQFModel> opc;
 
         await subtest_EnsureParentIdSetterWorksDRY();
-        await subtest_5_Items2();
-        await subtest_5_Items3();
-        await subtest_5_Items4();
-        await subtest_5_Items5();
-        await subtest_5_Items6();
-        await subtest_5_Items7();
-        await subtest_5_Items8();
-        await subtest_5_Items9();
-        await subtest_5_Items10();
 
         #region S U B T E S T S
         async Task subtest_EnsureParentIdSetterWorksDRY()
@@ -279,57 +270,6 @@ public class TestClass_PredicateMarkdownContext
             );
         }
 
-        async Task subtest_5_Items2()
-        {
-#if false
-            var pmdc = new PredicateMarkdownContext<AffinityQFModel>
-            {
-                QueryFilterConfig = QueryFilterConfig.Filter,
-                ObservableProjection = (INotifyCollectionChanged)opc,
-                Recordset = opc,
-            };
-
-            var az = pmdc.ObservableProjection;
-
-            Assert.AreEqual(
-                COUNT,
-                pmdc.UnfilteredCount,
-                "Expecting UNFILTERED COUNT is correct meaning RECORDSET is initialized.");
-
-            Assert.AreEqual(
-                SearchEntryState.QueryCompleteWithResults,
-                pmdc.SearchEntryState,
-                "Expecting state reflects recordset.");
-            Assert.AreEqual(
-                FilteringState.Armed,
-                pmdc.FilteringState);
-            { }
-#endif
-        }
-        async Task subtest_5_Items3()
-        {
-        }
-        async Task subtest_5_Items4()
-        {
-        }
-        async Task subtest_5_Items5()
-        {
-        }
-        async Task subtest_5_Items6()
-        {
-        }
-        async Task subtest_5_Items7()
-        {
-        }
-        async Task subtest_5_Items8()
-        {
-        }
-        async Task subtest_5_Items9()
-        {
-        }
-        async Task subtest_5_Items10()
-        {
-        }
         #endregion S U B T E S T S
 
     }

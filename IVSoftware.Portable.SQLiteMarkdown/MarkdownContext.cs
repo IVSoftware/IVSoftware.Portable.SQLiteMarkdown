@@ -2031,30 +2031,35 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 recordset = FilterQueryDatabase.Query(ProxyType.GetMapping(), sql);
                 if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
                 {
-                    await ApplyAffinities();
+                    await ApplyAffinities(recordset);
                 }
                 else if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
                 {
-                    await ApplyPriorities();
+                    await ApplyPriorities(recordset.Cast<IPrioritizedAffinity>().ToList());
+                }
+                else
+                {
+
                 }
             });
             ModelUpdated?.Invoke(this, EventArgs.Empty);
         }
 
-
         /// <summary>
         /// Apply priorities where Priority and EphemeralPriority scope is regional to siblings.
         /// </summary>
-        protected virtual async Task ApplyPriorities() 
-        { 
+        protected virtual async Task ApplyPriorities(IList recordset) 
+        {
+            var prioritized = recordset.Cast<IPrioritizedAffinity>();
+            var paths = prioritized.Select(_ => _.FullPath).ToArray();
         }
 
         /// <summary>
         /// Apply priorities where temporality may be involved.
         /// </summary>
-        protected virtual async Task ApplyAffinities() 
+        protected virtual async Task ApplyAffinities(IList recordset) 
         {
-            await ApplyPriorities();
+            await ApplyPriorities(recordset);
         }
 
         public event EventHandler? InputTextSettled;
