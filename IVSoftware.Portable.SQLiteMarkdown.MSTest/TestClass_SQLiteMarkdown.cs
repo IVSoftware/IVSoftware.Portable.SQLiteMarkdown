@@ -619,13 +619,14 @@ InputText"
         [TestMethod]
         public async Task Test_QueryFSMs()
         {
+            const int COUNT = 2;
             var extQueryHandle = default(List<SelectableQFModel>);
 
             var mdc = new TestableMarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
 
-            Assert.AreEqual(QueryFilterConfig.Query, mdc.QueryFilterConfig, "Expecting initial state.");
-            Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
-            Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+            Assert.AreEqual(QueryFilterConfig.Query, mdc.QueryFilterConfig, "QUERY + FILTER CONFIG.");
+            Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "CLEARED.");
+            Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "INELIGIBLE.");
 
             mdc.InputText = "a";
             Assert.AreEqual(SearchEntryState.QueryENB, mdc.SearchEntryState);
@@ -644,18 +645,22 @@ InputText"
             Assert.AreEqual(SearchEntryState.QueryEN, mdc.SearchEntryState, "QUERY ENABLED");
 
             // Query occurs.
-            mdc.LoadCanon(extQueryHandle.PopulateForDemo(2));
+            mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
 
-            Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState);
+            Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState, "COMPLETE WITH RESULTS");
             Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "DOES NOT MOVE IN QUERY-ONLY MODE");
-            Assert.AreEqual(2, mdc.CanonicalCount, "THERE ARE STILL ITEMS IN THE PROJECTION");
-            { }
+            Assert.AreEqual("ani", mdc.InputText, "THERE IS STILL TEXT IN THE IME");
+            Assert.AreEqual(COUNT, mdc.CanonicalCount, "THERE ARE STILL ITEMS IN THE PROJECTION");
 
             mdc.Clear();
-
+            Assert.AreEqual(string.Empty, mdc.InputText, "IME CLEARED");
+            Assert.AreEqual(COUNT, mdc.CanonicalCount, "THERE ARE STILL ITEMS IN THE PROJECTION");
             Assert.AreEqual(SearchEntryState.QueryEmpty, mdc.SearchEntryState);
+
+            mdc.Clear();
+            Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "CLEARED");
             Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "DOES NOT MOVE IN QUERY-ONLY MODE");
-            Assert.AreEqual(2, mdc.CanonicalCount, "IME EMPTY - Collection is *not* cleared yet.");
+            Assert.AreEqual(0, mdc.CanonicalCount, "PROJECTION IS RESET");
 
             { }
         }

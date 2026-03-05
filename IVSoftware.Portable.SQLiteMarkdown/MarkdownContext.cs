@@ -1565,34 +1565,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
-                // UpgradeToFilter : FilteringState == FilteringState.Ineligible;
-                // DowngradeToQuery: FilteringState != FilteringState.Ineligible;
-                // DowngradeToClear: DowngradeToQuery + SearchEntryState is not showing a query result.
-                if (InputText.Length > 0)
+                if (InputText.Length == 0)
                 {
-                    // Input text is non-empty.
-                    InputText = string.Empty;
-                    switch (FilteringState)
-                    {
-                        case FilteringState.Ineligible:
-                            break;
-                        case FilteringState.Armed:
-                            // Basically, if there is entry text but the filtering
-                            // is still only armed not active, that indicates that
-                            // what we're seeing in the list is the result of a full
-                            // db query that just occurred. So now, when we CLEAR that
-                            // text, it's assumed to be in the interest of filtering
-                            // that query result, so filtering stays Armed in this case.
-                            break;
-                        case FilteringState.Active:
-                            break;
-                        default:
-                            throw new NotImplementedException($"Bad case: {FilteringState}");
-                    }
-                }
-                else
-                {
-                    // Input text is empty.
+                    // EMPTY
                     switch (FilteringState)
                     {
                         case FilteringState.Ineligible:
@@ -1612,6 +1587,46 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         case FilteringState.Active:
                             // Text is already empty and clear is invoked (clicked) again - this is a hard reset.
                             FilteringState = FilteringState.Ineligible;
+                            break;
+                        default:
+                            throw new NotImplementedException($"Bad case: {FilteringState}");
+                    }
+                }
+                else
+                {
+                    // NOT EMPTY
+                    // UpgradeToFilter : FilteringState == FilteringState.Ineligible;
+                    // DowngradeToQuery: FilteringState != FilteringState.Ineligible;
+                    // DowngradeToClear: DowngradeToQuery + SearchEntryState is not showing a query result.
+                    InputText = string.Empty;
+
+                    switch (SearchEntryState)
+                    {
+                        case SearchEntryState.QueryCompleteWithResults:
+                            // Text has become empty, but don't clear the list in this intermediate step.
+                            SearchEntryState = SearchEntryState.QueryEmpty;
+                            break;
+                        case SearchEntryState.QueryCompleteNoResults:   // Expected
+                        case SearchEntryState.QueryEmpty:               // Unexpected but benign.
+                            // Text has become empty, and there are no items to clear.
+                            SearchEntryState = SearchEntryState.Cleared;
+                            break;
+                    }
+
+
+                    switch (FilteringState)
+                    {
+                        case FilteringState.Ineligible:
+                            break;
+                        case FilteringState.Armed:
+                            // Basically, if there is entry text but the filtering
+                            // is still only armed not active, that indicates that
+                            // what we're seeing in the list is the result of a full
+                            // db query that just occurred. So now, when we CLEAR that
+                            // text, it's assumed to be in the interest of filtering
+                            // that query result, so filtering stays Armed in this case.
+                            break;
+                        case FilteringState.Active:
                             break;
                         default:
                             throw new NotImplementedException($"Bad case: {FilteringState}");
