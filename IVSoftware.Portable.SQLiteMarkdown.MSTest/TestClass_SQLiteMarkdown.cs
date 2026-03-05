@@ -412,9 +412,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering False], CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible], [Net: null"
+[IME Len: 0, IsFiltering False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
             ;
-            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting MDC Defaults.");
 
 
             await subtestExtQueryNoResult();
@@ -486,35 +486,33 @@ InputText"
 
                 // SIMULATE - Now perform the external QUERY.
                 mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
-
                 actual = mdc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 62, IsFiltering True], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed], [Net: null, CC: 2, PMC: 2]"
+[IME Len: 62, IsFiltering True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
-                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "NEW RECORDSET 2 ITEMS");
 
                 // This will clear the IME
                 mdc.Clear();
-
                 actual = mdc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering True], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Armed], [Net: null, CC: 2, PMC: 2]"
+[IME Len: 0, IsFiltering True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Armed]"
                 ;
-                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-                // This is different. We're expecting a big state regression due to {Empty IME} + {Clear}.
-                Assert.AreEqual(string.Empty, mdc.InputText, "NO TEXT GOING INTO THE CLEAR().");
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "IME CLEAR ONLY");
+
+                // This will exit filter mode.
                 mdc.Clear();
 
                 actual = mdc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible], [Net: null, CC: 0, PMC: 0], [IME Len: 0, IsFiltering False]"
+[IME Len: 0, IsFiltering False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 

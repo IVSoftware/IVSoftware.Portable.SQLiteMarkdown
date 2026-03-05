@@ -1657,6 +1657,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case QueryFilterConfig.QueryAndFilter:
                     _isFiltering = FilteringState != FilteringState.Ineligible;
 
+#if false
                     if(FilteringState == FilteringState.Ineligible)
                     {
                         // Apply hysteresis to SearchEntryState; obtain direction from prev state.
@@ -1688,6 +1689,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 break;
                         }
                     }
+#endif
                     break;
                 default:
                     break;
