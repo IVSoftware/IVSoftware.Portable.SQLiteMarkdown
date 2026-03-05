@@ -407,7 +407,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             int COUNT;
 
             var mdc = new TestableMarkdownContext<SelectableQFModel>();
-            Assert.AreEqual(QueryFilterConfig.QueryAndFilter, mdc.QueryFilterConfig, "Expecting initial state.");
+            Assert.AreEqual(QueryFilterConfig.QueryAndFilter, mdc.QueryFilterConfig, "QUERY + FILTER");
             Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
             Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
 
@@ -478,24 +478,31 @@ InputText"
                 );
 
                 Assert.AreEqual(SearchEntryState.QueryEN, mdc.SearchEntryState, "Expecting mdc perceives a valid query.");
-                // SIMULATE - Now perform the external query.
+
+                // SIMULATE - Now perform the external QUERY.
                 mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
                 Assert.AreEqual(COUNT, mdc.CanonicalCount);
+                Assert.AreEqual(COUNT, mdc.PredicateMatchCount);
                 Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState);
                 Assert.AreEqual(FilteringState.Armed, mdc.FilteringState);
                 Assert.IsTrue(mdc.IsFiltering);
 
+                Assert.AreNotEqual(
+                    string.Empty,
+                    mdc.InputText, "IME NOT EMPTY BEFORE CLEAR");
                 mdc.Clear();
                 Assert.AreEqual(string.Empty, mdc.InputText);
+
                 // Expecting no change; there weren't any additional keystrokes to put it in FilteringState.Active.
                 Assert.AreEqual(FilteringState.Armed, mdc.FilteringState, "NO CHANGE");
-                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState, "NO CHANGE");
+                Assert.AreEqual(SearchEntryState.QueryEmpty, mdc.SearchEntryState, "IME STATE REGRESSED - Where the list was non-empty.");
                 Assert.IsTrue(mdc.IsFiltering, "NO CHANGE");
 
                 // This is different. We're expecting a big state regression due to {Empty IME} + {Clear}.
+                Assert.AreEqual(string.Empty, mdc.InputText, "NO TEXT GOING INTO THE CLEAR().");
                 mdc.Clear();
                 Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "FILTERING STATE REGRESSED.");
-                Assert.AreEqual(SearchEntryState.QueryEmpty, mdc.SearchEntryState, "IME STATE REGRESSED - Where the list was non-empty.");
+                Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "FINAL CLEAR");
                 Assert.IsFalse(mdc.IsFiltering, "TURNED OFF");
 
                 // Finally, this is going to CLEAR those two items, leaving the IME at first cause.
@@ -619,12 +626,14 @@ InputText"
         [TestMethod]
         public async Task Test_QueryFSMs()
         {
+            string actual, expected;
+                
             const int COUNT = 2;
             var extQueryHandle = default(List<SelectableQFModel>);
 
             var mdc = new TestableMarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
 
-            Assert.AreEqual(QueryFilterConfig.Query, mdc.QueryFilterConfig, "QUERY + FILTER CONFIG.");
+            Assert.AreEqual(QueryFilterConfig.Query, mdc.QueryFilterConfig, "QUERY ONLY.");
             Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "CLEARED.");
             Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "INELIGIBLE.");
 
@@ -646,6 +655,7 @@ InputText"
 
             // Query occurs.
             mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
+            Assert.IsFalse(mdc.IsFiltering, "FILTERING DISABLED");
 
             Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState, "COMPLETE WITH RESULTS");
             Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "DOES NOT MOVE IN QUERY-ONLY MODE");

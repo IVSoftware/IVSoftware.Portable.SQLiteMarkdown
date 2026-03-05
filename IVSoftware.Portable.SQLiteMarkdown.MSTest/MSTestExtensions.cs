@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SQLite;
+using System.Collections;
 using System.Diagnostics;
 using System.Xml.Linq;
 
@@ -211,6 +212,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     $"Awaitable did not complete within {timeout}.");
 
             return await settleTask;
+        }
+
+        public static string StateReport(this MarkdownContext @this)
+        {
+            var builder = new List<string>();
+            builder.Add($"{@this.QueryFilterConfig}");
+            builder.Add($"{@this.SearchEntryState}");
+            builder.Add($"{@this.FilteringState}");
+            builder.Add($"{Environment.NewLine}IME Len: {@this.InputText.Length}");
+            builder.Add($"IsFiltering {@this.IsFiltering}");
+            builder.Add($"Net: {(@this.ObservableNetProjection is IList list ? list.Count : "null")}");
+            builder.Add($"CC: {@this.CanonicalCount}");
+            builder.Add($"PMC: {@this.PredicateMatchCount}");
+            return string.Join(",", builder);
         }
     }
 }

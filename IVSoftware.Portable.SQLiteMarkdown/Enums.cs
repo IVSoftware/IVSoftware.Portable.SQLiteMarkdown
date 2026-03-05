@@ -178,6 +178,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// The Commit action yielded >= 1 result for the current IME state.
         /// </summary>
+        /// <remarks>
+        /// Mental Model (QUERY + FILTER MODE): "The icon and placeholder are clear: Enter more characters to filter the visible items."
+        /// - IsFiltering is true ONLY in this state.
+        /// </remarks>
         QueryCompleteWithResults,
         #endregion Q U E R Y
     }
