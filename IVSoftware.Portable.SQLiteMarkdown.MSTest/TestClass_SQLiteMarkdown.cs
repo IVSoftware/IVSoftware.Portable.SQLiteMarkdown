@@ -407,9 +407,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             int COUNT;
 
             var mdc = new TestableMarkdownContext<SelectableQFModel>();
-            Assert.AreEqual(QueryFilterConfig.QueryAndFilter, mdc.QueryFilterConfig, "QUERY + FILTER");
-            Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
-            Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+
+            actual = mdc.StateReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible], [Net: null, CC: 0, PMC: 0], [IME Len: 0, IsFiltering False]"
+            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
 
             await subtestExtQueryNoResult();
@@ -481,22 +486,25 @@ InputText"
 
                 // SIMULATE - Now perform the external QUERY.
                 mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
-                Assert.AreEqual(COUNT, mdc.CanonicalCount);
-                Assert.AreEqual(COUNT, mdc.PredicateMatchCount);
-                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState);
-                Assert.AreEqual(FilteringState.Armed, mdc.FilteringState);
-                Assert.IsTrue(mdc.IsFiltering);
 
-                Assert.AreNotEqual(
-                    string.Empty,
-                    mdc.InputText, "IME NOT EMPTY BEFORE CLEAR");
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed], [Net: null, CC: 2, PMC: 2], [IME Len: 62, IsFiltering True]"
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+
+                Assert.AreNotEqual(string.Empty, mdc.InputText, "IME NOT EMPTY BEFORE CLEAR");
                 mdc.Clear();
-                Assert.AreEqual(string.Empty, mdc.InputText);
 
-                // Expecting no change; there weren't any additional keystrokes to put it in FilteringState.Active.
-                Assert.AreEqual(FilteringState.Armed, mdc.FilteringState, "NO CHANGE");
-                Assert.AreEqual(SearchEntryState.QueryEmpty, mdc.SearchEntryState, "IME STATE REGRESSED - Where the list was non-empty.");
-                Assert.IsTrue(mdc.IsFiltering, "NO CHANGE");
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Armed], [Net: null, CC: 2, PMC: 2], [IME Len: 0, IsFiltering True]"
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
                 // This is different. We're expecting a big state regression due to {Empty IME} + {Clear}.
                 Assert.AreEqual(string.Empty, mdc.InputText, "NO TEXT GOING INTO THE CLEAR().");

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using Newtonsoft.Json;
 using SQLite;
 using System.Collections;
 using System.Diagnostics;
@@ -217,15 +218,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         public static string StateReport(this MarkdownContext @this)
         {
             var builder = new List<string>();
-            builder.Add($"{@this.QueryFilterConfig}");
-            builder.Add($"{@this.SearchEntryState}");
-            builder.Add($"{@this.FilteringState}");
-            builder.Add($"{Environment.NewLine}IME Len: {@this.InputText.Length}");
-            builder.Add($"IsFiltering {@this.IsFiltering}");
-            builder.Add($"Net: {(@this.ObservableNetProjection is IList list ? list.Count : "null")}");
+            builder.Add($"[{@this.QueryFilterConfig}: {@this.SearchEntryState.ToFullKey()}");
+            builder.Add($"{@this.FilteringState.ToFullKey()}]");
+            builder.Add($"[Net: {(@this.ObservableNetProjection is IList list ? list.Count : "null")}");
             builder.Add($"CC: {@this.CanonicalCount}");
-            builder.Add($"PMC: {@this.PredicateMatchCount}");
-            return string.Join(",", builder);
+            builder.Add($"PMC: {@this.PredicateMatchCount}]");
+            builder.Add($"[IME Len: {@this.InputText.Length}");
+            builder.Add($"IsFiltering {@this.IsFiltering}]");
+            return string.Join(", ", builder);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
@@ -132,9 +133,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         /// <remarks>
         /// - The IME has been cleared.
-        /// - The FilteredItems collection (e.g. "visible items") *has not* been cleared.
-        /// - NOT REACHABLE in QueryFilterConfig.Filter.
+        /// - The projection (e.g. "visible items") *has not* been cleared.
+        /// - WHEN COMBINED WITH FilteringState.Ineligible, new keystrokes form a markdown query and require Commit.
+        /// - WHEN COMBINED WITH FilteringState.Armed, new keystrokes will settle and filter.
         /// </remarks>
+        [Description("The IME is empty whether IsFiltering or not.")]
         QueryEmpty,
 
         /// <summary>
