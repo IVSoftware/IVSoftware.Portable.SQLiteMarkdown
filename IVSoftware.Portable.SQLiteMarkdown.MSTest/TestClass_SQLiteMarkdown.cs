@@ -663,7 +663,7 @@ InputText"
         }
 
         [TestMethod]
-        public async Task Test_QueryFSMs()
+        public async Task Test_QueryOnlyFSMs()
         {
             string actual, expected;
                 
@@ -671,10 +671,13 @@ InputText"
             var extQueryHandle = default(List<SelectableQFModel>);
 
             var mdc = new TestableMarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
-
-            Assert.AreEqual(QueryFilterConfig.Query, mdc.QueryFilterConfig, "QUERY ONLY.");
-            Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "CLEARED.");
-            Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "INELIGIBLE.");
+            actual = mdc.StateReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[IME Len: 0, IsFiltering False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
+            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
             mdc.InputText = "a";
             Assert.AreEqual(SearchEntryState.QueryENB, mdc.SearchEntryState);
@@ -694,28 +697,34 @@ InputText"
 
             // Query occurs.
             mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
-            Assert.IsFalse(mdc.IsFiltering, "FILTERING DISABLED");
 
-            Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mdc.SearchEntryState, "COMPLETE WITH RESULTS");
-            Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "DOES NOT MOVE IN QUERY-ONLY MODE");
-            Assert.AreEqual("ani", mdc.InputText, "THERE IS STILL TEXT IN THE IME");
-            Assert.AreEqual(COUNT, mdc.CanonicalCount, "THERE ARE STILL ITEMS IN THE PROJECTION");
-
-            mdc.Clear();
-            Assert.AreEqual(string.Empty, mdc.InputText, "IME CLEARED");
-            Assert.AreEqual(COUNT, mdc.CanonicalCount, "THERE ARE STILL ITEMS IN THE PROJECTION");
-            Assert.AreEqual(SearchEntryState.QueryEmpty, mdc.SearchEntryState);
-
-            mdc.Clear();
-            Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "CLEARED");
-            Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "DOES NOT MOVE IN QUERY-ONLY MODE");
-            Assert.AreEqual(0, mdc.CanonicalCount, "PROJECTION IS RESET");
-
+            actual = mdc.StateReport();
+            actual.ToClipboardExpected();
             { }
+            expected = @" 
+[IME Len: 3, IsFiltering False], [Net: null, CC: 2, PMC: 2], [Query: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
+            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting Filtering shows DISABLED.");
+
+            // Clear the IME, *not* the recordset.
+            mdc.Clear();
+            actual = mdc.StateReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[IME Len: 0, IsFiltering False], [Net: null, CC: 2, PMC: 2], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
+            ;
+            Assert.IsTrue(mdc.RouteToFullRecordset, "ROUTE TO CANONICAL");
+            { }
+            expected = @" 
+[IME Len: 0, IsFiltering False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
+            ;
+
+            mdc.Clear();
         }
 
         [TestMethod, Ignore]
-        public async Task Test_FilterFSMs()
+        public async Task Test_FilterOnlyFSMs()
         {
             var extQueryHandle = default(List<SelectableQFModel>);
 

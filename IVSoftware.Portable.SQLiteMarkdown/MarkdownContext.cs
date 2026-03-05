@@ -1805,7 +1805,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     // Not merely *is* empty. It has *become* empty.
                     // - Backspace to empty
                     // = [X] while not empty.
-                    if(CanonicalCount == 0)
+                    if(SearchEntryState == SearchEntryState.QueryCompleteWithResults)
                     {
                         // If there are no records in the projection,
                         // then the state has reached first cause.
