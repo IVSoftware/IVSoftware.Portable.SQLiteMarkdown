@@ -1829,7 +1829,7 @@ SearchEntryState='QueryCompleteWithResults'";
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                         // animal.b
@@ -1843,7 +1843,7 @@ SearchEntryState='QueryCompleteWithResults'";
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 1, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Armed]"
+[IME Len: 1, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                         actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));

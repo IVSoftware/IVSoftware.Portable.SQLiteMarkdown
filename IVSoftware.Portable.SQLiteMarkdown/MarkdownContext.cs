@@ -1543,7 +1543,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-        bool _routeToFullRecordset = false;
+        bool _routeToFullRecordset = true;
 
         /// <summary>
         /// Catch and release heuristic for canonical ObservableNetProjection entering and leaving IsFiltered state.
@@ -1728,74 +1728,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         string _inputText = string.Empty;
 
-        /// <summary>
-        /// Returns true when the normalized semantic input contains no effective terms.
-        /// </summary>
-        protected virtual bool IsSemanticallyEmpty()
-        {
-            var nonTransientInputText = InputText.TrimEnd();
-            bool hasTrailingEscapedOperator = false;
-
-            if (nonTransientInputText.Length >= 2)
-            {
-                int len = nonTransientInputText.Length;
-                char c1 = nonTransientInputText[len - 2];
-                char c2 = nonTransientInputText[len - 1];
-
-                if (c1 == '\\' && (c2 == '\\' || c2 == '!' || c2 == '|' || c2 == '&'))
-                {
-                    hasTrailingEscapedOperator = true;
-                }
-            }
-
-            if (!hasTrailingEscapedOperator)
-            {
-                nonTransientInputText =
-                    nonTransientInputText.TrimEnd('!', '|', '&');
-            }
-
-            return nonTransientInputText.Length == 0;
-        }
-
-        /// <summary>
-        /// Normalizes trailing transient operators and restarts the debounce cycle
-        /// only if the resulting semantic input differs from the previous value.
-        /// </summary>
-        protected virtual void RestartIfSemanticInputChanged()
-        {
-            var nonTransientInputText = InputText.TrimEnd();
-            bool hasTrailingEscapedOperator = false;
-            if (nonTransientInputText.Length >= 2)
-            {
-                int len = nonTransientInputText.Length;
-                char c1 = nonTransientInputText[len - 2];
-                char c2 = nonTransientInputText[len - 1];
-
-                if (c1 == '\\' && (c2 == '\\' || c2 == '!' || c2 == '|' || c2 == '&'))
-                {
-                    hasTrailingEscapedOperator = true;
-                }
-            }
-            if (!hasTrailingEscapedOperator)
-            {
-                nonTransientInputText = nonTransientInputText.TrimEnd(@"!|&".ToCharArray());
-            }
-            if (_literalInputText != nonTransientInputText)
-            {
-                _literalInputText = nonTransientInputText;
-                if (ValidationPredicate(_literalInputText))
-                {
-                    StartOrRestart();
-                }
-                else
-                {
-                    Cancel();
-                }
-            }
-        }
-        string _literalInputText = string.Empty;
-
-
         [Careful("Trimming or modifying the raw InputText is not allowed.")]
         protected virtual void OnInputTextChanged()
         {
@@ -1813,20 +1745,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (InputText.IsSemanticallyEmpty())
                 {
-                    // Not merely *is* empty. It has *become* empty.
+                    // Not merely *is* empty. It has *become* empty due to:
                     // - Backspace to empty
-                    // = [X] while not empty.
-                    if(SearchEntryState == SearchEntryState.QueryCompleteNoResults)
-                    {
-                        // If there are no records in the projection,
-                        // then the state has reached first cause.
-                        SearchEntryState = SearchEntryState.Cleared;
-                    }
-                    else
+                    // - [X] while not empty.
+                    if(SearchEntryState == SearchEntryState.QueryCompleteWithResults)
                     {
                         // This offers an intermediate step. The IME is now empty, but
                         // it takes one additional [X] to clear the projected items.
                         SearchEntryState = SearchEntryState.QueryEmpty;
+                    }
+                    else // ALL other states
+                    {
+                        // If there are no records in the projection,
+                        // then the state has reached first cause.
+                        SearchEntryState = SearchEntryState.Cleared;
                     }
                 }
                 else if (InputText.TrimEndTransients().Length < 3)
@@ -1936,6 +1868,74 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             RestartIfSemanticInputChanged();
         }
 
+
+
+        /// <summary>
+        /// Returns true when the normalized semantic input contains no effective terms.
+        /// </summary>
+        protected virtual bool IsSemanticallyEmpty()
+        {
+            var nonTransientInputText = InputText.TrimEnd();
+            bool hasTrailingEscapedOperator = false;
+
+            if (nonTransientInputText.Length >= 2)
+            {
+                int len = nonTransientInputText.Length;
+                char c1 = nonTransientInputText[len - 2];
+                char c2 = nonTransientInputText[len - 1];
+
+                if (c1 == '\\' && (c2 == '\\' || c2 == '!' || c2 == '|' || c2 == '&'))
+                {
+                    hasTrailingEscapedOperator = true;
+                }
+            }
+
+            if (!hasTrailingEscapedOperator)
+            {
+                nonTransientInputText =
+                    nonTransientInputText.TrimEnd('!', '|', '&');
+            }
+
+            return nonTransientInputText.Length == 0;
+        }
+
+        /// <summary>
+        /// Normalizes trailing transient operators and restarts the debounce cycle
+        /// only if the resulting semantic input differs from the previous value.
+        /// </summary>
+        protected virtual void RestartIfSemanticInputChanged()
+        {
+            var nonTransientInputText = InputText.TrimEnd();
+            bool hasTrailingEscapedOperator = false;
+            if (nonTransientInputText.Length >= 2)
+            {
+                int len = nonTransientInputText.Length;
+                char c1 = nonTransientInputText[len - 2];
+                char c2 = nonTransientInputText[len - 1];
+
+                if (c1 == '\\' && (c2 == '\\' || c2 == '!' || c2 == '|' || c2 == '&'))
+                {
+                    hasTrailingEscapedOperator = true;
+                }
+            }
+            if (!hasTrailingEscapedOperator)
+            {
+                nonTransientInputText = nonTransientInputText.TrimEnd(@"!|&".ToCharArray());
+            }
+            if (_literalInputText != nonTransientInputText)
+            {
+                _literalInputText = nonTransientInputText;
+                if (ValidationPredicate(_literalInputText))
+                {
+                    StartOrRestart();
+                }
+                else
+                {
+                    Cancel();
+                }
+            }
+        }
+        string _literalInputText = string.Empty;
 
         public SearchEntryState SearchEntryState
         {

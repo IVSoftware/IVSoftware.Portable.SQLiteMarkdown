@@ -680,24 +680,55 @@ InputText"
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
             mdc.InputText = "a";
-            Assert.AreEqual(SearchEntryState.QueryENB, mdc.SearchEntryState);
+            actual = mdc.StateReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[IME Len: 1, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
             // Backspace
             mdc.InputText = string.Empty;
+            actual = mdc.StateReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
+            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
             Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState);
 
             mdc.InputText = "a";
-            Assert.AreEqual(SearchEntryState.QueryENB, mdc.SearchEntryState);
+            actual = mdc.StateReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[IME Len: 1, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
             mdc.InputText = "an";
-            Assert.AreEqual(SearchEntryState.QueryENB, mdc.SearchEntryState);
+            actual = mdc.StateReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[IME Len: 2, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
             mdc.InputText = "ani";
-            Assert.AreEqual(SearchEntryState.QueryEN, mdc.SearchEntryState, "QUERY ENABLED");
+            actual = mdc.StateReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[IME Len: 3, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.QueryEN, FilteringState.Ineligible]"
+            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-            // Query occurs.
+            // Commit and load the new recordset.
+            // [Remember] IsFilter is DISABLED.
             mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
-
             actual = mdc.StateReport();
             actual.ToClipboardExpected();
             { }
@@ -712,15 +743,19 @@ InputText"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 2], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 2], [Query: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
             ;
-            Assert.IsTrue(mdc.RouteToFullRecordset, "ROUTE TO CANONICAL");
-            { }
-            expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
-            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
+            Assert.IsTrue(mdc.RouteToFullRecordset, "ROUTE TO CANONICAL");
+
+            // Terminal clear.
             mdc.Clear();
+            actual = mdc.StateReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @"PASTE HERE";
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
         }
 
         [TestMethod, Ignore]
