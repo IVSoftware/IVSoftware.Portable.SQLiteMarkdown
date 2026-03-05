@@ -488,8 +488,6 @@ InputText"
                 mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
 
                 actual = mdc.StateReport();
-                actual.ToClipboardExpected();
-                { }
                 expected = @" 
 [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed], [Net: null, CC: 2, PMC: 2], [IME Len: 62, IsFiltering True]"
                 ;
@@ -499,8 +497,6 @@ InputText"
                 mdc.Clear();
 
                 actual = mdc.StateReport();
-                actual.ToClipboardExpected();
-                { }
                 expected = @" 
 [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Armed], [Net: null, CC: 2, PMC: 2], [IME Len: 0, IsFiltering True]"
                 ;
@@ -509,9 +505,14 @@ InputText"
                 // This is different. We're expecting a big state regression due to {Empty IME} + {Clear}.
                 Assert.AreEqual(string.Empty, mdc.InputText, "NO TEXT GOING INTO THE CLEAR().");
                 mdc.Clear();
-                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "FILTERING STATE REGRESSED.");
-                Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "FINAL CLEAR");
-                Assert.IsFalse(mdc.IsFiltering, "TURNED OFF");
+
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible], [Net: null, CC: 0, PMC: 0], [IME Len: 0, IsFiltering False]"
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
                 // Finally, this is going to CLEAR those two items, leaving the IME at first cause.
                 IList? projection = mdc.ObservableNetProjection as IList; // [Remember] It's an INCC handle.
