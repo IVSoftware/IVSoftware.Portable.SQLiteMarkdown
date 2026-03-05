@@ -412,7 +412,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible], [Net: null, CC: 0, PMC: 0], [IME Len: 0, IsFiltering False]"
+[IME Len: 0, IsFiltering False], CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible], [Net: null"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -488,17 +488,21 @@ InputText"
                 mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
 
                 actual = mdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
                 expected = @" 
-[QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed], [Net: null, CC: 2, PMC: 2], [IME Len: 62, IsFiltering True]"
+[IME Len: 62, IsFiltering True], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed], [Net: null, CC: 2, PMC: 2]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-                Assert.AreNotEqual(string.Empty, mdc.InputText, "IME NOT EMPTY BEFORE CLEAR");
+                // This will clear the IME
                 mdc.Clear();
 
                 actual = mdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
                 expected = @" 
-[QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Armed], [Net: null, CC: 2, PMC: 2], [IME Len: 0, IsFiltering True]"
+[IME Len: 0, IsFiltering True], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Armed], [Net: null, CC: 2, PMC: 2]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
