@@ -1277,7 +1277,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// eligibility rules such as minimum length, throttling heuristics,
         /// or restricted character policies.
         /// </remarks>
-        [PublishedSignature("1.0", typeof(MarkdownContext)]
+        [PublishedSignature("1.0", typeof(MarkdownContext))]
         public Predicate<string> ValidationPredicate
         {
             get
@@ -1288,7 +1288,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     switch (_activeQFMode)
                     {
                         case QueryFilterMode.Query:
-                            return Regex.IsMatch(expr, @"[a-zA-Z0-9]{3}");
+                            return Regex.IsMatch(expr.TrimEndTransients(), @"[a-zA-Z0-9]{3}");
                         case QueryFilterMode.Filter:
                         default:
                             return true;
@@ -1765,13 +1765,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 nonTransientInputText = nonTransientInputText.TrimEnd(@"!|&".ToCharArray());
             }
-            if (_nonTransientInputText != nonTransientInputText)
+            if (_literalInputText != nonTransientInputText)
             {
-                _nonTransientInputText = nonTransientInputText;
-                StartOrRestart();
+                _literalInputText = nonTransientInputText;
+                if (ValidationPredicate(_literalInputText))
+                {
+                    StartOrRestart();
+                }
+                else
+                {
+                    Cancel();
+                }
             }
         }
-        string _nonTransientInputText = string.Empty;
+        string _literalInputText = string.Empty;
 
 
         [Careful("Trimming or modifying the raw InputText is not allowed.")]

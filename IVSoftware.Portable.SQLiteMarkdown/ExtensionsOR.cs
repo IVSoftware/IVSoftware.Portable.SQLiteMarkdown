@@ -98,7 +98,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             using (MarkdownContextOR.GetToken())
             {
-
                 if (validationState.HasFlag(ValidationState.DisableMinLength))
                 {
                     minInputLength = 0;
@@ -111,14 +110,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     .Any(_ => Attribute.IsDefined(_, typeof(SelfIndexedAttribute)));
                 #endregion I N P R O G
 
-#if false
-            if (!_contextCache.TryGetValue(type, out var context))
-            {
-                context = new MarkdownContextOR(type);
-                _contextCache[type] = context;
-            }
-            throw new NotImplementedException();
-#else
                 if (validationPredicate is null)
                 {
                     validationPredicate = Static.DefaultValidationPredicate;
@@ -315,7 +306,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     return string.Join(Environment.NewLine, builder);
                 }
                 #endregion Local Methods
-#endif
             }
         }
 

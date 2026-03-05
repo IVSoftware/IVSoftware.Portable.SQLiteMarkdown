@@ -1443,5 +1443,35 @@ SELECT * FROM itemsA WHERE
                 "Expecting 'itemsA' table identity."
             );
         }
+
+        /// <summary>
+        /// Ensure that IME input during IsFiltering epoch does not enter QueryEN or QueryEN
+        /// </summary>
+        [TestMethod]
+        public async Task Test_Detect_QueryENB_or_QueryEN_when_IsFiltering()
+        {
+            string actual, expected;
+            var mdc = new MarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Filter };
+
+            actual = mdc.StateReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[IME Len: 0, IsFiltering True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.Cleared, FilteringState.Armed]"
+            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+
+            mdc.InputText = "a";
+            await mdc; // YBYA you need this in filter mode.
+
+            actual = mdc.StateReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[IME Len: 1, IsFiltering True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryENB, FilteringState.Armed]"
+            ;
+            expected = @"";
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+        }
     }
 }
