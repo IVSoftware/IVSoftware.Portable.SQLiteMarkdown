@@ -1832,6 +1832,12 @@ SearchEntryState='QueryCompleteWithResults'";
 [IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+
+                        // PLEASE: Do not remove.
+                        Assert.IsTrue(
+                            items.ValidationPredicate("b"), 
+                            "This was a BUGIRL for the test itself.");
+
                         // animal.b
                         // Expecting Filter mode and an internal query.
                         // See also: {24048258-8BE4-40C4-BF85-8863E98BED51}

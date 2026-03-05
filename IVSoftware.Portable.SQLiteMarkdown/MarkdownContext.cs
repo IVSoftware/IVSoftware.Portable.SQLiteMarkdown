@@ -1284,6 +1284,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 return _validationPredicate ?? (expr =>
                 {
+                    if(IsFiltering)
+                    {
+                        return true;
+                    }
                     // Default true, or (in Query mode) 3 minimum contiguous chars.
                     switch (_activeQFMode)
                     {

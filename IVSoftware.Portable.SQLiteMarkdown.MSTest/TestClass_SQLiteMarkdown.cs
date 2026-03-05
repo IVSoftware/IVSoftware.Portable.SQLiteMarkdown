@@ -754,7 +754,9 @@ InputText"
             actual = mdc.StateReport();
             actual.ToClipboardExpected();
             { }
-            expected = @"PASTE HERE";
+            expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
+            ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
         }
 
