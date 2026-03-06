@@ -40,6 +40,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterSource()
         {
+            base.ObservableNetProjection = this;
+            base.ProjectionOptions = NetProjectionOption.ObservableOnly;
+
             CollectionChangedProtected += OnCollectionChanged;
 
             _canonicalRecordset.CollectionChanged += (sender, e) =>
@@ -110,6 +113,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
+            Debug.Fail($@"ADVISORY - THIS PATH HAS NOT BEEN DEBUGGED OR TESTED.");
             using (DHostBusy.GetToken())
             {
                 // --------------
@@ -118,20 +122,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // -> Sets SearchEntryState
                 base.LoadCanon(items);
                 // --------------
-
-#if DEBUG
-                if (base.ObservableNetProjection is null)
-                {
-                }
-                else if (ReferenceEquals(this, base.ObservableNetProjection is null))
-                {
-                }
-                else
-                {
-                    Debug.Fail($@"ADVISORY - This is nonsensical and you shouldn't be here.");
-                }
-#endif
-
 
                 // This causes a Reset on the main INCC
                 _canonicalRecordset.Clear();
@@ -171,6 +161,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 #if DEBUG
 
                 var preview = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
+
+#if DEBUG
+                if (base.ObservableNetProjection is null)
+                {
+                }
+                else if (ReferenceEquals(this, base.ObservableNetProjection is null))
+                {
+                }
+                else
+                {
+                    Debug.Fail($@"ADVISORY - This is nonsensical and you shouldn't be here.");
+                }
+#endif
+
 #endif
 
                 // This causes a Reset on the main INCC.

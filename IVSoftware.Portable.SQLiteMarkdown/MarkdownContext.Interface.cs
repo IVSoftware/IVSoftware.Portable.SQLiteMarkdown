@@ -559,6 +559,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         internal NetProjectionOption ProjectionOptions { get; set; } = NetProjectionOption.AllowDirectChanges;
 
+
+        /// <summary>
+        /// Reports on whether this object is inherited or composed.
+        /// </summary>
+        public ProjectionTopology ProjectionTopology { get; protected set; }
+
         /// <summary>
         /// Gets or sets the observable projection representing the effective
         /// (net visible) collection after markdown and predicate filtering.
@@ -633,8 +639,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             LoadCanon(ObservableNetProjection as IEnumerable);
         }
-
-        public ProjectionTopology ProjectionTopology { get; protected set; }
 
         /// <summary>
         /// Raised when the collection - that is the ObservableNetProjection - is modified in some way.
