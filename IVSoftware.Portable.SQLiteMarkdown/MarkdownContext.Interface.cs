@@ -107,7 +107,46 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     {
                         OnBoundItemObjectChange(xbo, e.ObjectChange);
                     }
+                    localCheckAddRemoveCount();
                     break;
+            }
+
+            void localCheckAddRemoveCount()
+            {
+                XElement? modelRoot = pxel?.AncestorsAndSelf().LastOrDefault();
+                if (modelRoot is null)
+                {
+                    this.ThrowFramework<NullReferenceException>(
+                        $"UNEXPECTED: The '{nameof(modelRoot)}' argument should be non-null by design.");
+                }
+                else
+                {
+                    var count = modelRoot.GetAttributeValue<int>(StdMarkdownAttribute.count);
+                }
+
+#if false
+                switch (e.ObjectChange)
+                {
+                    case XObjectChange.Add:
+                        count++;
+                        root?.SetAttributeValue(StdMarkdownAttribute.count, count);
+                        break;
+                    case XObjectChange.Remove:
+                        if (count == 0)
+                        {
+                            this.ThrowFramework<InvalidOperationException>(
+                                $"UNEXPECTED: Illegal underflow detected '{nameof(count)}'. Count should be >= 0 by design.");
+                        }
+                        else
+                        {
+                            count--;
+                            {
+                                root?.SetAttributeValue(StdMarkdownAttribute.count, count);
+                            }
+                        }
+                        break;
+                }
+#endif
             }
         }
 
@@ -119,47 +158,44 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected virtual void OnBoundItemObjectChange(XBoundAttribute xbo, XObjectChange action)
         {
             var item = xbo.Tag;
-            if (SQLITE_STRICT)
+            switch (action)
             {
-                switch (action)
-                {
-                    case XObjectChange.Add:
-                        if(xbo.Tag is IAffinityModel modeled)
-                        {
-                            if(xbo.Parent is null)
-                            {
-                                this.ThrowFramework<NullReferenceException>(
-                                    "UNEXPECTED: An attribute that is added should have a parent. What was it added *to*?");
-                            }
-                            else
-                            {
-                                modeled.Model = xbo.Parent;
-                            }
-                        }
+                case XObjectChange.Add:
+                    localSetModelAuthority(xbo);
+                    if (SQLITE_STRICT)
+                    {
                         if (1 != FilterQueryDatabase.Insert(item))
                         {
                             Debug.Fail($@"ADVISORY - Expecting operation to succeed.");
                         }
-                        break;
-                    case XObjectChange.Remove:
-                        FilterQueryDatabase.Delete(item);
-                        break;
-                }
-            }
-            else
-            {
-                switch (action)
-                {
-                    case XObjectChange.Add:
+                    }
+                    else
+                    {
                         if (1 != FilterQueryDatabase.InsertOrReplace(item))
                         {
 
                             Debug.Fail($@"ADVISORY - Expecting operation to succeed.");
                         }
-                        break;
-                    case XObjectChange.Remove:
-                        FilterQueryDatabase.Delete(item);
-                        break;
+                    }
+                    break;
+                case XObjectChange.Remove:
+                    FilterQueryDatabase.Delete(item);
+                    break;
+            }
+
+            void localSetModelAuthority(XBoundAttribute xbo)
+            {
+                if (xbo.Tag is IAffinityModel modeled)
+                {
+                    if (xbo.Parent is null)
+                    {
+                        this.ThrowFramework<NullReferenceException>(
+                            "UNEXPECTED: An attribute that is added should have a parent. What was it added *to*?");
+                    }
+                    else
+                    {
+                        modeled.Model = xbo.Parent;
+                    }
                 }
             }
         }
@@ -606,9 +642,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             protected set => Model.SetAttributeValue(StdMarkdownAttribute.count, value);
         }
 
-        public int CanonicalCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.count, @default: 0);
+        public int CanonicalCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.count);
 
-        public int PredicateMatchCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.matches, @default: 0);
+        public int PredicateMatchCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
 
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {

@@ -748,7 +748,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// When the attribute is missing or unusable, recovery proceeds as follows:
         /// 1. SAFE: If T is nullable, returns default(T).
         /// 2. SAFE: If @default is T, @default is returned as T.
-        /// 3. ADVISED UNSAFE: Throw policy is invoked; if the throw is handled,
+        /// 3. ADVISED SAFE: If [DefaultValue] is supplied, attempt conversion.
+        /// 4. ADVISED UNSAFE: Throw policy is invoked; if the throw is handled,
         ///    default(T) is returned after the notification.
         /// </remarks>
         internal static T? GetAttributeValue<T>(
@@ -757,45 +758,46 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             object? @default = null,
             ThrowOrAdvise? @throw = null)
         {
+            var targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+
             // [Careful] Attribute method already has error handling!
             if (@this.Attribute(stdEnum, @throw) is { } attr)
             {
-                var value = attr.Value;
-
-                if (typeof(T) == typeof(string))
-                {
-                    return (T)(object)value;
-                }
-
                 try
                 {
-                    var targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-
-                    if (targetType.IsEnum)
-                    {
-                        return (T)Enum.Parse(targetType, value);
-                    }
-
-                    return (T)Convert.ChangeType(value, targetType);
+                    return localConvertValue(attr.Value, targetType);
                 }
                 catch
                 {
                     // [Remember] Throw can be handled in which case there is no exception here.
                     @this.ThrowFramework<InvalidOperationException>(
-                        $"Unable to convert attribute {stdEnum.ToFullKey()} value '{value}' to {typeof(T).Name}.");
+                        $"Unable to convert attribute {stdEnum.ToFullKey()} value '{attr.Value}' to {typeof(T).Name}.");
                 }
             }
 
-            // Caller supplied a usable default
+            @default ??= stdEnum.GetCustomAttribute<DefaultValueAttribute>()?.Value;
+
+
+            // Direct default match (explicit @default or [DefaultValue]).
             if (@default is T defaultT)
             {
                 return defaultT;
             }
 
-            // Attribute missing and no default supplied
-            bool isNullable =
-                !typeof(T).IsValueType ||
-                Nullable.GetUnderlyingType(typeof(T)) is not null;
+            // Attempt conversion of default
+            if (@default is not null)
+            {
+                try
+                {
+                    return localConvertValue(@default, targetType);
+                }
+                catch
+                {
+                    // Ignore conversion failure and fall through to policy enforcement.
+                }
+            }
+
+            bool isNullable = targetType != typeof(T) || !typeof(T).IsValueType;
 
             if (!isNullable)
             {
@@ -818,6 +820,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
             return default;
+            #region L o c a l F x
+            T localConvertValue(object? value, Type targetType)
+            {
+                if (targetType == typeof(string))
+                    return (T)(object)(value?.ToString() ?? string.Empty);
+
+                if (targetType.IsEnum)
+                    return (T)Enum.Parse(targetType, value?.ToString()!, ignoreCase: true);
+
+                return (T)Convert.ChangeType(value, targetType);
+            }
+            #endregion L o c a l F x
         }
 
         internal static void SetAttributeValue(

@@ -43,14 +43,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         public XElement Model
         {
             get => _model;
-            set => SetXAFAuthority(value);
+            set => ArbitrateModelAuthority(value);
         }
 
         [Ephemeral, JsonProperty("Model")]
         public string Model_JSON => Model.ToShallow().ToString();
 
 
-        protected virtual void SetXAFAuthority(XElement value)
+        protected virtual void ArbitrateModelAuthority(XElement value)
         {
             if (value is null)
             {
@@ -80,7 +80,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                             _model = value;
                             value = xopSwap;
                         }
-                        TransferXAFXBOAuthority(value.Attributes().ToArray());
+                        TransferModelAuthority(value.Attributes().ToArray());
                     }
                 }
             }
@@ -88,7 +88,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         XElement _model = new XElement(nameof(StdMarkdownElement.model));
 
-        protected virtual void TransferXAFXBOAuthority(XAttribute[] srce)
+        protected virtual void TransferModelAuthority(XAttribute[] srce)
         {
             foreach (var attrSrce in srce)
             {
