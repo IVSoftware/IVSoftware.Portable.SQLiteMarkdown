@@ -627,9 +627,9 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model>
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" xitem=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" sort=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" xitem=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" sort=""1"" ismatch=""True"" />
+<model autocount=""2"" count=""2"" matches=""1"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" sort=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" sort=""1"" ismatch=""True"" />
 </model>"
                 ;
 
@@ -638,15 +638,11 @@ InputText"
                     actual.NormalizeResult(),
                     "Expecting result to match."
                 );
-
-
-                Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 06).Date, "Don't forget disabled");
-                return;
                 actual = mdc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 6, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 6, IsFiltering: True], [Net: null, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                 ;
 
                 // #1 [X]

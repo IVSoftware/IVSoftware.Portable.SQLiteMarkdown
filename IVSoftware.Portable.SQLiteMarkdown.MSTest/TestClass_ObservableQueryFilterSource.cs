@@ -1845,7 +1845,7 @@ SearchEntryState='QueryCompleteWithResults'";
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 1, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 1, IsFiltering: True], [Net: null, CC: 12, PMC: 5], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                         actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));

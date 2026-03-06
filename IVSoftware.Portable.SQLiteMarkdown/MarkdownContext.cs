@@ -2043,7 +2043,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 else
                 {
-                    Model.SetAttributeValue(StdMarkdownAttribute.ismatch, (matchPaths = localGetPaths()).Length);
+                    Model.SetAttributeValue(StdMarkdownAttribute.matches, (matchPaths = localGetPaths()).Length);
 
                     foreach (var path in matchPaths)
                     {
@@ -2070,20 +2070,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             { } // <= L O O K - the model is updated.
 
 #if ABSTRACT
-            // EXAMPLE
-            <model>
-              <xitem text="5b903388-64a9-49eb-a552-f482bd6c014c" xitem="[SelectableQFModel]" ismatch="True" />
-              <xitem text="7fb5a834-c087-44c5-b5ba-712ecdd2a1cc" xitem="[SelectableQFModel]" />
-              <xitem text="8161697b-5191-457e-b43b-3a976c8453ab" xitem="[SelectableQFModel]" />
-              <xitem text="d7d89a27-0c3f-4f90-975f-227fe4f5f66d" xitem="[SelectableQFModel]" ismatch="True" />
-              <xitem text="594a69eb-2797-4659-b7ea-c667309027f2" xitem="[SelectableQFModel]" />
-              <xitem text="2c914347-8fa8-4b0a-9661-40a9acea4427" xitem="[SelectableQFModel]" />
-              <xitem text="84d2adb4-33d8-4cb2-8cae-06ff0f0387f3" xitem="[SelectableQFModel]" ismatch="True" />
-              <xitem text="482e6327-36c3-4690-9215-ca589f22ff47" xitem="[SelectableQFModel]" ismatch="True" />
-              <xitem text="8af5bbbe-3f49-4a19-8a86-9176d9b13c8f" xitem="[SelectableQFModel]" />
-              <xitem text="068027a5-b65e-4bb0-b94c-3bb34de984fd" xitem="[SelectableQFModel]" ismatch="True" />
-              <xitem text="8fbd9000-3ef8-421e-8a4d-fc0465d13b6c" xitem="[SelectableQFModel]" />
-              <xitem text="93623ea7-87c6-43f2-994a-db262d68c7e5" xitem="[SelectableQFModel]" />
+            // EXAMPLE<model autocount="3" count="3" matches="1">
+              <xitem text="312d1c21-0000-0000-0000-000000000001" model="[SelectableQFModelTOQO]" sort="0" />
+              <xitem text="312d1c21-0000-0000-0000-00000000002c" model="[SelectableQFModelTOQO]" sort="1" />
+              <xitem text="312d1c21-0000-0000-0000-00000000002e" model="[SelectableQFModelTOQO]" sort="2" ismatch="True" />
             </model>
 #endif
 

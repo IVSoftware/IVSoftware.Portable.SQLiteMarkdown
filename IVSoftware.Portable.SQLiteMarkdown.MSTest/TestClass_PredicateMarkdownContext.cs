@@ -173,44 +173,44 @@ public class TestClass_PredicateMarkdownContext
         actual.ToClipboardExpected();
         { }
         expected = @" 
-<model>
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" xitem=""[TemporalAffinityQFModel]"" preview=""Brown Dog "" sort=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" xitem=""[TemporalAffinityQFModel]"" preview=""Green Appl"" sort=""1"" ismatch=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" xitem=""[TemporalAffinityQFModel]"" preview=""Yellow Ban"" sort=""2"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" xitem=""[TemporalAffinityQFModel]"" preview=""Blue Bird "" sort=""3"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" xitem=""[TemporalAffinityQFModel]"" preview=""Red Cherry"" sort=""4"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" xitem=""[TemporalAffinityQFModel]"" preview=""Black Cat "" sort=""5"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" xitem=""[TemporalAffinityQFModel]"" preview=""Orange Fox"" sort=""6"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" xitem=""[TemporalAffinityQFModel]"" preview=""White Rabb"" sort=""7"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000008"" xitem=""[TemporalAffinityQFModel]"" preview=""Purple Gra"" sort=""8"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" xitem=""[TemporalAffinityQFModel]"" preview=""Gray Wolf "" sort=""9"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000a"" xitem=""[TemporalAffinityQFModel]"" preview=""Pink Flami"" sort=""10"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" xitem=""[TemporalAffinityQFModel]"" preview=""Golden Lio"" sort=""11"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" xitem=""[TemporalAffinityQFModel]"" preview=""Brown Bear"" sort=""12"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000d"" xitem=""[TemporalAffinityQFModel]"" preview=""Green Pear"" sort=""13"" ismatch=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000e"" xitem=""[TemporalAffinityQFModel]"" preview=""Red Strawb"" sort=""14"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" xitem=""[TemporalAffinityQFModel]"" preview=""Black Pant"" sort=""15"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000010"" xitem=""[TemporalAffinityQFModel]"" preview=""Yellow Lem"" sort=""16"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000011"" xitem=""[TemporalAffinityQFModel]"" preview=""White Swan"" sort=""17"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000012"" xitem=""[TemporalAffinityQFModel]"" preview=""Purple Plu"" sort=""18"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000013"" xitem=""[TemporalAffinityQFModel]"" preview=""Blue Whale"" sort=""19"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000014"" xitem=""[TemporalAffinityQFModel]"" preview=""Elephant  "" sort=""20"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000015"" xitem=""[TemporalAffinityQFModel]"" preview=""Pineapple "" sort=""21"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000016"" xitem=""[TemporalAffinityQFModel]"" preview=""Shark     "" sort=""22"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000017"" xitem=""[TemporalAffinityQFModel]"" preview=""Owl       "" sort=""23"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000018"" xitem=""[TemporalAffinityQFModel]"" preview=""Giraffe   "" sort=""24"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000019"" xitem=""[TemporalAffinityQFModel]"" preview=""Coconut   "" sort=""25"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" xitem=""[TemporalAffinityQFModel]"" preview=""Kangaroo  "" sort=""26"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001b"" xitem=""[TemporalAffinityQFModel]"" preview=""Dragonfrui"" sort=""27"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" xitem=""[TemporalAffinityQFModel]"" preview=""Turtle    "" sort=""28"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001d"" xitem=""[TemporalAffinityQFModel]"" preview=""Mango     "" sort=""29"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" xitem=""[TemporalAffinityQFModel]"" preview=""Should NOT"" sort=""30"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001f"" xitem=""[TemporalAffinityQFModel]"" preview=""Appetizer "" sort=""31"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000020"" xitem=""[TemporalAffinityQFModel]"" preview=""Errata    "" sort=""32"" ismatch=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000021"" xitem=""[TemporalAffinityQFModel]"" preview=""Happy Camp"" sort=""33"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000022"" xitem=""[TemporalAffinityQFModel]"" preview=""Great exam"" sort=""34"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000023"" xitem=""[TemporalAffinityQFModel]"" preview=""Applicatio"" sort=""35"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000024"" xitem=""[TemporalAffinityQFModel]"" preview=""App Store "" sort=""36"" />
+<model autocount=""37"" count=""37"" matches=""3"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[TemporalAffinityQFModel]"" preview=""Brown Dog "" sort=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[TemporalAffinityQFModel]"" preview=""Green Appl"" sort=""1"" ismatch=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[TemporalAffinityQFModel]"" preview=""Yellow Ban"" sort=""2"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[TemporalAffinityQFModel]"" preview=""Blue Bird "" sort=""3"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[TemporalAffinityQFModel]"" preview=""Red Cherry"" sort=""4"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[TemporalAffinityQFModel]"" preview=""Black Cat "" sort=""5"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[TemporalAffinityQFModel]"" preview=""Orange Fox"" sort=""6"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[TemporalAffinityQFModel]"" preview=""White Rabb"" sort=""7"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000008"" model=""[TemporalAffinityQFModel]"" preview=""Purple Gra"" sort=""8"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[TemporalAffinityQFModel]"" preview=""Gray Wolf "" sort=""9"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[TemporalAffinityQFModel]"" preview=""Pink Flami"" sort=""10"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[TemporalAffinityQFModel]"" preview=""Golden Lio"" sort=""11"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[TemporalAffinityQFModel]"" preview=""Brown Bear"" sort=""12"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000d"" model=""[TemporalAffinityQFModel]"" preview=""Green Pear"" sort=""13"" ismatch=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000e"" model=""[TemporalAffinityQFModel]"" preview=""Red Strawb"" sort=""14"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[TemporalAffinityQFModel]"" preview=""Black Pant"" sort=""15"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000010"" model=""[TemporalAffinityQFModel]"" preview=""Yellow Lem"" sort=""16"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000011"" model=""[TemporalAffinityQFModel]"" preview=""White Swan"" sort=""17"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000012"" model=""[TemporalAffinityQFModel]"" preview=""Purple Plu"" sort=""18"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000013"" model=""[TemporalAffinityQFModel]"" preview=""Blue Whale"" sort=""19"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[TemporalAffinityQFModel]"" preview=""Elephant  "" sort=""20"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000015"" model=""[TemporalAffinityQFModel]"" preview=""Pineapple "" sort=""21"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000016"" model=""[TemporalAffinityQFModel]"" preview=""Shark     "" sort=""22"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000017"" model=""[TemporalAffinityQFModel]"" preview=""Owl       "" sort=""23"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[TemporalAffinityQFModel]"" preview=""Giraffe   "" sort=""24"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000019"" model=""[TemporalAffinityQFModel]"" preview=""Coconut   "" sort=""25"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[TemporalAffinityQFModel]"" preview=""Kangaroo  "" sort=""26"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001b"" model=""[TemporalAffinityQFModel]"" preview=""Dragonfrui"" sort=""27"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[TemporalAffinityQFModel]"" preview=""Turtle    "" sort=""28"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001d"" model=""[TemporalAffinityQFModel]"" preview=""Mango     "" sort=""29"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[TemporalAffinityQFModel]"" preview=""Should NOT"" sort=""30"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001f"" model=""[TemporalAffinityQFModel]"" preview=""Appetizer "" sort=""31"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000020"" model=""[TemporalAffinityQFModel]"" preview=""Errata    "" sort=""32"" ismatch=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000021"" model=""[TemporalAffinityQFModel]"" preview=""Happy Camp"" sort=""33"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000022"" model=""[TemporalAffinityQFModel]"" preview=""Great exam"" sort=""34"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000023"" model=""[TemporalAffinityQFModel]"" preview=""Applicatio"" sort=""35"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000024"" model=""[TemporalAffinityQFModel]"" preview=""App Store "" sort=""36"" />
 </model>"
         ;
 
