@@ -2797,9 +2797,10 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
             }
         }
 
-        [TestMethod]
+        [TestMethod, DoNotParallelize]
         public async Task Test_DemoFlow()
         {
+            using var te = this.TestableEpoch();
             using (var cnx = InitializeInMemoryDatabase())
             {
                 string actual, expected, sql;
@@ -2904,15 +2905,44 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                     actual = items.StateReport();
                     actual.ToClipboardExpected();
                     { }
+                    expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+                    ;
+                    Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting initial StateReport to match.");
 
-                    expected = @"PASTE HERE";
-                    Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                     Assert.AreEqual(0, eventQueue.Count, "YES. It's zero.");
 
-                    // NSB is NavSearchBar and is not awaitable at this time.
-                    nsb.InputText = "animal";
-                    items.Commit();
-                    await items;
+                    // Nothing requires await here.
+                    nsb.InputText = "animal";   // Synchronous because IsFiltering is False
+                    items.Commit();             // Query on a synchronous memory connection.
+
+
+                    actual = items.Model.ToString();
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+<model count=""12"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModelTOQO]"" sort=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModelTOQO]"" sort=""1"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModelTOQO]"" sort=""2"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModelTOQO]"" sort=""3"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModelTOQO]"" sort=""4"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModelTOQO]"" sort=""5"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModelTOQO]"" sort=""6"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModelTOQO]"" sort=""7"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModelTOQO]"" sort=""8"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModelTOQO]"" sort=""9"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModelTOQO]"" sort=""10"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModelTOQO]"" sort=""11"" />
+</model>";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting animal matches."
+                    );
+                    { }
+
 
                     actual = string.Join(Environment.NewLine, builder);
 
