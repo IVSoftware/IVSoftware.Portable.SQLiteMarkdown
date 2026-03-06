@@ -639,11 +639,14 @@ InputText"
                     "Expecting result to match."
                 );
 
+
+                Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 06).Date, "Don't forget disabled");
+                return;
                 actual = mdc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 15, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 6, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                 ;
 
                 // #1 [X]

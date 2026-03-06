@@ -48,17 +48,18 @@ public class TestClass_PredicateMarkdownContext
             { }
             expected = @" 
 <model>
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000008"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" xitem=""[SelectableQFModel]"" />
-</model>";
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" xitem=""[SelectableQFModel]"" sort=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" xitem=""[SelectableQFModel]"" sort=""1"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" xitem=""[SelectableQFModel]"" sort=""2"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" xitem=""[SelectableQFModel]"" sort=""3"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" xitem=""[SelectableQFModel]"" sort=""4"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" xitem=""[SelectableQFModel]"" sort=""5"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" xitem=""[SelectableQFModel]"" sort=""6"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" xitem=""[SelectableQFModel]"" sort=""7"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000008"" xitem=""[SelectableQFModel]"" sort=""8"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" xitem=""[SelectableQFModel]"" sort=""9"" />
+</model>"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -92,17 +93,18 @@ public class TestClass_PredicateMarkdownContext
             { }
             expected = @" 
 <model>
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000008"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" xitem=""[SelectableQFModel]"" />
-</model>";
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" xitem=""[SelectableQFModel]"" sort=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" xitem=""[SelectableQFModel]"" sort=""1"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" xitem=""[SelectableQFModel]"" sort=""2"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" xitem=""[SelectableQFModel]"" sort=""3"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" xitem=""[SelectableQFModel]"" sort=""4"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" xitem=""[SelectableQFModel]"" sort=""5"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" xitem=""[SelectableQFModel]"" sort=""6"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" xitem=""[SelectableQFModel]"" sort=""7"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000008"" xitem=""[SelectableQFModel]"" sort=""8"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" xitem=""[SelectableQFModel]"" sort=""9"" />
+</model>"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -280,6 +282,7 @@ public class TestClass_PredicateMarkdownContext
     ""IsPastDue"": null,
     ""Created"": ""2000-01-01T09:04:00+07:00"",
     ""ChainOfCustody"": ""{\r\n  \""Created\"": \""2000-01-01T09:04:00+07:00\"",\r\n  \""Coc\"": {}\r\n}"",
+    ""Model"": ""<model preview=\""Item05    \"" />"",
     ""FullPath"": ""312d1c21-0000-0000-0000-000000000005\\312d1c21-0000-0000-0000-000000000004"",
     ""ParentPath"": ""312d1c21-0000-0000-0000-000000000005"",
     ""ParentId"": ""312d1c21-0000-0000-0000-000000000005"",

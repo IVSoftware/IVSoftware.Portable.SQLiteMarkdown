@@ -146,11 +146,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 );
 
                 actual = mdci.Model.ToString();
+                actual.ToClipboardExpected();
+                { }
                 expected = @" 
 <model>
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" xitem=""[SelectableQFModel]"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" xitem=""[SelectableQFModel]"" />
-</model>";
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" xitem=""[SelectableQFModel]"" sort=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" xitem=""[SelectableQFModel]"" sort=""1"" />
+</model>"
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
