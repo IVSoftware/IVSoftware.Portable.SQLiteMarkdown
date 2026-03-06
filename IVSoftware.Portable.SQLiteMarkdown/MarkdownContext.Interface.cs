@@ -451,9 +451,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             void localResetModelForEpoch()
             {
-                // 260306
-                // The rationale for RemoveAll is to wipe the count attributes clean.
-                Model.RemoveAll();
+                // But leave 'predicates' and 'comparer' attributes intact!
+                Model.SetAttributeValue(nameof(StdMarkdownAttribute.count), null);
+                Model.SetAttributeValue(nameof(StdMarkdownAttribute.autocount), null);
+                Model.SetAttributeValue(nameof(StdMarkdownAttribute.matches), null);
+                Model.RemoveNodes();
             }
             #endregion L o c a l F x
         }
