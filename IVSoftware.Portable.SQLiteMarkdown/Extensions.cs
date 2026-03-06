@@ -770,7 +770,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return default;
         }
 
-        internal static void SetAttributeValue(this XElement @this, StdMarkdownAttribute stdEnum, object? value, byte maxLength = byte.MaxValue, ThrowOrAdvise? @throw = null)
+        internal static void SetAttributeValue(
+            this XElement @this,
+            StdMarkdownAttribute stdEnum,
+            object? value,
+            byte maxLength = byte.MaxValue,
+            bool padToMaxLength = false,
+            ThrowOrAdvise? @throw = null)
         {
             if (value is null)
             {
@@ -778,17 +784,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return;
             }
 
-            string preview = value.ToString() ?? string.Empty;
-
-            string truncated =
-                preview.Length <= maxLength
-                ? preview
-                : preview.Substring(0, maxLength);
-
-            if (preview.Length > maxLength)
+            string @string = value.ToString() ?? string.Empty;
+            if (@string.Length > maxLength)
             {
-                var msg = $"Value for {stdEnum.ToFullKey()} exceeded {maxLength} characters and was truncated.";
+                @string = @string.Substring(0, maxLength);
 
+                var msg = $"Value for {stdEnum.ToFullKey()} exceeded {maxLength} characters and has been truncated.";
                 switch (@throw)
                 {
                     case ThrowOrAdvise.ThrowHard:
@@ -808,7 +809,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         break;
                 }
             }
-            @this.SetAttributeValue(stdEnum.ToString(), truncated);
+            else if(padToMaxLength)
+            {
+                @string = @string.PadRight(maxLength);
+            }
+            @this.SetAttributeValue(stdEnum.ToString(), @string);
         }
     }
 }

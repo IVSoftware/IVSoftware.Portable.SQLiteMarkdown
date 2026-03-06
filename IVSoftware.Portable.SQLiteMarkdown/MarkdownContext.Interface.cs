@@ -118,8 +118,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 switch (action)
                 {
                     case XObjectChange.Add:
-                        if(xbo.Tag is IPrioritizedAffinity modeled)
-                        { }
+                        if(xbo.Tag is IAffinityModel modeled)
+                        {
+                            if(xbo.Parent is null)
+                            {
+                                this.ThrowFramework<NullReferenceException>(
+                                    "UNEXPECTED: An attribute that is added should have a parent. What was it added *to*?");
+                            }
+                            else
+                            {
+                                modeled.Model = xbo.Parent;
+                            }
+                        }
                         if (1 != FilterQueryDatabase.Insert(item))
                         {
                             Debug.Fail($@"ADVISORY - Expecting operation to succeed.");

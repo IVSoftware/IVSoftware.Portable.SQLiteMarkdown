@@ -643,7 +643,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Prev,
     }
 
-    internal interface IAffinity
+    internal interface IAffinityModel
     {
         /// <summary>
         /// Provides access to the hierarchical structure and hosts lateral expansion.
@@ -651,7 +651,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// XBoundObject is used extensively to attach service objects to XAttributes of this node.
         /// </remarks>
-        XElement Model { get; } // Xml affinity model.
+        XElement Model { get; set; } // Xml affinity model.
     }
 
     /// <summary>
@@ -663,7 +663,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// If the raw recordset of a query returns ONE child item at depth = 2, then the
     /// net query returns THREE. The UI now has greater opportunity to display context.
     /// </remarks>
-    internal interface IPrioritizedAffinity : IAffinity
+    internal interface IPrioritizedAffinity : IAffinityModel
     {
         /// <summary>
         /// Globally unique identifier.

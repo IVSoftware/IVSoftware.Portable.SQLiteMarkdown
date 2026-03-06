@@ -198,7 +198,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             {
                 if (!Equals(Preview, value))
                 {
-                    Model.SetAttributeValue(StdMarkdownAttribute.preview, value, maxLength: DefaultPreviewLength);
+                    Model.SetAttributeValue(
+                        StdMarkdownAttribute.preview,
+                        value,
+                        padToMaxLength: true,
+                        maxLength: DefaultPreviewLength);
                     OnPropertyChanged();
                 }
             }
