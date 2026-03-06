@@ -12,6 +12,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -88,6 +89,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnXElementChanged (XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
+            XElement? root = pxel?.AncestorsAndSelf().LastOrDefault();
+
+            uint count = 0;
+            if(root is null)
+            {
+                this.ThrowFramework<NullReferenceException>(
+                    $"UNEXPECTED: The '{nameof(root)}' argument should be non-null by design.");
+            }
             switch (e.ObjectChange)
             {
                 case XObjectChange.Add:
@@ -100,6 +109,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if(xbo is not null)
                     {
                         OnBoundItemObjectChange(xbo, e.ObjectChange);
+                    }
+                    break;
+            }
+            switch (e.ObjectChange)
+            {
+                case XObjectChange.Add:
+                    count++;
+                    root?.SetAttributeValue(StdMarkdownAttribute.count, count);
+                    break;
+                case XObjectChange.Remove:
+                    if (count == 0)
+                    {
+                        this.ThrowFramework<InvalidOperationException>(
+                            $"UNEXPECTED: Illegal underflow detected '{nameof(count)}'. Count should be >= 0 by design.");
+                    }
+                    else
+                    {
+                        count--;
+                        {
+                            root?.SetAttributeValue(StdMarkdownAttribute.count, count);
+                        }
                     }
                     break;
             }
@@ -255,6 +285,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             Enum localInitModelForEpoch(IEnumerable canonical)
             {
+#if DEBUG
+                int nRemoved = 0;
+#endif
+
                 Model.SetAttributeValue(StdMarkdownAttribute.count, null);
                 Model.SetAttributeValue(StdMarkdownAttribute.matchCount, null);
 
@@ -263,7 +297,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 #region L o c a l F x
                 void localOnXObjectChanged(object? sender, XObjectChangeEventArgs e)
                 {
-                    Debug.Fail($@"ADVISORY - Yes, this DOES raise events.");
+                    Debug.WriteLine($@"260306.A: Removed {++nRemoved}");
                 }
                 #endregion L o c a l F x
                 using (Model.WithOnDispose(
@@ -276,7 +310,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         Model.Changed -= localOnXObjectChanged;
                     }))
                 {
-                    Model.RemoveNodes();
+                    if (Model.HasElements)
+                    {
+                        Model.RemoveNodes();
+                    }
                 }
 #else
                 Model.RemoveNodes();
@@ -311,7 +348,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             break;
                     }
                 }
-                Model.SetAttributeValue(StdMarkdownAttribute.count, countDistinct);
                 Model.SetAttributeValue(StdMarkdownAttribute.ismatch, null); ;
                 return ReservedAffinityState.Next;
             }
