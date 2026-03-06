@@ -254,9 +254,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     internal enum StdMarkdownAttribute
     {
         /// <summary>
-        /// Path segment name.
+        /// Path segment name. 
         /// </summary>
+        /// <remarks>
+        /// - This is typically both a guid and also the PK.
+        /// - Not to be confused with Description.
+        /// </remarks>
         text,
+
+        /// <summary>
+        /// A truncated reference version of Description.
+        /// </summary>
+        /// <remarks>
+        /// Not to be confused with text which is generally a guid.
+        /// </remarks>
+        preview,
+
+        /// <summary>
+        /// The XBoundAttribute that holds this data model.
+        /// </summary>
+        /// <remarks>
+        /// Not to be confused with the XElement Model property.
+        /// </remarks>
+        model,
 
         /// <summary>
         /// This record matches all active predicates.
@@ -277,10 +297,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         /// <remarks>
         /// Serialized form of <c>PriorityOverride</c>.
-        /// Mental Model: "Temporary UI-driven ordering (e.g., column header sorts)."
+        /// Mental Model: "The user clicked the column header and this is the temporary sort."
         /// </remarks>
         sort,
-        preview,
     }
 
     /// <summary>
