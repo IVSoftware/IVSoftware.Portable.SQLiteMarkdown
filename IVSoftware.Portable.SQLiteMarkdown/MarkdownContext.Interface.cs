@@ -575,31 +575,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        [Obsolete("Use CanonicalCount and PredicateMatchCount for precise semantics.")]
-        public int UnfilteredCount
+        [Obsolete("Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount.")]
+        [PublishedSignature("1.0")] // Required for backward compatibility. Do not remove this property.
+        public int UnfilteredCount 
         {
             get => CanonicalCount;
-            protected set => CanonicalCount = value;
+            protected set => Model.SetAttributeValue(StdMarkdownAttribute.count, value);
         }
 
-        public int CanonicalCount
-        {
-            get => _canonicalCount;
-            protected set
-            {
-                if (!Equals(_canonicalCount, value))
-                {
-                    _canonicalCount = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        int _canonicalCount = default;
+        public int CanonicalCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.count, @default: 0);
 
-        public int PredicateMatchCount
-        {
-            get => Model.GetAttributeValue<int>(StdMarkdownAttribute.ismatch, @default: 0);
-        }
+        public int PredicateMatchCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.ismatch, @default: 0);
 
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {
