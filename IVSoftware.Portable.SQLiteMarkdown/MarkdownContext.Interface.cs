@@ -14,6 +14,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -121,7 +122,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 else
                 {
-                    var count = modelRoot.GetAttributeValue<int>(StdMarkdownAttribute.count);
+                    var autocount = modelRoot.GetAttributeValue<int>(StdMarkdownAttribute.autocount);
+                    switch (e.ObjectChange)
+                    {
+                        case XObjectChange.Add:
+                            autocount++;
+                            break;
+                        case XObjectChange.Remove:
+                            if (autocount == 0)
+                            {
+                                this.ThrowFramework<InvalidOperationException>(
+                                    $"UNEXPECTED: Illegal underflow detected '{nameof(autocount)}'. Count should be >= 0 by design.");
+                            }
+                            else
+                            {
+                                autocount--;
+                            }
+                            break;
+                    }
+                    modelRoot.SetAttributeValue(StdMarkdownAttribute.autocount, autocount);
+                    // [Careful]
+                    // It's too racey here to try and compare counts.
                 }
 
 #if false
@@ -430,7 +451,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             void localResetModelForEpoch()
             {
-                Model.RemoveNodes();
+                // 260306
+                // The rationale for RemoveAll is to wipe the count attributes clean.
+                Model.RemoveAll();
             }
             #endregion L o c a l F x
         }

@@ -309,6 +309,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         count,
 
         /// <summary>
+        /// The total running count, based on XElement.Changed.
+        /// </summary>
+        [DefaultValue(0)]
+        autocount,
+
+        /// <summary>
         /// In filter mode, the number of items matching all the predicates.
         /// </summary>
         [DefaultValue(0)]
