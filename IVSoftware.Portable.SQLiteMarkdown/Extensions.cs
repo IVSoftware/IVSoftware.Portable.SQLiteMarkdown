@@ -710,7 +710,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return default;
         }
 
-        internal static XAttribute? Attribute(this XElement @this, StdMarkdownAttribute stdEnum, ThrowOrAdvise? @throw = null)
+        internal static XAttribute? Attribute(this XElement @this, Enum stdEnum, ThrowOrAdvise? @throw = null)
         {
             string msg;
             if (@this.Attribute(stdEnum.ToString()) is not XAttribute attr)
@@ -754,7 +754,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         internal static T? GetAttributeValue<T>(
             this XElement @this,
-            StdMarkdownAttribute stdEnum,
+            Enum stdEnum,
             object? @default = null,
             ThrowOrAdvise? @throw = null)
         {
@@ -767,22 +767,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     return localConvertValue(attr.Value, targetType);
                 }
+                catch (FormatException)
+                {
+                    // [Remember] Throw can be handled and no hard exception thrown.
+                    @this.ThrowFramework<InvalidOperationException>(
+                        $"Unable to convert attribute {stdEnum.ToFullKey()} value '{attr.Value}' to {typeof(T).Name}.");
+                }
                 catch
                 {
-                    // [Remember] Throw can be handled in which case there is no exception here.
+                    // [Remember] Throw can be handled and no hard exception thrown.
                     @this.ThrowFramework<InvalidOperationException>(
                         $"Unable to convert attribute {stdEnum.ToFullKey()} value '{attr.Value}' to {typeof(T).Name}.");
                 }
             }
 
+            // If explicit default not supplied, consult [DefaultValue]
             @default ??= stdEnum.GetCustomAttribute<DefaultValueAttribute>()?.Value;
 
-
-            // Direct default match (explicit @default or [DefaultValue]).
+            // Direct default match (explicit @default or [DefaultValue])
             if (@default is T defaultT)
-            {
                 return defaultT;
-            }
 
             // Attempt conversion of default
             if (@default is not null)
@@ -797,12 +801,68 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
 
+            // No usable value resolved; enforce non-nullable contract
             bool isNullable = targetType != typeof(T) || !typeof(T).IsValueType;
 
             if (!isNullable)
             {
-                string msg = $"Non-nullable type({typeof(T).Name}) requires {nameof(@default)}";
+                localThrowHelper($"Non-nullable type({typeof(T).Name}) requires {nameof(@default)}");
+            }
 
+            return default;
+
+            #region L o c a l F x
+            T localConvertValue(object? value, Type targetType)
+            {
+                var s = value?.ToString() ?? string.Empty;
+
+                if (targetType == typeof(string))
+                    return (T)(object)s;
+
+                // Fast reject obvious non-numeric input when numeric expected
+                if (value is string sVal && localIsNumericType(targetType))
+                {
+                    if (!double.TryParse(sVal, out _))
+                    {
+                        // If explicit default not supplied, consult [DefaultValue]
+                        @default ??= stdEnum.GetCustomAttribute<DefaultValueAttribute>()?.Value;
+                        if(@default is T defaultT)
+                        {
+                            return defaultT;
+                        }
+                        else
+                        {
+                            // If no explicit @throw level then throw hard.
+                            @throw ??= ThrowOrAdvise.ThrowHard;
+                            localThrowHelper($"The string provided '{sVal}' is not numeric.");
+                            return default!; // We warned you.
+                        }
+                    }
+                }
+
+                if (targetType.IsEnum)
+                    return (T)Enum.Parse(targetType, s, ignoreCase: true);
+
+                return (T)Convert.ChangeType(value, targetType);
+            }
+
+            static bool localIsNumericType(Type t)
+            {
+                return t == typeof(byte) ||
+                       t == typeof(sbyte) ||
+                       t == typeof(short) ||
+                       t == typeof(ushort) ||
+                       t == typeof(int) ||
+                       t == typeof(uint) ||
+                       t == typeof(long) ||
+                       t == typeof(ulong) ||
+                       t == typeof(float) ||
+                       t == typeof(double) ||
+                       t == typeof(decimal);
+            }
+
+            void localThrowHelper(string msg)
+            {
                 switch (@throw ?? ThrowOrAdvise.ThrowHard)
                 {
                     case ThrowOrAdvise.ThrowHard:
@@ -819,19 +879,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         break;
                 }
             }
-            return default;
-            #region L o c a l F x
-            T localConvertValue(object? value, Type targetType)
-            {
-                if (targetType == typeof(string))
-                    return (T)(object)(value?.ToString() ?? string.Empty);
-
-                if (targetType.IsEnum)
-                    return (T)Enum.Parse(targetType, value?.ToString()!, ignoreCase: true);
-
-                return (T)Convert.ChangeType(value, targetType);
-            }
-            #endregion L o c a l F x
+            #endregion
         }
 
         internal static void SetAttributeValue(
