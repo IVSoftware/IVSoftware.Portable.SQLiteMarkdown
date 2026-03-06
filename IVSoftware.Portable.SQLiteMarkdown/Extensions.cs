@@ -767,21 +767,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     return localConvertValue(attr.Value, targetType);
                 }
-                catch (FormatException)
+                catch(Exception ex)
                 {
-                    // [Remember] Throw can be handled and no hard exception thrown.
-                    @this.ThrowFramework<InvalidOperationException>(
-                        $"Unable to convert attribute {stdEnum.ToFullKey()} value '{attr.Value}' to {typeof(T).Name}.");
-                }
-                catch
-                {
-                    // [Remember] Throw can be handled and no hard exception thrown.
-                    @this.ThrowFramework<InvalidOperationException>(
-                        $"Unable to convert attribute {stdEnum.ToFullKey()} value '{attr.Value}' to {typeof(T).Name}.");
+                    @this.RethrowFramework(ex);
                 }
             }
 
-            // If explicit default not supplied, consult [DefaultValue]
+            // If explicit default not supplied, consult [DefaultValue].
+            // NOTE: This line is a minor duplication that keeps both reflections out of the hot path unless needed.
             @default ??= stdEnum.GetCustomAttribute<DefaultValueAttribute>()?.Value;
 
             // Direct default match (explicit @default or [DefaultValue])
@@ -824,7 +817,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     if (!double.TryParse(sVal, out _))
                     {
-                        // If explicit default not supplied, consult [DefaultValue]
+                        // If explicit default not supplied, consult [DefaultValue].
+                        // NOTE: This line is a minor duplication that keeps both reflections out of the hot path unless needed.
                         @default ??= stdEnum.GetCustomAttribute<DefaultValueAttribute>()?.Value;
                         if(@default is T defaultT)
                         {
