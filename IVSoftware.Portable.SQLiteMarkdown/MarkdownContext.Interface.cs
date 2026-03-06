@@ -118,6 +118,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 switch (action)
                 {
                     case XObjectChange.Add:
+                        if(xbo.Tag is IPrioritizedAffinity modeled)
+                        { }
                         if (1 != FilterQueryDatabase.Insert(item))
                         {
                             Debug.Fail($@"ADVISORY - Expecting operation to succeed.");

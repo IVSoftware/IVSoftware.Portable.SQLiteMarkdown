@@ -35,6 +35,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             actual = JsonConvert.SerializeObject(item, Formatting.Indented);
             actual.ToClipboardExpected();
+            { }
             expected = @" 
 {
   ""Duration"": ""00:00:00"",
@@ -51,6 +52,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
   ""IsPastDue"": null,
   ""Created"": ""2000-01-01T09:00:00+07:00"",
   ""ChainOfCustody"": ""{\r\n  \""Created\"": \""2000-01-01T09:00:00+07:00\"",\r\n  \""Coc\"": {}\r\n}"",
+  ""Model"": ""<model preview=\""New Item\"" />"",
   ""FullPath"": ""312d1c21-0000-0000-0000-000000000000"",
   ""ParentPath"": """",
   ""ParentId"": """",
@@ -103,6 +105,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
   ""IsPastDue"": null,
   ""Created"": ""2000-01-01T09:00:00+07:00"",
   ""ChainOfCustody"": ""{\r\n  \""Created\"": \""2000-01-01T09:00:00+07:00\"",\r\n  \""Coc\"": {}\r\n}"",
+  ""Model"": ""<model preview=\""New Item\"" />"",
   ""FullPath"": ""312d1c21-0000-0000-0000-000000000000"",
   ""ParentPath"": """",
   ""ParentId"": """",

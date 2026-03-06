@@ -2032,9 +2032,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 Model.RemoveDescendantAttributes(StdMarkdownAttribute.ismatch);
 
-                // Perform internal filter query.
+                #region F I L T E R    Q U E R Y
                 sql = ParseSqlMarkdown();
                 matches = FilterQueryDatabase.Query(ProxyType.GetMapping(), sql);
+                #endregion F I L T E R    Q U E R Y
+
                 if (matches.Count == CanonicalCount)
                 {   /* G T K - N O O P */
                     // Fast track.

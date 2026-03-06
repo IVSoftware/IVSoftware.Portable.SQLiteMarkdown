@@ -15,6 +15,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
     internal partial class PrioritizedAffinityQFModel : SelectableQFModel, IPrioritizedAffinity
     {
+        public PrioritizedAffinityQFModel()
+        {
+            Preview = Description; // Because race is possible.
+            base.PropertyChanged += (sender, e) =>
+            {
+                switch (e.PropertyName)
+                {
+                    case nameof(Description):
+                        Preview = Description;
+                        break;
+                }
+            };
+        }
         /// <summary>
         /// Assign or consolidate the XML Prioritized Model associated with this object.
         /// </summary>
@@ -30,6 +43,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             get => _model;
             set => SetXAFAuthority(value);
         }
+
+        [Ephemeral, JsonProperty("Model")]
+        public string Model_JSON => Model.ToShallow().ToString();
+
 
         protected virtual void SetXAFAuthority(XElement value)
         {
@@ -173,7 +190,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         #region A F F I N I T Y    E P H E M E R A L
 
-        [Ephemeral]
+        [Ephemeral, JsonIgnore]
         public string? Preview
         {
             get => Model.AttributeValue<string>(StdMarkdownAttribute.preview);
@@ -181,11 +198,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             {
                 if (!Equals(Preview, value))
                 {
-                    Model.SetAttributeValue(StdMarkdownAttribute.preview, value);
+                    Model.SetAttributeValue(StdMarkdownAttribute.preview, value, maxLength: DefaultPreviewLength);
                     OnPropertyChanged();
                 }
             }
         }
+        public static byte DefaultPreviewLength
+        {
+            get => _defaultPreviewLength;
+            set => _defaultPreviewLength = Math.Max(value, (byte)5);
+        }
+        static byte _defaultPreviewLength = 10;
 
         [Ephemeral]
         public long? PriorityOverride

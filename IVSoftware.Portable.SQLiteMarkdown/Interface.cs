@@ -643,6 +643,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Prev,
     }
 
+    internal interface IAffinity
+    {
+        /// <summary>
+        /// Provides access to the hierarchical structure and hosts lateral expansion.
+        /// </summary>
+        /// <remarks>
+        /// XBoundObject is used extensively to attach service objects to XAttributes of this node.
+        /// </remarks>
+        XElement Model { get; } // Xml affinity model.
+    }
+
     /// <summary>
     /// Represents a prioritized node whose relational context ("affinity") is 
     /// implicitly restored when materialized from a query.
@@ -652,16 +663,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// If the raw recordset of a query returns ONE child item at depth = 2, then the
     /// net query returns THREE. The UI now has greater opportunity to display context.
     /// </remarks>
-    internal interface IPrioritizedAffinity
+    internal interface IPrioritizedAffinity : IAffinity
     {
-        /// <summary>
-        /// Provides access to the hierarchical structure and hosts lateral expansion.
-        /// </summary>
-        /// <remarks>
-        /// XBoundObject is used extensively to attach service objects to XAttributes of this node.
-        /// </remarks>
-        XElement Model { get; } // Xml affinity model.
-
         /// <summary>
         /// Globally unique identifier.
         /// </summary>
