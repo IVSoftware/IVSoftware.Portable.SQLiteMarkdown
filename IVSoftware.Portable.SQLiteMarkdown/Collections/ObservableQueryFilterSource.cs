@@ -119,6 +119,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 base.LoadCanon(items);
                 // --------------
 
+#if DEBUG
+                if (base.ObservableNetProjection is null)
+                {
+                }
+                else if (ReferenceEquals(this, base.ObservableNetProjection is null))
+                {
+                }
+                else
+                {
+                    Debug.Fail($@"ADVISORY - This is nonsensical and you shouldn't be here.");
+                }
+#endif
+
 
                 // This causes a Reset on the main INCC
                 _canonicalRecordset.Clear();
