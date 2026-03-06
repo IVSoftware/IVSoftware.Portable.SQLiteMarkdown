@@ -485,8 +485,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         // a target framework that supports it.
                         if (MemoryDatabase != null)
                         {
-                            var cMe = MemoryDatabase.Query<T>(InputText.ParseSqlMarkdown<T>());
-                            ReplaceItems(cMe);
+                            // Please don't combine these two lines. This is for cMe purposes.
+                            var recordset = MemoryDatabase.Query<T>(InputText.ParseSqlMarkdown<T>());
+                            ReplaceItems(recordset);
                         }
                         break;
                     case SearchEntryState.QueryCompleteNoResults:

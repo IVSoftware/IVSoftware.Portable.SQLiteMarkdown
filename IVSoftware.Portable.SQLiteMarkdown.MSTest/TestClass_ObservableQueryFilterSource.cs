@@ -2920,6 +2920,8 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                     actual = items.Model.ToString();
                     actual.ToClipboardExpected();
                     { }
+
+                    // [Careful("What?")] No 'preview' attribute? THAT'S BECAUSE THIS IS SelectableQFModelTOQO and *not* IAffinityModel.
                     expected = @" 
 <model count=""12"">
   <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModelTOQO]"" sort=""0"" />

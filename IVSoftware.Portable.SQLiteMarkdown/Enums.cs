@@ -300,7 +300,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Mental Model: "The user clicked the column header and this is the temporary sort."
         /// </remarks>
         sort,
+
+        /// <summary>
+        /// The total running count.
+        /// </summary>
         count,
+
+        /// <summary>
+        /// In filter mode, the number of items matching all the predicates.
+        /// </summary>
+        matchCount,
+
+        #region P R E D I C A T E S
+        /// <summary>
+        /// XBoundObject that holds a sorting predicate when present.
+        /// </summary>
+        comparer,
+
+        /// <summary>
+        /// XBoundObject that holds a filter predicates when present.
+        /// </summary>
+        predicate,
+        #endregion P R E D I C A T E S
     }
 
     /// <summary>

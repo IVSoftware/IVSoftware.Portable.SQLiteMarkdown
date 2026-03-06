@@ -255,6 +255,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             Enum localInitModelForEpoch(IEnumerable canonical)
             {
+                Model.SetAttributeValue(StdMarkdownAttribute.count, null);
+                Model.SetAttributeValue(StdMarkdownAttribute.matchCount, null);
+
                 PropertyInfo? pk = ContractType.GetMapping().PK?.PropertyInfo;
 #if DEBUG
                 #region L o c a l F x
