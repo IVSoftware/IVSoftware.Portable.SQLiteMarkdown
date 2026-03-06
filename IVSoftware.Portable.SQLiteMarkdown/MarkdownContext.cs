@@ -2043,7 +2043,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 else
                 {
-                    matchPaths = localGetPaths();
+                    Model.SetAttributeValue(StdMarkdownAttribute.ismatch, (matchPaths = localGetPaths()).Length);
 
                     foreach (var path in matchPaths)
                     {

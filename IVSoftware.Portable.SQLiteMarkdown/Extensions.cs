@@ -741,30 +741,65 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return null;
         }
 
-        internal static T? AttributeValue<T>(this XElement @this, StdMarkdownAttribute stdEnum, ThrowOrAdvise? @throw = null)
+        internal static T? GetAttributeValue<T>(
+            this XElement @this,
+            StdMarkdownAttribute stdEnum, 
+            T? @default = default,
+            ThrowOrAdvise? @throw = null)
         {
-            if (@this.Attribute(stdEnum, @throw) is { } attr)
+            bool isNullable =
+                !typeof(T).IsValueType ||
+                Nullable.GetUnderlyingType(typeof(T)) is not null;
+            
+            bool hasDefault = !Equals(@default, default(T));
+
+            if (!isNullable && !hasDefault)
             {
-                var value = attr.Value;
+                string msg = $"Non-nullable type({typeof(T).Name}) requires {nameof(@default)}";
 
-                if (typeof(T) == typeof(string))
+                // Defaults to a non-advisory hard throw in the absence of an explicit @throw argument.
+                switch (@throw ?? ThrowOrAdvise.ThrowHard)
                 {
-                    return (T)(object)value;
+                    case ThrowOrAdvise.ThrowHard:
+                        @this.ThrowHard<InvalidOperationException>(msg);
+                        break;
+                    case ThrowOrAdvise.ThrowSoft:
+                        @this.ThrowSoft<InvalidOperationException>(msg);
+                        break;
+                    case ThrowOrAdvise.ThrowFramework:
+                        @this.Advisory(msg);
+                        break;
+                    case ThrowOrAdvise.Advisory:
+                        @this.ThrowFramework<InvalidOperationException>(msg);
+                        break;
                 }
-
-                try
+            }
+            else
+            {
+                // [Careful] Attribute method already has error handling!
+                if (@this.Attribute(stdEnum, @throw) is { } attr)
                 {
-                    if (typeof(T).IsEnum)
+                    var value = attr.Value;
+
+                    if (typeof(T) == typeof(string))
                     {
-                        return (T)Enum.Parse(typeof(T), value);
+                        return (T)(object)value;
                     }
 
-                    return (T)Convert.ChangeType(value, typeof(T));
-                }
-                catch
-                {
-                    @this.ThrowFramework<InvalidOperationException>(
-                        $"Unable to convert attribute {stdEnum.ToFullKey()} value '{value}' to {typeof(T).Name}.");
+                    try
+                    {
+                        if (typeof(T).IsEnum)
+                        {
+                            return (T)Enum.Parse(typeof(T), value);
+                        }
+
+                        return (T)Convert.ChangeType(value, typeof(T));
+                    }
+                    catch
+                    {
+                        @this.ThrowFramework<InvalidOperationException>(
+                            $"Unable to convert attribute {stdEnum.ToFullKey()} value '{value}' to {typeof(T).Name}.");
+                    }
                 }
             }
             return default;

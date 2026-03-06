@@ -300,6 +300,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Mental Model: "The user clicked the column header and this is the temporary sort."
         /// </remarks>
         sort,
+        count,
     }
 
     /// <summary>
@@ -361,11 +362,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Empty the contents of the contract table.
         /// </summary>
         ResetModelForEpoch,
-
-        /// <summary>
-        /// Update current values for CanonicalCount and PredicateMatchCount by iterating model.
-        /// </summary>
-        UpdateCounts,
     }
 
     /// <summary>
@@ -377,8 +373,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         InitModelForEpoch = StdFSMState.InitModelForEpoch,
 
-        UpdateCounts = StdFSMState.UpdateCounts,
-
         InitStatesForEpoch = StdFSMState.InitStatesForEpoch,
     }
 
@@ -387,8 +381,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
 
         ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
-
-        UpdateCounts = StdFSMState.UpdateCounts,
     }
 
     public enum ProjectionTopology

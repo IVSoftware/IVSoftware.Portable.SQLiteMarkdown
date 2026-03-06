@@ -222,9 +222,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case StdFSMState.InitModelForEpoch when context is IEnumerable canonical:
                     localInitModelForEpoch(canonical);
                     break;
-                case StdFSMState.UpdateCounts:
-                    localUpdateCounts();
-                    break;
                 case StdFSMState.InitStatesForEpoch:
                     localInitStatesForEpoch();
                     break;
@@ -259,7 +256,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Enum localInitModelForEpoch(IEnumerable canonical)
             {
                 PropertyInfo? pk = ContractType.GetMapping().PK?.PropertyInfo;
+#if DEBUG
+                #region L o c a l F x
+                void localOnXObjectChanged(object? sender, XObjectChangeEventArgs e)
+                {
+                    Debug.Fail($@"ADVISORY - Yes, this DOES raise events.");
+                }
+                #endregion L o c a l F x
+                using (Model.WithOnDispose(
+                    onInit: (sender, e) =>
+                    {
+                        Model.Changed += localOnXObjectChanged;
+                    },
+                    onDispose: (sender, e) =>
+                    {
+                        Model.Changed -= localOnXObjectChanged;
+                    }))
+                {
+                    Model.RemoveNodes();
+                }
+#else
                 Model.RemoveNodes();
+#endif
                 int
                     countDistinct = 0,
                     countDuplicate = 0;
@@ -280,7 +298,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             xel.Name = nameof(StdMarkdownElement.xitem);
                             xel.SetBoundAttributeValue(
                                 tag: item,
-                                name: nameof(StdMarkdownElement.xitem));
+                                name: nameof(StdMarkdownAttribute.model));
                             xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), countDistinct);
                             countDistinct++;
                             break;
@@ -290,6 +308,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             break;
                     }
                 }
+                Model.SetAttributeValue(StdMarkdownAttribute.count, countDistinct);
+                Model.SetAttributeValue(StdMarkdownAttribute.ismatch, null); ;
                 return ReservedAffinityState.Next;
             }
 
@@ -305,31 +325,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         $"Expecting a non-empty value for PrimaryKey '{pk.Name}'.");
                     return null!;
                 }
-            }
-
-            void localUpdateCounts()
-            {
-                int
-                    canonical = 0,
-                    predicateMatch = 0;
-                foreach (var xel in Model.Descendants())
-                {
-                    canonical++;
-
-                    bool ismatch = true;
-
-                    // Do not combine these clauses.
-                    if (xel
-                        .Attributes(nameof(StdMarkdownAttribute.ismatch))
-                        .FirstOrDefault() is { } attr
-                        && bool.TryParse(attr.Value, out var @explicit) && @explicit == false)
-                    {
-                        ismatch = false;
-                    }
-                    if (ismatch) predicateMatch++;
-                }
-                CanonicalCount = canonical;
-                PredicateMatchCount = predicateMatch;
             }
 
             void localInitStatesForEpoch()
@@ -600,17 +595,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public int PredicateMatchCount
         {
-            get => _filteredCount;
-            protected set
-            {
-                if (!Equals(_filteredCount, value))
-                {
-                    _filteredCount = value;
-                    OnPropertyChanged();
-                }
-            }
+            get => Model.GetAttributeValue<int>(StdMarkdownAttribute.ismatch);
         }
-        int _filteredCount = default;
 
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {

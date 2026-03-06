@@ -409,7 +409,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             var extQueryHandle = default(List<PrioritizedAffinityQFModel>);
             int COUNT;
 
-            var mdc = new TestableMarkdownContext<PrioritizedAffinityQFModel>();
+            var mdc = new MarkdownContextForTest<PrioritizedAffinityQFModel>();
 
             actual = mdc.StateReport();
             actual.ToClipboardExpected();
@@ -688,7 +688,7 @@ InputText"
             const int COUNT = 2;
             var extQueryHandle = default(List<SelectableQFModel>);
 
-            var mdc = new TestableMarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
+            var mdc = new MarkdownContextForTest<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
             actual = mdc.StateReport();
             actual.ToClipboardExpected();
             { }
@@ -783,7 +783,7 @@ InputText"
         {
             var extQueryHandle = default(List<SelectableQFModel>);
 
-            TestableMarkdownContext<SelectableQFModel> mdc;
+            MarkdownContextForTest<SelectableQFModel> mdc;
 
             subtest_ConfigureThenLoad();
 
@@ -814,20 +814,9 @@ InputText"
         /// <summary>
         /// 
         /// </summary>
-        class TestableMarkdownContext<T> : MarkdownContext<T>
+        class MarkdownContextForTest<T> : MarkdownContext<T>
         {
-            public new int CanonicalCount
-            {
-                get => base.CanonicalCount;
-                set => base.CanonicalCount = value;
-            }
-            public new int PredicateMatchCount
-            {
-                get => base.PredicateMatchCount;
-                set => base.PredicateMatchCount = value;
-            }
-
-            public bool IsReady => _ready.CurrentCount > 0;
+            public new int CanonicalCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.count);
         }
 
         /// <summary>
