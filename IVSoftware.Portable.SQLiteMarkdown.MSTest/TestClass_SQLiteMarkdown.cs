@@ -409,7 +409,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             var extQueryHandle = default(List<PrioritizedAffinityQFModel>);
             int COUNT;
 
-            var mdc = new MarkdownContextForTest<PrioritizedAffinityQFModel>();
+            var mdc = new MarkdownContext<PrioritizedAffinityQFModel>();
 
             actual = mdc.StateReport();
             actual.ToClipboardExpected();
@@ -688,7 +688,7 @@ InputText"
             const int COUNT = 2;
             var extQueryHandle = default(List<SelectableQFModel>);
 
-            var mdc = new MarkdownContextForTest<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
+            var mdc = new MarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
             actual = mdc.StateReport();
             actual.ToClipboardExpected();
             { }
@@ -783,7 +783,7 @@ InputText"
         {
             var extQueryHandle = default(List<SelectableQFModel>);
 
-            MarkdownContextForTest<SelectableQFModel> mdc;
+            MarkdownContext<SelectableQFModel> mdc;
 
             subtest_ConfigureThenLoad();
 
@@ -808,15 +808,6 @@ InputText"
                 Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
             }
             #endregion S U B T E S T S
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        class MarkdownContextForTest<T> : MarkdownContext<T>
-        {
-            public new int CanonicalCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.count);
         }
 
         /// <summary>
