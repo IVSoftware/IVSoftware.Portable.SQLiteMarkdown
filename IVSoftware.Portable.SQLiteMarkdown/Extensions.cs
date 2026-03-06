@@ -769,5 +769,46 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             return default;
         }
+
+        internal static void SetAttributeValue(this XElement @this, StdMarkdownAttribute stdEnum, object? value, byte maxLength = byte.MaxValue, ThrowOrAdvise? @throw = null)
+        {
+            if (value is null)
+            {
+                @this.SetAttributeValue(stdEnum.ToString(), null);
+                return;
+            }
+
+            string preview = value.ToString() ?? string.Empty;
+
+            string truncated =
+                preview.Length <= maxLength
+                ? preview
+                : preview.Substring(0, maxLength);
+
+            if (preview.Length > maxLength)
+            {
+                var msg = $"Value for {stdEnum.ToFullKey()} exceeded {maxLength} characters and was truncated.";
+
+                switch (@throw)
+                {
+                    case ThrowOrAdvise.ThrowHard:
+                        @this.ThrowHard<InvalidOperationException>(msg);
+                        break;
+                    case ThrowOrAdvise.ThrowSoft:
+                        @this.ThrowSoft<InvalidOperationException>(msg);
+                        break;
+                    case ThrowOrAdvise.ThrowFramework:
+                        @this.ThrowFramework<InvalidOperationException>(msg);
+                        break;
+                    case ThrowOrAdvise.Advisory:
+                        @this.Advisory(msg);
+                        break;
+                    case null:
+                    default:
+                        break;
+                }
+            }
+            @this.SetAttributeValue(stdEnum.ToString(), truncated);
+        }
     }
 }
