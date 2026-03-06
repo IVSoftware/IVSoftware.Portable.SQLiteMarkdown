@@ -269,7 +269,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             xel.SetBoundAttributeValue(
                                 tag: item,
                                 name: nameof(StdMarkdownElement.xitem));
-                            xel.SetAttributeValue(nameof(StdMarkdownAttribute.priority), countDistinct);
+                            xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), countDistinct);
                             countDistinct++;
                             break;
                         default:

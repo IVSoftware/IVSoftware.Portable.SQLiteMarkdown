@@ -280,6 +280,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Mental Model: "Temporary UI-driven ordering (e.g., column header sorts)."
         /// </remarks>
         sort,
+        preview,
     }
 
     /// <summary>

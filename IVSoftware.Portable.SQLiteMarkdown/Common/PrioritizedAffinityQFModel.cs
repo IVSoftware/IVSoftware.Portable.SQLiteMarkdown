@@ -174,6 +174,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         #region A F F I N I T Y    E P H E M E R A L
 
         [Ephemeral]
+        public string? Preview
+        {
+            get => Model.AttributeValue<string>(StdMarkdownAttribute.preview);
+            set
+            {
+                if (!Equals(Preview, value))
+                {
+                    Model.SetAttributeValue(StdMarkdownAttribute.preview, value);
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        [Ephemeral]
         public long? PriorityOverride
         {
             get => Model.AttributeValue<long?>(StdMarkdownAttribute.sort);
