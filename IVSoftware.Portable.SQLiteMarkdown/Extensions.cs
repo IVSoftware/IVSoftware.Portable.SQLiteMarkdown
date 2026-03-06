@@ -666,7 +666,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             return @this;
         }
-
         internal static XBoundAttribute? XBoundAttribute(this XElement @this, StdMarkdownAttribute stdEnum, ThrowOrAdvise? @throw = null)
         {
             string msg;
@@ -707,6 +706,66 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             if(@this.XBoundAttribute(stdEnum, @throw) is { } xba && xba.Tag is T valueT)
             {
                 return valueT;
+            }
+            return default;
+        }
+
+        internal static XAttribute? Attribute(this XElement @this, StdMarkdownAttribute stdEnum, ThrowOrAdvise? @throw = null)
+        {
+            string msg;
+            if (@this.Attribute(stdEnum.ToString()) is not XAttribute attr)
+            {
+                msg = $"The {stdEnum.ToFullKey()} attribute was not found.";
+            }
+            else
+            {
+                return attr;
+            }
+            switch (@throw)
+            {
+                case ThrowOrAdvise.ThrowHard:
+                    @this.ThrowHard<InvalidOperationException>(msg);
+                    break;
+                case ThrowOrAdvise.ThrowSoft:
+                    @this.ThrowSoft<InvalidOperationException>(msg);
+                    break;
+                case ThrowOrAdvise.ThrowFramework:
+                    @this.ThrowFramework<InvalidOperationException>(msg);
+                    break;
+                case ThrowOrAdvise.Advisory:
+                    @this.Advisory(msg);
+                    break;
+                case null:
+                default: break;
+            }
+            return null;
+        }
+
+        internal static T? AttributeValue<T>(this XElement @this, StdMarkdownAttribute stdEnum, ThrowOrAdvise? @throw = null)
+        {
+            if (@this.Attribute(stdEnum, @throw) is { } attr)
+            {
+                var value = attr.Value;
+
+                if (typeof(T) == typeof(string))
+                {
+                    return (T)(object)value;
+                }
+
+                try
+                {
+                    if (typeof(T).IsEnum)
+                    {
+                        return (T)Enum.Parse(typeof(T), value);
+                    }
+
+                    return (T)Convert.ChangeType(value, typeof(T));
+                }
+                catch
+                {
+                    @this.ThrowFramework<InvalidOperationException>(
+                        $"Unable to convert attribute {stdEnum.ToFullKey()} value '{value}' to {typeof(T).Name}.");
+                }
             }
             return default;
         }

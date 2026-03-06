@@ -25,7 +25,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         /// - An error is raised if both the current XOP and the incoming value are already parented.
         /// </remarks>
         [Ephemeral, JsonIgnore]
-        public XElement XPM
+        public XElement Model
         {
             get => _model;
             set => SetXAFAuthority(value);
@@ -36,7 +36,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             if (value is null)
             {
                 this.ThrowHard<ArgumentNullException>(
-                    $"{nameof(XPM)} cannot be set to null.");
+                    $"{nameof(Model)} cannot be set to null.");
             }
             else
             {
@@ -49,9 +49,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                     if (_model.Parent is not null && value.Parent is not null)
                     {
                         this.ThrowHard<InvalidOperationException>(
-                            $"{nameof(XPM)} cannot be consolidated because both the current and" +
-                            $" incoming {nameof(XPM)} instances are already parented. " +
-                            $"A parented {nameof(XPM)} is authoritative and cannot be replaced.");
+                            $"{nameof(Model)} cannot be consolidated because both the current and" +
+                            $" incoming {nameof(Model)} instances are already parented. " +
+                            $"A parented {nameof(Model)} is authoritative and cannot be replaced.");
                     }
                     else
                     {
@@ -173,17 +173,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         public long? PriorityOverride
         {
-            get => XPM.TryGetSingleBoundAttributeByType;
+            get => Model.XBoundAttributeValue<long?>(StdMarkdownAttribute.sort);
             set
             {
-                if (!Equals(_priorityOverride, value))
+                if (!Equals(PriorityOverride, value))
                 {
-                    _priorityOverride = value;
+                    Model.SetBoundAttributeValue(value, StdMarkdownAttribute.sort);
                     OnPropertyChanged();
                 }
             }
         }
-        long? _priorityOverride = default;
 
         #region A F F I N I T Y    E P H E M E R A L
 

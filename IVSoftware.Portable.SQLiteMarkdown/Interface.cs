@@ -660,7 +660,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// XBoundObject is used extensively to attach service objects to XAttributes of this node.
         /// </remarks>
-        XElement XPM { get; } // Xml affinity model.
+        XElement Model { get; } // Xml affinity model.
 
         /// <summary>
         /// Globally unique identifier.
