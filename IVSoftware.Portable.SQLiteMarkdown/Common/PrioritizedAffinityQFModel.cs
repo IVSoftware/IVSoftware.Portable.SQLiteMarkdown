@@ -171,6 +171,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         }
         long _priority = 0;
 
+        #region A F F I N I T Y    E P H E M E R A L
+
+        [Ephemeral]
         public long? PriorityOverride
         {
             get => Model.AttributeValue<long?>(StdMarkdownAttribute.sort);
@@ -183,8 +186,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                 }
             }
         }
-
-        #region A F F I N I T Y    E P H E M E R A L
 
         [Ephemeral]
         public bool IsRoot => string.IsNullOrWhiteSpace(ParentId);
