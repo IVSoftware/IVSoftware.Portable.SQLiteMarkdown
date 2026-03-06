@@ -2921,7 +2921,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
 
                     // [Careful("What?")] No 'preview' attribute? THAT'S BECAUSE THIS IS SelectableQFModelTOQO and *not* IAffinityModel.
                     expected = @" 
-<model count=""12"">
+<model autocount=""12"" count=""12"" matches=""12"">
   <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModelTOQO]"" sort=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModelTOQO]"" sort=""1"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModelTOQO]"" sort=""2"" />
@@ -2934,7 +2934,8 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
   <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModelTOQO]"" sort=""9"" />
   <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModelTOQO]"" sort=""10"" />
   <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModelTOQO]"" sort=""11"" />
-</model>";
+</model>"
+                    ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
