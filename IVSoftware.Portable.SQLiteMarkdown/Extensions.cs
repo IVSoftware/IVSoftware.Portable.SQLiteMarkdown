@@ -1,6 +1,8 @@
 ﻿using IVSoftware.Portable;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -646,7 +648,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return $@"[assembly: InternalsVisibleTo(""{name.Name}, PublicKey={hex}"")]";
         }
 
-
         /// <summary>
         /// Removes the specified attribute from all descendant elements,
         /// optionally including the current element.
@@ -664,6 +665,50 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 attr.Remove();
             }
             return @this;
+        }
+
+        internal static XBoundAttribute? XBoundAttribute(this XElement @this, StdMarkdownAttribute stdEnum, ThrowOrAdvise? @throw = null)
+        {
+            string msg;
+            if (@this.Attribute(stdEnum.ToString()) is not XAttribute attr)
+            {
+                msg = $"The {stdEnum.ToFullKey()} attribute was not found.";
+            }
+            else if (attr is not XBoundAttribute xba)
+            {
+                msg = $"The {stdEnum.ToFullKey()} attribute exists but is not an {nameof(XBoundAttribute)}.";
+            }
+            else
+            {
+                return xba;
+            }
+            switch (@throw)
+            {
+                case ThrowOrAdvise.ThrowHard:
+                    @this.ThrowHard<InvalidOperationException>(msg);
+                    break;
+                case ThrowOrAdvise.ThrowSoft:
+                    @this.ThrowSoft<InvalidOperationException>(msg);
+                    break;
+                case ThrowOrAdvise.ThrowFramework:
+                    @this.ThrowFramework<InvalidOperationException>(msg);
+                    break;
+                case ThrowOrAdvise.Advisory:
+                    @this.Advisory(msg);
+                    break;
+                case null:
+                default: break;
+            }
+            return null;
+        }
+
+        internal static T? XBoundAttributeValue<T>(this XElement @this, StdMarkdownAttribute stdEnum, ThrowOrAdvise? @throw = null)
+        {
+            if(@this.XBoundAttribute(stdEnum, @throw) is { } xba && xba.Tag is T valueT)
+            {
+                return valueT;
+            }
+            return default;
         }
     }
 }

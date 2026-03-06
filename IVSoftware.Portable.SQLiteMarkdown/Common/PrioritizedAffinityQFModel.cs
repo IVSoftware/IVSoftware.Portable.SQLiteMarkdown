@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml.Linq;
+using System.Xml.Schema;
 using EphemeralAttribute = SQLite.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
@@ -14,7 +16,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     internal partial class PrioritizedAffinityQFModel : SelectableQFModel, IPrioritizedAffinity
     {
         /// <summary>
-        /// Assign or consolidate the XOP associated with this model.
+        /// Assign or consolidate the XML Prioritized Model associated with this object.
         /// </summary>
         /// <remarks>
         /// A parented XOP is authoritative and cannot be replaced.
@@ -23,7 +25,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         /// - An error is raised if both the current XOP and the incoming value are already parented.
         /// </remarks>
         [Ephemeral, JsonIgnore]
-        public XElement XAF
+        public XElement XPM
         {
             get => _model;
             set => SetXAFAuthority(value);
@@ -34,7 +36,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             if (value is null)
             {
                 this.ThrowHard<ArgumentNullException>(
-                    $"{nameof(XAF)} cannot be set to null.");
+                    $"{nameof(XPM)} cannot be set to null.");
             }
             else
             {
@@ -47,9 +49,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
                     if (_model.Parent is not null && value.Parent is not null)
                     {
                         this.ThrowHard<InvalidOperationException>(
-                            $"{nameof(XAF)} cannot be consolidated because both the current and" +
-                            $" incoming {nameof(XAF)} instances are already parented. " +
-                            $"A parented {nameof(XAF)} is authoritative and cannot be replaced.");
+                            $"{nameof(XPM)} cannot be consolidated because both the current and" +
+                            $" incoming {nameof(XPM)} instances are already parented. " +
+                            $"A parented {nameof(XPM)} is authoritative and cannot be replaced.");
                     }
                     else
                     {
@@ -171,7 +173,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
 
         public long? PriorityOverride
         {
-            get => _priorityOverride;
+            get => XPM.TryGetSingleBoundAttributeByType;
             set
             {
                 if (!Equals(_priorityOverride, value))
