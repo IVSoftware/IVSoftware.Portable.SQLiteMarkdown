@@ -3,6 +3,7 @@ using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
@@ -395,18 +396,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         /// <remarks>
         /// State machine failed to return to Cleared after consecutive [X].
         /// </remarks>
-        [TestMethod]
+        [TestMethod, DoNotParallelize]
         public async Task Test_QueryFilterFSMs()
         {
+            using var te = this.TestableEpoch();
+
             // MSTest internal consideration. This is about tests that hang.
             Assert.IsNull(SynchronizationContext.Current);
 
             string actual, expected;
             var builder = new List<string>();
-            var extQueryHandle = default(List<SelectableQFModel>);
+            var extQueryHandle = default(List<PrioritizedAffinityQFModel>);
             int COUNT;
 
-            var mdc = new TestableMarkdownContext<SelectableQFModel>();
+            var mdc = new TestableMarkdownContext<PrioritizedAffinityQFModel>();
 
             actual = mdc.StateReport();
             actual.ToClipboardExpected();
@@ -616,13 +619,25 @@ InputText"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-
-                Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 5).Date, "Don't forget disabled");
-                return;
-
                 // Filtering occurs
-                mdc.InputText = "valid query abc";
+                mdc.InputText = "item 2";
                 await mdc;
+
+                actual = mdc.Model.ToString();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model>
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" xitem=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" sort=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" xitem=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" sort=""1"" ismatch=""True"" />
+</model>"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting result to match."
+                );
 
                 actual = mdc.StateReport();
                 actual.ToClipboardExpected();

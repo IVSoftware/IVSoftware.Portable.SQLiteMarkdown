@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ using EphemeralAttribute = SQLite.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
+    [Table("items")]
     internal partial class PrioritizedAffinityQFModel : SelectableQFModel, IPrioritizedAffinity
     {
         public PrioritizedAffinityQFModel()
