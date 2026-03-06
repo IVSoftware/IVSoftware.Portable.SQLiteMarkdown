@@ -89,13 +89,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnXElementChanged (XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
-            XElement? root = pxel?.AncestorsAndSelf().LastOrDefault();
-
-            uint count = 0;
-            if(root is null)
+            if(pxel is null)
             {
                 this.ThrowFramework<NullReferenceException>(
-                    $"UNEXPECTED: The '{nameof(root)}' argument should be non-null by design.");
+                    $"UNEXPECTED: The '{nameof(pxel)}' argument should be non-null by design.");
             }
             switch (e.ObjectChange)
             {
@@ -109,27 +106,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if(xbo is not null)
                     {
                         OnBoundItemObjectChange(xbo, e.ObjectChange);
-                    }
-                    break;
-            }
-            switch (e.ObjectChange)
-            {
-                case XObjectChange.Add:
-                    count++;
-                    root?.SetAttributeValue(StdMarkdownAttribute.count, count);
-                    break;
-                case XObjectChange.Remove:
-                    if (count == 0)
-                    {
-                        this.ThrowFramework<InvalidOperationException>(
-                            $"UNEXPECTED: Illegal underflow detected '{nameof(count)}'. Count should be >= 0 by design.");
-                    }
-                    else
-                    {
-                        count--;
-                        {
-                            root?.SetAttributeValue(StdMarkdownAttribute.count, count);
-                        }
                     }
                     break;
             }
@@ -290,7 +266,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
 
                 Model.SetAttributeValue(StdMarkdownAttribute.count, null);
-                Model.SetAttributeValue(StdMarkdownAttribute.matchCount, null);
+                Model.SetAttributeValue(StdMarkdownAttribute.matches, null);
 
                 PropertyInfo? pk = ContractType.GetMapping().PK?.PropertyInfo;
 #if DEBUG
@@ -348,7 +324,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             break;
                     }
                 }
-                Model.SetAttributeValue(StdMarkdownAttribute.ismatch, null); ;
+
+                Model.SetAttributeValue(StdMarkdownAttribute.count, countDistinct);
+                if(Model.GetAttributeValue<IList?>(StdMarkdownAttribute.predicates) is { } predicates)
+                {
+                    Debug.Fail($@"ADVISORY - First Time.");
+                    Model.SetAttributeValue(StdMarkdownAttribute.matches, countDistinct); // This will change.
+                }
+                else
+                {
+                    Model.SetAttributeValue(StdMarkdownAttribute.matches, countDistinct);
+                }
+                Model.SetAttributeValue(StdMarkdownAttribute.ismatch, null);
                 return ReservedAffinityState.Next;
             }
 
@@ -621,7 +608,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public int CanonicalCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.count, @default: 0);
 
-        public int PredicateMatchCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.ismatch, @default: 0);
+        public int PredicateMatchCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.matches, @default: 0);
 
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {

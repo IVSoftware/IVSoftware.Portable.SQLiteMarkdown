@@ -281,6 +281,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// This record matches all active predicates.
         /// </summary>
+        [DefaultValue("True")]
         ismatch,
 
         /// <summary>
@@ -304,12 +305,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// The total running count.
         /// </summary>
+        [DefaultValue("0")]
         count,
 
         /// <summary>
         /// In filter mode, the number of items matching all the predicates.
         /// </summary>
-        matchCount,
+        [DefaultValue("0")]
+        matches,
 
         #region P R E D I C A T E S
         /// <summary>
@@ -320,7 +323,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// XBoundObject that holds a filter predicates when present.
         /// </summary>
-        predicate,
+        predicates,
         #endregion P R E D I C A T E S
     }
 
