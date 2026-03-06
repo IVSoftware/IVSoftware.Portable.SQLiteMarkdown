@@ -595,7 +595,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public int PredicateMatchCount
         {
-            get => Model.GetAttributeValue<int>(StdMarkdownAttribute.ismatch);
+            get => Model.GetAttributeValue<int>(StdMarkdownAttribute.ismatch, @default: 0);
         }
 
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)

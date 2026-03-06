@@ -741,23 +741,66 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return null;
         }
 
+        /// <summary>
+        /// Returns the attribute value converted to <typeparamref name="T"/>.
+        /// </summary>
+        /// <remarks>
+        /// When the attribute is missing or unusable, recovery proceeds as follows:
+        /// 1. SAFE: If T is nullable, returns default(T).
+        /// 2. SAFE: If @default is T, @default is returned as T.
+        /// 3. ADVISED UNSAFE: Throw policy is invoked; if the throw is handled,
+        ///    default(T) is returned after the notification.
+        /// </remarks>
         internal static T? GetAttributeValue<T>(
             this XElement @this,
-            StdMarkdownAttribute stdEnum, 
-            T? @default = default,
+            StdMarkdownAttribute stdEnum,
+            object? @default = null,
             ThrowOrAdvise? @throw = null)
         {
+            // [Careful] Attribute method already has error handling!
+            if (@this.Attribute(stdEnum, @throw) is { } attr)
+            {
+                var value = attr.Value;
+
+                if (typeof(T) == typeof(string))
+                {
+                    return (T)(object)value;
+                }
+
+                try
+                {
+                    var targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+
+                    if (targetType.IsEnum)
+                    {
+                        return (T)Enum.Parse(targetType, value);
+                    }
+
+                    return (T)Convert.ChangeType(value, targetType);
+                }
+                catch
+                {
+                    // [Remember] Throw can be handled in which case there is no exception here.
+                    @this.ThrowFramework<InvalidOperationException>(
+                        $"Unable to convert attribute {stdEnum.ToFullKey()} value '{value}' to {typeof(T).Name}.");
+                }
+            }
+
+            // Caller supplied a usable default
+            if (@default is T defaultT)
+            {
+                return defaultT;
+            }
+
+            // Attribute missing and no default supplied
             bool isNullable =
                 !typeof(T).IsValueType ||
                 Nullable.GetUnderlyingType(typeof(T)) is not null;
-            
-            bool hasDefault = !Equals(@default, default(T));
 
-            if (!isNullable && !hasDefault)
+            if (!isNullable)
             {
                 string msg = $"Non-nullable type({typeof(T).Name}) requires {nameof(@default)}";
 
-                // Defaults to a non-advisory hard throw in the absence of an explicit @throw argument.
                 switch (@throw ?? ThrowOrAdvise.ThrowHard)
                 {
                     case ThrowOrAdvise.ThrowHard:
@@ -767,39 +810,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         @this.ThrowSoft<InvalidOperationException>(msg);
                         break;
                     case ThrowOrAdvise.ThrowFramework:
-                        @this.Advisory(msg);
-                        break;
-                    case ThrowOrAdvise.Advisory:
                         @this.ThrowFramework<InvalidOperationException>(msg);
                         break;
-                }
-            }
-            else
-            {
-                // [Careful] Attribute method already has error handling!
-                if (@this.Attribute(stdEnum, @throw) is { } attr)
-                {
-                    var value = attr.Value;
-
-                    if (typeof(T) == typeof(string))
-                    {
-                        return (T)(object)value;
-                    }
-
-                    try
-                    {
-                        if (typeof(T).IsEnum)
-                        {
-                            return (T)Enum.Parse(typeof(T), value);
-                        }
-
-                        return (T)Convert.ChangeType(value, typeof(T));
-                    }
-                    catch
-                    {
-                        @this.ThrowFramework<InvalidOperationException>(
-                            $"Unable to convert attribute {stdEnum.ToFullKey()} value '{value}' to {typeof(T).Name}.");
-                    }
+                    case ThrowOrAdvise.Advisory:
+                        @this.Advisory(msg);
+                        break;
                 }
             }
             return default;

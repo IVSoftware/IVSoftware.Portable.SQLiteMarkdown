@@ -2869,7 +2869,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
 
                     string senderId = sender switch 
                     {
-                        object o when ReferenceEquals(o, items.UnfilteredItems) => nameof(items.UnfilteredItems),
+                        object o when ReferenceEquals(o, items.CanonicalRecordset) => nameof(items.CanonicalRecordset),
                         object o when ReferenceEquals(o, items) => "Projection",
                         _ => "Unknown", 
                     };
@@ -2901,9 +2901,18 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 #region S U B T E S T S
                 async Task subtestQueryInitial()
                 {
+                    actual = items.StateReport();
+                    actual.ToClipboardExpected();
+                    { }
+
+                    expected = @"PASTE HERE";
+                    Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                     Assert.AreEqual(0, eventQueue.Count, "YES. It's zero.");
 
-                    await localCommitOnSettle("animal");
+                    // NSB is NavSearchBar and is not awaitable at this time.
+                    nsb.InputText = "animal";
+                    items.Commit();
+                    await items;
 
                     actual = string.Join(Environment.NewLine, builder);
 
@@ -2990,7 +2999,9 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     Add("Application Form", "[document]", false, new() { "paperwork", "apply" });
                     Add("App Store", "[app]", false, new() { "digital", "mobile", "software" });
 
-                    await localCommitOnSettle("app gre");
+                    nsb.InputText = "app gre";
+                    items.Commit();
+                    await items;
 
                     actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
                     expected = @" 
@@ -3002,7 +3013,9 @@ Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portabl
                     Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, items.SearchEntryState);
 
                     // Perform a filter
-                    await localCommitOnSettle("[app] gre");
+                    nsb.InputText = "[app] gre";
+                    items.Commit();
+                    await items;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -3020,12 +3033,6 @@ Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portabl
                 #endregion S U B T E S T S
 
                 #region L o c a l F x
-                async Task localCommitOnSettle(string expr)
-                {
-                    nsb.InputText = expr;
-                    items.Commit();
-                    await items;
-                }
 
                 void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
                 {
