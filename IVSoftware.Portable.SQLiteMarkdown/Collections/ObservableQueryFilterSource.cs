@@ -40,7 +40,37 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterSource()
         {
-            DHostReset = new DHostResetProvider([() => OnCollectionChanged(new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset)]);
+            DHostReset = new DHostResetProvider(
+            [
+                () => OnCollectionChanged(new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset))
+            ]);
+
+#if DEBUG
+
+            #region L o c a l F x
+            void debugOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+            {
+                Debug.Assert(e.Action == NotifyCollectionChangedAction.Reset);
+            }
+            #endregion L o c a l F x
+
+
+            using (this.WithOnDispose(
+                onInit: (sender, e) =>
+                {
+                    this.CollectionChangedProtected += debugOnCollectionChanged;
+                },
+                onDispose: (sender, e) =>
+                {
+                    this.CollectionChangedProtected -= debugOnCollectionChanged;
+                }))
+            {
+                using(DHostReset.GetToken())
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+            }
+#endif
 
             // GZ GZ GZ GZ
             base.ObservableNetProjection = this;
@@ -473,8 +503,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         /// <summary>
-        /// We need this, but this implementation is 
-        /// probationary and might need some tweaking.
+        /// We need this, but this implementation is probationary and might need some tweaking.
         /// </summary>
         private void OnExternalChange(object value)
         {
@@ -490,7 +519,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 case FilteringState.Armed:
                     break;
                 case FilteringState.Active:
-                    ApplyFilter();
+                    _ = ApplyFilter();
                     break;
                 default:
                     break;
@@ -513,7 +542,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
             remove
             {
-                CollectionChangedProtected += value;
+                // 260307 BF Bug Fix
+                // Polarity was reversed. It works better like this:
+                CollectionChangedProtected -= value;
             }
         }
 
