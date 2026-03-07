@@ -2907,12 +2907,12 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                     }
                     eventQueue.Enqueue((sender, e));
                     builder.Add(e.GetFormatted(ReferenceEquals(sender, items)));
-                    newItems = e.NewItems?.Cast<object>().ToArray() ?? Array.Empty<object>(); 
 
                     // G T K
                     switch (e.Action)
                     {
                         case NotifyCollectionChangedAction.Add:
+                            newItems = e.NewItems?.Cast<object>().ToArray() ?? Array.Empty<object>(); 
                             break;
                         case NotifyCollectionChangedAction.Remove:
                             break;
@@ -2991,6 +2991,11 @@ NetProjection.Reset   NewItems= 0 NotifyCollectionChangedEventArgs           "
                         "Expecting 12 animal matches."
                     );
 
+                    Assert.AreSame(
+                        items, 
+                        items.ObservableNetProjection,
+                        "v2.0 when we say items we mean the ObservableNetProjection in this particular class.");
+
                     actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
                     actual.ToClipboard();
                     actual.ToClipboardExpected();
@@ -3019,10 +3024,36 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     // As a product of the CollectionChangedEvent this
                     // is representative of what we'd see in the visible list.
                     actual = string.Join(Environment.NewLine, newItems.Cast<object>().Select(_ => _.ToString()));
-                    actual.ToClipboard();
                     actual.ToClipboardExpected();
-                    actual.ToClipboardAssert("Expecting items to match");
                     { }
+                    var newItemsPayload = @" 
+Black Cat  [animal] [color]
+Orange Fox  [animal] [color]
+White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
+Gray Wolf ""pack"",""howl"",""wild"" [animal] [color]
+Golden Lion  [animal] [color]
+Brown Bear ""strong"",""wild"",""forest"" [animal] [color]
+Black Panther ""stealthy"",""feline"",""night"" [animal] [color]
+Elephant ""trunk"",""herd"",""safari"" [animal]
+Giraffe  [animal]
+Kangaroo ""bounce"",""outback"",""marsupial"" [animal]
+Turtle  [animal]
+Should NOT match an expression with an ""animal"" tag.  [not animal]"
+                    ;
+
+                    Assert.AreEqual(
+                        newItemsPayload.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting new items payload as reported."
+                    );
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),         // Actual Items.NetProjection
+                        newItemsPayload.NormalizeResult(),  // Event payload
+                        "Expecting NewItems in the Add event to match the Items"
+                    );
+
+
                 }
 
                 async Task subtestAppendAndRequery()
