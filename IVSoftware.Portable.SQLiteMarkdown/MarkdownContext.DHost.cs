@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -93,58 +94,111 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         DHostResetProvider? _dhostReset = null;
 
         /// <summary>
-        /// Reset epoch with collection changed authority.
+        /// Reset epoch that suppresses collection change propagation during reset.
         /// </summary>
+        /// <remarks>
+        /// This host defines a reset epoch. Nested or concurrent BeginUsing transitions
+        /// are suppressed to protect the epoch boundary, while the reset actions are
+        /// executed only when the host returns to depth zero (FinalDispose).
+        ///
+        /// Delegate actions should inspect collection-change authority when necessary
+        /// (for example, NetProjection vs Canonical) to determine whether work should
+        /// actually execute.
+        /// </remarks>
         protected class DHostResetProvider : DisposableHost
         {
             internal DHostResetProvider(IMarkdownContext mdc, IEnumerable<Action> onResetActions)
             {
                 if (mdc is null)
                 {
-                    // Rare circumstance where throwing a System.Exception is not optional.
                     throw new ArgumentNullException(
                         "MDC cannot be null because circularity is certain otherwise.");
                 }
+
                 _mdc = mdc;
 
-                List<Action> nonNullActions = new();
-                foreach (var action in onResetActions)
+                List<Action> actions = new();
+                foreach (var action in onResetActions ?? [])
                 {
                     if (action is null)
                     {
-                        this.ThrowHard<NullReferenceException>("Reset actions cannot be null");
+                        this.ThrowHard<NullReferenceException>(
+                            "Reset actions cannot contain null.");
                     }
-                    else
-                    {
-                        nonNullActions.Add(action);
-                    }
+                    actions.Add(action);
                 }
-                _onResetActions = nonNullActions.ToArray();
-            }
-            IMarkdownContext _mdc;
-            private Action[] _onResetActions;
 
-            public IDisposable GetToken()
-            {
-                return base.GetToken(sender: NotifyCollectionChangedEventAuthority.MarkdownContext);
+                _onResetActions = actions.ToArray();
             }
+
+            private readonly IMarkdownContext _mdc;
+            private readonly Action[] _onResetActions;
+
+            /// <summary>
+            /// Guards the BeginUsing / FinalDispose transition edges.
+            /// Only one thread may execute these transitions at a time.
+            /// </summary>
+            private int _lock;
+
             protected override void OnBeginUsing(BeginUsingEventArgs e)
             {
-                if (_onResetActions.Length == 0)
-                {
-                    this.Advisory($"Starting {nameof(DHostResetProvider)} epoch with no dispose actions.");
+                // Defensive guard against reentrant or concurrent BeginUsing transitions.
+                // This condition normally indicates a misuse of the reset paradigm and is avoidable.
+                //
+                // In correct usage, reset actions should consult collection-change
+                // authority before executing work. For example:
+                // EXAMPLE:
+                // if (DHostCollectionChangeAuthority.Authority
+                //     == NotifyCollectionChangedEventAuthority.NetProjection)
+                // {
+                //     ...
+                // }
+                //
+                // When that pattern is followed, reentrant resets are naturally avoided.
+                if (Interlocked.CompareExchange(ref _lock, 1, 0) != 0)
+                {    
+                    this.Advisory("Reentrant BeginReset suppressed.");
+                    return;
                 }
-                base.OnBeginUsing(e);
+
+                try
+                {
+                    if (_onResetActions.Length == 0)
+                    {
+                        this.Advisory(
+                            $"Starting {nameof(DHostResetProvider)} epoch with no reset actions.");
+                    }
+
+                    base.OnBeginUsing(e);
+                }
+                finally
+                {
+                    _lock = 0;
+                }
             }
+
             protected override void OnFinalDispose(FinalDisposeEventArgs e)
             {
-                base.OnFinalDispose(e);
-                using (_mdc.BeginAuthorityClaim())
+                if (Interlocked.CompareExchange(ref _lock, 1, 0) != 0)
                 {
-                    foreach (var action in _onResetActions)
+                    this.Advisory("Concurrent reset suppressed.");
+                    return;
+                }
+                try
+                {
+                    base.OnFinalDispose(e);
+
+                    using (_mdc.BeginAuthorityClaim())
                     {
-                        action();
+                        foreach (var action in _onResetActions)
+                        {
+                            action();
+                        }
                     }
+                }
+                finally
+                {
+                    _lock = 0;
                 }
             }
         }

@@ -414,7 +414,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     // add-remove changes to Items will bypass the input state machine. 
                     _canonicalRecordset.Clear();
 
-                    if (countCC == 1)
+                    if (countCC == 0)
                     {   /* G T K */
                     }
                     else
@@ -566,10 +566,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Probationary("260307 - Alternative to switching INCCs between canonical and filtered collections")]
         protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            if (DHostResetWithEventSuppression.IsZero())
+            if (DHostCollectionChangeAuthority.Authority == NotifyCollectionChangedEventAuthority.NetProjection)
             {
                 // For now:
                 OnCollectionChangedProtected(e);
+            }
+            else
+            {   /* G T K - N O O P */
             }
         }
 

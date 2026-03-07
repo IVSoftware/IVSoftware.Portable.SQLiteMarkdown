@@ -2984,6 +2984,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
+Projection.Reset NewItems=0
 Projection.Add NewItems=12"
                     ;
 
