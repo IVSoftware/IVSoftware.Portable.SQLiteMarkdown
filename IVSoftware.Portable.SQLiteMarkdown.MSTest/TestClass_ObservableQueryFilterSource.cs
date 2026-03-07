@@ -2991,9 +2991,7 @@ NetProjection.Reset   NewItems= 0 NotifyCollectionChangedEventArgs           "
                         "Expecting 12 animal matches."
                     );
 
-                    // As a product of the CollectionChangedEvent this
-                    // is representative of what we'd see in the visible list.
-                    actual = string.Join(Environment.NewLine, newItems.Cast<object>().Select(_ => _.ToString()));
+                    actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
                     actual.ToClipboard();
                     actual.ToClipboardExpected();
                     actual.ToClipboardAssert("Expecting items to match");
@@ -3017,6 +3015,14 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                         actual.NormalizeResult(),
                         "Expecting items to match"
                     );
+
+                    // As a product of the CollectionChangedEvent this
+                    // is representative of what we'd see in the visible list.
+                    actual = string.Join(Environment.NewLine, newItems.Cast<object>().Select(_ => _.ToString()));
+                    actual.ToClipboard();
+                    actual.ToClipboardExpected();
+                    actual.ToClipboardAssert("Expecting items to match");
+                    { }
                 }
 
                 async Task subtestAppendAndRequery()
