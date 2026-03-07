@@ -32,7 +32,7 @@ using IVSoftware.Portable.Disposable;
 using System.ComponentModel.Design.Serialization;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
-{   
+{
     // Namespace with test-only classes.
     namespace DemoDB
     {
@@ -46,14 +46,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     if (!Equals(_itemsSource, value))
                     {
                         INotifyCollectionChanged? incc = _itemsSource as INotifyCollectionChanged;
-                        if(_itemsSource is not null)
+                        if (_itemsSource is not null)
                         {
-                            if(incc is not null)
+                            if (incc is not null)
                             {
                                 incc.CollectionChanged -= OnCollectionChanged;
                             }
                         }
-                        _itemsSource = value; 
+                        _itemsSource = value;
                         if (_itemsSource is not null)
                         {
                             if (incc is not null)
@@ -408,28 +408,28 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 void subtestExpr()
                 {
                     actual = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>();
-					expected = @" 
+                    expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%animal%')"
-					;
+                    ;
 
-					Assert.AreEqual(
+                    Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
                         "Expecting query mode expression with QueryTerm indexed only."
                     );
 
-					actual = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>(QueryFilterMode.Filter);
-					expected = @" 
+                    actual = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>(QueryFilterMode.Filter);
+                    expected = @" 
 SELECT * FROM items WHERE (FilterTerm LIKE '%animal%')"
-					;
+                    ;
 
-					Assert.AreEqual(
-						expected.NormalizeResult(),
-						actual.NormalizeResult(),
-						"Expecting filter mode expression with FilterTerm indexed only."
-					);
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting filter mode expression with FilterTerm indexed only."
+                    );
 
-				}
+                }
                 async Task subtestReport()
                 {
                     unfiltered = cnx.Query<SelectableQFModelTOQO>("Select * from items");
@@ -475,11 +475,11 @@ Properties     =""{
                 void subtestMoreExprs()
                 {
                     actual = "bro".ParseSqlMarkdown<SelectableQFModelTOQO>();
-					expected = @" 
+                    expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%bro%')"
-					;
+                    ;
 
-					Assert.AreEqual(
+                    Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
                         "Expecting correct expr"
@@ -490,12 +490,12 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%bro%')"
                     Assert.IsNotNull(cnx.Query<SelectableQFModelTOQO>(actual).SingleOrDefault());
 
                     actual = "brown furry".ParseSqlMarkdown<SelectableQFModelTOQO>();
-					expected = @" 
+                    expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%brown%') AND (QueryTerm LIKE '%furry%')"
-					;
+                    ;
                     Assert.IsNotNull(cnx.Query<SelectableQFModelTOQO>(actual).SingleOrDefault());
                     actual = "brown !dog".ParseSqlMarkdown<SelectableQFModelTOQO>();
-                    
+
                     actual.ToClipboardExpected();
                     // IS null
                     Assert.IsNull(cnx.Query<SelectableQFModelTOQO>(actual).SingleOrDefault());
@@ -511,10 +511,10 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%brown%') AND (QueryTerm LIKE '%furry
                         actual = "brown furry".ParseSqlMarkdown<SelectableQFModelTOQO>(QueryFilterMode.Filter);
                         actual.ToClipboardExpected();
                         { }
-						expected = @" 
+                        expected = @" 
 SELECT * FROM items WHERE
 (FilterTerm LIKE '%brown%') AND (FilterTerm LIKE '%furry%')"
-						;
+                        ;
 
                         Assert.AreEqual(
                             expected.NormalizeResult(),
@@ -1237,9 +1237,9 @@ Properties     =""{
                     sql = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>();
 
                     actual = sql;
-					expected = @" 
+                    expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%animal%')"
-					;
+                    ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1282,7 +1282,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     results = cnx.Query<SelectableQFModelTOQO>(sql);
 
                     actual = string.Join(Environment.NewLine, results.Select(_ => _.ToString()));
-					expected = @" 
+                    expected = @" 
 Black Cat  [animal] [color]
 Orange Fox  [animal] [color]
 White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
@@ -1310,25 +1310,12 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
         public void Test_ObservableQueryFilterSource()
         {
             string actual, expected, sql;
+            var builder = new List<string>();
             SenderEventPair sep;
             NotifyCollectionChangedEventArgs ecc;
             Queue<SenderEventPair> eventQueue = new();
             List<SelectableQFModelTOQO> results;
-            var itemsSource =
-                new ObservableQueryFilterSource<SelectableQFModelTOQO>()
-                .WithCollectionChangeHandler((object? sender, NotifyCollectionChangedEventArgs e) =>
-            {
-                // For OQFS these are raised by CollectionChangedProtected on the CollectionChanged connection point.
-                eventQueue.Enqueue((sender, e));
-            });
-
-#if DEBUG
-            if (itemsSource.ObservableNetProjection is null)
-            { }
-            else 
-            { }
-#endif
-
+            var itemsSource = new ObservableQueryFilterSource<SelectableQFModelTOQO>();
             using (var cnx = InitializeInMemoryDatabase())
             {
                 subtestBasicQueryAnimal();
@@ -1337,16 +1324,38 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 #region S U B T E S T S
                 void subtestBasicQueryAnimal()
                 {
+                    // This subtest only. For real do not hoist or generalize this.
+                    using var local = this.WithOnDispose(
+                        onInit: (sender, e) =>
+                        {
+                            itemsSource.CollectionChanged += localOnCollectionChanged;
+                        },
+                        onDispose: (sender, e) =>
+                        {
+                            itemsSource.CollectionChanged -= localOnCollectionChanged;
+                        });
+                    void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+                    {
+                        builder.Add($"{e.Action} New={e.NewItems?.Count ?? 0} Old={e.OldItems?.Count ?? 0}");
+                    }
+
                     sql = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>();
                     results = cnx.Query<SelectableQFModelTOQO>(sql);
+
                     itemsSource.ReplaceItems(results);
 
 
-                    actual = JsonConvert.SerializeObject(eventQueue, Formatting.Indented);
+                    actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
-                    { } // <- FIRST TIME ONLY: Adjust the message.
-                    actual.ToClipboardAssert("Expecting json serialization to match.");
                     { }
+                    expected = @" 
+Add New=12 Old=0";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting builder content to match."
+                    );
 
                     actual = string.Join(Environment.NewLine, itemsSource.Select(_ => _.ToString()));
                     expected = @" 
@@ -1372,6 +1381,21 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 void subtestBasicQueryAnimalINPC()
                 {
                     itemsSource.Clear();
+
+                    // This subtest only. For real do not hoist or generalize this.
+                    using var local = this.WithOnDispose(
+                        onInit: (sender, e) =>
+                        {
+                            itemsSource.CollectionChanged += localOnCollectionChanged;
+                        },
+                        onDispose: (sender, e) =>
+                        {
+                            itemsSource.CollectionChanged -= localOnCollectionChanged;
+                        });
+                    void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+                    {
+                        eventQueue.Enqueue((sender, e));
+                    }
                     sql = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>();
                     results = cnx.Query<SelectableQFModelTOQO>(sql);
                     itemsSource.ReplaceItems(results);
@@ -1472,14 +1496,14 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                         case nameof(items.Busy):
                             break;
                         case nameof(SearchEntryState):
-                            if(caller == "subtestCommit")
+                            if (caller == "subtestCommit")
                             {
 
                             }
                             builder.Add($"{e.PropertyName}='{items.SearchEntryState}'");
                             break;
                         case nameof(FilteringState):
-                            if(caller == "subtestCommit")
+                            if (caller == "subtestCommit")
                             {
 
                             }
@@ -1842,7 +1866,7 @@ SearchEntryState='QueryCompleteWithResults'";
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
                         // PLEASE: Do not remove.
-                        Assert.IsTrue( items.ValidationPredicate("b"), "This was a BUGIRL for the test itself.");
+                        Assert.IsTrue(items.ValidationPredicate("b"), "This was a BUGIRL for the test itself.");
 
                         // animal.b
                         // Expecting Filter mode and an internal query.
@@ -1901,9 +1925,9 @@ Kangaroo ""bounce"",""outback"",""marsupial"" [animal]";
                     sql = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>();
 
                     actual = sql;
-					expected = @" 
+                    expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%animal%')"
-					;
+                    ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -2034,7 +2058,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE @param0000)";
 
                     cmd = cnx.CreateCommand(mc.NamedQuery, mc.NamedArgs);
 
-                    recordset =cmd.ExecuteQuery<T>();
+                    recordset = cmd.ExecuteQuery<T>();
                     Assert.AreEqual(19, recordset.Count);
 
 
@@ -2106,11 +2130,11 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%animal%')";
             string actual, expected;
             var bentDict = new Dictionary<string, object>
             {
-                { "malformedKey", "junk" }, 
-                { "@param-005", "also junk" }, 
-                { "@param0001", "dog" }, 
-                { "@param0000", "cat" }, 
-                { "@param20EF", "hex key" }, 
+                { "malformedKey", "junk" },
+                { "@param-005", "also junk" },
+                { "@param0001", "dog" },
+                { "@param0000", "cat" },
+                { "@param20EF", "hex key" },
             };
 
             IReadOnlyDictionary<string, object> NamedArgs =
@@ -2281,7 +2305,7 @@ SELECT * FROM items WHERE (NOT (QueryTerm LIKE @param0000)) AND (QueryTerm LIKE 
 
             void subtestUnarySubNegation()
             {
-                actual = "!(cat|dog)".ParseSqlMarkdown<SelectableQFModelTOQO>(QueryFilterMode.Query, out xast); 
+                actual = "!(cat|dog)".ParseSqlMarkdown<SelectableQFModelTOQO>(QueryFilterMode.Query, out xast);
                 actual.ToClipboardExpected();
                 expected = @" 
 SELECT * FROM items WHERE 
@@ -2462,7 +2486,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE @param0000) AND (QueryTerm LIKE @param
 
                     recordset = cmd.ExecuteQuery<SelectableQFModelTOQO>();
                     Assert.AreEqual(
-                        countManual, 
+                        countManual,
                         recordset.Count(),
                         "Expecting that we can compose a command that produced the same result as the long form."
                     );
@@ -2500,7 +2524,7 @@ SELECT * FROM items WHERE (QueryTerm LIKE ?) AND (QueryTerm LIKE ?)
                         actual.NormalizeResult(),
                         "Expecting positional command is properly ordered."
                     );
-                    recordset = cmd.ExecuteQuery<SelectableQFModelTOQO>();                
+                    recordset = cmd.ExecuteQuery<SelectableQFModelTOQO>();
                     Assert.AreEqual(countManual, recordset.Count());
                 }
                 #endregion S U B T E S T S
@@ -2558,11 +2582,11 @@ Properties     =""{
                     sql = "canine".ParseSqlMarkdown<StrictTagQueryModel>();
 
                     actual = sql;
-					expected = @" 
+                    expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%canine%')"
-					;
+                    ;
 
-					Assert.AreEqual(
+                    Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
                         "Expecting expr does not include a Tag term"
@@ -2575,9 +2599,9 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%canine%')"
                     sql = "[canine]".ParseSqlMarkdown<StrictTagQueryModel>();
 
                     actual = sql;
-					expected = @" 
+                    expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%[canine]%' OR TagMatchTerm LIKE '%[canine]%')"
-					;
+                    ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -2600,54 +2624,54 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%[canine]%' OR TagMatchTerm LIKE '%[c
             ValidationState validationState = ValidationState.Valid;
 
             actual = "Tom Tester".ParseSqlMarkdown<SelectableQFModelTOQO>();
-			expected = @" 
+            expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%Tom%') AND (QueryTerm LIKE '%Tester%')"
-			;
+            ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting unquoted term behavior.");
 
             actual = "Tom Tester'".ParseSqlMarkdown<SelectableQFModelTOQO>();
-			expected = @" 
+            expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%Tom%') AND (QueryTerm LIKE '%Tester''%')"
-			;
-			Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting trailing single quote is escaped.");
+            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting trailing single quote is escaped.");
 
             actual = "Tom Tester's".ParseSqlMarkdown<SelectableQFModelTOQO>();
-			expected = @" 
+            expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%Tom%') AND (QueryTerm LIKE '%Tester''s%')"
-			;
+            ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting single quote is escaped.");
 
             actual = @"""Tom Tester".ParseSqlMarkdown<SelectableQFModelTOQO>();
-			expected = @" 
+            expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%""Tom%') AND (QueryTerm LIKE '%Tester%')"
-			;
+            ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting unclosed double quote treated as literal.");
 
             actual = @"""Tom Tester'".ParseSqlMarkdown<SelectableQFModelTOQO>();
-			expected = @" 
+            expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%""Tom%') AND (QueryTerm LIKE '%Tester''%')"
-			;
+            ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting inner single quote escaped within unmatched double quote.");
 
             actual = @"""Tom Tester's".ParseSqlMarkdown<SelectableQFModelTOQO>();
-			expected = @" 
+            expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%""Tom%') AND (QueryTerm LIKE '%Tester''s%')"
-			;
+            ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting unclosed double quote with inner apostrophe.");
 
             actual = @"""Tom Tester's""".ParseSqlMarkdown<SelectableQFModelTOQO>();
-			expected = @" 
+            expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%Tom Tester''s%')"
-			;
+            ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting atomic term with apostrophe escaped.");
             #region V A R I A N T
             // We successfully have made an atomic term, and it is NOT QUOTED in the query.
             // Now, can you surround that atomic term with quotes?
 
             actual = @"""""""Tom Tester's""""""".ParseSqlMarkdown<SelectableQFModelTOQO>();
-			expected = @" 
+            expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%""""Tom Tester''s""""%')"
-			;
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -2657,33 +2681,33 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%""""Tom Tester''s""""%')"
             #endregion V A R I A N T
 
             actual = @"You said, """.ParseSqlMarkdown<SelectableQFModelTOQO>();
-			expected = @" 
+            expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%You%') AND (QueryTerm LIKE '%said,%') AND (QueryTerm LIKE '%""%')"
-			;
+            ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting unmatched double quote treated as literal.");
 
             actual = @"You said, """"".ParseSqlMarkdown<SelectableQFModelTOQO>();
-			expected = @" 
+            expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%You%') AND (QueryTerm LIKE '%said,%') AND (QueryTerm LIKE '%""%')"
-			;
+            ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting escaped double quote treated as literal.");
 
             actual = @"You said, """"H".ParseSqlMarkdown<SelectableQFModelTOQO>();
-			expected = @" 
+            expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%You%') AND (QueryTerm LIKE '%said,%') AND (QueryTerm LIKE '%""H%')"
-			;
+            ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting escaped quote followed by text.");
 
             actual = @"You said, """"Hello""".ParseSqlMarkdown<SelectableQFModelTOQO>();
-			expected = @" 
+            expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%You%') AND (QueryTerm LIKE '%said,%') AND (QueryTerm LIKE '%""Hello""%')"
-			;
+            ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "SUBTLE! Expecting escaped double quote + Unmatched quote at end is literal.");
 
             actual = @"You said, """"Hello"""".".ParseSqlMarkdown<SelectableQFModelTOQO>();
-			expected = @" 
+            expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%You%') AND (QueryTerm LIKE '%said,%') AND (QueryTerm LIKE '%""Hello"".%')"
-			;
+            ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), @"Expecting DOES NOT ATOMIZE Hello. It should be a single term surrounded by quotes instead");
         }
 
@@ -2700,44 +2724,44 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%You%') AND (QueryTerm LIKE '%said,%'
             sql = @"'Tom Tester'".ParseSqlMarkdown<SelectableQFModelTOQO>();
 
             actual = sql;
-			expected = @" 
+            expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%Tom Tester%')";
 
-			Assert.AreEqual(
-				expected.NormalizeResult(),
-				actual.NormalizeResult(),
-				"Expecting term between squotes is insulated from linting."
-			);
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting term between squotes is insulated from linting."
+            );
 
             sql = @"'Tom ""safe inner"" Tester'".ParseSqlMarkdown<SelectableQFModelTOQO>();
 
             // {93B1FE29-F593-47EC-9CFA-F2706E79AA9E}
             actual = sql;
-			expected = @" 
+            expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%Tom safe inner Tester%')";
 
-			Assert.AreEqual(
-				expected.NormalizeResult(),
-				actual.NormalizeResult(),
-				"SUBTLE: The dquote linter runs before the squote linter so both have had an effect."
-			);
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "SUBTLE: The dquote linter runs before the squote linter so both have had an effect."
+            );
 
-			sql = @"'Tom """"safe inner"""" Tester'".ParseSqlMarkdown<SelectableQFModelTOQO>();
+            sql = @"'Tom """"safe inner"""" Tester'".ParseSqlMarkdown<SelectableQFModelTOQO>();
 
-			// {93B1FE29-F593-47EC-9CFA-F2706E79AA9E}
-			actual = sql;
+            // {93B1FE29-F593-47EC-9CFA-F2706E79AA9E}
+            actual = sql;
 
             actual.ToClipboardExpected();
-			expected = @" 
+            expected = @" 
 SELECT * FROM items WHERE (QueryTerm LIKE '%Tom ""safe inner"" Tester%')"
-			;
+            ;
 
-			Assert.AreEqual(
-				expected.NormalizeResult(),
-				actual.NormalizeResult(),
-				"Escaped literal quotes"
-			);
-		}
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Escaped literal quotes"
+            );
+        }
 
         /// <summary>
         /// PFAW!
@@ -2870,17 +2894,17 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 };
                 items.CollectionChanged += (sender, e) =>
                 {
-                    if(ReferenceEquals(sender, items.CanonicalRecordset))
+                    if (ReferenceEquals(sender, items.CanonicalRecordset))
                     {
                         Debug.Fail($@"ADVISORY - First Time.");
                     }
                     eventQueue.Enqueue((sender, e));
 
-                    string senderId = sender switch 
+                    string senderId = sender switch
                     {
                         object o when ReferenceEquals(o, items.CanonicalRecordset) => nameof(items.CanonicalRecordset),
                         object o when ReferenceEquals(o, items) => "Projection",
-                        _ => "Unknown", 
+                        _ => "Unknown",
                     };
 
                     builder.Add($"{senderId}.{e.Action} NewItems={e.NewItems?.Count ?? 0}");
@@ -3031,7 +3055,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
 
                 async Task subtestAppendAndRequery()
                 {
-                    items.Clear(all: true);   
+                    items.Clear(all: true);
                     // Live-demo specific.
                     Add("Appetizer Plate", "[dish]", false, new() { "starter", "appealing", "snack" });
                     Add("Errata", "[notes]", false, new() { "crunchy", "green", "appended" });

@@ -40,26 +40,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterSource()
         {
-            if (CollectionChangedProtected is null)
-            {
-            }
-            else
-            {
-            }
-
-
             // GZ GZ GZ GZ
             base.ObservableNetProjection = this;
 
             // base.ProjectionOptions = NetProjectionOption.ObservableOnly;
-            if(CollectionChangedProtected is null)
-            {
-            }
-            else 
-            {
-            }
 
-            CollectionChangedProtected += OnCollectionChanged;
+            CollectionChangedProtectedZ += OnCollectionChanged;
             _canonicalRecordset.CollectionChanged += (sender, e) =>
             {
                 if (CollectionChangeAuthority == NotifyCollectionChangedEventAuthority.MarkdownContext)
@@ -86,7 +72,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             {
                                 if (FilteringState != FilteringState.Active)
                                 {
-                                    CollectionChangedProtected?.Invoke(this, e);
+                                    OnCollectionChangedProtected(e);
                                 }
                             }
                             break;
@@ -100,7 +86,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             }
                             else
                             {
-                                CollectionChangedProtected?.Invoke(this, e);
+                                OnCollectionChangedProtected(e);
                             }
                             break;
                         case NotifyCollectionChangedAction.Reset:
@@ -109,7 +95,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             {
                                 inpc.PropertyChanged -= OnItemPropertyChanged;
                             }
-                            CollectionChangedProtected?.Invoke(this, e);
+                            OnCollectionChangedProtected(e);
                             break;
                     }
                     _unsubscribeItems = _canonicalRecordset.OfType<INotifyPropertyChanged>().ToArray();
@@ -150,8 +136,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         }
                     }
                     // Raise single event after completing the loop.
-                    CollectionChangedProtected?.Invoke(
-                        this,
+                    OnCollectionChangedProtected(
                         new NotifyQueryFilterCollectionChangedEventArgs(
                             NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
                             _canonicalRecordset.ToList() // snapshot as IList
@@ -220,8 +205,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         }
 
                         // Raise single event after completing the loop.
-                        CollectionChangedProtected?.Invoke(
-                            this,
+                        OnCollectionChangedProtected(
                             new NotifyQueryFilterCollectionChangedEventArgs(
                                 NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
                                 _canonicalRecordset.ToList() // snapshot as IList
@@ -329,8 +313,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         // count < 2 we're not supposed to be here in the first place.
                         Debug.Assert(_canonicalRecordset.Count >= 2, "ADVISORY - Filterable source is required.");
                         FilteringState = FilteringState.Active;
-                        CollectionChangedProtected?.Invoke(
-                            this,
+                        OnCollectionChangedProtected(
                             new NotifyQueryFilterCollectionChangedEventArgs(
                                 NotifyQueryFilterCollectionChangedAction.ApplyFilter,
                                 _predicateMatchSubset.ToList() // snapshot
@@ -360,7 +343,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             if (FilteringState < FilteringState.Armed)
             {
 #if DEBUG
-                CollectionChangedProtected += localCollectionChanged;
+                CollectionChangedProtectedZ += localCollectionChanged;
 
                 // [Careful] 
                 // If we're responding to FilteringState changed to clear the
@@ -370,7 +353,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                 void localCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
                 {
-                    CollectionChangedProtected -= localCollectionChanged;
+                    CollectionChangedProtectedZ -= localCollectionChanged;
                 }
 #else
                 // [Careful] 
@@ -494,14 +477,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             add
             {
-                CollectionChangedProtected += value;
+                CollectionChangedProtectedZ += value;
             }
             remove
             {
-                CollectionChangedProtected += value;
+                CollectionChangedProtectedZ += value;
             }
         }
-        protected event NotifyCollectionChangedEventHandler CollectionChangedProtected;
+
+        private void OnCollectionChangedProtected(NotifyCollectionChangedEventArgs e)
+        {
+            CollectionChangedProtectedZ?.Invoke(this, e);
+        }
+        protected event NotifyCollectionChangedEventHandler CollectionChangedProtectedZ;
 
         /// <summary>
         /// No client data connection is assumed, but if a persistent
@@ -562,8 +550,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     // but the UI visuals might change e.g. icon glyph and/or color.
                     if (FilteringStatePrev == FilteringState.Active)
                     {
-                        CollectionChangedProtected?.Invoke(
-                            this,
+                        OnCollectionChangedProtected(
                             new NotifyQueryFilterCollectionChangedEventArgs(
                                 NotifyQueryFilterCollectionChangedAction.RemoveFilter | NotifyQueryFilterCollectionChangedAction.Add,
                                 _canonicalRecordset.ToList() // snapshot as IList
@@ -616,7 +603,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 // This is old. Do we still need it?
                 _canonicalRecordset.Clear();
-                CollectionChangedProtected?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                OnCollectionChangedProtected(
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
         }
 
