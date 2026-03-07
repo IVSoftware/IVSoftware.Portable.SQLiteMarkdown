@@ -69,9 +69,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             public NotifyCollectionChangedEventAuthority Authority { get; protected set; }
         }
 
-        public IDisposable BeginResetWithEventSuppression(
-            NotifyCollectionChangedEventAuthority resetAuthority = NotifyCollectionChangedEventAuthority.MarkdownContext)
-        => DHostResetWithEventSuppression.GetToken(sender: resetAuthority);
+        public IDisposable BeginResetWithEventSuppression() => DHostResetWithEventSuppression.GetToken();
 
         /// <summary>
         /// Requires initialization from subclass.
@@ -82,7 +80,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (_dhostReset is null)
                 {
-                    // We need to return something...
+                    // Has no actions, but is better than null.
                     _dhostReset = new DHostResetProvider(this, []);
                 }
                 return _dhostReset;
@@ -101,16 +99,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             internal DHostResetProvider(IMarkdownContext mdc, IEnumerable<Action> onResetActions)
             {
-                if(mdc is null)
+                if (mdc is null)
                 {
-                    this.ThrowHard<ArgumentNullException>("MDC cannot be null because of potential circularity.");
+                    // Rare circumstance where throwing a System.Exception is not optional.
+                    throw new ArgumentNullException(
+                        "MDC cannot be null because circularity is certain otherwise.");
                 }
                 _mdc = mdc;
 
                 List<Action> nonNullActions = new();
                 foreach (var action in onResetActions)
                 {
-                    if(action is null)
+                    if (action is null)
                     {
                         this.ThrowHard<NullReferenceException>("Reset actions cannot be null");
                     }
@@ -121,7 +121,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 _onResetActions = nonNullActions.ToArray();
             }
-            IMarkdownContext? _mdc;
+            IMarkdownContext _mdc;
             private Action[] _onResetActions;
 
             public IDisposable GetToken()
@@ -130,7 +130,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             protected override void OnBeginUsing(BeginUsingEventArgs e)
             {
-                if(_onResetActions.Length == 0)
+                if (_onResetActions.Length == 0)
                 {
                     this.Advisory($"Starting {nameof(DHostResetProvider)} epoch with no dispose actions.");
                 }
@@ -139,19 +139,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             protected override void OnFinalDispose(FinalDisposeEventArgs e)
             {
                 base.OnFinalDispose(e);
-
-                if (_mdc is not null 
-                    && Equals(NotifyCollectionChangedEventAuthority.MarkdownContext, e.ReleasedSenders.FirstOrDefault()))
-                {
-                    using (_mdc.BeginAuthorityClaim())
-                    {
-                        foreach (var action in _onResetActions)
-                        {
-                            action();
-                        }
-                    }
-                }
-                else
+                using (_mdc.BeginAuthorityClaim())
                 {
                     foreach (var action in _onResetActions)
                     {
