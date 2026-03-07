@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 
@@ -59,12 +60,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected class DHostAuthorityClaimProvider : DisposableHost
         {
             public IDisposable GetToken(CollectionChangeAuthority authority)
+                => base.GetToken(sender: authority, properties: null);
+
+            public new IDisposable GetToken(object? sender = null, Dictionary<string, object>? properties = null)
             {
-                if(IsZero())
-                {
-                    Authority = authority;
-                }
-                return base.GetToken(sender: authority);
+                sender = 
+                    (sender is CollectionChangeAuthority authority) 
+                    ? authority 
+                    : 0;
+                return base.GetToken(sender , null, properties);
+            }
+
+            public new IDisposable GetToken(string key, object value)
+                => base.GetToken((CollectionChangeAuthority)0, key, value);
+
+            public new IDisposable GetToken(object sender, string? key, object? value)
+            {
+                sender =
+                    (sender is CollectionChangeAuthority authority)
+                    ? authority
+                    : 0;
+                return base.GetToken(sender, key, value);
             }
             protected override void OnBeginUsing(BeginUsingEventArgs e)
             {
@@ -73,9 +89,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             protected override void OnFinalDispose(FinalDisposeEventArgs e)
             {
                 base.OnFinalDispose(e); // <- First
-                Authority = 0;
             }
-            public CollectionChangeAuthority Authority { get; protected set; }
+            public CollectionChangeAuthority Authority =>
+                Tokens.LastOrDefault()?.Sender is CollectionChangeAuthority authority
+                ? authority
+                : 0;
         }
 
         #region R E S E T    E P O C H
