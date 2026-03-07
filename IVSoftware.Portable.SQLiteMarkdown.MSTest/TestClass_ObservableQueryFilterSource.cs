@@ -2938,9 +2938,6 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 {
                     actual = items.StateReport();
                     Assert.IsNotNull(items.ObservableNetProjection, "260307: This now occurs in the CTor always.");
-
-                    actual.ToClipboardExpected();
-                    { }
                     expected = @" 
 [IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                     ;
@@ -2949,8 +2946,8 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                     Assert.AreEqual(0, eventQueue.Count, "YES. It's zero.");
 
                     // Nothing requires await here.
-                    nsb.InputText = "animal";   // Synchronous because IsFiltering is False
-                    items.Commit();             // Query on a synchronous memory connection.
+                    nsb.InputText = "animal";   // Synchronous because IsFiltering is False.
+                    items.Commit();             // Query on a synchronous memory connection => ReplaceItems() => LoadCanon().
 
 
                     actual = items.Model.ToString();
@@ -2978,19 +2975,15 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
-                        "Expecting animal matches."
+                        "Expecting 12 animal matches."
                     );
-                    { }
-
-
-                    actual = string.Join(Environment.NewLine, builder);
 
                     // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
                     // Limit touched 260304
+                    actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-Projection.Reset NewItems=0
 Projection.Add NewItems=12"
                     ;
 

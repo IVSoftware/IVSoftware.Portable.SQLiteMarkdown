@@ -399,6 +399,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </summary>
     internal enum InitFilterEpochFSM
     {
+        ClearNetProjection = StdFSMState.ClearNetProjection,
+
         InitFQBDForEpoch = StdFSMState.InitFQBDForEpoch,
 
         InitModelForEpoch = StdFSMState.InitModelForEpoch,

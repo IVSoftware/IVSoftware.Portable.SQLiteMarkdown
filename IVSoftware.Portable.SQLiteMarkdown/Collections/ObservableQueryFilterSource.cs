@@ -41,9 +41,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public ObservableQueryFilterSource()
         {
             DHostResetWithEventSuppression = new DHostResetProvider(
-            [
-                () => OnCollectionChanged(new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset))
-            ]);
+                this,
+                [
+                    () => OnCollectionChanged(new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset))
+                ]);
 
 #if DEBUG && !SKIP_UNIT_TEST_DHostResetWithEventSuppression
             #region L o c a l F x
@@ -80,7 +81,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
             _canonicalRecordset.CollectionChanged += (sender, e) =>
             {
-                if (CollectionChangeAuthority == NotifyCollectionChangedEventAuthority.MarkdownContext)
+                if (DHostCollectionChangeAuthority.Authority == NotifyCollectionChangedEventAuthority.MarkdownContext)
                 {   /* G T K - N O O P */
                 }
                 else
@@ -144,7 +145,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
         public IReadOnlyList<T> UnfilteredItems => _canonicalRecordset;
 
-        public async Task ReplaceItemsAsync(IEnumerable<T> items)
+        public virtual async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
             Debug.WriteLine($@"260306.a ADVISORY - {nameof(ReplaceItemsAsync)}.");
             using (DHostBusy.GetToken())
@@ -182,7 +183,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// Replaces the entire current dataset after a query.
         /// Not valid in Filter-only mode. Raises CollectionChanged and sets FilteringState based on count.
         /// </summary>
-        public void ReplaceItems(IEnumerable<T> items)
+        public virtual void ReplaceItems(IEnumerable<T> items)
         {
             using (DHostBusy.GetToken())
             {
@@ -253,7 +254,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// Ideal for static lists (e.g., preferences, enums).
         /// When a filter is "cleared" it means the collection view returns to "all items visible".
         /// </summary>
-        [PublishedSignature("1.0")]
+        [PublishedContract("1.0")]
         public void InitializeFilterOnlyMode(IEnumerable<T> items)
         {
             QueryFilterConfig = QueryFilterConfig.Filter;
@@ -576,7 +577,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// No client data connection is assumed, but if a persistent
         /// SQLite data connection is provided it will be queried here.
         /// </summary>
-        public void Commit()
+        [PublishedContract("1.0", typeof(IObservableQueryFilterSource))]
+        public virtual void Commit()
         {
             if (MemoryDatabase != null)
             {

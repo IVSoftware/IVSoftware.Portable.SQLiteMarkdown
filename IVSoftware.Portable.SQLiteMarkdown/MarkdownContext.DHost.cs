@@ -50,32 +50,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Acts as a circularity guard so that keeps these
         /// changes from appearing to be originated on the UI.
         /// </remarks>
-        public IDisposable BeginAuthorityClaim() => DHostClaimAuthority.GetToken();
-        public NotifyCollectionChangedEventAuthority CollectionChangeAuthority { get; private set; }
-        protected DisposableHost DHostClaimAuthority
+        public IDisposable BeginAuthorityClaim() => DHostCollectionChangeAuthority.GetToken();
+
+        protected DHostClaimAuthorityProvider DHostCollectionChangeAuthority { get; } = new();
+
+        protected class DHostClaimAuthorityProvider : DisposableHost
         {
-            get
+            protected override void OnBeginUsing(BeginUsingEventArgs e)
             {
-                if (_dhostClaimAuthority is null)
-                {
-                    _dhostClaimAuthority = new DisposableHost();
-
-                    _dhostClaimAuthority.BeginUsing += (sender, e) =>
-                    {
-                        CollectionChangeAuthority = NotifyCollectionChangedEventAuthority.MarkdownContext;
-                    };
-
-                    _dhostClaimAuthority.FinalDispose += (sender, e) =>
-                    {
-                        CollectionChangeAuthority = NotifyCollectionChangedEventAuthority.NetProjection;
-                    };
-                }
-                return _dhostClaimAuthority;
+                Authority = NotifyCollectionChangedEventAuthority.MarkdownContext;
+                base.OnBeginUsing(e);   // <- Last
             }
+            protected override void OnFinalDispose(FinalDisposeEventArgs e)
+            {
+                base.OnFinalDispose(e); // <- First
+                Authority = NotifyCollectionChangedEventAuthority.NetProjection;
+            }
+            public NotifyCollectionChangedEventAuthority Authority { get; protected set; }
         }
-        DisposableHost? _dhostClaimAuthority = null;
 
-        public IDisposable BeginResetWithEventSuppression() => DHostResetWithEventSuppression.GetToken();
+        public IDisposable BeginResetWithEventSuppression(
+            NotifyCollectionChangedEventAuthority resetAuthority = NotifyCollectionChangedEventAuthority.MarkdownContext)
+        => DHostResetWithEventSuppression.GetToken(sender: resetAuthority);
 
         /// <summary>
         /// Requires initialization from subclass.
@@ -87,17 +83,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (_dhostReset is null)
                 {
                     // We need to return something...
-                    _dhostReset = new DHostResetProvider([]);
+                    _dhostReset = new DHostResetProvider(this, []);
                 }
                 return _dhostReset;
             }
-            set => _dhostReset = value;
+            set
+            {
+                _dhostReset = value;
+            }
         }
         DHostResetProvider? _dhostReset = null;
+
+        /// <summary>
+        /// Reset epoch with collection changed authority.
+        /// </summary>
         protected class DHostResetProvider : DisposableHost
         {
-            public DHostResetProvider(IEnumerable<Action> onResetActions)
+            internal DHostResetProvider(IMarkdownContext mdc, IEnumerable<Action> onResetActions)
             {
+                if(mdc is null)
+                {
+                    this.ThrowHard<ArgumentNullException>("MDC cannot be null because of potential circularity.");
+                }
+                _mdc = mdc;
+
                 List<Action> nonNullActions = new();
                 foreach (var action in onResetActions)
                 {
@@ -112,7 +121,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 _onResetActions = nonNullActions.ToArray();
             }
+            IMarkdownContext? _mdc;
             private Action[] _onResetActions;
+
+            public IDisposable GetToken()
+            {
+                return base.GetToken(sender: NotifyCollectionChangedEventAuthority.MarkdownContext);
+            }
             protected override void OnBeginUsing(BeginUsingEventArgs e)
             {
                 if(_onResetActions.Length == 0)
@@ -121,13 +136,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 base.OnBeginUsing(e);
             }
-
             protected override void OnFinalDispose(FinalDisposeEventArgs e)
             {
                 base.OnFinalDispose(e);
-                foreach (var action in _onResetActions)
+
+                if (_mdc is not null 
+                    && Equals(NotifyCollectionChangedEventAuthority.MarkdownContext, e.ReleasedSenders.FirstOrDefault()))
                 {
-                    action();
+                    using (_mdc.BeginAuthorityClaim())
+                    {
+                        foreach (var action in _onResetActions)
+                        {
+                            action();
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var action in _onResetActions)
+                    {
+                        action();
+                    }
                 }
             }
         }

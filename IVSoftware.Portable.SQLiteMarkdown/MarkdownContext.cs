@@ -1278,7 +1278,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// eligibility rules such as minimum length, throttling heuristics,
         /// or restricted character policies.
         /// </remarks>
-        [PublishedSignature("1.0", typeof(MarkdownContext))]
+        [PublishedContract("1.0", typeof(MarkdownContext))]
         public Predicate<string> ValidationPredicate
         {
             get

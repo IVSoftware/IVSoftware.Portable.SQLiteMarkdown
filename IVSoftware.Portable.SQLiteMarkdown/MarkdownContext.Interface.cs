@@ -5,6 +5,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using SQLite;
 using System;
@@ -260,6 +261,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected Enum RunFSM<TFsm>(object? context = null) where TFsm : struct, Enum
         {
             Enum result = ReservedAffinityState.None;
+
+            // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
+            // * Reuse an incoming value that is already an object[] to avoid an unnecessary allocation.
+            if (context is IEnumerable collection)
+            {
+                context = collection is object[] array
+                ? array
+                : collection.Cast<object>().ToArray();
+            }
             foreach (Enum state in GetDeclaredValues<TFsm>())
             {
                 // Expecting 'Next' for linear flow.
@@ -307,6 +317,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             [Probationary]
             void localClearNetProjection()
             {
+                using (BeginResetWithEventSuppression())
+                {
+                    // DO NOT REMOVE.
+                    // Presumably, there will be some protected clear actions
+                    // herein but we need the Rest event *regardless*.
+                }
             }
 
             Enum localInitFQDBEpoch(IEnumerable canonical)
@@ -638,7 +654,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         protected virtual void OnObservableProjectionChanged()
         {
-            LoadCanon(ObservableNetProjection as IEnumerable);
+            if (ObservableNetProjection is IEnumerable collection && collection.Cast<object>().Any())
+            {
+                // Treat any non-empty projection as a new canonical recordset.
+                LoadCanon(collection);
+            }
+            else
+            {
+                Clear();
+            }
         }
 
         /// <summary>
@@ -678,7 +702,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         #endregion P R O J E C T I O N
 
         [Obsolete("Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount.")]
-        [PublishedSignature("1.0")] // Required for backward compatibility. Do not remove this property.
+        [PublishedContract("1.0")] // Required for backward compatibility. Do not remove this property.
         public int UnfilteredCount 
         {
             get => CanonicalCount;
