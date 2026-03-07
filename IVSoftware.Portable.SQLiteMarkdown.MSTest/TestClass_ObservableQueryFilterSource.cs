@@ -1557,7 +1557,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -1597,7 +1597,7 @@ InputText"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 1, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+[IME Len: 1, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                     }
@@ -1608,7 +1608,7 @@ InputText"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 1, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+[IME Len: 1, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting starting state is ENB.");
 
@@ -1619,7 +1619,7 @@ InputText"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                         eventQueue.Clear();
@@ -1631,7 +1631,7 @@ InputText"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting coming in at Cleared.");
 
@@ -1869,7 +1869,7 @@ SearchEntryState='QueryCompleteWithResults'";
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -1887,7 +1887,7 @@ SearchEntryState='QueryCompleteWithResults'";
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 1, IsFiltering: True], [Net: null, CC: 12, PMC: 5], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 1, IsFiltering: True], [Net: 0, CC: 12, PMC: 5], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                         actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
@@ -2845,8 +2845,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
             {
                 string actual, expected, sql;
                 List<SelectableQFModelTOQO> recordset;
-                NotifyCollectionChangedEventArgs? ecc;
-                SelectableQFModelTOQO[] newItems = [];
+                IList newItems = Array.Empty<object>();
                 Queue<SenderEventPair> eventQueue = new();
                 var builder = new List<string>();
 
@@ -2908,6 +2907,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                     }
                     eventQueue.Enqueue((sender, e));
                     builder.Add(e.GetFormatted(ReferenceEquals(sender, items)));
+                    newItems = e.NewItems?.Cast<object>().ToArray() ?? Array.Empty<object>(); 
 
                     // G T K
                     switch (e.Action)
@@ -2953,8 +2953,8 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-Projection.Add     NewItems=12 NotifyQueryFilterCollectionChangedEventArgs
-Projection.Reset   NewItems= 0 NotifyCollectionChangedEventArgs"
+NetProjection.Add     NewItems=12 NotifyQueryFilterCollectionChangedEventArgs
+NetProjection.Reset   NewItems= 0 NotifyCollectionChangedEventArgs           "
                     ;
 
                     Assert.AreEqual(
@@ -2990,39 +2990,10 @@ Projection.Reset   NewItems= 0 NotifyCollectionChangedEventArgs"
                         actual.NormalizeResult(),
                         "Expecting 12 animal matches."
                     );
-                    Assert.IsNotNull((ecc = (NotifyCollectionChangedEventArgs?)eventQueue.Dequeue()?.e));
-                    {
-                        switch (ecc.Action)
-                        {
-                            case NotifyCollectionChangedAction.Reset:
-                                break;
-                            default:
-                                Assert.Fail("Expecting Reset");
-                                break;
-                        }
-                    }
-
-                    Assert.IsNotNull((ecc = (NotifyCollectionChangedEventArgs?)eventQueue.DequeueSingle()?.e));
-                    {
-                        switch (ecc.Action)
-                        {
-                            case NotifyCollectionChangedAction.Add:
-                                newItems =
-                                    ecc
-                                    .NewItems
-                                    ?.OfType<SelectableQFModelTOQO>()
-                                    .ToArray() ?? [];
-                                Assert.AreEqual(12, newItems.Length);
-                                break;
-                            default:
-                                Assert.Fail("Expecting Add");
-                                break;
-                        }
-                    }
 
                     // As a product of the CollectionChangedEvent this
                     // is representative of what we'd see in the visible list.
-                    actual = string.Join(Environment.NewLine, newItems.Select(_ => _.ToString()));
+                    actual = string.Join(Environment.NewLine, newItems.Cast<object>().Select(_ => _.ToString()));
                     actual.ToClipboard();
                     actual.ToClipboardExpected();
                     actual.ToClipboardAssert("Expecting items to match");

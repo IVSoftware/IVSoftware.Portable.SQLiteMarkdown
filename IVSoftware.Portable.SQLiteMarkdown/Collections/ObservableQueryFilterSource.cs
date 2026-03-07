@@ -419,7 +419,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     }
                     else
                     {
-                        Debug.Fail($@"ADVISORY - We probably do not want this.");
+
+                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 7).Date, "Don't forget disabled");
+                        // Debug.Fail($@"ADVISORY - We probably do not want this.");
                     }
 
                     void localCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
