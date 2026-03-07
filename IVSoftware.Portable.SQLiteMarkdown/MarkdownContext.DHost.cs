@@ -3,6 +3,7 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -70,19 +71,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             public NotifyCollectionChangedEventAuthority Authority { get; protected set; }
         }
 
-        public IDisposable BeginResetWithEventSuppression() => DHostResetWithEventSuppression.GetToken();
+        #region R E S E T    E P O C H
+        public IDisposable BeginResetEpoch() => DHostResetEpoch.GetToken();
 
         /// <summary>
         /// Requires initialization from subclass.
         /// </summary>
-        protected DHostResetProvider DHostResetWithEventSuppression
+        protected DHostResetEpochProvider DHostResetEpoch
         {
             get
             {
                 if (_dhostReset is null)
                 {
                     // Has no actions, but is better than null.
-                    _dhostReset = new DHostResetProvider(this, []);
+                    _dhostReset = new DHostResetEpochProvider(this, []);
                 }
                 return _dhostReset;
             }
@@ -91,7 +93,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 _dhostReset = value;
             }
         }
-        DHostResetProvider? _dhostReset = null;
+        DHostResetEpochProvider? _dhostReset = null;
 
         /// <summary>
         /// Reset epoch that suppresses collection change propagation during reset.
@@ -105,9 +107,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// (for example, NetProjection vs Canonical) to determine whether work should
         /// actually execute.
         /// </remarks>
-        protected class DHostResetProvider : DisposableHost
+        protected class DHostResetEpochProvider : DisposableHost
         {
-            internal DHostResetProvider(IMarkdownContext mdc, IEnumerable<Action> onResetActions)
+            internal DHostResetEpochProvider(IMarkdownContext mdc, IEnumerable<Action> onResetActions)
             {
                 if (mdc is null)
                 {
@@ -156,7 +158,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 //
                 // When that pattern is followed, reentrant resets are naturally avoided.
                 if (Interlocked.CompareExchange(ref _lock, 1, 0) != 0)
-                {    
+                {
+                    Debug.Fail($@"ADVISORY - This should really be avoided.");
                     this.Advisory("Reentrant BeginReset suppressed.");
                     return;
                 }
@@ -166,7 +169,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if (_onResetActions.Length == 0)
                     {
                         this.Advisory(
-                            $"Starting {nameof(DHostResetProvider)} epoch with no reset actions.");
+                            $"Starting {nameof(DHostResetEpochProvider)} epoch with no reset actions.");
                     }
 
                     base.OnBeginUsing(e);
@@ -176,7 +179,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     _lock = 0;
                 }
             }
-
             protected override void OnFinalDispose(FinalDisposeEventArgs e)
             {
                 if (Interlocked.CompareExchange(ref _lock, 1, 0) != 0)
@@ -202,5 +204,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+        #endregion R E S E T    E P O C H
     }
 }

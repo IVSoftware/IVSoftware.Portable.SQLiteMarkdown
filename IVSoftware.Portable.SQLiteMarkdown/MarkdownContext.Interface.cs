@@ -317,12 +317,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             [Probationary]
             void localClearNetProjection()
             {
-                using (BeginResetWithEventSuppression())
-                {
-                    // DO NOT REMOVE.
-                    // Presumably, there will be some protected clear actions
-                    // herein but we need the Rest event *regardless*.
-                }
             }
 
             Enum localInitFQDBEpoch(IEnumerable canonical)

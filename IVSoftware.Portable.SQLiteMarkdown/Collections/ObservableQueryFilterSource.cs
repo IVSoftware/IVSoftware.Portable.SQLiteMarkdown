@@ -40,7 +40,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterSource()
         {
-            DHostResetWithEventSuppression = new DHostResetProvider(
+            DHostResetEpoch = new DHostResetEpochProvider(
                 this,
                 [
                     () => OnCollectionChanged(new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset))
@@ -48,7 +48,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
 #if DEBUG && !SKIP_UNIT_TEST_DHostResetWithEventSuppression
             #region L o c a l F x
-            void debugOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+            void localTestOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
             {
                 Debug.Assert(e.Action == NotifyCollectionChangedAction.Reset);
             }
@@ -58,14 +58,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             using (this.WithOnDispose(
                 onInit: (sender, e) =>
                 {
-                    this.CollectionChangedProtected += debugOnCollectionChanged;
+                    this.CollectionChangedProtected += localTestOnCollectionChanged;
                 },
                 onDispose: (sender, e) =>
                 {
-                    this.CollectionChangedProtected -= debugOnCollectionChanged;
+                    this.CollectionChangedProtected -= localTestOnCollectionChanged;
                 }))
             {
-                using(DHostResetWithEventSuppression.GetToken())
+                using(DHostResetEpoch.GetToken())
                 {
                     // Testing the new DHost which
                     // should raise Reset on final dispose.
@@ -370,8 +370,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         void IList.Clear() => Clear(all: true);
         void ICollection<T>.Clear() => Clear(all: true);
 
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -384,18 +382,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
         public void Clear()
         {
-            using (BeginResetWithEventSuppression())
+            using (BeginResetEpoch())
             {
                 RunFSM<NativeClearFSM>();
             }
         }
+
         public new void Clear(bool all = false)
         {
-            base.Clear(all);
-            if (FilteringState < FilteringState.Armed)
+            using (BeginResetEpoch())
             {
-                using (base.BeginAuthorityClaim())
+                base.Clear(all);
+                if (FilteringState < FilteringState.Armed)
                 {
+                    using (base.BeginAuthorityClaim())
+                    {
 #if RELEASE
                     // [Careful] 
                     // If we're responding to FilteringState changed to clear the
@@ -403,31 +404,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     // add-remove changes to Items will bypass the input state machine. 
                     _canonicalRecordset.Clear();
 #else
-                    int countCC = 0;
-                    // Same thing with event monitoring.
-                    CollectionChangedProtected += localCollectionChanged;
-                    CollectionChanged += localCollectionChanged;
+                        int countCC = 0;
+                        // Same thing with event monitoring.
+                        CollectionChangedProtected += localCollectionChanged;
+                        CollectionChanged += localCollectionChanged;
 
-                    // [Careful] 
-                    // If we're responding to FilteringState changed to clear the
-                    // unfiltered items list it MIGHT NOT WORK. For example, manual
-                    // add-remove changes to Items will bypass the input state machine. 
-                    _canonicalRecordset.Clear();
+                        // [Careful] 
+                        // If we're responding to FilteringState changed to clear the
+                        // unfiltered items list it MIGHT NOT WORK. For example, manual
+                        // add-remove changes to Items will bypass the input state machine. 
+                        _canonicalRecordset.Clear();
 
-                    if (countCC == 0)
-                    {   /* G T K */
-                    }
-                    else
-                    {
-                        Debug.Fail($@"ADVISORY - We probably do not want this.");
-                    }
+                        if (countCC == 0)
+                        {   /* G T K */
+                        }
+                        else
+                        {
+                            Debug.Fail($@"ADVISORY - We probably do not want this.");
+                        }
 
-                    void localCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-                    {
-                        countCC++;
-                        CollectionChangedProtected -= localCollectionChanged;
-                    }
+                        void localCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+                        {
+                            countCC++;
+                            CollectionChangedProtected -= localCollectionChanged;
+                        }
 #endif
+                    }
                 }
             }
         }
@@ -555,10 +557,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected virtual void OnCollectionChangedProtected(NotifyCollectionChangedEventArgs e)
         {
-            if (DHostResetWithEventSuppression.IsZero())
-            {
-                CollectionChangedProtected?.Invoke(this, e);
-            }
+            CollectionChangedProtected?.Invoke(this, e);
         }
         protected event NotifyCollectionChangedEventHandler? CollectionChangedProtected;
 
@@ -566,14 +565,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Probationary("260307 - Alternative to switching INCCs between canonical and filtered collections")]
         protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            if (DHostCollectionChangeAuthority.Authority == NotifyCollectionChangedEventAuthority.NetProjection)
-            {
-                // For now:
-                OnCollectionChangedProtected(e);
-            }
-            else
-            {   /* G T K - N O O P */
-            }
+            // For now:
+            OnCollectionChangedProtected(e);
         }
 
         /// <summary>

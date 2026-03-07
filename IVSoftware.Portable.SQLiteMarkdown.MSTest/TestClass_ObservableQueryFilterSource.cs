@@ -1398,25 +1398,18 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     #endregion L o c a l F x
 
                     itemsSource.Clear();
-                    sql = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>();
-                    results = cnx.Query<SelectableQFModelTOQO>(sql);
-                    itemsSource.ReplaceItems(results);
 
-                    actual =
-                        string
-                        .Join(Environment.NewLine, eventQueue.Select(_ => _.ToStringFromEventType()));
-                    actual.ToClipboardExpected();
-                    { }
-                    expected = @"
-Reset
-Add"
-                    ;
-
-                    ecc = (NotifyCollectionChangedEventArgs)eventQueue.Dequeue().e;
+                    ecc = (NotifyCollectionChangedEventArgs)eventQueue.DequeueSingle().e;
                     Assert.AreEqual(
                         NotifyCollectionChangedAction.Reset,
                         ecc.Action);
                     { }
+
+                    sql = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>();
+                    results = cnx.Query<SelectableQFModelTOQO>(sql);
+                    itemsSource.ReplaceItems(results);
+
+
                     ecc = (NotifyCollectionChangedEventArgs)eventQueue.DequeueSingle().e;
                     Assert.AreEqual(
                         NotifyCollectionChangedAction.Add,
