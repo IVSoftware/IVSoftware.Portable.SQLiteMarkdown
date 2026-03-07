@@ -78,7 +78,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Requires initialization from subclass.
         /// </summary>
-        protected DHostResetProvider? DHostReset{ get; }
+        protected DHostResetProvider? DHostReset{ get; set; }
         protected class DHostResetProvider : DisposableHost
         {
             public DHostResetProvider(IEnumerable<Action> onResetActions)

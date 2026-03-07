@@ -40,10 +40,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterSource()
         {
+            DHostReset = new DHostResetProvider([() => OnCollectionChanged(new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset)]);
+
             // GZ GZ GZ GZ
             base.ObservableNetProjection = this;
-
             // base.ProjectionOptions = NetProjectionOption.ObservableOnly;
+
 
             _canonicalRecordset.CollectionChanged += (sender, e) =>
             {
@@ -430,13 +432,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         int IList.Add(object item)
         {
-            if(item is T itemT)
+            if (item is T itemT)
             {
                 _canonicalRecordset.Add(itemT);
                 OnExternalChange(item);
                 return _canonicalRecordset.IndexOf(itemT);
             }
-            if(typeof(T) == typeof(StringWrapper))
+            if (typeof(T) == typeof(StringWrapper))
             {
                 var wrapper = new StringWrapper(item?.ToString() ?? string.Empty);
                 if (wrapper is T itemTT)
@@ -515,11 +517,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        private void OnCollectionChangedProtected(NotifyCollectionChangedEventArgs e)
+        protected virtual void OnCollectionChangedProtected(NotifyCollectionChangedEventArgs e)
         {
             CollectionChangedProtected?.Invoke(this, e);
         }
-        protected event NotifyCollectionChangedEventHandler CollectionChangedProtected;
+        protected event NotifyCollectionChangedEventHandler? CollectionChangedProtected;
+
+
+        [Probationary("260307 - Alternative to switching INCCs between canonical and filtered collections")]
+        protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            // For now:
+            OnCollectionChangedProtected(e);
+        }
 
         /// <summary>
         /// No client data connection is assumed, but if a persistent
