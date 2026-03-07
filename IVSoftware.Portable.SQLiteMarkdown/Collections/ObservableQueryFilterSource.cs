@@ -217,6 +217,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // _canonicalRecordset.Clear(); // <- NOT HERE!
 
                 using (base.BeginAuthorityClaim(authority: CollectionChangeAuthority.MarkdownContext))
+                using (base.BeginResetEpoch())
                 {
                     // Building from the model in V2 is new.
 

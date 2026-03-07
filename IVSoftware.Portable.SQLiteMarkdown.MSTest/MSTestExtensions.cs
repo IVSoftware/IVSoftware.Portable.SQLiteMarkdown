@@ -1,7 +1,10 @@
-﻿using IVSoftware.Portable.Xml.Linq.XBoundObject;
+﻿using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
 using SQLite;
 using System.Collections;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Xml.Linq;
 
@@ -226,6 +229,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             builder.Add($"[{@this.QueryFilterConfig}: {@this.SearchEntryState.ToFullKey()}");
             builder.Add($"{@this.FilteringState.ToFullKey()}]");
             return string.Join(", ", builder);
+        }
+
+        public static string GetFormatted(
+            this NotifyCollectionChangedEventArgs e, 
+            bool isProjection)
+        {
+            string preview = 
+                $"{(isProjection ? "NetProjection" : "Other")}.{e.Action.ToString().PadRight(7)} " +
+                $"NewItems={(e.NewItems?.Count ?? 0).ToString().PadLeft(2)} {e.GetType().Name.PadRight(43)}";
+            return preview;
         }
     }
 }

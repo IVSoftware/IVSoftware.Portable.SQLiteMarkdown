@@ -1336,7 +1336,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                         });
                     void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
                     {
-                        builder.Add($"{e.Action} New={e.NewItems?.Count ?? 0} Old={e.OldItems?.Count ?? 0}");
+                        builder.Add(e.GetFormatted(ReferenceEquals(sender, itemsSource)));
                     }
 
                     sql = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>();
@@ -1349,12 +1349,14 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-Add New=12 Old=0";
+NetProjection.Add     NewItems=12 NotifyQueryFilterCollectionChangedEventArgs
+NetProjection.Reset   NewItems= 0 NotifyCollectionChangedEventArgs"
+                    ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
-                        "Expecting builder content to match."
+                        "Expecting add component (first) + rest component (last)."
                     );
 
                     actual = string.Join(Environment.NewLine, itemsSource.Select(_ => _.ToString()));
@@ -1394,6 +1396,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
                     {
                         eventQueue.Enqueue((sender, e));
+                        builder.Add(e.GetFormatted(ReferenceEquals(sender, itemsSource)));
                     }
                     #endregion L o c a l F x
 
@@ -1405,21 +1408,31 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                         ecc.Action);
                     { }
 
+                    builder.Clear();
                     sql = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>();
                     results = cnx.Query<SelectableQFModelTOQO>(sql);
                     itemsSource.ReplaceItems(results);
 
-
-                    ecc = (NotifyCollectionChangedEventArgs)eventQueue.DequeueSingle().e;
+                    actual = string.Join(Environment.NewLine, builder);
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+NetProjection.Add     NewItems=12 NotifyQueryFilterCollectionChangedEventArgs
+NetProjection.Reset   NewItems= 0 NotifyCollectionChangedEventArgs           "
+                    ;
                     Assert.AreEqual(
-                        NotifyCollectionChangedAction.Add,
-                        ecc.Action);
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting add component (first) + rest component (last)."
+                    );
+
 
                     actual = string.Join(
                         Environment.NewLine,
                         ecc
                         .NewItems?.OfType<SelectableQFModelTOQO>()
                         .Select(_ => _.ToString()) ?? []);
+                    { }
 
                     expected = @" 
 Black Cat  [animal] [color]
@@ -2894,15 +2907,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                         Debug.Fail($@"ADVISORY - First Time.");
                     }
                     eventQueue.Enqueue((sender, e));
-
-                    string senderId = sender switch
-                    {
-                        object o when ReferenceEquals(o, items.CanonicalRecordset) => nameof(items.CanonicalRecordset),
-                        object o when ReferenceEquals(o, items) => "Projection",
-                        _ => "Unknown",
-                    };
-
-                    builder.Add($"{senderId}.{e.Action} NewItems={e.NewItems?.Count ?? 0}");
+                    builder.Add(e.GetFormatted(ReferenceEquals(sender, items)));
 
                     // G T K
                     switch (e.Action)
@@ -2942,6 +2947,21 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                     nsb.InputText = "animal";   // Synchronous because IsFiltering is False.
                     items.Commit();             // Query on a synchronous memory connection => ReplaceItems() => LoadCanon().
 
+                    // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
+                    // Limit touched 260304
+                    actual = string.Join(Environment.NewLine, builder);
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+Projection.Add     NewItems=12 NotifyQueryFilterCollectionChangedEventArgs
+Projection.Reset   NewItems= 0 NotifyCollectionChangedEventArgs"
+                    ;
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting the Commit method has an add component (first) and a reset component (last)."
+                    );
 
                     actual = items.Model.ToString();
                     actual.ToClipboardExpected();
@@ -2969,22 +2989,6 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
                         "Expecting 12 animal matches."
-                    );
-
-                    // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
-                    // Limit touched 260304
-                    actual = string.Join(Environment.NewLine, builder);
-                    actual.ToClipboardExpected();
-                    { }
-                    expected = @" 
-Projection.Reset NewItems=0
-Projection.Add NewItems=12"
-                    ;
-
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting collection authority clean flow.."
                     );
                     Assert.IsNotNull((ecc = (NotifyCollectionChangedEventArgs?)eventQueue.Dequeue()?.e));
                     {
