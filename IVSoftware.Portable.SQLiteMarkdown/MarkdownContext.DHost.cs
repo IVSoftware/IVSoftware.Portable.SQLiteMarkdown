@@ -75,33 +75,36 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         DisposableHost? _dhostClaimAuthority = null;
 
-
-    }
-    public class DHostResetProvider : DisposableHost
-    {
-        public DHostResetProvider(IEnumerable<Action> onResetActions)
+        /// <summary>
+        /// Requires initialization from subclass.
+        /// </summary>
+        protected DHostResetProvider? DHostReset{ get; }
+        protected class DHostResetProvider : DisposableHost
         {
-            List<Action> nonNullActions = new();
-            foreach (var action in onResetActions)
+            public DHostResetProvider(IEnumerable<Action> onResetActions)
             {
-                if(action is null)
+                List<Action> nonNullActions = new();
+                foreach (var action in onResetActions)
                 {
-                    this.ThrowHard<NullReferenceException>("Reset actions cannot be null");
+                    if(action is null)
+                    {
+                        this.ThrowHard<NullReferenceException>("Reset actions cannot be null");
+                    }
+                    else
+                    {
+                        nonNullActions.Add(action);
+                    }
                 }
-                else
-                {
-                    nonNullActions.Add(action);
-                }
+                _onResetActions = nonNullActions.ToArray();
             }
-            _onResetActions = nonNullActions.ToArray();
-        }
-        private Action[] _onResetActions;
-        protected override void OnFinalDispose(FinalDisposeEventArgs e)
-        {
-            base.OnFinalDispose(e);
-            foreach (var action in _onResetActions)
+            private Action[] _onResetActions;
+            protected override void OnFinalDispose(FinalDisposeEventArgs e)
             {
-
+                base.OnFinalDispose(e);
+                foreach (var action in _onResetActions)
+                {
+                    action();
+                }
             }
         }
     }
