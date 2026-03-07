@@ -40,7 +40,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterSource()
         {
-            // GZ GZ GZ
+            // GZ GZ GZ GZ
             // base.ObservableNetProjection = this;
             base.ProjectionOptions = NetProjectionOption.ObservableOnly;
 
