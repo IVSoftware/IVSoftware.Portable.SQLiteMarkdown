@@ -45,7 +45,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
             // base.ProjectionOptions = NetProjectionOption.ObservableOnly;
 
-            CollectionChangedProtectedZ += OnCollectionChanged;
             _canonicalRecordset.CollectionChanged += (sender, e) =>
             {
                 if (CollectionChangeAuthority == NotifyCollectionChangedEventAuthority.MarkdownContext)
@@ -589,10 +588,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
         string _title = "Items";
-
-        protected virtual void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs eUnk)
-        {
-        }
 
 
         #region R O U T E D    C O N D I T I O N A L S
