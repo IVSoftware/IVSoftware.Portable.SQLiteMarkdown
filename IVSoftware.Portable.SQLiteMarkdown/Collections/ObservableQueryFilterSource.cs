@@ -45,8 +45,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 () => OnCollectionChanged(new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset))
             ]);
 
-#if DEBUG
-
+#if DEBUG && !SKIP_UNIT_TEST_DHostResetWithEventSuppression
             #region L o c a l F x
             void debugOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
             {
@@ -67,6 +66,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 using(DHostResetWithEventSuppression.GetToken())
                 {
+                    // Testing the new DHost which
+                    // should raise Reset on final dispose.
                     System.Threading.Thread.Sleep(100);
                 }
             }
@@ -74,7 +75,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
             // GZ GZ GZ GZ
             base.ObservableNetProjection = this;
-            // base.ProjectionOptions = NetProjectionOption.ObservableOnly;
+            base.ProjectionOptions = NetProjectionOption.ObservableOnly;
 
 
             _canonicalRecordset.CollectionChanged += (sender, e) =>

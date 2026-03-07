@@ -2937,10 +2937,12 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 async Task subtestQueryInitial()
                 {
                     actual = items.StateReport();
+                    Assert.IsNotNull(items.ObservableNetProjection, "260307: This now occurs in the CTor always.");
+
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                     ;
                     Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting initial StateReport to match.");
 
