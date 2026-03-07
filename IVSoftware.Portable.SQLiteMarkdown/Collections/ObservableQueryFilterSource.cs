@@ -422,10 +422,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
             }
         }
-        public void Clear()
-        {
-            using DHostResetProvider
-        }
+        public void Clear() => RunFSM<NativeClearFSM>();
 
         public bool Contains(T item) { return _canonicalRecordset.Contains(item); }
 

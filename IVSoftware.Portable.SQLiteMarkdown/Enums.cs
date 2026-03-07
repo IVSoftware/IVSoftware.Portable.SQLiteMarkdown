@@ -413,6 +413,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
     }
 
+    internal enum NativeClearFSM
+    {
+        ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
+
+        ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
+    }
+
     public enum ProjectionTopology
     {
         /// <summary>
