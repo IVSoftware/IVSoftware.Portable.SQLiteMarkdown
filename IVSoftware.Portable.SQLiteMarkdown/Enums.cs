@@ -336,7 +336,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// States authority inside a NotifyCollectionChanged event handler.
     /// </summary>
-    public enum NotifyCollectionChangedEventAuthority
+    public enum CollectionChangeAuthority
     {
         /// <summary>
         /// The user has effected a (presumably UI-related) change to a filtered collection.

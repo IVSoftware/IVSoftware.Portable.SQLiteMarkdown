@@ -52,23 +52,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Acts as a circularity guard so that keeps these
         /// changes from appearing to be originated on the UI.
         /// </remarks>
-        public IDisposable BeginAuthorityClaim() => DHostCollectionChangeAuthority.GetToken();
+        public IDisposable BeginAuthorityClaim() => DHostAuthorityClaim.GetToken();
 
-        protected DHostClaimAuthorityProvider DHostCollectionChangeAuthority { get; } = new();
+        protected DHostAuthorityClaimProvider DHostAuthorityClaim { get; } = new();
 
-        protected class DHostClaimAuthorityProvider : DisposableHost
+        protected class DHostAuthorityClaimProvider : DisposableHost
         {
             protected override void OnBeginUsing(BeginUsingEventArgs e)
             {
-                Authority = NotifyCollectionChangedEventAuthority.MarkdownContext;
+                Authority = CollectionChangeAuthority.MarkdownContext;
                 base.OnBeginUsing(e);   // <- Last
             }
             protected override void OnFinalDispose(FinalDisposeEventArgs e)
             {
                 base.OnFinalDispose(e); // <- First
-                Authority = NotifyCollectionChangedEventAuthority.NetProjection;
+                Authority = CollectionChangeAuthority.NetProjection;
             }
-            public NotifyCollectionChangedEventAuthority Authority { get; protected set; }
+            public CollectionChangeAuthority Authority { get; protected set; }
         }
 
         #region R E S E T    E P O C H

@@ -81,7 +81,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
             _canonicalRecordset.CollectionChanged += (sender, e) =>
             {
-                if (DHostCollectionChangeAuthority.Authority == NotifyCollectionChangedEventAuthority.MarkdownContext)
+                if (DHostAuthorityClaim.Authority == CollectionChangeAuthority.MarkdownContext)
                 {   /* G T K - N O O P */
                 }
                 else
