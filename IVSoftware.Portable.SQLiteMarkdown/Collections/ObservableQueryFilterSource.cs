@@ -40,12 +40,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterSource()
         {
+            if (CollectionChangedProtected is null)
+            {
+            }
+            else
+            {
+            }
+
+
             // GZ GZ GZ GZ
-            // base.ObservableNetProjection = this;
-            base.ProjectionOptions = NetProjectionOption.ObservableOnly;
+            base.ObservableNetProjection = this;
+
+            // base.ProjectionOptions = NetProjectionOption.ObservableOnly;
+            if(CollectionChangedProtected is null)
+            {
+            }
+            else 
+            {
+            }
 
             CollectionChangedProtected += OnCollectionChanged;
-
             _canonicalRecordset.CollectionChanged += (sender, e) =>
             {
                 if (CollectionChangeAuthority == NotifyCollectionChangedEventAuthority.MarkdownContext)
@@ -162,8 +176,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 #if DEBUG
 
                 var preview = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
-
-#if DEBUG
+                var model = Model;
+                { }
                 if (base.ObservableNetProjection is null)
                 {
                 }
@@ -174,20 +188,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 {
                     Debug.Fail($@"ADVISORY - This is nonsensical and you shouldn't be here.");
                 }
+                int CCB4 = CanonicalCount;
 #endif
 
-#endif
 
-                // This causes a Reset on the main INCC.
-                // Unit Tests expect this, so leave it outside of the authority.
+                // RESET REQUIRED main INCC for NetProjection.
+                // Unit Tests expect this, but it can't be left
+                // outside of the authority or Model gets cleared..
                 // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
-                // This isn't how we'll do it in Collections, but
-                // leave this particular implementation alone.
-                _canonicalRecordset.Clear();
+                // _canonicalRecordset.Clear(); // <- Not Here
 
                 using (base.BeginAuthorityClaim())
                 {
-                    // Building from the model in V2 is new, however.
+                    // Building from the model in V2 is new.
+
+                    _canonicalRecordset.Clear();
+#if DEBUG
+                    if(CCB4 != CanonicalCount)
+                    {
+                        Debug.Fail("ACTION NEEDED - The CC must survive this.");
+                    }
+#endif
                     if (CanonicalCount != 0)
                     {
                         foreach (var xel in Model.Descendants())

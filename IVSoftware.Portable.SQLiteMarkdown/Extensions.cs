@@ -666,7 +666,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             return @this;
         }
-        internal static XBoundAttribute? XBoundAttribute(this XElement @this, StdMarkdownAttribute stdEnum, ThrowOrAdvise? @throw = null)
+        #region I N T E R N A L
+#if ABSTRACT
+        KEEP THESE INTERNAL.
+        The use of @throw as ThrowOrAdvise is new, is awesome, and is something 
+        that needs to be OFFICIALLY intergrated into the broader IVS Nuget. It
+        is CRITICAL to avoid having it leak out of this package. Really.
+#endif
+
+        /// <summary>
+        /// Returns the <see cref="XBoundAttribute"/> for the specified <see cref="StdMarkdownAttribute"/>.
+        /// </summary>
+        /// <remarks>
+        /// Resolves the attribute using the enum name. If the attribute is missing or not bound
+        /// as an <see cref="XBoundAttribute"/>, behavior is governed by <paramref name="throw"/>.
+        /// Advisory or unspecified returns <c>null</c>.
+        /// </remarks>
+        internal static XBoundAttribute? XBoundAttribute(
+            this XElement @this,
+            StdMarkdownAttribute stdEnum,   // This type *only* by design. Do not generalize to Enum.
+            ThrowOrAdvise? @throw = null)
         {
             string msg;
             if (@this.Attribute(stdEnum.ToString()) is not XAttribute attr)
@@ -701,7 +720,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return null;
         }
 
-        internal static T? XBoundAttributeValue<T>(this XElement @this, StdMarkdownAttribute stdEnum, ThrowOrAdvise? @throw = null)
+        /// <summary>
+        /// Returns the typed <c>Tag</c> value of the <see cref="XBoundAttribute"/> identified by the specified <see cref="StdMarkdownAttribute"/>.
+        /// </summary>
+        /// <remarks>
+        /// Resolves the attribute via <see cref="XBoundAttribute(XElement, StdMarkdownAttribute, ThrowOrAdvise?)"/>.
+        /// If the attribute is missing, not bound, or its <c>Tag</c> is not assignable to
+        /// <typeparamref name="T"/>, the result is <c>default</c>.
+        /// </remarks>
+        internal static T? XBoundAttributeValue<T>(
+            this XElement @this,
+            StdMarkdownAttribute stdEnum,   // This type *only* by design. Do not generalize to Enum.
+            ThrowOrAdvise? @throw = null)
         {
             if(@this.XBoundAttribute(stdEnum, @throw) is { } xba && xba.Tag is T valueT)
             {
@@ -710,7 +740,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return default;
         }
 
-        internal static XAttribute? Attribute(this XElement @this, Enum stdEnum, ThrowOrAdvise? @throw = null)
+        /// <summary>
+        /// Returns the <see cref="XAttribute"/> identified by the specified <see cref="Enum"/> key.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "Enum member → canonical attribute name."
+        /// - Resolves the attribute using the enum name as the attribute key.
+        /// - When the attribute is not present, behavior is governed by <paramref name="throw"/>. 
+        /// - Advisory or unspecified returns <c>null</c>.
+        /// </remarks>
+        internal static XAttribute? Attribute(
+            this XElement @this, 
+            Enum stdEnum, ThrowOrAdvise? @throw = null)
         {
             string msg;
             if (@this.Attribute(stdEnum.ToString()) is not XAttribute attr)
@@ -876,6 +917,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             #endregion
         }
 
+        /// <summary>
+        /// Assigns the value of the attribute identified by the specified <see cref="StdMarkdownAttribute"/>.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "Write canonical attribute text with controlled length semantics."
+        /// The value is converted to string and written using the enum name as the attribute key.       
+        /// - When the resulting string exceeds <paramref name="maxLength"/>, the value is truncated
+        ///   and the configured throw policy is invoked.
+        /// - When <paramref name="padToMaxLength"/> is <c>true</c>, the value is right-padded to the specified length.
+        /// </remarks>
         internal static void SetAttributeValue(
             this XElement @this,
             StdMarkdownAttribute stdEnum,
@@ -921,5 +972,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             @this.SetAttributeValue(stdEnum.ToString(), @string);
         }
+
+#endregion I N T E R N A L
     }
 }

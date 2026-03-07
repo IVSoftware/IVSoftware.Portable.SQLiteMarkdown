@@ -1315,6 +1315,16 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             Queue<SenderEventPair> eventQueue = new();
             List<SelectableQFModelTOQO> results;
             var itemsSource = new ObservableQueryFilterSource<SelectableQFModelTOQO>();
+
+            itemsSource.CollectionChanged += localOnCollectionChanged;
+
+#if DEBUG
+            if (itemsSource.ObservableNetProjection is null)
+            { }
+            else 
+            { }
+#endif
+
             void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
             {
                 eventQueue.Enqueue((sender, e));
@@ -1354,40 +1364,37 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 void subtestBasicQueryAnimalINPC()
                 {
                     itemsSource.Clear();
-                    try
-                    {
-                        itemsSource.CollectionChanged += localOnCollectionChanged;
-                        sql = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>();
-                        results = cnx.Query<SelectableQFModelTOQO>(sql);
-                        itemsSource.ReplaceItems(results);
+                    sql = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>();
+                    results = cnx.Query<SelectableQFModelTOQO>(sql);
+                    itemsSource.ReplaceItems(results);
 
-                        actual =
-                            string
-                            .Join(Environment.NewLine, eventQueue.Select(_ => _.ToStringFromEventType()));
-                        actual.ToClipboardExpected();
-                        { }
-                        expected = @"
+                    actual =
+                        string
+                        .Join(Environment.NewLine, eventQueue.Select(_ => _.ToStringFromEventType()));
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @"
 Reset
 Add"
-                        ;
+                    ;
 
-                        ecc = (NotifyCollectionChangedEventArgs)eventQueue.Dequeue().e;
-                        Assert.AreEqual(
-                            NotifyCollectionChangedAction.Reset,
-                            ecc.Action);
-                        { }
-                        ecc = (NotifyCollectionChangedEventArgs)eventQueue.DequeueSingle().e;
-                        Assert.AreEqual(
-                            NotifyCollectionChangedAction.Add,
-                            ecc.Action);
+                    ecc = (NotifyCollectionChangedEventArgs)eventQueue.Dequeue().e;
+                    Assert.AreEqual(
+                        NotifyCollectionChangedAction.Reset,
+                        ecc.Action);
+                    { }
+                    ecc = (NotifyCollectionChangedEventArgs)eventQueue.DequeueSingle().e;
+                    Assert.AreEqual(
+                        NotifyCollectionChangedAction.Add,
+                        ecc.Action);
 
-                        actual = string.Join(
-                            Environment.NewLine,
-                            ecc
-                            .NewItems?.OfType<SelectableQFModelTOQO>()
-                            .Select(_ => _.ToString()) ?? []);
+                    actual = string.Join(
+                        Environment.NewLine,
+                        ecc
+                        .NewItems?.OfType<SelectableQFModelTOQO>()
+                        .Select(_ => _.ToString()) ?? []);
 
-                        expected = @" 
+                    expected = @" 
 Black Cat  [animal] [color]
 Orange Fox  [animal] [color]
 White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
@@ -1400,11 +1407,6 @@ Giraffe  [animal]
 Kangaroo ""bounce"",""outback"",""marsupial"" [animal]
 Turtle  [animal]
 Should NOT match an expression with an ""animal"" tag.  [not animal]";
-                    }
-                    finally
-                    {
-                        itemsSource.CollectionChanged -= localOnCollectionChanged;
-                    }
                 }
                 #endregion S U B T E S T S
             }
