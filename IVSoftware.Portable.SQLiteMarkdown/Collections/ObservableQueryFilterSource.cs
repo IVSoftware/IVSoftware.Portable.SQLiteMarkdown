@@ -196,15 +196,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // Unit Tests expect this, but it can't be left
                 // outside of the authority or Model gets cleared..
                 // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
-                // _canonicalRecordset.Clear(); // <- Not Here
+                // _canonicalRecordset.Clear(); // <- NOT HERE!
 
                 using (base.BeginAuthorityClaim())
                 {
                     // Building from the model in V2 is new.
 
-                    _canonicalRecordset.Clear();
+                    _canonicalRecordset.Clear(); // <- HERE!
 #if DEBUG
-                    if(CCB4 != CanonicalCount)
+                    if (CCB4 != CanonicalCount)
                     {
                         Debug.Fail("ACTION NEEDED - The CC must survive this.");
                     }

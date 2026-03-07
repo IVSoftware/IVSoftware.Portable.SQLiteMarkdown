@@ -973,6 +973,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             @this.SetAttributeValue(stdEnum.ToString(), @string);
         }
 
-#endregion I N T E R N A L
+        // Fluent event attacher. Internal only; goes in Collections, with Preview semantics.
+        internal static T WithCollectionChangeHandler<T>(this T @this, NotifyCollectionChangedEventHandler handler)
+            where T: INotifyCollectionChanged
+        {
+            ((INotifyCollectionChanged)@this).CollectionChanged += handler;
+            return @this;
+        }
+        #endregion I N T E R N A L
     }
 }

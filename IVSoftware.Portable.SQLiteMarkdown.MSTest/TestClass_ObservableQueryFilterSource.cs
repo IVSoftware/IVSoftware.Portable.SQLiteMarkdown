@@ -1314,9 +1314,13 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             NotifyCollectionChangedEventArgs ecc;
             Queue<SenderEventPair> eventQueue = new();
             List<SelectableQFModelTOQO> results;
-            var itemsSource = new ObservableQueryFilterSource<SelectableQFModelTOQO>();
-
-            itemsSource.CollectionChanged += localOnCollectionChanged;
+            var itemsSource =
+                new ObservableQueryFilterSource<SelectableQFModelTOQO>()
+                .WithCollectionChangeHandler((object? sender, NotifyCollectionChangedEventArgs e) =>
+            {
+                // For OQFS these are raised by CollectionChangedProtected on the CollectionChanged connection point.
+                eventQueue.Enqueue((sender, e));
+            });
 
 #if DEBUG
             if (itemsSource.ObservableNetProjection is null)
@@ -1325,10 +1329,6 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             { }
 #endif
 
-            void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-            {
-                eventQueue.Enqueue((sender, e));
-            }
             using (var cnx = InitializeInMemoryDatabase())
             {
                 subtestBasicQueryAnimal();
@@ -1340,6 +1340,14 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     sql = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>();
                     results = cnx.Query<SelectableQFModelTOQO>(sql);
                     itemsSource.ReplaceItems(results);
+
+
+                    actual = JsonConvert.SerializeObject(eventQueue, Formatting.Indented);
+                    actual.ToClipboardExpected();
+                    { } // <- FIRST TIME ONLY: Adjust the message.
+                    actual.ToClipboardAssert("Expecting json serialization to match.");
+                    { }
+
                     actual = string.Join(Environment.NewLine, itemsSource.Select(_ => _.ToString()));
                     expected = @" 
 Black Cat  [animal] [color]
