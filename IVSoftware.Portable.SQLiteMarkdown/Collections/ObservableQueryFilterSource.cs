@@ -40,8 +40,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterSource()
         {
-            base.ObservableNetProjection = this;
-            base.ProjectionOptions = NetProjectionOption.ObservableOnly;
+            // GZ GZ GZ
+            //base.ObservableNetProjection = this;
+            //base.ProjectionOptions = NetProjectionOption.ObservableOnly;
 
             CollectionChangedProtected += OnCollectionChanged;
 
@@ -113,7 +114,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
-            Debug.Fail($@"ADVISORY - THIS PATH HAS NOT BEEN DEBUGGED OR TESTED.");
+            Debug.WriteLine($@"260306.a ADVISORY - {nameof(ReplaceItemsAsync)}.");
             using (DHostBusy.GetToken())
             {
                 // --------------
@@ -166,7 +167,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 if (base.ObservableNetProjection is null)
                 {
                 }
-                else if (ReferenceEquals(this, base.ObservableNetProjection is null))
+                else if (ReferenceEquals(this, base.ObservableNetProjection))
                 {
                 }
                 else

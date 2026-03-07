@@ -554,17 +554,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        /// <summary>
-        /// Determines whether MDC is allowed to puppeteer the projection directly.
-        /// </summary>
-        internal NetProjectionOption ProjectionOptions { get; set; } = NetProjectionOption.AllowDirectChanges;
-
-
-        /// <summary>
-        /// Reports on whether this object is inherited or composed.
-        /// </summary>
-        public ProjectionTopology ProjectionTopology { get; protected set; }
-
+        #region P R O J E C T I O N
         /// <summary>
         /// Gets or sets the observable projection representing the effective
         /// (net visible) collection after markdown and predicate filtering.
@@ -662,6 +652,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     break;
             }
         }
+
+
+        /// <summary>
+        /// Determines whether MDC is allowed to puppeteer the projection directly.
+        /// </summary>
+        internal NetProjectionOption ProjectionOptions { get; set; } = NetProjectionOption.AllowDirectChanges;
+
+
+        /// <summary>
+        /// Reports on whether this object is inherited or composed.
+        /// </summary>
+        public ProjectionTopology ProjectionTopology { get; protected set; }
+        #endregion P R O J E C T I O N
 
         [Obsolete("Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount.")]
         [PublishedSignature("1.0")] // Required for backward compatibility. Do not remove this property.
