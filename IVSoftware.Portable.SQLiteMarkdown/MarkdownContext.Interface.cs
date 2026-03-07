@@ -709,7 +709,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {
-            using (BeginAuthorityClaim())
+            using (BeginAuthorityClaim(CollectionChangeAuthority.MarkdownContext))
             {
                 await base.OnEpochFinalizingAsync(e);
                 if (!e.Cancel)

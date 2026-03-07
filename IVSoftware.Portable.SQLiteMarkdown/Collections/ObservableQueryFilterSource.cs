@@ -216,7 +216,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
                 // _canonicalRecordset.Clear(); // <- NOT HERE!
 
-                using (base.BeginAuthorityClaim())
+                using (base.BeginAuthorityClaim(authority: CollectionChangeAuthority.MarkdownContext))
                 {
                     // Building from the model in V2 is new.
 
@@ -395,41 +395,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 base.Clear(all);
                 if (FilteringState < FilteringState.Armed)
                 {
-                    using (base.BeginAuthorityClaim())
-                    {
 #if RELEASE
-                    // [Careful] 
-                    // If we're responding to FilteringState changed to clear the
-                    // canonical recordset it MIGHT NOT WORK. For example, manual
-                    // add-remove changes to Items will bypass the input state machine. 
-                    _canonicalRecordset.Clear();
-#else
-                        int countCC = 0;
-                        // Same thing with event monitoring.
-                        CollectionChangedProtected += localCollectionChanged;
-                        CollectionChanged += localCollectionChanged;
-
                         // [Careful] 
                         // If we're responding to FilteringState changed to clear the
-                        // unfiltered items list it MIGHT NOT WORK. For example, manual
+                        // canonical recordset it MIGHT NOT WORK. For example, manual
                         // add-remove changes to Items will bypass the input state machine. 
                         _canonicalRecordset.Clear();
+#else
+                    int countCC = 0;
+                    // Same thing with event monitoring.
+                    CollectionChangedProtected += localCollectionChanged;
+                    CollectionChanged += localCollectionChanged;
 
-                        if (countCC == 0)
-                        {   /* G T K */
-                        }
-                        else
-                        {
-                            Debug.Fail($@"ADVISORY - We probably do not want this.");
-                        }
+                    // [Careful] 
+                    // If we're responding to FilteringState changed to clear the
+                    // unfiltered items list it MIGHT NOT WORK. For example, manual
+                    // add-remove changes to Items will bypass the input state machine. 
+                    _canonicalRecordset.Clear();
 
-                        void localCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-                        {
-                            countCC++;
-                            CollectionChangedProtected -= localCollectionChanged;
-                        }
-#endif
+                    if (countCC == 0)
+                    {   /* G T K */
                     }
+                    else
+                    {
+                        Debug.Fail($@"ADVISORY - We probably do not want this.");
+                    }
+
+                    void localCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+                    {
+                        countCC++;
+                        CollectionChangedProtected -= localCollectionChanged;
+                    }
+#endif
                 }
             }
         }

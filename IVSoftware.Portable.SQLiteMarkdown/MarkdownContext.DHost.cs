@@ -52,21 +52,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Acts as a circularity guard so that keeps these
         /// changes from appearing to be originated on the UI.
         /// </remarks>
-        public IDisposable BeginAuthorityClaim() => DHostAuthorityClaim.GetToken();
+        public IDisposable BeginAuthorityClaim(CollectionChangeAuthority authority) => DHostAuthorityClaim.GetToken(authority);
 
         protected DHostAuthorityClaimProvider DHostAuthorityClaim { get; } = new();
 
         protected class DHostAuthorityClaimProvider : DisposableHost
         {
+            public IDisposable GetToken(CollectionChangeAuthority authority)
+            {
+                if(IsZero())
+                {
+                    Authority = authority;
+                }
+                return base.GetToken(sender: authority);
+            }
             protected override void OnBeginUsing(BeginUsingEventArgs e)
             {
-                Authority = CollectionChangeAuthority.MarkdownContext;
                 base.OnBeginUsing(e);   // <- Last
             }
             protected override void OnFinalDispose(FinalDisposeEventArgs e)
             {
                 base.OnFinalDispose(e); // <- First
-                Authority = CollectionChangeAuthority.NetProjection;
+                Authority = 0;
             }
             public CollectionChangeAuthority Authority { get; protected set; }
         }
@@ -189,13 +196,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 try
                 {
                     base.OnFinalDispose(e);
-
-                    using (_mdc.BeginAuthorityClaim())
+                    foreach (var action in _onResetActions)
                     {
-                        foreach (var action in _onResetActions)
-                        {
-                            action();
-                        }
+                        action();
                     }
                 }
                 finally

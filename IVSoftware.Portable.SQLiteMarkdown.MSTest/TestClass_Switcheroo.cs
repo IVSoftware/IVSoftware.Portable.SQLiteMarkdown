@@ -305,9 +305,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 }
             }
 
-            public IDisposable BeginAuthorityClaim()
+            public IDisposable BeginAuthorityClaim(CollectionChangeAuthority authority)
             {
-                return ((IMarkdownContext)_mdc).BeginAuthorityClaim();
+                return ((IMarkdownContext)_mdc).BeginAuthorityClaim(authority);
             }
 
             public FilteringState Clear(bool all)
@@ -315,7 +315,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 return ((IMarkdownContext)_mdc).Clear(all);
             }
 
-            public Task LoadCanonAsync(IEnumerable recordset)
+            public Task LoadCanonAsync(IEnumerable? recordset)
             {
                 return ((IMarkdownContext)_mdc).LoadCanonAsync(recordset);
             }

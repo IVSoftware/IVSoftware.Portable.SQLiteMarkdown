@@ -345,13 +345,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// During filtering, the MarkdownContext tracks a 'canonical' unfiltered
         /// list which now (counterinuitively) must be updated to remain canonical.
         /// </remarks>
-        NetProjection,
+        NetProjection = 1,
 
         /// <summary>
         /// The markdown context is notifying a change to the net
         /// projection, the (presumably visible) collection.
         /// </summary>
-        MarkdownContext,
+        MarkdownContext = NetProjection + 1,
     }
 
     /// <summary>
