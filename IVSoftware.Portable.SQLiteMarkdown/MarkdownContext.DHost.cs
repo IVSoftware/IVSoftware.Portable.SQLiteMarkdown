@@ -1,7 +1,9 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
@@ -41,9 +43,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public DisposableHost DHostSelfIndexing { get; } = new();
 
 
+        /// <summary>
+        /// Indicates that the MDC is pushing changes onto the NetProjection.
+        /// </summary>
+        /// <remarks>
+        /// Acts as a circularity guard so that keeps these
+        /// changes from appearing to be originated on the UI.
+        /// </remarks>
         public IDisposable BeginAuthorityClaim() => DHostClaimAuthority.GetToken();
-
-        [Probationary]
+        public NotifyCollectionChangedEventAuthority CollectionChangeAuthority { get; private set; }
         protected DisposableHost DHostClaimAuthority
         {
             get
@@ -51,16 +59,50 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (_dhostClaimAuthority is null)
                 {
                     _dhostClaimAuthority = new DisposableHost();
-                    _dhostClaimAuthority.BeginUsing += (sender, e)
-                        => CollectionChangeAuthority = NotifyCollectionChangedEventAuthority.MarkdownContext;
-                    _dhostClaimAuthority.FinalDispose += (sender, e)
-                        => CollectionChangeAuthority = NotifyCollectionChangedEventAuthority.NetProjection;
+
+                    _dhostClaimAuthority.BeginUsing += (sender, e) =>
+                    {
+                        CollectionChangeAuthority = NotifyCollectionChangedEventAuthority.MarkdownContext;
+                    };
+
+                    _dhostClaimAuthority.FinalDispose += (sender, e) =>
+                    {
+                        CollectionChangeAuthority = NotifyCollectionChangedEventAuthority.NetProjection;
+                    };
                 }
                 return _dhostClaimAuthority;
             }
         }
         DisposableHost? _dhostClaimAuthority = null;
 
-        public NotifyCollectionChangedEventAuthority CollectionChangeAuthority { get; private set; }
+
+    }
+    public class DHostResetProvider : DisposableHost
+    {
+        public DHostResetProvider(IEnumerable<Action> onResetActions)
+        {
+            List<Action> nonNullActions = new();
+            foreach (var action in onResetActions)
+            {
+                if(action is null)
+                {
+                    this.ThrowHard<NullReferenceException>("Reset actions cannot be null");
+                }
+                else
+                {
+                    nonNullActions.Add(action);
+                }
+            }
+            _onResetActions = nonNullActions.ToArray();
+        }
+        private Action[] _onResetActions;
+        protected override void OnFinalDispose(FinalDisposeEventArgs e)
+        {
+            base.OnFinalDispose(e);
+            foreach (var action in _onResetActions)
+            {
+
+            }
+        }
     }
 }

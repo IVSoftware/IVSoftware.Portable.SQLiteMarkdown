@@ -336,32 +336,63 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         void IList.Clear() => Clear(all: true);
         void ICollection<T>.Clear() => Clear(all: true);
 
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <remarks>
+        /// Collections that inherit MarkdownContext *must* distinguish clear semantics.
+        /// Subclass should implement both:
+        /// 1. The parameterless "no surprises" Clear().
+        /// 2. The UI-oriented [X] demoting clear state machine.
+        /// </remarks>
+        [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
         public new void Clear(bool all = false)
         {
             base.Clear(all);
             if (FilteringState < FilteringState.Armed)
             {
-#if DEBUG
-                CollectionChangedProtectedZ += localCollectionChanged;
-
-                // [Careful] 
-                // If we're responding to FilteringState changed to clear the
-                // unfiltered items list it MIGHT NOT WORK. For example, manual
-                // add-remove changes to Items will bypass the input state machine. 
-                _canonicalRecordset.Clear();
-
-                void localCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+                using (base.BeginAuthorityClaim())
                 {
-                    CollectionChangedProtectedZ -= localCollectionChanged;
-                }
+#if RELEASE
+                    // [Careful] 
+                    // If we're responding to FilteringState changed to clear the
+                    // canonical recordset it MIGHT NOT WORK. For example, manual
+                    // add-remove changes to Items will bypass the input state machine. 
+                    _canonicalRecordset.Clear();
 #else
-                // [Careful] 
-                // If we're responding to FilteringState changed to clear the
-                // unfiltered items list it MIGHT NOT WORK. For example, manual
-                // add-remove changes to Items will bypass the input state machine. 
-                _unfilteredItems.Clear();
+                    int countCC = 0;
+                    // Same thing with event monitoring.
+                    CollectionChangedProtected += localCollectionChanged;
+                    CollectionChanged += localCollectionChanged;
+
+                    // [Careful] 
+                    // If we're responding to FilteringState changed to clear the
+                    // unfiltered items list it MIGHT NOT WORK. For example, manual
+                    // add-remove changes to Items will bypass the input state machine. 
+                    _canonicalRecordset.Clear();
+
+                    if (countCC == 1)
+                    {   /* G T K */
+                    }
+                    else
+                    {
+                        Debug.Fail($@"ADVISORY - We probably do not want this.");
+                    }
+
+                    void localCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+                    {
+                        countCC++;
+                        CollectionChangedProtected -= localCollectionChanged;
+                    }
 #endif
+                }
             }
+        }
+        public void Clear()
+        {
+
         }
 
         public bool Contains(T item) { return _canonicalRecordset.Contains(item); }
@@ -476,19 +507,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             add
             {
-                CollectionChangedProtectedZ += value;
+                CollectionChangedProtected += value;
             }
             remove
             {
-                CollectionChangedProtectedZ += value;
+                CollectionChangedProtected += value;
             }
         }
 
         private void OnCollectionChangedProtected(NotifyCollectionChangedEventArgs e)
         {
-            CollectionChangedProtectedZ?.Invoke(this, e);
+            CollectionChangedProtected?.Invoke(this, e);
         }
-        protected event NotifyCollectionChangedEventHandler CollectionChangedProtectedZ;
+        protected event NotifyCollectionChangedEventHandler CollectionChangedProtected;
 
         /// <summary>
         /// No client data connection is assumed, but if a persistent
