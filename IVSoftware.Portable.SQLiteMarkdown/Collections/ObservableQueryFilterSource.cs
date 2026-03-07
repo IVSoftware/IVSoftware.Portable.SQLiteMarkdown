@@ -40,7 +40,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterSource()
         {
-            DHostReset = new DHostResetProvider(
+            DHostResetWithEventSuppression = new DHostResetProvider(
             [
                 () => OnCollectionChanged(new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset))
             ]);
@@ -65,7 +65,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     this.CollectionChangedProtected -= debugOnCollectionChanged;
                 }))
             {
-                using(DHostReset.GetToken())
+                using(DHostResetWithEventSuppression.GetToken())
                 {
                     System.Threading.Thread.Sleep(100);
                 }
@@ -380,6 +380,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// 2. The UI-oriented [X] demoting clear state machine.
         /// </remarks>
         [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
+        public void Clear()
+        {
+            using (BeginResetWithEventSuppression())
+            {
+                RunFSM<NativeClearFSM>();
+            }
+        }
         public new void Clear(bool all = false)
         {
             base.Clear(all);
@@ -422,7 +429,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
             }
         }
-        public void Clear() => RunFSM<NativeClearFSM>();
 
         public bool Contains(T item) { return _canonicalRecordset.Contains(item); }
 
@@ -547,7 +553,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected virtual void OnCollectionChangedProtected(NotifyCollectionChangedEventArgs e)
         {
-            CollectionChangedProtected?.Invoke(this, e);
+            if (DHostResetWithEventSuppression.IsZero())
+            {
+                CollectionChangedProtected?.Invoke(this, e);
+            }
         }
         protected event NotifyCollectionChangedEventHandler? CollectionChangedProtected;
 
@@ -555,8 +564,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Probationary("260307 - Alternative to switching INCCs between canonical and filtered collections")]
         protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            // For now:
-            OnCollectionChangedProtected(e);
+            if (DHostResetWithEventSuppression.IsZero())
+            {
+                // For now:
+                OnCollectionChangedProtected(e);
+            }
         }
 
         /// <summary>

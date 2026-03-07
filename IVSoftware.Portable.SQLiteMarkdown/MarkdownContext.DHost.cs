@@ -75,10 +75,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         DisposableHost? _dhostClaimAuthority = null;
 
+        public IDisposable BeginResetWithEventSuppression() => DHostResetWithEventSuppression.GetToken();
+
         /// <summary>
         /// Requires initialization from subclass.
         /// </summary>
-        protected DHostResetProvider DHostReset
+        protected DHostResetProvider DHostResetWithEventSuppression
         {
             get
             {
@@ -92,7 +94,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             set => _dhostReset = value;
         }
         DHostResetProvider? _dhostReset = null;
-        public IDisposable BeginResetWithEventSuppression() => DHostReset.GetToken();
         protected class DHostResetProvider : DisposableHost
         {
             public DHostResetProvider(IEnumerable<Action> onResetActions)

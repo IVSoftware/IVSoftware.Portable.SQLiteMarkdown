@@ -279,6 +279,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             switch ((StdFSMState)state)
             {
+                case StdFSMState.ClearNetProjection:
+                    localClearNetProjection();
+                    break;
                 case StdFSMState.InitFQBDForEpoch when context is IEnumerable canonical:
                     localInitFQDBEpoch(canonical);
                     break;
@@ -294,10 +297,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case StdFSMState.ResetModelForEpoch:
                     localResetModelForEpoch();
                     break;
+                default:
+                    Debug.Fail($@"ADVISORY - Unrecognized action.");
+                    break;
             }
             return ReservedAffinityState.Next;
 
             #region L o c a l F x
+            [Probationary]
+            void localClearNetProjection()
+            {
+            }
+
             Enum localInitFQDBEpoch(IEnumerable canonical)
             {
                 try

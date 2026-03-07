@@ -360,8 +360,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     [Canonical("FSM enums should declare members relative to numeric indexes in this set.")]
     internal enum StdFSMState
     {
-        [Obsolete]
-        InitializeUnfilteredItemsCollection = 1,
+        [Probationary]
+        ClearNetProjection = 1,
 
         /// <summary>
         /// Clear or Create Table for ContractType.
@@ -415,6 +415,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
     internal enum NativeClearFSM
     {
+        ClearNetProjection = StdFSMState.ClearNetProjection,
+
         ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
 
         ResetModelForEpoch = StdFSMState.ResetModelForEpoch,

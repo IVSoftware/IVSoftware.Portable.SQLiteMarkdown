@@ -1380,8 +1380,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 }
                 void subtestBasicQueryAnimalINPC()
                 {
-                    itemsSource.Clear();
-
+                    #region L o c a l F x
                     // This subtest only. For real do not hoist or generalize this.
                     using var local = this.WithOnDispose(
                         onInit: (sender, e) =>
@@ -1396,6 +1395,9 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     {
                         eventQueue.Enqueue((sender, e));
                     }
+                    #endregion L o c a l F x
+
+                    itemsSource.Clear();
                     sql = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>();
                     results = cnx.Query<SelectableQFModelTOQO>(sql);
                     itemsSource.ReplaceItems(results);
