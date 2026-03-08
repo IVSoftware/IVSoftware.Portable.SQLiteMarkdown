@@ -653,15 +653,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
 
         #region R O U T E D    C O N D I T I O N A L S
+
         protected override void OnSearchEntryStateChanged()
         {
             base.OnSearchEntryStateChanged();
             if(SearchEntryState == SearchEntryState.Cleared)
             {
                 // This is old. Do we still need it?
-                _canonicalRecordset.Clear();
-                OnCollectionChanged(
-                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                using (BeginAuthority(CollectionChangeAuthority.None))
+                {
+                    _canonicalRecordset.Clear();
+                }
             }
         }
 

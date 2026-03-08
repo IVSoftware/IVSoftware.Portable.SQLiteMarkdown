@@ -376,8 +376,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return ReservedFSMState.Next;
 
             #region L o c a l F x
-            void localDetectFastTrack()
+            Enum localDetectFastTrack()
             {
+                switch (state)
+                {
+                    case ClearModelFSM:
+                        { }
+                        break;
+                }
+                return ReservedFSMState.Next;
             }
 
             Enum localInitFQDBEpoch(IEnumerable canonical)

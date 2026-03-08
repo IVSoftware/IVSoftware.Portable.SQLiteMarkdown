@@ -1964,7 +1964,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnSearchEntryStateChanged() 
         {
-            if(SearchEntryState == SearchEntryState.Cleared)
+            if (SearchEntryState == SearchEntryState.Cleared)
             {
                 // Please do not combine these clauses.
                 if (ProjectionOptions.HasFlag(NetProjectionOption.AllowDirectChanges))
@@ -1988,13 +1988,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 else
                 {
+                    // Subclass has opted out of direct changes.
                     var msg = $"In {nameof(OnFilteringStateChanged)}(): {ProjectionOptions.ToFullKey()}";
                     this.Advisory(msg);
 
                     Debug.Fail($"260308 ADVISORY - {msg}");
                     Debug.WriteLine($"260308 ADVISORY - {msg}");
                 }
-                RunFSM<ResetFilterEpochFSM>();
             }
         }
 

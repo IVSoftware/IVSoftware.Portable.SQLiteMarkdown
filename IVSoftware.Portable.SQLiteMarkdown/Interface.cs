@@ -947,9 +947,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
     internal enum ReservedFSMState
     {
-        Canceled = -2,
-        Next = -1,
-        None = 0,
+        FastTrack = -3,
+        Canceled  = -2,
+        Next      = -1,
+        None      = 0,
     }
 
     internal enum AffinityFsm
