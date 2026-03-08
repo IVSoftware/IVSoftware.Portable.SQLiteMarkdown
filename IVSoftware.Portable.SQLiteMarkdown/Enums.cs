@@ -189,49 +189,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         #endregion Q U E R Y
     }
 
-    /// <summary>
-    /// Specifies which collection currently has synchronization authority.
-    /// </summary>
-    /// <remarks>
-    /// Defines which side is authoritative when propagating changes between
-    /// the canonical unfiltered collection and its filtered projection.
-    /// 
-    /// Terminology:
-    /// - Canonical refers to the unfiltered source collection.
-    /// - Projection refers to the filtered collection derived from the canonical source.
-    /// - Upstream propagation means synchronization from the projection back to the canonical source.
-    /// 
-    /// Authority may shift during refinement epochs to suppress upstream propagation
-    /// and prevent circular collection change events.
-    /// </remarks>
-    public enum CollectionSyncAuthority
-    {
-        /// <summary>
-        /// The filtered projection is authoritative.
-        /// Changes originating in the filtered collection may propagate
-        /// to the canonical unfiltered backing collection.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model (typical):
-        /// - The filtered collection represents the current visible projection.
-        /// - User-facing {add, edit, remove} operations occur against this projection.
-        /// - These operations are treated as authoritative and synchronized upstream.
-        /// </remarks>
-        Filtered,
-
-        /// <summary>
-        /// The canonical unfiltered collection is authoritative.
-        /// Changes in the filtered projection are not propagated upstream.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model (typical):
-        /// - The unfiltered collection represents the canonical source for a settled state.
-        /// - During a refinement epoch, the filtered projection is modified programmatically.
-        /// - Upstream propagation is suppressed to prevent circular collection change events.
-        /// </remarks>
-        Unfiltered,
-    }
-
     public enum Win32Message
     {
         WM_MOUSEMOVE = 0x0200,
@@ -336,6 +293,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// States authority inside a NotifyCollectionChanged event handler.
     /// </summary>
+    /// <remarks>
+    /// Defines which side is authoritative when propagating changes between
+    /// the canonical unfiltered collection and its filtered projection.
+    /// 
+    /// Terminology:
+    /// - NetProjection (typically a UI surface) refers to the items allowed by any active queries or filters. 
+    /// - Canonical refers to the backend collection captured when state enters IsFiltering.
+    /// - PredicateMatchSubset refers to the backend collection maintained by the Model.
+    /// 
+    /// Authority may shift during refinement epochs to suppress upstream propagation
+    /// and prevent circular collection change events.
+    /// </remarks>
     public enum CollectionChangeAuthority
     {
         /// <summary>
@@ -354,8 +323,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// The user has effected a (presumably UI-related) change to a filtered collection.
         /// </summary>
         /// <remarks>
-        /// During filtering, the MarkdownContext tracks a 'canonical' unfiltered
-        /// list which now (counterinuitively) must be updated to remain canonical.
+        /// Mental Model (typical): "When I add a new item, the current filter must not be allowed to 'immediately' hide it."
+        /// User-facing {add, edit, remove} operations that occur against a filtered projection are *exempt* from the filter.
         /// </remarks>
         NetProjection = None + 1,
 

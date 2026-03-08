@@ -221,9 +221,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-
+        
         protected async Task<Enum> RunFSMAsync<TFsm>(object? context = null) where TFsm : struct, Enum
         {
+            if(typeof(TFsm).GetCustomAttribute<CollectionChangeAuthorityAttribute>() is { } attr)
+            {
+
+            }
             Enum result = ReservedAffinityState.None;
             foreach (Enum state in GetDeclaredValues<TFsm>())
             {
