@@ -21,20 +21,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     /// </remarks>
     sealed class TokenDisposer : IDisposable
     {
-        readonly IDisposable?[] _tokens;
+        readonly IDisposable[] _tokens;
         bool _disposed;
 
         public TokenDisposer(params IDisposable?[] tokens)
-            => _tokens = tokens.OfType<IDisposable>().ToArray();
+            => _tokens = tokens.OfType<IDisposable>().Reverse().ToArray();
 
         public void Dispose()
         {
             if (_disposed) return;
             _disposed = true;
-
-            for (int i = _tokens.Length - 1; i >= 0; i--)
+            foreach (var token in _tokens)
             {
-                _tokens[i]?.Dispose();
+                token.Dispose();
             }
         }
     }

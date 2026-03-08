@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq;
@@ -298,36 +299,37 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 authorityToken = BeginCollectionChangeAuthority(authority);
             }
-
-
-            Enum result = ReservedFSMState.None;
-            // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
-            // * Reuse an incoming value that is already an object[] to avoid an unnecessary allocation.
-            if (context is IEnumerable collection)
+            using (new TokenDisposer(resetToken, authorityToken))
             {
-                context = collection is object[] array
-                    ? array
-                    : collection.Cast<object>().ToArray();
-            }
-
-            foreach (Enum state in GetDeclaredValues<TFsm>())
-            {
-                // Expecting 'Next' for linear flow.
-                result = ExecState(state, context);
-
-                switch (result)
+                Enum result = ReservedFSMState.None;
+                // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
+                // * Reuse an incoming value that is already an object[] to avoid an unnecessary allocation.
+                if (context is IEnumerable collection)
                 {
-                    case ReservedFSMState.Canceled:
-                    case ReservedFSMState.FastTrack:
-                    case ReservedFSMState.None:
-                        return result;
-                    case ReservedFSMState.Next:
-                        break;
-                    default:
-                        return localRunOOB(state, context);
+                    context = collection is object[] array
+                        ? array
+                        : collection.Cast<object>().ToArray();
                 }
+
+                foreach (Enum state in GetDeclaredValues<TFsm>())
+                {
+                    // Expecting 'Next' for linear flow.
+                    result = ExecState(state, context);
+
+                    switch (result)
+                    {
+                        case ReservedFSMState.Canceled:
+                        case ReservedFSMState.FastTrack:
+                        case ReservedFSMState.None:
+                            return result;
+                        case ReservedFSMState.Next:
+                            break;
+                        default:
+                            return localRunOOB(state, context);
+                    }
+                }
+                return result;
             }
-            return result;
 
             #region L o c a l F x
             Enum localRunOOB(Enum outOfBand, object? context)
