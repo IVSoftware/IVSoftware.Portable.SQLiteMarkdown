@@ -416,14 +416,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
 
     /// <summary>
-    /// Non-eventing background clear.
+    /// Empties the Model and the FiterQueryDatabase without eventing.
     /// </summary>
     [CollectionChangeAuthority(CollectionChangeAuthority.None)]
     internal enum ClearModelFSM
     {
         DetectFastTrack = StdFSMState.DetectFastTrack,
-
-        ClearProjection = StdFSMState.ClearProjection,
 
         ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
 

@@ -85,69 +85,79 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnXAttributeChanged (XAttribute xattr, XObjectChangeEventArgs e) 
         {
-            if(xattr is XBoundAttribute xbo && xbo.Tag.GetType() == ContractType)
+            if (DHostAuthorityClaim.Authority == CollectionChangeAuthority.None)
+            {   /* G T K - N O O P */
+            }
+            else
             {
-                OnBoundItemObjectChange(xbo, e.ObjectChange);
+                if (xattr is XBoundAttribute xbo && xbo.Tag.GetType() == ContractType)
+                {
+                    OnBoundItemObjectChange(xbo, e.ObjectChange);
+                }
             }
         }
 
         protected virtual void OnXElementChanged (XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
-            if(pxel is null)
-            {
-                this.ThrowFramework<NullReferenceException>(
-                    $"UNEXPECTED: The '{nameof(pxel)}' argument should be non-null by design.");
+            if (DHostAuthorityClaim.Authority == CollectionChangeAuthority.None)
+            {   /* G T K - N O O P */
             }
-            switch (e.ObjectChange)
+            else
             {
-                case XObjectChange.Add:
-                case XObjectChange.Remove:
-                    var xbo =
-                        xel
-                        .Attributes()
-                        .OfType<XBoundAttribute>()
-                        .FirstOrDefault(_ => _.Tag?.GetType() == ContractType);
-                    if(xbo is not null)
-                    {
-                        OnBoundItemObjectChange(xbo, e.ObjectChange);
-                    }
-                    localCheckAddRemoveCount();
-                    break;
-            }
-
-            void localCheckAddRemoveCount()
-            {
-                XElement? modelRoot = pxel?.AncestorsAndSelf().LastOrDefault();
-                if (modelRoot is null)
+                if (pxel is null)
                 {
                     this.ThrowFramework<NullReferenceException>(
-                        $"UNEXPECTED: The '{nameof(modelRoot)}' argument should be non-null by design.");
+                        $"UNEXPECTED: The '{nameof(pxel)}' argument should be non-null by design.");
                 }
-                else
+                switch (e.ObjectChange)
                 {
-                    var autocount = modelRoot.GetAttributeValue<int>(StdMarkdownAttribute.autocount);
-                    switch (e.ObjectChange)
-                    {
-                        case XObjectChange.Add:
-                            autocount++;
-                            break;
-                        case XObjectChange.Remove:
-                            if (autocount == 0)
-                            {
-                                this.ThrowFramework<InvalidOperationException>(
-                                    $"UNEXPECTED: Illegal underflow detected '{nameof(autocount)}'. Count should be >= 0 by design.");
-                            }
-                            else
-                            {
-                                autocount--;
-                            }
-                            break;
-                    }
-                    modelRoot.SetAttributeValue(StdMarkdownAttribute.autocount, autocount);
-                    // [Careful]
-                    // It's too racey here to try and compare counts.
+                    case XObjectChange.Add:
+                    case XObjectChange.Remove:
+                        var xbo =
+                            xel
+                            .Attributes()
+                            .OfType<XBoundAttribute>()
+                            .FirstOrDefault(_ => _.Tag?.GetType() == ContractType);
+                        if (xbo is not null)
+                        {
+                            OnBoundItemObjectChange(xbo, e.ObjectChange);
+                        }
+                        localCheckAddRemoveCount();
+                        break;
                 }
 
+                void localCheckAddRemoveCount()
+                {
+                    XElement? modelRoot = pxel?.AncestorsAndSelf().LastOrDefault();
+                    if (modelRoot is null)
+                    {
+                        this.ThrowFramework<NullReferenceException>(
+                            $"UNEXPECTED: The '{nameof(modelRoot)}' argument should be non-null by design.");
+                    }
+                    else
+                    {
+                        var autocount = modelRoot.GetAttributeValue<int>(StdMarkdownAttribute.autocount);
+                        switch (e.ObjectChange)
+                        {
+                            case XObjectChange.Add:
+                                autocount++;
+                                break;
+                            case XObjectChange.Remove:
+                                if (autocount == 0)
+                                {
+                                    this.ThrowFramework<InvalidOperationException>(
+                                        $"UNEXPECTED: Illegal underflow detected '{nameof(autocount)}'. Count should be >= 0 by design.");
+                                }
+                                else
+                                {
+                                    autocount--;
+                                }
+                                break;
+                        }
+                        modelRoot.SetAttributeValue(StdMarkdownAttribute.autocount, autocount);
+                        // [Careful]
+                        // It's too racey here to try and compare counts.
+                    }
 #if false
                 switch (e.ObjectChange)
                 {
@@ -171,6 +181,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         break;
                 }
 #endif
+                }
             }
         }
 
@@ -422,8 +433,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             switch ((StdFSMState)state)
             {
                 case StdFSMState.DetectFastTrack:
-                    localDetectFastTrack();
-                    break;
+                    if (Equals(localDetectFastTrack(), ReservedFSMState.FastTrack))
+                    {
+                        return ReservedFSMState.FastTrack;
+                    }
+                    else
+                    {
+                        break;
+                    }
                 case StdFSMState.InitFQBDForEpoch when context is IEnumerable canonical:
                     localInitFQDBEpoch(canonical);
                     break;
@@ -453,7 +470,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     case ClearModelFSM:
                         if (!Model.HasElements)
                         {
-                            Debug.Fail($@"ADVISORY - First Time.");
                             return ReservedFSMState.FastTrack;
                         }
                         break;

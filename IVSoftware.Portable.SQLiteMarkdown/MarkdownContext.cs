@@ -1966,6 +1966,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if (SearchEntryState == SearchEntryState.Cleared)
             {
+                if(ObservableNetProjection is null)
+                {
+                    // Request a Reset event on dispose.
+                    using (BeginResetEpoch())
+                    {
+                        // Suppress all event authority while clearing the model.
+                        RunFSM<ClearModelFSM>();
+                    }
+                }
+                else
+                {
+
+                }
+                return;
+
                 // Please do not combine these clauses.
                 if (ProjectionOptions.HasFlag(NetProjectionOption.AllowDirectChanges))
                 {
