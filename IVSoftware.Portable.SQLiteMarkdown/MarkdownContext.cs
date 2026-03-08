@@ -1555,7 +1555,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         protected virtual void OnIsFilteringChanged() { }
 
-
         /// <summary>
         /// Collections that inherit MarkdownContext *must* distinguish clear semantics.
         /// </summary>
@@ -1565,6 +1564,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// 2. The UI-oriented [X] demoting clear state machine.
         /// </remarks>
         [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
+        public void Clear()
+        {
+
+        }
+
         public FilteringState Clear(bool all = false)
         {
             if (all)

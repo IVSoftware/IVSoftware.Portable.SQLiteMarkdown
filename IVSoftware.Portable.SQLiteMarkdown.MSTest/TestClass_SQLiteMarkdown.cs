@@ -752,7 +752,7 @@ InputText"
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting Filtering shows DISABLED.");
 
             // Clear the IME, *not* the recordset.
-            mdc.Clear();
+            mdc.Clear(false);
             actual = mdc.StateReport();
             actual.ToClipboardExpected();
             { }
