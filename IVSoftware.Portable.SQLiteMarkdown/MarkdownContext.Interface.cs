@@ -20,6 +20,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using static SQLite.SQLite3;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -291,16 +292,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 using (DHostAuthorityClaim.GetToken(attr.Authority))
                 {
-                    return localRunFsm(context);
+                    return localRunFSM(context);
                 }
             }
             else
             {
-                return localRunFsm(context);
+                return localRunFSM(context);
             }
 
             #region L o c a l F x
-            Enum localRunFsm(object? context)
+            Enum localRunFSM(object? context)
             {
                 Enum result = ReservedFSMState.None;
 
@@ -318,14 +319,40 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     // Expecting 'Next' for linear flow.
                     result = ExecState(state, context);
 
-                    if (!Equals(result, ReservedFSMState.Next))
+                    switch (result)
                     {
-                        Enum outOfBand;
-                        while (!Equals(ReservedFSMState.None, (outOfBand = ExecState(state, context)))) { }
-                        break;
+                        case ReservedFSMState.Canceled:
+                        case ReservedFSMState.FastTrack:
+                        case ReservedFSMState.None:
+                            return result;
+                        case ReservedFSMState.Next:
+                            break;
+                        default:
+                            return localRunOOB(state, context);
                     }
                 }
                 return result;
+            }
+            Enum localRunOOB(Enum outOfBand, object? context)
+            {
+                Debug.Fail($@"ADVISORY - First Time.");
+                int oobCurrent = 0;
+                const int OOB_MAX = 100;
+                while (++oobCurrent <= OOB_MAX)
+                {
+                    outOfBand = ExecState(outOfBand, context);
+
+                    switch (outOfBand)
+                    {
+                        case ReservedFSMState.Canceled:
+                        case ReservedFSMState.FastTrack:
+                        case ReservedFSMState.None:
+                            return outOfBand;
+                        case ReservedFSMState.Next:
+                            break;
+                    }
+                }
+                return ReservedFSMState.MaxOOB;
             }
             #endregion
         }
@@ -381,7 +408,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 switch (state)
                 {
                     case ClearModelFSM:
-                        { }
+                        if (!Model.HasElements)
+                        {
+                            Debug.Fail($@"ADVISORY - First Time.");
+                            return ReservedFSMState.FastTrack;
+                        }
+                        break;
+                    case ClearProjectionFSM:
+                        if(!Model.HasElements && (ObservableNetProjection is not IEnumerable projection || !projection.Cast<object>().Any()))
+                        {
+                            Debug.Fail($@"ADVISORY - First Time.");
+                            return ReservedFSMState.FastTrack;
+                        }
                         break;
                 }
                 return ReservedFSMState.Next;
