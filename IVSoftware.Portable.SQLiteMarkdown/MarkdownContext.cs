@@ -1556,18 +1556,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected virtual void OnIsFilteringChanged() { }
 
         /// <summary>
-        /// Collections that inherit MarkdownContext *must* distinguish clear semantics.
+        /// Comprehensive system-level clear that includes InputText in its purview.
         /// </summary>
         /// <remarks>
-        /// Subclass should implement both:
+        /// Subclasses should implement both:
         /// 1. The parameterless "no surprises" Clear().
         /// 2. The UI-oriented [X] demoting clear state machine.
         /// </remarks>
         [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
-        public void Clear()
-        {
-            RunFSM<NativeClearFSM>();
-        }
 
         public FilteringState Clear(bool all = false)
         {

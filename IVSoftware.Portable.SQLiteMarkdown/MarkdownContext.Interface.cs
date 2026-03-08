@@ -242,8 +242,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// a static property of the context, constraining mutation rights to the precise
         /// interval in which the FSM is running.
         /// </remarks>
+        [Probationary("This id a draft implementation that hasn't been thoroughly tested.")]
         protected async Task<Enum> RunFSMAsync<TFsm>(object? context = null) where TFsm : struct, Enum
         {
+            Debug.Fail($@"ADVISORY - [Probationary].");
             IDisposable? resetToken = null, authorityToken = null;
 
             if (typeof(TFsm).GetCustomAttribute<ResetEpochAttribute>() is not null)
@@ -257,12 +259,58 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             using (new TokenDisposer(resetToken, authorityToken))
             {
                 Enum result = ReservedFSMState.None;
+                // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
+                // * Reuse an incoming value that is already an object[] to avoid an unnecessary allocation.
+                if (context is IEnumerable collection)
+                {
+                    context = collection is object[] array
+                        ? array
+                        : collection.Cast<object>().ToArray();
+                }
+
                 foreach (Enum state in GetDeclaredValues<TFsm>())
                 {
+                    // Expecting 'Next' for linear flow.
                     result = await ExecStateAsync(state, context);
+
+                    switch (result)
+                    {
+                        case ReservedFSMState.Canceled:
+                        case ReservedFSMState.FastTrack:
+                        case ReservedFSMState.None:
+                            return result;
+                        case ReservedFSMState.Next:
+                            break;
+                        default:
+                            return await localRunOOB(state, context);
+                    }
                 }
                 return result;
             }
+
+            #region L o c a l F x
+            async Task<Enum> localRunOOB(Enum outOfBand, object? context)
+            {
+                Debug.Fail($@"ADVISORY - First Time.");
+                int oobCurrent = 0;
+                const int OOB_MAX = 100;
+                while (++oobCurrent <= OOB_MAX)
+                {
+                    outOfBand = ExecState(outOfBand, context);
+
+                    switch (outOfBand)
+                    {
+                        case ReservedFSMState.Canceled:
+                        case ReservedFSMState.FastTrack:
+                        case ReservedFSMState.None:
+                            return outOfBand;
+                        case ReservedFSMState.Next:
+                            break;
+                    }
+                }
+                return ReservedFSMState.MaxOOB;
+            }
+            #endregion L o c a l F x
         }
 
         /// <summary>
