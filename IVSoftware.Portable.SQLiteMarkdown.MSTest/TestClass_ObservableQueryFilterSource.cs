@@ -1778,17 +1778,6 @@ InputText"
                         actual.ToClipboardExpected();
                         { }
 
-                        var notExpected = @" 
-Busy
-SearchEntryState
-FilteringState
-IsFiltering
-SearchEntryState
-FilteringState
-IsFiltering
-Busy"
-                        ;
-
                         // Limit Touched 260306
                         // - The timing is that backing stores for both _filteringState and _isFiltering change
                         //   before any events are raised. It's atomic that way.
@@ -1849,18 +1838,24 @@ SearchEntryState='QueryCompleteWithResults'";
                         );
 
                         // Now clear
-                        items.Clear();
+                        // [Careful]
+                        // This is an IList subclass *not* an MDC.
+                        // Don't do this because it calls the "no suprises" version as per policy.
+                        // items.Clear();   // <- NOPE!
+
+                        // The intended Clear is the regressive version.
+                        // Looking for a return value is one way to be sure.
+
+                        Assert.AreEqual(
+                            FilteringState.Armed,
+                            items.Clear(all: false),     // <- EXECUTES THE CLEAR
+                            "Expecting EMPTY input text WITHOUT regressing to Query. THIS MEANS ALL 12 ITEMS ARE SHOWN!"
+                        );
 
                         Assert.AreEqual(
                             string.Empty,
                             items.InputText,
                             "Expecting empty input text."
-                        );
-
-                        Assert.AreEqual(
-                            FilteringState.Armed,
-                            items.FilteringState,
-                            "Expecting nuanced behavior:"
                         );
 
 #if ABSTRACT
@@ -1879,9 +1874,11 @@ SearchEntryState='QueryCompleteWithResults'";
                         actual = items.StateReport();
                         actual.ToClipboardExpected();
                         { }
+
                         expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 0, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
+
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
                         // PLEASE: Do not remove.
@@ -1898,9 +1895,14 @@ SearchEntryState='QueryCompleteWithResults'";
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 1, IsFiltering: True], [Net: 0, CC: 12, PMC: 5], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 1, IsFiltering: True], [Net: 5, CC: 12, PMC: 5], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                         ;
-                        Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+                        Assert.AreEqual(
+                            expected.NormalizeResult(), 
+                            actual.NormalizeResult(), 
+                            "Expecting the PMC is routed to the ONP. BOTH SHOULD SHOW 5.");
+
+
                         actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
                         actual.ToClipboardExpected();
                         { }

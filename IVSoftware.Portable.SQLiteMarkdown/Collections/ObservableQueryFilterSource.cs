@@ -186,9 +186,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
 
             // RESET REQUIRED main INCC for NetProjection.
-            // Unit Tests expect this, but it can't be left
-            // outside of the authority or Model gets cleared..
+            // Unit Tests expect this, but it can't be left outside of the authority OTHERWISE MODEL GETS CLEARED.
             // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
+
             // _canonicalRecordset.Clear(); // <- NOT HERE!
 
             using (base.BeginCollectionChangeAuthority(authority: CollectionChangeAuthority.MarkdownContext))
@@ -403,48 +403,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        public new void Clear(bool all = false)
+        public new FilteringState Clear(bool all = false)
         {
             using (BeginResetEpoch())
             {
-                base.Clear(all);
-                if (FilteringState < FilteringState.Armed)
+                var fsBase = base.Clear(all);
+                if (fsBase < FilteringState.Armed)
                 {
-#if RELEASE
-                        // [Careful] 
-                        // If we're responding to FilteringState changed to clear the
-                        // canonical recordset it MIGHT NOT WORK. For example, manual
-                        // add-remove changes to Items will bypass the input state machine. 
-                        _canonicalRecordset.Clear();
-#else
-                    int countCC = 0;
-                    // Same thing with event monitoring.
-                    CollectionChanged += localCollectionChanged;
-                    CollectionChanged += localCollectionChanged;
-
                     // [Careful] 
                     // If we're responding to FilteringState changed to clear the
-                    // unfiltered items list it MIGHT NOT WORK. For example, manual
+                    // canonical recordset it MIGHT NOT WORK. For example, manual
                     // add-remove changes to Items will bypass the input state machine. 
                     _canonicalRecordset.Clear();
-
-                    if (countCC == 0)
-                    {   /* G T K */
-                    }
-                    else
-                    {
-
-                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 8).Date, "Don't forget disabled");
-                        // Debug.Fail($@"ADVISORY - We probably do not want this.");
-                    }
-
-                    void localCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-                    {
-                        countCC++;
-                        CollectionChanged -= localCollectionChanged;
-                    }
-#endif
                 }
+                return fsBase;
             }
         }
 
