@@ -180,9 +180,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         /// <summary>
-        /// Replaces the entire current dataset after a query.
-        /// Not valid in Filter-only mode. Raises CollectionChanged and sets FilteringState based on count.
+        /// Removes any current items before copying the items passed.
         /// </summary>
+        /// <remarks>
+        /// Mental Model: "I have a new recordset from my external (e.g., cloud) database."
+        /// On completeion SearchEntryState will always be either QueryCompleteNoResults or QueryCompleteWithResults.
+        /// </remarks>
         public virtual void ReplaceItems(IEnumerable<T> items)
         {
             using (DHostBusy.GetToken())
@@ -216,7 +219,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
                 // _canonicalRecordset.Clear(); // <- NOT HERE!
 
-                using (base.BeginAuthorityClaim(authority: CollectionChangeAuthority.MarkdownContext))
+                using (base.BeginAuthority(authority: CollectionChangeAuthority.MarkdownContext))
                 using (base.BeginResetEpoch())
                 {
                     // Building from the model in V2 is new.
@@ -420,7 +423,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     else
                     {
 
-                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 7).Date, "Don't forget disabled");
+                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 8).Date, "Don't forget disabled");
                         // Debug.Fail($@"ADVISORY - We probably do not want this.");
                     }
 

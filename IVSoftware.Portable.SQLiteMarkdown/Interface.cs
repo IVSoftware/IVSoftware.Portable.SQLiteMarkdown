@@ -236,7 +236,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Intended use: EpochFinalizing should be wrapped with this reference counter.
         /// </remarks>
-        IDisposable BeginAuthorityClaim(CollectionChangeAuthority authority);
+        IDisposable BeginAuthority(CollectionChangeAuthority authority);
 
         /// <summary>
         /// Gets the total number of items in the canonical ledger.

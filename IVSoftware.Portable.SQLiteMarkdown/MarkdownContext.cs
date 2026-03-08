@@ -1746,49 +1746,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
 
             #region L o c a l F x
-            void localApplyQuerySemantics()
-            {
-                if (InputText.IsSemanticallyEmpty())
-                {
-                    // IME not merely *is* empty. It has *become* empty due to:
-                    // - Backspace to empty
-                    // - [X] while not empty.
-                    if(SearchEntryState == SearchEntryState.QueryCompleteWithResults)
-                    {
-                        // This offers an intermediate step. The IME is now empty, but
-                        // it takes one additional [X] to clear the projected items.
-                        SearchEntryState = SearchEntryState.QueryEmpty;
-                    }
-                    else // ALL other states
-                    {
-                        // If there are no records in the projection,
-                        // then the state has reached first cause.
-                        SearchEntryState = SearchEntryState.Cleared;
-                    }
-                }
-                else if (InputText.TrimEndTransients().Length < 3)
-                {
-                    SearchEntryState = SearchEntryState.QueryENB;
-                }
-                else
-                {
-                    SearchEntryState = SearchEntryState.QueryEN;
-                }
-
-
-                //switch (SearchEntryState)
-                //{
-                //    case SearchEntryState.QueryCompleteWithResults:
-                //        // Text has become empty, but don't clear the list in this intermediate step.
-                //        SearchEntryState = SearchEntryState.QueryEmpty;
-                //        break;
-                //    case SearchEntryState.QueryCompleteNoResults:   // Expected
-                //    case SearchEntryState.QueryEmpty:               // Unexpected but benign.
-                //        // Text has become empty, and there are no items to clear.
-                //        SearchEntryState = SearchEntryState.Cleared;
-                //        break;
-                //}
-            }
             void localApplyFilterSemantics()
             {
                 // First cut: "There must be at least one item."
@@ -1819,6 +1776,54 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                     RestartIfSemanticInputChanged();
                 }
+            }
+
+            void localApplyQuerySemantics()
+            {
+                if (InputText.IsSemanticallyEmpty())
+                {
+                    // IME not merely *is* empty. It has *become* empty due to:
+                    // - Backspace to empty
+                    // - [X] while not empty.
+                    if(SearchEntryState == SearchEntryState.QueryCompleteWithResults)
+                    {
+                        // This offers an intermediate step. The IME is now empty, but
+                        // it takes one additional [X] to clear the projected items.
+
+
+                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 8).Date, "Don't forget disabled");
+                        // 260308
+                        // SearchEntryState = SearchEntryState.QueryEmpty;
+                    }
+                    else // ALL other states
+                    {
+                        // If there are no records in the projection,
+                        // then the state has reached first cause.
+                        SearchEntryState = SearchEntryState.Cleared;
+                    }
+                }
+                else if (InputText.TrimEndTransients().Length < 3)
+                {
+                    SearchEntryState = SearchEntryState.QueryENB;
+                }
+                else
+                {
+                    SearchEntryState = SearchEntryState.QueryEN;
+                }
+
+
+                //switch (SearchEntryState)
+                //{
+                //    case SearchEntryState.QueryCompleteWithResults:
+                //        // Text has become empty, but don't clear the list in this intermediate step.
+                //        SearchEntryState = SearchEntryState.QueryEmpty;
+                //        break;
+                //    case SearchEntryState.QueryCompleteNoResults:   // Expected
+                //    case SearchEntryState.QueryEmpty:               // Unexpected but benign.
+                //        // Text has become empty, and there are no items to clear.
+                //        SearchEntryState = SearchEntryState.Cleared;
+                //        break;
+                //}
             }
             #endregion L o c a l F x
         }

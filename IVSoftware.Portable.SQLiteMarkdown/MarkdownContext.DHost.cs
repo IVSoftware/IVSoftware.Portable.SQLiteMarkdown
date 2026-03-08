@@ -47,17 +47,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
 
         /// <summary>
-        /// Indicates that the MDC is pushing changes onto the NetProjection.
+        /// Identifies provenance of INCC.
         /// </summary>
         /// <remarks>
-        /// Acts as a circularity guard so that keeps these
-        /// changes from appearing to be originated on the UI.
+        /// Acts as an authority monitor and circularity guard for DDX between collections.
         /// </remarks>
-        public IDisposable BeginAuthorityClaim(CollectionChangeAuthority authority) => DHostAuthorityClaim.GetToken(authority);
+        public IDisposable BeginAuthority(CollectionChangeAuthority authority) => DHostAuthorityClaim.GetToken(authority);
 
-        protected DHostAuthorityClaimProvider DHostAuthorityClaim { get; } = new();
+        protected DHostAuthorityEpochProvider DHostAuthorityClaim { get; } = new();
 
-        protected class DHostAuthorityClaimProvider : DisposableHost
+        protected class DHostAuthorityEpochProvider : DisposableHost
         {
             public IDisposable GetToken(CollectionChangeAuthority authority)
                 => base.GetToken(sender: authority, properties: null);

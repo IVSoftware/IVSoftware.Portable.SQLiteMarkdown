@@ -305,9 +305,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 }
             }
 
-            public IDisposable BeginAuthorityClaim(CollectionChangeAuthority authority)
+            public IDisposable BeginAuthority(CollectionChangeAuthority authority)
             {
-                return ((IMarkdownContext)_mdc).BeginAuthorityClaim(authority);
+                return ((IMarkdownContext)_mdc).BeginAuthority(authority);
             }
 
             public FilteringState Clear(bool all)
