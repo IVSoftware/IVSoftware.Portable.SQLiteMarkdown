@@ -1971,13 +1971,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     if (ObservableNetProjection is IList projection && projection.Count != 0)
                     {
-                        projection.Clear();
+                        // Clear a non-empty projection on its own authority.
+                        using (BeginAuthority(CollectionChangeAuthority.NetProjection))
+                        {
+                            projection.Clear();
+                        }
                     }
                     else
                     {
-                        Debug.Assert(
-                            !Model.HasElements, 
-                            "Defensive verify that model is synchronized i.e., empty.");
+                        using (BeginAuthority(CollectionChangeAuthority.None))
+                        {
+                            projection.Clear();
+                        }
                     }
                 }
                 else

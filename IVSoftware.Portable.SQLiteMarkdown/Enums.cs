@@ -339,13 +339,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public enum CollectionChangeAuthority
     {
         /// <summary>
+        /// Explicit "no authority" grant.
+        /// </summary>
+        /// <remarks>
+        /// Distinct from 0, which is the idle state of authority grants.
+        /// - In practical terms, collection changed events are suppressed
+        ///   in a manner that prevents internal collections from interacting.
+        /// - Can be combined with a reset authority, which raises a Reset
+        ///   collection changed event when the churn has settled out.
+        /// </remarks>
+        None = 1,
+
+        /// <summary>
         /// The user has effected a (presumably UI-related) change to a filtered collection.
         /// </summary>
         /// <remarks>
         /// During filtering, the MarkdownContext tracks a 'canonical' unfiltered
         /// list which now (counterinuitively) must be updated to remain canonical.
         /// </remarks>
-        NetProjection = 1,
+        NetProjection = None + 1,
 
         /// <summary>
         /// The markdown context is notifying a change to the net
