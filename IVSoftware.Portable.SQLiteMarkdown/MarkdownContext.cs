@@ -1977,7 +1977,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         && _searchEntryStatePrev == SearchEntryState.Cleared)
                     {
 
-                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 7).Date, "Don't forget disabled");
+                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 8).Date, "Don't forget disabled");
                         // Debug.Fail($@"ADVISORY - SMOKING.");
                     }
 #endif
