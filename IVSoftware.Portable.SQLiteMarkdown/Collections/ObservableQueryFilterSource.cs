@@ -43,7 +43,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             DHostResetEpoch = new DHostResetEpochProvider(
                 this,
                 [
-                    () => OnCollectionChanged(new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset))
+                    () =>
+                    {
+                        using(BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
+                        {
+                            OnCollectionChanged(new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset));
+                        }
+                    }
                 ]);
 
 #if DEBUG && !SKIP_UNIT_TEST_DHostResetWithEventSuppression
@@ -549,7 +555,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         #endregion I L I S T
 
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
+        public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
         protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {

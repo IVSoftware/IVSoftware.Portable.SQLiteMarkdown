@@ -287,7 +287,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <remarks>
     /// MentalModel: "The UI-visible collection will need to re-sync after this block (e.g., filters have changed)."
     /// - The DHostResetEpoch can be configured with one or more actions that execute synchronously on final dispose. 
-    /// - TYPICALLY this raises NotifyCollectionChangedEvent.Reset on the ObservableNetCollection.
+    /// - TYPICALLY this raises NotifyCollectionChangedEvent.Reset on the ObservableNetCollection on its own authority.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Enum, AllowMultiple = false, Inherited = false)]
     public class ResetEpochAttribute : Attribute { }
