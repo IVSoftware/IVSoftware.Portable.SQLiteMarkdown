@@ -269,7 +269,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// Declares the authority under which to run a named enum FSM.
     /// </summary>
     /// <remarks>
-    /// In the context of RunFSM, casuse a token check out from DHostAuthorityEpoch.
+    /// In the context of RunFSM, causes a token check out from DHostAuthorityEpoch.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Enum, AllowMultiple = false, Inherited = false)]
     public class CollectionChangeAuthorityAttribute : Attribute
@@ -282,10 +282,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// Declares the authority under which to run a named enum FSM.
+    /// Causes a token check out from DHostResetEpoch.
     /// </summary>
     /// <remarks>
-    /// In the context of RunFSM, casuse a token check out from DHostAuthorityEpoch.
+    /// MentalModel: "The UI-visible collection will need to re-sync after this block (e.g., filters have changed)."
+    /// - The DHostResetEpoch can be configured with one or more actions that execute synchronously on final dispose. 
+    /// - TYPICALLY this raises NotifyCollectionChangedEvent.Reset on the ObservableNetCollection.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Enum, AllowMultiple = false, Inherited = false)]
     public class ResetEpochAttribute : Attribute { }
