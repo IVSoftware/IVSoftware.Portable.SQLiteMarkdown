@@ -244,20 +244,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         protected async Task<Enum> RunFSMAsync<TFsm>(object? context = null) where TFsm : struct, Enum
         {
-            if (typeof(TFsm).GetCustomAttribute<CollectionChangeAuthorityAttribute>() is { } attr)
-            {
-                using (DHostAuthorityClaim.GetToken(attr.Authority))
-                {
-                    return await localRunFsmAsync(context);
-                }
-            }
-            else
-            {
-                return await localRunFsmAsync(context);
-            }
+            IDisposable? resetToken = null, authorityToken = null;
 
-            #region L o c a l F x
-            async Task<Enum> localRunFsmAsync(object? context)
+            if (typeof(TFsm).GetCustomAttribute<ResetEpochAttribute>() is not null)
+            {
+                resetToken = BeginResetEpoch();
+            }
+            if (typeof(TFsm).GetCustomAttribute<CollectionChangeAuthorityAttribute>()?.Authority is CollectionChangeAuthority authority)
+            {
+                authorityToken = BeginCollectionChangeAuthority(authority);
+            }
+            using (new TokenDisposer(resetToken, authorityToken))
             {
                 Enum result = ReservedFSMState.None;
                 foreach (Enum state in GetDeclaredValues<TFsm>())
@@ -266,7 +263,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 return result;
             }
-            #endregion L o c a l F x
         }
 
         /// <summary>
@@ -295,7 +291,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 resetToken = BeginResetEpoch();
             }
-            if(typeof(TFsm).GetCustomAttribute<CollectionChangeAuthorityAttribute>() is CollectionChangeAuthority authority)
+            if(typeof(TFsm).GetCustomAttribute<CollectionChangeAuthorityAttribute>()?.Authority is CollectionChangeAuthority authority)
             {
                 authorityToken = BeginCollectionChangeAuthority(authority);
             }
