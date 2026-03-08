@@ -155,8 +155,48 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     base.LoadCanon(items);
                 });
 
-                // This causes a Reset on the main INCC
-                _canonicalRecordset.Clear();
+                internalLoadONPfromModel();
+            }
+        }
+
+        private void internalLoadONPfromModel()
+        {
+#if DEBUG
+            var preview = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
+            var model = Model;
+            { }
+            if (base.ObservableNetProjection is null)
+            {
+            }
+            else if (ReferenceEquals(this, base.ObservableNetProjection))
+            {
+            }
+            else
+            {
+                Debug.Fail($@"ADVISORY - This is nonsensical and you shouldn't be here.");
+            }
+            int CCB4 = CanonicalCount;
+#endif
+
+
+            // RESET REQUIRED main INCC for NetProjection.
+            // Unit Tests expect this, but it can't be left
+            // outside of the authority or Model gets cleared..
+            // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
+            // _canonicalRecordset.Clear(); // <- NOT HERE!
+
+            using (base.BeginCollectionChangeAuthority(authority: CollectionChangeAuthority.MarkdownContext))
+            using (base.BeginResetEpoch())
+            {
+                // Building from the model in V2 is new.
+
+                _canonicalRecordset.Clear(); // <- HERE!
+#if DEBUG
+                if (CCB4 != CanonicalCount)
+                {
+                    Debug.Fail("ACTION NEEDED - The CC must survive this.");
+                }
+#endif
                 if (CanonicalCount != 0)
                 {
                     foreach (var xel in Model.Descendants())
@@ -166,6 +206,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             _canonicalRecordset.Add(item);
                         }
                     }
+
                     // Raise single event after completing the loop.
                     OnCollectionChanged(
                         new NotifyQueryFilterCollectionChangedEventArgs(
@@ -175,6 +216,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     );
                 }
             }
+#if false
+            // This causes a Reset on the main INCC
+            _canonicalRecordset.Clear();
+            if (CanonicalCount != 0)
+            {
+                foreach (var xel in Model.Descendants())
+                {
+                    if (xel.To<T>() is { } item)
+                    {
+                        _canonicalRecordset.Add(item);
+                    }
+                }
+                // Raise single event after completing the loop.
+                OnCollectionChanged(
+                    new NotifyQueryFilterCollectionChangedEventArgs(
+                        NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
+                        _canonicalRecordset.ToList() // snapshot as IList
+                    )
+                );
+            }
+#endif
         }
 
         /// <summary>
@@ -192,62 +254,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // UPGRADE 260301
                 base.LoadCanon(items);
                 // --------------
-#if DEBUG
-
-                var preview = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
-                var model = Model;
-                { }
-                if (base.ObservableNetProjection is null)
-                {
-                }
-                else if (ReferenceEquals(this, base.ObservableNetProjection))
-                {
-                }
-                else
-                {
-                    Debug.Fail($@"ADVISORY - This is nonsensical and you shouldn't be here.");
-                }
-                int CCB4 = CanonicalCount;
-#endif
-
-
-                // RESET REQUIRED main INCC for NetProjection.
-                // Unit Tests expect this, but it can't be left
-                // outside of the authority or Model gets cleared..
-                // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
-                // _canonicalRecordset.Clear(); // <- NOT HERE!
-
-                using (base.BeginCollectionChangeAuthority(authority: CollectionChangeAuthority.MarkdownContext))
-                using (base.BeginResetEpoch())
-                {
-                    // Building from the model in V2 is new.
-
-                    _canonicalRecordset.Clear(); // <- HERE!
-#if DEBUG
-                    if (CCB4 != CanonicalCount)
-                    {
-                        Debug.Fail("ACTION NEEDED - The CC must survive this.");
-                    }
-#endif
-                    if (CanonicalCount != 0)
-                    {
-                        foreach (var xel in Model.Descendants())
-                        {
-                            if (xel.To<T>() is { } item)
-                            {
-                                _canonicalRecordset.Add(item);
-                            }
-                        }
-
-                        // Raise single event after completing the loop.
-                        OnCollectionChanged(
-                            new NotifyQueryFilterCollectionChangedEventArgs(
-                                NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
-                                _canonicalRecordset.ToList() // snapshot as IList
-                            )
-                        );
-                    }
-                }
+                internalLoadONPfromModel();
             }
         }
 
