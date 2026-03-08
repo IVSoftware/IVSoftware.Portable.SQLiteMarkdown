@@ -280,4 +280,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         public CollectionChangeAuthority Authority { get; } = 0;
     }
+
+    /// <summary>
+    /// Declares the authority under which to run a named enum FSM.
+    /// </summary>
+    /// <remarks>
+    /// In the context of RunFSM, casuse a token check out from DHostAuthorityEpoch.
+    /// </remarks>
+    [AttributeUsage(AttributeTargets.Enum, AllowMultiple = false, Inherited = false)]
+    public class ResetEpochAttribute : Attribute { }
 }

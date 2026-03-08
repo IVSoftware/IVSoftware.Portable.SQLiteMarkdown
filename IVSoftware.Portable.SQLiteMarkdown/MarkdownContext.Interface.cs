@@ -288,51 +288,48 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         protected Enum RunFSM<TFsm>(object? context = null) where TFsm : struct, Enum
         {
-            if (typeof(TFsm).GetCustomAttribute<CollectionChangeAuthorityAttribute>() is { } attr)
+            IDisposable? resetToken = null, authorityToken = null;
+
+            if(typeof(TFsm).GetCustomAttribute<ResetEpochAttribute>() is not null)
             {
-                using (DHostAuthorityClaim.GetToken(attr.Authority))
+                resetToken = BeginResetEpoch();
+            }
+            if(typeof(TFsm).GetCustomAttribute<CollectionChangeAuthorityAttribute>() is CollectionChangeAuthority authority)
+            {
+                authorityToken = BeginCollectionChangeAuthority(authority);
+            }
+
+
+            Enum result = ReservedFSMState.None;
+            // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
+            // * Reuse an incoming value that is already an object[] to avoid an unnecessary allocation.
+            if (context is IEnumerable collection)
+            {
+                context = collection is object[] array
+                    ? array
+                    : collection.Cast<object>().ToArray();
+            }
+
+            foreach (Enum state in GetDeclaredValues<TFsm>())
+            {
+                // Expecting 'Next' for linear flow.
+                result = ExecState(state, context);
+
+                switch (result)
                 {
-                    return localRunFSM(context);
+                    case ReservedFSMState.Canceled:
+                    case ReservedFSMState.FastTrack:
+                    case ReservedFSMState.None:
+                        return result;
+                    case ReservedFSMState.Next:
+                        break;
+                    default:
+                        return localRunOOB(state, context);
                 }
             }
-            else
-            {
-                return localRunFSM(context);
-            }
+            return result;
 
             #region L o c a l F x
-            Enum localRunFSM(object? context)
-            {
-                Enum result = ReservedFSMState.None;
-
-                // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
-                // * Reuse an incoming value that is already an object[] to avoid an unnecessary allocation.
-                if (context is IEnumerable collection)
-                {
-                    context = collection is object[] array
-                        ? array
-                        : collection.Cast<object>().ToArray();
-                }
-
-                foreach (Enum state in GetDeclaredValues<TFsm>())
-                {
-                    // Expecting 'Next' for linear flow.
-                    result = ExecState(state, context);
-
-                    switch (result)
-                    {
-                        case ReservedFSMState.Canceled:
-                        case ReservedFSMState.FastTrack:
-                        case ReservedFSMState.None:
-                            return result;
-                        case ReservedFSMState.Next:
-                            break;
-                        default:
-                            return localRunOOB(state, context);
-                    }
-                }
-                return result;
-            }
             Enum localRunOOB(Enum outOfBand, object? context)
             {
                 Debug.Fail($@"ADVISORY - First Time.");
@@ -354,7 +351,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 return ReservedFSMState.MaxOOB;
             }
-            #endregion
+            #endregion L o c a l F x
         }
         protected virtual async Task<Enum> ExecStateAsync(Enum state, object? context = null)
         {
@@ -414,7 +411,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             return ReservedFSMState.FastTrack;
                         }
                         break;
-                    case ClearProjectionFSM:
+                    case NativeClearFSM:
                         if(!Model.HasElements && (ObservableNetProjection is not IEnumerable projection || !projection.Cast<object>().Any()))
                         {
                             Debug.Fail($@"ADVISORY - First Time.");
@@ -815,7 +812,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {
-            using (BeginAuthority(CollectionChangeAuthority.MarkdownContext))
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
             {
                 await base.OnEpochFinalizingAsync(e);
                 if (!e.Cancel)

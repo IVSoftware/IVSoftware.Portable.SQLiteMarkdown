@@ -1566,7 +1566,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
         public void Clear()
         {
-            RunFSM<ClearProjectionFSM>();
+            RunFSM<NativeClearFSM>();
         }
 
         public FilteringState Clear(bool all = false)
@@ -1986,7 +1986,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         else
                         {
                             // Clear a non-empty projection on its own authority.
-                             RunFSM<ClearProjectionFSM>();
+                             RunFSM<NativeClearFSM>();
                         }
                     }
                 }

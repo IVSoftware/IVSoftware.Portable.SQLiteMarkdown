@@ -343,6 +343,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         DetectFastTrack = 1,
 
+        ClearProjection,
+
         /// <summary>
         /// Clear or Create Table for ContractType.
         /// </summary>
@@ -398,11 +400,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
     }
 
+#if false
     /// <summary>
     /// Executes on parameterless Clear invocation.
     /// </summary>
     [CollectionChangeAuthority(CollectionChangeAuthority.NetProjection)]
-    [Probationary($"Possible duplicate of {nameof(ClearProjectionFSM)}")]
     internal enum NativeClearFSM
     {
         DetectFastTrack = StdFSMState.DetectFastTrack,
@@ -411,6 +413,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
     }
+#endif
 
     /// <summary>
     /// Non-eventing background clear.
@@ -420,16 +423,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         DetectFastTrack = StdFSMState.DetectFastTrack,
 
+        ClearProjection = StdFSMState.ClearProjection,
+
         ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
 
         ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
     }
 
     /// <summary>
-    /// Non-eventing background clear.
+    /// Unconditional full clear suppresses event churn and raises final Reset.
     /// </summary>
-    [CollectionChangeAuthority(CollectionChangeAuthority.NetProjection)]
-    internal enum ClearProjectionFSM
+    [ResetEpoch]
+    [CollectionChangeAuthority(CollectionChangeAuthority.None)]
+    internal enum NativeClearFSM
     {
         DetectFastTrack = StdFSMState.DetectFastTrack,
 

@@ -219,7 +219,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
                 // _canonicalRecordset.Clear(); // <- NOT HERE!
 
-                using (base.BeginAuthority(authority: CollectionChangeAuthority.MarkdownContext))
+                using (base.BeginCollectionChangeAuthority(authority: CollectionChangeAuthority.MarkdownContext))
                 using (base.BeginResetEpoch())
                 {
                     // Building from the model in V2 is new.
@@ -660,7 +660,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             if(SearchEntryState == SearchEntryState.Cleared)
             {
                 // This is old. Do we still need it?
-                using (BeginAuthority(CollectionChangeAuthority.None))
+                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.None))
                 {
                     _canonicalRecordset.Clear();
                 }

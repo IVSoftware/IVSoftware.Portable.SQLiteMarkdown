@@ -52,7 +52,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Acts as an authority monitor and circularity guard for DDX between collections.
         /// </remarks>
-        public IDisposable BeginAuthority(CollectionChangeAuthority authority) => DHostAuthorityClaim.GetToken(authority);
+        public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority) => DHostAuthorityClaim.GetToken(authority);
 
         protected DHostAuthorityEpochProvider DHostAuthorityClaim { get; } = new();
 
