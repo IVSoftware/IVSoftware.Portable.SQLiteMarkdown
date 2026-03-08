@@ -1975,16 +1975,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         {
                             if (Model.HasElements)
                             {
+                                // Clear model with suppressed authority.
                                 RunFSM<ClearModelFSM>();
                             }
                         }
                         else
                         {
                             // Clear a non-empty projection on its own authority.
-                            using (BeginAuthority(CollectionChangeAuthority.NetProjection))
-                            {
-                                projection.Clear();
-                            }
+                             RunFSM<ClearProjectionFSM>();
                         }
                     }
                 }

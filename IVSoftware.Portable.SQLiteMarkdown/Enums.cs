@@ -341,8 +341,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     [Canonical("FSM enums should declare members relative to numeric indexes in this set.")]
     internal enum StdFSMState
     {
-        [Probationary]
-        ClearNetProjection = 1,
+        DetectFastTrack = 1,
 
         /// <summary>
         /// Clear or Create Table for ContractType.
@@ -380,7 +379,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </summary>
     internal enum InitFilterEpochFSM
     {
-        ClearNetProjection = StdFSMState.ClearNetProjection,
+        DetectFastTrack = StdFSMState.DetectFastTrack,
 
         InitFQBDForEpoch = StdFSMState.InitFQBDForEpoch,
 
@@ -402,9 +401,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Executes on parameterless Clear invocation.
     /// </summary>
+    [CollectionChangeAuthority(CollectionChangeAuthority.NetProjection)]
+    [Probationary($"Possible duplicate of {nameof(ClearProjectionFSM)}")]
     internal enum NativeClearFSM
     {
-        ClearNetProjection = StdFSMState.ClearNetProjection,
+        DetectFastTrack = StdFSMState.DetectFastTrack,
 
         ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
 
@@ -417,7 +418,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     [CollectionChangeAuthority(CollectionChangeAuthority.None)]
     internal enum ClearModelFSM
     {
-        ClearNetProjection = StdFSMState.ClearNetProjection,
+        DetectFastTrack = StdFSMState.DetectFastTrack,
+
+        ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
+
+        ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
+    }
+
+    /// <summary>
+    /// Non-eventing background clear.
+    /// </summary>
+    [CollectionChangeAuthority(CollectionChangeAuthority.NetProjection)]
+    internal enum ClearProjectionFSM
+    {
+        DetectFastTrack = StdFSMState.DetectFastTrack,
 
         ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
 

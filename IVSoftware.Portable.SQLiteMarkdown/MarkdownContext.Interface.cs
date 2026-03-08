@@ -351,8 +351,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             switch ((StdFSMState)state)
             {
-                case StdFSMState.ClearNetProjection:
-                    localClearNetProjection();
+                case StdFSMState.DetectFastTrack:
+                    localDetectFastTrack();
                     break;
                 case StdFSMState.InitFQBDForEpoch when context is IEnumerable canonical:
                     localInitFQDBEpoch(canonical);
@@ -376,8 +376,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return ReservedFSMState.Next;
 
             #region L o c a l F x
-            [Probationary]
-            void localClearNetProjection()
+            void localDetectFastTrack()
             {
             }
 
