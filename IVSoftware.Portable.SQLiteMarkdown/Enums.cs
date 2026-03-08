@@ -414,6 +414,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Non-eventing background clear.
     /// </summary>
+    [CollectionChangeAuthority(CollectionChangeAuthority.None)]
     internal enum ClearModelFSM
     {
         ClearNetProjection = StdFSMState.ClearNetProjection,

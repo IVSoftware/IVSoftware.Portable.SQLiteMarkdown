@@ -1975,10 +1975,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         {
                             if (Model.HasElements)
                             {
-                                using (BeginAuthority(CollectionChangeAuthority.None))
-                                {
-                                    RunFSM<ClearModelFSM>();
-                                }
+                                RunFSM<ClearModelFSM>();
                             }
                         }
                         else

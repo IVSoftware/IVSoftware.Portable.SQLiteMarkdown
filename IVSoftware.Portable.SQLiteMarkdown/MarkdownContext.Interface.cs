@@ -221,24 +221,117 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Executes a declared FSM sequentially while temporarily asserting any collection-change authority required by the FSM type.
+        /// </summary>
+        /// <remarks>
+        /// If the FSM enum <typeparamref name="TFsm"/> is decorated with
+        /// <c>CollectionChangeAuthorityAttribute</c>, an authority token is claimed for the
+        /// duration of the FSM execution window. This enables controlled mutation of the
+        /// canonical/projection collections during state execution without leaking that
+        /// authority outside the run scope.
+        ///
+        /// The FSM is executed deterministically by iterating the declared enum values
+        /// in order and invoking <c>ExecStateAsync</c> for each state. The final state
+        /// result is returned to the caller.
+        ///
+        /// This mechanism allows authority to behave as a dynamic capability rather than
+        /// a static property of the context, constraining mutation rights to the precise
+        /// interval in which the FSM is running.
+        /// </remarks>
         protected async Task<Enum> RunFSMAsync<TFsm>(object? context = null) where TFsm : struct, Enum
         {
-            if(typeof(TFsm).GetCustomAttribute<CollectionChangeAuthorityAttribute>() is { } attr)
+            if (typeof(TFsm).GetCustomAttribute<CollectionChangeAuthorityAttribute>() is { } attr)
             {
+                using (DHostAuthorityClaim.GetToken(attr.Authority))
+                {
+                    return await localRunFsmAsync(context);
+                }
+            }
+            else
+            {
+                return await localRunFsmAsync(context);
+            }
 
-            }
-            Enum result = ReservedAffinityState.None;
-            foreach (Enum state in GetDeclaredValues<TFsm>())
+            #region L o c a l F x
+            async Task<Enum> localRunFsmAsync(object? context)
             {
-                result = await ExecStateAsync(state, context);
+                Enum result = ReservedFSMState.None;
+                foreach (Enum state in GetDeclaredValues<TFsm>())
+                {
+                    result = await ExecStateAsync(state, context);
+                }
+                return result;
             }
-            return result;
+            #endregion L o c a l F x
         }
 
+        /// <summary>
+        /// Executes a declared FSM sequentially while temporarily asserting any collection-change authority required by the FSM type.
+        /// </summary>
+        /// <remarks>
+        /// If the FSM enum <typeparamref name="TFsm"/> is decorated with
+        /// <c>CollectionChangeAuthorityAttribute</c>, an authority token is claimed for the
+        /// duration of the FSM execution window. This enables controlled mutation of the
+        /// canonical/projection collections during state execution without leaking that
+        /// authority outside the run scope.
+        ///
+        /// The FSM is executed deterministically by iterating the declared enum values
+        /// in order and invoking <c>ExecState</c> for each state. The final state
+        /// result is returned to the caller.
+        ///
+        /// This mechanism allows authority to behave as a dynamic capability rather than
+        /// a static property of the context, constraining mutation rights to the precise
+        /// interval in which the FSM is running.
+        /// </remarks>
+        protected Enum RunFSM<TFsm>(object? context = null) where TFsm : struct, Enum
+        {
+            if (typeof(TFsm).GetCustomAttribute<CollectionChangeAuthorityAttribute>() is { } attr)
+            {
+                using (DHostAuthorityClaim.GetToken(attr.Authority))
+                {
+                    return localRunFsm(context);
+                }
+            }
+            else
+            {
+                return localRunFsm(context);
+            }
+
+            #region L o c a l F x
+            Enum localRunFsm(object? context)
+            {
+                Enum result = ReservedFSMState.None;
+
+                // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
+                // * Reuse an incoming value that is already an object[] to avoid an unnecessary allocation.
+                if (context is IEnumerable collection)
+                {
+                    context = collection is object[] array
+                        ? array
+                        : collection.Cast<object>().ToArray();
+                }
+
+                foreach (Enum state in GetDeclaredValues<TFsm>())
+                {
+                    // Expecting 'Next' for linear flow.
+                    result = ExecState(state, context);
+
+                    if (!Equals(result, ReservedFSMState.Next))
+                    {
+                        Enum outOfBand;
+                        while (!Equals(ReservedFSMState.None, (outOfBand = ExecState(state, context)))) { }
+                        break;
+                    }
+                }
+                return result;
+            }
+            #endregion
+        }
         protected virtual async Task<Enum> ExecStateAsync(Enum state, object? context = null)
         {
-            return ReservedAffinityState.Canceled;
+            return ReservedFSMState.Canceled;
         }
 
         /// <summary>
@@ -252,41 +345,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return typeof(TFsm)
                 .GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
                 .Select(field => (TFsm)field.GetValue(null)!);
-        }
-
-        /// <summary>
-        /// Executes each state in the enum <typeparamref name="TFsm"/> in declaration
-        /// order, invoking <c>ExecState</c> for each. Normal progression continues while
-        /// <see cref="ReservedAffinityState.Next"/> is returned. Any other result
-        /// transitions the runner into an out-of-band loop for the current state until
-        /// <see cref="ReservedAffinityState.None"/> is returned, after which execution
-        /// terminates and the last result is returned.
-        /// </summary>
-        protected Enum RunFSM<TFsm>(object? context = null) where TFsm : struct, Enum
-        {
-            Enum result = ReservedAffinityState.None;
-
-            // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
-            // * Reuse an incoming value that is already an object[] to avoid an unnecessary allocation.
-            if (context is IEnumerable collection)
-            {
-                context = collection is object[] array
-                ? array
-                : collection.Cast<object>().ToArray();
-            }
-            foreach (Enum state in GetDeclaredValues<TFsm>())
-            {
-                // Expecting 'Next' for linear flow.
-                result = ExecState(state, context);
-
-                if(!Equals(result, ReservedAffinityState.Next))
-                {
-                    Enum outOfBand;
-                    while (!Equals(ReservedAffinityState.None, (outOfBand = ExecState(state, context)))) { }
-                    break;
-                }
-            }
-            return result;
         }
 
         protected Enum ExecState(Enum state, object? context = null)
@@ -315,7 +373,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     Debug.Fail($@"ADVISORY - Unrecognized action.");
                     break;
             }
-            return ReservedAffinityState.Next;
+            return ReservedFSMState.Next;
 
             #region L o c a l F x
             [Probationary]
@@ -336,9 +394,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 catch (Exception ex)
                 {
                     this.RethrowHard(ex);
-                    return ReservedAffinityState.Canceled;
+                    return ReservedFSMState.Canceled;
                 }
-                return ReservedAffinityState.Next;
+                return ReservedFSMState.Next;
             }
 
             Enum localInitModelForEpoch(IEnumerable canonical)
@@ -418,7 +476,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     Model.SetAttributeValue(StdMarkdownAttribute.matches, countDistinct);
                 }
                 Model.SetAttributeValue(StdMarkdownAttribute.ismatch, null);
-                return ReservedAffinityState.Next;
+                return ReservedFSMState.Next;
             }
 
             string localGetFullPath(PropertyInfo pk, object unk)

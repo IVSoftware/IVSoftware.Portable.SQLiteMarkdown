@@ -278,6 +278,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             Authority = authority;
         }
-        CollectionChangeAuthority Authority { get; } = 0;
+        public CollectionChangeAuthority Authority { get; } = 0;
     }
 }
