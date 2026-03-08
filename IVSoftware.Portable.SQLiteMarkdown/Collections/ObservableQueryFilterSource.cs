@@ -76,7 +76,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
             // GZ GZ GZ GZ
             base.ObservableNetProjection = this;
-            base.ProjectionOptions = NetProjectionOption.ObservableOnly;
+            base.ProjectionOptions = NetProjectionOption.AllowDirectChanges;
 
 
             _canonicalRecordset.CollectionChanged += (sender, e) =>

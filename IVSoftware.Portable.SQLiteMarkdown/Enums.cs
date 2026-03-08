@@ -474,11 +474,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// MentalModel: "The explicit assignment of ObservableNetProjection *is" the OPT-IN."
         /// </remarks>
-        AllowDirectChanges = 0x0,
+        AllowDirectChanges = 0x1,
 
         /// <summary>
         /// Track INCC events but don't attempt to cast IList or make changes on the handle.
         /// </summary>
-        ObservableOnly     = 0x1,
+        ObservableOnly     = 0x2,
     }
 }
