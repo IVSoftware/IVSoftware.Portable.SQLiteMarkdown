@@ -81,7 +81,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
             _canonicalRecordset.CollectionChanged += (sender, e) =>
             {
-                if (DHostAuthorityClaim.Authority == CollectionChangeAuthority.MarkdownContext)
+                if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext)
                 {   /* G T K - N O O P */
                 }
                 else
@@ -150,12 +150,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             Debug.WriteLine($@"260306.a ADVISORY - {nameof(ReplaceItemsAsync)}.");
             using (DHostBusy.GetToken())
             {
-                // --------------
-                // UPGRADE 260301
-                // Sets UnfilteredCount
-                // -> Sets SearchEntryState
-                base.LoadCanon(items);
-                // --------------
+                await Task.Run(() =>
+                {
+                    base.LoadCanon(items);
+                });
 
                 // This causes a Reset on the main INCC
                 _canonicalRecordset.Clear();
@@ -548,7 +546,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            CollectionChanged?.Invoke(this, e);
+            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.None)
+            {   /* G T K - N O O P */
+            }
+            else
+            {
+                CollectionChanged?.Invoke(this, e);
+            }
         }
 
         /// <summary>

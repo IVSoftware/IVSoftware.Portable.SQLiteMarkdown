@@ -1778,6 +1778,17 @@ InputText"
                         actual.ToClipboardExpected();
                         { }
 
+                        var notExpected = @" 
+Busy
+SearchEntryState
+FilteringState
+IsFiltering
+SearchEntryState
+FilteringState
+IsFiltering
+Busy"
+                        ;
+
                         // Limit Touched 260306
                         // - The timing is that backing stores for both _filteringState and _isFiltering change
                         //   before any events are raised. It's atomic that way.

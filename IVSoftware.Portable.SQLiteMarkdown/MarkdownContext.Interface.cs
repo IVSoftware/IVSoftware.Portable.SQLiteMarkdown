@@ -85,7 +85,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnXAttributeChanged (XAttribute xattr, XObjectChangeEventArgs e) 
         {
-            if (DHostAuthorityClaim.Authority == CollectionChangeAuthority.None)
+            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.None)
             {   /* G T K - N O O P */
             }
             else
@@ -99,7 +99,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnXElementChanged (XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
-            if (DHostAuthorityClaim.Authority == CollectionChangeAuthority.None)
+            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.None)
             {   /* G T K - N O O P */
             }
             else
