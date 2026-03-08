@@ -407,7 +407,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// 260228 inprog
+    /// Executes on rising edge of IsFiltering.
     /// </summary>
     internal enum InitFilterEpochFSM
     {
@@ -420,6 +420,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         InitStatesForEpoch = StdFSMState.InitStatesForEpoch,
     }
 
+    /// <summary>
+    /// Executes on falling edge of IsFiltering.
+    /// </summary>
     internal enum ResetFilterEpochFSM
     {
         ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
@@ -427,7 +430,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
     }
 
+    /// <summary>
+    /// Executes on parameterless Clear invocation.
+    /// </summary>
     internal enum NativeClearFSM
+    {
+        ClearNetProjection = StdFSMState.ClearNetProjection,
+
+        ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
+
+        ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
+    }
+
+    /// <summary>
+    /// Non-eventing background clear.
+    /// </summary>
+    internal enum ClearModelFSM
     {
         ClearNetProjection = StdFSMState.ClearNetProjection,
 

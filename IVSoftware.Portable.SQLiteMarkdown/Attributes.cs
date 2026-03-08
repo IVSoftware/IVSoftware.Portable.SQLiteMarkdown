@@ -264,4 +264,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public string? Version { get; }
         public Type? Type { get; }
     }
+
+    /// <summary>
+    /// Declares the authority under which to run a named enum FSM.
+    /// </summary>
+    /// <remarks>
+    /// In the context of RunFSM, casuse a token check out from DHostAuthorityEpoch.
+    /// </remarks>
+    [AttributeUsage(AttributeTargets.Enum, AllowMultiple = false, Inherited = false)]
+    public class CollectionChangeAuthorityAttribute : Attribute
+    {
+        public CollectionChangeAuthorityAttribute(CollectionChangeAuthority authority = 0)
+        {
+            Authority = authority;
+        }
+        CollectionChangeAuthority Authority { get; } = 0;
+    }
 }

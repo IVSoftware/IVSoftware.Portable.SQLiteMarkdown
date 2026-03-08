@@ -1969,19 +1969,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 // Please do not combine these clauses.
                 if (ProjectionOptions.HasFlag(NetProjectionOption.AllowDirectChanges))
                 {
-                    if (ObservableNetProjection is IList projection && projection.Count != 0)
+                    if (ObservableNetProjection is IList projection)
                     {
-                        // Clear a non-empty projection on its own authority.
-                        using (BeginAuthority(CollectionChangeAuthority.NetProjection))
+                        if (projection.Count == 0)
                         {
-                            projection.Clear();
+                            if (Model.HasElements)
+                            {
+                                using (BeginAuthority(CollectionChangeAuthority.None))
+                                {
+                                    RunFSM<ClearModelFSM>();
+                                }
+                            }
                         }
-                    }
-                    else
-                    {
-                        using (BeginAuthority(CollectionChangeAuthority.None))
+                        else
                         {
-                            projection.Clear();
+                            // Clear a non-empty projection on its own authority.
+                            using (BeginAuthority(CollectionChangeAuthority.NetProjection))
+                            {
+                                projection.Clear();
+                            }
                         }
                     }
                 }
