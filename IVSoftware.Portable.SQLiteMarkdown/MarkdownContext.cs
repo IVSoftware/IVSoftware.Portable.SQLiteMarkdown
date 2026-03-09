@@ -140,7 +140,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // and are *not* bound to the ContractType.
             Raw = expr;
             Transform = Raw;
-            TableName = ResolveTableNameForPass(proxyType);
+
+
+#if true
+            TableName = proxyType.GetSQLiteMapping().TableName;
+#else
+            TableName = ResolveTableNameForPass(ProxyType);
+#endif
 
             Preamble = $"SELECT * FROM {TableName} WHERE";
 

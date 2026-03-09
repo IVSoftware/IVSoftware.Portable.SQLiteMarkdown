@@ -428,4 +428,28 @@ SELECT * FROM items WHERE
         }
         #endregion S U B T E S T S
     }
+
+    [TestMethod]
+    public void Test_BUGIRL_TableInheritance()
+    {
+        string actual, expected, sql;
+
+        var mapping = typeof(ItemCardModel).GetSQLiteMapping();
+        Assert.AreEqual(nameof(ItemCardModel), mapping.TableName);
+
+        sql = "green".ParseSqlMarkdown<ItemCardModel>();
+
+        actual = sql;
+        actual.ToClipboardExpected();
+        { }
+        expected = @" 
+SELECT * FROM ItemCardModel WHERE
+(QueryTerm LIKE '%green%')";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting table name to be ItemCardModel."
+        );
+    }
 }

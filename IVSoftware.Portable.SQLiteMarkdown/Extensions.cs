@@ -431,10 +431,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        public static bool TryGetTableNameFromBaseClass(this Type @this, out string tableName)
+        internal static bool TryGetTableNameFromBaseClass(this Type @this, out string tableName)
             => @this.TryGetTableNameFromBaseClass(out tableName, out _);
 
-        public static bool TryGetTableNameFromBaseClass(this Type @this, out string tableName, out Type baseClass)
+        internal static bool TryGetTableNameFromBaseClass(this Type @this, out string tableName, out Type baseClass)
         {
             foreach (var @base in @this.BaseTypes().Reverse())
             {
@@ -452,7 +452,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return false;
         }
 
-        public static bool TryGetTableNameFromTableAttribute(this Type @this, out string tableName)
+        internal static bool TryGetTableNameFromTableAttribute(this Type @this, out string tableName)
             => !string.IsNullOrWhiteSpace(tableName = @this.GetCustomAttribute<TableAttribute>(
                 inherit: false // CRITICAL! Does not produce an accurate result otherwise.
         )?.Name!);
@@ -984,15 +984,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         #endregion I N T E R N A L
     }
+
+    [Flags]
+    public enum GetMappingFlags
+    {
+        None = 0,
+
+
+        UseBaseTypeForProxy = 0x1,
+    }
     public static class SQLiteConnectionMapper
     {
-        public static TableMapping GetSQLiteMapping(this Type type, CreateFlags createFlags = CreateFlags.None)
+        public static TableMapping GetSQLiteMapping(
+            this Type type, 
+            CreateFlags createFlags = CreateFlags.None, 
+            GetMappingFlags getMappingFlags = GetMappingFlags.None)
             => Mapper.GetMapping(type, createFlags);
         public static TableMapping GetSQLiteMapping(
             Type type,
             out string? pkName,
             out string? pkPropertyName,
-            CreateFlags createFlags = CreateFlags.None)
+            CreateFlags createFlags = CreateFlags.None, 
+            GetMappingFlags getMappingFlags = GetMappingFlags.None)
         {
             var mapper = Mapper.GetMapping(type, createFlags);
             pkName = mapper.PK?.Name;
