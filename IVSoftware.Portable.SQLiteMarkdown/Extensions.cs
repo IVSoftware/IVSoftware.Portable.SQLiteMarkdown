@@ -1035,7 +1035,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 TableMapping contractMapping = Mapper.GetMapping(contractType);
                 if(contractMapping.TableName != proxyMapping.TableName)
                 {
-                    throw new NotImplementedException("ToDo");
+                    if (contractType.IsAssignableFrom(type))
+                    {
+                        // This one's interesting! When the contract type is explicitly assigned (as
+                        // it is in this call) it tells the proxy, "Don't believe your lying eyes."
+                        proxyMapping = contractMapping;
+                    }
+                    else
+                    {
+                        throw new NotImplementedException("ToDo");
+                    }
                 }
                 { } // <- L O O K    N E T    R E S U L T    O N    P R O X Y
             }

@@ -1465,6 +1465,7 @@ SELECT * FROM items WHERE
             {
                 var mdc = new MarkdownContext<SelectableQFModelSubclassA>();
                 mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
+
                 tableNames = mdc.GetTableNames();
                 "hello".ParseSqlMarkdown<SelectableQFModel>();
 
@@ -1479,7 +1480,7 @@ SELECT * FROM items WHERE
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting 'items' table"
+                    "Expecting 'itemsA' table because proxy and contract are the same."
                 );
             }
 
