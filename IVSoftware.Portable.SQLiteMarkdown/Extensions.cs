@@ -1013,20 +1013,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             CreateFlags createFlags = CreateFlags.None, 
             GetMappingFlags getMappingFlags = GetMappingFlags.None)
         {
-            if(type.GetCustomAttribute<SQLite.TableAttribute>() is null)
+            TableMapping? mapping = null;
+            foreach (var @base in type.BaseTypes(includeSelf: true))
             {
-
+                if(@base.GetCustomAttribute<SQLite.TableAttribute>(inherit: false) is not null)
+                {
+                    mapping = Mapper.GetMapping(type, createFlags);
+                    break;
+                }
             }
-            else
+            if(mapping is null)
             {
-
+                mapping = Mapper.GetMapping(type);
             }
-
-
-            var mapper = Mapper.GetMapping(type, createFlags);
-            pkName = mapper.PK?.Name;
-            pkPropertyName = mapper.PK?.PropertyName;
-            return mapper;
+            pkName = mapping.PK?.Name;
+            pkPropertyName = mapping.PK?.PropertyName;
+            return mapping;
         }
         static SQLiteConnection Mapper
         {
