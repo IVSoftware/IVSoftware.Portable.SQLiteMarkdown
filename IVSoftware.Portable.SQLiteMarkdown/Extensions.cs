@@ -93,27 +93,36 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
-        /// Performs SQL generation only, using an ad hoc MDC instance created for this purpose.
+        /// Generates SQL from a markdown expression using an ad hoc MarkdownContext (MDC).
         /// </summary>
         /// <remarks>
+        /// Performs SQL generation only and does not participate in filtering or context reuse.
+        ///
         /// CONFIG
-        /// - The QueryFilterConfig is locked to Query to prevent instantiation of 
-        ///   the built-in FilterQueryDatabase factory, or filtering against it.
+        /// - QueryFilterConfig is locked to Query to prevent creation of the internal
+        ///   FilterQueryDatabase and to ensure the operation remains parse-only.
+        ///
         /// MODE
-        /// - This is distinct from the QueryFilterMode argument, which is a router between
-        ///   the [QueryLikeTerm] and the [FilterLikeTerm] which impacts the SQL generation.
+        /// - QueryFilterMode selects whether SQL is generated using [QueryLikeTerm] or
+        ///   [FilterLikeTerm]. This routing affects SQL generation only and is distinct
+        ///   from QueryFilterConfig.
+        ///
+        /// TYPE RESOLUTION
+        /// - When invoked as a string extension there is no proxy indirection, so the
+        ///   provided type serves as both ContractType and ProxyType.
+        /// - This behavior is distinct from a persistent MDC, where parsing occurs 
+        ///   against a ProxyType that may differ from the ContractType (but which still must
+        ///   resolve to the same SQLite table as the ContractType).
         /// </remarks>
-        [Canonical("Common target for string extensions to ParseSqlMarkdown.")]
-        public static string ParseSqlMarkdown(this string @this, Type type, QueryFilterMode qfMode, out XElement xast)
-            => new MarkdownContext(
-                type
-                )
+        [Canonical("@this.ParseSqlMarkdown - All string extensions come here and operate on an ad hoc MDC instance.")]
+        public static string ParseSqlMarkdown(this string expr, Type type, QueryFilterMode qfMode, out XElement xast)
+            => new MarkdownContext(type)
             {
                 QueryFilterConfig = QueryFilterConfig.Query,    // For ad hoc parsing, be sure to lock out filtering. 
             }.ParseSqlMarkdown(
-                @this,
-                type,
-                qfMode,
+                expr, 
+                proxyType: type,    // These are always the same thing for a string extension.
+                qfMode,             // Not to be confused with QueryFilterConfig. The MDC can parse as-though filtering regardless.
                 out xast);
 
 
@@ -992,34 +1001,47 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     [Flags]
-    public enum GetMappingFlags
+    public enum MapDiscoveryFlag
     {
         None = 0,
-
-
         UseBaseTypeForProxy = 0x1,
     }
+
     public static class SQLiteConnectionMapper
     {
         public static TableMapping GetSQLiteMapping(
             this Type type,
             CreateFlags createFlags = CreateFlags.None,
-            GetMappingFlags getMappingFlags = GetMappingFlags.None)
-            => type.GetSQLiteMapping(out _, out _, createFlags, getMappingFlags);
+            MapDiscoveryFlag mapDiscoveryFlags = MapDiscoveryFlag.None)
+            => type.GetSQLiteMapping(out _, out _, createFlags, mapDiscoveryFlags);
         public static TableMapping GetSQLiteMapping(
             this Type type,
             out string? pkName,
             out string? pkPropertyName,
             CreateFlags createFlags = CreateFlags.None, 
-            GetMappingFlags getMappingFlags = GetMappingFlags.None)
+            MapDiscoveryFlag mapDiscoveryFlags = MapDiscoveryFlag.None)
         {
             TableMapping? mapping = null;
-            foreach (var @base in type.BaseTypes(includeSelf: true))
+            if (mapDiscoveryFlags.HasFlag(MapDiscoveryFlag.UseBaseTypeForProxy))
             {
-                if(@base.GetCustomAttribute<SQLite.TableAttribute>(inherit: false) is not null)
+                foreach (var @base in type.BaseTypes(includeSelf: true).Reverse())
                 {
-                    mapping = Mapper.GetMapping(@base, createFlags);
-                    break;
+                    if (@base.GetCustomAttribute<SQLite.TableAttribute>(inherit: false) is not null)
+                    {
+                        mapping = Mapper.GetMapping(@base, createFlags);
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                foreach (var @base in type.BaseTypes(includeSelf: true))
+                {
+                    if (@base.GetCustomAttribute<SQLite.TableAttribute>(inherit: false) is not null)
+                    {
+                        mapping = Mapper.GetMapping(@base, createFlags);
+                        break;
+                    }
                 }
             }
             if(mapping is null)

@@ -654,12 +654,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///   However, the semantic constraints on contract parsing (where ContractType 
         ///   is assumed to be the item type of the collection that subclasses it) will
         ///   provide an advisory stream should this be called upon to service more
-        ///   that the implicit single table for the collection.
+        ///   than the implicit single table for the collection.
         /// </remarks>
         protected SQLiteConnection FilterQueryDatabase
         {
             get
             {
+                if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                {
+                    this.ThrowPolicyException(SQLiteMarkdownPolicy.FilterEngineUnavailable);
+                    // NOTE:
+                    // Handling the Throw creates a benign condition where a DB
+                    // that might not really be necessary is instantiated regardless.
+                }
+
                 // HYBRID - factory getter.
                 if (_filterQueryDatabase is null)
                 {
@@ -671,6 +679,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             set
             {
+                if (value is not null && !QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                {
+                    // The user must be given the benefit of the doubt if they are explicitly
+                    // injecting a connection to be used for internal filter queries. This will
+                    // silently upgrade the configuration unless escalated in the Throw handler.
+                    this.ThrowPolicyException(SQLiteMarkdownPolicy.ConfigurationModifiedByDatabaseAssignment);
+                    QueryFilterConfig |= QueryFilterConfig.Filter;
+                }
+
                 if (!Equals(_filterQueryDatabase, value))
                 {
                     _filterQueryDatabase = value;
@@ -683,7 +700,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-
         SQLiteConnection? _filterQueryDatabase = default;
 
 #if false
@@ -883,5 +899,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+
+        public string[] GetTableNames() => FilterQueryDatabase.GetTableNames();
     }
 }

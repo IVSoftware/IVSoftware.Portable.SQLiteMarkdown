@@ -365,6 +365,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 return ((IMarkdownContext)_mdc).HasCounts(canonical, matches, database);
             }
 
+            public string[] GetTableNames()
+            {
+                return ((IMarkdownContext)_mdc).GetTableNames();
+            }
+
             // We do not care about BC events.
             public new event PropertyChangedEventHandler? PropertyChanged;
         }

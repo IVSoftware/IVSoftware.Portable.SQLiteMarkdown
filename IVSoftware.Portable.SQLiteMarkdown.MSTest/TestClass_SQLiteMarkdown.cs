@@ -1321,73 +1321,82 @@ FilterTerm";
             string actual, expected;
             string[] tableNames;
 
+            subtest_TableNameDefaultsToExplicitBC();
+            subtest_UncontroversialExplicitTableAttribute();
 
-            #region T H I S    I S    T H E    C O N C E R N 
-            using (var cnx = new SQLiteConnection(":memory:"))
+            #region S U B T E S T S
+            void subtest_TableNameDefaultsToExplicitBC()
             {
-                // Subclass "G" means "Gotcha!"
-                cnx.CreateTable<SelectableQFModelSubclassG>();
-                tableNames = cnx.GetTableNames();
+                // This is the "main gotcha" we're concerned about:
 
-                actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
-                expected = @" 
+                // POLICY #1: Base-class table fallback.
+                //
+                // When the concrete type does not declare its own [Table] attribute,
+                // but one or more base classes do, resolve table identity using the
+                // closest ancestor that explicitly declares [Table].
+                using (var cnx = new SQLiteConnection(":memory:"))
+                {
+                    // Subclass "G" means "Gotcha!"
+                    cnx.CreateTable<SelectableQFModelSubclassG>();
+                    tableNames = cnx.GetTableNames();
+
+                    actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
+                    expected = @" 
 [
   ""SelectableQFModelSubclassG""
 ]";
 
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting that SQLite will create table named after the subclass when no [Table] is declared."
-                );
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting that SQLite will create table named after the subclass when no [Table] is declared."
+                    );
 
-                // Whereas the parser is deliberately going to pick up the `[Table("items"]` from the BC.
-                builderThrow.Clear();
-                actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclassG>();
-                expected = @" 
+                    // Whereas the parser is deliberately going to pick up the `[Table("items"]` from the BC.
+                    builderThrow.Clear();
+                    actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclassG>();
+                    expected = @" 
 SELECT * FROM items WHERE 
 (QueryTerm LIKE '%animal%')";
 
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting 'items' table identity."
-                );
-
-                actual = string.Join(Environment.NewLine, builderThrow);
-                actual.ToClipboardExpected();
-                { } // <- FIRST TIME ONLY: Adjust the message.
-                actual.ToClipboardAssert("Expecting builder content to match.");
-                { }
-                expected = @" 
-Type 'SelectableQFModelSubclassG' is explicitly mapped to [Table(""items"")] in base class.";
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting builder content to match."
-                );
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting 'items' table identity."
+                    );
+                }
             }
-            #endregion T H I S    I S    T H E    C O N C E R N
+            #endregion S U B T E S T S
 
-            using (var cnx = new SQLiteConnection(":memory:"))
+            void subtest_UncontroversialExplicitTableAttribute()
             {
-                cnx.CreateTable<SelectableQFModel>();
-                tableNames = cnx.GetTableNames();
+                // TERMINOLOGY: What makes this "uncontroversial"?
+                //
+                // 
+                var mdc = new MarkdownContext<SelectableQFModel>();
+                mdc.ParseSqlMarkdown<SelectableQFModel>("uncontroversial");
+                tableNames = mdc.GetTableNames();
 
-                actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-[
-  ""items""
-]";
 
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting 'items' table"
-                );
+                using (var cnx = new SQLiteConnection(":memory:"))
+                {
+                    "uncontroversial".ParseSqlMarkdown<SelectableQFModel>();
+
+
+                    actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+    [
+      ""items""
+    ]";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting 'items' table"
+                    );
+                }
             }
 
             using (var cnx = new SQLiteConnection(":memory:"))
@@ -1442,6 +1451,15 @@ SELECT * FROM items WHERE
                     "Expecting 'items' table identity."
                 );
             }
+            #region v2.0+
+            // ++++++++++++++++
+            // AMBIGUITY EXISTS for explicit declared table identities in the inheritance chain.
+            // ++++++++++++++++
+            // Rule # 1
+            // When CONTRACT TYPE and PROXY TYPE are the SAME.
+
+            // Rule # 2
+            // When CONTRACT TYPE and PROXY TYPE are the DIFFERENT.
 
             // Now check parser where declared table identity is INCONSISTENT WITH the BC
             // v2.0+ "TO AVOID SPURIOUS TABLE CREATION - BASE CLASS WINS"
@@ -1468,6 +1486,7 @@ SELECT * FROM itemsA WHERE
                 actual.NormalizeResult(),
                 "Expecting 'itemsA' table identity."
             );
+            #endregion v2.0+
         }
 
         /// <summary>

@@ -253,6 +253,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// predicate, and optional database totals.
         /// </summary>
         bool HasCounts(int canonical, int matches, int? database = null);
+
+        string[] GetTableNames();
     }
 
     /// <summary>
