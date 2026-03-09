@@ -142,6 +142,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Transform = Raw;
             TableName = proxyType.GetSQLiteMapping(contractType: ContractType).TableName;
 
+
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 9).Date, "Don't forget disabled");
+#if false
+            if (_proxyType != ContractType
+                && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
+                && _proxyType.GetCustomAttribute<ExtendMappingAttribute>() is not null)
+                {
+                    FilterQueryDatabase.CreateTable(ProxyType);
+                }
+#endif
+
             Preamble = $"SELECT * FROM {TableName} WHERE";
 
             xast = XAST;

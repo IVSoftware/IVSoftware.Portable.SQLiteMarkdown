@@ -130,41 +130,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if (!Equals(_proxyType, value))
                     {
                         _proxyType = value;
-                        if (_proxyType != ContractType)
-                        {
-                            if (_proxyType.GetSQLiteMapping(contractType: ContractType) is { } mapping)
-                            {
-                                if(QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
-                                    && _proxyType.GetCustomAttribute<ExtendMappingAttribute>() is not null)
-                                {
-                                    FilterQueryDatabase.CreateTable(ProxyType);
-                                }
-                            }
-                            else
-                            {   /* G T K */
-                                // You only land here if a Throw was marked handled.
-                            }
-                        }
-#if false
-                        if (_proxyType != ContractType)
-                        {
-                            TableMapping
-                                contractMapping = ContractType.GetSQLiteMapping(),
-                                proxyMapping = _proxyType.GetSQLiteMapping();
-
-                            if (contractMapping.TableName == proxyMapping.TableName)
-                            {
-                                if(_proxyType.GetCustomAttribute<ExtendMappingAttribute>() is not null)
-                                {
-                                    FilterQueryDatabase.CreateTable(ProxyType);
-                                }
-                            }
-                            else
-                            {
-                                this.ThrowPolicyException(SQLiteMarkdownPolicy.ProxyTableMapping);
-                            }
-                        }
-#endif
                         OnPropertyChanged();
                     }
                 }

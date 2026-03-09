@@ -440,9 +440,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        internal static bool TryGetTableNameFromBaseClass(this Type @this, out string tableName)
-            => @this.TryGetTableNameFromBaseClass(out tableName, out _);
-
         internal static bool TryGetTableNameFromBaseClass(this Type @this, out string tableName, out Type baseClass)
         {
             foreach (var @base in @this.BaseTypes().Reverse())
@@ -1014,7 +1011,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             CreateFlags createFlags = CreateFlags.None,
             Type? contractType = null)
         {
-            TableMapping? mapping = null;
+            TableMapping? proxyMapping = null;
+            foreach (var @base in type.BaseTypes(includeSelf: true))
+            {
+                if (@base.GetCustomAttribute<SQLite.TableAttribute>(inherit: false) is not null)
+                {
+                    proxyMapping = Mapper.GetMapping(@base, createFlags);
+                    break;
+                }
+            }
+            if(proxyMapping is null)
+            {
+                // Did not find any explicit [Table] tags.
+                proxyMapping = Mapper.GetMapping(type);
+                Debug.Assert(
+                    type.Name == proxyMapping.TableName,
+                    "Expecting tha name of the Type will be used as the table name.");
+            }
+            else
+            { } // <- L O O K    N E T    R E S U L T    O N    P R O X Y
+
+            if( contractType is not null && contractType != type)
+            {
+
+            }
+
+#if false
 
             if (contractType is null)
             {
@@ -1030,7 +1052,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             else
             {
                 mapping = Mapper.GetMapping(contractType);
-                if (!contractType.IsAssignableFrom(type))
+                if (contractType.IsAssignableFrom(type))
+                {
+
+                }
+                else
                 {
                     TableMapping aspirant;
                     foreach (var @base in type.BaseTypes(includeSelf: true).Reverse())
@@ -1038,7 +1064,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         if (@base.GetCustomAttribute<SQLite.TableAttribute>(inherit: false) is not null)
                         {
                             aspirant = Mapper.GetMapping(@base, createFlags);
-                            if(aspirant.TableName == mapping.TableName)
+                            if (aspirant.TableName == mapping.TableName)
                             {
                                 throw new NotImplementedException("ToDo");
                             }
@@ -1051,17 +1077,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                 }
             }
-            if(mapping is null)
-            {
-                // Did not find any explicit [Table] tags.
-                mapping = Mapper.GetMapping(type);
-                Debug.Assert(
-                    type.Name == mapping.TableName, 
-                    "Expecting tha name of the Type will be used as the table name.");
-            }
-            pkName = mapping.PK?.Name;
-            pkPropertyName = mapping.PK?.PropertyName;
-            return mapping;
+#endif
+            pkName = proxyMapping.PK?.Name;
+            pkPropertyName = proxyMapping.PK?.PropertyName;
+            return proxyMapping;
         }
         static SQLiteConnection Mapper
         {
