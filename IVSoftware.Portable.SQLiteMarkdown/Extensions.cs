@@ -667,6 +667,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return @this;
         }
 
+        public static string[] GetTableNames(this SQLiteConnection @this)
+        {
+            var query = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%';";
+            var preview = @this.QueryScalars<string>(query).ToArray();
+            return preview;
+        }
 
         #region I N T E R N A L
 #if ABSTRACT
@@ -996,17 +1002,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public static class SQLiteConnectionMapper
     {
         public static TableMapping GetSQLiteMapping(
-            this Type type, 
-            CreateFlags createFlags = CreateFlags.None, 
+            this Type type,
+            CreateFlags createFlags = CreateFlags.None,
             GetMappingFlags getMappingFlags = GetMappingFlags.None)
-            => Mapper.GetMapping(type, createFlags);
+            => type.GetSQLiteMapping(out _, out _, createFlags, getMappingFlags);
         public static TableMapping GetSQLiteMapping(
-            Type type,
+            this Type type,
             out string? pkName,
             out string? pkPropertyName,
             CreateFlags createFlags = CreateFlags.None, 
             GetMappingFlags getMappingFlags = GetMappingFlags.None)
         {
+            if(type.GetCustomAttribute<SQLite.TableAttribute>() is null)
+            {
+
+            }
+            else
+            {
+
+            }
+
+
             var mapper = Mapper.GetMapping(type, createFlags);
             pkName = mapper.PK?.Name;
             pkPropertyName = mapper.PK?.PropertyName;

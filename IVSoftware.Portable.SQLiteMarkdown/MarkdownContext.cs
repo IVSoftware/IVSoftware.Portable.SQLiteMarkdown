@@ -140,13 +140,41 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // and are *not* bound to the ContractType.
             Raw = expr;
             Transform = Raw;
-
-
 #if false
-            TableName = proxyType.GetSQLiteMapping().TableName;
-#else
-            TableName = ResolveTableNameForPass(ProxyType);
+#if DEBUG
+            string 
+                tableNameContract = ContractType.GetSQLiteMapping().TableName,
+                tableNameProxy = proxyType.GetSQLiteMapping().TableName,
+                tableNameHeuristic = ResolveTableNameForPass(ProxyType);
+            if(tableNameProxy != tableNameContract)
+            {
+                Debug.Fail($@"ADVISORY - First Time.");
+            }
+            if(tableNameProxy != tableNameHeuristic)
+            {
+
+            }
 #endif
+
+            var flags =
+                ProxyType == ContractType
+                ? GetMappingFlags.None
+                : GetMappingFlags.UseBaseTypeForProxy;
+
+            switch (flags)
+            {
+                case GetMappingFlags.None:
+                    TableName = proxyType.GetSQLiteMapping(getMappingFlags: flags).TableName;
+                    break;
+                case GetMappingFlags.UseBaseTypeForProxy:
+                    TableName = ResolveTableNameForPass(ProxyType);
+                    break;
+                default:
+                    this.ThrowHard<NotSupportedException>($"The {flags.ToFullKey()} case is not supported.");
+                    break;
+            }
+#endif
+            TableName = proxyType.GetSQLiteMapping().TableName;
 
             Preamble = $"SELECT * FROM {TableName} WHERE";
 

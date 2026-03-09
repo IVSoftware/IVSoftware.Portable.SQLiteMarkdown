@@ -1319,8 +1319,7 @@ FilterTerm";
                 });
 
             string actual, expected;
-            List<string> tableNames;
-            var query = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%';";
+            string[] tableNames;
 
 
             #region T H I S    I S    T H E    C O N C E R N 
@@ -1328,11 +1327,9 @@ FilterTerm";
             {
                 // Subclass "G" means "Gotcha!"
                 cnx.CreateTable<SelectableQFModelSubclassG>();
-                tableNames = cnx.QueryScalars<string>(query);
+                tableNames = cnx.GetTableNames();
 
                 actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
-                actual.ToClipboardExpected();
-                { }
                 expected = @" 
 [
   ""SelectableQFModelSubclassG""
@@ -1376,7 +1373,7 @@ Type 'SelectableQFModelSubclassG' is explicitly mapped to [Table(""items"")] in 
             using (var cnx = new SQLiteConnection(":memory:"))
             {
                 cnx.CreateTable<SelectableQFModel>();
-                tableNames = cnx.QueryScalars<string>(query);
+                tableNames = cnx.GetTableNames();
 
                 actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
                 actual.ToClipboardExpected();
@@ -1396,7 +1393,7 @@ Type 'SelectableQFModelSubclassG' is explicitly mapped to [Table(""items"")] in 
             using (var cnx = new SQLiteConnection(":memory:"))
             {
                 cnx.CreateTable<SelectableQFModelSubclass>();
-                tableNames = cnx.QueryScalars<string>(query);
+                tableNames = cnx.GetTableNames();
 
                 actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
                 actual.ToClipboardExpected();
