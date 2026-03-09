@@ -25,7 +25,7 @@ using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
     [TestClass]
-    public class TestClass_UnitTestSQLiteParser
+    public partial class TestClass_TestClass_SQLiteMarkdown
     {
         #region D H O S T    D I S P O S A B L E    D A T A B A S E S
 

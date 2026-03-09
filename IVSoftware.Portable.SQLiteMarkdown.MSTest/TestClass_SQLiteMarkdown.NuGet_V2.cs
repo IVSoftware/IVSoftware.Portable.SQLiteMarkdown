@@ -12,7 +12,7 @@ using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttri
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
 [TestClass]
-public class TestClass_NuGet_V2
+public partial class TestClass_SQLiteMarkdown
 {
     [TestMethod]
     public void Test_PolicyException()

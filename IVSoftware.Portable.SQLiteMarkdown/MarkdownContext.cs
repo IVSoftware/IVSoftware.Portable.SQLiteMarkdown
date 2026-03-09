@@ -1938,29 +1938,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 #endregion I T ' S    T H E    L A W
                 if (!Equals(_searchEntryState, value))
                 {
-#if DEBUG
-                    _searchEntryStatePrev = _searchEntryState;
-#endif
                     _searchEntryState = value;
-
-#if DEBUG
-                    if(_searchEntryState == SearchEntryState.QueryCompleteNoResults 
-                        && _searchEntryStatePrev == SearchEntryState.Cleared)
-                    {
-
-                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 8).Date, "Don't forget disabled");
-                        // Debug.Fail($@"ADVISORY - SMOKING.");
-                    }
-#endif
                     OnSearchEntryStateChanged();
                     OnPropertyChanged();
                 }
             }
         }
         SearchEntryState _searchEntryState = default;
-#if DEBUG
-        SearchEntryState _searchEntryStatePrev = default;  
-#endif
 
         protected virtual void OnSearchEntryStateChanged() 
         {
