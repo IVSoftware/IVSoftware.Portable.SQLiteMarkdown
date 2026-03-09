@@ -58,4 +58,31 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     class ItemCardModel : SelectableQFModelSubclass
     {
     }
+
+    /// <summary>
+    /// 260309 NEW!
+    /// </summary>
+    [Table("items")]
+    class TrueProxy : SelfIndexed
+    {
+        public bool SchemaExtended { get; set; } = true;
+    }
+
+    /// <summary>
+    /// 260309 NEW!
+    /// </summary>
+    [Table("items"), ExtendMapping]
+    class TrueProxyWithExtendSchema : SelfIndexed
+    {
+        public bool SchemaExtended { get; set; } = true;
+    }
+
+    /// <summary>
+    /// 260309 NEW!
+    /// </summary>
+    [Table("containers")]
+    class NonCoherentProxy : SelfIndexed
+    {
+        public bool SchemaExtended { get; set; } = true;
+    }
 }

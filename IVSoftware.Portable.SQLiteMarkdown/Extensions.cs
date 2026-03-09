@@ -1026,7 +1026,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 proxyMapping = Mapper.GetMapping(type, createFlags);
                 Debug.Assert(
                     type.Name == proxyMapping.TableName,
-                    "Expecting tha name of the Type will be used as the table name.");
+                    "Expecting the name of the Type will be used as the table name.");
             }
             { } // <- L O O K    N E T    R E S U L T    O N    P R O X Y
 
@@ -1043,7 +1043,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                     else
                     {
-                        throw new NotImplementedException("ToDo");
+                        TableMapping? adhocMapping = null;
+                        foreach (var @base in type.BaseTypes(includeSelf: true).Reverse())
+                        {
+                            if (@base.GetCustomAttribute<SQLite.TableAttribute>(inherit: false) is not null)
+                            {
+                                adhocMapping = Mapper.GetMapping(@base, createFlags);
+                                if(adhocMapping.TableName == contractMapping.TableName)
+                                {
+                                    adhocMapping = contractMapping;
+                                    break;
+                                }
+                            }
+                        }
+                        if(!ReferenceEquals(adhocMapping, contractMapping))
+                        {
+                            pkName = string.Empty;
+                            pkPropertyName = string.Empty;
+                            Mapper.ThrowHard<InvalidOperationException>();
+                            return null!;
+                        }
                     }
                 }
                 { } // <- L O O K    N E T    R E S U L T    O N    P R O X Y
