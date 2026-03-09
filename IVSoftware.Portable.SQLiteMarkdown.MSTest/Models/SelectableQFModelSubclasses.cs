@@ -26,4 +26,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     class SelectableQFModelSubclassG : SelectableQFModel
     {
     }
+
+    /// <summary>
+    /// So, you think you tested this? Then why BUGIRL?
+    /// </summary>
+    [Table(nameof(ItemCardModel))]
+    class ItemCardModel : SelectableQFModelSubclass
+    {
+    }
 }

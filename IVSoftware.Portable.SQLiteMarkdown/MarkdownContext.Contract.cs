@@ -132,8 +132,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         if (_proxyType != ContractType)
                         {
                             TableMapping
-                                contractMapping = ContractType.GetMapping(),
-                                proxyMapping = _proxyType.GetMapping();
+                                contractMapping = ContractType.GetSQLiteMapping(),
+                                proxyMapping = _proxyType.GetSQLiteMapping();
 
                             if (contractMapping.TableName == proxyMapping.TableName)
                             {

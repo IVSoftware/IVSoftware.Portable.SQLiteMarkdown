@@ -490,7 +490,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     FilterQueryDatabase.RunInTransaction(() =>
                     {
-                        FilterQueryDatabase.DeleteAll(ContractType.GetMapping());
+                        FilterQueryDatabase.DeleteAll(ContractType.GetSQLiteMapping());
                         FilterQueryDatabase.CreateTable(ContractType);
                     });
                 }
@@ -511,7 +511,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 Model.SetAttributeValue(StdMarkdownAttribute.count, null);
                 Model.SetAttributeValue(StdMarkdownAttribute.matches, null);
 
-                PropertyInfo? pk = ContractType.GetMapping().PK?.PropertyInfo;
+                PropertyInfo? pk = ContractType.GetSQLiteMapping().PK?.PropertyInfo;
 #if DEBUG
                 #region L o c a l F x
                 void localOnXObjectChanged(object? sender, XObjectChangeEventArgs e)
@@ -627,7 +627,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             void localResetFQBDForEpoch()
             {
-                if (FilterQueryDatabase.DeleteAll(ContractType.GetMapping()) == 0)
+                if (FilterQueryDatabase.DeleteAll(ContractType.GetSQLiteMapping()) == 0)
                 {   /* G T K */
                 }
                 else

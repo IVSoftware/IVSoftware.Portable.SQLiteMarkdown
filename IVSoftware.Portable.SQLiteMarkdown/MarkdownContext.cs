@@ -106,7 +106,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// 
         /// Conflicting table declarations are handled according to ContractErrorLevel.
         /// </remarks>
-        [Canonical]
+        [Canonical("ParseSqlMarkdown - All extensions and overloads come here.")]
         public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
         {
             if (IsFiltering && expr.IsSemanticallyEmpty())
@@ -2057,7 +2057,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                 #region F I L T E R    Q U E R Y
                 sql = ParseSqlMarkdown();
-                matches = FilterQueryDatabase.Query(ProxyType.GetMapping(), sql);
+                matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
                 #endregion F I L T E R    Q U E R Y
 
                 if (matches.Count == CanonicalCount)
@@ -2117,7 +2117,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 else
                 {
-                    if (ProxyType.GetMapping().PK?.PropertyInfo is PropertyInfo pi)
+                    if (ProxyType.GetSQLiteMapping().PK?.PropertyInfo is PropertyInfo pi)
                     {
                         return matches.Cast<object>().Select(_ => (string)pi.GetValue(_)).ToArray();
                     }

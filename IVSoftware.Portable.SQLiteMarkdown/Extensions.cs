@@ -666,6 +666,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             return @this;
         }
+
+
         #region I N T E R N A L
 #if ABSTRACT
         KEEP THESE INTERNAL.
@@ -981,5 +983,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return @this;
         }
         #endregion I N T E R N A L
+    }
+    public static class SQLiteConnectionMapper
+    {
+        public static TableMapping GetSQLiteMapping(this Type type, CreateFlags createFlags = CreateFlags.None)
+            => Mapper.GetMapping(type, createFlags);
+        public static TableMapping GetSQLiteMapping(
+            Type type,
+            out string? pkName,
+            out string? pkPropertyName,
+            CreateFlags createFlags = CreateFlags.None)
+        {
+            var mapper = Mapper.GetMapping(type, createFlags);
+            pkName = mapper.PK?.Name;
+            pkPropertyName = mapper.PK?.PropertyName;
+            return mapper;
+        }
+        static SQLiteConnection Mapper
+        {
+            get
+            {
+                if (_mapper is null)
+                {
+                    _mapper = new SQLiteConnection(":memory:");
+                }
+                return _mapper;
+            }
+        }
+        static SQLiteConnection? _mapper = null;
     }
 }
