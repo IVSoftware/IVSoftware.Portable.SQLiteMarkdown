@@ -134,10 +134,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         {
                             if (_proxyType.GetSQLiteMapping(contractType: ContractType) is { } mapping)
                             {
-                                if (_proxyType.GetCustomAttribute<ExtendMappingAttribute>() is not null)
+                                if(QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
+                                    && _proxyType.GetCustomAttribute<ExtendMappingAttribute>() is not null)
                                 {
                                     FilterQueryDatabase.CreateTable(ProxyType);
                                 }
+                            }
+                            else
+                            {   /* G T K */
+                                // You only land here if a Throw was marked handled.
                             }
                         }
 #if false

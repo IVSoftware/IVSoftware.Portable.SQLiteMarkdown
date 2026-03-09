@@ -1040,11 +1040,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             aspirant = Mapper.GetMapping(@base, createFlags);
                             if(aspirant.TableName == mapping.TableName)
                             {
-
+                                throw new NotImplementedException("ToDo");
                             }
                             else
                             {
-
+                                throw new NotImplementedException("ToDo");
                             }
                             break;
                         }
@@ -1062,7 +1062,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             pkName = mapping.PK?.Name;
             pkPropertyName = mapping.PK?.PropertyName;
             return mapping;
-
         }
         static SQLiteConnection Mapper
         {
