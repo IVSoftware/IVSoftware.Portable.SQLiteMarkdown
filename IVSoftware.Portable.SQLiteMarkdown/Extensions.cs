@@ -1028,12 +1028,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     type.Name == proxyMapping.TableName,
                     "Expecting tha name of the Type will be used as the table name.");
             }
-            else
             { } // <- L O O K    N E T    R E S U L T    O N    P R O X Y
 
-            if( contractType is not null && contractType != type)
+            if (contractType is not null && contractType != type)
             {
-
+                TableMapping contractMapping = Mapper.GetMapping(contractType);
+                if(contractMapping.TableName != proxyMapping.TableName)
+                {
+                    throw new NotImplementedException("ToDo");
+                }
+                { } // <- L O O K    N E T    R E S U L T    O N    P R O X Y
             }
 
 #if false
