@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
@@ -1051,18 +1052,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 adhocMapping = Mapper.GetMapping(@base, createFlags);
                                 if(adhocMapping.TableName == contractMapping.TableName)
                                 {
-                                    adhocMapping = contractMapping;
-                                    break;
+                                    proxyMapping = adhocMapping;
+                                    goto breakFromInner;
                                 }
                             }
                         }
-                        if(!ReferenceEquals(adhocMapping, contractMapping))
-                        {
-                            pkName = string.Empty;
-                            pkPropertyName = string.Empty;
-                            Mapper.ThrowHard<InvalidOperationException>();
-                            return null!;
-                        }
+                        pkName = string.Empty;
+                        pkPropertyName = string.Empty;
+                        Mapper.ThrowHard<InvalidOperationException>("Proxy type cannot resolve to the contract table.");
+                        return null!;
+                        breakFromInner:;
                     }
                 }
                 { } // <- L O O K    N E T    R E S U L T    O N    P R O X Y

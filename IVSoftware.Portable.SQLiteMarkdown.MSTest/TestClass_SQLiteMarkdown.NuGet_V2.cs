@@ -541,6 +541,24 @@ SELECT * FROM items WHERE
 
         void subtest_NonIncoherentProxy()
         {
+            #region L o c a l F x
+            var builderThrow = new List<string>();
+            void localOnBeginThrowOrAdvise(object? sender, Throw e)
+            {
+                builderThrow.Add(e.Message);
+                e.Handled = true;
+            }
+            using var local = this.WithOnDispose(
+                onInit: (sender, e) =>
+                {
+                    Throw.BeginThrowOrAdvise += localOnBeginThrowOrAdvise;
+                },
+                onDispose: (sender, e) =>
+                {
+                    Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
+                });
+            #endregion L o c a l F x
+
             // PREREQUISITE FOR ANY PROXY
             var mdc = new MarkdownContext<SelectableQFModel>();
 
@@ -550,17 +568,18 @@ SELECT * FROM items WHERE
 
             sql = mdc.ParseSqlMarkdown<NonCoherentProxy>("green");
 
-            actual = sql;
+            Assert.AreEqual(string.Empty, sql, "Expecting empty expression for failed parse.");
+
+            actual = string.Join(Environment.NewLine, builderThrow);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-    SELECT * FROM items WHERE
-    (QueryTerm LIKE '%green%')";
+Proxy type cannot resolve to the contract table.";
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting table name to be ItemCardModel."
+                "Expecting throw event (handled locally)."
             );
         }
         #endregion S U B T E S T S

@@ -140,7 +140,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // and are *not* bound to the ContractType.
             Raw = expr;
             Transform = Raw;
-            TableName = proxyType.GetSQLiteMapping(contractType: ContractType).TableName;
+            if(proxyType.GetSQLiteMapping(contractType: ContractType)?.TableName is { } tableName)
+            {
+                TableName = tableName;
+            }
+            else
+            {
+                // Throw has already occured.
+                xast = null!; // We warned you.
+                return string.Empty;
+            }
+
 
 
             Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 9).Date, "Don't forget disabled");
