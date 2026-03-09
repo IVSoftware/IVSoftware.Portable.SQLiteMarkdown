@@ -137,7 +137,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                             if (contractMapping.TableName == proxyMapping.TableName)
                             {
-                                throw new NotImplementedException("ToDo");
+                                if(_proxyType.GetCustomAttribute<ExtendMappingAttribute>() is not null)
+                                {
+                                    FilterQueryDatabase.CreateTable(ProxyType);
+                                }
                             }
                             else
                             {

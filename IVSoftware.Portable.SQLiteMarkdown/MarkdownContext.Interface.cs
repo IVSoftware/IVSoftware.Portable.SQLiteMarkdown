@@ -742,7 +742,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             => await RunFSMAsync<InitFilterEpochFSM>(recordset);
 
         /// <summary>
-        /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
+        /// Established a new canonical model for subsequent operations.
         /// </summary>
         /// <remarks>
         /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
@@ -752,7 +752,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             recordset ??= Array.Empty<object>();
             using (DHostBusy.GetToken())
             {
-                RunFSM<InitFilterEpochFSM>(recordset);
+                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                {
+                    RunFSM<InitFilterEpochFSM>(recordset);
+                }
+                else
+                {
+                    // Build a new model for new recordset that
+                    // has no possibility of being filtered.
+                    RunFSM<InitQueryEpochFSM>(recordset);
+                }
             }
         }
 

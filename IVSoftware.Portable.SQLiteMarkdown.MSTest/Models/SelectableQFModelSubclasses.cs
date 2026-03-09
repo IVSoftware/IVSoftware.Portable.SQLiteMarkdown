@@ -3,26 +3,50 @@ using SQLite;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
 {
-
     /// <summary>
-    /// Subclass, where table is consistent with BC.(This is the control case of the experiment.)) 
+    /// Different classes, but the explicit [Table] attributes all agree.
     /// </summary>
+    /// <remarks>
+    /// SQLite mapping: resolves to "items".
+    /// Parser behavior: uncontroversial. All mappings converge on the same table.
+    /// </remarks>
     [Table("items")]
     class SelectableQFModelSubclass : SelectableQFModel
     {
     }
 
     /// <summary>
-    /// Subclass, where table is inconsistent with BC.
+    /// Different classes, and the explicit [Table] attributes conflict.
     /// </summary>
+    /// <remarks>
+    /// ACCORDING TO SQLITE NATIVE: 
+    /// The table name resolves to SelectableQFModelSubclassa.
+    /// 
+    /// BUT, ACCORDING TO SQLITE MARKDOWN PARSER, IT'S MORE SUBTLE:
+    /// 1. If ProxyType and ContractType are different types:
+    ///    a. The ContractType mapping will be used
+    ///    b. The ProxyType must be able to resolve to it *explicity* in its inheritance;
+    ///    c. The explicit [Table] attribute can be disregarded, provided b is true.
+    /// 2. If ProxyType and ContractType are the same type.
+    ///    a. The most-derived explicit table mapping is used.
+    ///    b. If *no* explicit [Table] attributes are found, the mapping 
+    ///       for the most derived type is used without exception.
+    /// </remarks>
     [Table("itemsA")]
     class SelectableQFModelSubclassA : SelectableQFModel
     {
     }
 
     /// <summary>
-    /// The "Gotcha" subclass. SQLite assumes table identity is 'SelectableQFModelSubclassG' not 'items'.
+    /// The "Gotcha" subclass.
     /// </summary>
+    /// <remarks>
+    /// ACCORDING TO SQLITE NATIVE: 
+    /// The table name resolves to SelectableQFModelSubclassG.
+    /// 
+    /// BUT, ACCORDING TO SQLITE MARKDOWN PARSER: 
+    /// Since SelectableQFModel offers an explicit table, always use that.
+    /// </remarks>
     class SelectableQFModelSubclassG : SelectableQFModel
     {
     }

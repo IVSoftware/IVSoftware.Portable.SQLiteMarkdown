@@ -1321,15 +1321,34 @@ FilterTerm";
             string actual, expected;
             string[] tableNames;
 
+
+            // TERMINOLOGY: Sources of "controversy".
+            // 1. Conflicting [Table] attributes in the inheritance chain.
+            // 2. ProxyType whose SQLite table mapping differs from ContractType.
+            //
+            // NOTWITHSTANDING:
+            // Case 1 is not controversial when ContractType and ProxyType are the same type.
+            // There is no competing mapping to resolve.
+            //
+            // Case 2 is treated as non-controversial when ProxyType inherits a mapping
+            // that resolves to the same table name as ContractType.
+
             subtest_TableNameDefaultsToExplicitBC();
+            subtest_ProxySameAsContract();
             subtest_UncontroversialExplicitTableAttribute();
+            subtest_ParseInputTextInQueryMode();
+
+            #region v2.0+
+            subtest_ProxyCoherence1();
+            subtest_ProxyCoherence2();
+            #endregion v2.0+
 
             #region S U B T E S T S
             void subtest_TableNameDefaultsToExplicitBC()
             {
                 // This is the "main gotcha" we're concerned about:
 
-                // POLICY #1: Base-class table fallback.
+                // POLICY: Base-class table fallback.
                 //
                 // When the concrete type does not declare its own [Table] attribute,
                 // but one or more base classes do, resolve table identity using the
@@ -1352,7 +1371,7 @@ FilterTerm";
                         "Expecting that SQLite will create table named after the subclass when no [Table] is declared."
                     );
 
-                    // Whereas the parser is deliberately going to pick up the `[Table("items"]` from the BC.
+                    // APPLY POLICY: Pick up the `[Table("items"]` from the BC.
                     builderThrow.Clear();
                     actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclassG>();
                     expected = @" 
@@ -1366,65 +1385,107 @@ SELECT * FROM items WHERE
                     );
                 }
             }
-            #endregion S U B T E S T S
 
+            // Different classes, but the explicit [Table] attributes all agree.
             void subtest_UncontroversialExplicitTableAttribute()
             {
-                // TERMINOLOGY: What makes this "uncontroversial"?
-                //
-                // 
                 var mdc = new MarkdownContext<SelectableQFModel>();
-                mdc.ParseSqlMarkdown<SelectableQFModel>("uncontroversial");
+                mdc.ParseSqlMarkdown<SelectableQFModelSubclass>("hello");
                 tableNames = mdc.GetTableNames();
-
-
-                using (var cnx = new SQLiteConnection(":memory:"))
-                {
-                    "uncontroversial".ParseSqlMarkdown<SelectableQFModel>();
-
-
-                    actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
-                    actual.ToClipboardExpected();
-                    { }
-                    expected = @" 
-    [
-      ""items""
-    ]";
-
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting 'items' table"
-                    );
-                }
-            }
-
-            using (var cnx = new SQLiteConnection(":memory:"))
-            {
-                cnx.CreateTable<SelectableQFModelSubclass>();
-                tableNames = cnx.GetTableNames();
+                "hello".ParseSqlMarkdown<SelectableQFModel>();
 
                 actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[
-  ""items""
-]"
-                ;
+    [
+      ""items""
+    ]";
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting 'items' table of base class is NOT FOUND."
+                    "Expecting 'items' table"
+                );
+            }
+
+            // When ContractType == ProxyType:
+            // - Any explicit [Table] attributes in base classes are moot.
+            void subtest_ProxySameAsContract()
+            {
+                var mdc = new MarkdownContext<SelectableQFModelSubclassA>();
+                mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
+                tableNames = mdc.GetTableNames();
+                "hello".ParseSqlMarkdown<SelectableQFModel>();
+
+                actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                // Even though [Table("items"]) exists in BC.
+                expected = @" 
+    [
+      ""itemsA""
+    ]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table"
+                );
+            }
+
+            void subtest_ProxyCoherence1()
+            {
+                var mdc = new MarkdownContext<SelectableQFModel>();
+                mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
+                tableNames = mdc.GetTableNames();
+                "hello".ParseSqlMarkdown<SelectableQFModel>();
+
+                actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+    [
+      ""items""
+    ]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table"
                 );
 
-                // Now check parser where declared table identity DUPLICATES the BC
+            }
+
+            void subtest_ProxyCoherence2()
+            {
+                var mdc = new MarkdownContext<SelectableQFModelSubclassA>();
+                mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
+                tableNames = mdc.GetTableNames();
+                "hello".ParseSqlMarkdown<SelectableQFModel>();
+
+                actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+    [
+      ""itemsA""
+    ]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table"
+                );
+            }
+
+            void subtest_ParseInputTextInQueryMode()
+            {
+                // Check parser where declared table identities resolve as same
                 var mdc = new MarkdownContext<SelectableQFModelSubclass>();
                 mdc.InputText = "animal";
 
                 actual = mdc.ParseSqlMarkdown();
-                { }
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -1436,57 +1497,8 @@ SELECT * FROM items WHERE
                     actual.NormalizeResult(),
                     "Expecting table to match."
                 );
-
-                // Now check parser EXTENSION where declared table identity DUPLICATES the BC
-                actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclass>();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-SELECT * FROM items WHERE 
-(QueryTerm LIKE '%animal%')";
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting 'items' table identity."
-                );
             }
-            #region v2.0+
-            // ++++++++++++++++
-            // AMBIGUITY EXISTS for explicit declared table identities in the inheritance chain.
-            // ++++++++++++++++
-            // Rule # 1
-            // When CONTRACT TYPE and PROXY TYPE are the SAME.
-
-            // Rule # 2
-            // When CONTRACT TYPE and PROXY TYPE are the DIFFERENT.
-
-            // Now check parser where declared table identity is INCONSISTENT WITH the BC
-            // v2.0+ "TO AVOID SPURIOUS TABLE CREATION - BASE CLASS WINS"
-            // v1.0  "Explicit [Table] attribute MUST BE RESPECTED."
-            actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclassA>();
-            actual.ToClipboardExpected();
-            { }
-
-            expected = @" 
-SELECT * FROM items WHERE
-(QueryTerm LIKE '%animal%')"
-            ;
-
-#if false && VERSION_1_CONTRACT
-            "Explicit [Table] attribute MUST BE RESPECTED."            
-
-            expected = @" 
-SELECT * FROM itemsA WHERE 
-(QueryTerm LIKE '%animal%')";
-#endif
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting 'itemsA' table identity."
-            );
-            #endregion v2.0+
+            #endregion S U B T E S T S
         }
 
         /// <summary>

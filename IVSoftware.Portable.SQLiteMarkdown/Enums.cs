@@ -391,6 +391,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
+    /// LoadCannon when config is QueryOnly.
+    /// </summary>
+    internal enum InitQueryEpochFSM
+    {
+        DetectFastTrack = StdFSMState.DetectFastTrack,
+
+        ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
+
+        InitStatesForEpoch = StdFSMState.InitStatesForEpoch,
+    }
+
+    /// <summary>
     /// Executes on falling edge of IsFiltering.
     /// </summary>
     internal enum ResetFilterEpochFSM
