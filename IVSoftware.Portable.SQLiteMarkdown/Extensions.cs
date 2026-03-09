@@ -1023,7 +1023,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             if(proxyMapping is null)
             {
                 // Did not find any explicit [Table] tags.
-                proxyMapping = Mapper.GetMapping(type);
+                proxyMapping = Mapper.GetMapping(type, createFlags);
                 Debug.Assert(
                     type.Name == proxyMapping.TableName,
                     "Expecting tha name of the Type will be used as the table name.");
@@ -1032,7 +1032,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             if (contractType is not null && contractType != type)
             {
-                TableMapping contractMapping = Mapper.GetMapping(contractType);
+                TableMapping contractMapping = Mapper.GetMapping(contractType, createFlags);
                 if(contractMapping.TableName != proxyMapping.TableName)
                 {
                     if (contractType.IsAssignableFrom(type))
@@ -1048,49 +1048,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 { } // <- L O O K    N E T    R E S U L T    O N    P R O X Y
             }
-
-#if false
-
-            if (contractType is null)
-            {
-                foreach (var @base in type.BaseTypes(includeSelf: true))
-                {
-                    if (@base.GetCustomAttribute<SQLite.TableAttribute>(inherit: false) is not null)
-                    {
-                        mapping = Mapper.GetMapping(@base, createFlags);
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                mapping = Mapper.GetMapping(contractType);
-                if (contractType.IsAssignableFrom(type))
-                {
-
-                }
-                else
-                {
-                    TableMapping aspirant;
-                    foreach (var @base in type.BaseTypes(includeSelf: true).Reverse())
-                    {
-                        if (@base.GetCustomAttribute<SQLite.TableAttribute>(inherit: false) is not null)
-                        {
-                            aspirant = Mapper.GetMapping(@base, createFlags);
-                            if (aspirant.TableName == mapping.TableName)
-                            {
-                                throw new NotImplementedException("ToDo");
-                            }
-                            else
-                            {
-                                throw new NotImplementedException("ToDo");
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-#endif
             pkName = proxyMapping.PK?.Name;
             pkPropertyName = proxyMapping.PK?.PropertyName;
             return proxyMapping;
