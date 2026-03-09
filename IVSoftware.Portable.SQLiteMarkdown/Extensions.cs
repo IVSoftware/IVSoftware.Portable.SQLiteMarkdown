@@ -1018,7 +1018,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if(@base.GetCustomAttribute<SQLite.TableAttribute>(inherit: false) is not null)
                 {
-                    mapping = Mapper.GetMapping(type, createFlags);
+                    mapping = Mapper.GetMapping(@base, createFlags);
                     break;
                 }
             }
