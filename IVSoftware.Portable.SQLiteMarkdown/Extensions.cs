@@ -1000,40 +1000,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         #endregion I N T E R N A L
     }
 
-    [Flags]
-    public enum MapDiscoveryFlag
-    {
-        None = 0,
-        UseBaseTypeForProxy = 0x1,
-    }
-
     public static class SQLiteConnectionMapper
     {
         public static TableMapping GetSQLiteMapping(
             this Type type,
             CreateFlags createFlags = CreateFlags.None,
-            MapDiscoveryFlag mapDiscoveryFlags = MapDiscoveryFlag.None)
-            => type.GetSQLiteMapping(out _, out _, createFlags, mapDiscoveryFlags);
+            Type? contractType = null)
+            => type.GetSQLiteMapping(out _, out _, createFlags, contractType);
         public static TableMapping GetSQLiteMapping(
             this Type type,
             out string? pkName,
             out string? pkPropertyName,
-            CreateFlags createFlags = CreateFlags.None, 
-            MapDiscoveryFlag mapDiscoveryFlags = MapDiscoveryFlag.None)
+            CreateFlags createFlags = CreateFlags.None,
+            Type? contractType = null)
         {
             TableMapping? mapping = null;
-            if (mapDiscoveryFlags.HasFlag(MapDiscoveryFlag.UseBaseTypeForProxy))
-            {
-                foreach (var @base in type.BaseTypes(includeSelf: true).Reverse())
-                {
-                    if (@base.GetCustomAttribute<SQLite.TableAttribute>(inherit: false) is not null)
-                    {
-                        mapping = Mapper.GetMapping(@base, createFlags);
-                        break;
-                    }
-                }
-            }
-            else
+
+            if (contractType is null)
             {
                 foreach (var @base in type.BaseTypes(includeSelf: true))
                 {
@@ -1044,13 +1027,34 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                 }
             }
-            if(mapping is null)
+            else
             {
-                mapping = Mapper.GetMapping(type);
+                mapping = Mapper.GetMapping(contractType);
+                if (!contractType.IsAssignableFrom(type))
+                {
+                    TableMapping aspirant;
+                    foreach (var @base in type.BaseTypes(includeSelf: true).Reverse())
+                    {
+                        if (@base.GetCustomAttribute<SQLite.TableAttribute>(inherit: false) is not null)
+                        {
+                            aspirant = Mapper.GetMapping(@base, createFlags);
+                            if(aspirant.TableName == mapping.TableName)
+                            {
+
+                            }
+                            else
+                            {
+
+                            }
+                            break;
+                        }
+                    }
+                }
             }
             pkName = mapping.PK?.Name;
             pkPropertyName = mapping.PK?.PropertyName;
             return mapping;
+
         }
         static SQLiteConnection Mapper
         {

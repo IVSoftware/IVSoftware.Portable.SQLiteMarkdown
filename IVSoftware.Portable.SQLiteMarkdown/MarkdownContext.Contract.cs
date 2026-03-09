@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Transactions;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -131,6 +132,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         _proxyType = value;
                         if (_proxyType != ContractType)
                         {
+                            if (_proxyType.GetSQLiteMapping(contractType: ContractType) is { } mapping)
+                            {
+                                if (_proxyType.GetCustomAttribute<ExtendMappingAttribute>() is not null)
+                                {
+                                    FilterQueryDatabase.CreateTable(ProxyType);
+                                }
+                            }
+                        }
+#if false
+                        if (_proxyType != ContractType)
+                        {
                             TableMapping
                                 contractMapping = ContractType.GetSQLiteMapping(),
                                 proxyMapping = _proxyType.GetSQLiteMapping();
@@ -147,6 +159,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 this.ThrowPolicyException(SQLiteMarkdownPolicy.ProxyTableMapping);
                             }
                         }
+#endif
                         OnPropertyChanged();
                     }
                 }

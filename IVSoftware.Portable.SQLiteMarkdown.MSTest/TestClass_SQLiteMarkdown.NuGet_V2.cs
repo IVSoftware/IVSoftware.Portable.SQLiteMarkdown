@@ -429,6 +429,9 @@ SELECT * FROM items WHERE
         #endregion S U B T E S T S
     }
 
+    /// <summary>
+    /// Test detection of "true proxy" mode.
+    /// </summary>
     [TestMethod]
     public void Test_BUGIRL_TableInheritance()
     {
@@ -437,19 +440,53 @@ SELECT * FROM items WHERE
         var mapping = typeof(ItemCardModel).GetSQLiteMapping();
         Assert.AreEqual(nameof(ItemCardModel), mapping.TableName);
 
-        sql = "green".ParseSqlMarkdown<ItemCardModel>();
 
-        actual = sql;
-        actual.ToClipboardExpected();
-        { }
-        expected = @" 
-SELECT * FROM ItemCardModel WHERE
-(QueryTerm LIKE '%green%')";
+        subtest_IsNotTrueProxy();
+        subtest_IsWeakProxy();
 
-        Assert.AreEqual(
-            expected.NormalizeResult(),
-            actual.NormalizeResult(),
-            "Expecting table name to be ItemCardModel."
-        );
+        #region S U B T E S T S
+        void subtest_IsNotTrueProxy()
+        {
+            sql = "green".ParseSqlMarkdown<ItemCardModel>();
+
+            actual = sql;
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+    SELECT * FROM ItemCardModel WHERE
+    (QueryTerm LIKE '%green%')";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting table name to be ItemCardModel."
+            );
+        }
+        void subtest_IsWeakProxy()
+        {
+            // PREREQUISITE FOR 'TRUE PROXY'
+            var mdc = new MarkdownContext<SelectableQFModel>();
+
+            // Because ItemCardModel is a subclass of SelectableQFModel
+            // it *is* a weak proxy by inheritance. But it's still a
+            // proxy, so we need to use the ContractType for table.
+
+            sql = mdc.ParseSqlMarkdown<ItemCardModel>("green");
+
+            actual = sql;
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+    SELECT * FROM items WHERE
+    (QueryTerm LIKE '%green%')";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting table name to be ItemCardModel."
+            );
+
+        }
+        #endregion S U B T E S T S
     }
 }
