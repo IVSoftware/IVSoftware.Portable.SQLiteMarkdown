@@ -197,20 +197,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 case XObjectChange.Add:
                     localSetModelAuthority(xbo);
-                    if (SQLITE_STRICT)
+
+                    if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                     {
-                        if (1 != FilterQueryDatabase.Insert(item))
+                        if (SQLITE_STRICT)
                         {
-                            Debug.Fail($@"ADVISORY - Expecting operation to succeed.");
+                            if (1 != FilterQueryDatabase.Insert(item))
+                            {
+                                Debug.Fail($@"ADVISORY - Expecting operation to succeed.");
+                            }
+                        }
+                        else
+                        {
+                            if (1 != FilterQueryDatabase.InsertOrReplace(item))
+                            {
+
+                                Debug.Fail($@"ADVISORY - Expecting operation to succeed.");
+                            }
                         }
                     }
                     else
-                    {
-                        if (1 != FilterQueryDatabase.InsertOrReplace(item))
-                        {
-
-                            Debug.Fail($@"ADVISORY - Expecting operation to succeed.");
-                        }
+                    {   /* G T K - N O O P */
+                        // There is no filter database to maintain.
                     }
                     break;
                 case XObjectChange.Remove:
@@ -486,18 +494,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             Enum localInitFQDBEpoch(IEnumerable canonical)
             {
-                try
+                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                 {
-                    FilterQueryDatabase.RunInTransaction(() =>
+                    try
                     {
-                        FilterQueryDatabase.DeleteAll(ContractType.GetSQLiteMapping());
-                        FilterQueryDatabase.CreateTable(ContractType);
-                    });
+                        FilterQueryDatabase.RunInTransaction(() =>
+                        {
+                            FilterQueryDatabase.DeleteAll(ContractType.GetSQLiteMapping());
+                            FilterQueryDatabase.CreateTable(ContractType);
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        this.RethrowHard(ex);
+                        return ReservedFSMState.Canceled;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    this.RethrowHard(ex);
-                    return ReservedFSMState.Canceled;
+                else
+                {   /* G T K - N O O P */
+                    // There is no FQDB to maintain in Query-Only mode.
                 }
                 return ReservedFSMState.Next;
             }
@@ -627,11 +642,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             void localResetFQBDForEpoch()
             {
-                if (FilterQueryDatabase.DeleteAll(ContractType.GetSQLiteMapping()) == 0)
-                {   /* G T K */
+                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                {
+                    try
+                    {
+                        if (FilterQueryDatabase.DeleteAll(ContractType.GetSQLiteMapping()) == 0)
+                        {   /* G T K */
+                        }
+                        else
+                        {   /* G T K */
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        this.RethrowHard(ex);
+                    }
                 }
                 else
-                {   /* G T K */
+                {   /* G T K - N O O P */
+                    // There is no FQDB to maintain in Query-Only mode.
                 }
             }
 
@@ -752,16 +781,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             recordset ??= Array.Empty<object>();
             using (DHostBusy.GetToken())
             {
-                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
-                {
-                    RunFSM<InitFilterEpochFSM>(recordset);
-                }
-                else
-                {
-                    // Build a new model for new recordset that
-                    // has no possibility of being filtered.
-                    RunFSM<InitQueryEpochFSM>(recordset);
-                }
+                RunFSM<InitFilterEpochFSM>(recordset);
             }
         }
 
