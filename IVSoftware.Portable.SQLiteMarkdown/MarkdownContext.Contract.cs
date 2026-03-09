@@ -241,7 +241,7 @@ Rationale     : The contract database must be held stable for this inheritance t
             else
             {
                 // Accept the uncontroversial table name as seen by SQLite.
-                bcTableName = Mapper.GetMapping(type).TableName;
+                bcTableName = type.GetSQLiteMapping().TableName;
             }
             return bcTableName;
 
@@ -263,18 +263,6 @@ Rationale     : The contract database must be held stable for this inheritance t
         private readonly HashSet<Type> _warnedOnType = new();
         private readonly object _warnLock = new();
 
-        protected static SQLiteConnectionMapper Mapper
-        {
-            get
-            {
-                if (_mapper is null)
-                {
-                    _mapper = new SQLiteConnectionMapper();
-                }
-                return _mapper;
-            }
-        }
-        static SQLiteConnectionMapper? _mapper = null;
         public ContractErrorLevel ContractErrorLevel { get; set; } = ContractErrorLevel.ThrowSoft;
 
         protected sealed class SQLiteConnectionMapper

@@ -142,7 +142,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Transform = Raw;
 
 
-#if true
+#if false
             TableName = proxyType.GetSQLiteMapping().TableName;
 #else
             TableName = ResolveTableNameForPass(ProxyType);
