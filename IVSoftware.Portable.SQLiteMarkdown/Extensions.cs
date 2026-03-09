@@ -1051,6 +1051,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                 }
             }
+            if(mapping is null)
+            {
+                // Did not find any explicit [Table] tags.
+                mapping = Mapper.GetMapping(type);
+                Debug.Assert(
+                    type.Name == mapping.TableName, 
+                    "Expecting tha name of the Type will be used as the table name.");
+            }
             pkName = mapping.PK?.Name;
             pkPropertyName = mapping.PK?.PropertyName;
             return mapping;
