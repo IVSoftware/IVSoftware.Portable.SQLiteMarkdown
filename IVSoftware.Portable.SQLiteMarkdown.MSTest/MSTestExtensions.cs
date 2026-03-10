@@ -7,6 +7,8 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Xml.Linq;
+using static System.Windows.Forms.Design.AxImporter;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
@@ -26,15 +28,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             };
 
         public static void PopulateDemoDatabase<T>(this SQLiteConnection @this, bool includeLive = false, PopulateOptions? options = null) 
-            where T : new()
+            where T : class, new()
         {
             @this.CreateTable<T>();
 
             var list = new List<T>().PopulateForDemo(includeLiveDemo: includeLive, options);
             @this.InsertAll(list);
         }
+
+        public static T AddDynamic<T>(this IList<T> @this, string description, string tags, bool isChecked, List<string>? keywords = null)
+            where T : class, new()
+        {
+            var itemT = new T();
+            typeof(T).GetProperty("Description")?.SetValue(itemT, description);
+            typeof(T).GetProperty("Tags")?.SetValue(itemT, tags);
+            typeof(T).GetProperty("IsChecked")?.SetValue(itemT, isChecked);
+            if (keywords != null)
+            {
+                var json = JsonConvert.SerializeObject(keywords);
+                typeof(T).GetProperty("Keywords")?.SetValue(itemT, json);
+            }
+            @this.Add(itemT);
+            return itemT;
+        }
+
         public static IList<T> PopulateForDemo<T>(this IList<T>? @this, bool includeLiveDemo = false, PopulateOptions? options = null)
-            where T : new()
+            where T : class, new()
         {
             Random rando = new(10);
 
@@ -49,20 +68,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
             {
+                var itemT = @this.AddDynamic(description, tags, isChecked, keywords);
                 if(options?.HasFlag(PopulateOptions.RandomChecks) == true)
                 {
                     isChecked = rando.Next(2) == 1;
                 }
-                var instance = new T();
-                typeof(T).GetProperty("Description")?.SetValue(instance, description);
-                typeof(T).GetProperty("Tags")?.SetValue(instance, tags);
-                typeof(T).GetProperty("IsChecked")?.SetValue(instance, isChecked);
-                if (keywords != null)
-                {
-                    var json = JsonConvert.SerializeObject(keywords);
-                    typeof(T).GetProperty("Keywords")?.SetValue(instance, json);
-                }
-                @this.Add(instance);
             }
             // Unit tested
             Add("Brown Dog", "[canine] [color]", false, new() { "loyal", "friend", "furry" });

@@ -8,7 +8,6 @@ using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
-
     [TestClass]
     public class TestClass_Extensions
     {

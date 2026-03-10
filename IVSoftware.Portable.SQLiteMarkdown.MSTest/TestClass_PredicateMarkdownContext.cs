@@ -14,6 +14,105 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 [TestClass]
 public class TestClass_PredicateMarkdownContext
 {
+
+    [TestMethod, DoNotParallelize]
+    public async Task Test_5_Items()
+    {
+        using var te = this.TestableEpoch();
+
+        const int COUNT = 5;
+        string parentId;
+        string actual, expected, sql;
+        List<TemporalAffinityQFModel> recordset;
+
+        using var cnx = new SQLiteConnection(":memory:");
+        cnx.CreateTable<TemporalAffinityQFModel>();
+
+        IList<TemporalAffinityQFModel> opc;
+
+        await subtest_EnsureParentIdSetterWorksDRY();
+
+        #region S U B T E S T S
+        async Task subtest_EnsureParentIdSetterWorksDRY()
+        {
+            opc =
+               new ObservableCollection<TemporalAffinityQFModel>()
+               .PopulateForDemo(COUNT, PopulateOptions.RandomChecks);
+
+            // Assign a parent path to last item.
+            parentId = new Guid().WithTestability().ToString();
+            opc.Last().ParentPath = parentId;
+
+            Assert.AreEqual(
+                COUNT,
+                opc.Count,
+                "Expecting initial population.");
+
+            Assert.AreEqual(COUNT, cnx.InsertAll(opc));
+
+            // Query SPECIFICALLY on ParentId alone.
+            sql = $"Select * from items where ParentId='{parentId}'";
+            recordset = cnx.Query<TemporalAffinityQFModel>(sql);
+
+
+            actual = JsonConvert.SerializeObject(recordset, Formatting.Indented);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[
+  {
+    ""Duration"": ""00:00:00"",
+    ""Remaining"": ""00:00:00"",
+    ""TemporalAffinity"": null,
+    ""TemporalChildAffinity"": null,
+    ""TemporalAffinityCurrentTimeDomain"": null,
+    ""Slots"": [],
+    ""UtcStart"": null,
+    ""UtcEnd"": null,
+    ""AvailableTimeSpan"": null,
+    ""IsDone"": null,
+    ""OutOfTime"": false,
+    ""IsPastDue"": null,
+    ""Created"": ""2000-01-01T09:04:00+07:00"",
+    ""ChainOfCustody"": ""{\r\n  \""Created\"": \""2000-01-01T09:04:00+07:00\"",\r\n  \""Coc\"": {}\r\n}"",
+    ""Model"": ""<model preview=\""Item05    \"" />"",
+    ""FullPath"": ""312d1c21-0000-0000-0000-000000000005\\312d1c21-0000-0000-0000-000000000004"",
+    ""ParentPath"": ""312d1c21-0000-0000-0000-000000000005"",
+    ""ParentId"": ""312d1c21-0000-0000-0000-000000000005"",
+    ""Priority"": 630822890400000000,
+    ""PriorityOverride"": null,
+    ""IsRoot"": false,
+    ""CustomProperties"": ""{}"",
+    ""Id"": ""312d1c21-0000-0000-0000-000000000004"",
+    ""Description"": ""Item05"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": """",
+    ""IsChecked"": true,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000004"",
+    ""QueryTerm"": ""item05"",
+    ""FilterTerm"": ""item05"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item05\""\r\n}""
+  }
+]"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting " +
+                "1. Testable Guids and DateTimeOffset." +
+                "2. Specifically, Last item is #...004 and ParentId is #...005."
+            );
+        }
+
+        #endregion S U B T E S T S
+
+    }
+
     [TestMethod, DoNotParallelize]
     public void Test_IsFilteringEdgeTests()
     {
@@ -121,7 +220,7 @@ public class TestClass_PredicateMarkdownContext
     }
 
     /// <summary>
-    /// Try out some basic extenal filters.
+    /// Try out some basic external filters.
     /// </summary>
     [TestMethod, DoNotParallelize]
     public async Task Test_TemporalAffinityQFModel()
@@ -219,104 +318,8 @@ public class TestClass_PredicateMarkdownContext
             actual.NormalizeResult(),
             "Expecting modeled matches."
         );
-    }
 
-
-    [TestMethod, DoNotParallelize]
-    public async Task Test_5_Items()
-    {
-        using var te = this.TestableEpoch();
-
-        const int COUNT = 5;
-        string parentId;
-        string actual, expected, sql;
-        List<TemporalAffinityQFModel> recordset;
-
-        using var cnx = new SQLiteConnection(":memory:");
-        cnx.CreateTable<TemporalAffinityQFModel>();
-
-        IList<TemporalAffinityQFModel> opc;
-
-        await subtest_EnsureParentIdSetterWorksDRY();
-
-        #region S U B T E S T S
-        async Task subtest_EnsureParentIdSetterWorksDRY()
-        {
-            opc =
-               new ObservableCollection<TemporalAffinityQFModel>()
-               .PopulateForDemo(COUNT, PopulateOptions.RandomChecks);
-
-            // Assign a parent path to last item.
-            parentId = new Guid().WithTestability().ToString();
-            opc.Last().ParentPath = parentId;
-
-            Assert.AreEqual(
-                COUNT,
-                opc.Count,
-                "Expecting initial population.");
-
-            Assert.AreEqual(COUNT, cnx.InsertAll(opc));
-
-            // Query SPECIFICALLY on ParentId alone.
-            sql = $"Select * from items where ParentId='{parentId}'";
-            recordset = cnx.Query<TemporalAffinityQFModel>(sql);
-
-
-            actual = JsonConvert.SerializeObject(recordset, Formatting.Indented);
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-[
-  {
-    ""Duration"": ""00:00:00"",
-    ""Remaining"": ""00:00:00"",
-    ""TemporalAffinity"": null,
-    ""TemporalChildAffinity"": null,
-    ""TemporalAffinityCurrentTimeDomain"": null,
-    ""Slots"": [],
-    ""UtcStart"": null,
-    ""UtcEnd"": null,
-    ""AvailableTimeSpan"": null,
-    ""IsDone"": null,
-    ""OutOfTime"": false,
-    ""IsPastDue"": null,
-    ""Created"": ""2000-01-01T09:04:00+07:00"",
-    ""ChainOfCustody"": ""{\r\n  \""Created\"": \""2000-01-01T09:04:00+07:00\"",\r\n  \""Coc\"": {}\r\n}"",
-    ""Model"": ""<model preview=\""Item05    \"" />"",
-    ""FullPath"": ""312d1c21-0000-0000-0000-000000000005\\312d1c21-0000-0000-0000-000000000004"",
-    ""ParentPath"": ""312d1c21-0000-0000-0000-000000000005"",
-    ""ParentId"": ""312d1c21-0000-0000-0000-000000000005"",
-    ""Priority"": 630822890400000000,
-    ""PriorityOverride"": null,
-    ""IsRoot"": false,
-    ""CustomProperties"": ""{}"",
-    ""Id"": ""312d1c21-0000-0000-0000-000000000004"",
-    ""Description"": ""Item05"",
-    ""Keywords"": ""[]"",
-    ""KeywordsDisplay"": """",
-    ""Tags"": """",
-    ""IsChecked"": true,
-    ""Selection"": 0,
-    ""IsEditing"": false,
-    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000004"",
-    ""QueryTerm"": ""item05"",
-    ""FilterTerm"": ""item05"",
-    ""TagMatchTerm"": """",
-    ""Properties"": ""{\r\n  \""Description\"": \""Item05\""\r\n}""
-  }
-]"
-            ;
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting " +
-                "1. Testable Guids and DateTimeOffset." +
-                "2. Specifically, Last item is #...004 and ParentId is #...005."
-            );
-        }
-
-        #endregion S U B T E S T S
-
+        Assert.AreEqual(3, opc.Count);
+        { }
     }
 }
