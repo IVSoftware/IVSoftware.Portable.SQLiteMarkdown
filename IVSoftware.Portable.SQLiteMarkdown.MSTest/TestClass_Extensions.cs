@@ -1,5 +1,6 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.LocalEnums;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.ComponentModel;

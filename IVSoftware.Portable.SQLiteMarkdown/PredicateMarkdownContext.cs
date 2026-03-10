@@ -88,9 +88,45 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         string[] _predicates = [];
 
-        public void ActivateFilters(Enum stdPredicate, params Enum[] more)
+        public void ActivateFilters(Enum filter, params Enum[] moreFilters)
         {
-            throw new NotImplementedException();
+            foreach (var member in new[] { filter }.Concat(moreFilters))
+            {
+                if (filter.GetCustomAttribute<WhereAttribute>()?.Binding is { } propertyName && !string.IsNullOrWhiteSpace(propertyName))
+                {
+                    ActiveFiltersProtected[propertyName] = filter;
+                }
+            }
+        }
+        public void DeactivateFilters(Enum filter, params Enum[] moreFilters)
+        {
+            string binding, predicate;
+            if (filter.TryGetWhereAttribute(out binding, out predicate, @throw: true))
+            {
+                // Retrieve the current property-bound predicate...
+                if (ActiveFiltersProtected[binding] is { } found)
+                {
+                    // ... but don't remove it unless it's a MATCH for the remove request.
+                    if (Equals(found, filter))
+                    {
+                        ActiveFiltersProtected.Remove(binding);
+                    }
+                    else
+                    {   /* G T K */
+                        // This was a BUGIRL. Fixed now.
+                    }
+                }
+            }
+            foreach (var more in moreFilters)
+            {
+                if (more.TryGetWhereAttribute(out binding, out predicate, @throw: true))
+                {
+                    if (ActiveFiltersProtected[binding] is { } found && Equals(found, more))
+                    {
+                        ActiveFiltersProtected.Remove(binding);
+                    }
+                }
+            }
         }
 
         public IDisposable BeginFilterAtom() => DHostAtomic.GetToken();
@@ -111,11 +147,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         private DisposableHost? _dhostAtomic = null;
 
         public void ClearFilters(bool clearInputText = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void DeactivateFilters(Enum stdPredicate, params Enum[] more)
         {
             throw new NotImplementedException();
         }

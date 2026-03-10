@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
@@ -118,10 +119,41 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     }
                 }
             }
+            public bool Remove(TKey key)
+            {
+                if (@base.TryGetValue(key, out TValue current))
+                {
+                    var ePre = new CollectionChangingEventArgs(
+                        CollectionChangingAction.Remove,
+                        oldValue: new DictionaryEntry(key, current),
+                        newValue: null);
+
+                    CollectionChanging?.Invoke(this, ePre);
+                    if (ePre.Cancel)
+                    {
+                        return false;
+                    }
+
+                    @base.Remove(key);
+
+                    var ePost = new NotifyCollectionChangedEventArgs(
+                        NotifyCollectionChangedAction.Remove,
+                        changedItem: new DictionaryEntry(key, current));
+
+                    OnCollectionChanged(ePost);
+
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
             public virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs ePost)
             {
                 CollectionChanged?.Invoke(this, ePost);
             }
+
             public event EventHandler<CollectionChangingEventArgs>? CollectionChanging;
             public event NotifyCollectionChangedEventHandler? CollectionChanged;
         }
