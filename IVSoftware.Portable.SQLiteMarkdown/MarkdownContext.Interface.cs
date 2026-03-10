@@ -889,8 +889,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     switch (e.Action)
                     {
                         case NotifyCollectionChangedAction.Add:
-                            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 10).Date, "Don't forget disabled");
-                            LoadCanon(sender as IEnumerable);
+                            if (e.NewItems?.Count is 1)
+                            {
+                                // RunFSM<TrackUserAddItem>(e.NewItems);
+                                Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 10).Date, "Don't forget disabled");
+                                LoadCanon(sender as IEnumerable);
+                            }
+                            else
+                            {
+                                LoadCanon(sender as IEnumerable);
+                            }
                             break;
                         case NotifyCollectionChangedAction.Move:
                             break;
