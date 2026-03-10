@@ -77,7 +77,7 @@
 			- Integrated PrimaryKeyPredicateTerm in composed queries.
 
 			Query composition modularized to allow subclasses to participate in query construction without overriding the full expression.
-			Query => $"{Preamble} {WherePredicate} {PrimaryKeyPredicateTerm} {LimitTerm}"
+			Query =&gt; $"{Preamble} {WherePredicate} {PrimaryKeyPredicateTerm} {LimitTerm}"
 
 			- WherePredicate is now { get; protected set; }.
 			- Preamble includes the WHERE keyword.
