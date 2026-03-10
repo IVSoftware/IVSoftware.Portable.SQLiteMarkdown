@@ -19,7 +19,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     [TestClass]
     public class TestClass_POCOs
     {
-        [TestMethod, Ignore]
+        [TestMethod]
         public async Task Test_ItemsSource()
         {
             string actual, expected;

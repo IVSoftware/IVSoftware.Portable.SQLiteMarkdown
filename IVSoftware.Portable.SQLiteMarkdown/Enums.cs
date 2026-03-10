@@ -361,9 +361,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         InitStatesForEpoch,
 
         /// <summary>
-        /// Using a DHostSuppress token, populate the NetProjection. Reset will happen on token release.
+        /// User projection change.
         /// </summary>
-        NetProjectWithSuppress,
+        AddItemToModel,
+
+        /// <summary>
+        /// User projection change.
+        /// </summary>
+        RemoveItemFromModel,
+
+    /// <summary>
+    /// Using a DHostSuppress token, populate the NetProjection. Reset will happen on token release.
+    /// </summary>
+    NetProjectWithSuppress,
 
         /// <summary>
         /// Empty the contents of the contract table.
@@ -388,6 +398,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         InitModelForEpoch = StdFSMState.InitModelForEpoch,
 
         InitStatesForEpoch = StdFSMState.InitStatesForEpoch,
+    }
+
+    /// <summary>
+    /// Executes on rising edge of IsFiltering.
+    /// </summary>
+    internal enum TrackUserAddItem
+    {
+        AddItemToModel = StdFSMState.AddItemToModel,
+    }
+
+    /// <summary>
+    /// Executes on rising edge of IsFiltering.
+    /// </summary>
+    internal enum TrackUserRemoveItem
+    {
+        RemoveItemFromModel = StdFSMState.RemoveItemFromModel,
     }
 
     /// <summary>

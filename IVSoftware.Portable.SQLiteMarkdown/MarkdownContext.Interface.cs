@@ -641,6 +641,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
 
+
+            void localAddItemToModel(object? item)
+            {
+            }
+
             void localResetFQBDForEpoch()
             {
                 if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
