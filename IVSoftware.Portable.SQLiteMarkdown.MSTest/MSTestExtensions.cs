@@ -27,44 +27,44 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 1 => queue.Dequeue(),
                 _ => throw new InvalidOperationException("Multiple items in queue."),
             };
-
-        public static void PopulateDemoDatabase<T>(this SQLiteConnection @this, bool includeLive = false, PopulateOptions? options = null) 
-            where T : class, new()
+        public static void PopulateDemoDatabase<TItem>(this SQLiteConnection @this, bool includeLive = false, PopulateOptions? options = null)
+            where TItem : class, new()
         {
-            @this.CreateTable<T>();
+            @this.CreateTable<TItem>();
 
-            var list = new List<T>().PopulateForDemo(includeLiveDemo: includeLive, options);
+            var list = new List<TItem>().PopulateForDemo(includeLiveDemo: includeLive, options);
             @this.InsertAll(list);
         }
-        public static T AddDynamic<T>(this IList<T> @this, string description, string tags, bool isChecked, List<string>? keywords = null)
-            where T : class, new()
-            => ((IList)@this).AddDynamic<T>(description, tags, isChecked, keywords);
+
+        public static TItem AddDynamic<TItem>(this IList<TItem> @this, string description, string tags, bool isChecked, List<string>? keywords = null)
+            where TItem : class, new()
+            => ((IList)@this).AddDynamic<TItem>(description, tags, isChecked, keywords);
 
         [Canonical]
-        public static T AddDynamic<T>(this IList @this, string description, string tags, bool isChecked, List<string>? keywords = null)
-            where T : class, new()
+        public static TItem AddDynamic<TItem>(this IList @this, string description, string tags, bool isChecked, List<string>? keywords = null)
+            where TItem : class, new()
         {
-            var itemT = new T();
-            typeof(T).GetProperty("Description")?.SetValue(itemT, description);
-            typeof(T).GetProperty("Tags")?.SetValue(itemT, tags);
-            typeof(T).GetProperty("IsChecked")?.SetValue(itemT, isChecked);
+            var itemT = new TItem();
+            typeof(TItem).GetProperty("Description")?.SetValue(itemT, description);
+            typeof(TItem).GetProperty("Tags")?.SetValue(itemT, tags);
+            typeof(TItem).GetProperty("IsChecked")?.SetValue(itemT, isChecked);
             if (keywords != null)
             {
                 var json = JsonConvert.SerializeObject(keywords);
-                typeof(T).GetProperty("Keywords")?.SetValue(itemT, json);
+                typeof(TItem).GetProperty("Keywords")?.SetValue(itemT, json);
             }
             @this.Add(itemT);
             return itemT;
         }
 
-        public static IList<T> PopulateForDemo<T>(this IList<T>? @this, bool includeLiveDemo = false, PopulateOptions? options = null)
-            where T : class, new()
+        public static IList<TItem> PopulateForDemo<TItem>(this IList<TItem>? @this, bool includeLiveDemo = false, PopulateOptions? options = null)
+            where TItem : class, new()
         {
             Random rando = new(10);
 
             if (@this is null)
             {
-                @this = new List<T>();
+                @this = new List<TItem>();
             }
             else
             {
@@ -73,13 +73,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
             {
-                var itemT = @this.AddDynamic<T>(description, tags, isChecked, keywords);
-                if(options?.HasFlag(PopulateOptions.RandomChecks) == true)
+                var itemT = @this.AddDynamic<TItem>(description, tags, isChecked, keywords);
+                if (options?.HasFlag(PopulateOptions.RandomChecks) == true)
                 {
                     isChecked = rando.Next(2) == 1;
                 }
             }
-            // Unit tested
+
             Add("Brown Dog", "[canine] [color]", false, new() { "loyal", "friend", "furry" });
             Add("Green Apple", "[fruit] [color]", false, new() { "tart", "snack", "healthy" });
             Add("Yellow Banana", "[fruit] [color]", false);
@@ -114,7 +114,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             if (includeLiveDemo)
             {
-                // Live-demo specific.
                 Add("Appetizer Plate", "[dish]", false, new() { "starter", "appealing", "snack" });
                 Add("Errata", "[notes]", false, new() { "crunchy", "green", "appended" });
                 Add("Happy Camper", "[phrase]", false, new() { "joyful", "camp", "approach-west" });
@@ -122,6 +121,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 Add("Application Form", "[document]", false, new() { "paperwork", "apply" });
                 Add("App Store", "[app]", false, new() { "digital", "mobile", "software" });
             }
+
             return @this;
         }
         public static TList PopulateForDemo<TList, TItem>(this TList? @this, int count, PopulateOptions? options = null)
