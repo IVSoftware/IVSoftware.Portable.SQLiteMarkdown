@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.SQLiteMarkdown.Collections;
+﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
@@ -35,8 +36,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             var list = new List<T>().PopulateForDemo(includeLiveDemo: includeLive, options);
             @this.InsertAll(list);
         }
-
         public static T AddDynamic<T>(this IList<T> @this, string description, string tags, bool isChecked, List<string>? keywords = null)
+            where T : class, new()
+            => ((IList)@this).AddDynamic<T>(description, tags, isChecked, keywords);
+
+        [Canonical]
+        public static T AddDynamic<T>(this IList @this, string description, string tags, bool isChecked, List<string>? keywords = null)
             where T : class, new()
         {
             var itemT = new T();
@@ -68,7 +73,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
             {
-                var itemT = @this.AddDynamic(description, tags, isChecked, keywords);
+                var itemT = @this.AddDynamic<T>(description, tags, isChecked, keywords);
                 if(options?.HasFlag(PopulateOptions.RandomChecks) == true)
                 {
                     isChecked = rando.Next(2) == 1;
@@ -119,13 +124,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             }
             return @this;
         }
-        public static IList<T> PopulateForDemo<T>(this IList<T>? @this, int count, PopulateOptions? options = null)
-            where T : new()
+        public static TList PopulateForDemo<TList, TItem>(this TList? @this, int count, PopulateOptions? options = null)
+            where TList : IList<TItem>
+            where TItem : new()
+        {
+            throw new NotImplementedException("ToDo");
+        }
+        public static IList<TItem> PopulateForDemo<TItem>(this IList<TItem>? @this, int count, PopulateOptions? options = null)
+            where TItem : new()
         {
             Random rando = new(10);
             if (@this is null)
             {
-                @this = new List<T>();
+                @this = new List<TItem>();
             }
             else
             {
@@ -142,14 +153,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
             {
-                var instance = new T();
-                typeof(T).GetProperty("Description")?.SetValue(instance, description);
-                typeof(T).GetProperty("Tags")?.SetValue(instance, tags);
-                typeof(T).GetProperty("IsChecked")?.SetValue(instance, isChecked);
+                var instance = new TItem();
+                typeof(TItem).GetProperty("Description")?.SetValue(instance, description);
+                typeof(TItem).GetProperty("Tags")?.SetValue(instance, tags);
+                typeof(TItem).GetProperty("IsChecked")?.SetValue(instance, isChecked);
                 if (keywords != null)
                 {
                     var json = JsonConvert.SerializeObject(keywords);
-                    typeof(T).GetProperty("Keywords")?.SetValue(instance, json);
+                    typeof(TItem).GetProperty("Keywords")?.SetValue(instance, json);
                 }
                 @this.Add(instance);
             }

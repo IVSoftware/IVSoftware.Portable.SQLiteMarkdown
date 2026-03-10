@@ -466,7 +466,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Inheritance,
 
         /// <summary>
-        /// The ObservableNetProjection inherits INotifyCollectionChanged - flitering employs copying not routing.
+        /// The ObservableNetProjection inherits INotifyCollectionChanged - filtering employs copying not routing.
         /// </summary>
         /// <remarks>
         /// IsFiltering => 

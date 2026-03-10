@@ -75,7 +75,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             #endregion S U B T E S T S
         }
 
-
+        /// <summary>
+        /// Verifies the ability of the MDC to self-identify its <see cref="ProjectionTopology"/>.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "Am I (the MDC) inherited by the projection class? Or does the projection class include me as a composed object?"
+        ///
+        /// The test instantiates a projection type that inherits <see cref="MarkdownContext"/>,
+        /// allowing the MDC to infer its topology without configuration. The first assertion
+        /// verifies that <see cref="ProjectionTopology.Inheritance"/> is detected immediately.
+        ///
+        /// An observable collection is then assigned and populated. The test confirms that the
+        /// MDC routes structure through its canonical model and backing database by verifying:
+        /// - the observable source contents,
+        /// - the generated canonical XML model,
+        /// - synchronized counts across canonical store, predicate matches, and database.
+        ///
+        /// Clearing the observable source confirms that routed structural changes propagate
+        /// back through the canonical store and database.
+        ///
+        /// Finally, enabling <see cref="QueryFilterConfig.Filter"/> verifies that switching the
+        /// configuration does not disturb the already established inheritance topology.
+        /// </remarks>
         [TestMethod, DoNotParallelize]
         public void TestMethod_RouteInheritance()
         {
@@ -100,7 +121,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             }
             void subtest_PopulateAndClearEpoch()
             {
-                oc = new ObservableCollection<SelectableQFModel>().PopulateForDemo(2);
+
+                oc = 
+                    new ObservableCollection<SelectableQFModel>()
+                    .PopulateForDemo(2);
+
                 mdci.ObservableNetProjection = (INotifyCollectionChanged)oc;
 
 
@@ -170,7 +195,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     "Expecting the database items track the model at all times.");
 
                 #region C L E A R
-                oc.Clear();
+                oc.Clear(); // This is an IList no-surprises clear.
                 Assert.AreEqual(0, mdci.CanonicalCount);
                 Assert.AreEqual(0, mdci.PredicateMatchCount);
                 Assert.IsFalse(mdci.Model.HasElements);

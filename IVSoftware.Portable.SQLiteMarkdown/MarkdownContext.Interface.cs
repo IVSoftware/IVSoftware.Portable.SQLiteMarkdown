@@ -875,6 +875,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         protected virtual void OnObservableProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            if (IsFiltering)
+            {
+                switch (DHostAuthorityEpoch.Authority)
+                {
+                    case 0:
+                        break;
+                    case CollectionChangeAuthority.None:
+                        break;
+                    case CollectionChangeAuthority.NetProjection:
+                        break;
+                    case CollectionChangeAuthority.MarkdownContext:
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                switch (DHostAuthorityEpoch.Authority)
+                {
+                    case 0:
+                        break;
+                    case CollectionChangeAuthority.None:
+                        break;
+                    case CollectionChangeAuthority.NetProjection:
+                        break;
+                    case CollectionChangeAuthority.MarkdownContext:
+                        break;
+                    default:
+                        break;
+                }
+            }
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
