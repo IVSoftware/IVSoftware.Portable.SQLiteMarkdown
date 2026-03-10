@@ -124,12 +124,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             return @this;
         }
-        public static TList PopulateForDemo<TList, TItem>(this TList? @this, int count, PopulateOptions? options = null)
-            where TList : IList<TItem>
-            where TItem : new()
-        {
-            throw new NotImplementedException("ToDo");
-        }
+
         public static IList<TItem> PopulateForDemo<TItem>(this IList<TItem>? @this, int count, PopulateOptions? options = null)
             where TItem : new()
         {
