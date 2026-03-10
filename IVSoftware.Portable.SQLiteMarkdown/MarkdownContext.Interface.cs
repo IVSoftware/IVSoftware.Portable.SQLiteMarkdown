@@ -880,52 +880,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         protected virtual void OnObservableProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (IsFiltering)
+
+            switch (DHostAuthorityEpoch.Authority)
             {
-                switch (DHostAuthorityEpoch.Authority)
-                {
-                    case 0:
-                        break;
-                    case CollectionChangeAuthority.None:
-                        break;
-                    case CollectionChangeAuthority.NetProjection:
-                        break;
-                    case CollectionChangeAuthority.MarkdownContext:
-                        break;
-                    default:
-                        break;
-                }
-            }
-            else
-            {
-                switch (DHostAuthorityEpoch.Authority)
-                {
-                    case 0:
-                        break;
-                    case CollectionChangeAuthority.None:
-                        break;
-                    case CollectionChangeAuthority.NetProjection:
-                        break;
-                    case CollectionChangeAuthority.MarkdownContext:
-                        break;
-                    default:
-                        break;
-                }
-            }
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
+                case 0:
+                case CollectionChangeAuthority.NetProjection:
+
+                    switch (e.Action)
+                    {
+                        case NotifyCollectionChangedAction.Add:
+                            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 10).Date, "Don't forget disabled");
+                            LoadCanon(sender as IEnumerable);
+                            break;
+                        case NotifyCollectionChangedAction.Move:
+                            break;
+                        case NotifyCollectionChangedAction.Remove:
+                            break;
+                        case NotifyCollectionChangedAction.Replace:
+                            break;
+                        case NotifyCollectionChangedAction.Reset:
+                            LoadCanon(sender as IEnumerable);
+                            break;
+                        default:
+                            this.ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");
+                            break;
+                    }
+
                     break;
-                case NotifyCollectionChangedAction.Move:
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    LoadCanon(sender as IEnumerable);
-                    break;
+                case CollectionChangeAuthority.None:
+                case CollectionChangeAuthority.MarkdownContext:
                 default:
+                    {   /* G T K - N O O P */
+                    }
                     break;
             }
         }

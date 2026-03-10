@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System;
 using System.Collections;
@@ -19,9 +20,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     [TestClass]
     public class TestClass_POCOs
     {
-        [TestMethod]
+        [TestMethod, DoNotParallelize]
         public async Task Test_ItemsSource()
         {
+            using var te = this.TestableEpoch();
+
             string actual, expected;
 
             // IOC - Construct inline then pull.
@@ -49,7 +52,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual = pmdc.Model.ToString();
                 actual.ToClipboardExpected();
                 { }
-                expected = @"not-empty";
+                expected = @" 
+<model autocount=""1"" count=""1"" matches=""1"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
+</model>"
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
