@@ -459,6 +459,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case StdFSMState.InitStatesForEpoch:
                     localInitStatesForEpoch();
                     break;
+                case StdFSMState.AddItemToModel:
+                    localAddItemToModel(context);
+                    break;
+                case StdFSMState.RemoveItemFromModel:
+                    localRemoveItemFromModel(context);
+                    break;
                 case StdFSMState.ResetFQBDForEpoch:
                     localResetFQBDForEpoch();
                     break;
@@ -641,8 +647,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
 
-
             void localAddItemToModel(object? item)
+            {
+            }
+
+            void localRemoveItemFromModel(object? item)
             {
             }
 
@@ -891,7 +900,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         case NotifyCollectionChangedAction.Add:
                             if (e.NewItems?.Count is 1)
                             {
-                                // RunFSM<TrackUserAddItem>(e.NewItems);
+                                RunFSM<TrackUserAddItem>(null);
                                 Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 10).Date, "Don't forget disabled");
                                 LoadCanon(sender as IEnumerable);
                             }
