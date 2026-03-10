@@ -3,8 +3,9 @@ using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Internal;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
+using System.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -13,21 +14,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         , IPredicateMarkdownContext
     {
         public PredicateMarkdownContext(Type type) : base(type) { }
-        public IReadOnlyDictionary<string, Enum> ActiveFilters
-        {
-            get
-            {
-                if (_activeFilters is null)
-                {
-                    _activeFilters = new ReadOnlyDictionary<string, Enum>(ActiveFiltersProtected!);
-                }
-                return _activeFilters;
-            }
-        }
-        IReadOnlyDictionary<string, Enum>? _activeFilters = null;
+        public IReadOnlyDictionary<string, Enum> ActiveFilters => ActiveFiltersProtected.AsReadOnly;
 
         [Careful("Don't draw inferences from changes in the collection itself.")]
-        protected TolerantDictionary<string, Enum> ActiveFiltersProtected
+        TolerantDictionary<string, Enum> ActiveFiltersProtected
         {
             get
             {
@@ -38,7 +28,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     {
                         switch (e.Action)
                         {
-                            case NotifyCollectionChangingAction.Add:
+                            case CollectionChangingAction.Add:
 
 #if false
                                 IsFiltering = true;
@@ -61,12 +51,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
                                 if (IsFiltering)
                                 {
-                                    MarkdownContext.StartOrRestart();
+                                    StartOrRestart();
                                 }
                                 else
                                 {   /* G T K */
                                 }
-                                _activeFilters = new ReadOnlyDictionary<string, Enum>(_activeFiltersProtected!);
                                 Predicates =
                                     ActiveFilters.Values
                                     .Select(_ => _.GetCustomAttribute<WhereAttribute>()?.Expr)
@@ -82,6 +71,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         TolerantDictionary<string, Enum>? _activeFiltersProtected = null;
+
+        [Obsolete]
+        public string[] Predicates
+        {
+            get => _predicates;
+            set
+            {
+                value ??= [];
+                if (!Equals(_predicates, value))
+                {
+                    _predicates = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        string[] _predicates = [];
 
         public void ActivateFilters(Enum stdPredicate, params Enum[] more)
         {

@@ -1,9 +1,11 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Runtime.InteropServices;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
@@ -31,18 +33,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// is a non-nullable value type, attempting to assign <c>null</c> triggers a hard exception,
         /// since the underlying dictionary cannot represent that state.
         ///
-        /// This implementation *intentionally omits* the observable semantics of the canonical
-        /// version (such as CollectionChanging). It exists solely as a minimal internal
-        /// utility for tolerant lookup behavior in libraries that must remain dependency-light.
+        /// This implementation exists solely as a minimal internal utility when reduced tolerant
+        /// lookup behavior is sufficient in libraries that must remain dependency-light.
         /// </remarks>
-        class TolerantDictionary<TKey, TValue> : Dictionary<TKey, TValue>
+        class TolerantDictionary<TKey, TValue>
         {
+            public TolerantDictionary()
+            {
+                AsReadOnly = new(@base);
+            }
+            Dictionary<TKey, TValue> @base = new();
+            public ReadOnlyDictionary<TKey, TValue> AsReadOnly { get; }
+
             [Indexer]
-            public new TValue? this[TKey key]
+            public TValue? this[TKey key]
             {
                 get
                 {
-                    if (!TryGetValue(key, out TValue value))
+                    if (!@base.TryGetValue(key, out TValue value))
                     {
                         return default!;
                     }
@@ -70,41 +78,73 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         // This must return, even if the Throw is deescalated.
                         return;
                     }
-
-                    if (TryGetValue(key, out TValue current))
+                    CollectionChangingEventArgs ePre;
+                    NotifyCollectionChangedEventArgs ePost;
+                    if (@base.TryGetValue(key, out TValue current))
                     {
                         if (!Equals(current, value))
                         {
-                            var e = new CollectionChangingEventArgs<TKey, TValue>(key, current, value);
-                            CollectionChanging?.Invoke(this, e);
-                            if (e.Cancel) return;
-                            base[key] = value!;
+                            ePre = new CollectionChangingEventArgs(
+                                CollectionChangingAction.Replace, 
+                                oldValue: new(key, current), 
+                                newValue: new DictionaryEntry(key,value));
+                            CollectionChanging?.Invoke(this, ePre);
+                            if (ePre.Cancel) return;
+                            @base[key] = value!;
+
+                            ePost = new NotifyCollectionChangedEventArgs(
+                                NotifyCollectionChangedAction.Replace,
+                                newItem: new DictionaryEntry(key!, value),
+                                oldItem: new DictionaryEntry(key!, current));
+
+                            OnCollectionChanged(ePost);
                         }
                     }
                     else
                     {
-                        var e = new CollectionChangingEventArgs<TKey, TValue>(key, default, value);
-                        CollectionChanging?.Invoke(this, e);
-                        if (e.Cancel) return;
-                        base[key] = value!;
+                        ePre = new CollectionChangingEventArgs(
+                            CollectionChangingAction.Replace,
+                            oldValue: null,
+                            newValue: new DictionaryEntry(key, value));
+                        CollectionChanging?.Invoke(this, ePre);
+                        if (ePre.Cancel) return;
+                        @base[key] = value!;
+
+                        ePost = new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Add,
+                            changedItem: new DictionaryEntry(key!, value));
+
+                        OnCollectionChanged(ePost);
                     }
                 }
             }
-            public event EventHandler<CollectionChangingEventArgs<TKey, TValue>>? CollectionChanging;
+            public virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs ePost)
+            {
+                CollectionChanged?.Invoke(this, ePost);
+            }
+            public event EventHandler<CollectionChangingEventArgs>? CollectionChanging;
+            public event NotifyCollectionChangedEventHandler? CollectionChanged;
         }
 
-        class CollectionChangingEventArgs<TKey, TValue> : CancelEventArgs
+        class CollectionChangingEventArgs : CancelEventArgs
         {
-            public CollectionChangingEventArgs(TKey key, TValue? oldValue, TValue? newValue)
+            public CollectionChangingEventArgs(CollectionChangingAction action, DictionaryEntry? oldValue, DictionaryEntry? newValue)
             {
-                Key = key;
+                Action = action;
                 OldValue = oldValue;
                 NewValue = newValue;
             }
-
-            public TKey Key { get; }
-            public TValue? OldValue { get; }
-            public TValue? NewValue { get; }
+            public CollectionChangingAction Action { get; }
+            public DictionaryEntry? OldValue { get; }
+            public DictionaryEntry? NewValue { get; }
+        }
+        enum CollectionChangingAction
+        {
+            Add = NotifyCollectionChangedAction.Add,
+            Remove = NotifyCollectionChangedAction.Remove,
+            Replace = NotifyCollectionChangedAction.Replace,
+            Move = NotifyCollectionChangedAction.Move,
+            Reset = NotifyCollectionChangedAction.Reset,
         }
     }
 }
