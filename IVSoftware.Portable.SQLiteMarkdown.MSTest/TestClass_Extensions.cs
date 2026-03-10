@@ -32,7 +32,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             subtest_ThrowPolicy();
             void subtest_ThrowPolicy()
             {
-
                 #region L o c a l F x
                 var builderThrow = new List<string>();
                 void localOnBeginThrowOrAdvise(object? sender, Throw e)
