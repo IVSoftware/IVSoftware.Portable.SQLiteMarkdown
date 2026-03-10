@@ -123,11 +123,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return string.Empty;
             }
             ProxyType = proxyType;
-#if DEBUG
-            if (expr == "animal b")
-            { }
-#endif
-            // Guard reentrancy by making sure to clear previous passes.
+            if (ProxyType != ContractType
+                && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
+                && _proxyType.GetCustomAttribute<ExtendMappingAttribute>() is not null)
+            {
+                FilterQueryDatabase.CreateTable(ProxyType);
+            }
+
+            // Always clear the previous pass.
             XAST.RemoveNodes();
             _activeQFMode = qfMode;
             if (ValidationPredicate?.Invoke(expr) == false)
@@ -150,15 +153,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 xast = null!; // We warned you.
                 return string.Empty;
             }
-            if (_proxyType != ContractType
-                && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
-                && _proxyType.GetCustomAttribute<ExtendMappingAttribute>() is not null)
-                {
-#if false
-                    FilterQueryDatabase.CreateTable(ProxyType);
-#endif
-                }
-
             Preamble = $"SELECT * FROM {TableName} WHERE";
 
             xast = XAST;
