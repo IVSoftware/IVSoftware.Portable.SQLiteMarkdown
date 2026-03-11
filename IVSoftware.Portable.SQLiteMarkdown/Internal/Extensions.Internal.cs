@@ -388,14 +388,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         }
         public static ReplaceItemsEventingContext GetReplacementTriageEvents(
             this XElement model,
-            IEnumerable? canon)
-        => new ReplaceItemsEventingContext(model, canon);
+            IEnumerable? canon,
+                ReplaceItemsEventingOption options)
+        => new ReplaceItemsEventingContext(model, canon, options);
 
         public class ReplaceItemsEventingContext
         {
             public ReplaceItemsEventingContext(
                 XElement model,
-                IEnumerable? canon)
+                IEnumerable? canon,
+                ReplaceItemsEventingOption options)
             {
                 IList
                     oldItems = new List<object>(),
@@ -446,6 +448,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                         break;
                 }
             }
+
             public NotifyCollectionChangedEventArgs? Structural { get; }
             public NotifyCollectionChangedEventArgs? Reset { get; }
         }
