@@ -1,12 +1,13 @@
 ﻿using IVSoftware.Portable.Xml.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
-    class SelfRemovingXBoundAttribute : XBoundAttribute
+    class SelfRemovingXBoundAttribute : XBoundAttribute, IDisposable
     {
         public SelfRemovingXBoundAttribute(Enum stdEnum, Enum tag)
             : base(
@@ -15,11 +16,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                   text: $"[{tag}]")
         {
         }
+        public void Dispose()
+        {
+            if(Parent is not null)
+            {
+                Remove();
+            }
+            else
+            {
+                Debug.Fail($@"ADVISORY - Expecting parent.");
+            }
+        }
     }
 
     internal static partial class Extensions
     {
-        public static void SetSelfRemovingXBoundAttribute(this XElement @this, Enum stdEnum, Enum tag)
-            => @this.Add(new SelfRemovingXBoundAttribute(stdEnum, tag));
+        public static IDisposable SetSelfRemovingXBoundAttribute(this XElement @this, Enum stdEnum, Enum tag)
+        {
+            var xba = new SelfRemovingXBoundAttribute(stdEnum, tag);
+            @this.Add(xba);
+            return xba;
+        }
     }
 }
