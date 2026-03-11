@@ -767,10 +767,10 @@ InputText"
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
         }
 
-        [TestMethod, Ignore]
+        [TestMethod, DoNotParallelize, Ignore]
         public async Task Test_FilterOnlyFSMs()
         {
-            var extQueryHandle = default(List<SelectableQFModel>);
+            var extQueryHandle = default(List<SelectableQFModel>).PopulateForDemo(2);
 
             MarkdownContext<SelectableQFModel> mdc;
 
@@ -786,6 +786,7 @@ InputText"
                 Assert.AreEqual(QueryFilterConfig.Filter, mdc.QueryFilterConfig, "Expecting initial state.");
                 Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
                 Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+
             }
 
             void subtest_LoadThenConfigure()

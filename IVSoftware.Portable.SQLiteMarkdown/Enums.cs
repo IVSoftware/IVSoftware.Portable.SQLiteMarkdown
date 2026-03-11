@@ -361,19 +361,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         InitStatesForEpoch,
 
         /// <summary>
-        /// User projection change.
+        /// User interactive Add.
         /// </summary>
         AddItemToModel,
 
         /// <summary>
-        /// User projection change.
+        /// User interactive Remove.
         /// </summary>
         RemoveItemFromModel,
 
-    /// <summary>
-    /// Using a DHostSuppress token, populate the NetProjection. Reset will happen on token release.
-    /// </summary>
-    NetProjectWithSuppress,
+        /// <summary>
+        /// Using a DHostSuppress token, populate the NetProjection. Reset will happen on token release.
+        /// </summary>
+        NetProjectWithSuppress,
 
         /// <summary>
         /// Empty the contents of the contract table.

@@ -654,8 +654,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
                 {
-                    var placerResult = Model.Place(full, out var xel);
+                    int
+                        indexForAdd = Model.GetAttributeValue<int>(StdMarkdownAttribute.autocount),
+                        countB4 = Model.GetAttributeValue<int>(StdMarkdownAttribute.count, 0),
+                        matchesB4 = Model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
 
+                    var placerResult = Model.Place(full, out var xel);
                     switch (placerResult)
                     {
                         case PlacerResult.Exists:
@@ -666,12 +670,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 tag: item,
                                 name: nameof(StdMarkdownAttribute.model));
 
-
-                            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 10).Date, "Don't forget disabled");
-                            // Position will matter. 
-                            //xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), countDistinct);
-                            //countDistinct++;
-
+                            xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), indexForAdd);
+                            Model.SetAttributeValue(nameof(StdMarkdownAttribute.count), ++countB4);
+                            Model.SetAttributeValue(nameof(StdMarkdownAttribute.matches), ++matchesB4);
                             break;
                         default:
                             this.ThrowFramework<NotSupportedException>(
