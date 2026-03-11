@@ -1371,6 +1371,22 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                         "Expecting StateReport shows INITIAL QUERY RECORDSET N=12."
                     );
 
+
+                    actual = itemsSource.OptionsReport();
+                    actual.ToClipboardExpected();
+                    { } // <- FIRST TIME ONLY: Adjust the message.
+                    actual.ToClipboardAssert("Expecting option settings to match.");
+                    { }
+                    expected = @" 
+ProjectionTopology.Inheritance, NetProjectionOption.ObservableOnly, ReplaceItemsEventingOption.StructuralReplaceEvent";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting option settings to match."
+                    );
+
+
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
                     expected = @" 

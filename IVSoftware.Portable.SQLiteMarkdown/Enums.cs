@@ -532,41 +532,72 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     [Flags]
-    public enum ReplaceItemsOption
+    public enum ReplaceItemsEventingOption
     {
         /// <summary>
-        /// Replace items using standard INCC Remove and Add notifications.
+        /// Emit structural collection change events that reflect the specific mutation.
         /// </summary>
         /// <remarks>
-        /// Replacement is expressed through normal collection change events rather
-        /// than a Reset. Each event may represent multiple items.
+        /// The emitted INCC event corresponds to the structural transition classified
+        /// by <see cref="ReplaceItemsEventingTriage"/>:
+        /// - EmptyBefore  -> Add
+        /// - EmptyAfter   -> Remove
+        /// - NeverEmpty   -> Replace
         ///
-        /// Depending on the composition of the existing and replacement sets,
-        /// the operation may produce:
-        /// - a single Add event (when the original collection was empty), or
-        /// - a Remove event followed by an Add event.
+        /// Each event may represent multiple items.
         ///
-        /// MentalModel: "Observers reconcile the replacement through batched Remove/Add notifications."
-        ///
-        /// NOTES:
-        /// Regardless of option flags:
-        /// - A replacement that leaves the collection empty redirects to Reset semantics.
-        /// - A replacement that begins with an empty collection redirects to Add semantics. 
+        /// MentalModel: "Observers reconcile the mutation structurally."
         /// </remarks>
-        DiscreteRemoveAndAddEvents = 0x1,
+        StructuralReplaceEvent = 0x1,
 
         /// <summary>
-        /// Replace items by emitting a single Reset notification.
+        /// Collapse any structural mutation into a single Reset event.
         /// </summary>
         /// <remarks>
-        /// Observers are instructed to re-enumerate the collection rather than tracking structural changes.
+        /// Observers are instructed to discard their current view and
+        /// re-enumerate the collection regardless of the underlying mutation.
         ///
-        /// MentalModel: "The collection changed; refresh everything."
-        ///
-        /// NOTE:
-        /// Regardless of option flags:
-        /// - A replacement that leaves the collection empty redirects to Reset semantics.
+        /// MentalModel: "Something changed; refresh everything."
         /// </remarks>
-        ConsolidatedResetEvent = 0x2,
+        ResetOnAnyChange = 0x2,
+    }
+
+    [NotFlags]
+    internal enum ReplaceItemsEventingTriage
+    {
+        /// <summary>
+        /// Describes a noop "wash" invocation.
+        /// </summary>
+        /// <remarks>
+        /// Unconditionally suppress event invocation.
+        /// </remarks>
+        AlwaysEmpty,
+
+        /// <summary>
+        /// Describes a virtual replacement with Add semantics.
+        /// </summary>
+        /// <remarks>
+        /// StructuralReplaceEvent - generates a Add action for N new items.
+        /// ResetOnAnyChange - generates an Reset event.
+        /// </remarks>
+        EmptyBefore,
+
+        /// <summary>
+        /// Describes a virtual replacement with Clear semantics.
+        /// </summary>
+        /// <remarks>
+        /// StructuralReplaceEvent - generates a Remove action for N old items.
+        /// ResetOnAnyChange - generates an Reset event.
+        /// </remarks>
+        EmptyAfter,
+
+        /// <summary>
+        /// Describes a virtual replacement with Replace semantics.
+        /// </summary>
+        /// <remarks>
+        /// StructuralReplaceEvent - generates a Replace action for N old and N' new items.
+        /// ResetOnAnyChange - generates an Reset event.
+        /// </remarks>
+        NeverEmpty,
     }
 }

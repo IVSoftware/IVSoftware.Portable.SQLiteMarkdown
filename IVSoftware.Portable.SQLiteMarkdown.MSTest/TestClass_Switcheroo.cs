@@ -383,6 +383,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             public int PredicateMatchCount => ((IMarkdownContext)_mdc).PredicateMatchCount;
 
+            public NetProjectionOption ProjectionOption { get => ((IMarkdownContext)_mdc).ProjectionOption; set => ((IMarkdownContext)_mdc).ProjectionOption = value; }
+            public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get => ((IMarkdownContext)_mdc).ReplaceItemsEventingOptions; set => ((IMarkdownContext)_mdc).ReplaceItemsEventingOptions = value; }
+
             INotifyCollectionChanged? _observableNetProjection = default;
 
             protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>

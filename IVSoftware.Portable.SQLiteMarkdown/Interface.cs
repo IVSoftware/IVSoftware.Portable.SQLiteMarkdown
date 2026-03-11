@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using SQLite;
 using System;
 using System.Collections;
@@ -254,6 +255,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         bool HasCounts(int canonical, int matches, int? database = null);
 
+        NetProjectionOption ProjectionOption { get; set; }
+
+        ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; }
         string[] GetTableNames();
     }
 

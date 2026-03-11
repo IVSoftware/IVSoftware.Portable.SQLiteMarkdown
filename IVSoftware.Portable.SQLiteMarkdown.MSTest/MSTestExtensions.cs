@@ -247,6 +247,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             return string.Join(", ", builder);
         }
 
+        public static string OptionsReport(this MarkdownContext @this)
+        {
+            var builder = new List<string>();
+            builder.Add($"{@this.ProjectionTopology.ToFullKey()}");
+            builder.Add($"{@this.ProjectionOption.ToFullKey()}");
+            builder.Add($"{@this.ReplaceItemsEventingOptions.ToFullKey()}");
+            return string.Join(", ", builder);
+        }
+
         public static string GetFormatted(
             this NotifyCollectionChangedEventArgs e, 
             bool isProjection)

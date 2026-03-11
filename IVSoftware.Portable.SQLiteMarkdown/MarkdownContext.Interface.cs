@@ -837,6 +837,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public virtual void LoadCanon(IEnumerable? recordset)
         {
             recordset ??= Array.Empty<object>();
+
+
             using (DHostBusy.GetToken())
             {
                 RunFSM<LoadIsFilteringEpochFSM>(recordset);
@@ -996,7 +998,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.
         /// </summary>
-        internal NetProjectionOption ProjectionOption { get; set; } = NetProjectionOption.AllowDirectChanges;
+        public NetProjectionOption ProjectionOption { get; set; } = NetProjectionOption.AllowDirectChanges;
+
+        public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; } = ReplaceItemsEventingOption.StructuralReplaceEvent;
 
 
         /// <summary>
