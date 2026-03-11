@@ -469,6 +469,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case StdFSMState.ResetOrCanonizeModelForEpoch when context is IEnumerable canonical:
                     localResetOrCanonizeModelForEpoch(context);
                     break;
+                case StdFSMState.ResetOrCanonizeModelForEpoch:
+                    localResetModelForEpoch();
+                    break;
                 case StdFSMState.InitStatesForEpoch:
                     localInitStatesForEpoch();
                     break;
@@ -477,9 +480,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     break;
                 case StdFSMState.RemoveItemFromModel:
                     localRemoveItemFromModel(context);
-                    break;
-                case StdFSMState.ResetOrCanonizeModelForEpoch:
-                    localResetModelForEpoch();
                     break;
                 default:
                     Debug.Fail($@"ADVISORY - Unrecognized action.");
@@ -518,38 +518,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             Enum localResetOrCanonizeFQDBForEpoch(object? context)
             {
-                if (context is not IEnumerable canonical)
+                // Check to see whether we should have a FQDB in the first place.
+                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                 {
-                    Model.RemoveNodes(StdMarkdownAttribute.count, StdMarkdownAttribute.matches);
-                    return ReservedFSMState.Next;
+                    try
+                    {
+                        FilterQueryDatabase.RunInTransaction(() =>
+                        {
+                            // Ensure table exists.
+                            FilterQueryDatabase.CreateTable(ContractType);
+                            // Clear any entries from a pre-existing table.
+                            FilterQueryDatabase.DeleteAll(ContractType.GetSQLiteMapping());
+                            // [Remember]
+                            // - Canonization happens via XML changes as they arrive.
+                            // - N O O P
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        this.RethrowHard(ex);
+                        return ReservedFSMState.Canceled;
+                    }
                 }
                 else
-                {
-                    // Check to see whether we should have a FQDB in the first place.
-                    if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
-                    {
-                        try
-                        {
-                            FilterQueryDatabase.RunInTransaction(() =>
-                            {
-                                // Ensure table exists.
-                                FilterQueryDatabase.CreateTable(ContractType);
-                                // Clear any entries from a pre-existing table.
-                                FilterQueryDatabase.DeleteAll(ContractType.GetSQLiteMapping());
-                            });
-                        }
-                        catch (Exception ex)
-                        {
-                            this.RethrowHard(ex);
-                            return ReservedFSMState.Canceled;
-                        }
-                    }
-                    else
-                    {   /* G T K - N O O P */
-                        // There is no FQDB to maintain in Query-Only mode.
-                    }
-                    return ReservedFSMState.Next;
+                {   /* G T K - N O O P */
+                    // There is no FQDB to maintain in Query-Only mode.
                 }
+                return ReservedFSMState.Next;
             }
 
             void localResetOrCanonizeModelForEpoch(object? context)
@@ -741,11 +736,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             void localResetModelForEpoch()
             {
-                // But leave 'predicates' and 'comparer' attributes intact!
-                Model.SetAttributeValue(nameof(StdMarkdownAttribute.count), null);
-                Model.SetAttributeValue(nameof(StdMarkdownAttribute.autocount), null);
-                Model.SetAttributeValue(nameof(StdMarkdownAttribute.matches), null);
-                Model.RemoveNodes();
+                Model.RemoveNodes(StdMarkdownAttribute.count, nameof(StdMarkdownAttribute.autocount, nameof(StdMarkdownAttribute.matches);
             }
             #endregion L o c a l F x
         }

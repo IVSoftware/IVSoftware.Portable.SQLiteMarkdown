@@ -1439,15 +1439,14 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     );
 
                     Assert.AreEqual(string.Empty, itemsSource.InputText, "Confirm before clear.");
-                    itemsSource.Clear();
+                    itemsSource.Clear(); // Expecting "no surprises" here.
 
                     // 260311.D RETROFIT - StateReport came online later. Let's see if it agrees.
                     actual = itemsSource.StateReport();
                     actual.ToClipboardExpected();
-
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 12, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
