@@ -529,12 +529,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #if DEBUG
                 int nRemoved = 0;
 #endif
-
                 Model.SetAttributeValue(StdMarkdownAttribute.count, null);
                 Model.SetAttributeValue(StdMarkdownAttribute.matches, null);
 
                 PropertyInfo? pk = ContractType.GetSQLiteMapping().PK?.PropertyInfo;
-#if DEBUG
+#if RELEASE
+                Model.RemoveNodes();
+#else
+                // DEBUG:
+                // Provides clarity on how the XML Changed events work on a bulk RemoveNodes.
                 #region L o c a l F x
                 void localOnXObjectChanged(object? sender, XObjectChangeEventArgs e)
                 {
@@ -556,8 +559,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         Model.RemoveNodes();
                     }
                 }
-#else
-                Model.RemoveNodes();
 #endif
                 int
                     countDistinct = 0,
@@ -649,10 +650,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             void localAddItemToModel(object? item)
             {
+                if (ContractType.GetPK()?.PropertyInfo is { } pi)
+                {
+
+                }
+                else this.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
             }
 
             void localRemoveItemFromModel(object? item)
             {
+                if (ContractType.GetPK()?.PropertyInfo is { } pi)
+                {
+
+                }
+                else this.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
             }
 
             void localResetFQBDForEpoch()
@@ -889,7 +900,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         protected virtual void OnObservableProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-
             switch (DHostAuthorityEpoch.Authority)
             {
                 case 0:
@@ -901,8 +911,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             if (e.NewItems?.Count is 1)
                             {
                                 RunFSM<TrackUserAddItem>(null);
-                                Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 10).Date, "Don't forget disabled");
-                                LoadCanon(sender as IEnumerable);
                             }
                             else
                             {

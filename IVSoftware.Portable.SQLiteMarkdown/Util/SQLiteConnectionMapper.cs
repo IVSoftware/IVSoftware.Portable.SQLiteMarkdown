@@ -23,7 +23,6 @@ using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {
-
     public static class SQLiteConnectionMapper
     {
         public static TableMapping GetSQLiteMapping(
@@ -96,6 +95,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
             pkPropertyName = proxyMapping.PK?.PropertyName;
             return proxyMapping;
         }
+
+        public static TableMapping.Column? GetPK(this Type type)
+            => type.GetSQLiteMapping().PK;
+
+        public static string? GetFullPath(this object? unk)
+        {
+            switch(unk)
+            {
+                case object when unk is IPrioritizedAffinity item:
+                    return item.FullPath;
+                case object when unk.GetType().GetPK()?.GetValue(unk) is string path:
+                    return path;
+                default:
+                case null:
+                    return null;
+            }
+        }
+
         static SQLiteConnection Mapper
         {
             get

@@ -70,7 +70,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             if (!Equals(_contractType, value))
                             {
                                 _contractType = value;
-                                // OnContractTypeChanged();
                                 OnPropertyChanged();
                             }
                             break;
@@ -84,7 +83,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             if (_contractType is null)
                             {
                                 _contractType = value;
-                                // OnContractTypeChanged();
                                 OnPropertyChanged();
                             }
                             break;
@@ -94,24 +92,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         Type? _contractType = null;
 
-#if false
-
-        /// <summary>
-        /// Creates or recreates a memory database containing a table for the ContractType
-        /// </summary>
-        protected virtual void OnContractTypeChanged()
-        {
-            if (ContractType is null)
-            {
-                this.ThrowHard<NullReferenceException>($"{nameof(ContractType)} cannot be null.");
-            }
-            else
-            {
-                _ = TryCreateTableForContractType();
-                TableName = ResolveTableNameForPass(ContractType);
-            }
-        }
-#endif
         public Type ProxyType
         {
             get => _proxyType;
