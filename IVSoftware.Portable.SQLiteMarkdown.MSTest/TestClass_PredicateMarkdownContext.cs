@@ -8,6 +8,8 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
+using IVSoftware.Portable.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -265,8 +267,37 @@ public class TestClass_PredicateMarkdownContext
             pmdc.FilteringState);
         { }
 
-        pmdc.InputText = "green";
-        await pmdc;
+
+        #region L o c a l F x
+        void localOnModelUpdated(object? sender, EventArgs e)
+        {
+            actual = pmdc.StateReport();
+            expected = @" 
+[IME Len: 5, IsFiltering: True], [Net: 37, CC: 37, PMC: 3], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]";
+
+            var v =
+                pmdc
+                .Model
+                .Descendants()
+                .Where(_ => bool.Parse(_.Attribute(nameof(StdMarkdownAttribute.ismatch))?.Value ?? "false") == true)
+                .Select(_ => (_.Attribute(StdMarkdownAttribute.model) as XBoundAttribute)?.Tag)
+                .ToArray();
+            { }
+        }
+        #endregion L o c a l F x
+        using (pmdc.WithOnDispose(
+            onInit: (sender, e) =>
+            {
+                pmdc.ModelUpdated += localOnModelUpdated;
+            },
+            onDispose: (sender, e) =>
+            {
+                pmdc.ModelUpdated -= localOnModelUpdated;
+            }))
+        {
+            pmdc.InputText = "green";
+            await pmdc;
+        }
 
         actual = pmdc.Model.ToString();
         actual.ToClipboardExpected();
