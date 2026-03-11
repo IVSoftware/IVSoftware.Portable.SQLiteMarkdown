@@ -1386,6 +1386,7 @@ ProjectionTopology.Inheritance, NetProjectionOption.ObservableOnly, ReplaceItems
 
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
+                    { }
                     expected = @" 
 NetProjection.Add     NewItems=12 NotifyQueryFilterCollectionChangedEventArgs
 NetProjection.Reset   NewItems= 0 NotifyCollectionChangedEventArgs           "

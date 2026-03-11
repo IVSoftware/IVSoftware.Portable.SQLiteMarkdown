@@ -837,28 +837,52 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
-            using (var eventHost = Model.SetSelfRemovingXBoundAttribute(
-                StdMarkdownAttribute.triage, 
-                Model.GetReplacementTriageEvents(recordset, ReplaceItemsEventingOptions)))
+            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext)
+            {   /* G T K - N O O P */
+            }
+            else
             {
-                RunFSM<LoadIsFilteringEpochFSM>(recordset);
-                if(eventHost.Tag is ReplaceItemsEventingContext context)
+                using (var eventHost = Model.SetSelfRemovingXBoundAttribute(
+                    StdMarkdownAttribute.triage,
+                    Model.GetReplacementTriageEvents(recordset, ReplaceItemsEventingOptions)))
                 {
-                    if(context.Structural is NotifyCollectionChangedEventArgs eStructural)
+                    RunFSM<LoadIsFilteringEpochFSM>(recordset);
+                    if (eventHost.Tag is ReplaceItemsEventingContext context)
                     {
-                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 11).Date, "Don't forget disabled");
+                        if (context.Structural is NotifyCollectionChangedEventArgs eStructural)
+                        {
+                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
+                            {
+                                Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 11).Date, "Don't forget disabled");
+                                OnRaiseCollectionChangedEventRequest(eStructural);
+                            }
+                        }
+                        if (context.Reset is NotifyCollectionChangedEventArgs eReset)
+                        {
+                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
+                            {
+                                Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 11).Date, "Don't forget disabled");
+                                OnObservableProjectionCollectionChanged(ObservableNetProjection, eReset);
+                            }
+                        }
                     }
-                    if (context.Reset is NotifyCollectionChangedEventArgs eReset)
+                    else
                     {
-                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 11).Date, "Don't forget disabled");
+                        this.ThrowFramework<NullReferenceException>($"Expecting {nameof(ReplaceItemsEventingContext)}");
                     }
-                }
-                else
-                {
-                    this.ThrowFramework<NullReferenceException>($"Expecting {nameof(ReplaceItemsEventingContext)}");
                 }
             }
         }
+
+
+        /// <summary>
+        /// This object is *not* INotifyCollectionChanged. But we know such consumers might be out there.
+        /// </summary>
+        protected virtual void OnRaiseCollectionChangedEventRequest(NotifyCollectionChangedEventArgs e)
+        {
+            RaiseCollectionChangedEventRequest?.Invoke(this, e);
+        }
+        public event NotifyCollectionChangedEventHandler? RaiseCollectionChangedEventRequest;
 
         #region P R O J E C T I O N
         /// <summary>
@@ -923,7 +947,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
 
         /// <summary>
-        /// Raised when the handle to the ObservableNetCollection changes.
+        /// Raised when the *handle* to the ObservableNetCollection changes.
         /// </summary>
         /// <remarks>
         /// SYNCHRONOUS - Do *not* mess around. This is information we need *now* and will have to wait for.
@@ -945,8 +969,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
-        /// Raised when the collection - that is the ObservableNetProjection - is modified in some way.
+        /// Receives projection change notifications required to maintain the canonical ledger during filtering.
         /// </summary>
+        /// <remarks>
+        /// This handler is only meaningful when <see cref="IsFiltering"/> is true. In Filter modes
+        /// the observable projection acts as an interaction surface and its structural changes
+        /// must be absorbed into the canonical model.
+        /// </remarks>
         protected virtual void OnObservableProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (DHostAuthorityEpoch.Authority)
