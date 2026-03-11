@@ -480,6 +480,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             #region L o c a l F x
             Enum localDetectFastTrack()
             {
+                bool isEmptyProjection =
+                    !(ObservableNetProjection is IEnumerable projection && projection.Cast<object>().Any());
                 switch (state)
                 {
                     case ClearModelFSM:
@@ -489,12 +491,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         }
                         break;
                     case NativeClearFSM:
-                        if(!Model.HasElements && (ObservableNetProjection is not IEnumerable projection || !projection.Cast<object>().Any()))
+                        // If ALL are true.
+                        if( SearchEntryState == SearchEntryState.Cleared
+                            && !Model.HasElements
+                            && isEmptyProjection)
                         {
-                            Debug.Fail($@"ADVISORY - First Time.");
                             return ReservedFSMState.FastTrack;
                         }
-                        break;
+                        else
+                        {
+                            break;
+                        }
                 }
                 return ReservedFSMState.Next;
             }

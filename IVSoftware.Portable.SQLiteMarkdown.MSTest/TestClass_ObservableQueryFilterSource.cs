@@ -1,8 +1,11 @@
+using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.DemoDB;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.QFTemplates;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
@@ -13,23 +16,21 @@ using SQLite;
 using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using static IVSoftware.Portable.Threading.Extensions;
 using static SQLite.SQLite3;
 using static System.Net.Mime.MediaTypeNames;
 using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
-using static IVSoftware.Portable.Threading.Extensions;
-using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
-using IVSoftware.Portable.Disposable;
-using System.ComponentModel.Design.Serialization;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
@@ -1339,24 +1340,48 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                         builder.Add(e.GetFormatted(ReferenceEquals(sender, itemsSource)));
                     }
 
+                    // 260311.A RETROFIT - StateReport came online later. Let's see if it agrees.
+                    actual = itemsSource.StateReport();
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+                    ;
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting StateReport shows FIRST CAUSE."
+                    );
+
                     sql = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>();
                     results = cnx.Query<SelectableQFModelTOQO>(sql);
 
                     itemsSource.ReplaceItems(results);
 
+                    // 260311.B RETROFIT - StateReport came online later. Let's see if it agrees.
+                    actual = itemsSource.StateReport();
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+                    ;
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting StateReport shows INITIAL QUERY RECORDSET N=12."
+                    );
 
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-NetProjection.Add     NewItems=12 NotifyQueryFilterCollectionChangedEventArgs
-NetProjection.Reset   NewItems= 0 NotifyCollectionChangedEventArgs"
+NetProjection.Add     NewItems=12 NotifyQueryFilterCollectionChangedEventArgs"
                     ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
-                        "Expecting add component (first) + rest component (last)."
+                        "Expecting ADD to an EMPTY RECORDSET causes NO CLEAR OR RESET."
                     );
 
                     actual = string.Join(Environment.NewLine, itemsSource.Select(_ => _.ToString()));
@@ -1400,7 +1425,34 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     }
                     #endregion L o c a l F x
 
+                    // 260311.C RETROFIT - StateReport came online later. Let's see if it agrees.
+                    actual = itemsSource.StateReport();
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+                    ;
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting StateReport shows RESUME WITH CURRENT STATE."
+                    );
+
+                    Assert.AreEqual(string.Empty, itemsSource.InputText, "Confirm before clear.");
                     itemsSource.Clear();
+
+                    // 260311.D RETROFIT - StateReport came online later. Let's see if it agrees.
+                    actual = itemsSource.StateReport();
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 12, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Armed]"
+                    ;
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting StateReport shows ??."
+                    );
 
                     ecc = (NotifyCollectionChangedEventArgs)eventQueue.DequeueSingle().e;
                     Assert.AreEqual(

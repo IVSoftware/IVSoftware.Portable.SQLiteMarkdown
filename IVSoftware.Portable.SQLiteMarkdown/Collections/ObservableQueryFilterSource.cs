@@ -385,7 +385,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         void ICollection<T>.Clear() => Clear(all: true);
 
         /// <summary>
-        /// 
+        /// "No Suprises" clear on an IList.
         /// </summary>
         /// <remarks>
         /// Collections that inherit MarkdownContext *must* distinguish clear semantics.
