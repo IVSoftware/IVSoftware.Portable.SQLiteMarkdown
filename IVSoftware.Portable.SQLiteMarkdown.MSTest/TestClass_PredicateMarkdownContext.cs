@@ -10,7 +10,6 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.Xml.Linq;
-using System.ComponentModel.Design.Serialization;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 

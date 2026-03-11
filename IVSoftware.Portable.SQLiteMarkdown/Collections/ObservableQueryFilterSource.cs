@@ -79,10 +79,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
             }
 #endif
-
-            // GZ GZ GZ GZ
             base.ObservableNetProjection = this;
-            base.ProjectionOptions = NetProjectionOption.AllowDirectChanges;
+            base.ProjectionOptions = NetProjectionOption.ObservableOnly;
 
 
             _canonicalRecordset.CollectionChanged += (sender, e) =>
@@ -165,86 +163,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        private void internalLoadONPfromModel()
-        {
-#if DEBUG
-            var preview = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
-            var model = Model;
-            { }
-            if (base.ObservableNetProjection is null)
-            {
-            }
-            else if (ReferenceEquals(this, base.ObservableNetProjection))
-            {
-            }
-            else
-            {
-                Debug.Fail($@"ADVISORY - This is nonsensical and you shouldn't be here.");
-            }
-            int CCB4 = CanonicalCount;
-#endif
-
-
-            // RESET REQUIRED main INCC for NetProjection.
-            // Unit Tests expect this, but it can't be left outside of the authority OTHERWISE MODEL GETS CLEARED.
-            // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
-
-            // _canonicalRecordset.Clear(); // <- NOT HERE!
-
-            using (base.BeginCollectionChangeAuthority(authority: CollectionChangeAuthority.MarkdownContext))
-            using (base.BeginResetEpoch())
-            {
-                // Building from the model in V2 is new.
-
-                _canonicalRecordset.Clear(); // <- HERE!
-#if DEBUG
-                if (CCB4 != CanonicalCount)
-                {
-                    Debug.Fail("ACTION NEEDED - The CC must survive this.");
-                }
-#endif
-                if (CanonicalCount != 0)
-                {
-                    foreach (var xel in Model.Descendants())
-                    {
-                        if (xel.To<T>() is { } item)
-                        {
-                            _canonicalRecordset.Add(item);
-                        }
-                    }
-
-                    // Raise single event after completing the loop.
-                    OnCollectionChanged(
-                        new NotifyQueryFilterCollectionChangedEventArgs(
-                            NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
-                            _canonicalRecordset.ToList() // snapshot as IList
-                        )
-                    );
-                }
-            }
-#if false
-            // This causes a Reset on the main INCC
-            _canonicalRecordset.Clear();
-            if (CanonicalCount != 0)
-            {
-                foreach (var xel in Model.Descendants())
-                {
-                    if (xel.To<T>() is { } item)
-                    {
-                        _canonicalRecordset.Add(item);
-                    }
-                }
-                // Raise single event after completing the loop.
-                OnCollectionChanged(
-                    new NotifyQueryFilterCollectionChangedEventArgs(
-                        NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
-                        _canonicalRecordset.ToList() // snapshot as IList
-                    )
-                );
-            }
-#endif
-        }
-
         /// <summary>
         /// Removes any current items before copying the items passed.
         /// </summary>
@@ -264,17 +182,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        /// <summary>
-        /// Sets Filter-only mode and initializes the dataset for filtering.
-        /// Ideal for static lists (e.g., preferences, enums).
-        /// When a filter is "cleared" it means the collection view returns to "all items visible".
-        /// </summary>
-        [PublishedContract("1.0")]
-        public void InitializeFilterOnlyMode(IEnumerable<T> items)
-        {
-            QueryFilterConfig = QueryFilterConfig.Filter;
-            LoadCanon(items);
-        }
 
         /// <summary>
         /// Applies filtering based on incremental changes to the input text,
@@ -377,6 +284,98 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     }
                 }
             }
+        }
+
+        private void internalLoadONPfromModel()
+        {
+#if DEBUG
+            var preview = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
+            var model = Model;
+            { }
+            if (base.ObservableNetProjection is null)
+            {
+            }
+            else if (ReferenceEquals(this, base.ObservableNetProjection))
+            {
+            }
+            else
+            {
+                Debug.Fail($@"ADVISORY - This is nonsensical and you shouldn't be here.");
+            }
+            int CCB4 = CanonicalCount;
+#endif
+
+
+            // RESET REQUIRED main INCC for NetProjection.
+            // Unit Tests expect this, but it can't be left outside of the authority OTHERWISE MODEL GETS CLEARED.
+            // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
+
+            // _canonicalRecordset.Clear(); // <- NOT HERE!
+
+            using (base.BeginCollectionChangeAuthority(authority: CollectionChangeAuthority.MarkdownContext))
+            using (base.BeginResetEpoch())
+            {
+                // Building from the model in V2 is new.
+
+                _canonicalRecordset.Clear(); // <- HERE!
+#if DEBUG
+                if (CCB4 != CanonicalCount)
+                {
+                    Debug.Fail("ACTION NEEDED - The CC must survive this.");
+                }
+#endif
+                if (CanonicalCount != 0)
+                {
+                    foreach (var xel in Model.Descendants())
+                    {
+                        if (xel.To<T>() is { } item)
+                        {
+                            _canonicalRecordset.Add(item);
+                        }
+                    }
+
+                    // Raise single event after completing the loop.
+                    OnCollectionChanged(
+                        new NotifyQueryFilterCollectionChangedEventArgs(
+                            NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
+                            _canonicalRecordset.ToList() // snapshot as IList
+                        )
+                    );
+                }
+            }
+#if false
+            // This causes a Reset on the main INCC
+            _canonicalRecordset.Clear();
+            if (CanonicalCount != 0)
+            {
+                foreach (var xel in Model.Descendants())
+                {
+                    if (xel.To<T>() is { } item)
+                    {
+                        _canonicalRecordset.Add(item);
+                    }
+                }
+                // Raise single event after completing the loop.
+                OnCollectionChanged(
+                    new NotifyQueryFilterCollectionChangedEventArgs(
+                        NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
+                        _canonicalRecordset.ToList() // snapshot as IList
+                    )
+                );
+            }
+#endif
+        }
+
+        /// <summary>
+        /// Sets Filter-only mode and initializes the dataset for filtering.
+        /// Ideal for static lists (e.g., preferences, enums).
+        /// When a filter is "cleared" it means the collection view returns to "all items visible".
+        /// </summary>
+        [PublishedContract("1.0")]
+        public void InitializeFilterOnlyMode(IEnumerable<T> items)
+        {
+            QueryFilterConfig = QueryFilterConfig.Filter;
+            LoadCanon(items);
         }
 
         #region I L I S T
@@ -531,12 +530,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.None)
-            {   /* G T K - N O O P */
-            }
-            else
+            switch (DHostAuthorityEpoch.Authority)
             {
-                CollectionChanged?.Invoke(this, e);
+                case 0:
+                case CollectionChangeAuthority.None:
+                case CollectionChangeAuthority.NetProjection:
+                    /* G T K - N O O P */
+                    break;
+                case CollectionChangeAuthority.MarkdownContext:
+                    CollectionChanged?.Invoke(this, e);
+                    break;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {DHostAuthorityEpoch.Authority.ToFullKey()} case is not supported.");
+                    break;
             }
         }
 
@@ -660,17 +666,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// This is a router for whether to show the unfiltered set or the filtered one.
         /// The override allows some intelligence WRT the number of filterable items in the list.
         /// </summary>
-
-
-        /// <summary>
-        /// This is a router for whether to show the unfiltered set or the filtered one.
-        /// The override allows some intelligence WRT the number of filterable items in the list.
-        /// </summary>
         [Careful("This polarity was wrong, and has been fixed.")]
         public override bool RouteToFullRecordset
         {
             get
             {
+                // The FULL RECORDSET has less than 2 items total.
                 if (_canonicalRecordset.Count < 2) // Filtering state ineligible. Show all items.
                 {
                     return true;
@@ -683,6 +684,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     }
                     else
                     {
+                        // Initial filtering state (query expr unchanged) OR
+                        // any subsequent change where InputText is not empty.
                         return FilteringState != FilteringState.Active;
                     }
                 }
