@@ -192,6 +192,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 );
                 Assert.IsTrue(mdc.HasCounts(canonical: 2, matches: 2, database: 2));
 
+                // 260310.A - StateReport came online later. Let's see if it agrees.
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 2, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]";
+
                 nResult = mdc.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
 
                 Assert.AreEqual(
