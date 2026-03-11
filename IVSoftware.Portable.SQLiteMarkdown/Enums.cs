@@ -348,12 +348,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Clear or Create Table for ContractType.
         /// </summary>
-        InitFQBDForEpoch,
+        /// <remarks>
+        /// The decision to repopulate with a canonical recordset
+        /// is switched on the enum type.
+        /// </remarks>
+        ResetOrCanonizeFQBDForEpoch,
 
         /// <summary>
-        /// Build the XML model of the canonical recordset.
+        /// Empty the contents of the contract table.
         /// </summary>
-        InitModelForEpoch,
+        ResetOrCanonizeModelForEpoch,
 
         /// <summary>
         /// Set SearchEntryState and FilteringState contextually.
@@ -374,28 +378,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Using a DHostSuppress token, populate the NetProjection. Reset will happen on token release.
         /// </summary>
         NetProjectWithSuppress,
-
-        /// <summary>
-        /// Empty the contents of the contract table.
-        /// </summary>
-        ResetFQBDForEpoch,
-
-        /// <summary>
-        /// Empty the contents of the contract table.
-        /// </summary>
-        ResetModelForEpoch,
     }
 
     /// <summary>
     /// Executes on rising edge of IsFiltering.
     /// </summary>
-    internal enum InitFilterEpochFSM
+    internal enum InitIsFIlteringEpochFSM
     {
         DetectFastTrack = StdFSMState.DetectFastTrack,
 
-        InitFQBDForEpoch = StdFSMState.InitFQBDForEpoch,
+        ResetOrCanonizeFQBDForEpoch = StdFSMState.ResetOrCanonizeFQBDForEpoch,
 
-        InitModelForEpoch = StdFSMState.InitModelForEpoch,
+        ResetOrCanonizeModelForEpoch = StdFSMState.ResetOrCanonizeModelForEpoch,
 
         InitStatesForEpoch = StdFSMState.InitStatesForEpoch,
     }
@@ -421,9 +415,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </summary>
     internal enum ResetFilterEpochFSM
     {
-        ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
+        ResetOrCanonizeFQBDForEpoch = StdFSMState.ResetOrCanonizeFQBDForEpoch,
 
-        ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
+        ResetModelForEpoch = StdFSMState.ResetOrCanonizeModelForEpoch,
     }
 
 #if false
@@ -449,9 +443,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         DetectFastTrack = StdFSMState.DetectFastTrack,
 
-        ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
+        ResetOrCanonizeFQBDForEpoch = StdFSMState.ResetOrCanonizeFQBDForEpoch,
 
-        ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
+        ResetModelForEpoch = StdFSMState.ResetOrCanonizeModelForEpoch,
     }
 
     /// <summary>
@@ -463,9 +457,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         DetectFastTrack = StdFSMState.DetectFastTrack,
 
-        ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
+        ResetOrCanonizeFQBDForEpoch = StdFSMState.ResetOrCanonizeFQBDForEpoch,
 
-        ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
+        ResetOrCanonizeModelForEpoch = StdFSMState.ResetOrCanonizeModelForEpoch,
     }
 
     public enum ProjectionTopology

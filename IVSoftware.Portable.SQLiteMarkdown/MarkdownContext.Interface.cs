@@ -450,11 +450,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     {
                         break;
                     }
-                case StdFSMState.InitFQBDForEpoch when context is IEnumerable canonical:
-                    localInitFQDBEpoch(canonical);
+                case StdFSMState.ResetOrCanonizeFQBDForEpoch:
+                    localResetOrCanonizeFQDBForEpoch(context);
                     break;
-                case StdFSMState.InitModelForEpoch when context is IEnumerable canonical:
-                    localInitModelForEpoch(canonical);
+                case StdFSMState.ResetOrCanonizeModelForEpoch when context is IEnumerable canonical:
+                    localResetOrCanonizeModelForEpoch(context);
                     break;
                 case StdFSMState.InitStatesForEpoch:
                     localInitStatesForEpoch();
@@ -465,10 +465,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case StdFSMState.RemoveItemFromModel:
                     localRemoveItemFromModel(context);
                     break;
-                case StdFSMState.ResetFQBDForEpoch:
-                    localResetFQBDForEpoch();
-                    break;
-                case StdFSMState.ResetModelForEpoch:
+                case StdFSMState.ResetOrCanonizeModelForEpoch:
                     localResetModelForEpoch();
                     break;
                 default:
@@ -506,123 +503,130 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return ReservedFSMState.Next;
             }
 
-            Enum localInitFQDBEpoch(IEnumerable canonical)
+            Enum localResetOrCanonizeFQDBForEpoch(object? context)
             {
-                // Check to see whether we should have a FQDB in the first place.
-                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                if (context is not IEnumerable canonical)
                 {
-                    try
-                    {
-                        FilterQueryDatabase.RunInTransaction(() =>
-                        {
-                            // Ensure table exists.
-                            FilterQueryDatabase.CreateTable(ContractType);
-                            // Clear any entries from a pre-existing table.
-                            FilterQueryDatabase.DeleteAll(ContractType.GetSQLiteMapping());
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        this.RethrowHard(ex);
-                        return ReservedFSMState.Canceled;
-                    }
+                    Model.RemoveNodes(StdMarkdownAttribute.count, StdMarkdownAttribute.matches);
+                    return ReservedFSMState.Next;
                 }
                 else
-                {   /* G T K - N O O P */
-                    // There is no FQDB to maintain in Query-Only mode.
+                {
+                    // Check to see whether we should have a FQDB in the first place.
+                    if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                    {
+                        try
+                        {
+                            FilterQueryDatabase.RunInTransaction(() =>
+                            {
+                                // Ensure table exists.
+                                FilterQueryDatabase.CreateTable(ContractType);
+                                // Clear any entries from a pre-existing table.
+                                FilterQueryDatabase.DeleteAll(ContractType.GetSQLiteMapping());
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            this.RethrowHard(ex);
+                            return ReservedFSMState.Canceled;
+                        }
+                    }
+                    else
+                    {   /* G T K - N O O P */
+                        // There is no FQDB to maintain in Query-Only mode.
+                    }
+                    return ReservedFSMState.Next;
                 }
-                return ReservedFSMState.Next;
             }
 
-            void localInitModelForEpoch(IEnumerable canonical)
+            void localResetOrCanonizeModelForEpoch(object? context)
             {
-                switch (state)
+                if (context is not IEnumerable canonical)
                 {
-                    case NativeClearFSM:
-                        Model.RemoveNodes(StdMarkdownAttribute.count, StdMarkdownAttribute.matches);
-                        return;
-                    default:
-                        break;
+                    Model.RemoveNodes(StdMarkdownAttribute.count, StdMarkdownAttribute.matches);
+                    return;
                 }
-
+                else
+                {
 #if DEBUG
-                int nRemoved = 0;
+                    int nRemoved = 0;
 #endif
-                Model.SetAttributeValue(StdMarkdownAttribute.count, null);
-                Model.SetAttributeValue(StdMarkdownAttribute.matches, null);
+                    Model.SetAttributeValue(StdMarkdownAttribute.count, null);
+                    Model.SetAttributeValue(StdMarkdownAttribute.matches, null);
 
-                PropertyInfo? pk = ContractType.GetSQLiteMapping().PK?.PropertyInfo;
+                    PropertyInfo? pk = ContractType.GetSQLiteMapping().PK?.PropertyInfo;
 #if RELEASE
                 Model.RemoveNodes();
 #else
-                // DEBUG:
-                // Provides clarity on how the XML Changed events work on a bulk RemoveNodes.
-                #region L o c a l F x
-                void localOnXObjectChanged(object? sender, XObjectChangeEventArgs e)
-                {
-                    Debug.WriteLine($@"260306.A: Removed {++nRemoved}");
-                }
-                #endregion L o c a l F x
-                using (Model.WithOnDispose(
-                    onInit: (sender, e) =>
+                    // DEBUG:
+                    // Provides clarity on how the XML Changed events work on a bulk RemoveNodes.
+                    #region L o c a l F x
+                    void localOnXObjectChanged(object? sender, XObjectChangeEventArgs e)
                     {
-                        Model.Changed += localOnXObjectChanged;
-                    },
-                    onDispose: (sender, e) =>
-                    {
-                        Model.Changed -= localOnXObjectChanged;
-                    }))
-                {
-                    if (Model.HasElements)
-                    {
-                        Model.RemoveNodes();
+                        Debug.WriteLine($@"260306.A: Removed {++nRemoved}");
                     }
-                }
+                    #endregion L o c a l F x
+                    using (Model.WithOnDispose(
+                        onInit: (sender, e) =>
+                        {
+                            Model.Changed += localOnXObjectChanged;
+                        },
+                        onDispose: (sender, e) =>
+                        {
+                            Model.Changed -= localOnXObjectChanged;
+                        }))
+                    {
+                        if (Model.HasElements)
+                        {
+                            Model.RemoveNodes();
+                        }
+                    }
 #endif
-                int
-                    countDistinct = 0,
-                    countDuplicate = 0;
+                    int
+                        countDistinct = 0,
+                        countDuplicate = 0;
 
-                if (pk is null)
-                {
-                    throw new NotSupportedException($"Type '{ContractType.Name}' has no PK and such types are not (yet) supported.");
-                }
-                foreach (var item in canonical)
-                {
-                    // ToDo: Test with item.GetFullPath() extension.
-                    var placerResult = Model.Place(path: localGetFullPath(pk, item), out var xel);
-
-                    switch (placerResult)
+                    if (pk is null)
                     {
-                        case PlacerResult.Exists:
-                            countDuplicate++;
-                            break;
-                        case PlacerResult.Created:
-                            xel.Name = nameof(StdMarkdownElement.xitem);
-                            xel.SetBoundAttributeValue(
-                                tag: item,
-                                name: nameof(StdMarkdownAttribute.model));
-                            xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), countDistinct);
-                            countDistinct++;
-                            break;
-                        default:
-                            this.ThrowFramework<NotSupportedException>(
-                                $"Unexpected result: `{placerResult.ToFullKey()}`. Expected options are {PlacerResult.Created} or {PlacerResult.Exists}");
-                            break;
+                        throw new NotSupportedException($"Type '{ContractType.Name}' has no PK and such types are not (yet) supported.");
                     }
-                }
+                    foreach (var item in canonical)
+                    {
+                        // ToDo: Test with item.GetFullPath() extension.
+                        var placerResult = Model.Place(path: localGetFullPath(pk, item), out var xel);
 
-                Model.SetAttributeValue(StdMarkdownAttribute.count, countDistinct);
-                if(Model.GetAttributeValue<IList?>(StdMarkdownAttribute.predicates) is { } predicates)
-                {
-                    Debug.Fail($@"ADVISORY - First Time.");
-                    Model.SetAttributeValue(StdMarkdownAttribute.matches, countDistinct); // This will change.
+                        switch (placerResult)
+                        {
+                            case PlacerResult.Exists:
+                                countDuplicate++;
+                                break;
+                            case PlacerResult.Created:
+                                xel.Name = nameof(StdMarkdownElement.xitem);
+                                xel.SetBoundAttributeValue(
+                                    tag: item,
+                                    name: nameof(StdMarkdownAttribute.model));
+                                xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), countDistinct);
+                                countDistinct++;
+                                break;
+                            default:
+                                this.ThrowFramework<NotSupportedException>(
+                                    $"Unexpected result: `{placerResult.ToFullKey()}`. Expected options are {PlacerResult.Created} or {PlacerResult.Exists}");
+                                break;
+                        }
+                    }
+
+                    Model.SetAttributeValue(StdMarkdownAttribute.count, countDistinct);
+                    if (Model.GetAttributeValue<IList?>(StdMarkdownAttribute.predicates) is { } predicates)
+                    {
+                        Debug.Fail($@"ADVISORY - First Time.");
+                        Model.SetAttributeValue(StdMarkdownAttribute.matches, countDistinct); // This will change.
+                    }
+                    else
+                    {
+                        Model.SetAttributeValue(StdMarkdownAttribute.matches, countDistinct);
+                    }
+                    Model.SetAttributeValue(StdMarkdownAttribute.ismatch, null);
                 }
-                else
-                {
-                    Model.SetAttributeValue(StdMarkdownAttribute.matches, countDistinct);
-                }
-                Model.SetAttributeValue(StdMarkdownAttribute.ismatch, null);
             }
 
             string localGetFullPath(PropertyInfo pk, object unk)
@@ -720,30 +724,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                 }
                 else this.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
-            }
-
-            void localResetFQBDForEpoch()
-            {
-                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
-                {
-                    try
-                    {
-                        if (FilterQueryDatabase.DeleteAll(ContractType.GetSQLiteMapping()) == 0)
-                        {   /* G T K */
-                        }
-                        else
-                        {   /* G T K */
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        this.RethrowHard(ex);
-                    }
-                }
-                else
-                {   /* G T K - N O O P */
-                    // There is no FQDB to maintain in Query-Only mode.
-                }
             }
 
             void localResetModelForEpoch()
@@ -850,7 +830,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
         /// </remarks>
         public virtual async Task LoadCanonAsync(IEnumerable? recordset)
-            => await RunFSMAsync<InitFilterEpochFSM>(recordset);
+            => await RunFSMAsync<InitIsFIlteringEpochFSM>(recordset);
 
         /// <summary>
         /// Established a new canonical model for subsequent operations.
@@ -863,7 +843,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             recordset ??= Array.Empty<object>();
             using (DHostBusy.GetToken())
             {
-                RunFSM<InitFilterEpochFSM>(recordset);
+                RunFSM<InitIsFIlteringEpochFSM>(recordset);
             }
         }
 
