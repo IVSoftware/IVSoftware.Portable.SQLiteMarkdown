@@ -436,13 +436,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 .Select(field => (TFsm)field.GetValue(null)!);
         }
 
-        protected Enum ExecState(Enum state, object? contextZ = null)
+        protected Enum ExecState(Enum state, object? context = null)
         {
-            LoadCanonContext? lcc = contextZ as LoadCanonContext;
-            IEnumerable<object>? canon =
-                lcc is null
-                ? contextZ as IEnumerable<object>
-                : lcc.Recordset as IEnumerable<object>;
+            IEnumerable<object>? canon = context as IEnumerable<object>;
             bool
                 isEmptyProjection = canon?.Any() != true;
 #if DEBUG
@@ -690,7 +686,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             void localAddItemToModel()
             {
-                object? item = contextZ;
+                object? item = context;
                 if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
                 {
                     int
@@ -727,7 +723,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             void localRemoveItemFromModel()
             {
-                object? item = contextZ;
+                object? item = context;
                 if (ContractType.GetPK()?.PropertyInfo is { } pi)
                 {
 
@@ -832,58 +828,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public virtual async Task LoadCanonAsync(IEnumerable? recordset)
             => await RunFSMAsync<LoadIsFilteringEpochFSM>(recordset);
 
-        sealed class LoadCanonContext : IDisposable
-        {
-            TokenDisposer _flexDispose;
-            public LoadCanonContext(MarkdownContext mdc, IEnumerable? recordset, ReplaceItemsEventingTriage triage)
-            {
-                List<IDisposable> disposables = new([mdc.DHostBusy.GetToken()]);
-                Recordset = recordset ?? Array.Empty<object>();
-                Triage = triage;
-
-                switch (mdc.ReplaceItemsEventingOptions)
-                {
-                    case ReplaceItemsEventingOption.StructuralReplaceEvent:
-                        break;
-                    case ReplaceItemsEventingOption.ResetOnAnyChange:
-                    case ReplaceItemsEventingOption.All:
-                        switch (triage)
-                        {
-                            case ReplaceItemsEventingTriage.AlwaysEmpty:
-                                break;
-                            case ReplaceItemsEventingTriage.EmptyBefore:
-                            case ReplaceItemsEventingTriage.EmptyAfter:
-                            case ReplaceItemsEventingTriage.NeverEmpty:
-                                disposables.Add(mdc.BeginResetEpoch());
-                                break;
-                            default:
-                                this.ThrowHard<NotSupportedException>($"The {triage.ToFullKey()} case is not supported.");
-                                break;
-                        }
-                        break;
-                    default:
-                        this.ThrowHard<NotSupportedException>($"The {mdc.ReplaceItemsEventingOptions.ToFullKey()} case is not supported.");
-                        break;
-                }
-                _flexDispose = new TokenDisposer(disposables);
-            }
-
-            /// <summary>
-            /// Incoming canonical recordset used to rebuild the model.
-            /// </summary>
-            public IEnumerable Recordset { get; }
-
-            /// <summary>
-            /// Structural relationship between the existing model and the incoming recordset.
-            /// </summary>
-            public ReplaceItemsEventingTriage Triage { get; }
-
-            public void Dispose()
-            {
-                _flexDispose?.Dispose();
-            }
-        }
-
         /// <summary>
         /// Established a new canonical model for subsequent operations.
         /// </summary>
@@ -892,13 +836,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
-            using (var context = new LoadCanonContext(
-                this,
-                recordset,
-                Model.GetReplacementTriage(recordset)))
             using (Model.SetSelfRemovingXBoundAttribute(StdMarkdownAttribute.triage, Model.GetReplacementTriage(recordset)))
             {
-                RunFSM<LoadIsFilteringEpochFSM>(context);
+                RunFSM<LoadIsFilteringEpochFSM>(recordset);
             }
         }
 
