@@ -48,7 +48,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             void subtest_TrackAdd()
             {
                 items.AddDynamic("Brown Dog", "[canine] [color]", false, new() { "loyal", "friend", "furry" });
-                { }
+
                 actual = pmdc.Model.ToString();
                 actual.ToClipboardExpected();
                 { }
@@ -63,6 +63,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     actual.NormalizeResult(),
                     "Expecting: FILTER MODE => ALWAYS TRACKS."
                 );
+
+                items.AddDynamic("Green Apple", "[fruit] [color]", false, new() { "tart", "snack", "healthy" });
+                actual = pmdc.Model.ToString();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model autocount=""2"" count=""2"" matches=""2"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" sort=""1"" />
+</model>"
+                ;
             }
             #endregion S U B T E S T S
         }
