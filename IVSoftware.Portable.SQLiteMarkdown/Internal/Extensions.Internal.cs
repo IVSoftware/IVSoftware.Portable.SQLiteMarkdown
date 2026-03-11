@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -343,11 +344,43 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         public static XElement RemoveNodes(this XElement @this, Enum reset, params Enum[] moreResets)
         {
             @this.RemoveNodes();
-            foreach(Enum @enum in new[] { reset }.Concat(moreResets))
+            foreach (Enum @enum in new[] { reset }.Concat(moreResets))
             {
                 @this.SetAttributeValue(@enum.ToString(), 0);
             }
             return @this;
+        }
+
+        /// <summary>
+        /// Classifies the structural relationship between the canonical XML model and an incoming recordset.
+        /// </summary>
+        /// <remarks>
+        /// Determines the <see cref="ReplaceItemsEventingTriage"/> describing the transition
+        /// from the existing canonical state represented by <paramref name="model"/> to the
+        /// incoming sequence <paramref name="canon"/>.
+        ///
+        /// The canonical state is considered empty when the model contains no child elements.
+        /// The incoming sequence is considered empty when it is null or contains no items.
+        ///
+        /// When evaluating non-<see cref="ICollection"/> sequences, only a minimal probe is
+        /// performed to determine emptiness.
+        /// </remarks>
+        public static ReplaceItemsEventingTriage GetReplacementTriage(this XElement model, IEnumerable? canon)
+        {
+            bool oldEmpty = !model.HasElements;
+            bool newEmpty =
+                canon is ICollection c
+                ? c.Count == 0
+                : canon?.Cast<object>()?.Any() != true;
+
+            return
+                oldEmpty && newEmpty
+                ? ReplaceItemsEventingTriage.AlwaysEmpty
+                : oldEmpty
+                    ? ReplaceItemsEventingTriage.EmptyBefore
+                    : newEmpty
+                        ? ReplaceItemsEventingTriage.EmptyAfter
+                        : ReplaceItemsEventingTriage.NeverEmpty;
         }
         #endregion L E G I T
     }

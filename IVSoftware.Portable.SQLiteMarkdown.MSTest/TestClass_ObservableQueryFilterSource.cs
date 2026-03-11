@@ -1374,8 +1374,6 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
 
                     actual = itemsSource.OptionsReport();
                     actual.ToClipboardExpected();
-                    { } // <- FIRST TIME ONLY: Adjust the message.
-                    actual.ToClipboardAssert("Expecting option settings to match.");
                     { }
                     expected = @" 
 ProjectionTopology.Inheritance, NetProjectionOption.ObservableOnly, ReplaceItemsEventingOption.StructuralReplaceEvent";

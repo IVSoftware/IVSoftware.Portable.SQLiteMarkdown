@@ -836,14 +836,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
+            #region N E W    I N    P R O G R E S S
+            var triage = Model.GetReplacementTriage(recordset);
+            switch (triage)
+            {
+                case ReplaceItemsEventingTriage.AlwaysEmpty:
+                    break;
+                case ReplaceItemsEventingTriage.EmptyBefore:
+                    break;
+                case ReplaceItemsEventingTriage.EmptyAfter:
+                    break;
+                case ReplaceItemsEventingTriage.NeverEmpty:
+                    break;
+                default:
+                    this.ThrowHard<NotSupportedException>($"The {triage.ToFullKey()} case is not supported.");
+                    break;
+            }
+            #endregion N E W    I N    P R O G R E S S
+
+
             recordset ??= Array.Empty<object>();
-
-
             using (DHostBusy.GetToken())
             {
                 RunFSM<LoadIsFilteringEpochFSM>(recordset);
             }
         }
+        IList _canonical = null;
 
         #region P R O J E C T I O N
         /// <summary>
