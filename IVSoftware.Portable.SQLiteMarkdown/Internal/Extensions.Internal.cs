@@ -7,8 +7,10 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
@@ -365,7 +367,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// When evaluating non-<see cref="ICollection"/> sequences, only a minimal probe is
         /// performed to determine emptiness.
         /// </remarks>
-        public static ReplaceItemsEventingTriage GetReplacementTriage(this XElement model, IEnumerable? canon)
+        public static ReplaceItemsEventingTriage GetReplacementTriage(
+            this XElement model,
+            IEnumerable? canon)
         {
             bool oldEmpty = !model.HasElements;
             bool newEmpty =
@@ -381,6 +385,45 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                     : newEmpty
                         ? ReplaceItemsEventingTriage.EmptyAfter
                         : ReplaceItemsEventingTriage.NeverEmpty;
+        }
+        public static ReplaceItemsEventingContext GetReplacementTriageEvents(
+            this XElement model,
+            IEnumerable? canon)
+        => new ReplaceItemsEventingContext(model, canon);
+
+        public class ReplaceItemsEventingContext
+        {
+            public ReplaceItemsEventingContext(
+                XElement model,
+                IEnumerable? newItems)
+            {
+                var oldItems = new List<object>();
+                foreach (var xel in model.Descendants())
+                {
+                    if(xel.Attribute(nameof(StdMarkdownAttribute.model)) is XBoundAttribute xba
+                        && xba.Tag is { } item)
+                    {
+                        oldItems.Add(item);
+                    }
+                }
+                var triage = model.GetReplacementTriage(newItems);
+                switch (triage)
+                {
+                    case ReplaceItemsEventingTriage.AlwaysEmpty:
+                        break;
+                    case ReplaceItemsEventingTriage.EmptyBefore:
+                        break;
+                    case ReplaceItemsEventingTriage.EmptyAfter:
+                        break;
+                    case ReplaceItemsEventingTriage.NeverEmpty:
+                        break;
+                    default:
+                        this.ThrowHard<NotSupportedException>($"The {triage.ToFullKey()} case is not supported.");
+                        break;
+                }
+            }
+            public NotifyCollectionChangedEventArgs? Structural { get; }
+            public NotifyCollectionChangedEventArgs? Reset { get; }
         }
         #endregion L E G I T
     }
