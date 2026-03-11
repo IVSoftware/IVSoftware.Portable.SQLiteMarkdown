@@ -657,15 +657,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// Represents a prioritized node whose relational context ("affinity") is 
-    /// implicitly restored when materialized from a query.
+    /// Defines hierarchical identity using a materialized full-path scheme derived from adjacency and path components.
     /// </summary>
     /// <remarks>
-    /// EXAMPLE:
-    /// If the raw recordset of a query returns ONE child item at depth = 2, then the
-    /// net query returns THREE. The UI now has greater opportunity to display context.
+    /// Implementations expose both adjacency-list coordinates (<see cref="ParentId"/>) and
+    /// materialized-path coordinates (<see cref="ParentPath"/>), enabling deterministic
+    /// construction of <see cref="FullPath"/> as the canonical hierarchical address.
+    /// 
+    /// <see cref="Id"/> typically corresponds to the model primary key. <see cref="FullPath"/>
+    /// is ephemeral and represents the linted concatenation of <see cref="ParentPath"/> and
+    /// <see cref="Id"/>, allowing stable placement and ordering within tree projections.
     /// </remarks>
-    internal interface IPrioritizedAffinity : IAffinityModel
+    internal interface IFullPathAffinity
     {
         /// <summary>
         /// Globally unique identifier.
@@ -673,7 +676,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Typically, this refers to the primary key of the model.
         /// </remarks>
-        string Id { get; set; }
+        string Id { get; }
 
         /// <summary>
         /// Adjacency List Policy defines a hierarchal position.
@@ -683,14 +686,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Materialized Path Policy defines a hierarchal position.
         /// </summary>
-        public string ParentPath { get; set; }
+        public string ParentPath { get; }
 
         /// <summary>
         /// Linted concatenation of ParentPath and Id
         /// </summary>
         [Ephemeral]
         string FullPath { get; }
+    }
 
+    /// <summary>
+    /// Represents a prioritized node whose relational context ("affinity") is 
+    /// implicitly restored when materialized from a query.
+    /// </summary>
+    /// <remarks>
+    /// EXAMPLE:
+    /// If the raw recordset of a query returns ONE child item at depth = 2, then the
+    /// net query returns THREE. The UI now has greater opportunity to display context.
+    /// </remarks>
+    internal interface IPrioritizedAffinity : IFullPathAffinity, IAffinityModel
+    {
         [Ephemeral]
         bool IsRoot { get; }
 
