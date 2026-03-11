@@ -178,7 +178,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // UPGRADE 260301
                 base.LoadCanon(items);
                 // --------------
-                internalLoadONPfromModel();
+
+                switch (ProjectionOption)
+                {
+                    case NetProjectionOption.ObservableOnly:
+                        internalLoadONPfromModel();
+                        break;
+                    case NetProjectionOption.AllowDirectChanges:
+                        break;
+                    default:
+                        this.ThrowHard<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                        break;
+                }
             }
         }
 
