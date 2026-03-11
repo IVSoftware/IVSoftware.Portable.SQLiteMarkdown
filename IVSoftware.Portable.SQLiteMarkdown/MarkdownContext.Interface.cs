@@ -835,24 +835,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         sealed class LoadCanonContext : IDisposable
         {
-            TokenDisposer? _flexDispose = null;
-            public LoadCanonContext(IEnumerable? recordset, ReplaceItemsEventingTriage triage, ReplaceItemsEventingOption options)
+            TokenDisposer _flexDispose;
+            public LoadCanonContext(MarkdownContext mdc, IEnumerable? recordset, ReplaceItemsEventingTriage triage)
             {
+                List<IDisposable> disposables = new([mdc.DHostBusy.GetToken()]);
                 Recordset = recordset ?? Array.Empty<object>();
                 Triage = triage;
 
-                switch (options)
+                switch (mdc.ReplaceItemsEventingOptions)
                 {
                     case ReplaceItemsEventingOption.StructuralReplaceEvent:
                         break;
                     case ReplaceItemsEventingOption.ResetOnAnyChange:
                     case ReplaceItemsEventingOption.All:
-
+                        switch (triage)
+                        {
+                            case ReplaceItemsEventingTriage.AlwaysEmpty:
+                                break;
+                            case ReplaceItemsEventingTriage.EmptyBefore:
+                            case ReplaceItemsEventingTriage.EmptyAfter:
+                            case ReplaceItemsEventingTriage.NeverEmpty:
+                                disposables.Add(mdc.BeginResetEpoch());
+                                break;
+                            default:
+                                this.ThrowHard<NotSupportedException>($"The {triage.ToFullKey()} case is not supported.");
+                                break;
+                        }
                         break;
                     default:
-                        this.ThrowHard<NotSupportedException>($"The {options.ToFullKey()} case is not supported.");
+                        this.ThrowHard<NotSupportedException>($"The {mdc.ReplaceItemsEventingOptions.ToFullKey()} case is not supported.");
                         break;
                 }
+                _flexDispose = new TokenDisposer(disposables);
             }
 
             /// <summary>
@@ -880,9 +894,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public virtual void LoadCanon(IEnumerable? recordset)
         {
             using (var context = new LoadCanonContext(
-                    recordset,
-                    Model.GetReplacementTriage(recordset),
-                    ReplaceItemsEventingOptions))
+                this,
+                recordset,
+                Model.GetReplacementTriage(recordset)))
             {
                 RunFSM<LoadIsFilteringEpochFSM>(context);
             }
