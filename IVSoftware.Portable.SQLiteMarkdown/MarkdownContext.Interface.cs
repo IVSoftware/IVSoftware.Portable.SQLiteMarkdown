@@ -955,7 +955,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         case NotifyCollectionChangedAction.Reset:
                             if (sender is IList list && list.Count == 0)
                             {
-                                if(Model.HasElements)
+                                // #{A665C02F-B1DE-45AE-8DAD-67775114E725}
+                                if (Model.HasElements)
                                 {
                                     Model.RemoveAll();
                                 }

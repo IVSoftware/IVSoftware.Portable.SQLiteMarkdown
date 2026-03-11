@@ -198,6 +198,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 { }
                 expected = @" 
 [IME Len: 0, IsFiltering: True], [Net: 2, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]";
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting StateReport FSOL to match HasCounts."
+                );
 
                 nResult = mdc.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
 
@@ -215,6 +220,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 Assert.AreEqual(0, nResult);
 
                 // 260310.B - StateReport came online later. Let's see if it agrees.
+                // #{A665C02F-B1DE-45AE-8DAD-67775114E725}
                 actual = mdc.StateReport();
                 actual.ToClipboardExpected();
                 { }

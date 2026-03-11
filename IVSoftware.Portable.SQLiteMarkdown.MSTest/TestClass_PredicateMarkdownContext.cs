@@ -319,9 +319,22 @@ public class TestClass_PredicateMarkdownContext
             "Expecting modeled matches."
         );
 
-        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 10).Date, "Don't forget disabled");
-        return;
-        Assert.AreEqual(3, opc.Count);
+        Assert.AreEqual(ProjectionTopology.Composition, pmdc.ProjectionTopology, "Because oc is INCC.");
+        Assert.AreEqual(NetProjectionOption.AllowDirectChanges, pmdc.ProjectionOptions);
+
+        actual = pmdc.StateReport();
+        actual.ToClipboardExpected();
+        { } // <- FIRST TIME ONLY: Adjust the message.
+        actual.ToClipboardAssert("Expecting ??");
         { }
+        expected = @" 
+[IME Len: 5, IsFiltering: True], [Net: 3, CC: 37, PMC: 3], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting ??"
+        );
+
     }
 }
