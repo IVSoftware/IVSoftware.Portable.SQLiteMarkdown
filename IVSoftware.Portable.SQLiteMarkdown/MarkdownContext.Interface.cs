@@ -650,7 +650,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             void localAddItemToModel(object? item)
             {
-                if (ContractType.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
+                if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
                 {
 
                 }
