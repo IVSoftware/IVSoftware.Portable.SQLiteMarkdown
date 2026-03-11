@@ -439,6 +439,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected Enum ExecState(Enum state, object? context = null)
         {
+            IEnumerable<object>?
+                projection = context as IEnumerable<object>;
+            bool
+                isEmptyProjection = projection?.Any() != true;
+#if DEBUG
+            switch (state)
+            {
+                case NativeClearFSM:
+                    break;
+                case LoadIsFilteringEpochFSM:
+                    break;
+            }
+#endif
             switch ((StdFSMState)state)
             {
                 case StdFSMState.DetectFastTrack:
@@ -830,7 +843,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
         /// </remarks>
         public virtual async Task LoadCanonAsync(IEnumerable? recordset)
-            => await RunFSMAsync<InitIsFilteringEpochFSM>(recordset);
+            => await RunFSMAsync<LoadIsFilteringEpochFSM>(recordset);
 
         /// <summary>
         /// Established a new canonical model for subsequent operations.
@@ -843,7 +856,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             recordset ??= Array.Empty<object>();
             using (DHostBusy.GetToken())
             {
-                RunFSM<InitIsFilteringEpochFSM>(recordset);
+                RunFSM<LoadIsFilteringEpochFSM>(recordset);
             }
         }
 

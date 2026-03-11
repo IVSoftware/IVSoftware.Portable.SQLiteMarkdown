@@ -383,7 +383,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Executes on rising edge of IsFiltering.
     /// </summary>
-    internal enum InitIsFilteringEpochFSM
+    internal enum LoadIsFilteringEpochFSM
     {
         DetectFastTrack = StdFSMState.DetectFastTrack,
 
