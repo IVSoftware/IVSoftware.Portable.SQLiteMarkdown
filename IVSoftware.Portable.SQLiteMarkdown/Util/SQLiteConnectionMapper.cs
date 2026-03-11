@@ -72,7 +72,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         {
             pkName = string.Empty;
             pkPropertyName = string.Empty;
-            if (type is Type)
+            if (type.Name == nameof(Type))
             {
                 type.ThrowHard<ArgumentException>(
     $"The mapper expects a model type, but '{nameof(Type)}' itself was supplied. " +

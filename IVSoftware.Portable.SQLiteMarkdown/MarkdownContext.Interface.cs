@@ -913,7 +913,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         case NotifyCollectionChangedAction.Add:
                             if (e.NewItems?.Count is 1)
                             {
-                                RunFSM<TrackUserAddItem>(null);
+                                RunFSM<TrackUserAddItem>(e.NewItems[0]);
                             }
                             else
                             {
