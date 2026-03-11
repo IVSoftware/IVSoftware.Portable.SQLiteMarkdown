@@ -846,11 +846,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     if(context.Structural is NotifyCollectionChangedEventArgs eStructural)
                     {
-                        OnObservableProjectionCollectionChanged(ObservableNetProjection, eStructural);
+                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 11).Date, "Don't forget disabled");
                     }
                     if (context.Reset is NotifyCollectionChangedEventArgs eReset)
-                    { 
-                        OnObservableProjectionCollectionChanged(ObservableNetProjection, eReset);
+                    {
+                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 11).Date, "Don't forget disabled");
                     }
                 }
                 else
