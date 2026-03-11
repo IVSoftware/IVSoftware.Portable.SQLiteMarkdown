@@ -359,7 +359,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// <remarks>
         /// Determines the <see cref="ReplaceItemsEventingTriage"/> describing the transition
         /// from the existing canonical state represented by <paramref name="model"/> to the
-        /// incoming sequence <paramref name="canon"/>.
+        /// incoming sequence <paramref name="newItems"/>.
         ///
         /// The canonical state is considered empty when the model contains no child elements.
         /// The incoming sequence is considered empty when it is null or contains no items.
@@ -367,15 +367,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// When evaluating non-<see cref="ICollection"/> sequences, only a minimal probe is
         /// performed to determine emptiness.
         /// </remarks>
-        public static ReplaceItemsEventingTriage GetReplacementTriage(
-            this XElement model,
-            IEnumerable? canon)
+        static ReplaceItemsEventingTriage GetReplacementTriage(
+            IList oldItems,
+            IList newItems)
         {
-            bool oldEmpty = !model.HasElements;
-            bool newEmpty =
-                canon is ICollection c
-                ? c.Count == 0
-                : canon?.Cast<object>()?.Any() != true;
+            bool oldEmpty = oldItems.Count == 0;
+            bool newEmpty = newItems.Count == 0;
 
             return
                 oldEmpty && newEmpty
@@ -389,7 +386,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         public static ReplaceItemsEventingContext GetReplacementTriageEvents(
             this XElement model,
             IEnumerable? canon,
-                ReplaceItemsEventingOption options)
+            ReplaceItemsEventingOption options)
         => new ReplaceItemsEventingContext(model, canon, options);
 
         public class ReplaceItemsEventingContext
@@ -411,7 +408,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                         oldItems.Add(item);
                     }
                 }
-                var triage = model.GetReplacementTriage(canon);
+                var triage = GetReplacementTriage(oldItems, newItems);
                 switch (triage)
                 {
                     case ReplaceItemsEventingTriage.AlwaysEmpty:
@@ -466,7 +463,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             public NotifyCollectionChangedEventArgs? Reset
             {
                 get => _reset;
-                set
+                private set
                 {
                     if (Options.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
                     {
