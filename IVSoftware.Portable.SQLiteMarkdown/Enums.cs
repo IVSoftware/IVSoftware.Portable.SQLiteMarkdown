@@ -560,6 +560,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// MentalModel: "Something changed; refresh everything."
         /// </remarks>
         ResetOnAnyChange = 0x2,
+
+        /// <summary>
+        /// Emit both the structural mutation event and a Reset notification.
+        /// </summary>
+        /// <remarks>
+        /// The structural INCC event (Add, Remove, or Replace) is raised first
+        /// according to <see cref="ReplaceItemsEventingTriage"/>, followed by a
+        /// Reset event.
+        ///
+        /// This mode preserves structural information for observers that track
+        /// incremental mutations while also forcing views that rely on Reset
+        /// semantics to refresh.
+        ///
+        /// MentalModel: "Tell observers exactly what changed, then force a refresh."
+        /// </remarks>
+        All = ResetOnAnyChange | StructuralReplaceEvent,
     }
 
     [NotFlags]
