@@ -389,6 +389,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             ReplaceItemsEventingOption options)
         => new ReplaceItemsEventingContext(model, canon, options);
 
+        /// <summary>
+        /// Produces collection change events describing the replacement of the canonical item set.
+        /// </summary>
         public class ReplaceItemsEventingContext
         {
             public ReplaceItemsEventingContext(

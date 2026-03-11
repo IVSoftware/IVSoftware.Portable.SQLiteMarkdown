@@ -22,6 +22,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using static IVSoftware.Portable.SQLiteMarkdown.Internal.Extensions;
 using static SQLite.SQLite3;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
@@ -836,11 +837,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
-            using (Model.SetSelfRemovingXBoundAttribute(
+            using (var eventHost = Model.SetSelfRemovingXBoundAttribute(
                 StdMarkdownAttribute.triage, 
                 Model.GetReplacementTriageEvents(recordset, ReplaceItemsEventingOptions)))
             {
                 RunFSM<LoadIsFilteringEpochFSM>(recordset);
+                if(eventHost.Tag is ReplaceItemsEventingContext context)
+                {
+                    if(context.Structural is EventArgs eStructural)
+                    {
+                    }
+                    if (context.Reset is EventArgs eReset)
+                    { 
+                    }
+                }
+                else
+                {
+                    this.ThrowFramework<NullReferenceException>($"Expecting {nameof(ReplaceItemsEventingContext)}");
+                }
             }
         }
 

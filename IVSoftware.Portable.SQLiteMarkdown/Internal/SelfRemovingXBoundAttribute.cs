@@ -37,13 +37,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
     internal static partial class Extensions
     {
-        public static IDisposable SetSelfRemovingXBoundAttribute(this XElement @this, Enum stdEnum, Enum tag)
+        public static SelfRemovingXBoundAttribute SetSelfRemovingXBoundAttribute(this XElement @this, Enum stdEnum, Enum tag)
         {
             var xba = new SelfRemovingXBoundAttribute(stdEnum, tag);
             @this.Add(xba);
             return xba;
         }
-        public static IDisposable SetSelfRemovingXBoundAttribute(this XElement @this, Enum stdEnum, object tag)
+        public static SelfRemovingXBoundAttribute SetSelfRemovingXBoundAttribute(this XElement @this, Enum stdEnum, object tag)
         {
             var xba = new SelfRemovingXBoundAttribute(stdEnum, tag);
             @this.Add(xba);
