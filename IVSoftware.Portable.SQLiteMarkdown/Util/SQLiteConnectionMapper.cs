@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
@@ -99,6 +100,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         public static TableMapping.Column? GetPK(this Type type)
             => type.GetSQLiteMapping().PK;
 
+        public static string GetFullPath(this IFullPathAffinity @this) 
+            => @this.FullPath;
+        public static string GetFullPath(this object? @this) 
+            => ReadOnlyFullPathAffinity.Create(@this)?.FullPath ?? string.Empty;
         static SQLiteConnection Mapper
         {
             get

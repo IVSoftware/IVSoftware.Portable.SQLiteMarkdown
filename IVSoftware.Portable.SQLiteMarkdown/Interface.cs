@@ -668,7 +668,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// is ephemeral and represents the linted concatenation of <see cref="ParentPath"/> and
     /// <see cref="Id"/>, allowing stable placement and ordering within tree projections.
     /// </remarks>
-    internal interface IFullPathAffinity
+    public interface IFullPathAffinity
     {
         /// <summary>
         /// Globally unique identifier.
