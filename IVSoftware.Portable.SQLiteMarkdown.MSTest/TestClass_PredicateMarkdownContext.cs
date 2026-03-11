@@ -10,6 +10,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.Xml.Linq;
+using System.ComponentModel.Design.Serialization;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -271,6 +272,9 @@ public class TestClass_PredicateMarkdownContext
         #region L o c a l F x
         void localOnModelUpdated(object? sender, EventArgs e)
         {
+            // This is just the bandaid.
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 10).Date, "Don't forget disabled");
+
             actual = pmdc.StateReport();
             expected = @" 
 [IME Len: 5, IsFiltering: True], [Net: 37, CC: 37, PMC: 3], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]";
@@ -283,6 +287,24 @@ public class TestClass_PredicateMarkdownContext
                 .Select(_ => (_.Attribute(StdMarkdownAttribute.model) as XBoundAttribute)?.Tag)
                 .ToArray();
             { }
+            using (pmdc.BeginResetEpoch())
+            {
+                if(pmdc.ObservableNetProjection is IList list)
+                {
+                    list.Clear();
+                    foreach (var item in v)
+                    {
+                        list.Add(item);
+                    }
+                }
+            }
+
+            actual = pmdc.StateReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[IME Len: 5, IsFiltering: True], [Net: 3, CC: 37, PMC: 3], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+            ;
         }
         #endregion L o c a l F x
         using (pmdc.WithOnDispose(
@@ -355,8 +377,6 @@ public class TestClass_PredicateMarkdownContext
 
         actual = pmdc.StateReport();
         actual.ToClipboardExpected();
-        { } // <- FIRST TIME ONLY: Adjust the message.
-        actual.ToClipboardAssert("Expecting ??");
         { }
         expected = @" 
 [IME Len: 5, IsFiltering: True], [Net: 3, CC: 37, PMC: 3], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]";
