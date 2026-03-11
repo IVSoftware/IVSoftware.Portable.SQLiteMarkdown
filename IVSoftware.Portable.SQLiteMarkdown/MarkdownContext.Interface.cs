@@ -534,13 +534,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return ReservedFSMState.Next;
             }
 
-            Enum localInitModelForEpoch(IEnumerable canonical)
+            void localInitModelForEpoch(IEnumerable canonical)
             {
                 switch (state)
                 {
                     case NativeClearFSM:
                         Model.RemoveNodes(StdMarkdownAttribute.count, StdMarkdownAttribute.matches);
-                        break;
+                        return;
                     default:
                         break;
                 }
@@ -623,7 +623,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     Model.SetAttributeValue(StdMarkdownAttribute.matches, countDistinct);
                 }
                 Model.SetAttributeValue(StdMarkdownAttribute.ismatch, null);
-                return ReservedFSMState.Next;
             }
 
             string localGetFullPath(PropertyInfo pk, object unk)
@@ -642,6 +641,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             void localInitStatesForEpoch()
             {
+                switch (state)
+                {
+                    case NativeClearFSM:
+                        SearchEntryState = SearchEntryState.Cleared;
+                        FilteringState = FilteringState.Ineligible;
+                        return;
+                    default:
+                        break;
+                }
                 switch (CanonicalCount)
                 {
                     case 0:

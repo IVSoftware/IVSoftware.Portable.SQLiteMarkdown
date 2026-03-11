@@ -1444,6 +1444,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     // 260311.D RETROFIT - StateReport came online later. Let's see if it agrees.
                     actual = itemsSource.StateReport();
                     actual.ToClipboardExpected();
+
                     { }
                     expected = @" 
 [IME Len: 0, IsFiltering: True], [Net: 12, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Armed]"
