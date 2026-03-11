@@ -26,7 +26,6 @@ using static SQLite.SQLite3;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-
     partial class MarkdownContext : IMarkdownContext
     {
         /// <summary>
@@ -262,7 +261,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// a static property of the context, constraining mutation rights to the precise
         /// interval in which the FSM is running.
         /// </remarks>
-        [Probationary("This id a draft implementation that hasn't been thoroughly tested.")]
+        [Probationary("This is a draft implementation that hasn't been thoroughly tested.")]
         protected async Task<Enum> RunFSMAsync<TFsm>(object? context = null) where TFsm : struct, Enum
         {
             Debug.Fail($@"ADVISORY - [Probationary].");

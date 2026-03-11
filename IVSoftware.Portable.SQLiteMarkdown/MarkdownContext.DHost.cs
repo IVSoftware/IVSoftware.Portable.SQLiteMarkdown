@@ -56,6 +56,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected DHostAuthorityEpochProvider DHostAuthorityEpoch { get; } = new();
 
+        [DebuggerDisplay("Count={ReferenceCount} Authority={Authority}")]
         protected class DHostAuthorityEpochProvider : DisposableHost
         {
             public IDisposable GetToken(CollectionChangeAuthority authority)

@@ -1356,6 +1356,19 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     sql = "animal".ParseSqlMarkdown<SelectableQFModelTOQO>();
                     results = cnx.Query<SelectableQFModelTOQO>(sql);
 
+                    // NEW 260311
+                    actual = itemsSource.OptionsReport();
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+ProjectionTopology.Inheritance, NetProjectionOption.ObservableOnly, ReplaceItemsEventingOption.StructuralReplaceEvent";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting option settings to match."
+                    );
+
                     itemsSource.ReplaceItems(results);
 
                     // 260311.B RETROFIT - StateReport came online later. Let's see if it agrees.
@@ -1370,20 +1383,6 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                         actual.NormalizeResult(),
                         "Expecting StateReport shows INITIAL QUERY RECORDSET N=12."
                     );
-
-
-                    actual = itemsSource.OptionsReport();
-                    actual.ToClipboardExpected();
-                    { }
-                    expected = @" 
-ProjectionTopology.Inheritance, NetProjectionOption.ObservableOnly, ReplaceItemsEventingOption.StructuralReplaceEvent";
-
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting option settings to match."
-                    );
-
 
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
