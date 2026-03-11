@@ -80,7 +80,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
 #endif
             base.ObservableNetProjection = this;
-            base.ProjectionOptions = NetProjectionOption.ObservableOnly;
+            base.ProjectionOption = NetProjectionOption.ObservableOnly;
 
 
             _canonicalRecordset.CollectionChanged += (sender, e) =>

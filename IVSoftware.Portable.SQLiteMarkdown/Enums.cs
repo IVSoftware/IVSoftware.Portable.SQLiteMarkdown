@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -507,7 +508,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Composition,
     }
 
-    [Flags, Probationary]
+    [NotFlags]
     internal enum NetProjectionOption
     {
         /// <summary>
@@ -516,11 +517,50 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// MentalModel: "The explicit assignment of ObservableNetProjection *is" the OPT-IN."
         /// </remarks>
-        AllowDirectChanges = 0x1,
+        AllowDirectChanges,
 
         /// <summary>
         /// Track INCC events but don't attempt to cast IList or make changes on the handle.
         /// </summary>
-        ObservableOnly     = 0x2,
+        ObservableOnly,
+    }
+
+    [Flags]
+    internal enum ReplaceItemsOption
+    {
+        /// <summary>
+        /// Replace items using standard INCC Remove and Add notifications.
+        /// </summary>
+        /// <remarks>
+        /// Replacement is expressed through normal collection change events rather
+        /// than a Reset. Each event may represent multiple items.
+        ///
+        /// Depending on the composition of the existing and replacement sets,
+        /// the operation may produce:
+        /// - a single Add event (when the original collection was empty), or
+        /// - a Remove event followed by an Add event.
+        ///
+        /// MentalModel: "Observers reconcile the replacement through batched Remove/Add notifications."
+        ///
+        /// NOTES:
+        /// Regardless of option flags:
+        /// - A replacement that leaves the collection empty redirects to Reset semantics.
+        /// - A replacement that begins with an empty collection redirects to Add semantics. 
+        /// </remarks>
+        DiscreteRemoveAndAddEvents = 0x1,
+
+        /// <summary>
+        /// Replace items by emitting a single Reset notification.
+        /// </summary>
+        /// <remarks>
+        /// Observers are instructed to re-enumerate the collection rather than tracking structural changes.
+        ///
+        /// MentalModel: "The collection changed; refresh everything."
+        ///
+        /// NOTE:
+        /// Regardless of option flags:
+        /// - A replacement that leaves the collection empty redirects to Reset semantics.
+        /// </remarks>
+        ConsolidatedResetEvent = 0x2,
     }
 }

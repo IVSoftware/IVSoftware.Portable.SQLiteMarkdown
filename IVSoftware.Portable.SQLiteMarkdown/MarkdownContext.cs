@@ -1964,32 +1964,36 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (ObservableNetProjection is IList projection)
                 {
-                    if (ProjectionOptions.HasFlag(NetProjectionOption.AllowDirectChanges))
+                    switch (ProjectionOption)
                     {
-                        if (projection.Count == 0)
-                        {
-                            if (Model.HasElements)
+                        case NetProjectionOption.AllowDirectChanges:
+                            if (projection.Count == 0)
                             {
-                                // Clear model with suppressed authority.
-                                RunFSM<ClearModelFSM>();
+                                if (Model.HasElements)
+                                {
+                                    // Clear model with suppressed authority.
+                                    RunFSM<ClearModelFSM>();
+                                }
                             }
-                        }
-                        else
-                        {
-                            // Clear a non-empty projection on its own authority.
-                            RunFSM<NativeClearFSM>();
-                        }
-                    }
-                    else
-                    {
-                        #region A D V I S O R I E S
-                        var msg = $"In {nameof(OnFilteringStateChanged)}(): {ProjectionOptions.ToFullKey()}";
-                        this.Advisory(msg);
-                        Debug.WriteLine($"260308 ADVISORY - {msg}");
-                        #endregion A D V I S O R I E S
+                            else
+                            {
+                                // Clear a non-empty projection on its own authority.
+                                RunFSM<NativeClearFSM>();
+                            }
+                            break;
+                        case NetProjectionOption.ObservableOnly:
+                            #region A D V I S O R I E S
+                            var msg = $"In {nameof(OnFilteringStateChanged)}(): {ProjectionOption.ToFullKey()}";
+                            this.Advisory(msg);
+                            Debug.WriteLine($"260308 ADVISORY - {msg}");
+                            #endregion A D V I S O R I E S
 
-                        // Subclass has opted out of direct changes.
-                        localExecClearWithReset();
+                            // Subclass has opted out of direct changes.
+                            localExecClearWithReset();
+                            break;
+                        default:
+                            this.ThrowHard<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                            break;
                     }
                 }
                 else
