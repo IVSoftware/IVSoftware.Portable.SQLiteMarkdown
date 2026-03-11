@@ -830,7 +830,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
         /// </remarks>
         public virtual async Task LoadCanonAsync(IEnumerable? recordset)
-            => await RunFSMAsync<InitIsFIlteringEpochFSM>(recordset);
+            => await RunFSMAsync<InitIsFilteringEpochFSM>(recordset);
 
         /// <summary>
         /// Established a new canonical model for subsequent operations.
@@ -843,7 +843,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             recordset ??= Array.Empty<object>();
             using (DHostBusy.GetToken())
             {
-                RunFSM<InitIsFIlteringEpochFSM>(recordset);
+                RunFSM<InitIsFilteringEpochFSM>(recordset);
             }
         }
 
