@@ -299,24 +299,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         private void internalLoadONPfromModel()
         {
-#if DEBUG
-            var preview = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
-            var model = Model;
-            { }
-            if (base.ObservableNetProjection is null)
+            var canonicalItems =
+                Model
+                .Descendants().Select(_ => _.To<T>())
+                .OfType<T>()
+                .ToArray();
+            using(base.BeginCollectionChangeAuthority(authority: CollectionChangeAuthority.None))
             {
+                _canonicalRecordset.Clear();
+                foreach (var item in canonicalItems)
+                {
+                    _canonicalRecordset.Add(item);
+                }
             }
-            else if (ReferenceEquals(this, base.ObservableNetProjection))
-            {
-            }
-            else
-            {
-                Debug.Fail($@"ADVISORY - This is nonsensical and you shouldn't be here.");
-            }
-            int CCB4 = CanonicalCount;
-#endif
 
-
+#if false
             // RESET REQUIRED main INCC for NetProjection.
             // Unit Tests expect this, but it can't be left outside of the authority OTHERWISE MODEL GETS CLEARED.
             // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
@@ -329,12 +326,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // Building from the model in V2 is new.
 
                 _canonicalRecordset.Clear(); // <- HERE!
-#if DEBUG
-                if (CCB4 != CanonicalCount)
-                {
-                    Debug.Fail("ACTION NEEDED - The CC must survive this.");
-                }
-#endif
                 if (CanonicalCount != 0)
                 {
                     foreach (var xel in Model.Descendants())
@@ -353,26 +344,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         )
                     );
                 }
-            }
-#if false
-            // This causes a Reset on the main INCC
-            _canonicalRecordset.Clear();
-            if (CanonicalCount != 0)
-            {
-                foreach (var xel in Model.Descendants())
-                {
-                    if (xel.To<T>() is { } item)
-                    {
-                        _canonicalRecordset.Add(item);
-                    }
-                }
-                // Raise single event after completing the loop.
-                OnCollectionChanged(
-                    new NotifyQueryFilterCollectionChangedEventArgs(
-                        NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
-                        _canonicalRecordset.ToList() // snapshot as IList
-                    )
-                );
             }
 #endif
         }

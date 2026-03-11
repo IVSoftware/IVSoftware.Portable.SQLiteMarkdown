@@ -897,6 +897,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 recordset,
                 Model.GetReplacementTriage(recordset)))
             {
+                Model.SetSelfRemovingXBoundAttribute(StdMarkdownAttribute.triage, Model.GetReplacementTriage(recordset));
                 RunFSM<LoadIsFilteringEpochFSM>(context);
             }
         }

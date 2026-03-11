@@ -288,6 +288,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// XBoundObject that holds a filter predicates when present.
         /// </summary>
         predicates,
+        triage,
         #endregion P R E D I C A T E S
     }
 

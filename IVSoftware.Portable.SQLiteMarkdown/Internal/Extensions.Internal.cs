@@ -29,7 +29,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
     /// Until that time they remain **internal by design** to prevent the
     /// provisional API surface from leaking into consumer code.
     /// </remarks>
-    internal static class Extensions
+    internal static partial class Extensions
     {
         #region P R E V I E W
         /// <summary>
