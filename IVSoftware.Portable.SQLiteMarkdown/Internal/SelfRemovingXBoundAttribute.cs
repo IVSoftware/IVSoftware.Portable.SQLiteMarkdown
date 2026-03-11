@@ -43,5 +43,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             @this.Add(xba);
             return xba;
         }
+        public static IDisposable SetSelfRemovingXBoundAttribute(this XElement @this, Enum stdEnum, object tag)
+        {
+            var xba = new SelfRemovingXBoundAttribute(stdEnum, tag);
+            @this.Add(xba);
+            return xba;
+        }
     }
 }

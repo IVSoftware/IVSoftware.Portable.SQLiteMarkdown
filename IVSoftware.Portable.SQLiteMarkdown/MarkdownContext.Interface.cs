@@ -836,7 +836,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
-            using (Model.SetSelfRemovingXBoundAttribute(StdMarkdownAttribute.triage, Model.GetReplacementTriage(recordset)))
+            using (Model.SetSelfRemovingXBoundAttribute(StdMarkdownAttribute.triage, Model.GetReplacementTriageEvents(recordset)))
             {
                 RunFSM<LoadIsFilteringEpochFSM>(recordset);
             }
