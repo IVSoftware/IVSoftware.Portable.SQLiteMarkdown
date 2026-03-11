@@ -844,11 +844,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 RunFSM<LoadIsFilteringEpochFSM>(recordset);
                 if(eventHost.Tag is ReplaceItemsEventingContext context)
                 {
-                    if(context.Structural is EventArgs eStructural)
+                    if(context.Structural is NotifyCollectionChangedEventArgs eStructural)
                     {
+                        OnObservableProjectionCollectionChanged(ObservableNetProjection, eStructural);
                     }
-                    if (context.Reset is EventArgs eReset)
+                    if (context.Reset is NotifyCollectionChangedEventArgs eReset)
                     { 
+                        OnObservableProjectionCollectionChanged(ObservableNetProjection, eReset);
                     }
                 }
                 else
