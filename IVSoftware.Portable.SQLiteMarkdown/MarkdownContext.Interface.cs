@@ -437,12 +437,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 .Select(field => (TFsm)field.GetValue(null)!);
         }
 
-        protected Enum ExecState(Enum state, object? context = null)
+        protected Enum ExecState(Enum state, object? contextZ = null)
         {
-            IEnumerable<object>?
-                projection = context as IEnumerable<object>;
+            LoadCanonContext? lcc = contextZ as LoadCanonContext;
+            IEnumerable<object>? canon =
+                lcc is null
+                ? contextZ as IEnumerable<object>
+                : lcc.Recordset as IEnumerable<object>;
             bool
-                isEmptyProjection = projection?.Any() != true;
+                isEmptyProjection = canon?.Any() != true;
 #if DEBUG
             switch (state)
             {
@@ -464,19 +467,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         break;
                     }
                 case StdFSMState.ResetOrCanonizeFQBDForEpoch:
-                    localResetOrCanonizeFQDBForEpoch(context);
+                    localResetOrCanonizeFQDBForEpoch();
                     break;
                 case StdFSMState.ResetOrCanonizeModelForEpoch:
-                    localResetOrCanonizeModelForEpoch(context);
+                    localResetOrCanonizeModelForEpoch();
                     break;
                 case StdFSMState.UpdateStatesForEpoch:
                     localInitStatesForEpoch();
                     break;
                 case StdFSMState.AddItemToModel:
-                    localAddItemToModel(context);
+                    localAddItemToModel();
                     break;
                 case StdFSMState.RemoveItemFromModel:
-                    localRemoveItemFromModel(context);
+                    localRemoveItemFromModel();
                     break;
                 default:
                     Debug.Fail($@"ADVISORY - Unrecognized action.");
@@ -513,7 +516,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return ReservedFSMState.Next;
             }
 
-            Enum localResetOrCanonizeFQDBForEpoch(object? context)
+            Enum localResetOrCanonizeFQDBForEpoch()
             {
                 // Check to see whether we should have a FQDB in the first place.
                 if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
@@ -544,9 +547,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return ReservedFSMState.Next;
             }
 
-            void localResetOrCanonizeModelForEpoch(object? context)
+            void localResetOrCanonizeModelForEpoch()
             {
-                if (context is not IEnumerable canonical)
+                if (canon is not IEnumerable)
                 {
                     Model.RemoveNodes(StdMarkdownAttribute.autocount, StdMarkdownAttribute.count, StdMarkdownAttribute.matches);
                     return;
@@ -595,7 +598,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     {
                         throw new NotSupportedException($"Type '{ContractType.Name}' has no PK and such types are not (yet) supported.");
                     }
-                    foreach (var item in canonical)
+                    foreach (var item in canon)
                     {
                         // ToDo: Test with item.GetFullPath() extension.
                         var placerResult = Model.Place(path: localGetFullPath(pk, item), out var xel);
@@ -686,8 +689,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
 
-            void localAddItemToModel(object? item)
+            void localAddItemToModel()
             {
+                object? item = contextZ;
                 if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
                 {
                     int
@@ -722,8 +726,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
 
-            void localRemoveItemFromModel(object? item)
+            void localRemoveItemFromModel()
             {
+                object? item = contextZ;
                 if (ContractType.GetPK()?.PropertyInfo is { } pi)
                 {
 
@@ -828,6 +833,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public virtual async Task LoadCanonAsync(IEnumerable? recordset)
             => await RunFSMAsync<LoadIsFilteringEpochFSM>(recordset);
 
+        sealed class LoadCanonContext
+        {
+            public LoadCanonContext(IEnumerable? recordset, ReplaceItemsEventingTriage triage)
+            {
+                Recordset = recordset ?? Array.Empty<object>();
+                Triage = triage;
+            }
+
+            /// <summary>
+            /// Incoming canonical recordset used to rebuild the model.
+            /// </summary>
+            public IEnumerable Recordset { get; }
+
+            /// <summary>
+            /// Structural relationship between the existing model and the incoming recordset.
+            /// </summary>
+            public ReplaceItemsEventingTriage Triage { get; }
+        }
+
         /// <summary>
         /// Established a new canonical model for subsequent operations.
         /// </summary>
@@ -836,32 +860,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
-            #region N E W    I N    P R O G R E S S
-            var triage = Model.GetReplacementTriage(recordset);
-            switch (triage)
-            {
-                case ReplaceItemsEventingTriage.AlwaysEmpty:
-                    break;
-                case ReplaceItemsEventingTriage.EmptyBefore:
-                    break;
-                case ReplaceItemsEventingTriage.EmptyAfter:
-                    break;
-                case ReplaceItemsEventingTriage.NeverEmpty:
-                    break;
-                default:
-                    this.ThrowHard<NotSupportedException>($"The {triage.ToFullKey()} case is not supported.");
-                    break;
-            }
-            #endregion N E W    I N    P R O G R E S S
-
-
             recordset ??= Array.Empty<object>();
             using (DHostBusy.GetToken())
             {
-                RunFSM<LoadIsFilteringEpochFSM>(recordset);
+                RunFSM<LoadIsFilteringEpochFSM>(
+                    context: new LoadCanonContext(recordset, Model.GetReplacementTriage(recordset)));
             }
         }
-        IList _canonical = null;
 
         #region P R O J E C T I O N
         /// <summary>
