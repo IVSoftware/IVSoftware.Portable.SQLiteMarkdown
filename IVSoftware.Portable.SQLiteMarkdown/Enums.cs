@@ -362,7 +362,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Set SearchEntryState and FilteringState contextually.
         /// </summary>
-        InitStatesForEpoch,
+        UpdateStatesForEpoch,
 
         /// <summary>
         /// User interactive Add.
@@ -391,7 +391,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         ResetOrCanonizeModelForEpoch = StdFSMState.ResetOrCanonizeModelForEpoch,
 
-        InitStatesForEpoch = StdFSMState.InitStatesForEpoch,
+        UpdateStatesForEpoch = StdFSMState.UpdateStatesForEpoch,
     }
 
     /// <summary>
@@ -418,6 +418,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ResetOrCanonizeFQBDForEpoch = StdFSMState.ResetOrCanonizeFQBDForEpoch,
 
         ResetModelForEpoch = StdFSMState.ResetOrCanonizeModelForEpoch,
+
+        UpdateStatesForEpoch = StdFSMState.UpdateStatesForEpoch,
     }
 
 #if false
@@ -460,6 +462,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ResetOrCanonizeFQBDForEpoch = StdFSMState.ResetOrCanonizeFQBDForEpoch,
 
         ResetOrCanonizeModelForEpoch = StdFSMState.ResetOrCanonizeModelForEpoch,
+
+        UpdateStatesForEpoch = StdFSMState.UpdateStatesForEpoch,
     }
 
     public enum ProjectionTopology

@@ -1373,15 +1373,15 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
 
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
-                    { }
                     expected = @" 
-NetProjection.Add     NewItems=12 NotifyQueryFilterCollectionChangedEventArgs"
+NetProjection.Add     NewItems=12 NotifyQueryFilterCollectionChangedEventArgs
+NetProjection.Reset   NewItems= 0 NotifyCollectionChangedEventArgs           "
                     ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
-                        "Expecting ADD to an EMPTY RECORDSET causes NO CLEAR OR RESET."
+                        "Expecting REPLACE ITEMS semantics."
                     );
 
                     actual = string.Join(Environment.NewLine, itemsSource.Select(_ => _.ToString()));

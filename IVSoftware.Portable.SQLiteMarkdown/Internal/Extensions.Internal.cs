@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml.Linq;
@@ -342,6 +343,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         public static XElement RemoveNodes(this XElement @this, Enum reset, params Enum[] moreResets)
         {
             @this.RemoveNodes();
+            foreach(Enum @enum in new[] { reset }.Concat(moreResets))
+            {
+                @this.SetAttributeValue(@enum.ToString(), 0);
+            }
             return @this;
         }
         #endregion L E G I T

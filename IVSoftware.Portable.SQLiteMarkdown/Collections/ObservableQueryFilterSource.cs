@@ -526,25 +526,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         #endregion I L I S T
 
-        public event NotifyCollectionChangedEventHandler? CollectionChanged;
-
+        /// <summary>
+        /// Public-facing CollectionChanged event, regardless of its source.
+        /// </summary>
         protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            switch (DHostAuthorityEpoch.Authority)
+            if(DHostAuthorityEpoch.Authority != CollectionChangeAuthority.None)
             {
-                case 0:
-                case CollectionChangeAuthority.None:
-                case CollectionChangeAuthority.NetProjection:
-                    /* G T K - N O O P */
-                    break;
-                case CollectionChangeAuthority.MarkdownContext:
-                    CollectionChanged?.Invoke(this, e);
-                    break;
-                default:
-                    this.ThrowFramework<NotSupportedException>($"The {DHostAuthorityEpoch.Authority.ToFullKey()} case is not supported.");
-                    break;
+                CollectionChanged?.Invoke(this, e);
             }
         }
+
+        public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
         /// <summary>
         /// No client data connection is assumed, but if a persistent

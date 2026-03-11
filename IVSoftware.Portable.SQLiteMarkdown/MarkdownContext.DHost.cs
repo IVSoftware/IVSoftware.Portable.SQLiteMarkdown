@@ -151,9 +151,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         this.ThrowHard<NullReferenceException>(
                             "Reset actions cannot contain null.");
                     }
-                    actions.Add(action);
+                    else
+                    {
+                        actions.Add(action);
+                    }
                 }
-
                 _onResetActions = actions.ToArray();
             }
 

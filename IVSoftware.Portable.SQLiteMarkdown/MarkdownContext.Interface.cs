@@ -466,13 +466,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case StdFSMState.ResetOrCanonizeFQBDForEpoch:
                     localResetOrCanonizeFQDBForEpoch(context);
                     break;
-                case StdFSMState.ResetOrCanonizeModelForEpoch when context is IEnumerable canonical:
+                case StdFSMState.ResetOrCanonizeModelForEpoch:
                     localResetOrCanonizeModelForEpoch(context);
                     break;
-                case StdFSMState.ResetOrCanonizeModelForEpoch:
-                    localResetModelForEpoch();
-                    break;
-                case StdFSMState.InitStatesForEpoch:
+                case StdFSMState.UpdateStatesForEpoch:
                     localInitStatesForEpoch();
                     break;
                 case StdFSMState.AddItemToModel:
@@ -551,7 +548,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (context is not IEnumerable canonical)
                 {
-                    Model.RemoveNodes(StdMarkdownAttribute.count, StdMarkdownAttribute.matches);
+                    Model.RemoveNodes(StdMarkdownAttribute.autocount, StdMarkdownAttribute.count, StdMarkdownAttribute.matches);
                     return;
                 }
                 else
@@ -732,11 +729,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                 }
                 else this.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
-            }
-
-            void localResetModelForEpoch()
-            {
-                Model.RemoveNodes(StdMarkdownAttribute.count, nameof(StdMarkdownAttribute.autocount, nameof(StdMarkdownAttribute.matches);
             }
             #endregion L o c a l F x
         }
