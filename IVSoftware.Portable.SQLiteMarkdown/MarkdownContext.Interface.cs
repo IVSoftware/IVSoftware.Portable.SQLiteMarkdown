@@ -833,12 +833,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public virtual async Task LoadCanonAsync(IEnumerable? recordset)
             => await RunFSMAsync<LoadIsFilteringEpochFSM>(recordset);
 
-        sealed class LoadCanonContext
+        sealed class LoadCanonContext : IDisposable
         {
-            public LoadCanonContext(IEnumerable? recordset, ReplaceItemsEventingTriage triage)
+            TokenDisposer? _flexDispose = null;
+            public LoadCanonContext(IEnumerable? recordset, ReplaceItemsEventingTriage triage, ReplaceItemsEventingOption options)
             {
                 Recordset = recordset ?? Array.Empty<object>();
                 Triage = triage;
+
+                switch (options)
+                {
+                    case ReplaceItemsEventingOption.StructuralReplaceEvent:
+                        break;
+                    case ReplaceItemsEventingOption.ResetOnAnyChange:
+                    case ReplaceItemsEventingOption.All:
+
+                        break;
+                    default:
+                        this.ThrowHard<NotSupportedException>($"The {options.ToFullKey()} case is not supported.");
+                        break;
+                }
             }
 
             /// <summary>
@@ -850,6 +864,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             /// Structural relationship between the existing model and the incoming recordset.
             /// </summary>
             public ReplaceItemsEventingTriage Triage { get; }
+
+            public void Dispose()
+            {
+                _flexDispose?.Dispose();
+            }
         }
 
         /// <summary>
@@ -860,11 +879,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
-            recordset ??= Array.Empty<object>();
-            using (DHostBusy.GetToken())
+            using (var context = new LoadCanonContext(
+                    recordset,
+                    Model.GetReplacementTriage(recordset),
+                    ReplaceItemsEventingOptions))
             {
-                RunFSM<LoadIsFilteringEpochFSM>(
-                    context: new LoadCanonContext(recordset, Model.GetReplacementTriage(recordset)));
+                RunFSM<LoadIsFilteringEpochFSM>(context);
             }
         }
 
