@@ -767,9 +767,22 @@ InputText"
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
         }
 
-        [TestMethod, DoNotParallelize, Ignore]
+        /// <summary>
+        /// Verifies state initialization and transitions when operating in Filter-only mode.
+        /// </summary>
+        /// <remarks>
+        /// Confirms that configuring <see cref="QueryFilterConfig.Filter"/> before or after
+        /// context initialization results in the same effective FSM state:
+        /// <c>SearchEntryState.QueryCompleteNoResults</c> with <c>FilteringState.Armed</c>.
+        ///
+        /// Ensures that Filter-only configuration bypasses query semantics and
+        /// immediately prepares the filtering pipeline.
+        /// </remarks>
+        [TestMethod]
         public async Task Test_FilterOnlyFSMs()
         {
+            string actual, expected;
+
             var extQueryHandle = default(List<SelectableQFModel>).PopulateForDemo(2);
 
             MarkdownContext<SelectableQFModel> mdc;
@@ -782,20 +795,49 @@ InputText"
             void subtest_ConfigureThenLoad()
             {
                 mdc = new() { QueryFilterConfig = QueryFilterConfig.Filter };
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+                ;
 
-                Assert.AreEqual(QueryFilterConfig.Filter, mdc.QueryFilterConfig, "Expecting initial state.");
-                Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
-                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
-
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting FILTER ONLY."
+                );
             }
 
             void subtest_LoadThenConfigure()
             {
                 mdc = new();
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+                ;
 
-                Assert.AreEqual(QueryFilterConfig.QueryAndFilter, mdc.QueryFilterConfig, "Expecting initial state.");
-                Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
-                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting QUERY AND FILTER."
+                );
+
+                mdc.QueryFilterConfig = QueryFilterConfig.Filter;
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting FILTER ONLY."
+                );
             }
             #endregion S U B T E S T S
         }
