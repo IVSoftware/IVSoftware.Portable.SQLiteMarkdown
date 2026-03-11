@@ -24,13 +24,45 @@ using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {
+    /// <summary>
+    /// Provides utilities for resolving SQLite table mappings and structural metadata.
+    /// </summary>
+    /// <remarks>
+    /// Includes helpers that:
+    /// - Resolve the effective <see cref="TableMapping"/> for a type, honoring base-class
+    ///   <c>[Table]</c> declarations and optional contract-type overrides.
+    /// - Expose primary-key metadata for reflection-driven scenarios.
+    /// - Provide a universal <c>FullPath</c> accessor that works for both
+    ///   <see cref="IFullPathAffinity"/> instances and arbitrary objects via
+    ///   <see cref="ReadOnlyFullPathAffinity"/> structural adaptation.
+    /// </remarks>
     public static class SQLiteConnectionMapper
     {
+        /// <summary>
+        /// Resolves the effective SQLite <see cref="TableMapping"/> for the specified type.
+        /// </summary>
+        /// <remarks>
+        /// Traverses the inheritance chain to locate the first explicit <c>[Table]</c>
+        /// declaration. If none is found, the mapping inferred by SQLite is used.
+        /// An optional <paramref name="contractType"/> may override the proxy mapping
+        /// when the proxy participates in a contract-bound hierarchy.
+        /// </remarks>
         public static TableMapping GetSQLiteMapping(
             this Type type,
             CreateFlags createFlags = CreateFlags.None,
             Type? contractType = null)
             => type.GetSQLiteMapping(out _, out _, createFlags, contractType);
+
+        /// <summary>
+        /// Resolves the effective SQLite <see cref="TableMapping"/> for the specified type.
+        /// </summary>
+        /// <remarks>
+        /// Traverses the inheritance chain to locate the first explicit <c>[Table]</c>
+        /// declaration. If none is found, the mapping inferred by SQLite is used.
+        /// An optional <paramref name="contractType"/> may override the proxy mapping
+        /// when the proxy participates in a contract-bound hierarchy.
+        /// </remarks>
+        [Canonical]
         public static TableMapping GetSQLiteMapping(
             this Type type,
             out string? pkName,
@@ -97,13 +129,53 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
             return proxyMapping;
         }
 
+        /// <summary>
+        /// Returns the primary-key column mapping for the specified type.
+        /// </summary>
+        /// <remarks>
+        /// This is a convenience wrapper over <see cref="GetSQLiteMapping(Type)"/> used
+        /// by reflection-driven infrastructure that treats the SQLite primary key as
+        /// the canonical identifier for a model instance.
+        /// </remarks>
         public static TableMapping.Column? GetPK(this Type type)
             => type.GetSQLiteMapping().PK;
 
-        public static string GetFullPath(this IFullPathAffinity @this) 
+        /// <summary>
+        /// Returns the hierarchical placement path of an object known to be <see cref="IFullPathAffinity"/>.
+        /// </summary>
+        /// <remarks>
+        /// Fast-path accessor when the interface is known. The returned value represents the
+        /// path used to position the item within the MarkdownContext <c>Model</c>
+        /// element tree.
+        /// </remarks>
+        public static string GetFullPath(this IFullPathAffinity @this)
             => @this.FullPath;
-        public static string GetFullPath(this object? @this) 
+
+        /// <summary>
+        /// Attempts to determine the hierarchical placement path of an arbitrary object.
+        /// </summary>
+        /// <remarks>
+        /// This is a heuristic. <see cref="ReadOnlyFullPathAffinity"/> is used to interpret
+        /// the instance as <see cref="IFullPathAffinity"/> using reflection and SQLite
+        /// metadata. The result is suitable for positioning within the MarkdownContext
+        /// <c>Model</c> element tree when sufficient structure is present.
+        ///
+        /// Returns an empty string when no path information can be inferred.
+        /// </remarks>
+        public static string GetFullPath(this object? @this)
             => ReadOnlyFullPathAffinity.Create(@this)?.FullPath ?? string.Empty;
+
+        /// <summary>
+        /// Provides the shared SQLite mapper connection used for metadata inspection.
+        /// </summary>
+        /// <remarks>
+        /// This in-memory connection exists only so SQLite-net can construct and cache
+        /// <see cref="TableMapping"/> metadata (for example primary-key discovery).
+        /// 
+        /// Because SQLite-net internally caches mappings per connection, keeping a single
+        /// shared instance avoids repeated reflection and ensures stable mapping behavior
+        /// across the application.
+        /// </remarks>
         static SQLiteConnection Mapper
         {
             get
