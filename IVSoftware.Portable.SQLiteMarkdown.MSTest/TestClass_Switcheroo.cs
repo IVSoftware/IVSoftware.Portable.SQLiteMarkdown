@@ -213,7 +213,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 Assert.IsFalse(mdc.Model.HasElements);
                 nResult = mdc.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
                 Assert.AreEqual(0, nResult);
+
+                // 260310.B - StateReport came online later. Let's see if it agrees.
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
                 { }
+                expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting StateReport FSOL to match HasCounts."
+                );
                 #endregion C L E A R
             }
 
