@@ -491,7 +491,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     case NativeClearFSM:
                         if(!Model.HasElements && (ObservableNetProjection is not IEnumerable projection || !projection.Cast<object>().Any()))
                         {
-                            Debug.Fail($@"ADVISORY - First Time.");
+                            if (SearchEntryState != SearchEntryState.Cleared)
+                            {
+                                Debug.Fail($@"ADVISORY - First Time.");
+                                SearchEntryState = SearchEntryState.Cleared;
+                            }
+
+                            if (FilteringState != FilteringState.Ineligible)
+                            {
+                                Debug.Fail($@"ADVISORY - First Time.");
+                                FilteringState = FilteringState.Ineligible;
+                            }
                             return ReservedFSMState.FastTrack;
                         }
                         break;
@@ -953,7 +963,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         case NotifyCollectionChangedAction.Replace:
                             break;
                         case NotifyCollectionChangedAction.Reset:
-                            LoadCanon(sender as IEnumerable);
+                            if (sender is IList list && list.Count == 0)
+                            {
+                                RunFSM<NativeClearFSM>();
+                            }
+                            else
+                            {
+                                LoadCanon(sender as IEnumerable);
+                            }
                             break;
                         default:
                             this.ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");

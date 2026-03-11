@@ -126,13 +126,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             }
             void subtest_PopulateAndClearEpoch()
             {
-
                 oc = 
                     new ObservableCollection<SelectableQFModel>()
                     .PopulateForDemo(2);
 
                 mdc.ObservableNetProjection = (INotifyCollectionChanged)oc;
-
 
                 actual = JsonConvert.SerializeObject(oc, Formatting.Indented);
                 expected = @" 
@@ -192,27 +190,70 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 );
                 Assert.IsTrue(mdc.HasCounts(canonical: 2, matches: 2, database: 2));
 
-                nResult = mdc.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
+                // 260310.A - StateReport came online later. Let's see if it agrees.
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 2, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]";
 
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting StateReport FSOL to match HasCounts."
+                );
+
+                nResult = mdc.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
                 Assert.AreEqual(
                     mdc.CanonicalCount,
                     nResult,
                     "Expecting the database items track the model at all times.");
 
                 #region C L E A R
-                oc.Clear(); // This is an IList no-surprises clear.
+                oc.Clear(); // This is an IList no-surprises clear. But it still fires INCC.
                 Assert.AreEqual(0, mdc.CanonicalCount);
                 Assert.AreEqual(0, mdc.PredicateMatchCount);
                 Assert.IsFalse(mdc.Model.HasElements);
                 nResult = mdc.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
                 Assert.AreEqual(0, nResult);
+
+                // 260310.B - StateReport came online later. Let's see if it agrees.
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
                 { }
+                expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting StateReport FSOL to match HasCounts."
+                );
                 #endregion C L E A R
             }
 
             void subtest_FilterTracking()
             {
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 2, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting QUERY AND FILTER."
+                );
+
                 mdc.QueryFilterConfig = QueryFilterConfig.Filter;
+
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
+                { } // <- FIRST TIME ONLY: Adjust the message.
+                actual.ToClipboardAssert("Expecting FILTER ONLY with canonical preserved..");
+                { }
             }
             #endregion S U B T E S T S
         }
