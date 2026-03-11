@@ -399,6 +399,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 IEnumerable? canon,
                 ReplaceItemsEventingOption options)
             {
+                Options = options;
                 IList
                     oldItems = new List<object>(),
                     newItems = canon?.Cast<object>().ToList() ?? [];
@@ -448,9 +449,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                         break;
                 }
             }
+            public ReplaceItemsEventingOption Options { get; }
+            public NotifyCollectionChangedEventArgs? Structural
+            {
+                get => _structural;
+                private set
+                {
+                    if (Options.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
+                    {
+                        _structural = value;
+                    }
+                }
+            }
+            NotifyCollectionChangedEventArgs? _structural = default;
 
-            public NotifyCollectionChangedEventArgs? Structural { get; }
-            public NotifyCollectionChangedEventArgs? Reset { get; }
+            public NotifyCollectionChangedEventArgs? Reset
+            {
+                get => _reset;
+                set
+                {
+                    if (Options.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
+                    {
+                        _reset = value;
+                    }
+                }
+            }
+            NotifyCollectionChangedEventArgs? _reset = default;
         }
         #endregion L E G I T
     }
