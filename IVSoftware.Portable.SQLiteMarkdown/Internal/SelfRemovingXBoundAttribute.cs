@@ -14,8 +14,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                   name: stdEnum.ToString(),
                   tag: tag,
                   text: $"[{tag}]")
-        {
-        }
+        { }
+        public SelfRemovingXBoundAttribute(Enum stdEnum, object tag, string? text = null)
+            : base(
+                  name: stdEnum.ToString(),
+                  tag: tag,
+                  text: text)
+        { }
+
         public void Dispose()
         {
             if(Parent is not null)
