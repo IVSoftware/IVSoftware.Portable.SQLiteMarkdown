@@ -395,9 +395,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         {
             public ReplaceItemsEventingContext(
                 XElement model,
-                IEnumerable? newItems)
+                IEnumerable? canon)
             {
-                var oldItems = new List<object>();
+                IList
+                    oldItems = new List<object>(),
+                    newItems = canon?.Cast<object>().ToList() ?? [];
                 foreach (var xel in model.Descendants())
                 {
                     if(xel.Attribute(nameof(StdMarkdownAttribute.model)) is XBoundAttribute xba
@@ -406,17 +408,39 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                         oldItems.Add(item);
                     }
                 }
-                var triage = model.GetReplacementTriage(newItems);
+                var triage = model.GetReplacementTriage(canon);
                 switch (triage)
                 {
                     case ReplaceItemsEventingTriage.AlwaysEmpty:
+                        Structural = null;
+                        Reset = null;
                         break;
+
                     case ReplaceItemsEventingTriage.EmptyBefore:
+                        Structural = new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Add,
+                            changedItems: newItems);
+                        Reset = new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Reset);
                         break;
+
                     case ReplaceItemsEventingTriage.EmptyAfter:
+                        Structural = new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Remove,
+                            changedItems: oldItems);
+                        Reset = new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Reset);
                         break;
+
                     case ReplaceItemsEventingTriage.NeverEmpty:
+                        Structural = new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Replace,
+                            newItems: newItems,
+                            oldItems: oldItems);
+                        Reset = new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Reset);
                         break;
+
                     default:
                         this.ThrowHard<NotSupportedException>($"The {triage.ToFullKey()} case is not supported.");
                         break;
