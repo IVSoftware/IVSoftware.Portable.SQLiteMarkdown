@@ -508,14 +508,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             Enum localInitFQDBEpoch(IEnumerable canonical)
             {
+                // Check to see whether we should have a FQDB in the first place.
                 if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                 {
                     try
                     {
                         FilterQueryDatabase.RunInTransaction(() =>
                         {
-                            FilterQueryDatabase.DeleteAll(ContractType.GetSQLiteMapping());
+                            // Ensure table exists.
                             FilterQueryDatabase.CreateTable(ContractType);
+                            // Clear any entries from a pre-existing table.
+                            FilterQueryDatabase.DeleteAll(ContractType.GetSQLiteMapping());
                         });
                     }
                     catch (Exception ex)
@@ -533,6 +536,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             Enum localInitModelForEpoch(IEnumerable canonical)
             {
+                switch (state)
+                {
+                    case NativeClearFSM:
+                        Model.RemoveNodes(StdMarkdownAttribute.count, StdMarkdownAttribute.matches);
+                        break;
+                    default:
+                        break;
+                }
+
 #if DEBUG
                 int nRemoved = 0;
 #endif

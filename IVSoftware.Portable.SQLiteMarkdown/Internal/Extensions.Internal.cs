@@ -6,21 +6,30 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Text;
+using System.Threading;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
+    /// <summary>
+    /// Internal extensions supporting advisory and policy-driven exception flow.
+    /// </summary>
+    /// <remarks>
+    /// These helpers currently host the `ThrowOrAdvise` style dispatch used
+    /// throughout the MarkdownContext pipeline. The mechanism is stable but
+    /// intentionally scoped to this package while the broader integration
+    /// with IVSoftware.Portable.Xml.Linq evolves.
+    ///
+    /// When the upstream library formally adopts this capability, these
+    /// extensions are expected to migrate there and be removed from this
+    /// assembly.
+    ///
+    /// Until that time they remain **internal by design** to prevent the
+    /// provisional API surface from leaking into consumer code.
+    /// </remarks>
     internal static class Extensions
     {
-
-        #region I N T E R N A L
-#if ABSTRACT
-        KEEP THESE INTERNAL.
-        The use of @throw as ThrowOrAdvise is new and widely applicable. However, it's 
-        something that needs to be OFFICIALLY intergrated into the broader IVS Nuget.
-        It is CRITICAL to avoid having it leak out of this package. Really.
-#endif
-
+        #region P R E V I E W
         /// <summary>
         /// Returns the <see cref="XBoundAttribute"/> for the specified <see cref="StdMarkdownAttribute"/>.
         /// </summary>
@@ -327,6 +336,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             ((INotifyCollectionChanged)@this).CollectionChanged += handler;
             return @this;
         }
-        #endregion I N T E R N A L
+        #endregion  P R E V I E W
+
+        #region L E G I T
+        public static XElement RemoveNodes(this XElement @this, Enum reset, params Enum[] moreResets)
+        {
+            @this.RemoveNodes();
+            return @this;
+        }
+        #endregion L E G I T
     }
 }
