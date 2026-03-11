@@ -70,6 +70,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
             CreateFlags createFlags = CreateFlags.None,
             Type? contractType = null)
         {
+            pkName = string.Empty;
+            pkPropertyName = string.Empty;
+            if (type is Type)
+            {
+                type.ThrowHard<ArgumentException>(
+    $"The mapper expects a model type, but '{nameof(Type)}' itself was supplied. " +
+    "Pass the concrete type of the entity to be mapped.");
+                return null!; 
+            }
+
             TableMapping? proxyMapping = null;
             foreach (var @base in type.BaseTypes(includeSelf: true))
             {
@@ -115,8 +125,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                                 }
                             }
                         }
-                        pkName = string.Empty;
-                        pkPropertyName = string.Empty;
                         Mapper.ThrowHard<InvalidOperationException>("Proxy type cannot resolve to the contract table.");
                         return null!;
                         breakFromInner:;

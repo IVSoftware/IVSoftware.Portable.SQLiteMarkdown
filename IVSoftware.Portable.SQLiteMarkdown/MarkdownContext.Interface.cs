@@ -650,11 +650,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             void localAddItemToModel(object? item)
             {
-                if (ContractType.GetPK()?.PropertyInfo is { } pi)
+                if (ContractType.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
                 {
 
                 }
-                else this.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
+                else
+                {
+                    this.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
+                }
             }
 
             void localRemoveItemFromModel(object? item)
