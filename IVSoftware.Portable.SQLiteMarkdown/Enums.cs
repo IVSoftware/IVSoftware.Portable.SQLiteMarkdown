@@ -509,24 +509,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     [NotFlags]
-    internal enum NetProjectionOption
+    public enum NetProjectionOption
     {
         /// <summary>
-        /// Default permissive.
+        /// Observe the projection for reconciliation but do not mutate it.
         /// </summary>
         /// <remarks>
-        /// MentalModel: "The explicit assignment of ObservableNetProjection *is" the OPT-IN."
+        /// MDC subscribes to INCC events in order to maintain the canonical model,
+        /// but treats the projection as externally owned by the UI.
         /// </remarks>
-        AllowDirectChanges,
+        ObservableOnly,
 
         /// <summary>
-        /// Track INCC events but don't attempt to cast IList or make changes on the handle.
+        /// Allow MDC to directly modify the projection collection.
         /// </summary>
-        ObservableOnly,
+        /// <remarks>
+        /// OPT-IN: Enables MDC to puppeteer the projection when maintaining canonical
+        /// state. This is a powerful opt-in that assumes MDC has safe write
+        /// authority over the observable collection.
+        /// </remarks>
+        AllowDirectChanges,
     }
 
     [Flags]
-    internal enum ReplaceItemsOption
+    public enum ReplaceItemsOption
     {
         /// <summary>
         /// Replace items using standard INCC Remove and Add notifications.
