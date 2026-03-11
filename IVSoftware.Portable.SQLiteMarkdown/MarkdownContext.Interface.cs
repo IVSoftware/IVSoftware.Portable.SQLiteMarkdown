@@ -570,7 +570,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 foreach (var item in canonical)
                 {
+                    // ToDo: Test with item.GetFullPath() extension.
                     var placerResult = Model.Place(path: localGetFullPath(pk, item), out var xel);
+
                     switch (placerResult)
                     {
                         case PlacerResult.Exists:
@@ -652,7 +654,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
                 {
+                    var placerResult = Model.Place(full, out var xel);
 
+                    switch (placerResult)
+                    {
+                        case PlacerResult.Exists:
+                            break;
+                        case PlacerResult.Created:
+                            xel.Name = nameof(StdMarkdownElement.xitem);
+                            xel.SetBoundAttributeValue(
+                                tag: item,
+                                name: nameof(StdMarkdownAttribute.model));
+
+
+                            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 10).Date, "Don't forget disabled");
+                            // Position will matter. 
+                            //xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), countDistinct);
+                            //countDistinct++;
+
+                            break;
+                        default:
+                            this.ThrowFramework<NotSupportedException>(
+                                $"Unexpected result: `{placerResult.ToFullKey()}`. Expected options are {PlacerResult.Created} or {PlacerResult.Exists}");
+                            break;
+                    }
                 }
                 else
                 {
