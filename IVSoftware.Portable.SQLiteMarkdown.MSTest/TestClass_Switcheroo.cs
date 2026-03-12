@@ -338,6 +338,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 }
             }
 
+            public event NotifyCollectionChangedEventHandler OutgoingCollectionChangedEventRequest
+            {
+                add
+                {
+                    ((IMarkdownContext)_mdc).OutgoingCollectionChangedEventRequest += value;
+                }
+
+                remove
+                {
+                    ((IMarkdownContext)_mdc).OutgoingCollectionChangedEventRequest -= value;
+                }
+            }
+
             public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority)
             {
                 return ((IMarkdownContext)_mdc).BeginCollectionChangeAuthority(authority);
@@ -394,11 +407,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             public void LoadCanon(IEnumerable? recordset)
             {
                 ((IMarkdownContext)_mdc).LoadCanon(recordset);
-            }
-
-            public bool HasCounts(int canonical, int matches, int? database = null)
-            {
-                return ((IMarkdownContext)_mdc).HasCounts(canonical, matches, database);
             }
 
             public string[] GetTableNames()

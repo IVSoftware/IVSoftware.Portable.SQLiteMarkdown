@@ -186,6 +186,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         event EventHandler? InputTextSettled;
 
+        /// <summary>
+        /// Requests that an external host raise a collection change notification.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="MarkdownContext"/> itself does not implement <see cref="INotifyCollectionChanged"/>.
+        /// Instead, canonical mutations are surfaced through this request so that an owning
+        /// surface—often a derived type or UI adapter that *does* implement
+        /// <see cref="INotifyCollectionChanged"/>—may relay the corresponding
+        /// <see cref="NotifyCollectionChangedEventArgs"/> to observers.
+        ///
+        /// Mental Model: "Filtering model has been reconfigured. Ask the host to raise INCC."
+        /// </remarks>
+        event NotifyCollectionChangedEventHandler OutgoingCollectionChangedEventRequest;
+
         #region P A R S E
         string ParseSqlMarkdown();
         string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast);
@@ -248,12 +262,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Gets the number of canonical items that satisfy the active predicate.
         /// </summary>
         int PredicateMatchCount { get; }
-
-        /// <summary>
-        /// Returns true when the current counts match the expected canonical,
-        /// predicate, and optional database totals.
-        /// </summary>
-        bool HasCounts(int canonical, int matches, int? database = null);
 
         NetProjectionOption ProjectionOption { get; set; }
 
