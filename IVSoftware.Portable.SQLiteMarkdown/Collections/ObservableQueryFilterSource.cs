@@ -536,38 +536,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 case NotifyQueryFilterCollectionChangedEventArgs eQF:
                     // New bandaid.
-
-                    Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 12).Date, "Don't forget disabled");
-                    var matches =
-                        Model
-                        .Descendants()
-                        .Where(_ => 
-                        {
-                            if(_.Attribute(nameof(StdMarkdownAttribute.ismatch)) is { } attr)
-                            {
-                                if(bool.TryParse(attr.Value, out var parsed))
-                                {
-                                    return parsed;
-                                }
-                                else
-                                {
-                                    return false;
-                                }
-                            }
-                            else
-                            {
-                                return true; 
-                            }
-                        })
-                        .Select(_ => (_.Attribute(StdMarkdownAttribute.model) as XBoundAttribute)?.Tag)
-                        .ToArray();
-                    { }
                     if (ObservableNetProjection is IList list)
                     {
-                        if(list.Count == matches.Length)
-                        { }
-                        else 
-                        { }
+                        switch (ProjectionOption)
+                        {
+                            case NetProjectionOption.ObservableOnly:
+                                break;
+                            case NetProjectionOption.AllowDirectChanges:
+                                break;
+                            default:
+                                this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                                break;
+                        }
                         //list.Clear();
                         //foreach (var item in v)
                         //{

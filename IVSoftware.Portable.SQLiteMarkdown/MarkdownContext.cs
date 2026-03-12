@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
@@ -2004,7 +2005,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected virtual async Task ApplyFilter()
         {
             string sql;
-            IList matches;
+            IList matches = Array.Empty<object>();
             string[] matchPaths;
 
             await Task.Run(async () =>
@@ -2045,13 +2046,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             });
 
-            if(ProjectionOption == NetProjectionOption.AllowDirectChanges)
-            {
+            var eventContext = Model.GetReplacementTriageEvents(matches, ReplaceItemsEventingOptions);
 
+            if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
+            {
+                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
+                {
+                    OnOutgoingCollectionChangedRequest(
+                        NotifyQueryFilterCollectionChangedEventArgs
+                        .FromNotifyCollectionChangedEventArgs(NotifyCollectionChangedQueryFilterFlags.ApplyFilter, eStructural));
+                }
             }
-            else
+            if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
             {
-
+                OnOutgoingCollectionChangedRequest(eReset);
             }
             ModelUpdated?.Invoke(this, EventArgs.Empty);
             

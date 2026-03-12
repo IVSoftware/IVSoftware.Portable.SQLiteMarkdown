@@ -428,7 +428,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                     newItems = canon?.Cast<object>().ToList() ?? [];
                 foreach (var xel in model.Descendants())
                 {
-                    if(xel.Attribute(nameof(StdMarkdownAttribute.model)) is XBoundAttribute xba
+                    if (xel.Attribute(nameof(StdMarkdownAttribute.model)) is XBoundAttribute xba
                         && xba.Tag is { } item)
                     {
                         oldItems.Add(item);
@@ -534,6 +534,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             allMatch = matched.Count == count;
             return matched.ToArray();
         }
+
+        public static T ToBaseAction<T>(this Enum @this)
+            where T : Enum => (T)Enum.ToObject(typeof(T), Convert.ToInt32(@this) & 0xFF);
+
+        public static NotifyCollectionChangedAction ToBaseAction(this Enum @this)
+            => @this.ToBaseAction<NotifyCollectionChangedAction>();
         #endregion L E G I T
     }
 }

@@ -384,9 +384,6 @@ public class TestClass_PredicateMarkdownContext
         actual.ToClipboardExpected();
         { }
         expected = @" 
-[IME Len: 5, IsFiltering: True], [Net: 37, CC: 37, PMC: 3], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
-        ;
-        expected = @" 
 [IME Len: 5, IsFiltering: True], [Net: 3, CC: 37, PMC: 3], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]";
 
         Assert.AreEqual(
