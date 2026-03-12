@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
@@ -495,6 +497,70 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 }
             }
             NotifyCollectionChangedEventArgs? _reset = default;
+        }
+
+        /// <summary>
+        /// Enumerates descendant elements converted to <typeparamref name="T"/>, honoring the explicit <c>ismatch</c> marker.
+        /// </summary>
+        /// <remarks>
+        /// When <paramref name="preferExplicit"/> is true, explicitly marked matches take precedence; 
+        /// if none exist, the implicit set (elements without <c>ismatch=false</c>) is returned.
+        /// </remarks>
+        public static IEnumerable<T?> Matches<T>(this XElement @this, bool someOrAll = true)
+        {
+            List<T> 
+                matched = new(),
+                unmatched = new();
+            foreach (var current in @this.Descendants())
+            {
+                localGetExplicitMatch(current);
+            }
+            var net =
+                someOrAll
+                ? matched.Count == 0
+                    ? unmatched
+                    : matched
+                : matched;
+
+            foreach (var item in net)
+            {
+                yield return item;
+            }
+            #region L o c a l F x
+            void localGetExplicitMatch(XElement xel)
+            {
+                bool isMatch;
+                if (xel.Attribute(nameof(StdMarkdownAttribute.ismatch)) is { } attr)
+                {
+                    if (bool.TryParse(attr.Value, out var parsed))
+                    {
+                        isMatch = parsed;
+                    }
+                    else
+                    {
+                        isMatch = false;
+                    }
+                }
+                else
+                {
+                    isMatch = true;
+                }
+                if(isMatch)
+                {
+                    if (xel.To<T>() is { } itemT)
+                    {
+                        matched.Add(itemT);
+                    }
+                }
+                else
+                {
+                    if (xel.To<T>() is { } itemT)
+                    {
+                        unmatched.Add(itemT);
+                    }
+                }
+            }
+            #endregion L o c a l F x
         }
         #endregion L E G I T
     }

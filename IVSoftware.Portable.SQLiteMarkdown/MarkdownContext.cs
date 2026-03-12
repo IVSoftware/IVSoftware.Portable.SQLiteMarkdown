@@ -2044,6 +2044,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                 }
             });
+
+            if(ProjectionOption == NetProjectionOption.AllowDirectChanges)
+            {
+
+            }
+            else
+            {
+
+            }
             ModelUpdated?.Invoke(this, EventArgs.Empty);
             
             { } // <= L O O K - the model is updated.

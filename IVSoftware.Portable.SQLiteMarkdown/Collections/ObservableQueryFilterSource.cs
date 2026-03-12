@@ -1,9 +1,9 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.Threading;
+using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
@@ -13,9 +13,9 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
@@ -530,11 +530,57 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <summary>
         /// Public-facing CollectionChanged event, regardless of its source.
         /// </summary>
-        protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs eBCL)
         {
+            switch (eBCL)
+            {
+                case NotifyQueryFilterCollectionChangedEventArgs eQF:
+                    // New bandaid.
+
+                    Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 12).Date, "Don't forget disabled");
+                    var matches =
+                        Model
+                        .Descendants()
+                        .Where(_ => 
+                        {
+                            if(_.Attribute(nameof(StdMarkdownAttribute.ismatch)) is { } attr)
+                            {
+                                if(bool.TryParse(attr.Value, out var parsed))
+                                {
+                                    return parsed;
+                                }
+                                else
+                                {
+                                    return false;
+                                }
+                            }
+                            else
+                            {
+                                return true; 
+                            }
+                        })
+                        .Select(_ => (_.Attribute(StdMarkdownAttribute.model) as XBoundAttribute)?.Tag)
+                        .ToArray();
+                    { }
+                    if (ObservableNetProjection is IList list)
+                    {
+                        if(list.Count == matches.Length)
+                        { }
+                        else 
+                        { }
+                        //list.Clear();
+                        //foreach (var item in v)
+                        //{
+                        //    list.Add(item);
+                        //}
+                    }
+                    break;
+                default:
+                    break;
+            }
             if(DHostAuthorityEpoch.Authority != CollectionChangeAuthority.None)
             {
-                CollectionChanged?.Invoke(this, e);
+                CollectionChanged?.Invoke(this, eBCL);
             }
         }
 
