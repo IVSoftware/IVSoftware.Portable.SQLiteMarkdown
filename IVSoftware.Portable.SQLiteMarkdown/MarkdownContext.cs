@@ -1962,50 +1962,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if (SearchEntryState == SearchEntryState.Cleared)
             {
-                if (ObservableNetProjection is IList projection)
+                RunFSM<NativeClearFSM>();
+                if (ObservableNetProjection is IList projection
+                    && ProjectionOption == NetProjectionOption.AllowDirectChanges)
                 {
-                    switch (ProjectionOption)
-                    {
-                        case NetProjectionOption.AllowDirectChanges:
-                            if (projection.Count == 0)
-                            {
-                                if (Model.HasElements)
-                                {
-                                    // Clear model with suppressed authority.
-                                    RunFSM<ClearModelFSM>();
-                                }
-                            }
-                            else
-                            {
-                                // Clear a non-empty projection on its own authority.
-                                RunFSM<NativeClearFSM>();
-                            }
-                            break;
-                        case NetProjectionOption.ObservableOnly:
-                            #region A D V I S O R I E S
-                            var msg = $"In {nameof(OnFilteringStateChanged)}(): {ProjectionOption.ToFullKey()}";
-                            this.Advisory(msg);
-                            Debug.WriteLine($"260308 ADVISORY - {msg}");
-                            #endregion A D V I S O R I E S
-
-                            // Subclass has opted out of direct changes.
-                            localExecClearWithReset();
-                            break;
-                        default:
-                            this.ThrowHard<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
-                            break;
-                    }
-                }
-                else
-                {
-                    localExecClearWithReset();
-                }
-
-                // Backend execution of model clear with reset event.
-                // In one case, there is a routine safe flow, in the the other an advisory flow.
-                void localExecClearWithReset()
-                {
-                    RunFSM<ClearModelFSM>();
+                    Debug.Fail($@"IFD ADVISORY - Not Supported.");
                 }
             }
         }

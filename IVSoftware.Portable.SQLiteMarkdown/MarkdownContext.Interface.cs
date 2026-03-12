@@ -482,12 +482,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     !(ObservableNetProjection is IEnumerable projection && projection.Cast<object>().Any());
                 switch (state)
                 {
-                    case ClearModelFSM:
-                        if (!Model.HasElements)
-                        {
-                            return ReservedFSMState.FastTrack;
-                        }
-                        break;
                     case NativeClearFSM:
                         // If ALL are true.
                         if( SearchEntryState == SearchEntryState.Cleared

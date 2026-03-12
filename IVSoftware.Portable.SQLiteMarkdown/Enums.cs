@@ -440,23 +440,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
 
     /// <summary>
-    /// Empties the Model and the FiterQueryDatabase without eventing.
-    /// </summary>
-    [CollectionChangeAuthority(CollectionChangeAuthority.None)]
-    internal enum ClearModelFSM
-    {
-        DetectFastTrack = StdFSMState.DetectFastTrack,
-
-        ResetOrCanonizeFQBDForEpoch = StdFSMState.ResetOrCanonizeFQBDForEpoch,
-
-        ResetModelForEpoch = StdFSMState.ResetOrCanonizeModelForEpoch,
-    }
-
-    /// <summary>
     /// Unconditional full clear suppresses event churn and raises final Reset.
     /// </summary>
-    [ResetEpoch]
-    [CollectionChangeAuthority(CollectionChangeAuthority.None)]
     internal enum NativeClearFSM
     {
         DetectFastTrack = StdFSMState.DetectFastTrack,
