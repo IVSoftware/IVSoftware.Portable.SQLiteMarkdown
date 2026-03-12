@@ -52,46 +52,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public ObservableQueryFilterSource()
         {
             CanonicalRecordset = new ReadOnlyCollection<T>(_canonicalRecordset);
-
-            DHostResetEpoch = new DHostResetEpochProvider(
-                this,
-                [
-                    () =>
-                    {
-                        using(BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
-                        {
-                            OnCollectionChanged(new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset));
-                        }
-                    }
-                ]);
-
-#if DEBUG && !SKIP_UNIT_TEST_DHostResetWithEventSuppression
-            #region L o c a l F x
-            void localTestOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-            {
-                Debug.Assert(e.Action == NotifyCollectionChangedAction.Reset);
-            }
-            #endregion L o c a l F x
-
-
-            using (this.WithOnDispose(
-                onInit: (sender, e) =>
-                {
-                    this.CollectionChanged += localTestOnCollectionChanged;
-                },
-                onDispose: (sender, e) =>
-                {
-                    this.CollectionChanged -= localTestOnCollectionChanged;
-                }))
-            {
-                using(DHostResetEpoch.GetToken())
-                {
-                    // Testing the new DHost which
-                    // should raise Reset on final dispose.
-                    System.Threading.Thread.Sleep(100);
-                }
-            }
-#endif
             base.ObservableNetProjection = this;
             base.ProjectionOption = NetProjectionOption.ObservableOnly;
 
@@ -311,6 +271,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected override void OnOutgoingCollectionChangedRequest(NotifyCollectionChangedEventArgs e)
         {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    break;
+            }
             var canonicalItems =
                 Model
                 .Descendants().Select(_ => _.To<T>())
@@ -412,27 +385,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
         public void Clear()
         {
-            using (BeginResetEpoch())
-            {
-                RunFSM<NativeClearFSM>();
-            }
+            RunFSM<NativeClearFSM>();
         }
 
         public new FilteringState Clear(bool all = false)
         {
-            using (BeginResetEpoch())
+            var fsBase = base.Clear(all);
+            if (fsBase < FilteringState.Armed)
             {
-                var fsBase = base.Clear(all);
-                if (fsBase < FilteringState.Armed)
-                {
-                    // [Careful] 
-                    // If we're responding to FilteringState changed to clear the
-                    // canonical recordset it MIGHT NOT WORK. For example, manual
-                    // add-remove changes to Items will bypass the input state machine. 
-                    _canonicalRecordset.Clear();
-                }
-                return fsBase;
+                // [Careful] 
+                // If we're responding to FilteringState changed to clear the
+                // canonical recordset it MIGHT NOT WORK. For example, manual
+                // add-remove changes to Items will bypass the input state machine. 
+                _canonicalRecordset.Clear();
             }
+            return fsBase;
         }
 
         public bool Contains(T item) { return _canonicalRecordset.Contains(item); }

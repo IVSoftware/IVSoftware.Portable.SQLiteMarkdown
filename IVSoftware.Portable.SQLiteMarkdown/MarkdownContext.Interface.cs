@@ -266,17 +266,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected async Task<Enum> RunFSMAsync<TFsm>(object? context = null) where TFsm : struct, Enum
         {
             Debug.Fail($@"ADVISORY - [Probationary].");
-            IDisposable? resetToken = null, authorityToken = null;
+            IDisposable? authorityToken = null;
 
-            if (typeof(TFsm).GetCustomAttribute<ResetEpochAttribute>() is not null)
-            {
-                resetToken = BeginResetEpoch();
-            }
             if (typeof(TFsm).GetCustomAttribute<CollectionChangeAuthorityAttribute>()?.Authority is CollectionChangeAuthority authority)
             {
                 authorityToken = BeginCollectionChangeAuthority(authority);
             }
-            using (new TokenDisposer(resetToken, authorityToken))
+            using (new TokenDisposer(authorityToken))
             {
                 Enum result = ReservedFSMState.None;
                 // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
@@ -353,17 +349,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         protected Enum RunFSM<TFsm>(object? context = null) where TFsm : struct, Enum
         {
-            IDisposable? resetToken = null, authorityToken = null;
+            IDisposable? authorityToken = null;
 
-            if(typeof(TFsm).GetCustomAttribute<ResetEpochAttribute>() is not null)
-            {
-                resetToken = BeginResetEpoch();
-            }
             if(typeof(TFsm).GetCustomAttribute<CollectionChangeAuthorityAttribute>()?.Authority is CollectionChangeAuthority authority)
             {
                 authorityToken = BeginCollectionChangeAuthority(authority);
             }
-            using (new TokenDisposer(resetToken, authorityToken))
+            using (new TokenDisposer(authorityToken))
             {
                 Enum result = ReservedFSMState.None;
                 // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.

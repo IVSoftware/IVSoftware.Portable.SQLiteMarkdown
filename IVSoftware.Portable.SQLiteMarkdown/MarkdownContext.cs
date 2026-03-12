@@ -2005,12 +2005,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 // In one case, there is a routine safe flow, in the the other an advisory flow.
                 void localExecClearWithReset()
                 {
-                    // Request a Reset event on dispose.
-                    using (BeginResetEpoch())
-                    {
-                        // Suppress all event authority while clearing the model.
-                        RunFSM<ClearModelFSM>();
-                    }
+                    RunFSM<ClearModelFSM>();
                 }
             }
         }

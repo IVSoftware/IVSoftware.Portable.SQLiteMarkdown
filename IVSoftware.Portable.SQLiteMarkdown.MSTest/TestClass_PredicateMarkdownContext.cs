@@ -286,15 +286,12 @@ public class TestClass_PredicateMarkdownContext
                 .Select(_ => (_.Attribute(StdMarkdownAttribute.model) as XBoundAttribute)?.Tag)
                 .ToArray();
             { }
-            using (pmdc.BeginResetEpoch())
+            if(pmdc.ObservableNetProjection is IList list)
             {
-                if(pmdc.ObservableNetProjection is IList list)
+                list.Clear();
+                foreach (var item in v)
                 {
-                    list.Clear();
-                    foreach (var item in v)
-                    {
-                        list.Add(item);
-                    }
+                    list.Add(item);
                 }
             }
 
