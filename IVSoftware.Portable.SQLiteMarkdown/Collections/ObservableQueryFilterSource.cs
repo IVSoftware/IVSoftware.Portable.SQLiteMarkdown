@@ -38,6 +38,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         , IList<T>
         where T : new()
     {
+        #region N O N    O B S E R V A B L E    S O U R C E S
+        /// <summary>
+        /// The IEnumerable<T> collection when IsFiltering = false.
+        /// </summary>
+        private readonly IList<T> _canonicalRecordset = new List<T>();
+        /// <summary>
+        /// The IEnumerable<T> collection when IsFiltering = true.
+        /// </summary>
+        private readonly IList<T> _predicateMatchSubset = new List<T>();
+        #endregion N O N    O B S E R V A B L E    S O U R C E S
+
         public ObservableQueryFilterSource()
         {
             CanonicalRecordset = new ReadOnlyCollection<T>(_canonicalRecordset);
@@ -142,9 +153,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             };
 #endif
         }
-
-        private readonly ObservableCollection<T> _predicateMatchSubset = new ObservableCollection<T>();
-        private readonly IList<T> _canonicalRecordset = new List<T>();
 
 
         public IReadOnlyList<T> CanonicalRecordset { get; }
@@ -308,24 +316,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 .Descendants().Select(_ => _.To<T>())
                 .OfType<T>()
                 .ToArray();
-            using (base.BeginCollectionChangeAuthority(authority: CollectionChangeAuthority.None))
+            _canonicalRecordset.Clear();
+            foreach (var item in canonicalItems)
             {
-                _canonicalRecordset.Clear();
-                foreach (var item in canonicalItems)
-                {
-                    _canonicalRecordset.Add(item);
-                }
+                _canonicalRecordset.Add(item);
             }
 
-            // Raises OutgoingCollectionChangedRequest event under markdown context authority
+            Debug.Assert(
+                DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext,
+                "Expecting protected operation.");
+
             base.OnOutgoingCollectionChangedRequest(e);
-
-            // It's also important to raise this event under
-            // the same authority in order to rein in circularity.
-            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
-            {
-                CollectionChanged?.Invoke(this, e);
-            }
+            CollectionChanged?.Invoke(this, e);
         }
 
         private void internalLoadONPfromModel()

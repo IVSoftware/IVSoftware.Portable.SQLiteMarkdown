@@ -1047,10 +1047,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         protected virtual void OnOutgoingCollectionChangedRequest(NotifyCollectionChangedEventArgs e)
         {
-            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
-            {
-                OutgoingCollectionChangedEventRequest?.Invoke(this, e);
-            }
+            Debug.Assert(
+                DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext,
+                "Expecting protected operation.");
+
+            OutgoingCollectionChangedEventRequest?.Invoke(this, e);
         }
         public event NotifyCollectionChangedEventHandler? OutgoingCollectionChangedEventRequest;
 
