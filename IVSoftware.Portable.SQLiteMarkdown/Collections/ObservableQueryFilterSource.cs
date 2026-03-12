@@ -297,6 +297,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
+        protected override void OnOutgoingCollectionChangedRequest(NotifyCollectionChangedEventArgs e)
+        {
+            // Raises OutgoingCollectionChangedRequest event under markdown context authority
+            base.OnOutgoingCollectionChangedRequest(e);
+
+            // It's also important to raise this event under
+            // the same authority in order to rein in circularity.
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
+            {
+                CollectionChanged?.Invoke(this, e);
+            }
+        }
+
         private void internalLoadONPfromModel()
         {
             var canonicalItems =
