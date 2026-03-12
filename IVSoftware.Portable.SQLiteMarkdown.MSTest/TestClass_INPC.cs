@@ -1,6 +1,8 @@
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.WinOS.MSTest.Extensions;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -10,6 +12,8 @@ public class TestClass_INPC
     [TestMethod, DoNotParallelize]
     public void Test_QueryModeINPC()
     {
+        using var te = this.TestableEpoch();
+
         string actual, expected;
         List<string> 
             builderINPC = new (),
@@ -27,7 +31,7 @@ public class TestClass_INPC
         {
             if (sender is SelectableQFModel item)
             {
-                builderINPC.Add(e.PropertyName!);
+                builderINPC.Add($"{e.PropertyName!}: {item.Description.PadToMaxLength(10, true)}");
             }
         };
 
@@ -38,7 +42,6 @@ public class TestClass_INPC
 [IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
         ;
         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
-
 
         items.AddDynamic("Brown Dog", "[canine] [color]", false, new() { "loyal", "friend", "furry" });
 
