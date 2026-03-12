@@ -369,7 +369,7 @@ public class TestClass_PredicateMarkdownContext
         );
 
         Assert.AreEqual(ProjectionTopology.Composition, pmdc.ProjectionTopology, "Because oc is INCC.");
-        Assert.AreEqual(NetProjectionOption.AllowDirectChanges, pmdc.ProjectionOption);
+        Assert.AreEqual(NetProjectionOption.ObservableOnly, pmdc.ProjectionOption);
 
         actual = pmdc.StateReport();
         actual.ToClipboardExpected();

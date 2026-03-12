@@ -1059,7 +1059,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.
         /// </summary>
-        public NetProjectionOption ProjectionOption { get; set; } = NetProjectionOption.AllowDirectChanges;
+        public NetProjectionOption ProjectionOption { get; set; } = NetProjectionOption.ObservableOnly;
 
         public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; } = ReplaceItemsEventingOption.StructuralReplaceEvent;
 
