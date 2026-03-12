@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
@@ -535,11 +536,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             return matched.ToArray();
         }
 
-        public static T ToBaseAction<T>(this Enum @this)
-            where T : Enum => (T)Enum.ToObject(typeof(T), Convert.ToInt32(@this) & 0xFF);
+        public static NotifyCollectionChangedAction ToNotifyCollectionChangedAction(this Enum @this)
+            => (NotifyCollectionChangedAction)
+               Enum.ToObject(typeof(NotifyCollectionChangedAction), Convert.ToInt32(@this) & 0xFF);
 
-        public static NotifyCollectionChangedAction ToBaseAction(this Enum @this)
-            => @this.ToBaseAction<NotifyCollectionChangedAction>();
+        public static NotifyCollectionChangedReason ToNotifyCollectionChangedReason(this Enum @this)
+            => (NotifyCollectionChangedReason)
+               Enum.ToObject(typeof(NotifyCollectionChangedReason), Convert.ToInt32(@this) & ~0xFF);
         #endregion L E G I T
     }
 }

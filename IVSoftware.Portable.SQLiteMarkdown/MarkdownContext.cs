@@ -2054,7 +2054,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     OnOutgoingCollectionChangedRequest(
                         NotifyQueryFilterCollectionChangedEventArgs
-                        .FromNotifyCollectionChangedEventArgs(NotifyCollectionChangedQueryFilterFlags.ApplyFilter, eStructural));
+                        .FromNotifyCollectionChangedEventArgs(NotifyCollectionChangedReason.ApplyFilter, eStructural));
                 }
             }
             if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)

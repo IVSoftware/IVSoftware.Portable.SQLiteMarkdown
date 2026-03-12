@@ -530,37 +530,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <summary>
         /// Public-facing CollectionChanged event, regardless of its source.
         /// </summary>
-        protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs eBCL)
+        protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            switch (eBCL)
-            {
-                case NotifyQueryFilterCollectionChangedEventArgs eQF:
-                    // New bandaid.
-                    if (ObservableNetProjection is IList list)
-                    {
-                        switch (ProjectionOption)
-                        {
-                            case NetProjectionOption.ObservableOnly:
-                                break;
-                            case NetProjectionOption.AllowDirectChanges:
-                                break;
-                            default:
-                                this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
-                                break;
-                        }
-                        //list.Clear();
-                        //foreach (var item in v)
-                        //{
-                        //    list.Add(item);
-                        //}
-                    }
-                    break;
-                default:
-                    break;
-            }
             if(DHostAuthorityEpoch.Authority != CollectionChangeAuthority.None)
             {
-                CollectionChanged?.Invoke(this, eBCL);
+                CollectionChanged?.Invoke(this, e);
             }
         }
 

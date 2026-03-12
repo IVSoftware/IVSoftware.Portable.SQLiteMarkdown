@@ -1048,21 +1048,69 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if(eBCL is NotifyQueryFilterCollectionChangedEventArgs eQF)
             {
-                Debug.Fail($@"IFD ADVISORY - First Time TODO.");
+                var reason = eQF.Action.ToNotifyCollectionChangedReason();
+                switch (reason)
+                {
+                    case NotifyCollectionChangedReason.QueryResult:
+                        break;
+                    case NotifyCollectionChangedReason.ApplyFilter:
+                        localApplyFilterToNetCollection();
+                        break;
+                    case NotifyCollectionChangedReason.RemoveFilter:
+                        break;
+                    default:
+                        this.ThrowFramework<NotSupportedException>($"The {reason.ToFullKey()} case is not supported.");
+                        break;
+                }
             }
             Debug.Assert(
                 DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext,
                 "Expecting protected operation.");
 
             OutgoingCollectionChangedEventRequest?.Invoke(this, eBCL);
+
+            #region L o c a l F x
+            void localApplyFilterToNetCollection()
+            {
+                switch (ProjectionOption)
+                {
+                    case NetProjectionOption.ObservableOnly:
+                        {   /* G T K - N O O P */
+                        }
+                        break;
+                    case NetProjectionOption.AllowDirectChanges:
+                        { }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            #endregion L o c a l F x
         }
         public event NotifyCollectionChangedEventHandler? OutgoingCollectionChangedEventRequest;
+
 
 
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.
         /// </summary>
-        public NetProjectionOption ProjectionOption { get; set; } = NetProjectionOption.ObservableOnly;
+        public NetProjectionOption ProjectionOption
+        {
+            get =>
+                // This guards against attempting to write when the projection is null.
+                ObservableNetProjection is null         
+                ? NetProjectionOption.ObservableOnly
+                : _projectionOption;
+            set
+            {
+                if (!Equals(_projectionOption, value))
+                {
+                    _projectionOption = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        NetProjectionOption  _projectionOption = default;
 
         public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; } = ReplaceItemsEventingOption.StructuralReplaceEvent;
 
