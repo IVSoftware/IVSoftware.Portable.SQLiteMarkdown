@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
@@ -1043,13 +1044,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///
         /// Mental Model: "Filtering model has been reconfigured. Ask the host to raise INCC."
         /// </remarks>
-        protected virtual void OnOutgoingCollectionChangedRequest(NotifyCollectionChangedEventArgs e)
+        protected virtual void OnOutgoingCollectionChangedRequest(NotifyCollectionChangedEventArgs eBCL)
         {
+            if(eBCL is NotifyQueryFilterCollectionChangedEventArgs eQF)
+            {
+                Debug.Fail($@"IFD ADVISORY - First Time TODO.");
+            }
             Debug.Assert(
                 DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext,
                 "Expecting protected operation.");
 
-            OutgoingCollectionChangedEventRequest?.Invoke(this, e);
+            OutgoingCollectionChangedEventRequest?.Invoke(this, eBCL);
         }
         public event NotifyCollectionChangedEventHandler? OutgoingCollectionChangedEventRequest;
 
