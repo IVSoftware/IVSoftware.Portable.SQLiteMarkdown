@@ -1371,6 +1371,13 @@ ProjectionTopology.Inheritance, NetProjectionOption.ObservableOnly, ReplaceItems
 
                     itemsSource.ReplaceItems(results);
 
+                    actual = string.Join(Environment.NewLine, builder);
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+NetProjection.Add     NewItems=12 NotifyCollectionChangedEventArgs           "
+                    ;
+
                     // 260311.B RETROFIT - StateReport came online later. Let's see if it agrees.
                     actual = itemsSource.StateReport();
                     actual.ToClipboardExpected();
@@ -1383,13 +1390,6 @@ ProjectionTopology.Inheritance, NetProjectionOption.ObservableOnly, ReplaceItems
                         actual.NormalizeResult(),
                         "Expecting StateReport shows INITIAL QUERY RECORDSET N=12."
                     );
-
-                    actual = string.Join(Environment.NewLine, builder);
-                    actual.ToClipboardExpected();
-                    { }
-                    expected = @" 
-NetProjection.Add     NewItems=12 NotifyCollectionChangedEventArgs           "
-                    ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1451,8 +1451,17 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                         "Expecting StateReport shows RESUME WITH CURRENT STATE."
                     );
 
+                    builder.Clear();
                     Assert.AreEqual(string.Empty, itemsSource.InputText, "Confirm before clear.");
                     itemsSource.Clear(); // Expecting "no surprises" here.
+
+
+                    actual = string.Join(Environment.NewLine, builder);
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @"     
+NetProjection.Reset   NotifyCollectionChangedEventArgs           "
+                    ;
 
                     // 260311.D RETROFIT - StateReport came online later. Let's see if it agrees.
                     actual = itemsSource.StateReport();

@@ -383,10 +383,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// 2. The UI-oriented [X] demoting clear state machine.
         /// </remarks>
         [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
-        public void Clear()
-        {
-            RunFSM<NativeClearFSM>();
-        }
+        public void Clear() => base.Clear(all: true);
 
         public new FilteringState Clear(bool all = false)
         {

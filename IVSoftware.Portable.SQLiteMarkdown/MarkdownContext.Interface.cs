@@ -193,14 +193,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
         protected virtual void OnBoundItemObjectChange(XBoundAttribute xbo, XObjectChange action)
         {
-            var item = xbo.Tag;
-            switch (action)
+            if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
             {
-                case XObjectChange.Add:
-                    localSetModelAuthority(xbo);
+                var item = xbo.Tag;
+                switch (action)
+                {
+                    case XObjectChange.Add:
+                        localSetModelAuthority(xbo);
 
-                    if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
-                    {
                         if (SQLITE_STRICT)
                         {
                             if (1 != FilterQueryDatabase.Insert(item))
@@ -216,31 +216,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 Debug.Fail($@"ADVISORY - Expecting operation to succeed.");
                             }
                         }
-                    }
-                    else
-                    {   /* G T K - N O O P */
-                        // There is no filter database to maintain.
-                    }
-                    break;
-                case XObjectChange.Remove:
-                    FilterQueryDatabase.Delete(item);
-                    break;
-            }
+                        break;
+                    case XObjectChange.Remove:
+                        FilterQueryDatabase.Delete(item);
+                        break;
+                }
 
-            void localSetModelAuthority(XBoundAttribute xbo)
-            {
-                if (xbo.Tag is IAffinityModel modeled)
+                // Associate the xml Model governing this ddx.
+                void localSetModelAuthority(XBoundAttribute xbo)
                 {
-                    if (xbo.Parent is null)
+                    if (xbo.Tag is IAffinityModel modeled)
                     {
-                        this.ThrowFramework<NullReferenceException>(
-                            "UNEXPECTED: An attribute that is added should have a parent. What was it added *to*?");
-                    }
-                    else
-                    {
-                        modeled.Model = xbo.Parent;
+                        if (xbo.Parent is null)
+                        {
+                            this.ThrowFramework<NullReferenceException>(
+                                "UNEXPECTED: An attribute that is added should have a parent. What was it added *to*?");
+                        }
+                        else
+                        {
+                            modeled.Model = xbo.Parent;
+                        }
                     }
                 }
+            }
+            else
+            {   /* G T K - N O O P */
+                // There is no filter database to maintain.
             }
         }
 
