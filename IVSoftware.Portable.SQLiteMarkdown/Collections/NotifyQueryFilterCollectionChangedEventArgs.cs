@@ -39,6 +39,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         #endregion C O N T E X T
     }
 
+    [DebuggerDisplay("{Action}  OldCount={OldItems?.Count ?? 0}  NewCount={NewItems?.Count ?? 0}  OldIndex={OldStartingIndex}  NewIndex={NewStartingIndex}")]
     public sealed class NotifyQueryFilterCollectionChangedEventArgs : NotifyCollectionChangedEventArgs
     {
         public static NotifyQueryFilterCollectionChangedEventArgs FromNotifyCollectionChangedEventArgs(
