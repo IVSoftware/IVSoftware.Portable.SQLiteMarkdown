@@ -978,7 +978,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 case 0:
                 case CollectionChangeAuthority.NetProjection:
-
                     switch (e.Action)
                     {
                         case NotifyCollectionChangedAction.Add:
@@ -1048,7 +1047,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         protected virtual void OnOutgoingCollectionChangedRequest(NotifyCollectionChangedEventArgs e)
         {
-            OutgoingCollectionChangedEventRequest?.Invoke(this, e);
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
+            {
+                OutgoingCollectionChangedEventRequest?.Invoke(this, e);
+            }
         }
         public event NotifyCollectionChangedEventHandler? OutgoingCollectionChangedEventRequest;
 

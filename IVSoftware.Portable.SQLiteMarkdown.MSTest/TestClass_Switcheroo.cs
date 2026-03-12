@@ -190,9 +190,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     actual.NormalizeResult(),
                     "Expecting updated model."
                 );
-                Assert.IsTrue(mdc.HasCounts(canonical: 2, matches: 2, database: 2));
 
-                // 260310.A RETROFIT - StateReport came online later. Let's see if it agrees.
                 actual = mdc.StateReport();
                 actual.ToClipboardExpected();
                 { }
@@ -219,7 +217,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 nResult = mdc.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
                 Assert.AreEqual(0, nResult);
 
-                // 260310.B RETROFIT - StateReport came online later. Let's see if it agrees.
                 // #{A665C02F-B1DE-45AE-8DAD-67775114E725}
                 actual = mdc.StateReport();
                 actual.ToClipboardExpected();
