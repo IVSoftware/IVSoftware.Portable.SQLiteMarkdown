@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
@@ -500,67 +501,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         }
 
         /// <summary>
-        /// Enumerates descendant elements converted to <typeparamref name="T"/>, honoring the explicit <c>ismatch</c> marker.
+        /// Materializes descendant elements converted to <typeparamref name="T"/> whose effective <c>ismatch</c> state is true.
         /// </summary>
         /// <remarks>
-        /// When <paramref name="preferExplicit"/> is true, explicitly marked matches take precedence; 
-        /// if none exist, the implicit set (elements without <c>ismatch=false</c>) is returned.
+        /// <paramref name="allMatch"/> reports whether every descendant satisfied the match rule.
+        /// Elements without an explicit <c>ismatch</c> attribute assume <paramref name="default"/>.
         /// </remarks>
-        public static IEnumerable<T?> Matches<T>(this XElement @this, bool someOrAll = true)
+        public static T[] Matches<T>(this XElement @this, bool @default = true) => @this.Matches<T>(out _, @default);
+
+        [Canonical]
+        public static T[] Matches<T>(this XElement @this, out bool allMatch, bool @default = true)
         {
-            List<T> 
-                matched = new(),
-                unmatched = new();
+            List<T> matched = new();
+            int count = 0;
+
             foreach (var current in @this.Descendants())
             {
-                localGetExplicitMatch(current);
-            }
-            var net =
-                someOrAll
-                ? matched.Count == 0
-                    ? unmatched
-                    : matched
-                : matched;
+                count++;
 
-            foreach (var item in net)
-            {
-                yield return item;
-            }
-            #region L o c a l F x
-            void localGetExplicitMatch(XElement xel)
-            {
-                bool isMatch;
-                if (xel.Attribute(nameof(StdMarkdownAttribute.ismatch)) is { } attr)
+                bool isMatch =
+                    current.Attribute(nameof(StdMarkdownAttribute.ismatch)) is { } attr
+                    && bool.TryParse(attr.Value, out var explicitMatch)
+                        ? explicitMatch
+                        : @default;
+
+                if (isMatch && current.To<T>() is { } itemT)
                 {
-                    if (bool.TryParse(attr.Value, out var parsed))
-                    {
-                        isMatch = parsed;
-                    }
-                    else
-                    {
-                        isMatch = false;
-                    }
-                }
-                else
-                {
-                    isMatch = true;
-                }
-                if(isMatch)
-                {
-                    if (xel.To<T>() is { } itemT)
-                    {
-                        matched.Add(itemT);
-                    }
-                }
-                else
-                {
-                    if (xel.To<T>() is { } itemT)
-                    {
-                        unmatched.Add(itemT);
-                    }
+                    matched.Add(itemT);
                 }
             }
-            #endregion L o c a l F x
+
+            allMatch = matched.Count == count;
+            return matched.ToArray();
         }
         #endregion L E G I T
     }
