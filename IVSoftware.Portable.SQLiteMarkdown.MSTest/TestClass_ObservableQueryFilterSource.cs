@@ -1388,8 +1388,7 @@ ProjectionTopology.Inheritance, NetProjectionOption.ObservableOnly, ReplaceItems
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-NetProjection.Add     NewItems=12 NotifyQueryFilterCollectionChangedEventArgs
-NetProjection.Reset   NewItems= 0 NotifyCollectionChangedEventArgs           "
+NetProjection.Add     NewItems=12 NotifyCollectionChangedEventArgs           "
                     ;
 
                     Assert.AreEqual(
@@ -1483,8 +1482,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-NetProjection.Add     NewItems=12 NotifyQueryFilterCollectionChangedEventArgs
-NetProjection.Reset   NewItems= 0 NotifyCollectionChangedEventArgs           "
+NetProjection.Add     NewItems=12 NotifyCollectionChangedEventArgs           "
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
