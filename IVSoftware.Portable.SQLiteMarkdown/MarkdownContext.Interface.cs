@@ -469,6 +469,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case StdFSMState.RemoveItemFromModel:
                     localRemoveItemFromModel();
                     break;
+                case StdFSMState.RequestOutgoingCollectionChangedRequest:
+                    localRequestOutgoingCollectionChangedRequest();
+                    break;
                 default:
                     Debug.Fail($@"ADVISORY - Unrecognized action.");
                     break;
@@ -716,6 +719,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                 }
                 else this.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
+            }
+
+            void localRequestOutgoingCollectionChangedRequest()
+            {
+                var e = context as NotifyCollectionChangedEventArgs 
+                    ?? new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset);
+                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
+                {
+                    OnOutgoingCollectionChangedRequest(e);
+                }
             }
             #endregion L o c a l F x
         }

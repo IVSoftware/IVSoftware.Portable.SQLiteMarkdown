@@ -345,8 +345,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         DetectFastTrack = 1,
 
-        ClearProjection,
-
         /// <summary>
         /// Clear or Create Table for ContractType.
         /// </summary>
@@ -380,6 +378,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Using a DHostSuppress token, populate the NetProjection. Reset will happen on token release.
         /// </summary>
         NetProjectWithSuppress,
+
+        /// <summary>
+        /// Request that an external host raise a collection change notification.
+        /// </summary>
+        RequestOutgoingCollectionChangedRequest,
     }
 
     /// <summary>
@@ -451,6 +454,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ResetOrCanonizeModelForEpoch = StdFSMState.ResetOrCanonizeModelForEpoch,
 
         UpdateStatesForEpoch = StdFSMState.UpdateStatesForEpoch,
+
+        RequestOutgoingCollectionChangedRequest = StdFSMState.RequestOutgoingCollectionChangedRequest,
     }
 
     public enum ProjectionTopology

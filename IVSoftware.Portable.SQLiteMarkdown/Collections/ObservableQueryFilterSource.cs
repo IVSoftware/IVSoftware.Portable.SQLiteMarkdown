@@ -628,13 +628,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         protected override void OnSearchEntryStateChanged()
         {
             base.OnSearchEntryStateChanged();
-            if(SearchEntryState == SearchEntryState.Cleared)
+            if (SearchEntryState == SearchEntryState.Cleared)
             {
-                // This is old. Do we still need it?
-                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.None))
-                {
-                    _canonicalRecordset.Clear();
-                }
+                _canonicalRecordset.Clear();
             }
         }
 
