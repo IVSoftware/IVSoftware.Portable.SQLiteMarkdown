@@ -854,7 +854,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
                             {
                                 Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 11).Date, "Don't forget disabled");
-                                OnRaiseCollectionChangedEventRequest(eStructural);
+                                OnOutgoingCollectionChangedRequest(eStructural);
                             }
                         }
                         if (context.Reset is NotifyCollectionChangedEventArgs eReset)
@@ -862,7 +862,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
                             {
                                 Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 11).Date, "Don't forget disabled");
-                                OnObservableProjectionCollectionChanged(ObservableNetProjection, eReset);
+                                OnIncomingProjectionCollectionChanged(ObservableNetProjection, eReset);
                             }
                         }
                     }
@@ -873,16 +873,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-
-
-        /// <summary>
-        /// This object is *not* INotifyCollectionChanged. But we know such consumers might be out there.
-        /// </summary>
-        protected virtual void OnRaiseCollectionChangedEventRequest(NotifyCollectionChangedEventArgs e)
-        {
-            RaiseCollectionChangedEventRequest?.Invoke(this, e);
-        }
-        public event NotifyCollectionChangedEventHandler? RaiseCollectionChangedEventRequest;
 
         #region P R O J E C T I O N
         /// <summary>
@@ -918,7 +908,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     // Unsubscribe INCC
                     if (_observableProjection is not null)
                     {
-                        _observableProjection.CollectionChanged -= OnObservableProjectionCollectionChanged;
+                        _observableProjection.CollectionChanged -= OnIncomingProjectionCollectionChanged;
                     }
 
                     _observableProjection = value;
@@ -938,7 +928,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     // Subscribe INCC
                     if (_observableProjection is not null)
                     {
-                        _observableProjection.CollectionChanged += OnObservableProjectionCollectionChanged;
+                        _observableProjection.CollectionChanged += OnIncomingProjectionCollectionChanged;
                     }
                 }
             }
@@ -973,10 +963,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         /// <remarks>
         /// This handler is only meaningful when <see cref="IsFiltering"/> is true. In Filter modes
-        /// the observable projection acts as an interaction surface and its structural changes
-        /// must be absorbed into the canonical model.
+        /// the observable projection becomes an interaction surface and its structural changes
+        /// must be reconciled back into the canonical model.
+        ///
+        /// Newly added items are treated as filter matches until the next filter evaluation.
+        /// This prevents user-initiated additions from immediately disappearing if they do
+        /// not satisfy the current filter predicate.
+        ///
+        /// Mental Model: "User changed the filtered projection. Track these changes in the canonical ledger."
         /// </remarks>
-        protected virtual void OnObservableProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected virtual void OnIncomingProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (DHostAuthorityEpoch.Authority)
             {
@@ -1037,6 +1033,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     break;
             }
         }
+
+        /// <summary>
+        /// Requests that an external host raise a collection change notification.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="MarkdownContext"/> itself does not implement <see cref="INotifyCollectionChanged"/>.
+        /// Instead, canonical mutations are surfaced through this request so that an owning
+        /// surface—often a derived type or UI adapter that *does* implement
+        /// <see cref="INotifyCollectionChanged"/>—may relay the corresponding
+        /// <see cref="NotifyCollectionChangedEventArgs"/> to observers.
+        ///
+        /// Mental Model: "Filtering model has been reconfigured. Ask the host to raise INCC."
+        /// </remarks>
+        protected virtual void OnOutgoingCollectionChangedRequest(NotifyCollectionChangedEventArgs e)
+        {
+            OutgoingCollectionChangedEventRequest?.Invoke(this, e);
+        }
+        public event NotifyCollectionChangedEventHandler? OutgoingCollectionChangedEventRequest;
 
 
         /// <summary>
