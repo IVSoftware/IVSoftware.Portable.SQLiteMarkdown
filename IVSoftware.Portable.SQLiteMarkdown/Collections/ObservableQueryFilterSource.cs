@@ -299,6 +299,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected override void OnOutgoingCollectionChangedRequest(NotifyCollectionChangedEventArgs e)
         {
+            var canonicalItems =
+                Model
+                .Descendants().Select(_ => _.To<T>())
+                .OfType<T>()
+                .ToArray();
+            using (base.BeginCollectionChangeAuthority(authority: CollectionChangeAuthority.None))
+            {
+                _canonicalRecordset.Clear();
+                foreach (var item in canonicalItems)
+                {
+                    _canonicalRecordset.Add(item);
+                }
+            }
+
             // Raises OutgoingCollectionChangedRequest event under markdown context authority
             base.OnOutgoingCollectionChangedRequest(e);
 
@@ -312,6 +326,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         private void internalLoadONPfromModel()
         {
+            return;
             var canonicalItems =
                 Model
                 .Descendants().Select(_ => _.To<T>())
