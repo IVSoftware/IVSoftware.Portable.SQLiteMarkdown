@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static IVSoftware.Portable.SQLiteMarkdown.Internal.Extensions;
@@ -1078,8 +1079,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         {   /* G T K - N O O P */
                         }
                         break;
-                    case NetProjectionOption.AllowDirectChanges:
-                        { }
+                    case NetProjectionOption.AllowDirectChanges when ObservableNetProjection is IList projection:
+                        var matches = Model.Matches();
+                        // Remove items that no longer match.
+                        for (int i = projection.Count - 1; i >= 0; i--)
+                        {
+                            var item = projection[i];
+                            if (!matches.Contains(item))
+                            {
+                                projection.Remove(item);
+                            }
+                        }
+
+                        // Add items that are missing.
+                        foreach (var item in matches)
+                        {
+                            if (!projection.Contains(item))
+                            {
+                                projection.Add(item);
+                            }
+                        }
                         break;
                     default:
                         break;
@@ -1088,8 +1107,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             #endregion L o c a l F x
         }
         public event NotifyCollectionChangedEventHandler? OutgoingCollectionChangedEventRequest;
-
-
 
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.
