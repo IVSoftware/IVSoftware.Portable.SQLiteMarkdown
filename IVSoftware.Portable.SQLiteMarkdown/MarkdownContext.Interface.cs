@@ -853,7 +853,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         {
                             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
                             {
-                                Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 11).Date, "Don't forget disabled");
                                 OnOutgoingCollectionChangedRequest(eStructural);
                             }
                         }
@@ -861,8 +860,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         {
                             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
                             {
-                                Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 11).Date, "Don't forget disabled");
-                                OnIncomingProjectionCollectionChanged(ObservableNetProjection, eReset);
+                                OnOutgoingCollectionChangedRequest(eReset);
                             }
                         }
                     }

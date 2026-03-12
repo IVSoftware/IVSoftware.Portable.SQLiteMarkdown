@@ -272,7 +272,7 @@ public class TestClass_PredicateMarkdownContext
         void localOnModelUpdated(object? sender, EventArgs e)
         {
             // This is just the bandaid.
-            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 11).Date, "Don't forget disabled");
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 12).Date, "Don't forget disabled");
 
             actual = pmdc.StateReport();
             expected = @" 

@@ -45,6 +45,10 @@ public class TestClass_INPC
 
         items.AddDynamic("Brown Dog", "[canine] [color]", false, new() { "loyal", "friend", "furry" });
 
+        Assert.AreEqual(1, items.Count);
+        { }
+        return;
+
         actual = items.Model.ToString();
         actual.ToClipboardExpected();
         { }

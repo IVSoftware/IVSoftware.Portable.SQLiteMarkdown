@@ -394,7 +394,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // If we're responding to FilteringState changed to clear the
                 // canonical recordset it MIGHT NOT WORK. For example, manual
                 // add-remove changes to Items will bypass the input state machine. 
-                _canonicalRecordset.Clear();
+                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
+                {
+                    _canonicalRecordset.Clear();
+                }
             }
             return fsBase;
         }
@@ -408,18 +411,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         int IList.IndexOf(object value) { return ((IList)_canonicalRecordset).IndexOf(value); }
         public void Insert(int index, T item)
         {
-            _canonicalRecordset.Insert(index, item);
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
+            {
+                _canonicalRecordset.Insert(index, item);
+            }
             OnExternalChange(item);
         }
 
         public void Add(T item)
         {
-            _canonicalRecordset.Add(item);
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
+            {
+                _canonicalRecordset.Add(item);
+            }
             OnExternalChange(item);
         }
         public void RemoveAt(int index)
         {
-            object item;
+            object? item;
             if (index < _canonicalRecordset.Count)
             {
                 item = _canonicalRecordset[index];
@@ -428,7 +437,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 item = null;
             }
-            _canonicalRecordset.RemoveAt(index);
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
+            {
+                _canonicalRecordset.RemoveAt(index);
+            }
             OnExternalChange(item);
         }
 
@@ -436,7 +448,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             if (item is T itemT)
             {
-                _canonicalRecordset.Add(itemT);
+                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
+                {
+                    _canonicalRecordset.Add(itemT);
+                }
                 OnExternalChange(item);
                 return _canonicalRecordset.IndexOf(itemT);
             }
@@ -461,7 +476,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         void IList.Insert(int index, object item)
         {
-            _canonicalRecordset.Insert(index, (T)item);
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
+            {
+                _canonicalRecordset.Insert(index, (T)item);
+            }
             OnExternalChange(item);
         }
 
@@ -469,7 +487,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             if (_canonicalRecordset.Contains((T)item))
             {
-                _canonicalRecordset.Remove((T)item);
+                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
+                {
+                    _canonicalRecordset.Remove((T)item);
+                }
                 OnExternalChange(item);
             }
         }
@@ -477,7 +498,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <summary>
         /// We need this, but this implementation is probationary and might need some tweaking.
         /// </summary>
-        private void OnExternalChange(object value)
+        private void OnExternalChange(object? value)
         {
             if (value is ISelectable selectable)
             {
