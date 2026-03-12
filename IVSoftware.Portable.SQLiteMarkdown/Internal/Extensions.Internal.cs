@@ -333,6 +333,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             @this.SetAttributeValue(stdEnum.ToString(), @string);
         }
 
+        internal static string PadToMaxLength(
+            this string @string,
+            out bool isMaxLengthExceeded,
+            byte maxLength = byte.MaxValue,
+            bool padToMaxLength = false)
+        {
+            isMaxLengthExceeded = @string.Length > maxLength;
+            if (isMaxLengthExceeded)
+            {
+                @string = @string.Substring(0, maxLength);
+            }
+            else if (padToMaxLength)
+            {
+                @string = @string.PadRight(maxLength);
+            }
+            return @string;
+        }
+
+        internal static string PadToMaxLength(
+            this string @string,
+            byte maxLength = byte.MaxValue,
+            bool padToMaxLength = false)
+            => @string.PadToMaxLength(out _, maxLength, padToMaxLength);
+
         // Fluent event attacher. Internal only; goes in Collections, with Preview semantics.
         internal static T WithCollectionChangeHandler<T>(this T @this, NotifyCollectionChangedEventHandler handler)
             where T : INotifyCollectionChanged
