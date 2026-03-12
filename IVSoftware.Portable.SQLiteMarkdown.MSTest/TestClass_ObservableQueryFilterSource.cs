@@ -3030,8 +3030,8 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-NetProjection.Add     NewItems=12 NotifyQueryFilterCollectionChangedEventArgs
-NetProjection.Reset   NewItems= 0 NotifyCollectionChangedEventArgs           "
+NetProjection.Add     NewItems=12 NotifyCollectionChangedEventArgs           "
+                    ;
                     ;
 
                     Assert.AreEqual(
