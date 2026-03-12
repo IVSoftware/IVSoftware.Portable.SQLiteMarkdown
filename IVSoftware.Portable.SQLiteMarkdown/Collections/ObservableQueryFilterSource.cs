@@ -40,6 +40,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterSource()
         {
+            CanonicalRecordset = new ReadOnlyCollection<T>(_canonicalRecordset);
+
             DHostResetEpoch = new DHostResetEpochProvider(
                 this,
                 [
@@ -82,7 +84,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             base.ObservableNetProjection = this;
             base.ProjectionOption = NetProjectionOption.ObservableOnly;
 
-
+#if false
             _canonicalRecordset.CollectionChanged += (sender, e) =>
             {
                 if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext)
@@ -138,16 +140,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     _unsubscribeItems = _canonicalRecordset.OfType<INotifyPropertyChanged>().ToArray();
                 }
             };
+#endif
         }
 
         private readonly ObservableCollection<T> _predicateMatchSubset = new ObservableCollection<T>();
-        private readonly ObservableCollection<T> _canonicalRecordset = new ObservableCollection<T>();
+        private readonly IList<T> _canonicalRecordset = new List<T>();
 
-        public IReadOnlyList<T> CanonicalRecordset => _canonicalRecordset;
+
+        public IReadOnlyList<T> CanonicalRecordset { get; }
 
 
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
-        public IReadOnlyList<T> UnfilteredItems => _canonicalRecordset;
+        public IReadOnlyList<T> UnfilteredItems => CanonicalRecordset;
 
         public virtual async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
