@@ -2037,7 +2037,7 @@ SELECT * FROM items WHERE
                     matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
                     #endregion F I L T E R    Q U E R Y
 
-                    if (matches.Count == CanonicalCount)
+                    if (false /*TODO: Sequence equal here, not count equal.*/)
                     {   /* G T K - N O O P */
                         // Fast track.
                     }

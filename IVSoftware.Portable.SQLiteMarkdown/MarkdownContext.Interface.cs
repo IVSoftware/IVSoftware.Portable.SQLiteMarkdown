@@ -14,6 +14,7 @@ using SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.ComponentModel.Design;
@@ -1071,6 +1072,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
+        public IReadOnlyList<object> PredicateMatchSubset
+        {
+            get
+            {
+                if (_predicateMatchSubset is null)
+                {
+                    _predicateMatchSubset = new ReadOnlyCollection<object>((List<object>)PredicateMatchSubsetProtected);
+                }
+                return _predicateMatchSubset;
+            }
+        }
+        IReadOnlyList<object>? _predicateMatchSubset = null;
+        protected IList PredicateMatchSubsetProtected { get; set; } = new List<object>();
+
         /// <summary>
         /// Signals that the canonical markdown model has reached a stable state
         /// following an input-driven reconciliation.
@@ -1096,50 +1111,94 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///
         /// Mental Model: "Input text has settled; the model has reconciled."
         /// </remarks>
-        protected virtual void OnModelSettled(NotifyCollectionChangedEventArgs eBCL) 
+        protected virtual void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
         {
             ModelSettled?.Invoke(this, eBCL);
-            switch (ProjectionOption)
+
+            if (eBCL is not ModelSettledEventArgs eModel)
             {
-                case NetProjectionOption.ObservableOnly:
-                    break;
-                case NetProjectionOption.AllowDirectChanges:
-                    localApplyDirectChanges();
-                    break;
-                default:
-                    this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
-                    break;
+                this.ThrowFramework<InvalidOperationException>(
+                    $"Insisting on {nameof(ModelSettledEventArgs)} - The pattern match just gets the cast.");
             }
-            #region L o c a l F x
-            void localApplyDirectChanges()
+            else
             {
-                if (eBCL is ModelSettledEventArgs eModel)
+                switch (eModel.Reason)
                 {
-                    if (ObservableNetProjection is IList projection)
+                    case NotifyCollectionChangedReason.QueryResult:
+                        localLoadCanon();
+                        break;
+                    case NotifyCollectionChangedReason.ApplyFilter:
+                    case NotifyCollectionChangedReason.RemoveFilter:
+                        localModifyFilter();
+                        break;
+                    default:
+                        break;
+                }
+                void localLoadCanon()
+                {
+                    switch (ProjectionOption)
                     {
-                        if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
+                        case NetProjectionOption.ObservableOnly:
+                            break;
+                        case NetProjectionOption.AllowDirectChanges:
+                            localApplyDirectChanges();
+                            break;
+                        default:
+                            this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                            break;
+                    }
+                    #region L o c a l F x
+                    void localApplyDirectChanges()
+                    {
+                        if (ObservableNetProjection is IList projection)
                         {
-                            projection.Remove(item);
-                        }
-                        if (eBCL.NewStartingIndex == -1)
-                        {
-                            if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
+                            if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
                             {
-                                projection.Add(item);
+                                projection.Remove(item);
+                            }
+                            if (eBCL.NewStartingIndex == -1)
+                            {
+                                if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
+                                {
+                                    projection.Add(item);
+                                }
+                            }
+                            else
+                            {
+                                if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
+                                {
+                                    projection.Add(item);
+                                }
                             }
                         }
-                        else
+                    }
+                    #endregion L o c a l F x
+                }
+
+                void localModifyFilter()
+                {
+                    if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
+                    {
+                        PredicateMatchSubsetProtected.Remove(item);
+                    }
+                    if (eBCL.NewStartingIndex == -1)
+                    {
+                        if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
                         {
-                            if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
-                            {
-                                projection.Add(item);
-                            }
+                            PredicateMatchSubsetProtected.Add(item);
+                        }
+                    }
+                    else
+                    {
+                        if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
+                        {
+                            PredicateMatchSubsetProtected.Add(item);
                         }
                     }
                 }
             }
-            #endregion L o c a l F x
         }
+
         public event NotifyCollectionChangedEventHandler? ModelSettled;
 
         /// <summary>

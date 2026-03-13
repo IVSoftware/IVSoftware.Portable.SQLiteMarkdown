@@ -258,9 +258,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        protected override void OnModelSettled(NotifyCollectionChangedEventArgs e)
+        protected override void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
         {
-            base.OnModelSettled(e);
+            base.OnModelSettled(eBCL);
 
             switch (ProjectionOption)
             {
@@ -275,30 +275,66 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
             void localApplyNonDirectChanges()
             {
-                switch (e.Action)
+                if(eBCL is ModelSettledEventArgs eModel)
                 {
-                    case NotifyCollectionChangedAction.Add:
-                        break;
-                    case NotifyCollectionChangedAction.Move:
-                        break;
-                    case NotifyCollectionChangedAction.Remove:
-                        break;
-                    case NotifyCollectionChangedAction.Replace:
-                        break;
-                    case NotifyCollectionChangedAction.Reset:
-                        break;
+                    switch (eModel.Reason)
+                    {
+                        case NotifyCollectionChangedReason.QueryResult:
+                            localLoadCanon();
+                            break;
+                        case NotifyCollectionChangedReason.ApplyFilter:
+#if DEBUG
+                            // Where's the iterator pointing right now?
+                            if(this.Any()) // <- specifically the iterator.
+                            {
+                                foreach (var item in this)
+                                {
+
+                                }
+                            }
+                            else
+                            {
+
+                            }
+
+#endif
+                            break;
+                        case NotifyCollectionChangedReason.RemoveFilter:
+                            break;
+                        default:
+                            break;
+                    }
                 }
-                var canonicalItems =
-                    Model
-                    .Descendants().Select(_ => _.To<T>())
-                    .OfType<T>()
-                    .ToArray();
-                CanonicalSupersetProtected.Clear();
-                foreach (var item in canonicalItems)
+
+                #region L o c a l F x
+                void localLoadCanon()
                 {
-                    CanonicalSupersetProtected.Add(item);
+                    switch (eBCL.Action)
+                    {
+                        case NotifyCollectionChangedAction.Add:
+                            break;
+                        case NotifyCollectionChangedAction.Move:
+                            break;
+                        case NotifyCollectionChangedAction.Remove:
+                            break;
+                        case NotifyCollectionChangedAction.Replace:
+                            break;
+                        case NotifyCollectionChangedAction.Reset:
+                            break;
+                    }
+                    var canonicalItems =
+                        Model
+                        .Descendants().Select(_ => _.To<T>())
+                        .OfType<T>()
+                        .ToArray();
+                    CanonicalSupersetProtected.Clear();
+                    foreach (var item in canonicalItems)
+                    {
+                        CanonicalSupersetProtected.Add(item);
+                    }
+                    CollectionChanged?.Invoke(this, eBCL);
                 }
-                CollectionChanged?.Invoke(this, e);
+                #endregion L o c a l F x
             }
         }
 
