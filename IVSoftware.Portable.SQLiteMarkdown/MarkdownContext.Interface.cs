@@ -1096,7 +1096,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///
         /// Mental Model: "Input text has settled; the model has reconciled."
         /// </remarks>
-        protected virtual void OnModelSettled(NotifyCollectionChangedEventArgs eBCL) { }
+        protected virtual void OnModelSettled(NotifyCollectionChangedEventArgs eBCL) 
+        {
+            ModelSettled?.Invoke(this, eBCL);
+        }
         public event NotifyCollectionChangedEventHandler? ModelSettled;
 
         /// <summary>

@@ -10,6 +10,8 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -229,6 +231,7 @@ public class TestClass_PredicateMarkdownContext
     {
         string actual, expected;
         using var te = this.TestableEpoch();
+        var builder = new List<string>();
 
         const bool INCLUDE_LIVE_DEMO = true;
         int COUNT = INCLUDE_LIVE_DEMO ? 37 : 31;
@@ -270,59 +273,55 @@ public class TestClass_PredicateMarkdownContext
 
 
         #region L o c a l F x
-        void localOnModelUpdated(object? sender, EventArgs e)
+        void localOnModelUpdated(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            // This is just the bandaid.
-            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 12).Date, "Don't forget disabled");
-            return; // for good.
-
-
-            actual = pmdc.StateReport();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-[IME Len: 5, IsFiltering: True], [Net: 37, CC: 37, PMC: 3], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]";
-            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
-
-            return;
-            var v =
-                pmdc
-                .Model
-                .Descendants()
-                .Where(_ => bool.Parse(_.Attribute(nameof(StdMarkdownAttribute.ismatch))?.Value ?? "false") == true)
-                .Select(_ => (_.Attribute(StdMarkdownAttribute.model) as XBoundAttribute)?.Tag)
-                .ToArray();
-            { }
-            if(pmdc.ObservableNetProjection is IList list)
+            builder.Add(e.GetFormatted(ReferenceEquals(sender, pmdc.ObservableNetProjection)));
+            switch (pmdc.ProjectionOption)
             {
-                list.Clear();
-                foreach (var item in v)
-                {
-                    list.Add(item);
-                }
+                case NetProjectionOption.ObservableOnly:
+                    break;
+                case NetProjectionOption.AllowDirectChanges:
+                    break;
+                default:
+                    this.ThrowHard<NotSupportedException>($"The {pmdc.ProjectionOption.ToFullKey()} case is not supported.");
+                    break;
             }
-
-            actual = pmdc.StateReport();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-[IME Len: 5, IsFiltering: True], [Net: 3, CC: 37, PMC: 3], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
-            ;
         }
 
         #endregion L o c a l F x
         using (pmdc.WithOnDispose(
             onInit: (sender, e) =>
             {
-                pmdc.ModelUpdated += localOnModelUpdated;
+                pmdc.ModelSettled += localOnModelUpdated;
             },
             onDispose: (sender, e) =>
             {
-                pmdc.ModelUpdated -= localOnModelUpdated;
+                pmdc.ModelSettled -= localOnModelUpdated;
             }))
         {
+
+            actual = pmdc.StateReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 37, CC: 37, PMC: 37], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+
             pmdc.InputText = "green";
             await pmdc;
+
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Other.Replace NewItems= 3 OldItems=37 ModelSettledEventArgs                      ";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting ModelSettledEvent."
+            );
         }
 
         actual = pmdc.Model.ToString();

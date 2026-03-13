@@ -2005,18 +2005,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+        public event EventHandler? InputTextSettled;
 
         SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
         protected virtual async Task ApplyFilter()
         {
-            string sql;
-            IList matches = Array.Empty<object>();
-            string[] matchPaths;
-
-            await Task.Run(async () =>
+            await _sslimAF.WaitAsync();
+            try
             {
-                await _sslimAF.WaitAsync();
-                try
+                string sql;
+                IList matches = Array.Empty<object>();
+                string[] matchPaths;
+
+                await Task.Run(async () =>
                 {
                     Model.RemoveDescendantAttributes(StdMarkdownAttribute.ismatch);
 
@@ -2063,34 +2064,20 @@ SELECT * FROM items WHERE
                             await ApplyAffinities(matches);
                         }
                     }
-                }
-                catch (Exception ex)
+                });
+
+                var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangedReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
+
+                if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
                 {
-                    this.RethrowHard(ex);
+                    OnModelSettled(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
+                        reason: NotifyCollectionChangedReason.ApplyFilter,
+                        e: eStructural));
                 }
-                finally
+                if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
                 {
-                    _sslimAF.Release();
+                    OnModelSettled(eReset);
                 }
-            });
-
-            var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangedReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
-
-            if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
-            {
-                OnModelSettled(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
-                    reason: NotifyCollectionChangedReason.ApplyFilter, 
-                    e: eStructural));
-            }
-            if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
-            {
-                OnModelSettled(eReset);
-            }
-            ModelUpdated?.Invoke(this, EventArgs.Empty);
-            
-            { } // <= L O O K - the model is updated.
-
-
 
 #if ABSTRACT
             // EXAMPLE<model autocount="3" count="3" matches="1">
@@ -2101,41 +2088,47 @@ SELECT * FROM items WHERE
 #endif
 
 
-            #region L o c a l F x
+                #region L o c a l F x
 
-            /// <summary>
-            /// Resolves the path identifiers for the matched recordset. When the proxy
-            /// implements <c>IPrioritizedAffinity</c>, paths are taken directly from
-            /// <c>FullPath</c>; otherwise the value of the mapped SQLite primary key is
-            /// used. A missing primary key mapping is treated as a framework error.
-            /// </summary>
-            string[] localGetPaths()
-            {
-                if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                /// <summary>
+                /// Resolves the path identifiers for the matched recordset. When the proxy
+                /// implements <c>IPrioritizedAffinity</c>, paths are taken directly from
+                /// <c>FullPath</c>; otherwise the value of the mapped SQLite primary key is
+                /// used. A missing primary key mapping is treated as a framework error.
+                /// </summary>
+                string[] localGetPaths()
                 {
-                    return matches.Cast<IPrioritizedAffinity>().Select(_ => _.FullPath).ToArray();
-                }
-                else
-                {
-                    if (ProxyType.GetSQLiteMapping().PK?.PropertyInfo is PropertyInfo pi)
+                    if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
                     {
-                        return matches.Cast<object>().Select(_ => (string)pi.GetValue(_)).ToArray();
+                        return matches.Cast<IPrioritizedAffinity>().Select(_ => _.FullPath).ToArray();
                     }
-                    // Error fall-through.
-                    this.ThrowHard<InvalidOperationException>();
-                    return [];
+                    else
+                    {
+                        if (ProxyType.GetSQLiteMapping().PK?.PropertyInfo is PropertyInfo pi)
+                        {
+                            return matches.Cast<object>().Select(_ => (string)pi.GetValue(_)).ToArray();
+                        }
+                        // Error fall-through.
+                        this.ThrowHard<InvalidOperationException>();
+                        return [];
+                    }
                 }
+                #endregion L o c a l F x
             }
-            #endregion L o c a l F x
+            catch (Exception ex)
+            {
+                this.RethrowHard(ex);
+            }
+            finally
+            {
+                _sslimAF.Release();
+            }
         }
 
         /// <summary>
         /// Apply priorities where temporality may be involved.
         /// </summary>
         protected virtual async Task ApplyAffinities(IList recordset) { }
-
-        public event EventHandler? InputTextSettled;
-        public event EventHandler? ModelUpdated;
 
         #endregion N A V    S E A R C H    S T A T E    M A C H I N E
 

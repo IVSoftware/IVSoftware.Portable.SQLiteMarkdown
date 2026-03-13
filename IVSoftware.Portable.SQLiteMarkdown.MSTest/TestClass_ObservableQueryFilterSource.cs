@@ -1375,7 +1375,7 @@ ProjectionTopology.Inheritance, NetProjectionOption.ObservableOnly, ReplaceItems
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-NetProjection.Add     NewItems=12 NotifyCollectionChangedEventArgs           "
+NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                     ;
 
                     // 260311.B RETROFIT - StateReport came online later. Let's see if it agrees.
@@ -1460,7 +1460,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     actual.ToClipboardExpected();
                     { }
                     expected = @"     
-NetProjection.Reset   NotifyCollectionChangedEventArgs           "
+NetProjection.Reset   ModelSettledEventArgs           "
                     ;
 
                     // 260311.D RETROFIT - StateReport came online later. Let's see if it agrees.
@@ -1491,7 +1491,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-NetProjection.Add     NewItems=12 NotifyCollectionChangedEventArgs           "
+NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1961,6 +1961,12 @@ SearchEntryState='QueryCompleteWithResults'";
 
                         // PLEASE: Do not remove.
                         Assert.IsTrue(items.ValidationPredicate("b"), "This was a BUGIRL for the test itself.");
+
+
+
+                        await Task.Delay(1000);
+
+
 
                         // animal.b
                         // Expecting Filter mode and an internal query.
@@ -3044,7 +3050,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-NetProjection.Add     NewItems=12 NotifyCollectionChangedEventArgs           "
+NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                     ;
                     ;
 

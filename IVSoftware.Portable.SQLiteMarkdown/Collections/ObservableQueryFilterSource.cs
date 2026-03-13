@@ -557,6 +557,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     break;
             }
         }
+
         protected override async Task OnInputTextSettled(CancelEventArgs e)
         {
             await base.OnInputTextSettled(e);
