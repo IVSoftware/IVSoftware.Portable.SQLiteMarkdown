@@ -281,7 +281,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         case NotifyCollectionChangedReason.QueryResult:
                             localLoadCanon();
                             break;
-                        case NotifyCollectionChangedReason.ApplyFilter:
+                        case NotifyCollectionChangedReason.RemoveFilter:
+                        case NotifyCollectionChangedReason.ApplyFilter: /* G T K - N O O P */
 #if DEBUG
                             // Where's the iterator pointing right now?
                             if(this.Any()) // <- specifically the iterator.
@@ -295,10 +296,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             {
 
                             }
-
 #endif
-                            break;
-                        case NotifyCollectionChangedReason.RemoveFilter:
                             break;
                         default:
                             break;
