@@ -271,11 +271,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     localApplyNonDirectChanges();
                     break;
                 case NetProjectionOption.AllowDirectChanges:
+                    localApplyDirectChanges();
                     break;
                 default:
                     this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
                     break;
             }
+            void localApplyDirectChanges () => localApplyNonDirectChanges();
             void localApplyNonDirectChanges()
             {
                 switch (e.Action)

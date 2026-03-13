@@ -93,6 +93,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
+                if (Enum.TryParse(xattr.Name.LocalName, out StdMarkdownAttribute std))
+                {
+                    switch (xattr)
+                    {
+                        case XBoundAttribute xba when std == StdMarkdownAttribute.model:
+                            break;
+                        default:
+                            switch (std)
+                            {
+                                case StdMarkdownAttribute.ismatch:
+                                    break;
+                            }
+                            break;
+                    }
+                }
                 if (xattr is XBoundAttribute xbo && xbo.Tag.GetType() == ContractType)
                 {
                     OnBoundItemObjectChange(xbo, e.ObjectChange);
@@ -125,11 +140,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         {
                             OnBoundItemObjectChange(xbo, e.ObjectChange);
                         }
-                        localCheckAddRemoveCount();
+                        localAutoCount();
                         break;
                 }
 
-                void localCheckAddRemoveCount()
+                #region L o c a l F x
+                void localAutoCount()
                 {
                     XElement? modelRoot = pxel?.AncestorsAndSelf().LastOrDefault();
                     if (modelRoot is null)
@@ -185,6 +201,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
 #endif
                 }
+                #endregion L o c a l F x
             }
         }
 
