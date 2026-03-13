@@ -41,7 +41,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterSource()
         {
-            CanonicalRecordset = new ReadOnlyCollection<T>(CanonicalRecordsetProtected);
+            CanonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetProtected);
             base.ObservableNetProjection = this;
             base.ProjectionOption = NetProjectionOption.ObservableOnly;
 
@@ -107,7 +107,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
 
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
-        public IReadOnlyList<T> UnfilteredItems => CanonicalRecordset;
+        public IReadOnlyList<T> UnfilteredItems => CanonicalSuperset;
 
         public virtual async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
@@ -237,7 +237,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         }
                         // Active REGARDLESS of result because if unfiltered
                         // count < 2 we're not supposed to be here in the first place.
-                        Debug.Assert(CanonicalRecordsetProtected.Count >= 2, "ADVISORY - Filterable source is required.");
+                        Debug.Assert(CanonicalSupersetProtected.Count >= 2, "ADVISORY - Filterable source is required.");
                         FilteringState = FilteringState.Active;
 
                         if(ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
@@ -301,10 +301,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     .Descendants().Select(_ => _.To<T>())
                     .OfType<T>()
                     .ToArray();
-                CanonicalRecordsetProtected.Clear();
+                CanonicalSupersetProtected.Clear();
                 foreach (var item in canonicalItems)
                 {
-                    CanonicalRecordsetProtected.Add(item);
+                    CanonicalSupersetProtected.Add(item);
                 }
                 CollectionChanged?.Invoke(this, e);
             }
@@ -384,10 +384,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 .ToArray();
             using(base.BeginCollectionChangeAuthority(authority: CollectionChangeAuthority.None))
             {
-                CanonicalRecordsetProtected.Clear();
+                CanonicalSupersetProtected.Clear();
                 foreach (var item in canonicalItems)
                 {
-                    CanonicalRecordsetProtected.Add(item);
+                    CanonicalSupersetProtected.Add(item);
                 }
             }
 
@@ -439,7 +439,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         #region I L I S T
-        public int IndexOf(T item) { return CanonicalRecordsetProtected.IndexOf(item); }
+        public int IndexOf(T item) { return CanonicalSupersetProtected.IndexOf(item); }
 
         void IList.Clear() => Clear(all: true);
         void ICollection<T>.Clear() => Clear(all: true);
@@ -465,41 +465,41 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // If we're responding to FilteringState changed to clear the
                 // canonical recordset it MIGHT NOT WORK. For example, manual
                 // add-remove changes to Items will bypass the input state machine. 
-                CanonicalRecordsetProtected.Clear();
+                CanonicalSupersetProtected.Clear();
             }
             return fsBase;
         }
 
-        public bool Contains(T item) { return CanonicalRecordsetProtected.Contains(item); }
+        public bool Contains(T item) { return CanonicalSupersetProtected.Contains(item); }
 
-        public void CopyTo(T[] array, int arrayIndex) { CanonicalRecordsetProtected.CopyTo(array, arrayIndex); }
+        public void CopyTo(T[] array, int arrayIndex) { CanonicalSupersetProtected.CopyTo(array, arrayIndex); }
 
-        bool IList.Contains(object value) { return ((IList)CanonicalRecordsetProtected).Contains(value); }
+        bool IList.Contains(object value) { return ((IList)CanonicalSupersetProtected).Contains(value); }
 
-        int IList.IndexOf(object value) { return ((IList)CanonicalRecordsetProtected).IndexOf(value); }
+        int IList.IndexOf(object value) { return ((IList)CanonicalSupersetProtected).IndexOf(value); }
         public void Insert(int index, T item)
         {
-            CanonicalRecordsetProtected.Insert(index, item);
+            CanonicalSupersetProtected.Insert(index, item);
             OnExternalChange(item);
         }
 
         public void Add(T item)
         {
-            CanonicalRecordsetProtected.Add(item);
+            CanonicalSupersetProtected.Add(item);
             OnExternalChange(item);
         }
         public void RemoveAt(int index)
         {
             object? item;
-            if (index < CanonicalRecordsetProtected.Count)
+            if (index < CanonicalSupersetProtected.Count)
             {
-                item = CanonicalRecordsetProtected[index];
+                item = CanonicalSupersetProtected[index];
             }
             else
             {
                 item = null;
             }
-            CanonicalRecordsetProtected.RemoveAt(index);
+            CanonicalSupersetProtected.RemoveAt(index);
             OnExternalChange(item);
         }
 
@@ -507,16 +507,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             if (item is T itemT)
             {
-                CanonicalRecordsetProtected.Add(itemT);
-                return CanonicalRecordsetProtected.IndexOf(itemT);
+                CanonicalSupersetProtected.Add(itemT);
+                return CanonicalSupersetProtected.IndexOf(itemT);
             }
             if (typeof(T) == typeof(StringWrapper))
             {
                 var wrapper = new StringWrapper(item?.ToString() ?? string.Empty);
                 if (wrapper is T itemTT)
                 {
-                    CanonicalRecordsetProtected.Add(itemTT);
-                    return CanonicalRecordsetProtected.IndexOf(itemTT);
+                    CanonicalSupersetProtected.Add(itemTT);
+                    return CanonicalSupersetProtected.IndexOf(itemTT);
                 }
             }
             throw new ArgumentException($"Value of type {item?.GetType()} cannot be added to list of {typeof(T)}");
@@ -524,22 +524,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public bool Remove(T item)
         {
-            var removed = CanonicalRecordsetProtected.Remove(item);
+            var removed = CanonicalSupersetProtected.Remove(item);
             if (removed) OnExternalChange(item);
             return removed;
         }
 
         void IList.Insert(int index, object item)
         {
-            CanonicalRecordsetProtected.Insert(index, (T)item);
+            CanonicalSupersetProtected.Insert(index, (T)item);
             OnExternalChange(item);
         }
 
         void IList.Remove(object item)
         {
-            if (CanonicalRecordsetProtected.Contains((T)item))
+            if (CanonicalSupersetProtected.Contains((T)item))
             {
-                CanonicalRecordsetProtected.Remove((T)item);
+                CanonicalSupersetProtected.Remove((T)item);
                 OnExternalChange(item);
             }
         }
@@ -568,11 +568,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        void ICollection.CopyTo(Array array, int index) { ((ICollection)CanonicalRecordsetProtected).CopyTo(array, index); }
+        void ICollection.CopyTo(Array array, int index) { ((ICollection)CanonicalSupersetProtected).CopyTo(array, index); }
 
-        bool ICollection.IsSynchronized { get { return ((ICollection)CanonicalRecordsetProtected).IsSynchronized; } }
+        bool ICollection.IsSynchronized { get { return ((ICollection)CanonicalSupersetProtected).IsSynchronized; } }
 
-        object ICollection.SyncRoot { get { return ((ICollection)CanonicalRecordsetProtected).SyncRoot; } }
+        object ICollection.SyncRoot { get { return ((ICollection)CanonicalSupersetProtected).SyncRoot; } }
 
         #endregion I L I S T
 
@@ -656,7 +656,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                     reason: NotifyCollectionChangedReason.RemoveFilter,
                                     action: NotifyCollectionChangedAction.Replace,
                                     oldItems: PredicateMatchSubset.ToList(),
-                                    newItems: CanonicalRecordset.ToList()
+                                    newItems: CanonicalSuperset.ToList()
                                 )
                             );
                         }
@@ -712,7 +712,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             base.OnSearchEntryStateChanged();
             if (SearchEntryState == SearchEntryState.Cleared)
             {
-                CanonicalRecordsetProtected.Clear();
+                CanonicalSupersetProtected.Clear();
             }
         }
 
@@ -726,7 +726,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             get
             {
                 // The FULL RECORDSET has less than 2 items total.
-                if (CanonicalRecordsetProtected.Count < 2) // Filtering state ineligible. Show all items.
+                if (CanonicalSupersetProtected.Count < 2) // Filtering state ineligible. Show all items.
                 {
                     return true;
                 }
@@ -754,11 +754,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Careful("This polarity was wrong, and has been fixed.")]
         private IReadOnlyList<T> RoutedRecordset =>
             RouteToFullRecordset 
-            ? CanonicalRecordset 
+            ? CanonicalSuperset 
             : PredicateMatchSubset;
 
-        public IReadOnlyList<T> CanonicalRecordset { get; }
-        private readonly IList<T> CanonicalRecordsetProtected = new List<T>();
+        public IReadOnlyList<T> CanonicalSuperset { get; }
+        private readonly IList<T> CanonicalSupersetProtected = new List<T>();
 
         public new IEnumerator<T> GetEnumerator() => RoutedRecordset.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
@@ -768,12 +768,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <summary>
         /// Required IList support
         /// </summary>
-        public bool IsReadOnly => ((IList)CanonicalRecordsetProtected).IsReadOnly;
+        public bool IsReadOnly => ((IList)CanonicalSupersetProtected).IsReadOnly;
 
         /// <summary>
         /// Required IList support
         /// </summary>
-        public bool IsFixedSize => ((IList)CanonicalRecordsetProtected).IsFixedSize;
+        public bool IsFixedSize => ((IList)CanonicalSupersetProtected).IsFixedSize;
 
         public T this[int index]
         {

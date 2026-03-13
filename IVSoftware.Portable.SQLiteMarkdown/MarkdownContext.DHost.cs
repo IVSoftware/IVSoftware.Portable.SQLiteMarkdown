@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -53,6 +54,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Acts as an authority monitor and circularity guard for DDX between collections.
         /// </remarks>
         public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority) => DHostAuthorityEpoch.GetToken(authority);
+
+        public void Commit()
+        {
+            var e = new RecordsetRequestEventArgs();
+            OnCommit(e);
+            if(e.CanonicalSuperset is not null)
+            {
+
+            }    
+        }
+        protected virtual void OnCommit(RecordsetRequestEventArgs e) 
+        {
+        }
+        public event EventHandler<RecordsetRequestEventArgs>? RecordsetRequest;
+
 
         protected DHostAuthorityEpochProvider DHostAuthorityEpoch { get; } = new();
 

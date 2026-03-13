@@ -1553,7 +1553,6 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 var items = new ObservableQueryFilterSource<T>
                 {
                     ProjectionOption = NetProjectionOption.AllowDirectChanges,
-                    QueryFilterConfig = QueryFilterConfig.Query, 
                 };
                 string caller = string.Empty;
 
@@ -1810,7 +1809,8 @@ InputText";
                     {
                         // "animal"
                         items.InputText += "mal";
-                        await items;
+                        Assert.IsFalse(items.IsFiltering);
+                        ((MarkdownContext)items).Commit();
 
                         actual =
                             string
@@ -2991,7 +2991,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 };
                 items.CollectionChanged += (sender, e) =>
                 {
-                    if (ReferenceEquals(sender, items.CanonicalRecordset))
+                    if (ReferenceEquals(sender, items.CanonicalSuperset))
                     {
                         Debug.Fail($@"ADVISORY - First Time.");
                     }
