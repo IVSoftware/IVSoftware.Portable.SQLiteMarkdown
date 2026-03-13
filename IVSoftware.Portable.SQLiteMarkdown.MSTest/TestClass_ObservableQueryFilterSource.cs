@@ -11,6 +11,7 @@ using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Microsoft.VisualBasic.Logging;
+using Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client;
 using Newtonsoft.Json;
 using SQLite;
 using System.Collections;
@@ -1957,6 +1958,14 @@ SearchEntryState='QueryCompleteWithResults'";
 [IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
 
+                        Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+
+                        actual = items.OptionsReport();
+                        actual.ToClipboardExpected();
+                        { }
+                        expected = @" 
+ProjectionTopology.Inheritance, NetProjectionOption.AllowDirectChanges, ReplaceItemsEventingOption.StructuralReplaceEvent"
+                        ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
                         // PLEASE: Do not remove.

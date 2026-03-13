@@ -3,7 +3,6 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.Threading;
-using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
@@ -15,8 +14,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
-using System.Diagnostics.Tracing;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
