@@ -268,6 +268,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             switch (ProjectionOption)
             {
                 case NetProjectionOption.ObservableOnly:
+                    localApplyNonDirectChanges();
                     break;
                 case NetProjectionOption.AllowDirectChanges:
                     break;
@@ -275,31 +276,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
                     break;
             }
-
-            switch (e.Action)
+            void localApplyNonDirectChanges()
             {
-                case NotifyCollectionChangedAction.Add:
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    break;
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        break;
+                    case NotifyCollectionChangedAction.Move:
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        break;
+                    case NotifyCollectionChangedAction.Replace:
+                        break;
+                    case NotifyCollectionChangedAction.Reset:
+                        break;
+                }
+                var canonicalItems =
+                    Model
+                    .Descendants().Select(_ => _.To<T>())
+                    .OfType<T>()
+                    .ToArray();
+                CanonicalRecordsetProtected.Clear();
+                foreach (var item in canonicalItems)
+                {
+                    CanonicalRecordsetProtected.Add(item);
+                }
+                CollectionChanged?.Invoke(this, e);
             }
-            var canonicalItems =
-                Model
-                .Descendants().Select(_ => _.To<T>())
-                .OfType<T>()
-                .ToArray();
-            CanonicalRecordsetProtected.Clear();
-            foreach (var item in canonicalItems)
-            {
-                CanonicalRecordsetProtected.Add(item);
-            }
-            CollectionChanged?.Invoke(this, e);
         }
 
 #if false
