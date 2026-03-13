@@ -433,18 +433,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 selectable.Selection = ItemSelection.None;
             }
             FilteringState = FilteringState;
-            switch (FilteringState)
-            {
-                case FilteringState.Ineligible:
-                    break;
-                case FilteringState.Armed:
-                    break;
-                case FilteringState.Active:
-                    _ = ApplyFilter();
-                    break;
-                default:
-                    break;
-            }
         }
 
         void ICollection.CopyTo(Array array, int index) { ((ICollection)CanonicalSupersetProtected).CopyTo(array, index); }
