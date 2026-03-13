@@ -172,9 +172,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
     }
     public class PredicateMarkdownContext<T> 
-        : MarkdownContext
+        : MarkdownContext<T>
         where T : class, new()
     {
-        public PredicateMarkdownContext() : base(typeof(T)) { }
+        public PredicateMarkdownContext() { }
     }
 }

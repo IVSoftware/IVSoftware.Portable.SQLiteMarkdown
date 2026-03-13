@@ -1962,12 +1962,6 @@ SearchEntryState='QueryCompleteWithResults'";
                         // PLEASE: Do not remove.
                         Assert.IsTrue(items.ValidationPredicate("b"), "This was a BUGIRL for the test itself.");
 
-
-
-                        await Task.Delay(1000);
-
-
-
                         // animal.b
                         // Expecting Filter mode and an internal query.
                         // See also: {24048258-8BE4-40C4-BF85-8863E98BED51}

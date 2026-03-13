@@ -299,7 +299,6 @@ public class TestClass_PredicateMarkdownContext
                 pmdc.ModelSettled -= localOnModelUpdated;
             }))
         {
-
             actual = pmdc.StateReport();
             actual.ToClipboardExpected();
             { }
