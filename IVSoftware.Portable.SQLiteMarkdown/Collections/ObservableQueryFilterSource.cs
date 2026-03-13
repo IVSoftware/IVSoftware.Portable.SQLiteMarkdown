@@ -38,24 +38,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         , IList<T>
         where T : new()
     {
-        #region N O N    O B S E R V A B L E    S O U R C E S
-        /// <summary>
-        /// The IEnumerable<T> collection when IsFiltering = false.
-        /// </summary>
-        private readonly IList<T> _canonicalRecordset = new List<T>();
-        /// <summary>
-        /// The IEnumerable<T> collection when IsFiltering = true.
-        /// </summary>
-        private readonly IList<T> _predicateMatchSubset = new List<T>();
-        #endregion N O N    O B S E R V A B L E    S O U R C E S
-
         public ObservableQueryFilterSource()
         {
-            CanonicalRecordset = new ReadOnlyCollection<T>(_canonicalRecordset);
+            CanonicalRecordset = new ReadOnlyCollection<T>(CanonicalRecordsetProtected);
             base.ObservableNetProjection = this;
             base.ProjectionOption = NetProjectionOption.ObservableOnly;
 
-#if false
+#if false && USER_OLD_INPC
+
             _canonicalRecordset.CollectionChanged += (sender, e) =>
             {
                 if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext)
@@ -113,9 +103,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             };
 #endif
         }
-
-
-        public IReadOnlyList<T> CanonicalRecordset { get; }
 
 
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
@@ -242,19 +229,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                         // This is 'not' the place for a reconciled sync.
                         // We would do that in the UI if at all.
-                        _predicateMatchSubset.Clear();
+                        PredicateMatchSubsetProtected.Clear();
                         foreach (var item in filteredRecords)
                         {
-                            _predicateMatchSubset.Add(item);
+                            PredicateMatchSubsetProtected.Add(item);
                         }
                         // Active REGARDLESS of result because if unfiltered
                         // count < 2 we're not supposed to be here in the first place.
-                        Debug.Assert(_canonicalRecordset.Count >= 2, "ADVISORY - Filterable source is required.");
+                        Debug.Assert(CanonicalRecordsetProtected.Count >= 2, "ADVISORY - Filterable source is required.");
                         FilteringState = FilteringState.Active;
                         OnCollectionChanged(
                             new NotifyQueryFilterCollectionChangedEventArgs(
                                 NotifyQueryFilterCollectionChangedAction.ApplyFilter,
-                                _predicateMatchSubset.ToList() // snapshot
+                                PredicateMatchSubset.Cast<T>().ToList() // snapshot
                             )
                         );
                     }
@@ -269,7 +256,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        protected override void OnOutgoingCollectionChangedRequest(NotifyCollectionChangedEventArgs e)
+        protected override void OnModelSettled(NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -289,19 +276,83 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 .Descendants().Select(_ => _.To<T>())
                 .OfType<T>()
                 .ToArray();
-            _canonicalRecordset.Clear();
+            CanonicalRecordsetProtected.Clear();
             foreach (var item in canonicalItems)
             {
-                _canonicalRecordset.Add(item);
+                CanonicalRecordsetProtected.Add(item);
             }
 
             Debug.Assert(
                 DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext,
                 "Expecting protected operation.");
 
-            base.OnOutgoingCollectionChangedRequest(e);
+            base.OnModelSettled(e);
             CollectionChanged?.Invoke(this, e);
         }
+
+#if false
+        
+        {
+            if(eBCL is NotifyQueryFilterCollectionChangedEventArgs eQF)
+            {
+                var reason = eQF.Action.ToNotifyCollectionChangedReason();
+                switch (reason)
+                {
+                    case NotifyCollectionChangedReason.QueryResult:
+                        break;
+                    case NotifyCollectionChangedReason.ApplyFilter:
+                        localApplyFilterToNetCollection();
+                        break;
+                    case NotifyCollectionChangedReason.RemoveFilter:
+                        break;
+                    default:
+                        this.ThrowFramework<NotSupportedException>($"The {reason.ToFullKey()} case is not supported.");
+                        break;
+                }
+            }
+            Debug.Assert(
+                DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext,
+                "Expecting protected operation.");
+
+            OutgoingCollectionChangedEventRequest?.Invoke(this, eBCL);
+
+            #region L o c a l F x
+            void localApplyFilterToNetCollection()
+            {
+                switch (ProjectionOption)
+                {
+                    case NetProjectionOption.ObservableOnly:
+                        {   /* G T K - N O O P */
+                        }
+                        break;
+                    case NetProjectionOption.AllowDirectChanges when ObservableNetProjection is IList projection:
+                        var matches = ;
+                        // Remove items that no longer match.
+                        for (int i = projection.Count - 1; i >= 0; i--)
+                        {
+                            var item = projection[i];
+                            if (!matches.Contains(item))
+                            {
+                                projection.Remove(item);
+                            }
+                        }
+
+                        // Add items that are missing.
+                        foreach (var item in matches)
+                        {
+                            if (!projection.Contains(item))
+                            {
+                                projection.Add(item);
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            #endregion L o c a l F x
+        }
+#endif
 
         private void internalLoadONPfromModel()
         {
@@ -313,10 +364,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 .ToArray();
             using(base.BeginCollectionChangeAuthority(authority: CollectionChangeAuthority.None))
             {
-                _canonicalRecordset.Clear();
+                CanonicalRecordsetProtected.Clear();
                 foreach (var item in canonicalItems)
                 {
-                    _canonicalRecordset.Add(item);
+                    CanonicalRecordsetProtected.Add(item);
                 }
             }
 
@@ -368,7 +419,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         #region I L I S T
-        public int IndexOf(T item) { return _canonicalRecordset.IndexOf(item); }
+        public int IndexOf(T item) { return CanonicalRecordsetProtected.IndexOf(item); }
 
         void IList.Clear() => Clear(all: true);
         void ICollection<T>.Clear() => Clear(all: true);
@@ -396,24 +447,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // add-remove changes to Items will bypass the input state machine. 
                 using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
                 {
-                    _canonicalRecordset.Clear();
+                    CanonicalRecordsetProtected.Clear();
                 }
             }
             return fsBase;
         }
 
-        public bool Contains(T item) { return _canonicalRecordset.Contains(item); }
+        public bool Contains(T item) { return CanonicalRecordsetProtected.Contains(item); }
 
-        public void CopyTo(T[] array, int arrayIndex) { _canonicalRecordset.CopyTo(array, arrayIndex); }
+        public void CopyTo(T[] array, int arrayIndex) { CanonicalRecordsetProtected.CopyTo(array, arrayIndex); }
 
-        bool IList.Contains(object value) { return ((IList)_canonicalRecordset).Contains(value); }
+        bool IList.Contains(object value) { return ((IList)CanonicalRecordsetProtected).Contains(value); }
 
-        int IList.IndexOf(object value) { return ((IList)_canonicalRecordset).IndexOf(value); }
+        int IList.IndexOf(object value) { return ((IList)CanonicalRecordsetProtected).IndexOf(value); }
         public void Insert(int index, T item)
         {
             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
             {
-                _canonicalRecordset.Insert(index, item);
+                CanonicalRecordsetProtected.Insert(index, item);
             }
             OnExternalChange(item);
         }
@@ -422,16 +473,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
             {
-                _canonicalRecordset.Add(item);
+                CanonicalRecordsetProtected.Add(item);
             }
             OnExternalChange(item);
         }
         public void RemoveAt(int index)
         {
             object? item;
-            if (index < _canonicalRecordset.Count)
+            if (index < CanonicalRecordsetProtected.Count)
             {
-                item = _canonicalRecordset[index];
+                item = CanonicalRecordsetProtected[index];
             }
             else
             {
@@ -439,7 +490,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
             {
-                _canonicalRecordset.RemoveAt(index);
+                CanonicalRecordsetProtected.RemoveAt(index);
             }
             OnExternalChange(item);
         }
@@ -450,18 +501,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
                 {
-                    _canonicalRecordset.Add(itemT);
+                    CanonicalRecordsetProtected.Add(itemT);
                 }
                 OnExternalChange(item);
-                return _canonicalRecordset.IndexOf(itemT);
+                return CanonicalRecordsetProtected.IndexOf(itemT);
             }
             if (typeof(T) == typeof(StringWrapper))
             {
                 var wrapper = new StringWrapper(item?.ToString() ?? string.Empty);
                 if (wrapper is T itemTT)
                 {
-                    _canonicalRecordset.Add(itemTT);
-                    return _canonicalRecordset.IndexOf(itemTT);
+                    CanonicalRecordsetProtected.Add(itemTT);
+                    return CanonicalRecordsetProtected.IndexOf(itemTT);
                 }
             }
             throw new ArgumentException($"Value of type {item?.GetType()} cannot be added to list of {typeof(T)}");
@@ -469,7 +520,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public bool Remove(T item)
         {
-            var removed = _canonicalRecordset.Remove(item);
+            var removed = CanonicalRecordsetProtected.Remove(item);
             if (removed) OnExternalChange(item);
             return removed;
         }
@@ -478,18 +529,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
             {
-                _canonicalRecordset.Insert(index, (T)item);
+                CanonicalRecordsetProtected.Insert(index, (T)item);
             }
             OnExternalChange(item);
         }
 
         void IList.Remove(object item)
         {
-            if (_canonicalRecordset.Contains((T)item))
+            if (CanonicalRecordsetProtected.Contains((T)item))
             {
                 using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
                 {
-                    _canonicalRecordset.Remove((T)item);
+                    CanonicalRecordsetProtected.Remove((T)item);
                 }
                 OnExternalChange(item);
             }
@@ -519,11 +570,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        void ICollection.CopyTo(Array array, int index) { ((ICollection)_canonicalRecordset).CopyTo(array, index); }
+        void ICollection.CopyTo(Array array, int index) { ((ICollection)CanonicalRecordsetProtected).CopyTo(array, index); }
 
-        bool ICollection.IsSynchronized { get { return ((ICollection)_canonicalRecordset).IsSynchronized; } }
+        bool ICollection.IsSynchronized { get { return ((ICollection)CanonicalRecordsetProtected).IsSynchronized; } }
 
-        object ICollection.SyncRoot { get { return ((ICollection)_canonicalRecordset).SyncRoot; } }
+        object ICollection.SyncRoot { get { return ((ICollection)CanonicalRecordsetProtected).SyncRoot; } }
 
         #endregion I L I S T
 
@@ -603,7 +654,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         OnCollectionChanged(
                             new NotifyQueryFilterCollectionChangedEventArgs(
                                 NotifyQueryFilterCollectionChangedAction.RemoveFilter | NotifyQueryFilterCollectionChangedAction.Add,
-                                _canonicalRecordset.ToList() // snapshot as IList
+                                CanonicalRecordsetProtected.ToList() // snapshot as IList
                             )
                         );
                     }
@@ -648,7 +699,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             base.OnSearchEntryStateChanged();
             if (SearchEntryState == SearchEntryState.Cleared)
             {
-                _canonicalRecordset.Clear();
+                CanonicalRecordsetProtected.Clear();
             }
         }
 
@@ -662,7 +713,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             get
             {
                 // The FULL RECORDSET has less than 2 items total.
-                if (_canonicalRecordset.Count < 2) // Filtering state ineligible. Show all items.
+                if (CanonicalRecordsetProtected.Count < 2) // Filtering state ineligible. Show all items.
                 {
                     return true;
                 }
@@ -688,27 +739,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         [Careful("This polarity was wrong, and has been fixed.")]
-        private IList<T> _RoutedItems_ =>
-            RouteToFullRecordset ? _canonicalRecordset : _predicateMatchSubset;
+        private IReadOnlyList<T> RoutedRecordset =>
+            RouteToFullRecordset 
+            ? CanonicalRecordset 
+            : PredicateMatchSubset;
 
-        public IEnumerator<T> GetEnumerator() => _RoutedItems_.GetEnumerator();
+        public IReadOnlyList<T> CanonicalRecordset { get; }
+        private readonly IList<T> CanonicalRecordsetProtected = new List<T>();
+
+        public new IEnumerator<T> GetEnumerator() => RoutedRecordset.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
-        public int Count => _RoutedItems_.Count;
+        public int Count => RoutedRecordset.Count;
 
         /// <summary>
         /// Required IList support
         /// </summary>
-        public bool IsReadOnly => ((IList)_canonicalRecordset).IsReadOnly;
+        public bool IsReadOnly => ((IList)CanonicalRecordsetProtected).IsReadOnly;
 
         /// <summary>
         /// Required IList support
         /// </summary>
-        public bool IsFixedSize => ((IList)_canonicalRecordset).IsFixedSize;
+        public bool IsFixedSize => ((IList)CanonicalRecordsetProtected).IsFixedSize;
 
         public T this[int index]
         {
-            get { return _RoutedItems_[index]; }
+            get { return RoutedRecordset[index]; }
             set
             {
                 // Eventually we'll want to add an item to a filtered list, but to do so:

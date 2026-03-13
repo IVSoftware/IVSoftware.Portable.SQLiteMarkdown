@@ -730,7 +730,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     ?? new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset);
                 using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
                 {
-                    OnOutgoingCollectionChangedRequest(e);
+                    OnModelSettled(e);
                 }
             }
             #endregion L o c a l F x
@@ -855,14 +855,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         {
                             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
                             {
-                                OnOutgoingCollectionChangedRequest(eStructural);
+                                OnModelSettled(eStructural);
                             }
                         }
                         if (context.Reset is NotifyCollectionChangedEventArgs eReset)
                         {
                             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
                             {
-                                OnOutgoingCollectionChangedRequest(eReset);
+                                OnModelSettled(eReset);
                             }
                         }
                     }
@@ -1034,79 +1034,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
-        /// Requests that an external host raise a collection change notification.
+        /// Signals that the canonical markdown model has reached a stable state
+        /// following an input-driven reconciliation.
         /// </summary>
         /// <remarks>
-        /// <see cref="MarkdownContext"/> itself does not implement <see cref="INotifyCollectionChanged"/>.
-        /// Instead, canonical mutations are surfaced through this request so that an owning
-        /// surface—often a derived type or UI adapter that *does* implement
-        /// <see cref="INotifyCollectionChanged"/>—may relay the corresponding
-        /// <see cref="NotifyCollectionChangedEventArgs"/> to observers.
+        /// <see cref="MarkdownContext"/> does not implement
+        /// <see cref="INotifyCollectionChanged"/>. Instead, when the input text
+        /// settles and the internal model completes its reconciliation cycle,
+        /// this method is invoked to indicate that the model state is now stable.
         ///
-        /// Mental Model: "Filtering model has been reconfigured. Ask the host to raise INCC."
+        /// An owning surface—such as a UI adapter or derived collection that
+        /// implements <see cref="INotifyCollectionChanged"/>—may observe this
+        /// transition and decide whether to translate the change into a
+        /// corresponding collection notification.
+        ///
+        /// Mental Model: "Input text has settled; the model has reconciled."
         /// </remarks>
-        protected virtual void OnOutgoingCollectionChangedRequest(NotifyCollectionChangedEventArgs eBCL)
-        {
-            if(eBCL is NotifyQueryFilterCollectionChangedEventArgs eQF)
-            {
-                var reason = eQF.Action.ToNotifyCollectionChangedReason();
-                switch (reason)
-                {
-                    case NotifyCollectionChangedReason.QueryResult:
-                        break;
-                    case NotifyCollectionChangedReason.ApplyFilter:
-                        localApplyFilterToNetCollection();
-                        break;
-                    case NotifyCollectionChangedReason.RemoveFilter:
-                        break;
-                    default:
-                        this.ThrowFramework<NotSupportedException>($"The {reason.ToFullKey()} case is not supported.");
-                        break;
-                }
-            }
-            Debug.Assert(
-                DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext,
-                "Expecting protected operation.");
-
-            OutgoingCollectionChangedEventRequest?.Invoke(this, eBCL);
-
-            #region L o c a l F x
-            void localApplyFilterToNetCollection()
-            {
-                switch (ProjectionOption)
-                {
-                    case NetProjectionOption.ObservableOnly:
-                        {   /* G T K - N O O P */
-                        }
-                        break;
-                    case NetProjectionOption.AllowDirectChanges when ObservableNetProjection is IList projection:
-                        var matches = Model.Matches();
-                        // Remove items that no longer match.
-                        for (int i = projection.Count - 1; i >= 0; i--)
-                        {
-                            var item = projection[i];
-                            if (!matches.Contains(item))
-                            {
-                                projection.Remove(item);
-                            }
-                        }
-
-                        // Add items that are missing.
-                        foreach (var item in matches)
-                        {
-                            if (!projection.Contains(item))
-                            {
-                                projection.Add(item);
-                            }
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-            #endregion L o c a l F x
-        }
-        public event NotifyCollectionChangedEventHandler? OutgoingCollectionChangedEventRequest;
+        protected virtual void OnModelSettled(NotifyCollectionChangedEventArgs eBCL) { }
+        public event NotifyCollectionChangedEventHandler? ModelSettled;
 
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.

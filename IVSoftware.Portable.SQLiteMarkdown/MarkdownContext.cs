@@ -1967,7 +1967,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (ObservableNetProjection is IList projection
                     && ProjectionOption == NetProjectionOption.AllowDirectChanges)
                 {
-                    Debug.Fail($@"IFD ADVISORY - Not Supported.");
+                    if(projection.Count != 0)
+                    {
+                        Debug.Fail($@"BE ADVISED - THERE WILL BE A RESET EVENT.");
+                        projection.Clear();
+                    }
                 }
             }
         }
@@ -2001,7 +2005,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-
         protected virtual async Task ApplyFilter()
         {
             string sql;
@@ -2052,14 +2055,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
                 {
-                    OnOutgoingCollectionChangedRequest(
+                    OnModelSettled(
                         NotifyQueryFilterCollectionChangedEventArgs
                         .FromNotifyCollectionChangedEventArgs(NotifyCollectionChangedReason.ApplyFilter, eStructural));
                 }
             }
             if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
             {
-                OnOutgoingCollectionChangedRequest(eReset);
+                OnModelSettled(eReset);
             }
             ModelUpdated?.Invoke(this, EventArgs.Empty);
             

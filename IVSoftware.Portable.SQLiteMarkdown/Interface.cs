@@ -198,7 +198,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///
         /// Mental Model: "Filtering model has been reconfigured. Ask the host to raise INCC."
         /// </remarks>
-        event NotifyCollectionChangedEventHandler OutgoingCollectionChangedEventRequest;
+        event NotifyCollectionChangedEventHandler ModelSettled;
 
         #region P A R S E
         string ParseSqlMarkdown();

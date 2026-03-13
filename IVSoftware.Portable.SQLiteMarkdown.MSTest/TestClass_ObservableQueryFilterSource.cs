@@ -1550,7 +1550,10 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 @"\& \| \! \( \) \[ \] \' \"" \\".ParseSqlMarkdown<PetProfileN>();
                 Queue<SenderEventPair> eventQueue = new();
                 List<T> recordset;
-                var items = new ObservableQueryFilterSource<T>();
+                var items = new ObservableQueryFilterSource<T>
+                {
+                    ProjectionOption = NetProjectionOption.AllowDirectChanges,
+                };
                 string caller = string.Empty;
 
 

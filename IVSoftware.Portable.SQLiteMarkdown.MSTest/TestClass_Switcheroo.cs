@@ -335,16 +335,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 }
             }
 
-            public event NotifyCollectionChangedEventHandler OutgoingCollectionChangedEventRequest
+            public event NotifyCollectionChangedEventHandler ModelSettled
             {
                 add
                 {
-                    ((IMarkdownContext)_mdc).OutgoingCollectionChangedEventRequest += value;
+                    ((IMarkdownContext)_mdc).ModelSettled += value;
                 }
 
                 remove
                 {
-                    ((IMarkdownContext)_mdc).OutgoingCollectionChangedEventRequest -= value;
+                    ((IMarkdownContext)_mdc).ModelSettled -= value;
                 }
             }
 

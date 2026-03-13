@@ -501,43 +501,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             NotifyCollectionChangedEventArgs? _reset = default;
         }
 
-#if false
-        /// <summary>
-        /// Materializes descendant elements converted to <typeparamref name="T"/> whose effective <c>ismatch</c> state is true.
-        /// </summary>
-        /// <remarks>
-        /// <paramref name="allMatch"/> reports whether every descendant satisfied the match rule.
-        /// Elements without an explicit <c>ismatch</c> attribute assume <paramref name="default"/>.
-        /// </remarks>
-        public static T[] Matches<T>(this XElement @this, bool @default = true) => @this.Matches<T>(out _, @default);
-
-        public static T[] Matches<T>(this XElement @this, out bool allMatch, bool @default = true)
-        {
-            List<T> matched = new();
-            int count = 0;
-
-            foreach (var current in @this.Descendants())
-            {
-                count++;
-
-                bool isMatch =
-                    current.Attribute(nameof(StdMarkdownAttribute.ismatch)) is { } attr
-                    && bool.TryParse(attr.Value, out var explicitMatch)
-                        ? explicitMatch
-                        : @default;
-
-                if (isMatch && current.To<T>() is { } itemT)
-                {
-                    matched.Add(itemT);
-                }
-            }
-
-            allMatch = matched.Count == count;
-            return matched.ToArray();
-        }
-#endif
-
-
         /// <summary>
         /// Materializes descendant object whose effective <c>ismatch</c> state is true.
         /// </summary>
@@ -548,7 +511,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         public static object[] Matches(this XElement @this, bool @default = true)
             => @this.Matches(out _, @default);
 
-        [Canonical]
+        [Probationary, Canonical]
         public static object[] Matches(this XElement @this, out bool allMatch, bool @default = true)
         {
             List<object> matched = new();
