@@ -1809,7 +1809,8 @@ InputText";
                     {
                         // "animal"
                         items.InputText += "mal";
-                        Assert.IsFalse(items.IsFiltering);
+                        Assert.IsFalse(items.IsFiltering, "Expecting NO NEED TO AWAIT HERE.");
+                        // NOPE: Assert.AreEqual(items.ProjectionOption, NetProjectionOption.ObservableOnly, "Expecting MANUAL POPULATE BELOW.");
                         ((MarkdownContext)items).Commit();
 
                         actual =

@@ -663,13 +663,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             var name = stdEnum.ToString();
 
-            var query = includeSelf
+            var query = (includeSelf
                 ? @this.DescendantsAndSelf().Attributes(name)
-                : @this.Descendants().Attributes(name);
+                : @this.Descendants().Attributes(name))
+                .ToArray();
 
             foreach (var attr in query.ToList())
             {
-                attr.Remove();
+                if (attr.Parent is null)
+                {   /* G T K */
+                    // 260313 we're beginning to do this auto on the XElement.Changed events.
+                }
+                else
+                {
+                    attr.Remove();
+                }
             }
             return @this;
         }

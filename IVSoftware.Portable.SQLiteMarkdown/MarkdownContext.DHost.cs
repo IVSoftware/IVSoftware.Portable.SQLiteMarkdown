@@ -59,14 +59,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             var e = new RecordsetRequestEventArgs();
             OnCommit(e);
-            if(e.CanonicalSuperset is not null)
+            if (e.CanonicalSuperset is null)
+            {   /* G T K - N O O P */
+            }
+            else
             {
-
+                Debug.Fail($@"ADVISORY - First Time.");
             }    
         }
-        protected virtual void OnCommit(RecordsetRequestEventArgs e) 
-        {
-        }
+        protected virtual void OnCommit(RecordsetRequestEventArgs e) { }
+
         public event EventHandler<RecordsetRequestEventArgs>? RecordsetRequest;
 
 

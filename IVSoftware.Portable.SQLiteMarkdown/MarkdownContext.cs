@@ -2005,6 +2005,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+
+        SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
         protected virtual async Task ApplyFilter()
         {
             string sql;
@@ -2013,39 +2015,62 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             await Task.Run(async () =>
             {
-                Model.RemoveDescendantAttributes(StdMarkdownAttribute.ismatch);
-
-                #region F I L T E R    Q U E R Y
-                sql = ParseSqlMarkdown();
-                matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
-                #endregion F I L T E R    Q U E R Y
-
-                if (matches.Count == CanonicalCount)
-                {   /* G T K - N O O P */
-                    // Fast track.
-                }
-                else
+                await _sslimAF.WaitAsync();
+                try
                 {
-                    Model.SetAttributeValue(StdMarkdownAttribute.matches, (matchPaths = localGetPaths()).Length);
+                    Model.RemoveDescendantAttributes(StdMarkdownAttribute.ismatch);
 
-                    foreach (var path in matchPaths)
+                    #region F I L T E R    Q U E R Y
+                    sql = ParseSqlMarkdown();
+
+#if DEBUG
+                    if (InputText == "b")
                     {
-                        switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
+                        Debug.Assert(sql == @"
+SELECT * FROM items WHERE
+(FilterTerm LIKE '%b%')".TrimStart(),
+                        "PROBABLY *NOT* BUGIRL - SCREENING FOR A SPURIOUS FAIL");
+                    }
+#endif
+
+                    matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
+                    #endregion F I L T E R    Q U E R Y
+
+                    if (matches.Count == CanonicalCount)
+                    {   /* G T K - N O O P */
+                        // Fast track.
+                    }
+                    else
+                    {
+                        Model.SetAttributeValue(StdMarkdownAttribute.matches, (matchPaths = localGetPaths()).Length);
+
+                        foreach (var path in matchPaths)
                         {
-                            case PlacerResult.Exists:
-                                xaf.SetAttributeValue(nameof(StdMarkdownAttribute.ismatch), bool.TrueString);
-                                break;
-                            case PlacerResult.Created:
-                                this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
-                                break;
-                            default:
-                                break;
+                            switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
+                            {
+                                case PlacerResult.Exists:
+                                    xaf.SetAttributeValue(nameof(StdMarkdownAttribute.ismatch), bool.TrueString);
+                                    break;
+                                case PlacerResult.Created:
+                                    this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                        {
+                            await ApplyAffinities(matches);
                         }
                     }
-                    if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
-                    {
-                        await ApplyAffinities(matches);
-                    }
+                }
+                catch (Exception ex)
+                {
+                    this.RethrowHard(ex);
+                }
+                finally
+                {
+                    _sslimAF.Release();
                 }
             });
 
