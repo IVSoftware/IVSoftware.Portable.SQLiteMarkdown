@@ -118,8 +118,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 {
                     base.LoadCanon(items);
                 });
-
-                internalLoadONPfromModel();
             }
         }
 
@@ -138,18 +136,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // UPGRADE 260301
                 base.LoadCanon(items);
                 // --------------
-
-                switch (ProjectionOption)
-                {
-                    case NetProjectionOption.ObservableOnly:
-                        internalLoadONPfromModel();
-                        break;
-                    case NetProjectionOption.AllowDirectChanges:
-                        break;
-                    default:
-                        this.ThrowHard<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
-                        break;
-                }
             }
         }
 
@@ -166,6 +152,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 await base.ApplyFilter();
                 try
                 {
+                    var matchesB4 = PredicateMatchSubset.ToArray();
                     Debug.Assert(IsFiltering);
                     if (InputText.Length == 0)
                     {
@@ -242,7 +229,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                         if(ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
                         {
-                            Debug.Fail($@"ADVISORY - First Time.");
+                            OnCollectionChanged(
+                                new ModelSettledEventArgs
+                                (
+                                    reason: NotifyCollectionChangedReason.ApplyFilter,
+                                    action: NotifyCollectionChangedAction.Replace,
+                                    oldItems: matchesB4,
+                                    newItems: PredicateMatchSubset.ToArray()
+                                )
+                            );
                         }
                         if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
                         {
@@ -308,122 +303,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
                 CollectionChanged?.Invoke(this, e);
             }
-        }
-
-#if false
-        
-        {
-            if(eBCL is ModelSettledEventArgs eQF)
-            {
-                var reason = eQF.Action.ToNotifyCollectionChangedReason();
-                switch (reason)
-                {
-                    case NotifyCollectionChangedReason.QueryResult:
-                        break;
-                    case NotifyCollectionChangedReason.ApplyFilter:
-                        localApplyFilterToNetCollection();
-                        break;
-                    case NotifyCollectionChangedReason.RemoveFilter:
-                        break;
-                    default:
-                        this.ThrowFramework<NotSupportedException>($"The {reason.ToFullKey()} case is not supported.");
-                        break;
-                }
-            }
-            Debug.Assert(
-                DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext,
-                "Expecting protected operation.");
-
-            OutgoingCollectionChangedEventRequest?.Invoke(this, eBCL);
-
-            #region L o c a l F x
-            void localApplyFilterToNetCollection()
-            {
-                switch (ProjectionOption)
-                {
-                    case NetProjectionOption.ObservableOnly:
-                        {   /* G T K - N O O P */
-                        }
-                        break;
-                    case NetProjectionOption.AllowDirectChanges when ObservableNetProjection is IList projection:
-                        var matches = ;
-                        // Remove items that no longer match.
-                        for (int i = projection.Count - 1; i >= 0; i--)
-                        {
-                            var item = projection[i];
-                            if (!matches.Contains(item))
-                            {
-                                projection.Remove(item);
-                            }
-                        }
-
-                        // Add items that are missing.
-                        foreach (var item in matches)
-                        {
-                            if (!projection.Contains(item))
-                            {
-                                projection.Add(item);
-                            }
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-            #endregion L o c a l F x
-        }
-#endif
-
-        private void internalLoadONPfromModel()
-        {
-            return;
-            var canonicalItems =
-                Model
-                .Descendants().Select(_ => _.To<T>())
-                .OfType<T>()
-                .ToArray();
-            using(base.BeginCollectionChangeAuthority(authority: CollectionChangeAuthority.None))
-            {
-                CanonicalSupersetProtected.Clear();
-                foreach (var item in canonicalItems)
-                {
-                    CanonicalSupersetProtected.Add(item);
-                }
-            }
-
-#if false
-            // RESET REQUIRED main INCC for NetProjection.
-            // Unit Tests expect this, but it can't be left outside of the authority OTHERWISE MODEL GETS CLEARED.
-            // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
-
-            // _canonicalRecordset.Clear(); // <- NOT HERE!
-
-            using (base.BeginCollectionChangeAuthority(authority: CollectionChangeAuthority.MarkdownContext))
-            using (base.BeginResetEpoch())
-            {
-                // Building from the model in V2 is new.
-
-                _canonicalRecordset.Clear(); // <- HERE!
-                if (CanonicalCount != 0)
-                {
-                    foreach (var xel in Model.Descendants())
-                    {
-                        if (xel.To<T>() is { } item)
-                        {
-                            _canonicalRecordset.Add(item);
-                        }
-                    }
-
-                    // Raise single event after completing the loop.
-                    OnCollectionChanged(
-                        new ModelSettledEventArgs(
-                            ModelSettledAction.QueryResult | ModelSettledAction.Add,
-                            _canonicalRecordset.ToList() // snapshot as IList
-                        )
-                    );
-                }
-            }
-#endif
         }
 
         /// <summary>
@@ -594,8 +473,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// SQLite data connection is provided it will be queried here.
         /// </summary>
         [PublishedContract("1.0", typeof(IObservableQueryFilterSource))]
-        public virtual void Commit()
+        [PublishedContract("2.0", typeof(IMarkdownContext))]
+        public new void Commit() => base.Commit();
+        protected override void OnCommit(RecordsetRequestEventArgs e)
         {
+            base.OnCommit(e);
+
             if (MemoryDatabase != null)
             {
                 switch (SearchEntryState)
@@ -655,8 +538,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                 new ModelSettledEventArgs(
                                     reason: NotifyCollectionChangedReason.RemoveFilter,
                                     action: NotifyCollectionChangedAction.Replace,
-                                    oldItems: PredicateMatchSubset.ToList(),
-                                    newItems: CanonicalSuperset.ToList()
+                                    oldItems: PredicateMatchSubset.ToArray(),
+                                    newItems: CanonicalSuperset.ToArray()
                                 )
                             );
                         }

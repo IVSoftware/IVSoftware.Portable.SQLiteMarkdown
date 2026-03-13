@@ -251,7 +251,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// Advisory for signatures that look like they need refactoring
     /// but are part of a published contract. Basically, DON'T DO IT!
     /// </summary>
-    [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
     internal class PublishedContractAttribute : Attribute 
     {
         // Do Not Change signature, return type, or argument names.

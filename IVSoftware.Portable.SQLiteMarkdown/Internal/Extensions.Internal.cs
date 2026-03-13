@@ -409,9 +409,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         }
         public static ReplaceItemsEventingContext GetReplacementTriageEvents(
             this XElement model,
+            NotifyCollectionChangedReason reason,
             IEnumerable? canon,
             ReplaceItemsEventingOption options)
-        => new ReplaceItemsEventingContext(model, canon, options);
+        => new ReplaceItemsEventingContext(model, reason, canon, options);
 
         /// <summary>
         /// Produces collection change events describing the replacement of the canonical item set.
@@ -420,6 +421,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         {
             public ReplaceItemsEventingContext(
                 XElement model,
+                NotifyCollectionChangedReason reason,
                 IEnumerable? canon,
                 ReplaceItemsEventingOption options)
             {
@@ -444,27 +446,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                         break;
 
                     case ReplaceItemsEventingTriage.EmptyBefore:
-                        Structural = new NotifyCollectionChangedEventArgs(
+                        Structural = new ModelSettledEventArgs(
+                            reason,
                             NotifyCollectionChangedAction.Add,
                             changedItems: newItems);
-                        Reset = new NotifyCollectionChangedEventArgs(
+                        Reset = new ModelSettledEventArgs(
+                            reason,
                             NotifyCollectionChangedAction.Reset);
                         break;
 
                     case ReplaceItemsEventingTriage.EmptyAfter:
-                        Structural = new NotifyCollectionChangedEventArgs(
+                        Structural = new ModelSettledEventArgs(
+                            reason,
                             NotifyCollectionChangedAction.Remove,
                             changedItems: oldItems);
-                        Reset = new NotifyCollectionChangedEventArgs(
+                        Reset = new ModelSettledEventArgs(
+                            reason,
                             NotifyCollectionChangedAction.Reset);
                         break;
 
                     case ReplaceItemsEventingTriage.NeverEmpty:
-                        Structural = new NotifyCollectionChangedEventArgs(
+                        Structural = new ModelSettledEventArgs(
+                            reason,
                             NotifyCollectionChangedAction.Replace,
                             newItems: newItems,
                             oldItems: oldItems);
-                        Reset = new NotifyCollectionChangedEventArgs(
+                        Reset = new ModelSettledEventArgs(
+                            reason,
                             NotifyCollectionChangedAction.Reset);
                         break;
 
@@ -474,7 +482,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 }
             }
             public ReplaceItemsEventingOption Options { get; }
-            public NotifyCollectionChangedEventArgs? Structural
+            public ModelSettledEventArgs? Structural
             {
                 get => _structural;
                 private set
@@ -485,9 +493,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                     }
                 }
             }
-            NotifyCollectionChangedEventArgs? _structural = default;
+            ModelSettledEventArgs? _structural = default;
 
-            public NotifyCollectionChangedEventArgs? Reset
+            public ModelSettledEventArgs? Reset
             {
                 get => _reset;
                 private set
@@ -498,7 +506,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                     }
                 }
             }
-            NotifyCollectionChangedEventArgs? _reset = default;
+            ModelSettledEventArgs? _reset = default;
         }
 
         /// <summary>

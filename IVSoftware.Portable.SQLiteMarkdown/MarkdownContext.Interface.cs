@@ -885,7 +885,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 using (var eventHost = Model.SetSelfRemovingXBoundAttribute(
                     StdMarkdownAttribute.triage,
-                    Model.GetReplacementTriageEvents(recordset, ReplaceItemsEventingOptions)))
+                    Model.GetReplacementTriageEvents(NotifyCollectionChangedReason.QueryResult, recordset, ReplaceItemsEventingOptions)))
                 {
                     RunFSM<LoadIsFilteringEpochFSM>(recordset);
                     if (eventHost.Tag is ReplaceItemsEventingContext context)

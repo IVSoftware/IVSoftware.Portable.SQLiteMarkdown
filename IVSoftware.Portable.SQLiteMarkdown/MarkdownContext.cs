@@ -2049,7 +2049,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             });
 
-            var eventContext = Model.GetReplacementTriageEvents(matches, ReplaceItemsEventingOptions);
+            var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangedReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
 
             if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
             {
