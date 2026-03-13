@@ -40,7 +40,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     }
 
     [DebuggerDisplay("{Action}  OldCount={OldItems?.Count ?? 0}  NewCount={NewItems?.Count ?? 0}  OldIndex={OldStartingIndex}  NewIndex={NewStartingIndex}")]
-    public sealed class ModelSettledEventArgs : NotifyCollectionChangedEventArgs
+    public class ModelSettledEventArgs : NotifyCollectionChangedEventArgs
     {
         public new ModelSettledAction Action => (ModelSettledAction)((uint)Reason | (uint)base.Action);
         public static ModelSettledEventArgs FromNotifyCollectionChangedEventArgs(

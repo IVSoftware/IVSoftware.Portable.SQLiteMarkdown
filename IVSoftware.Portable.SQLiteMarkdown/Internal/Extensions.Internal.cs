@@ -545,13 +545,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             return matched.ToArray();
         }
 
+        #region A C T I O N    M A S K S
         public static NotifyCollectionChangedAction ToNotifyCollectionChangedAction(this Enum @this)
             => (NotifyCollectionChangedAction)
-               Enum.ToObject(typeof(NotifyCollectionChangedAction), Convert.ToInt32(@this) & 0xFF);
+               Enum.ToObject(typeof(NotifyCollectionChangedAction), Convert.ToInt32(@this) & 0x07);
 
         public static NotifyCollectionChangedReason ToNotifyCollectionChangedReason(this Enum @this)
             => (NotifyCollectionChangedReason)
-               Enum.ToObject(typeof(NotifyCollectionChangedReason), Convert.ToInt32(@this) & ~0xFF);
+               Enum.ToObject(typeof(NotifyCollectionChangedReason), Convert.ToInt32(@this) & ~0x07);
+        #endregion A C T I O N    M A S K S
+
         #endregion L E G I T
     }
 }
