@@ -174,6 +174,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
             => ReadOnlyFullPathAffinity.Create(@this)?.FullPath ?? string.Empty;
 
         /// <summary>
+        /// Attempts to determine the value of the property designated as the primary key.
+        /// </summary>
+        /// <remarks>
+        /// This is a heuristic. <see cref="ReadOnlyFullPathAffinity"/> is used to interpret
+        /// the instance as <see cref="IFullPathAffinity"/> using reflection and SQLite
+        /// metadata. The result is suitable for hash set contains.
+        ///
+        /// Returns an empty string when no path information can be inferred.
+        /// </remarks>
+        public static string GetId(this object? @this)
+            => ReadOnlyFullPathAffinity.Create(@this)?.Id ?? string.Empty;
+
+        /// <summary>
         /// Provides the shared SQLite mapper connection used for metadata inspection.
         /// </summary>
         /// <remarks>

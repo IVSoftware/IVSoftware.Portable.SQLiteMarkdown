@@ -93,47 +93,52 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
+                string id = null!;
                 if (xattr.Parent?.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
-                    && xbaModel.Tag is { } model)
+                    && xbaModel.Tag is { } model
+                    && !string.IsNullOrWhiteSpace(id = model.GetId()))
                 {
-                    if (Enum.TryParse(xattr.Name.LocalName, out StdMarkdownAttribute std))
+                    if (ReferenceEquals(xattr, xbaModel))
                     {
-                        switch (xattr)
+                        OnBoundItemObjectChange(xbaModel, e.ObjectChange);
+                    }
+                    else
+                    {
+                        if (Enum.TryParse(xattr.Name.LocalName, out StdMarkdownAttribute std))
                         {
-                            case XBoundAttribute xba when std == StdMarkdownAttribute.model:
-                                break;
-                            default:
-                                switch (std)
-                                {
-                                    case StdMarkdownAttribute.ismatch:
-                                        bool isMatch = bool.Parse(xattr.Value);
-                                        switch (e.ObjectChange)
-                                        {
-                                            case XObjectChange.Add:
-                                            case XObjectChange.Value:
-                                                if (isMatch)
-                                                {
-                                                    Debug.Fail($@"ADVISORY - First Time.");
-                                                    _matchContains.Add("");
-                                                }
-                                                break;
-                                            case XObjectChange.Remove:
-                                                break;
-                                        }
-                                        { }
-                                        break;
-                                }
-                                break;
+                            switch (xattr)
+                            {
+                                case XBoundAttribute:
+                                    break;
+                                default:
+                                    switch (std)
+                                    {
+                                        case StdMarkdownAttribute.ismatch:
+                                            bool isMatch = bool.Parse(xattr.Value);
+                                            switch (e.ObjectChange)
+                                            {
+                                                case XObjectChange.Add:
+                                                case XObjectChange.Value:
+                                                    if (isMatch)
+                                                    {
+                                                        MatchContainsProto.Add(id);
+                                                    }
+                                                    break;
+                                                case XObjectChange.Remove:
+                                                    MatchContainsProto.Remove(id);
+                                                    break;
+                                            }
+                                            break;
+                                    }
+                                    break;
+                            }
                         }
                     }
                 }
-                if (xattr is XBoundAttribute xbo && xbo.Tag.GetType() == ContractType)
-                {
-                    OnBoundItemObjectChange(xbo, e.ObjectChange);
-                }
             }
         }
-        HashSet<string> _matchContains = new();
+        [Probationary]
+        public HashSet<string> MatchContainsProto = new();
 
         protected virtual void OnXElementChanged (XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
