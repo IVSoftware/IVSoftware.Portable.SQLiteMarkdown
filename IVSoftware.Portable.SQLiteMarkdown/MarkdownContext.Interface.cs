@@ -1039,14 +1039,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         /// <remarks>
         /// <see cref="MarkdownContext"/> does not implement
-        /// <see cref="INotifyCollectionChanged"/>. Instead, when the input text
+        /// <see cref="INotifyCollectionChanged"/>. Instead, once the input text
         /// settles and the internal model completes its reconciliation cycle,
-        /// this method is invoked to indicate that the model state is now stable.
+        /// this method is invoked to indicate that the canonical model has
+        /// reached a stable state.
         ///
         /// An owning surface—such as a UI adapter or derived collection that
         /// implements <see cref="INotifyCollectionChanged"/>—may observe this
         /// transition and decide whether to translate the change into a
         /// corresponding collection notification.
+        ///
+        /// The supplied <see cref="NotifyCollectionChangedEventArgs"/> may be downcast 
+        /// to <c>ModelSettledEventArgs</c>. When cast in this way, which provides
+        /// additional semantics in its upper byte(s) indicating the reason the model
+        /// settled (for example query results, filter application, or filter
+        /// removal). The lower byte remains the standard
+        /// <see cref="NotifyCollectionChangedAction"/> value.
         ///
         /// Mental Model: "Input text has settled; the model has reconciled."
         /// </remarks>

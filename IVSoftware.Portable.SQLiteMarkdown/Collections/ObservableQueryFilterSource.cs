@@ -258,6 +258,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected override void OnModelSettled(NotifyCollectionChangedEventArgs e)
         {
+            // [Obsolete]
+            Debug.Assert(
+                DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext,
+                "Expecting protected operation.");
+
+            base.OnModelSettled(e);
+
+            switch (ProjectionOption)
+            {
+                case NetProjectionOption.ObservableOnly:
+                    break;
+                case NetProjectionOption.AllowDirectChanges:
+                    break;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                    break;
+            }
+
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
@@ -281,12 +299,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 CanonicalRecordsetProtected.Add(item);
             }
-
-            Debug.Assert(
-                DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext,
-                "Expecting protected operation.");
-
-            base.OnModelSettled(e);
             CollectionChanged?.Invoke(this, e);
         }
 
