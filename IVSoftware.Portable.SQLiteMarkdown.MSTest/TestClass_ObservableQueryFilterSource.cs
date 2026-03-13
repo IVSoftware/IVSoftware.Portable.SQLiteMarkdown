@@ -1553,6 +1553,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                 var items = new ObservableQueryFilterSource<T>
                 {
                     ProjectionOption = NetProjectionOption.AllowDirectChanges,
+                    QueryFilterConfig = QueryFilterConfig.Query, 
                 };
                 string caller = string.Empty;
 
