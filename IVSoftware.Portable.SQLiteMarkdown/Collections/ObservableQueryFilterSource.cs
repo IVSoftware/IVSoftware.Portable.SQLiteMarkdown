@@ -38,7 +38,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterSource()
         {
-            CanonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetProtected);
             base.ObservableNetProjection = this;
             base.ProjectionOption = NetProjectionOption.ObservableOnly;
 
@@ -104,7 +103,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
 
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
-        public IReadOnlyList<T> UnfilteredItems => CanonicalSuperset;
+        public IReadOnlyList<T> UnfilteredItems => (List<T>)CanonicalSupersetProtected;
 
         public virtual async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
@@ -149,7 +148,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 await base.ApplyFilter();
                 try
                 {
-                    var matchesB4 = PredicateMatchSubset.ToArray();
+                    var matchesB4 = PredicateMatchSubset.Cast<T>().ToArray();
                     Debug.Assert(IsFiltering);
                     if (InputText.Length == 0)
                     {
@@ -232,7 +231,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                     reason: NotifyCollectionChangedReason.ApplyFilter,
                                     action: NotifyCollectionChangedAction.Replace,
                                     oldItems: matchesB4,
-                                    newItems: PredicateMatchSubset.ToArray()
+                                    newItems: PredicateMatchSubsetProtected
                                 )
                             );
                         }
@@ -559,8 +558,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                 new ModelSettledEventArgs(
                                     reason: NotifyCollectionChangedReason.RemoveFilter,
                                     action: NotifyCollectionChangedAction.Replace,
-                                    oldItems: PredicateMatchSubset.ToArray(),
-                                    newItems: CanonicalSuperset.ToArray()
+                                    oldItems: PredicateMatchSubsetProtected,
+                                    newItems: CanonicalSupersetProtected
                                 )
                             );
                         }
@@ -657,15 +656,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         [Careful("This polarity was wrong, and has been fixed.")]
-        private IReadOnlyList<T> RoutedRecordset =>
+        private IList RoutedRecordset =>
             RouteToFullRecordset 
-            ? CanonicalSuperset 
-            : PredicateMatchSubset;
+            ? CanonicalSupersetProtected 
+            : PredicateMatchSubsetProtected;
 
-        public IReadOnlyList<T> CanonicalSuperset { get; }
-        private readonly IList<T> CanonicalSupersetProtected = new List<T>();
+        public ICollection CanonicalSuperset => CanonicalSupersetProtected;
+        protected readonly List<T> CanonicalSupersetProtected = new List<T>();
 
-        public new IEnumerator<T> GetEnumerator() => RoutedRecordset.GetEnumerator();
+        public new IEnumerator<T> GetEnumerator() => RoutedRecordset.Cast<T>().GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
         public int Count => RoutedRecordset.Count;
@@ -682,7 +681,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public T this[int index]
         {
-            get { return RoutedRecordset[index]; }
+            get => 
+                RoutedRecordset[index] is T itemT
+                ? itemT 
+                : default!;
             set
             {
                 // Eventually we'll want to add an item to a filtered list, but to do so:
@@ -692,13 +694,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 //   of whether it meets the current filter (otherwise you might
                 //   add it and have it disappear due to the filter.
                 // WE WILL NEED TO DO THIS CAREFULLY WHEN THE TIME COMES!
-                throw new NotImplementedException("ToDo");
+                throw new NotSupportedException();
             }
         }
 
         object IList.this[int index]
         {
-            get => this[index];
+            get => this[index]!;
             set
             {
                 if (value is T t)

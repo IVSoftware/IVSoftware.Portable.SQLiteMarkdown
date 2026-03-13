@@ -1072,19 +1072,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        public IReadOnlyList<object> PredicateMatchSubset
-        {
-            get
-            {
-                if (_predicateMatchSubset is null)
-                {
-                    _predicateMatchSubset = new ReadOnlyCollection<object>((List<object>)PredicateMatchSubsetProtected);
-                }
-                return _predicateMatchSubset;
-            }
-        }
-        IReadOnlyList<object>? _predicateMatchSubset = null;
-        protected IList PredicateMatchSubsetProtected { get; set; } = new List<object>();
+        public ICollection PredicateMatchSubset => PredicateMatchSubsetProtected;
+        protected virtual IList PredicateMatchSubsetProtected { get; set; } = new List<object>();
 
         /// <summary>
         /// Signals that the canonical markdown model has reached a stable state

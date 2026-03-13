@@ -15,20 +15,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         public MarkdownContext() : base(typeof(T)) { }
 
-        public new IReadOnlyList<T> PredicateMatchSubset
-        {
-            get
-            {
-                if (_predicateMatchSubset is null)
-                {
-                    _predicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetProtected);
-                }
-                return _predicateMatchSubset;
-            }
-        }
-        IReadOnlyList<T>? _predicateMatchSubset = null;
-
-        public new IList<T> PredicateMatchSubsetProtected
+        protected override IList PredicateMatchSubsetProtected
         {
             get
             {
@@ -36,7 +23,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     base.PredicateMatchSubsetProtected = new List<T>();
                 }
-                return (IList<T>)base.PredicateMatchSubsetProtected;
+                return base.PredicateMatchSubsetProtected;
             }
         }
 
