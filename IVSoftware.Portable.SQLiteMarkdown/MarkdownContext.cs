@@ -2053,12 +2053,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
             {
-                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
-                {
-                    OnModelSettled(
-                        ModelSettledEventArgs
-                        .FromNotifyCollectionChangedEventArgs(NotifyCollectionChangedReason.ApplyFilter, eStructural));
-                }
+                OnModelSettled(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
+                    reason: NotifyCollectionChangedReason.ApplyFilter, 
+                    e: eStructural));
             }
             if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
             {

@@ -258,11 +258,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected override void OnModelSettled(NotifyCollectionChangedEventArgs e)
         {
-            // [Obsolete]
-            Debug.Assert(
-                DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext,
-                "Expecting protected operation.");
-
             base.OnModelSettled(e);
 
             switch (ProjectionOption)
@@ -462,10 +457,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // If we're responding to FilteringState changed to clear the
                 // canonical recordset it MIGHT NOT WORK. For example, manual
                 // add-remove changes to Items will bypass the input state machine. 
-                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
-                {
-                    CanonicalRecordsetProtected.Clear();
-                }
+                CanonicalRecordsetProtected.Clear();
             }
             return fsBase;
         }
@@ -479,19 +471,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         int IList.IndexOf(object value) { return ((IList)CanonicalRecordsetProtected).IndexOf(value); }
         public void Insert(int index, T item)
         {
-            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
-            {
-                CanonicalRecordsetProtected.Insert(index, item);
-            }
+            CanonicalRecordsetProtected.Insert(index, item);
             OnExternalChange(item);
         }
 
         public void Add(T item)
         {
-            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
-            {
-                CanonicalRecordsetProtected.Add(item);
-            }
+            CanonicalRecordsetProtected.Add(item);
             OnExternalChange(item);
         }
         public void RemoveAt(int index)
@@ -505,10 +491,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 item = null;
             }
-            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
-            {
-                CanonicalRecordsetProtected.RemoveAt(index);
-            }
+            CanonicalRecordsetProtected.RemoveAt(index);
             OnExternalChange(item);
         }
 
@@ -516,11 +499,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             if (item is T itemT)
             {
-                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
-                {
-                    CanonicalRecordsetProtected.Add(itemT);
-                }
-                OnExternalChange(item);
+                CanonicalRecordsetProtected.Add(itemT);
                 return CanonicalRecordsetProtected.IndexOf(itemT);
             }
             if (typeof(T) == typeof(StringWrapper))
@@ -544,10 +523,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         void IList.Insert(int index, object item)
         {
-            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
-            {
-                CanonicalRecordsetProtected.Insert(index, (T)item);
-            }
+            CanonicalRecordsetProtected.Insert(index, (T)item);
             OnExternalChange(item);
         }
 
@@ -555,10 +531,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             if (CanonicalRecordsetProtected.Contains((T)item))
             {
-                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
-                {
-                    CanonicalRecordsetProtected.Remove((T)item);
-                }
+                CanonicalRecordsetProtected.Remove((T)item);
                 OnExternalChange(item);
             }
         }

@@ -43,14 +43,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     public sealed class ModelSettledEventArgs : NotifyCollectionChangedEventArgs
     {
         public static ModelSettledEventArgs FromNotifyCollectionChangedEventArgs(
-            NotifyCollectionChangedReason extended,
+            NotifyCollectionChangedReason reason,
             NotifyCollectionChangedEventArgs e)
         {
             if(e.NewStartingIndex != -1 || e.OldStartingIndex != -1)
             {
                 Debug.Fail($@"IFD ADVISORY - First Time TODO.");
             }
-            var actionQF = (ModelSettledAction)((int)extended | (int)e.Action);
+            var actionQF = (ModelSettledAction)((int)reason | (int)e.Action);
 
             return e.Action switch
             {

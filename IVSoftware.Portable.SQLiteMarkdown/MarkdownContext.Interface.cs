@@ -514,8 +514,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case StdFSMState.RemoveItemFromModel:
                     localRemoveItemFromModel();
                     break;
-                case StdFSMState.RequestOutgoingCollectionChangedRequest:
-                    localRequestOutgoingCollectionChangedRequest();
+                case StdFSMState.ModelSettled:
+                    localRaiseModelSettled();
                     break;
                 default:
                     Debug.Fail($@"ADVISORY - Unrecognized action.");
@@ -766,14 +766,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 else this.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
             }
 
-            void localRequestOutgoingCollectionChangedRequest()
+            void localRaiseModelSettled()
             {
                 var e = context as NotifyCollectionChangedEventArgs 
                     ?? new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset);
-                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
-                {
-                    OnModelSettled(e);
-                }
+                OnModelSettled(e);
             }
             #endregion L o c a l F x
         }
@@ -881,7 +878,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
-            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext)
+            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Model)
             {   /* G T K - N O O P */
             }
             else
@@ -895,14 +892,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     {
                         if (context.Structural is NotifyCollectionChangedEventArgs eStructural)
                         {
-                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
+                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Model))
                             {
                                 OnModelSettled(eStructural);
                             }
                         }
                         if (context.Reset is NotifyCollectionChangedEventArgs eReset)
                         {
-                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
+                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Model))
                             {
                                 OnModelSettled(eReset);
                             }
@@ -1019,7 +1016,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             switch (DHostAuthorityEpoch.Authority)
             {
                 case 0:
-                case CollectionChangeAuthority.NetProjection:
                     switch (e.Action)
                     {
                         case NotifyCollectionChangedAction.Add:
@@ -1067,7 +1063,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                     break;
                 case CollectionChangeAuthority.None:
-                case CollectionChangeAuthority.MarkdownContext:
+                case CollectionChangeAuthority.Model:
                 default:
                     {   /* G T K - N O O P */
                     }
@@ -1147,7 +1143,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {
-            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Model))
             {
                 await base.OnEpochFinalizingAsync(e);
                 if (!e.Cancel)

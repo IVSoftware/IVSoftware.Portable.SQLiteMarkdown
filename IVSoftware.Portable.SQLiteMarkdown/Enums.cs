@@ -322,19 +322,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         None = 1,
 
         /// <summary>
+        /// The markdown context is notifying a change to the net
+        /// projection, the (presumably visible) collection.
+        /// </summary>
+        Model = None + 1,
+
+#if false
+        /// <summary>
         /// The user has effected a (presumably UI-related) change to a filtered collection.
         /// </summary>
         /// <remarks>
         /// Mental Model (typical): "When I add a new item, the current filter must not be allowed to 'immediately' hide it."
         /// User-facing {add, edit, remove} operations that occur against a filtered projection are *exempt* from the filter.
         /// </remarks>
-        NetProjection = None + 1,
-
-        /// <summary>
-        /// The markdown context is notifying a change to the net
-        /// projection, the (presumably visible) collection.
-        /// </summary>
-        MarkdownContext = NetProjection + 1,
+        Projection = Model + 1,
+#endif
     }
 
     /// <summary>
@@ -382,7 +384,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Request that an external host raise a collection change notification.
         /// </summary>
-        RequestOutgoingCollectionChangedRequest,
+        ModelSettled,
     }
 
     /// <summary>
@@ -455,7 +457,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         UpdateStatesForEpoch = StdFSMState.UpdateStatesForEpoch,
 
-        RequestOutgoingCollectionChangedRequest = StdFSMState.RequestOutgoingCollectionChangedRequest,
+        RequestOutgoingCollectionChangedRequest = StdFSMState.ModelSettled,
     }
 
     public enum ProjectionTopology

@@ -20,12 +20,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case NetProjectionOption.ObservableOnly:
                     break;
                 case NetProjectionOption.AllowDirectChanges:
+                    localApplyDirectChanges();
                     break;
                 default:
-
                     this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
                     break;
             }
+            #region L o c a l F x
+            void localApplyDirectChanges()
+            {
+
+            }
+            #endregion L o c a l F x
         }
         protected override void OnXAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
         {
