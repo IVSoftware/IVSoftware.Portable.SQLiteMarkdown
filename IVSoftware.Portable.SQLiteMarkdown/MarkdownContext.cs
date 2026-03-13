@@ -2056,7 +2056,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 using (BeginCollectionChangeAuthority(CollectionChangeAuthority.MarkdownContext))
                 {
                     OnModelSettled(
-                        NotifyQueryFilterCollectionChangedEventArgs
+                        ModelSettledEventArgs
                         .FromNotifyCollectionChangedEventArgs(NotifyCollectionChangedReason.ApplyFilter, eStructural));
                 }
             }

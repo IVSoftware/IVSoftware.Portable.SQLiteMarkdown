@@ -239,8 +239,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         Debug.Assert(CanonicalRecordsetProtected.Count >= 2, "ADVISORY - Filterable source is required.");
                         FilteringState = FilteringState.Active;
                         OnCollectionChanged(
-                            new NotifyQueryFilterCollectionChangedEventArgs(
-                                NotifyQueryFilterCollectionChangedAction.ApplyFilter,
+                            new ModelSettledEventArgs(
+                                ModelSettledAction.ApplyFilter,
                                 PredicateMatchSubset.Cast<T>().ToList() // snapshot
                             )
                         );
@@ -293,7 +293,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 #if false
         
         {
-            if(eBCL is NotifyQueryFilterCollectionChangedEventArgs eQF)
+            if(eBCL is ModelSettledEventArgs eQF)
             {
                 var reason = eQF.Action.ToNotifyCollectionChangedReason();
                 switch (reason)
@@ -396,8 +396,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                     // Raise single event after completing the loop.
                     OnCollectionChanged(
-                        new NotifyQueryFilterCollectionChangedEventArgs(
-                            NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
+                        new ModelSettledEventArgs(
+                            ModelSettledAction.QueryResult | ModelSettledAction.Add,
                             _canonicalRecordset.ToList() // snapshot as IList
                         )
                     );
@@ -652,8 +652,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     if (FilteringStatePrev == FilteringState.Active)
                     {
                         OnCollectionChanged(
-                            new NotifyQueryFilterCollectionChangedEventArgs(
-                                NotifyQueryFilterCollectionChangedAction.RemoveFilter | NotifyQueryFilterCollectionChangedAction.Add,
+                            new ModelSettledEventArgs(
+                                ModelSettledAction.RemoveFilter | ModelSettledAction.Add,
                                 CanonicalRecordsetProtected.ToList() // snapshot as IList
                             )
                         );
