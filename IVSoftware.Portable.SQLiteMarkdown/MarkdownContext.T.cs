@@ -1,6 +1,8 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Xml.Linq;
@@ -29,7 +31,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             #region L o c a l F x
             void localApplyDirectChanges()
             {
-
+                if (eBCL is ModelSettledEventArgs eModel)
+                {
+                    if (ObservableNetProjection is IList<T> projection)
+                    {
+                        if (eBCL.OldItems is not null) foreach (T item in eBCL.OldItems)
+                        {
+                            projection.Remove(item);
+                        }
+                        if (eBCL.NewStartingIndex == -1)
+                        {
+                            if (eBCL.NewItems is not null) foreach (T item in eBCL.NewItems)
+                            {
+                                projection.Add(item);
+                            }
+                        }
+                        else
+                        {
+                            if (eBCL.NewItems is not null) foreach (T item in eBCL.NewItems)
+                            {
+                                projection.Add(item);
+                            }
+                        }
+                    }
+                }
             }
             #endregion L o c a l F x
         }

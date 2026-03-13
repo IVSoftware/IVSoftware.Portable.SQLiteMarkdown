@@ -16,6 +16,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
+using System.Diagnostics.Tracing;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
@@ -238,12 +239,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         // count < 2 we're not supposed to be here in the first place.
                         Debug.Assert(CanonicalRecordsetProtected.Count >= 2, "ADVISORY - Filterable source is required.");
                         FilteringState = FilteringState.Active;
-                        OnCollectionChanged(
-                            new ModelSettledEventArgs(
-                                ModelSettledAction.ApplyFilter,
-                                PredicateMatchSubset.Cast<T>().ToList() // snapshot
-                            )
-                        );
+
+                        if(ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
+                        {
+                            Debug.Fail($@"ADVISORY - First Time.");
+                        }
+                        if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
+                        {
+                            OnCollectionChanged(
+                                new ModelSettledEventArgs
+                                (
+                                    reason: NotifyCollectionChangedReason.ApplyFilter,
+                                    action: NotifyCollectionChangedAction.Reset
+                                )
+                            );
+                        }
                     }
                 }
                 finally
@@ -266,13 +276,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     localApplyNonDirectChanges();
                     break;
                 case NetProjectionOption.AllowDirectChanges:
-                    localApplyDirectChanges();
                     break;
                 default:
                     this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
                     break;
             }
-            void localApplyDirectChanges () => localApplyNonDirectChanges();
             void localApplyNonDirectChanges()
             {
                 switch (e.Action)
@@ -641,12 +649,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     // but the UI visuals might change e.g. icon glyph and/or color.
                     if (FilteringStatePrev == FilteringState.Active)
                     {
-                        OnCollectionChanged(
-                            new ModelSettledEventArgs(
-                                ModelSettledAction.RemoveFilter | ModelSettledAction.Add,
-                                CanonicalRecordsetProtected.ToList() // snapshot as IList
-                            )
-                        );
+                        if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
+                        {
+                            OnCollectionChanged(
+                                new ModelSettledEventArgs(
+                                    reason: NotifyCollectionChangedReason.RemoveFilter,
+                                    action: NotifyCollectionChangedAction.Replace,
+                                    oldItems: PredicateMatchSubset.ToList(),
+                                    newItems: CanonicalRecordset.ToList()
+                                )
+                            );
+                        }
+                        if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
+                        {
+                            OnCollectionChanged(
+                                new ModelSettledEventArgs
+                                (
+                                    reason: NotifyCollectionChangedReason.RemoveFilter,
+                                    action: NotifyCollectionChangedAction.Reset
+                                )
+                            );
+                        }
                     }
                     break;
             }
