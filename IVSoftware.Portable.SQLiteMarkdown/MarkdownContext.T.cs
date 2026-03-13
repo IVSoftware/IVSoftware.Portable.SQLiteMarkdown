@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Xml.Linq;
 
@@ -12,6 +15,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected override void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
         {
             base.OnModelSettled(eBCL);
+            switch (ProjectionOption)
+            {
+                case NetProjectionOption.ObservableOnly:
+                    break;
+                case NetProjectionOption.AllowDirectChanges:
+                    break;
+                default:
+
+                    this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                    break;
+            }
         }
         protected override void OnXAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
         {
