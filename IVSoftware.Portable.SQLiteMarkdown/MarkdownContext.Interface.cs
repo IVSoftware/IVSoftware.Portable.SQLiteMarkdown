@@ -93,19 +93,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
-                if (Enum.TryParse(xattr.Name.LocalName, out StdMarkdownAttribute std))
+                if (xattr.Parent?.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
+                    && xbaModel.Tag is { } model)
                 {
-                    switch (xattr)
+                    if (Enum.TryParse(xattr.Name.LocalName, out StdMarkdownAttribute std))
                     {
-                        case XBoundAttribute xba when std == StdMarkdownAttribute.model:
-                            break;
-                        default:
-                            switch (std)
-                            {
-                                case StdMarkdownAttribute.ismatch:
-                                    break;
-                            }
-                            break;
+                        switch (xattr)
+                        {
+                            case XBoundAttribute xba when std == StdMarkdownAttribute.model:
+                                break;
+                            default:
+                                switch (std)
+                                {
+                                    case StdMarkdownAttribute.ismatch:
+                                        bool isMatch = bool.Parse(xattr.Value);
+                                        switch (e.ObjectChange)
+                                        {
+                                            case XObjectChange.Add:
+                                            case XObjectChange.Value:
+                                                if (isMatch)
+                                                {
+                                                    Debug.Fail($@"ADVISORY - First Time.");
+                                                    _matchContains.Add("");
+                                                }
+                                                break;
+                                            case XObjectChange.Remove:
+                                                break;
+                                        }
+                                        { }
+                                        break;
+                                }
+                                break;
+                        }
                     }
                 }
                 if (xattr is XBoundAttribute xbo && xbo.Tag.GetType() == ContractType)
@@ -114,6 +133,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+        HashSet<string> _matchContains = new();
 
         protected virtual void OnXElementChanged (XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
