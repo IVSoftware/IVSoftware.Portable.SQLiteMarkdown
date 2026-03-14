@@ -1196,23 +1196,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 void localAdd()
                 {
-                    throw new NotImplementedException("ToDo");
+                    Debug.Fail($@"IFD ADVISORY - First Time.");
                 }
                 void localMove()
                 {
-                    throw new NotImplementedException("ToDo");
+                    Debug.Fail($@"IFD ADVISORY - First Time.");
                 }
                 void localRemove()
                 {
-                    throw new NotImplementedException("ToDo");
+                    Debug.Fail($@"IFD ADVISORY - First Time.");
                 }
                 void localReplace()
                 {
-                    throw new NotImplementedException("ToDo");
+                    Debug.Fail($@"IFD ADVISORY - First Time.");
                 }
                 void localReset()
                 {
-                    throw new NotImplementedException("ToDo");
+                    Debug.Fail($@"IFD ADVISORY - First Time.");
                 }
                 #endregion L o c a l F x
             }
