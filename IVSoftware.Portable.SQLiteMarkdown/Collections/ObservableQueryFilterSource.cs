@@ -392,6 +392,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                 }
                                 break;
                         }
+#if DEBUG
+                        if (RouteToFullRecordset)
+                        {   /* G T K */
+                        }
+                        else
+                        {
+                            var cMe = Model.ToString();
+                        }
+#endif
                     }
                     void localReset()
                     {
@@ -867,8 +876,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                 new ModelSettledEventArgs(
                                     reason: NotifyCollectionChangedReason.RemoveFilter,
                                     action: NotifyCollectionChangedAction.Replace,
-                                    oldItems: PredicateMatchSubsetProtected,
-                                    newItems: CanonicalSupersetProtected
+                                    oldItems: (IList)PredicateMatchSubset,
+                                    newItems: (IList)CanonicalSuperset
                                 )
                             );
                         }
@@ -887,11 +896,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        protected override async Task OnInputTextSettled(CancelEventArgs e)
-        {
-            await base.OnInputTextSettled(e);
-            RouteToFullRecordset = string.IsNullOrWhiteSpace(InputText);
-        }
         protected virtual void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             ItemPropertyChanged?.Invoke(this, new ItemPropertyChangedEventArgs(e.PropertyName, sender));
@@ -934,43 +938,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// The override allows some intelligence WRT the number of filterable items in the list.
         /// </summary>
         [Careful("This polarity was wrong, and has been fixed.")]
-        public override bool RouteToFullRecordset
+        public override bool RouteToFullRecordset => base.RouteToFullRecordset;
+
+
+        [Careful("This polarity was wrong, and has been fixed.")]
+        private IReadOnlyList<T> RoutedRecordset =>
+            RouteToFullRecordset 
+            ? CanonicalSuperset 
+            : PredicateMatchSubset;
+
+        public IReadOnlyList<T> CanonicalSuperset
         {
             get
             {
-                // The FULL RECORDSET has less than 2 items total.
-                if (CanonicalSupersetProtected.Count < 2) // Filtering state ineligible. Show all items.
+                if (_canonicalSuperset is null)
                 {
-                    return true;
+                    _canonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetProtected);
                 }
-                else
-                {
-                    if (InputText.Length == 0)
-                    {
-                        return true;         // Show all items. Full stop.
-                    }
-                    else
-                    {
-                        // Initial filtering state (query expr unchanged) OR
-                        // any subsequent change where InputText is not empty.
-                        return FilteringState != FilteringState.Active;
-                    }
-                }
-            }
-            protected set
-            {
-                this.ThrowSoft<InvalidOperationException>(
-                    $"{nameof(RouteToFullRecordset)}.Set is a NOOP in the derived class and should not be called.");
+                return _canonicalSuperset;
             }
         }
-
-        [Careful("This polarity was wrong, and has been fixed.")]
-        private IList RoutedRecordset =>
-            RouteToFullRecordset 
-            ? CanonicalSupersetProtected 
-            : PredicateMatchSubsetProtected;
-
-        public ICollection CanonicalSuperset => CanonicalSupersetProtected;
+        IReadOnlyList<T>? _canonicalSuperset = null;
         protected readonly List<T> CanonicalSupersetProtected = new List<T>();
 
         public new IEnumerator<T> GetEnumerator() => RoutedRecordset.Cast<T>().GetEnumerator();

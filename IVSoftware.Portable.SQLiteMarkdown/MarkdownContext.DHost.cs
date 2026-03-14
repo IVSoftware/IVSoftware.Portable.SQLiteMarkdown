@@ -3,6 +3,7 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -68,6 +69,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }    
         }
         protected virtual void OnCommit(RecordsetRequestEventArgs e) { }
+
+        internal T ChangeSubsetType<T>() where T : class, new()
+        {
+            throw new NotImplementedException();
+        }
 
         public event EventHandler<RecordsetRequestEventArgs>? RecordsetRequest;
 

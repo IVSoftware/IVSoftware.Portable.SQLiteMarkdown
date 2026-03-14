@@ -1074,9 +1074,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        public ICollection PredicateMatchSubset => PredicateMatchSubsetProtected;
-        protected virtual IList PredicateMatchSubsetProtected { get; set; } = new List<object>();
-
         /// <summary>
         /// Signals that the canonical markdown model has reached a stable state
         /// following an input-driven reconciliation.
@@ -1204,7 +1201,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     foreach (var item in eBCL.OldItems)
                                     {
                                         projection.Remove(item);
-                                        PredicateMatchSubsetProtected.Remove(item);
+                                        PredicateMatchSubsetPrivate.Remove(item);
                                     }
                                 }
                                 if (eBCL.NewItems is not null)
@@ -1212,7 +1209,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     foreach (var item in eBCL.NewItems)
                                     {
                                         projection.Add(item);
-                                        PredicateMatchSubsetProtected.Add(item);
+                                        PredicateMatchSubsetPrivate.Add(item);
                                     }
                                 }
                                 break;

@@ -57,15 +57,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 .WithBoundAttributeValue(this);
             ContractType = type;
 
+            // Self-detect the topology.
             if (typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
             {
                 ProjectionTopology = ProjectionTopology.Inheritance;
             }
-            else
-            {   /* G T K - N O O P */
-                // We have to wait and see if this gets assigned.
-            }
+
+            // Construct the predicate subset with the correct element type
+            // that ensures a cast to IReadOnlyList<T> will succeed.
+            PredicateMatchSubsetPrivate = (IList)Activator.CreateInstance(
+                typeof(List<>).MakeGenericType(type)
+            )!;
         }
+
+        private IList PredicateMatchSubsetPrivate { get; }
+        public ICollection PredicateMatchSubset => PredicateMatchSubsetPrivate;
 
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
 
@@ -1551,16 +1557,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public virtual bool RouteToFullRecordset
         {
-            get => _routeToFullRecordset;
-            protected set
+            get
             {
-                if (!Equals(_routeToFullRecordset, value))
+                if(InputText.Trim().Length == 0)
                 {
-                    _routeToFullRecordset = value;
-                    OnPropertyChanged();
+                    return true;
                 }
+                int
+                    autocount = Model.GetAttributeValue<int>(StdMarkdownAttribute.autocount, 0),
+                    matches = Model.GetAttributeValue<int>(StdMarkdownAttribute.matches, 0);
+                return autocount == matches;
             }
         }
+
         bool _routeToFullRecordset = true;
 
         /// <summary>
