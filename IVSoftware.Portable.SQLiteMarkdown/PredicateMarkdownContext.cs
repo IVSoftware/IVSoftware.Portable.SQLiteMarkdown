@@ -43,7 +43,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             case NotifyCollectionChangedAction.Add:
                             case NotifyCollectionChangedAction.Remove:
                             case NotifyCollectionChangedAction.Reset:
-                                Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 11).Date, "Don't forget disabled");
+                                Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 14).Date, "Don't forget disabled");
 #if false
                                 IsFiltering = 
                                     MarkdownContext.FilteringState == FilteringState.Active 

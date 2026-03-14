@@ -135,7 +135,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-
+#if false && SAVE
         /// <summary>
         /// Applies filtering based on incremental changes to the input text,
         /// occurring after the initial query. Operates on the in-memory SQLite store
@@ -256,6 +256,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
             }
         }
+#endif
 
         protected override void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
         {
