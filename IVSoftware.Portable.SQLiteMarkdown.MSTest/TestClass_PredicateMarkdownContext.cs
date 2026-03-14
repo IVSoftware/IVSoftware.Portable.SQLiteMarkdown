@@ -320,7 +320,15 @@ public class TestClass_PredicateMarkdownContext
             expected = @" 
 [IME Len: 0, IsFiltering: True], [Net: 37, CC: 37, PMC: 37], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
             ;
-            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting State Report to match.");
+
+            actual = pmdc.OptionsReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+ProjectionTopology.Composition, NetProjectionOption.AllowDirectChanges, ReplaceItemsEventingOption.StructuralReplaceEvent"
+            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting Options Report to match.");
 
             pmdc.InputText = "green";
             await pmdc;

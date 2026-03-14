@@ -258,6 +258,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 #endif
 
+        /// <summary>
+        /// Provides full control over model settling semantics to this subclass.
+        /// </summary>
+        [Careful("Do not expect 'MDC by Composition' to invoke this for tests.")]
         protected override void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
         {
             base.OnModelSettled(eBCL);
