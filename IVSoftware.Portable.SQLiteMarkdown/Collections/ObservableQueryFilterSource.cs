@@ -278,6 +278,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 {
                     switch (eModel.Reason)
                     {
+                        case NotifyCollectionChangedReason.Reset:
+                            CollectionChanged?.Invoke(this, eBCL);
+                            break;
                         case NotifyCollectionChangedReason.QueryResult:
                             localLoadCanon();
                             break;

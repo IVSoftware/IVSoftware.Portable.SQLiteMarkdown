@@ -11,14 +11,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     [Flags]
     public enum NotifyCollectionChangedReason
     {
-        #region C O N T E X T
-        /// <summary>
-        /// The changes are taking place inside a QueryResult action
-        /// </summary>
-        QueryResult = 0x1000,
-        ApplyFilter = 0x2000,
+        Reset        = 0x0000,
+        QueryResult  = 0x1000,
+        ApplyFilter  = 0x2000,
         RemoveFilter = 0x4000,
-        #endregion C O N T E X T
     }
     [Flags]
     public enum ModelSettledAction

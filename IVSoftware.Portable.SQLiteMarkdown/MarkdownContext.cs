@@ -1973,6 +1973,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         projection.Clear();
                     }
                 }
+                OnModelSettled(new ModelSettledEventArgs(
+                    reason: NotifyCollectionChangedReason.Reset,
+                    action: NotifyCollectionChangedAction.Reset));
             }
         }
 
