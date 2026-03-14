@@ -3,6 +3,7 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
@@ -22,6 +23,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -245,7 +247,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     case XObjectChange.Add:
                         localSetModelAuthority(xbo);
-
+                        localAddEvents(item);
                         if (SQLITE_STRICT)
                         {
                             if (1 != FilterQueryDatabase.Insert(item))
@@ -264,6 +266,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         break;
                     case XObjectChange.Remove:
                         FilterQueryDatabase.Delete(item);
+                        localRemoveEvents(item);
                         break;
                 }
 
@@ -288,7 +291,53 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {   /* G T K - N O O P */
                 // There is no filter database to maintain.
             }
+            #region L o c a l F x
+
+            void localAddEvents(object item)
+            {
+                if(item is INotifyPropertyChanged inpc)
+                {
+                    inpc.PropertyChanged += OnItemPropertyChanged;
+                }
+            }
+            void localRemoveEvents(object item)
+            {
+                if (item is INotifyPropertyChanged inpc)
+                {
+                    inpc.PropertyChanged -= OnItemPropertyChanged;
+                }
+            }
+            #endregion L o c a l F x
         }
+
+        /// <summary>
+        /// Base Class (WDT) Event Forwarder.
+        /// </summary>
+        /// <remarks>
+        /// Necessary because:
+        /// 1. At present, there is no OnPropertyChanged(e) virtual base method.
+        /// 2. We need to raise PropertyChanged with custom events for item changes.
+        /// </remarks>
+        private void OnBaseClassPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(new ItemPropertyChangedEventArgs(e.PropertyName, nameof(WatchdogTimer)));
+        }
+        protected new virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            PropertyChanged?.Invoke(this, e);
+        }
+
+        // An event that can be invoked by this class with custom events.
+        public new event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnItemPropertyChanged(object item, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(new ItemPropertyChangedEventArgs(e.PropertyName, item));
+        }
+
 
         /// <summary>
         /// Executes a declared FSM sequentially while temporarily asserting any collection-change authority required by the FSM type.

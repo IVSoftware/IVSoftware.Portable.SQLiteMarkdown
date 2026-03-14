@@ -3,6 +3,7 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
@@ -69,6 +70,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             PredicateMatchSubsetPrivate = (IList)Activator.CreateInstance(
                 typeof(List<>).MakeGenericType(type)
             )!;
+            // We still want to get the 
+            base.PropertyChanged += OnBaseClassPropertyChanged;
         }
 
         /// <summary>
