@@ -6,6 +6,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
+using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;
@@ -2023,11 +2024,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                     await Task.Run(async () =>
                     {
+                        PredicateMatchSubsetPrivate.Clear();
                         Model.RemoveDescendantAttributes(StdMarkdownAttribute.ismatch);
 
                         #region F I L T E R    Q U E R Y
                         sql = ParseSqlMarkdown();
-
 #if DEBUG
                         if (InputText == "b")
                         {
@@ -2037,36 +2038,38 @@ SELECT * FROM items WHERE
                             "PROBABLY *NOT* BUGIRL - SCREENING FOR A SPURIOUS FAIL");
                         }
 #endif
-
+                        // Execute the filter query against the proxy table. The returned rows are
+                        // lightweight proxy records used only to discover which canonical models
+                        // satisfy the predicate. These proxy instances are not inserted into the
+                        // projection; instead their paths are resolved back to the original model
+                        // objects bound in the AST.
                         matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
                         #endregion F I L T E R    Q U E R Y
 
-                        if (false /*TODO: Sequence equal here, not count equal.*/)
-                        {   /* G T K - N O O P */
-                            // Fast track.
-                        }
-                        else
-                        {
-                            Model.SetAttributeValue(StdMarkdownAttribute.matches, (matchPaths = localGetPaths()).Length);
+                        Model.SetAttributeValue(StdMarkdownAttribute.matches, (matchPaths = localGetPaths()).Length);
 
-                            foreach (var path in matchPaths)
+                        foreach (var path in matchPaths)
+                        {
+                            switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
                             {
-                                switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
-                                {
-                                    case PlacerResult.Exists:
-                                        xaf.SetAttributeValue(nameof(StdMarkdownAttribute.ismatch), bool.TrueString);
-                                        break;
-                                    case PlacerResult.Created:
-                                        this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
-                                        break;
-                                    default:
-                                        break;
-                                }
+                                case PlacerResult.Exists:
+                                    xaf.SetAttributeValue(nameof(StdMarkdownAttribute.ismatch), bool.TrueString);
+                                    if (xaf.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
+                                        && xbaModel.Tag is { } model)
+                                    {
+                                        PredicateMatchSubsetPrivate.Add(model);
+                                    }
+                                    break;
+                                case PlacerResult.Created:
+                                    this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
+                                    break;
+                                default:
+                                    break;
                             }
-                            if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
-                            {
-                                await ApplyAffinities(matches);
-                            }
+                        }
+                        if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                        {
+                            await ApplyAffinities(matches);
                         }
                     });
 

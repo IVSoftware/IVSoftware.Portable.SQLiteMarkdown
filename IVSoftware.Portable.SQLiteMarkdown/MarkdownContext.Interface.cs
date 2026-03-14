@@ -1201,7 +1201,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     foreach (var item in eBCL.OldItems)
                                     {
                                         projection.Remove(item);
-                                        PredicateMatchSubsetPrivate.Remove(item);
                                     }
                                 }
                                 if (eBCL.NewItems is not null)
@@ -1209,7 +1208,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     foreach (var item in eBCL.NewItems)
                                     {
                                         projection.Add(item);
-                                        PredicateMatchSubsetPrivate.Add(item);
                                     }
                                 }
                                 break;
