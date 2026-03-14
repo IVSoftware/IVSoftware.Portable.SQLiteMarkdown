@@ -233,6 +233,7 @@ public class TestClass_PredicateMarkdownContext
         string actual, expected;
         using var te = this.TestableEpoch();
         var builder = new List<string>();
+        int busyCount = 0;
 
         const bool INCLUDE_LIVE_DEMO = true;
         int COUNT = INCLUDE_LIVE_DEMO ? 37 : 31;
@@ -289,15 +290,28 @@ public class TestClass_PredicateMarkdownContext
             }
         }
 
+        void localOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(pmdc.Busy):
+                    if(pmdc.Busy) busyCount++;
+                    break;
+                default:
+                    break;
+            }
+        }
         #endregion L o c a l F x
         using (pmdc.WithOnDispose(
             onInit: (sender, e) =>
             {
                 pmdc.ModelSettled += localOnModelUpdated;
+                pmdc.PropertyChanged += localOnPropertyChanged;
             },
             onDispose: (sender, e) =>
             {
                 pmdc.ModelSettled -= localOnModelUpdated;
+                pmdc.PropertyChanged -= localOnPropertyChanged;
             }))
         {
             actual = pmdc.StateReport();
@@ -308,35 +322,9 @@ public class TestClass_PredicateMarkdownContext
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
+            pmdc.InputText = "green";
+            await pmdc;
 
-            int busyCount = 0;
-            #region L o c a l F x
-            void localOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
-            {
-                switch (e.PropertyName)
-                {
-                    case nameof(pmdc.Busy):
-                        if(pmdc.Busy) busyCount++;
-                        break;
-                    default:
-                        break;
-                }
-            }
-            #endregion L o c a l F x
-            using (pmdc.WithOnDispose(
-                onInit: (sender, e) =>
-                {
-                    pmdc.PropertyChanged += localOnPropertyChanged;
-                },
-                onDispose: (sender, e) =>
-                {
-                    pmdc.PropertyChanged -= localOnPropertyChanged;
-                }))
-            {
-
-                pmdc.InputText = "green";
-                await pmdc;
-            }
             Assert.AreEqual(1, busyCount);
             Assert.IsFalse(pmdc.Busy);
 
