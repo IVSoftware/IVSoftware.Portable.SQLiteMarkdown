@@ -285,15 +285,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         "Expecting, obviously, that this *is* inheritance but making sure the property is set."
                     );
 
-                    IList? projection = this;
-                    // For filtering ops, update the internal snapshot here.
-                    switch (eModel.Reason)
-                    {
-                        case NotifyCollectionChangedReason.ApplyFilter:
-                        case NotifyCollectionChangedReason.RemoveFilter:
-                            localCommitProjectionSubset();
-                            break;
-                    }
+                    IList? projection = CanonicalSupersetProtected;
 
                     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                     // Subclass has OPTED-IN to direct changes.
@@ -333,27 +325,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     OnCollectionChanged(eBCL);
 
                     #region L o c a l F x
-                    void localCommitProjectionSubset()
-                    {
-                        if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
-                        {
-                            PredicateMatchSubsetProtected.Remove(item);
-                        }
-                        if (eBCL.NewStartingIndex == -1)
-                        {
-                            if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
-                            {
-                                PredicateMatchSubsetProtected.Add(item);
-                            }
-                        }
-                        else
-                        {
-                            if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
-                            {
-                                PredicateMatchSubsetProtected.Add(item);
-                            }
-                        }
-                    }
 
                     void localAdd()
                     {

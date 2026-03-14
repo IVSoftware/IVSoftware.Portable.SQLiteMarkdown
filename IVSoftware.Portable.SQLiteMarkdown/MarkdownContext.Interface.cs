@@ -1119,18 +1119,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 else
                 {
-                    IList? projection = ObservableNetProjection as IList;
-                    // For filtering ops, update the internal snapshot here.
-                    switch (eModel.Reason)
+                    if(ObservableNetProjection is not IList projection)
                     {
-                        case NotifyCollectionChangedReason.ApplyFilter:
-                        case NotifyCollectionChangedReason.RemoveFilter:
-                            localCommitProjectionSubset();
-                            break;
+                        this.ThrowFramework<InvalidOperationException>(
+                            $"Expecting {nameof(ObservableNetProjection)} is determined to be non-null in the ProjectionOption property getter.");
                     }
-
-                    if (projection is not null
-                        && ProjectionOption == NetProjectionOption.AllowDirectChanges)
+                    else
                     {
                         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                         // Subclass has OPTED-IN to direct changes.
@@ -1168,27 +1162,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     ModelSettled?.Invoke(this, eBCL);
 
                     #region L o c a l F x
-                    void localCommitProjectionSubset()
-                    {
-                        if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
-                        {
-                            PredicateMatchSubsetProtected.Remove(item);
-                        }
-                        if (eBCL.NewStartingIndex == -1)
-                        {
-                            if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
-                            {
-                                PredicateMatchSubsetProtected.Add(item);
-                            }
-                        }
-                        else
-                        {
-                            if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
-                            {
-                                PredicateMatchSubsetProtected.Add(item);
-                            }
-                        }
-                    }
 
                     void localAdd()
                     {
@@ -1231,6 +1204,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     foreach (var item in eBCL.OldItems)
                                     {
                                         projection.Remove(item);
+                                        PredicateMatchSubsetProtected.Remove(item);
                                     }
                                 }
                                 if (eBCL.NewItems is not null)
@@ -1238,6 +1212,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     foreach (var item in eBCL.NewItems)
                                     {
                                         projection.Add(item);
+                                        PredicateMatchSubsetProtected.Add(item);
                                     }
                                 }
                                 break;
