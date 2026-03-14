@@ -26,14 +26,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return base.PredicateMatchSubsetProtected;
             }
         }
-
-        protected override void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
-        {
-            base.OnModelSettled(eBCL);
-        }
-        protected override void OnXAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
-        {
-            base.OnXAttributeChanged(xattr, e);
-        }
     }
 }

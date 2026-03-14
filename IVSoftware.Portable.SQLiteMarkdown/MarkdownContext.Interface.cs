@@ -1104,144 +1104,153 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         protected virtual void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
         {
-            if (eBCL is not ModelSettledEventArgs eModel)
+            if (ProjectionOption == NetProjectionOption.ObservableOnly)
             {
-                this.ThrowFramework<InvalidOperationException>(
-                    $"Insisting on {nameof(ModelSettledEventArgs)} - The pattern match just gets the cast.");
+                // Relies on the subclass calling the base class when
+                // all desired changes have been made bu subclass.
+                ModelSettled?.Invoke(this, eBCL);
             }
             else
             {
-                IList? projection = ObservableNetProjection as IList;
-                // For filtering ops, update the internal snapshot here.
-                switch (eModel.Reason)
+                if (eBCL is not ModelSettledEventArgs eModel)
                 {
-                    case NotifyCollectionChangedReason.ApplyFilter:
-                    case NotifyCollectionChangedReason.RemoveFilter:
-                        localCommitProjectionSubset();
-                        break;
+                    this.ThrowFramework<InvalidOperationException>(
+                        $"Insisting on {nameof(ModelSettledEventArgs)} - The pattern match just gets the cast.");
                 }
-
-                if (projection is not null
-                    && ProjectionOption == NetProjectionOption.AllowDirectChanges)
+                else
                 {
-                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                    // Subclass has OPTED-IN to direct changes.
-                    //
-                    // Every change made here will 'attempt to' raise events on that
-                    // object, but we expect that collection object to apply its own
-                    // suppression and instead raise eBCL when the churn has finished
-                    // in response to the ModelUpdated that is about to be raised.
-                    //
-                    // TO THAT END this operation is wrapped in an authority whereby
-                    // the ONP can tell this is taking place from the back end.
-                    //
-                    // [Careful]
-                    // Inspecting the sender of those events is *not* an effective
-                    // way in in which to determine authority because *that* collection
-                    // raises *those* events, i.e., is the sender of them.
-                    Debug.Assert(
-                        DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Model,
-                        "Expecting this operation takes place under Model authority."
-                    );
-                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-                    switch (eBCL.Action)
+                    IList? projection = ObservableNetProjection as IList;
+                    // For filtering ops, update the internal snapshot here.
+                    switch (eModel.Reason)
                     {
-                        case NotifyCollectionChangedAction.Add: localAdd(); break;
-                        case NotifyCollectionChangedAction.Move: localMove(); break;
-                        case NotifyCollectionChangedAction.Remove: localRemove(); break;
-                        case NotifyCollectionChangedAction.Replace: localReplace(); break;
-                        case NotifyCollectionChangedAction.Reset: localReset(); break;
-                        default:
-                            this.ThrowFramework<NotSupportedException>($"The {eBCL.Action.ToFullKey()} case is not supported.");
+                        case NotifyCollectionChangedReason.ApplyFilter:
+                        case NotifyCollectionChangedReason.RemoveFilter:
+                            localCommitProjectionSubset();
                             break;
                     }
-                }
-                ModelSettled?.Invoke(this, eBCL);
 
-                #region L o c a l F x
-                void localCommitProjectionSubset()
-                {
-                    if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
+                    if (projection is not null
+                        && ProjectionOption == NetProjectionOption.AllowDirectChanges)
                     {
-                        PredicateMatchSubsetProtected.Remove(item);
-                    }
-                    if (eBCL.NewStartingIndex == -1)
-                    {
-                        if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
+                        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        // Subclass has OPTED-IN to direct changes.
+                        //
+                        // Every change made here will 'attempt to' raise events on that
+                        // object, but we expect that collection object to apply its own
+                        // suppression and instead raise eBCL when the churn has finished
+                        // in response to the ModelUpdated that is about to be raised.
+                        //
+                        // TO THAT END this operation is wrapped in an authority whereby
+                        // the ONP can tell this is taking place from the back end.
+                        //
+                        // [Careful]
+                        // Inspecting the sender of those events is *not* an effective
+                        // way in in which to determine authority because *that* collection
+                        // raises *those* events, i.e., is the sender of them.
+                        Debug.Assert(
+                            DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Model,
+                            "Expecting this operation takes place under Model authority."
+                        );
+                        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+                        switch (eBCL.Action)
                         {
-                            PredicateMatchSubsetProtected.Add(item);
+                            case NotifyCollectionChangedAction.Add: localAdd(); break;
+                            case NotifyCollectionChangedAction.Move: localMove(); break;
+                            case NotifyCollectionChangedAction.Remove: localRemove(); break;
+                            case NotifyCollectionChangedAction.Replace: localReplace(); break;
+                            case NotifyCollectionChangedAction.Reset: localReset(); break;
+                            default:
+                                this.ThrowFramework<NotSupportedException>($"The {eBCL.Action.ToFullKey()} case is not supported.");
+                                break;
                         }
                     }
-                    else
+                    ModelSettled?.Invoke(this, eBCL);
+
+                    #region L o c a l F x
+                    void localCommitProjectionSubset()
                     {
-                        if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
+                        if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
                         {
-                            PredicateMatchSubsetProtected.Add(item);
+                            PredicateMatchSubsetProtected.Remove(item);
+                        }
+                        if (eBCL.NewStartingIndex == -1)
+                        {
+                            if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
+                            {
+                                PredicateMatchSubsetProtected.Add(item);
+                            }
+                        }
+                        else
+                        {
+                            if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
+                            {
+                                PredicateMatchSubsetProtected.Add(item);
+                            }
                         }
                     }
-                }
 
-                void localAdd()
-                {
-                    if (eBCL.NewItems is not null)
+                    void localAdd()
                     {
-                        var index =
-                            eBCL.NewStartingIndex == -1
-                            ? projection.Count
-                            : eBCL.NewStartingIndex;
-                        foreach (var item in eBCL.NewItems)
+                        if (eBCL.NewItems is not null)
                         {
-                            projection.Insert(index++, item);
+                            var index =
+                                eBCL.NewStartingIndex == -1
+                                ? projection.Count
+                                : eBCL.NewStartingIndex;
+                            foreach (var item in eBCL.NewItems)
+                            {
+                                projection.Insert(index++, item);
+                            }
                         }
                     }
-                }
 
-                void localMove()
-                {
-                    Debug.Fail($@"IFD ADVISORY - First Time.");
-                }
-
-                void localRemove()
-                {
-                    Debug.Fail($@"IFD ADVISORY - First Time.");
-                }
-
-                void localReplace()
-                {
-                    if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
-                    {
-                        projection.Remove(item);
-                    }
-                    if (eBCL.NewItems is not null)
-                    {
-                        var index =
-                            eBCL.NewStartingIndex == -1
-                            ? projection.Count
-                            : eBCL.NewStartingIndex;
-                        foreach (var item in eBCL.NewItems)
-                        {
-                            projection.Insert(index++, item);
-                        }
-                    }
-                }
-                void localReset()
-                {
-                    projection.Clear();
-
-                    // Typically this eBCL repesents an "emptying of the collection"
-                    // but this is not a guarantee. If the event offers new items,
-                    // take this opportunity to copy them.
-                    if (eBCL.NewItems is not null)
+                    void localMove()
                     {
                         Debug.Fail($@"IFD ADVISORY - First Time.");
-                        foreach (var item in eBCL.NewItems)
+                    }
+
+                    void localRemove()
+                    {
+                        Debug.Fail($@"IFD ADVISORY - First Time.");
+                    }
+
+                    void localReplace()
+                    {
+                        if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
                         {
-                            projection.Add(item);
+                            projection.Remove(item);
+                        }
+                        if (eBCL.NewItems is not null)
+                        {
+                            var index =
+                                eBCL.NewStartingIndex == -1
+                                ? projection.Count
+                                : eBCL.NewStartingIndex;
+                            foreach (var item in eBCL.NewItems)
+                            {
+                                projection.Insert(index++, item);
+                            }
                         }
                     }
+                    void localReset()
+                    {
+                        projection.Clear();
+
+                        // Typically this eBCL repesents an "emptying of the collection"
+                        // but this is not a guarantee. If the event offers new items,
+                        // take this opportunity to copy them.
+                        if (eBCL.NewItems is not null)
+                        {
+                            Debug.Fail($@"IFD ADVISORY - First Time.");
+                            foreach (var item in eBCL.NewItems)
+                            {
+                                projection.Add(item);
+                            }
+                        }
+                    }
+                    #endregion L o c a l F x
                 }
-                #endregion L o c a l F x
             }
         }
 
