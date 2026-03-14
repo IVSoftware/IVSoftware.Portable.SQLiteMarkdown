@@ -1109,6 +1109,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
+                IList? projection = ObservableNetProjection as IList;
                 // For filtering ops, update the internal snapshot here.
                 switch (eModel.Reason)
                 {
@@ -1118,7 +1119,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         break;
                 }
 
-                if(ProjectionOption == NetProjectionOption.AllowDirectChanges)
+                if (projection is not null
+                    && ProjectionOption == NetProjectionOption.AllowDirectChanges)
                 {
                     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                     // Subclass has OPTED-IN to direct changes.
@@ -1146,28 +1148,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         default:
                             this.ThrowFramework<NotSupportedException>($"The {eBCL.Action.ToFullKey()} case is not supported.");
                             break;
-                    }
-
-                    if (ObservableNetProjection is IList projection)
-                    {
-                        if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
-                        {
-                            projection.Remove(item);
-                        }
-                        if (eBCL.NewStartingIndex == -1)
-                        {
-                            if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
-                            {
-                                projection.Add(item);
-                            }
-                        }
-                        else
-                        {
-                            if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
-                            {
-                                projection.Add(item);
-                            }
-                        }
                     }
                 }
                 ModelSettled?.Invoke(this, eBCL);
@@ -1208,11 +1188,37 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 void localReplace()
                 {
-                    Debug.Fail($@"IFD ADVISORY - First Time.");
+                    if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
+                    {
+                        projection.Remove(item);
+                    }
+                    if (eBCL.NewItems is not null)
+                    {
+                        var index =
+                            eBCL.NewStartingIndex == -1
+                            ? projection.Count
+                            : eBCL.NewStartingIndex;
+                        foreach (var item in eBCL.NewItems)
+                        {
+                            projection.Insert(index++, item);
+                        }
+                    }
                 }
                 void localReset()
                 {
-                    Debug.Fail($@"IFD ADVISORY - First Time.");
+                    projection.Clear();
+
+                    // Typically this eBCL repesents an "emptying of the collection"
+                    // but this is not a guarantee. If the event offers new items,
+                    // take this opportunity to copy them.
+                    if (eBCL.NewItems is not null)
+                    {
+                        Debug.Fail($@"IFD ADVISORY - First Time.");
+                        foreach (var item in eBCL.NewItems)
+                        {
+                            projection.Add(item);
+                        }
+                    }
                 }
                 #endregion L o c a l F x
             }
