@@ -1132,6 +1132,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     //
                     // TO THAT END this operation is wrapped in an authority whereby
                     // the ONP can tell this is taking place from the back end.
+                    //
+                    // [Careful]
+                    // Inspecting the sender of those events is *not* an effective
+                    // way in in which to determine authority because *that* collection
+                    // raises *those* events, i.e., is the sender of them.
                     Debug.Assert(
                         DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Model,
                         "Expecting this operation takes place under Model authority."
