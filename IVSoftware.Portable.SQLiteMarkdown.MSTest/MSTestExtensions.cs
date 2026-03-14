@@ -20,13 +20,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     }
     public static partial class SQLiteMarkdownTestExtensions
     {
-        public static T DequeueSingle<T>(this Queue<T> queue)
-            => queue.Count switch
-            {
-                0 => throw new InvalidOperationException("Queue is empty."),
-                1 => queue.Dequeue(),
-                _ => throw new InvalidOperationException("Multiple items in queue."),
-            };
         public static void PopulateDemoDatabase<TItem>(this SQLiteConnection @this, bool includeLive = false, PopulateOptions? options = null)
             where TItem : class, new()
         {
@@ -161,6 +154,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             }
             return @this;
         }
+
+        public static T DequeueSingle<T>(this Queue<T> queue)
+            => queue.Count switch
+            {
+                0 => throw new InvalidOperationException("Queue is empty."),
+                1 => queue.Dequeue(),
+                _ => throw new InvalidOperationException("Multiple items in queue."),
+            };
 
         /// <summary>
         /// Supports await Unk with a timeout for deterministic fail on test instead of hanging. 

@@ -1826,8 +1826,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         default:
                             throw new NotImplementedException($"Bad case: {FilteringState}");
                     }
-                    RestartIfSemanticInputChanged();
                 }
+
+                // #{AC826718-2B0C-4846-9F85-B028BAD3CC10}
+                // Please *do not move* (as has been done many times before).
+                // HERE'S THE THING:
+                // In query mode, the ui *typically* awaits Commit, not Settle,
+                // and this is epistemic because the primary database "could be
+                // anything" and take a year to return a query for all we know.
+                // NEVERTHELESS:
+                // The awaiter, and the process of settling text, is a separate concern.
+                // MENTAL MODEL (CORRECTED):
+                // Check the filtering state in OnInputTextSettled instead, and
+                // gate the 'apply filter' there, not here.
+                RestartIfSemanticInputChanged();
             }
 
             void localApplyQuerySemantics()
