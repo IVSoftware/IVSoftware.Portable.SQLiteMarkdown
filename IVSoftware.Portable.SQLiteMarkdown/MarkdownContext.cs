@@ -1,9 +1,12 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
+using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;
@@ -55,15 +58,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 .WithBoundAttributeValue(this);
             ContractType = type;
 
+            // Self-detect the topology.
             if (typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
             {
                 ProjectionTopology = ProjectionTopology.Inheritance;
             }
-            else
-            {   /* G T K - N O O P */
-                // We have to wait and see if this gets assigned.
-            }
+
+            // Construct the predicate subset with the correct element type
+            // that ensures a cast to IReadOnlyList<T> will succeed.
+            PredicateMatchSubsetPrivate = (IList)Activator.CreateInstance(
+                typeof(List<>).MakeGenericType(type)
+            )!;
         }
+
+        private IList PredicateMatchSubsetPrivate { get; }
+        public ICollection PredicateMatchSubset => PredicateMatchSubsetPrivate;
 
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
 
@@ -106,7 +115,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// 
         /// Conflicting table declarations are handled according to ContractErrorLevel.
         /// </remarks>
-        [Canonical]
+        [Canonical("ParseSqlMarkdown - All extensions and overloads come here.")]
         public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
         {
             if (IsFiltering && expr.IsSemanticallyEmpty())
@@ -123,11 +132,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return string.Empty;
             }
             ProxyType = proxyType;
-#if DEBUG
-            if (expr == "animal b")
-            { }
-#endif
-            // Guard reentrancy by making sure to clear previous passes.
+            if (ProxyType != ContractType
+                && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
+                && _proxyType.GetCustomAttribute<ExtendMappingAttribute>() is not null)
+            {
+                FilterQueryDatabase.CreateTable(ProxyType);
+            }
+
+            // Always clear the previous pass.
             XAST.RemoveNodes();
             _activeQFMode = qfMode;
             if (ValidationPredicate?.Invoke(expr) == false)
@@ -140,8 +152,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // and are *not* bound to the ContractType.
             Raw = expr;
             Transform = Raw;
-            TableName = ResolveTableNameForPass(proxyType);
-
+            if(proxyType.GetSQLiteMapping(contractType: ContractType)?.TableName is { } tableName)
+            {
+                TableName = tableName;
+            }
+            else
+            {
+                // Throw has already occured.
+                xast = null!; // We warned you.
+                return string.Empty;
+            }
             Preamble = $"SELECT * FROM {TableName} WHERE";
 
             xast = XAST;
@@ -1538,16 +1558,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public virtual bool RouteToFullRecordset
         {
-            get => _routeToFullRecordset;
-            protected set
+            get
             {
-                if (!Equals(_routeToFullRecordset, value))
+                if(InputText.Trim().Length == 0)
                 {
-                    _routeToFullRecordset = value;
-                    OnPropertyChanged();
+                    return true;
                 }
+                int
+                    autocount = Model.GetAttributeValue<int>(StdMarkdownAttribute.autocount, 0),
+                    matches = Model.GetAttributeValue<int>(StdMarkdownAttribute.matches, 0);
+                return autocount == matches;
             }
         }
+
         bool _routeToFullRecordset = true;
 
         /// <summary>
@@ -1938,79 +1961,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 #endregion I T ' S    T H E    L A W
                 if (!Equals(_searchEntryState, value))
                 {
-#if DEBUG
-                    _searchEntryStatePrev = _searchEntryState;
-#endif
                     _searchEntryState = value;
-
-#if DEBUG
-                    if(_searchEntryState == SearchEntryState.QueryCompleteNoResults 
-                        && _searchEntryStatePrev == SearchEntryState.Cleared)
-                    {
-
-                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 8).Date, "Don't forget disabled");
-                        // Debug.Fail($@"ADVISORY - SMOKING.");
-                    }
-#endif
                     OnSearchEntryStateChanged();
                     OnPropertyChanged();
                 }
             }
         }
         SearchEntryState _searchEntryState = default;
-#if DEBUG
-        SearchEntryState _searchEntryStatePrev = default;  
-#endif
 
         protected virtual void OnSearchEntryStateChanged() 
         {
             if (SearchEntryState == SearchEntryState.Cleared)
             {
-                if (ObservableNetProjection is IList projection)
-                {
-                    if (ProjectionOptions.HasFlag(NetProjectionOption.AllowDirectChanges))
-                    {
-                        if (projection.Count == 0)
-                        {
-                            if (Model.HasElements)
-                            {
-                                // Clear model with suppressed authority.
-                                RunFSM<ClearModelFSM>();
-                            }
-                        }
-                        else
-                        {
-                            // Clear a non-empty projection on its own authority.
-                            RunFSM<NativeClearFSM>();
-                        }
-                    }
-                    else
-                    {
-                        #region A D V I S O R I E S
-                        var msg = $"In {nameof(OnFilteringStateChanged)}(): {ProjectionOptions.ToFullKey()}";
-                        this.Advisory(msg);
-                        Debug.WriteLine($"260308 ADVISORY - {msg}");
-                        #endregion A D V I S O R I E S
-
-                        // Subclass has opted out of direct changes.
-                        localExecClearWithReset();
-                    }
-                }
-                else
-                {
-                    localExecClearWithReset();
-                }
-
-                // Backend execution of model clear with reset event.
-                // In one case, there is a routine safe flow, in the the other an advisory flow.
-                void localExecClearWithReset()
-                {
-                    // Request a Reset event on dispose.
-                    using (BeginResetEpoch())
-                    {
-                        // Suppress all event authority while clearing the model.
-                        RunFSM<ClearModelFSM>();
-                    }
+                if (Equals(ReservedFSMState.FastTrack, RunFSM<NativeClearFSM>()))
+                {   /* G T K */
                 }
             }
         }
@@ -2044,53 +2008,83 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+        public event EventHandler? InputTextSettled;
 
+        SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
         protected virtual async Task ApplyFilter()
         {
-            string sql;
-            IList matches;
-            string[] matchPaths;
-
-            await Task.Run(async () =>
+            using (DHostBusy.GetToken())
             {
-                Model.RemoveDescendantAttributes(StdMarkdownAttribute.ismatch);
-
-                #region F I L T E R    Q U E R Y
-                sql = ParseSqlMarkdown();
-                matches = FilterQueryDatabase.Query(ProxyType.GetMapping(), sql);
-                #endregion F I L T E R    Q U E R Y
-
-                if (matches.Count == CanonicalCount)
-                {   /* G T K - N O O P */
-                    // Fast track.
-                }
-                else
+                await _sslimAF.WaitAsync();
+                try
                 {
-                    Model.SetAttributeValue(StdMarkdownAttribute.matches, (matchPaths = localGetPaths()).Length);
+                    string sql;
+                    IList matches = Array.Empty<object>();
+                    string[] matchPaths;
 
-                    foreach (var path in matchPaths)
+                    await Task.Run(async () =>
                     {
-                        switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
+                        PredicateMatchSubsetPrivate.Clear();
+                        Model.RemoveDescendantAttributes(StdMarkdownAttribute.ismatch);
+
+                        #region F I L T E R    Q U E R Y
+                        sql = ParseSqlMarkdown();
+#if DEBUG
+                        if (InputText == "b")
                         {
-                            case PlacerResult.Exists:
-                                xaf.SetAttributeValue(nameof(StdMarkdownAttribute.ismatch), bool.TrueString);
-                                break;
-                            case PlacerResult.Created:
-                                this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
-                                break;
-                            default:
-                                break;
+                            Debug.Assert(sql == @"
+SELECT * FROM items WHERE
+(FilterTerm LIKE '%b%')".TrimStart(),
+                            "PROBABLY *NOT* BUGIRL - SCREENING FOR A SPURIOUS FAIL");
                         }
-                    }
-                    if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+#endif
+                        // Execute the filter query against the proxy table. The returned rows are
+                        // lightweight proxy records used only to discover which canonical models
+                        // satisfy the predicate. These proxy instances are not inserted into the
+                        // projection; instead their paths are resolved back to the original model
+                        // objects bound in the AST.
+                        matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
+                        #endregion F I L T E R    Q U E R Y
+
+                        Model.SetAttributeValue(StdMarkdownAttribute.matches, (matchPaths = localGetPaths()).Length);
+
+                        foreach (var path in matchPaths)
+                        {
+                            switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
+                            {
+                                case PlacerResult.Exists:
+                                    xaf.SetAttributeValue(nameof(StdMarkdownAttribute.ismatch), bool.TrueString);
+                                    if (xaf.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
+                                        && xbaModel.Tag is { } model)
+                                    {
+                                        PredicateMatchSubsetPrivate.Add(model);
+                                    }
+                                    break;
+                                case PlacerResult.Created:
+                                    this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                        {
+                            await ApplyAffinities(matches);
+                        }
+                    });
+
+                    var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangedReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
+
+                    if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
                     {
-                        await ApplyAffinities(matches);
+                        OnModelSettled(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
+                            reason: NotifyCollectionChangedReason.ApplyFilter,
+                            e: eStructural));
                     }
-                }
-            });
-            ModelUpdated?.Invoke(this, EventArgs.Empty);
-            
-            { } // <= L O O K - the model is updated.
+                    if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
+                    {
+                        OnModelSettled(eReset);
+                    }
 
 #if ABSTRACT
             // EXAMPLE<model autocount="3" count="3" matches="1">
@@ -2101,41 +2095,48 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
 
 
-            #region L o c a l F x
+                    #region L o c a l F x
 
-            /// <summary>
-            /// Resolves the path identifiers for the matched recordset. When the proxy
-            /// implements <c>IPrioritizedAffinity</c>, paths are taken directly from
-            /// <c>FullPath</c>; otherwise the value of the mapped SQLite primary key is
-            /// used. A missing primary key mapping is treated as a framework error.
-            /// </summary>
-            string[] localGetPaths()
-            {
-                if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
-                {
-                    return matches.Cast<IPrioritizedAffinity>().Select(_ => _.FullPath).ToArray();
-                }
-                else
-                {
-                    if (ProxyType.GetMapping().PK?.PropertyInfo is PropertyInfo pi)
+                    /// <summary>
+                    /// Resolves the path identifiers for the matched recordset. When the proxy
+                    /// implements <c>IPrioritizedAffinity</c>, paths are taken directly from
+                    /// <c>FullPath</c>; otherwise the value of the mapped SQLite primary key is
+                    /// used. A missing primary key mapping is treated as a framework error.
+                    /// </summary>
+                    string[] localGetPaths()
                     {
-                        return matches.Cast<object>().Select(_ => (string)pi.GetValue(_)).ToArray();
+                        if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                        {
+                            return matches.Cast<IPrioritizedAffinity>().Select(_ => _.FullPath).ToArray();
+                        }
+                        else
+                        {
+                            if (ProxyType.GetSQLiteMapping().PK?.PropertyInfo is PropertyInfo pi)
+                            {
+                                return matches.Cast<object>().Select(_ => (string)pi.GetValue(_)).ToArray();
+                            }
+                            // Error fall-through.
+                            this.ThrowHard<InvalidOperationException>();
+                            return [];
+                        }
                     }
-                    // Error fall-through.
-                    this.ThrowHard<InvalidOperationException>();
-                    return [];
+                    #endregion L o c a l F x
+                }
+                catch (Exception ex)
+                {
+                    this.RethrowHard(ex);
+                }
+                finally
+                {
+                    _sslimAF.Release();
                 }
             }
-            #endregion L o c a l F x
         }
 
         /// <summary>
         /// Apply priorities where temporality may be involved.
         /// </summary>
         protected virtual async Task ApplyAffinities(IList recordset) { }
-
-        public event EventHandler? InputTextSettled;
-        public event EventHandler? ModelUpdated;
 
         #endregion N A V    S E A R C H    S T A T E    M A C H I N E
 

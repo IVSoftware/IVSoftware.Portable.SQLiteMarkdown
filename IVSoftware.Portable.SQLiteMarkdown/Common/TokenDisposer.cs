@@ -24,6 +24,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         readonly IDisposable[] _tokens;
         bool _disposed;
 
+        public TokenDisposer(IEnumerable<IDisposable?> tokens)
+            => _tokens = tokens.OfType<IDisposable>().Reverse().ToArray();
         public TokenDisposer(params IDisposable?[] tokens)
             => _tokens = tokens.OfType<IDisposable>().Reverse().ToArray();
 

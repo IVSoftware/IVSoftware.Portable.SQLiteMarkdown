@@ -2,6 +2,7 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Switcheroo;
+using IVSoftware.Portable.SQLiteMarkdown;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
@@ -14,6 +15,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
+
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
@@ -58,7 +60,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             void subtest_Compositor()
             {
                 var mdcc = new ObservableNetProjectionWithComposition<SelectableQFModel>();
+                Assert.AreEqual(
+                    ProjectionTopology.Composition,
+                    mdcc.ProjectionTopology,
+                    "Expecting COMPOSITION as assigned in CTor.");
 
+                mdcc.ObservableNetProjection = null;
                 Assert.AreEqual(
                     ProjectionTopology.None,
                     mdcc.ProjectionTopology,
@@ -75,7 +82,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             #endregion S U B T E S T S
         }
 
-
+        /// <summary>
+        /// Verifies the ability of the MDC to self-identify its <see cref="ProjectionTopology"/>.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "Am I (the MDC) inherited by the projection class? Or does the projection class include me as a composed object?"
+        ///
+        /// The test instantiates a projection type that inherits <see cref="MarkdownContext"/>,
+        /// allowing the MDC to infer its topology without configuration. The first assertion
+        /// verifies that <see cref="ProjectionTopology.Inheritance"/> is detected immediately.
+        ///
+        /// An observable collection is then assigned and populated. The test confirms that the
+        /// MDC routes structure through its canonical model and backing database by verifying:
+        /// - the observable source contents,
+        /// - the generated canonical XML model,
+        /// - synchronized counts across canonical store, predicate matches, and database.
+        ///
+        /// Clearing the observable source confirms that routed structural changes propagate
+        /// back through the canonical store and database.
+        ///
+        /// Finally, enabling <see cref="QueryFilterConfig.Filter"/> verifies that switching the
+        /// configuration does not disturb the already established inheritance topology.
+        /// </remarks>
         [TestMethod, DoNotParallelize]
         public void TestMethod_RouteInheritance()
         {
@@ -84,7 +112,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             int nResult;
             IList<SelectableQFModel> oc;
 
-            var mdci = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
+            var mdc = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
 
             subtest_DetectTopology();
             subtest_PopulateAndClearEpoch();
@@ -95,13 +123,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             {
                 Assert.AreEqual(
                     ProjectionTopology.Inheritance,
-                    mdci.ProjectionTopology,
+                    mdc.ProjectionTopology,
                     "Expecting INHERITANCE is detectable from the start.");
             }
             void subtest_PopulateAndClearEpoch()
             {
-                oc = new ObservableCollection<SelectableQFModel>().PopulateForDemo(2);
-                mdci.ObservableNetProjection = (INotifyCollectionChanged)oc;
+
+                oc = 
+                    new ObservableCollection<SelectableQFModel>()
+                    .PopulateForDemo(2);
+
+                mdc.ObservableNetProjection = (INotifyCollectionChanged)oc;
 
 
                 actual = JsonConvert.SerializeObject(oc, Formatting.Indented);
@@ -145,7 +177,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     "Expecting TWO items on display."
                 );
 
-                actual = mdci.Model.ToString();
+                actual = mdc.Model.ToString();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -160,80 +192,79 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     actual.NormalizeResult(),
                     "Expecting updated model."
                 );
-                Assert.IsTrue(mdci.HasCounts(canonical: 2, matches: 2, database: 2));
 
-                nResult = mdci.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 2, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]";
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting StateReport FSOL to match HasCounts."
+                );
+
+                nResult = mdc.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
 
                 Assert.AreEqual(
-                    mdci.CanonicalCount,
+                    mdc.CanonicalCount,
                     nResult,
                     "Expecting the database items track the model at all times.");
 
                 #region C L E A R
-                oc.Clear();
-                Assert.AreEqual(0, mdci.CanonicalCount);
-                Assert.AreEqual(0, mdci.PredicateMatchCount);
-                Assert.IsFalse(mdci.Model.HasElements);
-                nResult = mdci.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
+                oc.Clear(); // This is an IList no-surprises clear.
+                Assert.AreEqual(0, mdc.CanonicalCount);
+                Assert.AreEqual(0, mdc.PredicateMatchCount);
+                Assert.IsFalse(mdc.Model.HasElements);
+                nResult = mdc.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
                 Assert.AreEqual(0, nResult);
+
+                // #{A665C02F-B1DE-45AE-8DAD-67775114E725}
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
                 { }
+                expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting StateReport FSOL to match HasCounts."
+                );
                 #endregion C L E A R
             }
 
             void subtest_FilterTracking()
             {
-                mdci.QueryFilterConfig = QueryFilterConfig.Filter;
+                mdc.QueryFilterConfig = QueryFilterConfig.Filter;
             }
             #endregion S U B T E S T S
         }
 
-
-        [TestMethod, Ignore]
+        [TestMethod]
         public void Test_ResetAndCopy()
         {
             string actual, expected;
             List<string> builder = new();
-            subtest_ResetAndCopy1();
-            subtest_ResetAndCopy2();
-            subtest_ResetAndCopy3();
-            subtest_ResetAndCopy4();
-            subtest_ResetAndCopy5();
-            subtest_ResetAndCopy6();
-            subtest_ResetAndCopy7();
-            subtest_ResetAndCopy8();
-            subtest_ResetAndCopy9();
-            subtest_ResetAndCopy10();
+            ObservableNetProjectionWithComposition<SelectableQFModel> mdc;
+
+            subtest_DetectTopology();
 
             #region S U B T E S T S
-            void subtest_ResetAndCopy1()
+            void subtest_DetectTopology()
             {
-            }
-            void subtest_ResetAndCopy2()
-            {
-            }
-            void subtest_ResetAndCopy3()
-            {
-            }
-            void subtest_ResetAndCopy4()
-            {
-            }
-            void subtest_ResetAndCopy5()
-            {
-            }
-            void subtest_ResetAndCopy6()
-            {
-            }
-            void subtest_ResetAndCopy7()
-            {
-            }
-            void subtest_ResetAndCopy8()
-            {
-            }
-            void subtest_ResetAndCopy9()
-            {
-            }
-            void subtest_ResetAndCopy10()
-            {
+                mdc = new ObservableNetProjectionWithComposition<SelectableQFModel>();
+                Assert.AreEqual(
+                    ProjectionTopology.Composition,
+                    mdc.ProjectionTopology,
+                    "Expecting ABSENCE OF INHERITANCE is detectable from the start as 'COMPOSITION'.");
+
+                mdc.ObservableNetProjection = null;
+                Assert.AreEqual(
+                    ProjectionTopology.None,
+                    mdc.ProjectionTopology,
+                    "Expecting NONE.");
             }
             #endregion S U B T E S T S
         }
@@ -261,6 +292,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         {
             public ObservableNetProjectionWithComposition()
             {
+                _mdc.ObservableNetProjection = this;
                 base.PropertyChanged += (sender, e) =>
                 {
                     Debug.WriteLine($"260303 BC PropertyChange '{e.PropertyName}' is advisory only.");
@@ -305,6 +337,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 }
             }
 
+            public event NotifyCollectionChangedEventHandler ModelSettled
+            {
+                add
+                {
+                    ((IMarkdownContext)_mdc).ModelSettled += value;
+                }
+
+                remove
+                {
+                    ((IMarkdownContext)_mdc).ModelSettled -= value;
+                }
+            }
+
             public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority)
             {
                 return ((IMarkdownContext)_mdc).BeginCollectionChangeAuthority(authority);
@@ -342,13 +387,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             public ProjectionTopology ProjectionTopology => ((IMarkdownContext)_mdc).ProjectionTopology;
 
-            public INotifyCollectionChanged ObservableNetProjection 
+            public INotifyCollectionChanged? ObservableNetProjection 
             {
                 get => ((IMarkdownContext)_mdc).ObservableNetProjection;
                 set => ((IMarkdownContext)_mdc).ObservableNetProjection = value;
             }
 
             public int PredicateMatchCount => ((IMarkdownContext)_mdc).PredicateMatchCount;
+
+            public NetProjectionOption ProjectionOption { get => ((IMarkdownContext)_mdc).ProjectionOption; set => ((IMarkdownContext)_mdc).ProjectionOption = value; }
+            public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get => ((IMarkdownContext)_mdc).ReplaceItemsEventingOptions; set => ((IMarkdownContext)_mdc).ReplaceItemsEventingOptions = value; }
 
             INotifyCollectionChanged? _observableNetProjection = default;
 
@@ -360,9 +408,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 ((IMarkdownContext)_mdc).LoadCanon(recordset);
             }
 
-            public bool HasCounts(int canonical, int matches, int? database = null)
+            public string[] GetTableNames()
             {
-                return ((IMarkdownContext)_mdc).HasCounts(canonical, matches, database);
+                return ((IMarkdownContext)_mdc).GetTableNames();
             }
 
             // We do not care about BC events.

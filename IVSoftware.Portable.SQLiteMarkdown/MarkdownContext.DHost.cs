@@ -1,7 +1,9 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -54,8 +56,31 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority) => DHostAuthorityEpoch.GetToken(authority);
 
+        public void Commit()
+        {
+            var e = new RecordsetRequestEventArgs();
+            OnCommit(e);
+            if (e.CanonicalSuperset is null)
+            {   /* G T K - N O O P */
+            }
+            else
+            {
+                Debug.Fail($@"ADVISORY - First Time.");
+            }    
+        }
+        protected virtual void OnCommit(RecordsetRequestEventArgs e) { }
+
+        internal T ChangeSubsetType<T>() where T : class, new()
+        {
+            throw new NotImplementedException();
+        }
+
+        public event EventHandler<RecordsetRequestEventArgs>? RecordsetRequest;
+
+
         protected DHostAuthorityEpochProvider DHostAuthorityEpoch { get; } = new();
 
+        [DebuggerDisplay("Count={ReferenceCount} Authority={Authority}")]
         protected class DHostAuthorityEpochProvider : DisposableHost
         {
             public IDisposable GetToken(CollectionChangeAuthority authority)
@@ -94,136 +119,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 ? authority
                 : 0;
         }
-
-        #region R E S E T    E P O C H
-        public IDisposable BeginResetEpoch() => DHostResetEpoch.GetToken();
-
-        /// <summary>
-        /// Requires initialization from subclass.
-        /// </summary>
-        protected DHostResetEpochProvider DHostResetEpoch
-        {
-            get
-            {
-                if (_dhostReset is null)
-                {
-                    // Has no actions, but is better than null.
-                    _dhostReset = new DHostResetEpochProvider(this, []);
-                }
-                return _dhostReset;
-            }
-            set
-            {
-                _dhostReset = value;
-            }
-        }
-        DHostResetEpochProvider? _dhostReset = null;
-
-        /// <summary>
-        /// Reset epoch that suppresses collection change propagation during reset.
-        /// </summary>
-        /// <remarks>
-        /// This host defines a reset epoch. Nested or concurrent BeginUsing transitions
-        /// are suppressed to protect the epoch boundary, while the reset actions are
-        /// executed only when the host returns to depth zero (FinalDispose).
-        ///
-        /// Delegate actions should inspect collection-change authority when necessary
-        /// (for example, NetProjection vs Canonical) to determine whether work should
-        /// actually execute.
-        /// </remarks>
-        protected class DHostResetEpochProvider : DisposableHost
-        {
-            internal DHostResetEpochProvider(IMarkdownContext mdc, IEnumerable<Action> onResetActions)
-            {
-                if (mdc is null)
-                {
-                    throw new ArgumentNullException(
-                        "MDC cannot be null because circularity is certain otherwise.");
-                }
-
-                _mdc = mdc;
-
-                List<Action> actions = new();
-                foreach (var action in onResetActions ?? [])
-                {
-                    if (action is null)
-                    {
-                        this.ThrowHard<NullReferenceException>(
-                            "Reset actions cannot contain null.");
-                    }
-                    actions.Add(action);
-                }
-
-                _onResetActions = actions.ToArray();
-            }
-
-            private readonly IMarkdownContext _mdc;
-            private readonly Action[] _onResetActions;
-
-            /// <summary>
-            /// Guards the BeginUsing / FinalDispose transition edges.
-            /// Only one thread may execute these transitions at a time.
-            /// </summary>
-            private int _lock;
-
-            protected override void OnBeginUsing(BeginUsingEventArgs e)
-            {
-                // Defensive guard against reentrant or concurrent BeginUsing transitions.
-                // This condition normally indicates a misuse of the reset paradigm and is avoidable.
-                //
-                // In correct usage, reset actions should consult collection-change
-                // authority before executing work. For example:
-                // EXAMPLE:
-                // if (DHostCollectionChangeAuthority.Authority
-                //     == NotifyCollectionChangedEventAuthority.NetProjection)
-                // {
-                //     ...
-                // }
-                //
-                // When that pattern is followed, reentrant resets are naturally avoided.
-                if (Interlocked.CompareExchange(ref _lock, 1, 0) != 0)
-                {
-                    Debug.Fail($@"ADVISORY - This should really be avoided.");
-                    this.Advisory("Reentrant BeginReset suppressed.");
-                    return;
-                }
-
-                try
-                {
-                    if (_onResetActions.Length == 0)
-                    {
-                        this.Advisory(
-                            $"Starting {nameof(DHostResetEpochProvider)} epoch with no reset actions.");
-                    }
-
-                    base.OnBeginUsing(e);
-                }
-                finally
-                {
-                    _lock = 0;
-                }
-            }
-            protected override void OnFinalDispose(FinalDisposeEventArgs e)
-            {
-                if (Interlocked.CompareExchange(ref _lock, 1, 0) != 0)
-                {
-                    this.Advisory("Concurrent reset suppressed.");
-                    return;
-                }
-                try
-                {
-                    base.OnFinalDispose(e);
-                    foreach (var action in _onResetActions)
-                    {
-                        action();
-                    }
-                }
-                finally
-                {
-                    _lock = 0;
-                }
-            }
-        }
-        #endregion R E S E T    E P O C H
     }
 }

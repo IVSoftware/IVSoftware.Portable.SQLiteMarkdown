@@ -8,12 +8,116 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
+using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using System.ComponentModel;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
 [TestClass]
 public class TestClass_PredicateMarkdownContext
 {
+
+    [TestMethod, DoNotParallelize]
+    public async Task Test_5_Items()
+    {
+        using var te = this.TestableEpoch();
+
+        const int COUNT = 5;
+        string parentId;
+        string actual, expected, sql;
+        List<TemporalAffinityQFModel> recordset;
+
+        using var cnx = new SQLiteConnection(":memory:");
+        cnx.CreateTable<TemporalAffinityQFModel>();
+
+        IList<TemporalAffinityQFModel> opc;
+
+        await subtest_EnsureParentIdSetterWorksDRY();
+
+        #region S U B T E S T S
+        async Task subtest_EnsureParentIdSetterWorksDRY()
+        {
+            opc =
+               new ObservableCollection<TemporalAffinityQFModel>()
+               .PopulateForDemo(COUNT, PopulateOptions.RandomChecks);
+
+            // Assign a parent path to last item.
+            parentId = new Guid().WithTestability().ToString();
+            opc.Last().ParentPath = parentId;
+
+            Assert.AreEqual(
+                COUNT,
+                opc.Count,
+                "Expecting initial population.");
+
+            Assert.AreEqual(COUNT, cnx.InsertAll(opc));
+
+            // Query SPECIFICALLY on ParentId alone.
+            sql = $"Select * from items where ParentId='{parentId}'";
+            recordset = cnx.Query<TemporalAffinityQFModel>(sql);
+
+
+            actual = JsonConvert.SerializeObject(recordset, Formatting.Indented);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[
+  {
+    ""Duration"": ""00:00:00"",
+    ""Remaining"": ""00:00:00"",
+    ""TemporalAffinity"": null,
+    ""TemporalChildAffinity"": null,
+    ""TemporalAffinityCurrentTimeDomain"": null,
+    ""Slots"": [],
+    ""UtcStart"": null,
+    ""UtcEnd"": null,
+    ""AvailableTimeSpan"": null,
+    ""IsDone"": null,
+    ""OutOfTime"": false,
+    ""IsPastDue"": null,
+    ""Created"": ""2000-01-01T09:04:00+07:00"",
+    ""ChainOfCustody"": ""{\r\n  \""Created\"": \""2000-01-01T09:04:00+07:00\"",\r\n  \""Coc\"": {}\r\n}"",
+    ""Model"": ""<model preview=\""Item05    \"" />"",
+    ""FullPath"": ""312d1c21-0000-0000-0000-000000000005\\312d1c21-0000-0000-0000-000000000004"",
+    ""ParentPath"": ""312d1c21-0000-0000-0000-000000000005"",
+    ""ParentId"": ""312d1c21-0000-0000-0000-000000000005"",
+    ""Priority"": 630822890400000000,
+    ""PriorityOverride"": null,
+    ""IsRoot"": false,
+    ""CustomProperties"": ""{}"",
+    ""Id"": ""312d1c21-0000-0000-0000-000000000004"",
+    ""Description"": ""Item05"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": """",
+    ""IsChecked"": true,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000004"",
+    ""QueryTerm"": ""item05"",
+    ""FilterTerm"": ""item05"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item05\""\r\n}""
+  }
+]"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting " +
+                "1. Testable Guids and DateTimeOffset." +
+                "2. Specifically, Last item is #...004 and ParentId is #...005."
+            );
+        }
+
+        #endregion S U B T E S T S
+
+    }
+
     [TestMethod, DoNotParallelize]
     public void Test_IsFilteringEdgeTests()
     {
@@ -121,13 +225,15 @@ public class TestClass_PredicateMarkdownContext
     }
 
     /// <summary>
-    /// Try out some basic extenal filters.
+    /// Try out some basic external filters.
     /// </summary>
     [TestMethod, DoNotParallelize]
     public async Task Test_TemporalAffinityQFModel()
     {
         string actual, expected;
         using var te = this.TestableEpoch();
+        var builder = new List<string>();
+        int busyCount = 0;
 
         const bool INCLUDE_LIVE_DEMO = true;
         int COUNT = INCLUDE_LIVE_DEMO ? 37 : 31;
@@ -143,6 +249,7 @@ public class TestClass_PredicateMarkdownContext
         {
             QueryFilterConfig = QueryFilterConfig.Filter,
             ObservableNetProjection = opc,
+            ProjectionOption = NetProjectionOption.AllowDirectChanges,
         };
 
         Assert.IsTrue(pmdc.IsFiltering);
@@ -166,8 +273,81 @@ public class TestClass_PredicateMarkdownContext
             pmdc.FilteringState);
         { }
 
-        pmdc.InputText = "green";
-        await pmdc;
+
+        #region L o c a l F x
+        void localOnModelUpdated(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            builder.Add(e.GetFormatted(ReferenceEquals(sender, pmdc.ObservableNetProjection)));
+            switch (pmdc.ProjectionOption)
+            {
+                case NetProjectionOption.ObservableOnly:
+                    break;
+                case NetProjectionOption.AllowDirectChanges:
+                    break;
+                default:
+                    this.ThrowHard<NotSupportedException>($"The {pmdc.ProjectionOption.ToFullKey()} case is not supported.");
+                    break;
+            }
+        }
+
+        void localOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(pmdc.Busy):
+                    if(pmdc.Busy) busyCount++;
+                    break;
+                default:
+                    break;
+            }
+        }
+        #endregion L o c a l F x
+        using (pmdc.WithOnDispose(
+            onInit: (sender, e) =>
+            {
+                pmdc.ModelSettled += localOnModelUpdated;
+                pmdc.PropertyChanged += localOnPropertyChanged;
+            },
+            onDispose: (sender, e) =>
+            {
+                pmdc.ModelSettled -= localOnModelUpdated;
+                pmdc.PropertyChanged -= localOnPropertyChanged;
+            }))
+        {
+            actual = pmdc.StateReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 37, CC: 37, PMC: 37], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting State Report to match.");
+
+            actual = pmdc.OptionsReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+ProjectionTopology.Composition, NetProjectionOption.AllowDirectChanges, ReplaceItemsEventingOption.StructuralReplaceEvent"
+            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting Options Report to match.");
+
+            pmdc.InputText = "green";
+            await pmdc;
+
+            Assert.AreEqual(1, busyCount);
+            Assert.IsFalse(pmdc.Busy);
+
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Other.Replace NewItems= 3 OldItems=37 ModelSettledEventArgs                      ";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting ModelSettledEvent."
+            );
+        }
 
         actual = pmdc.Model.ToString();
         actual.ToClipboardExpected();
@@ -219,104 +399,22 @@ public class TestClass_PredicateMarkdownContext
             actual.NormalizeResult(),
             "Expecting modeled matches."
         );
-    }
 
+        Assert.AreEqual(ProjectionTopology.Composition, pmdc.ProjectionTopology, "Because oc is INCC.");
+        
+        //Assert.AreEqual(NetProjectionOption.ObservableOnly, pmdc.ProjectionOption);
 
-    [TestMethod, DoNotParallelize]
-    public async Task Test_5_Items()
-    {
-        using var te = this.TestableEpoch();
+        actual = pmdc.StateReport();
+        actual.ToClipboardExpected();
+        { }
+        expected = @" 
+[IME Len: 5, IsFiltering: True], [Net: 3, CC: 37, PMC: 3], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]";
 
-        const int COUNT = 5;
-        string parentId;
-        string actual, expected, sql;
-        List<TemporalAffinityQFModel> recordset;
-
-        using var cnx = new SQLiteConnection(":memory:");
-        cnx.CreateTable<TemporalAffinityQFModel>();
-
-        IList<TemporalAffinityQFModel> opc;
-
-        await subtest_EnsureParentIdSetterWorksDRY();
-
-        #region S U B T E S T S
-        async Task subtest_EnsureParentIdSetterWorksDRY()
-        {
-            opc =
-               new ObservableCollection<TemporalAffinityQFModel>()
-               .PopulateForDemo(COUNT, PopulateOptions.RandomChecks);
-
-            // Assign a parent path to last item.
-            parentId = new Guid().WithTestability().ToString();
-            opc.Last().ParentPath = parentId;
-
-            Assert.AreEqual(
-                COUNT,
-                opc.Count,
-                "Expecting initial population.");
-
-            Assert.AreEqual(COUNT, cnx.InsertAll(opc));
-
-            // Query SPECIFICALLY on ParentId alone.
-            sql = $"Select * from items where ParentId='{parentId}'";
-            recordset = cnx.Query<TemporalAffinityQFModel>(sql);
-
-
-            actual = JsonConvert.SerializeObject(recordset, Formatting.Indented);
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-[
-  {
-    ""Duration"": ""00:00:00"",
-    ""Remaining"": ""00:00:00"",
-    ""TemporalAffinity"": null,
-    ""TemporalChildAffinity"": null,
-    ""TemporalAffinityCurrentTimeDomain"": null,
-    ""Slots"": [],
-    ""UtcStart"": null,
-    ""UtcEnd"": null,
-    ""AvailableTimeSpan"": null,
-    ""IsDone"": null,
-    ""OutOfTime"": false,
-    ""IsPastDue"": null,
-    ""Created"": ""2000-01-01T09:04:00+07:00"",
-    ""ChainOfCustody"": ""{\r\n  \""Created\"": \""2000-01-01T09:04:00+07:00\"",\r\n  \""Coc\"": {}\r\n}"",
-    ""Model"": ""<model preview=\""Item05    \"" />"",
-    ""FullPath"": ""312d1c21-0000-0000-0000-000000000005\\312d1c21-0000-0000-0000-000000000004"",
-    ""ParentPath"": ""312d1c21-0000-0000-0000-000000000005"",
-    ""ParentId"": ""312d1c21-0000-0000-0000-000000000005"",
-    ""Priority"": 630822890400000000,
-    ""PriorityOverride"": null,
-    ""IsRoot"": false,
-    ""CustomProperties"": ""{}"",
-    ""Id"": ""312d1c21-0000-0000-0000-000000000004"",
-    ""Description"": ""Item05"",
-    ""Keywords"": ""[]"",
-    ""KeywordsDisplay"": """",
-    ""Tags"": """",
-    ""IsChecked"": true,
-    ""Selection"": 0,
-    ""IsEditing"": false,
-    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000004"",
-    ""QueryTerm"": ""item05"",
-    ""FilterTerm"": ""item05"",
-    ""TagMatchTerm"": """",
-    ""Properties"": ""{\r\n  \""Description\"": \""Item05\""\r\n}""
-  }
-]"
-            ;
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting " +
-                "1. Testable Guids and DateTimeOffset." +
-                "2. Specifically, Last item is #...004 and ParentId is #...005."
-            );
-        }
-
-        #endregion S U B T E S T S
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting ??"
+        );
 
     }
 }

@@ -12,7 +12,7 @@ using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttri
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
 [TestClass]
-public class TestClass_NuGet_V2
+public partial class TestClass_SQLiteMarkdown
 {
     [TestMethod]
     public void Test_PolicyException()
@@ -425,6 +425,162 @@ SELECT * FROM items WHERE
         {
             "carrot".ParseSqlMarkdown<SelectableQFModel>();
             Assert.AreEqual(0, eventQueue.Count(), "Expecting *no* database creation.");
+        }
+        #endregion S U B T E S T S
+    }
+
+    /// <summary>
+    /// Test detection of "true proxy" mode.
+    /// </summary>
+    [TestMethod]
+    public void Test_BUGIRL_ProxyInheritance()
+    {
+        string actual, expected, sql;
+
+        var mapping = typeof(ItemCardModel).GetSQLiteMapping();
+        Assert.AreEqual(nameof(ItemCardModel), mapping.TableName);
+
+        subtest_IsNotTrueProxy();
+        subtest_IsWeakProxy();
+        subtest_IsTrueProxy();
+        subtest_IsTrueProxyWithExtendSchema();
+        subtest_NonIncoherentProxy();
+
+        #region S U B T E S T S
+        void subtest_IsNotTrueProxy()
+        {
+            sql = "green".ParseSqlMarkdown<ItemCardModel>();
+
+            actual = sql;
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+    SELECT * FROM ItemCardModel WHERE
+    (QueryTerm LIKE '%green%')";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting table name to be ItemCardModel."
+            );
+        }
+        void subtest_IsWeakProxy()
+        {
+            // PREREQUISITE FOR ANY PROXY
+            var mdc = new MarkdownContext<SelectableQFModel>();
+
+            // Because ItemCardModel is a subclass of SelectableQFModel
+            // it *is* a weak proxy by inheritance. But it's still a
+            // proxy, so we need to use the ContractType for table.
+
+            sql = mdc.ParseSqlMarkdown<ItemCardModel>("green");
+
+            actual = sql;
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+    SELECT * FROM items WHERE
+    (QueryTerm LIKE '%green%')";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting table name to be ItemCardModel."
+            );
+        }
+
+        void subtest_IsTrueProxy()
+        {
+            // PREREQUISITE FOR ANY PROXY
+            var mdc = new MarkdownContext<SelectableQFModel>();
+
+            // Because ItemCardModel is a subclass of SelectableQFModel
+            // it *is* a weak proxy by inheritance. But it's still a
+            // proxy, so we need to use the ContractType for table.
+
+            sql = mdc.ParseSqlMarkdown<TrueProxy>("green");
+
+            actual = sql;
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+    SELECT * FROM items WHERE
+    (QueryTerm LIKE '%green%')";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting table name to be ItemCardModel."
+            );
+        }
+
+        void subtest_IsTrueProxyWithExtendSchema()
+        {
+            // PREREQUISITE FOR ANY PROXY
+            var mdc = new MarkdownContext<SelectableQFModel>();
+
+            // Because ItemCardModel is a subclass of SelectableQFModel
+            // it *is* a weak proxy by inheritance. But it's still a
+            // proxy, so we need to use the ContractType for table.
+
+            sql = mdc.ParseSqlMarkdown<TrueProxyWithExtendSchema>("green");
+
+            actual = sql;
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+    SELECT * FROM items WHERE
+    (QueryTerm LIKE '%green%')";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting table name to be ItemCardModel."
+            );
+        }
+
+        void subtest_NonIncoherentProxy()
+        {
+            #region L o c a l F x
+            var builderThrow = new List<string>();
+            void localOnBeginThrowOrAdvise(object? sender, Throw e)
+            {
+                builderThrow.Add(e.Message);
+                e.Handled = true;
+            }
+            using var local = this.WithOnDispose(
+                onInit: (sender, e) =>
+                {
+                    Throw.BeginThrowOrAdvise += localOnBeginThrowOrAdvise;
+                },
+                onDispose: (sender, e) =>
+                {
+                    Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
+                });
+            #endregion L o c a l F x
+
+            // PREREQUISITE FOR ANY PROXY
+            var mdc = new MarkdownContext<SelectableQFModel>();
+
+            // Because ItemCardModel is a subclass of SelectableQFModel
+            // it *is* a weak proxy by inheritance. But it's still a
+            // proxy, so we need to use the ContractType for table.
+
+            sql = mdc.ParseSqlMarkdown<NonCoherentProxy>("green");
+
+            Assert.AreEqual(string.Empty, sql, "Expecting empty expression for failed parse.");
+
+            actual = string.Join(Environment.NewLine, builderThrow);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Proxy type cannot resolve to the contract table.";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting throw event (handled locally)."
+            );
         }
         #endregion S U B T E S T S
     }

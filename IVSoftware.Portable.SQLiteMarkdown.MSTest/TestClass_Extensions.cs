@@ -1,5 +1,6 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.LocalEnums;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.ComponentModel;
@@ -7,7 +8,6 @@ using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
-
     [TestClass]
     public class TestClass_Extensions
     {
@@ -31,7 +31,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             subtest_ThrowPolicy();
             void subtest_ThrowPolicy()
             {
-
                 #region L o c a l F x
                 var builderThrow = new List<string>();
                 void localOnBeginThrowOrAdvise(object? sender, Throw e)

@@ -1,6 +1,5 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.Threading;
@@ -13,7 +12,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -40,50 +38,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterSource()
         {
-            DHostResetEpoch = new DHostResetEpochProvider(
-                this,
-                [
-                    () =>
-                    {
-                        using(BeginCollectionChangeAuthority(CollectionChangeAuthority.NetProjection))
-                        {
-                            OnCollectionChanged(new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset));
-                        }
-                    }
-                ]);
-
-#if DEBUG && !SKIP_UNIT_TEST_DHostResetWithEventSuppression
-            #region L o c a l F x
-            void localTestOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-            {
-                Debug.Assert(e.Action == NotifyCollectionChangedAction.Reset);
-            }
-            #endregion L o c a l F x
-
-
-            using (this.WithOnDispose(
-                onInit: (sender, e) =>
-                {
-                    this.CollectionChanged += localTestOnCollectionChanged;
-                },
-                onDispose: (sender, e) =>
-                {
-                    this.CollectionChanged -= localTestOnCollectionChanged;
-                }))
-            {
-                using(DHostResetEpoch.GetToken())
-                {
-                    // Testing the new DHost which
-                    // should raise Reset on final dispose.
-                    System.Threading.Thread.Sleep(100);
-                }
-            }
-#endif
-
-            // GZ GZ GZ GZ
             base.ObservableNetProjection = this;
-            base.ProjectionOptions = NetProjectionOption.AllowDirectChanges;
+            base.ProjectionOption = NetProjectionOption.ObservableOnly;
 
+#if false && USER_OLD_INPC
 
             _canonicalRecordset.CollectionChanged += (sender, e) =>
             {
@@ -140,16 +98,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     _unsubscribeItems = _canonicalRecordset.OfType<INotifyPropertyChanged>().ToArray();
                 }
             };
+#endif
         }
-
-        private readonly ObservableCollection<T> _predicateMatchSubset = new ObservableCollection<T>();
-        private readonly ObservableCollection<T> _canonicalRecordset = new ObservableCollection<T>();
-
-        public IReadOnlyList<T> CanonicalRecordset => _canonicalRecordset;
 
 
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
-        public IReadOnlyList<T> UnfilteredItems => _canonicalRecordset;
+        public IReadOnlyList<T> UnfilteredItems => (List<T>)CanonicalSupersetProtected;
 
         public virtual async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
@@ -160,89 +114,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 {
                     base.LoadCanon(items);
                 });
-
-                internalLoadONPfromModel();
             }
-        }
-
-        private void internalLoadONPfromModel()
-        {
-#if DEBUG
-            var preview = FilterQueryDatabase.ExecuteScalar<int>("Select count(*) from items");
-            var model = Model;
-            { }
-            if (base.ObservableNetProjection is null)
-            {
-            }
-            else if (ReferenceEquals(this, base.ObservableNetProjection))
-            {
-            }
-            else
-            {
-                Debug.Fail($@"ADVISORY - This is nonsensical and you shouldn't be here.");
-            }
-            int CCB4 = CanonicalCount;
-#endif
-
-
-            // RESET REQUIRED main INCC for NetProjection.
-            // Unit Tests expect this, but it can't be left outside of the authority OTHERWISE MODEL GETS CLEARED.
-            // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
-
-            // _canonicalRecordset.Clear(); // <- NOT HERE!
-
-            using (base.BeginCollectionChangeAuthority(authority: CollectionChangeAuthority.MarkdownContext))
-            using (base.BeginResetEpoch())
-            {
-                // Building from the model in V2 is new.
-
-                _canonicalRecordset.Clear(); // <- HERE!
-#if DEBUG
-                if (CCB4 != CanonicalCount)
-                {
-                    Debug.Fail("ACTION NEEDED - The CC must survive this.");
-                }
-#endif
-                if (CanonicalCount != 0)
-                {
-                    foreach (var xel in Model.Descendants())
-                    {
-                        if (xel.To<T>() is { } item)
-                        {
-                            _canonicalRecordset.Add(item);
-                        }
-                    }
-
-                    // Raise single event after completing the loop.
-                    OnCollectionChanged(
-                        new NotifyQueryFilterCollectionChangedEventArgs(
-                            NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
-                            _canonicalRecordset.ToList() // snapshot as IList
-                        )
-                    );
-                }
-            }
-#if false
-            // This causes a Reset on the main INCC
-            _canonicalRecordset.Clear();
-            if (CanonicalCount != 0)
-            {
-                foreach (var xel in Model.Descendants())
-                {
-                    if (xel.To<T>() is { } item)
-                    {
-                        _canonicalRecordset.Add(item);
-                    }
-                }
-                // Raise single event after completing the loop.
-                OnCollectionChanged(
-                    new NotifyQueryFilterCollectionChangedEventArgs(
-                        NotifyQueryFilterCollectionChangedAction.QueryResult | NotifyQueryFilterCollectionChangedAction.Add,
-                        _canonicalRecordset.ToList() // snapshot as IList
-                    )
-                );
-            }
-#endif
         }
 
         /// <summary>
@@ -260,22 +132,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // UPGRADE 260301
                 base.LoadCanon(items);
                 // --------------
-                internalLoadONPfromModel();
             }
         }
 
-        /// <summary>
-        /// Sets Filter-only mode and initializes the dataset for filtering.
-        /// Ideal for static lists (e.g., preferences, enums).
-        /// When a filter is "cleared" it means the collection view returns to "all items visible".
-        /// </summary>
-        [PublishedContract("1.0")]
-        public void InitializeFilterOnlyMode(IEnumerable<T> items)
-        {
-            QueryFilterConfig = QueryFilterConfig.Filter;
-            LoadCanon(items);
-        }
-
+#if false && SAVE
         /// <summary>
         /// Applies filtering based on incremental changes to the input text,
         /// occurring after the initial query. Operates on the in-memory SQLite store
@@ -288,6 +148,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 await base.ApplyFilter();
                 try
                 {
+                    var matchesB4 = PredicateMatchSubset.Cast<T>().ToArray();
                     Debug.Assert(IsFiltering);
                     if (InputText.Length == 0)
                     {
@@ -352,21 +213,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                         // This is 'not' the place for a reconciled sync.
                         // We would do that in the UI if at all.
-                        _predicateMatchSubset.Clear();
+                        PredicateMatchSubsetProtected.Clear();
                         foreach (var item in filteredRecords)
                         {
-                            _predicateMatchSubset.Add(item);
+                            PredicateMatchSubsetProtected.Add(item);
                         }
                         // Active REGARDLESS of result because if unfiltered
                         // count < 2 we're not supposed to be here in the first place.
-                        Debug.Assert(_canonicalRecordset.Count >= 2, "ADVISORY - Filterable source is required.");
+                        Debug.Assert(CanonicalSupersetProtected.Count >= 2, "ADVISORY - Filterable source is required.");
                         FilteringState = FilteringState.Active;
-                        OnCollectionChanged(
-                            new NotifyQueryFilterCollectionChangedEventArgs(
-                                NotifyQueryFilterCollectionChangedAction.ApplyFilter,
-                                _predicateMatchSubset.ToList() // snapshot
-                            )
-                        );
+
+                        if(ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
+                        {
+                            OnCollectionChanged(
+                                new ModelSettledEventArgs
+                                (
+                                    reason: NotifyCollectionChangedReason.ApplyFilter,
+                                    action: NotifyCollectionChangedAction.Replace,
+                                    oldItems: matchesB4,
+                                    newItems: PredicateMatchSubsetProtected
+                                )
+                            );
+                        }
+                        if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
+                        {
+                            OnCollectionChanged(
+                                new ModelSettledEventArgs
+                                (
+                                    reason: NotifyCollectionChangedReason.ApplyFilter,
+                                    action: NotifyCollectionChangedAction.Reset
+                                )
+                            );
+                        }
                     }
                 }
                 finally
@@ -378,15 +256,412 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
             }
         }
+#endif
+
+        /// <summary>
+        /// Provides full control over model settling semantics to this subclass.
+        /// </summary>
+        [Careful("Do not expect 'MDC by Composition' to invoke this for tests.")]
+
+        protected override void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
+        {
+            if(ProjectionOption == NetProjectionOption.AllowDirectChanges)
+            {
+                base.OnModelSettled(eBCL);
+            }
+            else
+            {
+                if (eBCL is not ModelSettledEventArgs eModel)
+                {
+                    this.ThrowFramework<InvalidOperationException>(
+                        $"Insisting on {nameof(ModelSettledEventArgs)} - The pattern match just gets the cast.");
+                }
+                else
+                {
+                    // This override can only occur for the Inheritance topology.
+                    // The assert verifies the CTor didn't misclassify this instance as Composition.
+                    Debug.Assert(
+                        Equals(ProjectionTopology.Inheritance, ProjectionTopology),
+                        "Expecting, obviously, that this *is* inheritance but making sure the property is set."
+                    );
+
+                    IList? projection = CanonicalSupersetProtected;
+
+                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    // Subclass has OPTED-IN to direct changes.
+                    //
+                    // Every change made here will 'attempt to' raise events on that
+                    // object, but we expect that collection object to apply its own
+                    // suppression and instead raise eBCL when the churn has finished
+                    // in response to the ModelUpdated that is about to be raised.
+                    //
+                    // TO THAT END this operation is wrapped in an authority whereby
+                    // the ONP can tell this is taking place from the back end.
+                    //
+                    // [Careful]
+                    // Inspecting the sender of those events is *not* an effective
+                    // way in in which to determine authority because *that* collection
+                    // raises *those* events, i.e., is the sender of them.
+                    Debug.Assert(
+                        DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Model,
+                        "Expecting this operation takes place under Model authority."
+                    );
+                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+                    switch (eBCL.Action)
+                    {
+                        case NotifyCollectionChangedAction.Add: localAdd(); break;
+                        case NotifyCollectionChangedAction.Move: localMove(); break;
+                        case NotifyCollectionChangedAction.Remove: localRemove(); break;
+                        case NotifyCollectionChangedAction.Replace: localReplace(); break;
+                        case NotifyCollectionChangedAction.Reset: localReset(); break;
+                        default:
+                            this.ThrowFramework<NotSupportedException>($"The {eBCL.Action.ToFullKey()} case is not supported.");
+                            break;
+                    }
+
+                    // Raising our own event (instead of calling base to do it indirectly)
+                    // is the point of NetProjectionOption.ObservableOnly mode.
+                    OnCollectionChanged(eBCL);
+
+                    #region L o c a l F x
+
+                    void localAdd()
+                    {
+                        if (eBCL.NewItems is not null)
+                        {
+                            var index =
+                                eBCL.NewStartingIndex == -1
+                                ? projection.Count
+                                : eBCL.NewStartingIndex;
+                            foreach (var item in eBCL.NewItems)
+                            {
+                                projection.Insert(index++, item);
+                            }
+                        }
+                    }
+
+                    void localMove()
+                    {
+                        Debug.Fail($@"IFD ADVISORY - First Time.");
+                    }
+
+                    void localRemove()
+                    {
+                        Debug.Fail($@"IFD ADVISORY - First Time.");
+                    }
+
+                    void localReplace()
+                    {
+                        switch (eModel.Reason)
+                        {
+                            case NotifyCollectionChangedReason.QueryResult:
+                            case NotifyCollectionChangedReason.ApplyFilter:
+                            case NotifyCollectionChangedReason.RemoveFilter:
+                                // Avoid Clear() here. Some observers treat Clear as a semantic reset
+                                // (e.g., selection or virtualization state) rather than a sequence of
+                                // removes. Replaying the individual Remove/Add operations preserves
+                                // the original mutation semantics and avoids surprising state resets.
+                                if (eBCL.OldItems is not null)
+                                {
+                                    foreach (var item in eBCL.OldItems)
+                                    {
+                                        projection.Remove(item);
+                                    }
+                                }
+                                if (eBCL.NewItems is not null)
+                                {
+                                    foreach (var item in eBCL.NewItems)
+                                    {
+                                        projection.Add(item);
+                                    }
+                                }
+                                break;
+                            default:
+                                // Normal BCL Replace
+                                if (eBCL.OldItems is not null &&
+                                    eBCL.NewItems is not null &&
+                                    eBCL.OldStartingIndex >= 0)
+                                {
+                                    int index = eBCL.OldStartingIndex;
+
+                                    foreach (var item in eBCL.NewItems)
+                                    {
+                                        projection[index++] = item;
+                                    }
+                                }
+                                break;
+                        }
+#if DEBUG
+                        if (RouteToFullRecordset)
+                        {   /* G T K */
+                        }
+                        else
+                        {
+                            var cMe = Model.ToString();
+                        }
+#endif
+                    }
+                    void localReset()
+                    {
+                        projection.Clear();
+
+                        // Typically this eBCL repesents an "emptying of the collection"
+                        // but this is not a guarantee. If the event offers new items,
+                        // take this opportunity to copy them.
+                        if (eBCL.NewItems is not null)
+                        {
+                            Debug.Fail($@"IFD ADVISORY - First Time.");
+                            foreach (var item in eBCL.NewItems)
+                            {
+                                projection.Add(item);
+                            }
+                        }
+                    }
+                    #endregion L o c a l F x
+                }
+            }
+        }
+
+#if false
+        protected override void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
+        {
+            base.OnModelSettled(eBCL);
+
+            switch (ProjectionOption)
+            {
+                case NetProjectionOption.ObservableOnly:
+                    localApplyNonDirectChanges();
+                    break;
+                case NetProjectionOption.AllowDirectChanges:
+                    break;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                    break;
+            }
+            void localApplyNonDirectChanges()
+            {
+                if(eBCL is ModelSettledEventArgs eModel)
+                {
+                    switch (eModel.Reason)
+                    {
+                        case NotifyCollectionChangedReason.Reset:
+                            CollectionChanged?.Invoke(this, eBCL);
+                            break;
+                        case NotifyCollectionChangedReason.QueryResult:
+                            localLoadCanon();
+                            break;
+                        case NotifyCollectionChangedReason.RemoveFilter:
+                        case NotifyCollectionChangedReason.ApplyFilter: /* G T K - N O O P */
+#if DEBUG
+                            // Where's the iterator pointing right now?
+                            if(this.Any()) // <- specifically the iterator.
+                            {
+                                foreach (var item in this)
+                                {
+
+                                }
+                            }
+                            else
+                            {
+
+                            }
+#endif
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                #region L o c a l F x
+                void localLoadCanon()
+                {
+                    switch (eBCL.Action)
+                    {
+                        case NotifyCollectionChangedAction.Add:
+                            break;
+                        case NotifyCollectionChangedAction.Move:
+                            break;
+                        case NotifyCollectionChangedAction.Remove:
+                            break;
+                        case NotifyCollectionChangedAction.Replace:
+                            break;
+                        case NotifyCollectionChangedAction.Reset:
+                            break;
+                    }
+                    var canonicalItems =
+                        Model
+                        .Descendants().Select(_ => _.To<T>())
+                        .OfType<T>()
+                        .ToArray();
+                    CanonicalSupersetProtected.Clear();
+                    foreach (var item in canonicalItems)
+                    {
+                        CanonicalSupersetProtected.Add(item);
+                    }
+                    CollectionChanged?.Invoke(this, eBCL);
+                }
+                #endregion L o c a l F x
+
+
+#if false
+                IList? projection = ObservableNetProjection as IList;
+                // For filtering ops, update the internal snapshot here.
+                switch (eModel.Reason)
+                {
+                    case NotifyCollectionChangedReason.ApplyFilter:
+                    case NotifyCollectionChangedReason.RemoveFilter:
+                        localCommitProjectionSubset();
+                        break;
+                }
+
+                if (projection is not null
+                    && ProjectionOption == NetProjectionOption.AllowDirectChanges)
+                {
+                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    // Subclass has OPTED-IN to direct changes.
+                    //
+                    // Every change made here will 'attempt to' raise events on that
+                    // object, but we expect that collection object to apply its own
+                    // suppression and instead raise eBCL when the churn has finished
+                    // in response to the ModelUpdated that is about to be raised.
+                    //
+                    // TO THAT END this operation is wrapped in an authority whereby
+                    // the ONP can tell this is taking place from the back end.
+                    //
+                    // [Careful]
+                    // Inspecting the sender of those events is *not* an effective
+                    // way in in which to determine authority because *that* collection
+                    // raises *those* events, i.e., is the sender of them.
+                    Debug.Assert(
+                        DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Model,
+                        "Expecting this operation takes place under Model authority."
+                    );
+                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+                    switch (eBCL.Action)
+                    {
+                        case NotifyCollectionChangedAction.Add: localAdd(); break;
+                        case NotifyCollectionChangedAction.Move: localMove(); break;
+                        case NotifyCollectionChangedAction.Remove: localRemove(); break;
+                        case NotifyCollectionChangedAction.Replace: localReplace(); break;
+                        case NotifyCollectionChangedAction.Reset: localReset(); break;
+                        default:
+                            this.ThrowFramework<NotSupportedException>($"The {eBCL.Action.ToFullKey()} case is not supported.");
+                            break;
+                    }
+                }
+                ModelSettled?.Invoke(this, eBCL);
+
+                #region L o c a l F x
+                void localCommitProjectionSubset()
+                {
+                    if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
+                    {
+                        PredicateMatchSubsetProtected.Remove(item);
+                    }
+                    if (eBCL.NewStartingIndex == -1)
+                    {
+                        if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
+                        {
+                            PredicateMatchSubsetProtected.Add(item);
+                        }
+                    }
+                    else
+                    {
+                        if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
+                        {
+                            PredicateMatchSubsetProtected.Add(item);
+                        }
+                    }
+                }
+
+                void localAdd()
+                {
+                    if (eBCL.NewItems is not null)
+                    {
+                        var index =
+                            eBCL.NewStartingIndex == -1
+                            ? projection.Count
+                            : eBCL.NewStartingIndex;
+                        foreach (var item in eBCL.NewItems)
+                        {
+                            projection.Insert(index++, item);
+                        }
+                    }
+                }
+
+                void localMove()
+                {
+                    Debug.Fail($@"IFD ADVISORY - First Time.");
+                }
+
+                void localRemove()
+                {
+                    Debug.Fail($@"IFD ADVISORY - First Time.");
+                }
+
+                void localReplace()
+                {
+                    if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
+                    {
+                        projection.Remove(item);
+                    }
+                    if (eBCL.NewItems is not null)
+                    {
+                        var index =
+                            eBCL.NewStartingIndex == -1
+                            ? projection.Count
+                            : eBCL.NewStartingIndex;
+                        foreach (var item in eBCL.NewItems)
+                        {
+                            projection.Insert(index++, item);
+                        }
+                    }
+                }
+                void localReset()
+                {
+                    projection.Clear();
+
+                    // Typically this eBCL repesents an "emptying of the collection"
+                    // but this is not a guarantee. If the event offers new items,
+                    // take this opportunity to copy them.
+                    if (eBCL.NewItems is not null)
+                    {
+                        Debug.Fail($@"IFD ADVISORY - First Time.");
+                        foreach (var item in eBCL.NewItems)
+                        {
+                            projection.Add(item);
+                        }
+                    }
+                }
+                #endregion L o c a l F x
+#endif
+            }
+        }
+
+#endif
+
+        /// <summary>
+        /// Sets Filter-only mode and initializes the dataset for filtering.
+        /// Ideal for static lists (e.g., preferences, enums).
+        /// When a filter is "cleared" it means the collection view returns to "all items visible".
+        /// </summary>
+        [PublishedContract("1.0")]
+        public void InitializeFilterOnlyMode(IEnumerable<T> items)
+        {
+            QueryFilterConfig = QueryFilterConfig.Filter;
+            LoadCanon(items);
+        }
 
         #region I L I S T
-        public int IndexOf(T item) { return _canonicalRecordset.IndexOf(item); }
+        public int IndexOf(T item) { return CanonicalSupersetProtected.IndexOf(item); }
 
         void IList.Clear() => Clear(all: true);
         void ICollection<T>.Clear() => Clear(all: true);
 
         /// <summary>
-        /// 
+        /// "No Suprises" clear on an IList.
         /// </summary>
         /// <remarks>
         /// Collections that inherit MarkdownContext *must* distinguish clear semantics.
@@ -395,61 +670,52 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// 2. The UI-oriented [X] demoting clear state machine.
         /// </remarks>
         [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
-        public void Clear()
-        {
-            using (BeginResetEpoch())
-            {
-                RunFSM<NativeClearFSM>();
-            }
-        }
+        public void Clear() => base.Clear(all: true);
 
         public new FilteringState Clear(bool all = false)
         {
-            using (BeginResetEpoch())
+            var fsBase = base.Clear(all);
+            if (fsBase < FilteringState.Armed)
             {
-                var fsBase = base.Clear(all);
-                if (fsBase < FilteringState.Armed)
-                {
-                    // [Careful] 
-                    // If we're responding to FilteringState changed to clear the
-                    // canonical recordset it MIGHT NOT WORK. For example, manual
-                    // add-remove changes to Items will bypass the input state machine. 
-                    _canonicalRecordset.Clear();
-                }
-                return fsBase;
+                // [Careful] 
+                // If we're responding to FilteringState changed to clear the
+                // canonical recordset it MIGHT NOT WORK. For example, manual
+                // add-remove changes to Items will bypass the input state machine. 
+                CanonicalSupersetProtected.Clear();
             }
+            return fsBase;
         }
 
-        public bool Contains(T item) { return _canonicalRecordset.Contains(item); }
+        public bool Contains(T item) { return CanonicalSupersetProtected.Contains(item); }
 
-        public void CopyTo(T[] array, int arrayIndex) { _canonicalRecordset.CopyTo(array, arrayIndex); }
+        public void CopyTo(T[] array, int arrayIndex) { CanonicalSupersetProtected.CopyTo(array, arrayIndex); }
 
-        bool IList.Contains(object value) { return ((IList)_canonicalRecordset).Contains(value); }
+        bool IList.Contains(object value) { return ((IList)CanonicalSupersetProtected).Contains(value); }
 
-        int IList.IndexOf(object value) { return ((IList)_canonicalRecordset).IndexOf(value); }
+        int IList.IndexOf(object value) { return ((IList)CanonicalSupersetProtected).IndexOf(value); }
         public void Insert(int index, T item)
         {
-            _canonicalRecordset.Insert(index, item);
+            CanonicalSupersetProtected.Insert(index, item);
             OnExternalChange(item);
         }
 
         public void Add(T item)
         {
-            _canonicalRecordset.Add(item);
+            CanonicalSupersetProtected.Add(item);
             OnExternalChange(item);
         }
         public void RemoveAt(int index)
         {
-            object item;
-            if (index < _canonicalRecordset.Count)
+            object? item;
+            if (index < CanonicalSupersetProtected.Count)
             {
-                item = _canonicalRecordset[index];
+                item = CanonicalSupersetProtected[index];
             }
             else
             {
                 item = null;
             }
-            _canonicalRecordset.RemoveAt(index);
+            CanonicalSupersetProtected.RemoveAt(index);
             OnExternalChange(item);
         }
 
@@ -457,17 +723,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             if (item is T itemT)
             {
-                _canonicalRecordset.Add(itemT);
-                OnExternalChange(item);
-                return _canonicalRecordset.IndexOf(itemT);
+                CanonicalSupersetProtected.Add(itemT);
+                return CanonicalSupersetProtected.IndexOf(itemT);
             }
             if (typeof(T) == typeof(StringWrapper))
             {
                 var wrapper = new StringWrapper(item?.ToString() ?? string.Empty);
                 if (wrapper is T itemTT)
                 {
-                    _canonicalRecordset.Add(itemTT);
-                    return _canonicalRecordset.IndexOf(itemTT);
+                    CanonicalSupersetProtected.Add(itemTT);
+                    return CanonicalSupersetProtected.IndexOf(itemTT);
                 }
             }
             throw new ArgumentException($"Value of type {item?.GetType()} cannot be added to list of {typeof(T)}");
@@ -475,22 +740,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public bool Remove(T item)
         {
-            var removed = _canonicalRecordset.Remove(item);
+            var removed = CanonicalSupersetProtected.Remove(item);
             if (removed) OnExternalChange(item);
             return removed;
         }
 
         void IList.Insert(int index, object item)
         {
-            _canonicalRecordset.Insert(index, (T)item);
+            CanonicalSupersetProtected.Insert(index, (T)item);
             OnExternalChange(item);
         }
 
         void IList.Remove(object item)
         {
-            if (_canonicalRecordset.Contains((T)item))
+            if (CanonicalSupersetProtected.Contains((T)item))
             {
-                _canonicalRecordset.Remove((T)item);
+                CanonicalSupersetProtected.Remove((T)item);
                 OnExternalChange(item);
             }
         }
@@ -498,55 +763,60 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <summary>
         /// We need this, but this implementation is probationary and might need some tweaking.
         /// </summary>
-        private void OnExternalChange(object value)
+        private void OnExternalChange(object? value)
         {
             if (value is ISelectable selectable)
             {
                 selectable.Selection = ItemSelection.None;
             }
             FilteringState = FilteringState;
-            switch (FilteringState)
-            {
-                case FilteringState.Ineligible:
-                    break;
-                case FilteringState.Armed:
-                    break;
-                case FilteringState.Active:
-                    _ = ApplyFilter();
-                    break;
-                default:
-                    break;
-            }
         }
 
-        void ICollection.CopyTo(Array array, int index) { ((ICollection)_canonicalRecordset).CopyTo(array, index); }
+        void ICollection.CopyTo(Array array, int index) { ((ICollection)CanonicalSupersetProtected).CopyTo(array, index); }
 
-        bool ICollection.IsSynchronized { get { return ((ICollection)_canonicalRecordset).IsSynchronized; } }
+        bool ICollection.IsSynchronized { get { return ((ICollection)CanonicalSupersetProtected).IsSynchronized; } }
 
-        object ICollection.SyncRoot { get { return ((ICollection)_canonicalRecordset).SyncRoot; } }
+        object ICollection.SyncRoot { get { return ((ICollection)CanonicalSupersetProtected).SyncRoot; } }
 
         #endregion I L I S T
 
-        public event NotifyCollectionChangedEventHandler? CollectionChanged;
-
-        protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        /// <summary>
+        /// Public-facing CollectionChanged event, regardless of its source.
+        /// </summary>
+        protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs eBCL)
         {
-            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.None)
-            {   /* G T K - N O O P */
-            }
-            else
+            switch (DHostAuthorityEpoch.Authority)
             {
-                CollectionChanged?.Invoke(this, e);
+                case CollectionChangeAuthority.None:
+                    // Events are being supressed by this authority epoch.
+                    break;
+                case CollectionChangeAuthority.Model:
+                    // Raise only sanctioned events
+                    if(eBCL is ModelSettledEventArgs eModel)
+                    {
+                        CollectionChanged?.Invoke(this, eBCL);
+                    }
+                    break;
+                default:
+                    // Allow under normal collection self-authority.
+                    CollectionChanged?.Invoke(this, eBCL);
+                    break;
             }
         }
+
+        public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
         /// <summary>
         /// No client data connection is assumed, but if a persistent
         /// SQLite data connection is provided it will be queried here.
         /// </summary>
         [PublishedContract("1.0", typeof(IObservableQueryFilterSource))]
-        public virtual void Commit()
+        [PublishedContract("2.0", typeof(IMarkdownContext))]
+        public new void Commit() => base.Commit();
+        protected override void OnCommit(RecordsetRequestEventArgs e)
         {
+            base.OnCommit(e);
+
             if (MemoryDatabase != null)
             {
                 switch (SearchEntryState)
@@ -600,21 +870,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     // but the UI visuals might change e.g. icon glyph and/or color.
                     if (FilteringStatePrev == FilteringState.Active)
                     {
-                        OnCollectionChanged(
-                            new NotifyQueryFilterCollectionChangedEventArgs(
-                                NotifyQueryFilterCollectionChangedAction.RemoveFilter | NotifyQueryFilterCollectionChangedAction.Add,
-                                _canonicalRecordset.ToList() // snapshot as IList
-                            )
-                        );
+                        if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
+                        {
+                            OnCollectionChanged(
+                                new ModelSettledEventArgs(
+                                    reason: NotifyCollectionChangedReason.RemoveFilter,
+                                    action: NotifyCollectionChangedAction.Replace,
+                                    oldItems: (IList)PredicateMatchSubset,
+                                    newItems: (IList)CanonicalSuperset
+                                )
+                            );
+                        }
+                        if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
+                        {
+                            OnCollectionChanged(
+                                new ModelSettledEventArgs
+                                (
+                                    reason: NotifyCollectionChangedReason.RemoveFilter,
+                                    action: NotifyCollectionChangedAction.Reset
+                                )
+                            );
+                        }
                     }
                     break;
             }
         }
-        protected override async Task OnInputTextSettled(CancelEventArgs e)
-        {
-            await base.OnInputTextSettled(e);
-            RouteToFullRecordset = string.IsNullOrWhiteSpace(InputText);
-        }
+
         protected virtual void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             ItemPropertyChanged?.Invoke(this, new ItemPropertyChangedEventArgs(e.PropertyName, sender));
@@ -646,13 +927,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         protected override void OnSearchEntryStateChanged()
         {
             base.OnSearchEntryStateChanged();
-            if(SearchEntryState == SearchEntryState.Cleared)
+            if (SearchEntryState == SearchEntryState.Cleared)
             {
-                // This is old. Do we still need it?
-                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.None))
-                {
-                    _canonicalRecordset.Clear();
-                }
+                CanonicalSupersetProtected.Clear();
             }
         }
 
@@ -660,62 +937,51 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// This is a router for whether to show the unfiltered set or the filtered one.
         /// The override allows some intelligence WRT the number of filterable items in the list.
         /// </summary>
-
-
-        /// <summary>
-        /// This is a router for whether to show the unfiltered set or the filtered one.
-        /// The override allows some intelligence WRT the number of filterable items in the list.
-        /// </summary>
         [Careful("This polarity was wrong, and has been fixed.")]
-        public override bool RouteToFullRecordset
+        public override bool RouteToFullRecordset => base.RouteToFullRecordset;
+
+
+        [Careful("This polarity was wrong, and has been fixed.")]
+        private IReadOnlyList<T> RoutedRecordset =>
+            RouteToFullRecordset 
+            ? CanonicalSuperset 
+            : PredicateMatchSubset;
+
+        public IReadOnlyList<T> CanonicalSuperset
         {
             get
             {
-                if (_canonicalRecordset.Count < 2) // Filtering state ineligible. Show all items.
+                if (_canonicalSuperset is null)
                 {
-                    return true;
+                    _canonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetProtected);
                 }
-                else
-                {
-                    if (InputText.Length == 0)
-                    {
-                        return true;         // Show all items. Full stop.
-                    }
-                    else
-                    {
-                        return FilteringState != FilteringState.Active;
-                    }
-                }
-            }
-            protected set
-            {
-                this.ThrowSoft<InvalidOperationException>(
-                    $"{nameof(RouteToFullRecordset)}.Set is a NOOP in the derived class and should not be called.");
+                return _canonicalSuperset;
             }
         }
+        IReadOnlyList<T>? _canonicalSuperset = null;
+        protected readonly List<T> CanonicalSupersetProtected = new List<T>();
 
-        [Careful("This polarity was wrong, and has been fixed.")]
-        private IList<T> _RoutedItems_ =>
-            RouteToFullRecordset ? _canonicalRecordset : _predicateMatchSubset;
-
-        public IEnumerator<T> GetEnumerator() => _RoutedItems_.GetEnumerator();
+        public new IEnumerator<T> GetEnumerator() => RoutedRecordset.Cast<T>().GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
-        public int Count => _RoutedItems_.Count;
+        public int Count => RoutedRecordset.Count;
 
         /// <summary>
         /// Required IList support
         /// </summary>
-        public bool IsReadOnly => ((IList)_canonicalRecordset).IsReadOnly;
+        public bool IsReadOnly => ((IList)CanonicalSupersetProtected).IsReadOnly;
 
         /// <summary>
         /// Required IList support
         /// </summary>
-        public bool IsFixedSize => ((IList)_canonicalRecordset).IsFixedSize;
+        public bool IsFixedSize => ((IList)CanonicalSupersetProtected).IsFixedSize;
 
         public T this[int index]
         {
-            get { return _RoutedItems_[index]; }
+            get => 
+                RoutedRecordset[index] is T itemT
+                ? itemT 
+                : default!;
             set
             {
                 // Eventually we'll want to add an item to a filtered list, but to do so:
@@ -725,13 +991,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 //   of whether it meets the current filter (otherwise you might
                 //   add it and have it disappear due to the filter.
                 // WE WILL NEED TO DO THIS CAREFULLY WHEN THE TIME COMES!
-                throw new NotImplementedException("ToDo");
+                throw new NotSupportedException();
             }
         }
 
         object IList.this[int index]
         {
-            get => this[index];
+            get => this[index]!;
             set
             {
                 if (value is T t)

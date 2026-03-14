@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Transactions;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -69,7 +70,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             if (!Equals(_contractType, value))
                             {
                                 _contractType = value;
-                                // OnContractTypeChanged();
                                 OnPropertyChanged();
                             }
                             break;
@@ -83,7 +83,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             if (_contractType is null)
                             {
                                 _contractType = value;
-                                // OnContractTypeChanged();
                                 OnPropertyChanged();
                             }
                             break;
@@ -93,24 +92,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         Type? _contractType = null;
 
-#if false
-
-        /// <summary>
-        /// Creates or recreates a memory database containing a table for the ContractType
-        /// </summary>
-        protected virtual void OnContractTypeChanged()
-        {
-            if (ContractType is null)
-            {
-                this.ThrowHard<NullReferenceException>($"{nameof(ContractType)} cannot be null.");
-            }
-            else
-            {
-                _ = TryCreateTableForContractType();
-                TableName = ResolveTableNameForPass(ContractType);
-            }
-        }
-#endif
         public Type ProxyType
         {
             get => _proxyType;
@@ -129,21 +110,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if (!Equals(_proxyType, value))
                     {
                         _proxyType = value;
-                        if (_proxyType != ContractType)
-                        {
-                            TableMapping
-                                contractMapping = ContractType.GetMapping(),
-                                proxyMapping = _proxyType.GetMapping();
-
-                            if (contractMapping.TableName == proxyMapping.TableName)
-                            {
-                                throw new NotImplementedException("ToDo");
-                            }
-                            else
-                            {
-                                this.ThrowPolicyException(SQLiteMarkdownPolicy.ProxyTableMapping);
-                            }
-                        }
                         OnPropertyChanged();
                     }
                 }
@@ -241,7 +207,7 @@ Rationale     : The contract database must be held stable for this inheritance t
             else
             {
                 // Accept the uncontroversial table name as seen by SQLite.
-                bcTableName = Mapper.GetMapping(type).TableName;
+                bcTableName = type.GetSQLiteMapping().TableName;
             }
             return bcTableName;
 
@@ -263,18 +229,6 @@ Rationale     : The contract database must be held stable for this inheritance t
         private readonly HashSet<Type> _warnedOnType = new();
         private readonly object _warnLock = new();
 
-        protected static SQLiteConnectionMapper Mapper
-        {
-            get
-            {
-                if (_mapper is null)
-                {
-                    _mapper = new SQLiteConnectionMapper();
-                }
-                return _mapper;
-            }
-        }
-        static SQLiteConnectionMapper? _mapper = null;
         public ContractErrorLevel ContractErrorLevel { get; set; } = ContractErrorLevel.ThrowSoft;
 
         protected sealed class SQLiteConnectionMapper

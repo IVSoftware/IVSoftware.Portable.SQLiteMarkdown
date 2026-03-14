@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -287,6 +288,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// XBoundObject that holds a filter predicates when present.
         /// </summary>
         predicates,
+        triage,
         #endregion P R E D I C A T E S
     }
 
@@ -320,19 +322,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         None = 1,
 
         /// <summary>
+        /// The markdown context is notifying a change to the net
+        /// projection, the (presumably visible) collection.
+        /// </summary>
+        Model = None + 1,
+
+#if false
+        /// <summary>
         /// The user has effected a (presumably UI-related) change to a filtered collection.
         /// </summary>
         /// <remarks>
         /// Mental Model (typical): "When I add a new item, the current filter must not be allowed to 'immediately' hide it."
         /// User-facing {add, edit, remove} operations that occur against a filtered projection are *exempt* from the filter.
         /// </remarks>
-        NetProjection = None + 1,
-
-        /// <summary>
-        /// The markdown context is notifying a change to the net
-        /// projection, the (presumably visible) collection.
-        /// </summary>
-        MarkdownContext = NetProjection + 1,
+        Projection = Model + 1,
+#endif
     }
 
     /// <summary>
@@ -343,22 +347,34 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         DetectFastTrack = 1,
 
-        ClearProjection,
-
         /// <summary>
         /// Clear or Create Table for ContractType.
         /// </summary>
-        InitFQBDForEpoch,
+        /// <remarks>
+        /// The decision to repopulate with a canonical recordset
+        /// is switched on the enum type.
+        /// </remarks>
+        ResetOrCanonizeFQBDForEpoch,
 
         /// <summary>
-        /// Build the XML model of the canonical recordset.
+        /// Empty the contents of the contract table.
         /// </summary>
-        InitModelForEpoch,
+        ResetOrCanonizeModelForEpoch,
 
         /// <summary>
         /// Set SearchEntryState and FilteringState contextually.
         /// </summary>
-        InitStatesForEpoch,
+        UpdateStatesForEpoch,
+
+        /// <summary>
+        /// User interactive Add.
+        /// </summary>
+        AddItemToModel,
+
+        /// <summary>
+        /// User interactive Remove.
+        /// </summary>
+        RemoveItemFromModel,
 
         /// <summary>
         /// Using a DHostSuppress token, populate the NetProjection. Reset will happen on token release.
@@ -366,28 +382,39 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         NetProjectWithSuppress,
 
         /// <summary>
-        /// Empty the contents of the contract table.
+        /// Request that an external host raise a collection change notification.
         /// </summary>
-        ResetFQBDForEpoch,
-
-        /// <summary>
-        /// Empty the contents of the contract table.
-        /// </summary>
-        ResetModelForEpoch,
+        ModelSettled,
     }
 
     /// <summary>
     /// Executes on rising edge of IsFiltering.
     /// </summary>
-    internal enum InitFilterEpochFSM
+    internal enum LoadIsFilteringEpochFSM
     {
         DetectFastTrack = StdFSMState.DetectFastTrack,
 
-        InitFQBDForEpoch = StdFSMState.InitFQBDForEpoch,
+        ResetOrCanonizeFQBDForEpoch = StdFSMState.ResetOrCanonizeFQBDForEpoch,
 
-        InitModelForEpoch = StdFSMState.InitModelForEpoch,
+        ResetOrCanonizeModelForEpoch = StdFSMState.ResetOrCanonizeModelForEpoch,
 
-        InitStatesForEpoch = StdFSMState.InitStatesForEpoch,
+        UpdateStatesForEpoch = StdFSMState.UpdateStatesForEpoch,
+    }
+
+    /// <summary>
+    /// Executes on rising edge of IsFiltering.
+    /// </summary>
+    internal enum TrackUserAddItem
+    {
+        AddItemToModel = StdFSMState.AddItemToModel,
+    }
+
+    /// <summary>
+    /// Executes on rising edge of IsFiltering.
+    /// </summary>
+    internal enum TrackUserRemoveItem
+    {
+        RemoveItemFromModel = StdFSMState.RemoveItemFromModel,
     }
 
     /// <summary>
@@ -395,9 +422,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </summary>
     internal enum ResetFilterEpochFSM
     {
-        ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
+        ResetOrCanonizeFQBDForEpoch = StdFSMState.ResetOrCanonizeFQBDForEpoch,
 
-        ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
+        ResetModelForEpoch = StdFSMState.ResetOrCanonizeModelForEpoch,
+
+        UpdateStatesForEpoch = StdFSMState.UpdateStatesForEpoch,
     }
 
 #if false
@@ -416,30 +445,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
 
     /// <summary>
-    /// Empties the Model and the FiterQueryDatabase without eventing.
-    /// </summary>
-    [CollectionChangeAuthority(CollectionChangeAuthority.None)]
-    internal enum ClearModelFSM
-    {
-        DetectFastTrack = StdFSMState.DetectFastTrack,
-
-        ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
-
-        ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
-    }
-
-    /// <summary>
     /// Unconditional full clear suppresses event churn and raises final Reset.
     /// </summary>
-    [ResetEpoch]
-    [CollectionChangeAuthority(CollectionChangeAuthority.None)]
+    [CollectionChangeAuthority(CollectionChangeAuthority.Model)]
     internal enum NativeClearFSM
     {
         DetectFastTrack = StdFSMState.DetectFastTrack,
 
-        ResetFQBDForEpoch = StdFSMState.ResetFQBDForEpoch,
+        ResetOrCanonizeFQBDForEpoch = StdFSMState.ResetOrCanonizeFQBDForEpoch,
 
-        ResetModelForEpoch = StdFSMState.ResetModelForEpoch,
+        ResetOrCanonizeModelForEpoch = StdFSMState.ResetOrCanonizeModelForEpoch,
+
+        UpdateStatesForEpoch = StdFSMState.UpdateStatesForEpoch,
+
+        RaiseModelSettledEvent = StdFSMState.ModelSettled,
     }
 
     public enum ProjectionTopology
@@ -466,7 +485,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Inheritance,
 
         /// <summary>
-        /// The ObservableNetProjection inherits INotifyCollectionChanged - flitering employs copying not routing.
+        /// The ObservableNetProjection inherits INotifyCollectionChanged - filtering employs copying not routing.
         /// </summary>
         /// <remarks>
         /// IsFiltering => 
@@ -483,20 +502,112 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Composition,
     }
 
-    [Flags, Probationary]
-    internal enum NetProjectionOption
+    [NotFlags]
+    public enum NetProjectionOption
     {
         /// <summary>
-        /// Default permissive.
+        /// Observe the projection for reconciliation but do not mutate it.
         /// </summary>
         /// <remarks>
-        /// MentalModel: "The explicit assignment of ObservableNetProjection *is" the OPT-IN."
+        /// MDC subscribes to INCC events in order to maintain the canonical model,
+        /// but treats the projection as externally owned by the UI.
         /// </remarks>
-        AllowDirectChanges = 0x1,
+        ObservableOnly,
 
         /// <summary>
-        /// Track INCC events but don't attempt to cast IList or make changes on the handle.
+        /// Allow MDC to directly modify the projection collection.
         /// </summary>
-        ObservableOnly     = 0x2,
+        /// <remarks>
+        /// OPT-IN: Enables MDC to puppeteer the projection when maintaining canonical
+        /// state. This is a powerful opt-in that assumes MDC has safe write
+        /// authority over the observable collection.
+        /// </remarks>
+        AllowDirectChanges,
+    }
+
+    [Flags]
+    public enum ReplaceItemsEventingOption
+    {
+        /// <summary>
+        /// Emit structural collection change events that reflect the specific mutation.
+        /// </summary>
+        /// <remarks>
+        /// The emitted INCC event corresponds to the structural transition classified
+        /// by <see cref="ReplaceItemsEventingTriage"/>:
+        /// - EmptyBefore  -> Add
+        /// - EmptyAfter   -> Remove
+        /// - NeverEmpty   -> Replace
+        ///
+        /// Each event may represent multiple items.
+        ///
+        /// MentalModel: "Observers reconcile the mutation structurally."
+        /// </remarks>
+        StructuralReplaceEvent = 0x1,
+
+        /// <summary>
+        /// Collapse any structural mutation into a single Reset event.
+        /// </summary>
+        /// <remarks>
+        /// Observers are instructed to discard their current view and
+        /// re-enumerate the collection regardless of the underlying mutation.
+        ///
+        /// MentalModel: "Something changed; refresh everything."
+        /// </remarks>
+        ResetOnAnyChange = 0x2,
+
+        /// <summary>
+        /// Emit both the structural mutation event and a Reset notification.
+        /// </summary>
+        /// <remarks>
+        /// The structural INCC event (Add, Remove, or Replace) is raised first
+        /// according to <see cref="ReplaceItemsEventingTriage"/>, followed by a
+        /// Reset event.
+        ///
+        /// This mode preserves structural information for observers that track
+        /// incremental mutations while also forcing views that rely on Reset
+        /// semantics to refresh.
+        ///
+        /// MentalModel: "Tell observers exactly what changed, then force a refresh."
+        /// </remarks>
+        All = ResetOnAnyChange | StructuralReplaceEvent,
+    }
+
+    [NotFlags]
+    internal enum ReplaceItemsEventingTriage
+    {
+        /// <summary>
+        /// Describes a noop "wash" invocation.
+        /// </summary>
+        /// <remarks>
+        /// Unconditionally suppress event invocation.
+        /// </remarks>
+        AlwaysEmpty,
+
+        /// <summary>
+        /// Describes a virtual replacement with Add semantics.
+        /// </summary>
+        /// <remarks>
+        /// StructuralReplaceEvent - generates a Add action for N new items.
+        /// ResetOnAnyChange - generates an Reset event.
+        /// </remarks>
+        EmptyBefore,
+
+        /// <summary>
+        /// Describes a virtual replacement with Clear semantics.
+        /// </summary>
+        /// <remarks>
+        /// StructuralReplaceEvent - generates a Remove action for N old items.
+        /// ResetOnAnyChange - generates an Reset event.
+        /// </remarks>
+        EmptyAfter,
+
+        /// <summary>
+        /// Describes a virtual replacement with Replace semantics.
+        /// </summary>
+        /// <remarks>
+        /// StructuralReplaceEvent - generates a Replace action for N old and N' new items.
+        /// ResetOnAnyChange - generates an Reset event.
+        /// </remarks>
+        NeverEmpty,
     }
 }

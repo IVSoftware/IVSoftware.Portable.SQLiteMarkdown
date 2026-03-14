@@ -1,31 +1,20 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
-using IVSoftware.Portable.Threading;
-using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using SQLite;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
-using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
 using System.Reflection;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
 using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
     [TestClass]
-    public class TestClass_UnitTestSQLiteParser
+    public partial class TestClass_TestClass_SQLiteMarkdown
     {
         #region D H O S T    D I S P O S A B L E    D A T A B A S E S
 
@@ -746,6 +735,10 @@ InputText"
             actual = mdc.StateReport();
             actual.ToClipboardExpected();
             { }
+            // [Remember]
+            // The *absence* of any ismatch attributes makes
+            // each and every node a perceived match.
+
             expected = @" 
 [IME Len: 3, IsFiltering: False], [Net: null, CC: 2, PMC: 2], [Query: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
             ;
@@ -774,10 +767,23 @@ InputText"
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
         }
 
-        [TestMethod, Ignore]
+        /// <summary>
+        /// Verifies state initialization and transitions when operating in Filter-only mode.
+        /// </summary>
+        /// <remarks>
+        /// Confirms that configuring <see cref="QueryFilterConfig.Filter"/> before or after
+        /// context initialization results in the same effective FSM state:
+        /// <c>SearchEntryState.QueryCompleteNoResults</c> with <c>FilteringState.Armed</c>.
+        ///
+        /// Ensures that Filter-only configuration bypasses query semantics and
+        /// immediately prepares the filtering pipeline.
+        /// </remarks>
+        [TestMethod]
         public async Task Test_FilterOnlyFSMs()
         {
-            var extQueryHandle = default(List<SelectableQFModel>);
+            string actual, expected;
+
+            var extQueryHandle = default(List<SelectableQFModel>).PopulateForDemo(2);
 
             MarkdownContext<SelectableQFModel> mdc;
 
@@ -789,19 +795,49 @@ InputText"
             void subtest_ConfigureThenLoad()
             {
                 mdc = new() { QueryFilterConfig = QueryFilterConfig.Filter };
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+                ;
 
-                Assert.AreEqual(QueryFilterConfig.Filter, mdc.QueryFilterConfig, "Expecting initial state.");
-                Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
-                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting FILTER ONLY."
+                );
             }
 
             void subtest_LoadThenConfigure()
             {
                 mdc = new();
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+                ;
 
-                Assert.AreEqual(QueryFilterConfig.QueryAndFilter, mdc.QueryFilterConfig, "Expecting initial state.");
-                Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState, "Expecting initial state.");
-                Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState, "Expecting initial state.");
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting QUERY AND FILTER."
+                );
+
+                mdc.QueryFilterConfig = QueryFilterConfig.Filter;
+                actual = mdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting FILTER ONLY."
+                );
             }
             #endregion S U B T E S T S
         }
@@ -1330,72 +1366,88 @@ FilterTerm";
                 });
 
             string actual, expected;
-            List<string> tableNames;
-            var query = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%';";
+            string[] tableNames;
 
 
-            #region T H I S    I S    T H E    C O N C E R N 
-            using (var cnx = new SQLiteConnection(":memory:"))
+            // TERMINOLOGY: Sources of "controversy".
+            // 1. Conflicting [Table] attributes in the inheritance chain.
+            // 2. ProxyType whose SQLite table mapping differs from ContractType.
+            //
+            // NOTWITHSTANDING:
+            // Case 1 is not controversial when ContractType and ProxyType are the same type.
+            // There is no competing mapping to resolve.
+            //
+            // Case 2 is treated as non-controversial when ProxyType inherits a mapping
+            // that resolves to the same table name as ContractType.
+
+            subtest_TableNameDefaultsToExplicitBC();
+            subtest_ProxySameAsContract();
+            subtest_UncontroversialExplicitTableAttribute();
+            subtest_ParseInputTextInQueryMode();
+
+            #region v2.0+
+            subtest_ProxyCoherence1();
+            subtest_ProxyCoherence2();
+            #endregion v2.0+
+
+            #region S U B T E S T S
+            void subtest_TableNameDefaultsToExplicitBC()
             {
-                // Subclass "G" means "Gotcha!"
-                cnx.CreateTable<SelectableQFModelSubclassG>();
-                tableNames = cnx.QueryScalars<string>(query);
+                // This is the "main gotcha" we're concerned about:
 
-                actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
+                // POLICY: Base-class table fallback.
+                //
+                // When the concrete type does not declare its own [Table] attribute,
+                // but one or more base classes do, resolve table identity using the
+                // closest ancestor that explicitly declares [Table].
+                using (var cnx = new SQLiteConnection(":memory:"))
+                {
+                    // Subclass "G" means "Gotcha!"
+                    cnx.CreateTable<SelectableQFModelSubclassG>();
+                    tableNames = cnx.GetTableNames();
+
+                    actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
+                    expected = @" 
 [
   ""SelectableQFModelSubclassG""
 ]";
 
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting that SQLite will create table named after the subclass when no [Table] is declared."
-                );
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting that SQLite will create table named after the subclass when no [Table] is declared."
+                    );
 
-                // Whereas the parser is deliberately going to pick up the `[Table("items"]` from the BC.
-                builderThrow.Clear();
-                actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclassG>();
-                expected = @" 
+                    // APPLY POLICY: Pick up the `[Table("items"]` from the BC.
+                    builderThrow.Clear();
+                    actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclassG>();
+                    expected = @" 
 SELECT * FROM items WHERE 
 (QueryTerm LIKE '%animal%')";
 
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting 'items' table identity."
-                );
-
-                actual = string.Join(Environment.NewLine, builderThrow);
-                actual.ToClipboardExpected();
-                { } // <- FIRST TIME ONLY: Adjust the message.
-                actual.ToClipboardAssert("Expecting builder content to match.");
-                { }
-                expected = @" 
-Type 'SelectableQFModelSubclassG' is explicitly mapped to [Table(""items"")] in base class.";
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting builder content to match."
-                );
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting 'items' table identity."
+                    );
+                }
             }
-            #endregion T H I S    I S    T H E    C O N C E R N
 
-            using (var cnx = new SQLiteConnection(":memory:"))
+            // Different classes, but the explicit [Table] attributes all agree.
+            void subtest_UncontroversialExplicitTableAttribute()
             {
-                cnx.CreateTable<SelectableQFModel>();
-                tableNames = cnx.QueryScalars<string>(query);
+                var mdc = new MarkdownContext<SelectableQFModel>();
+                mdc.ParseSqlMarkdown<SelectableQFModelSubclass>("hello");
+                tableNames = mdc.GetTableNames();
+                "hello".ParseSqlMarkdown<SelectableQFModel>();
 
                 actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[
-  ""items""
-]";
+    [
+      ""items""
+    ]";
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -1404,32 +1456,84 @@ Type 'SelectableQFModelSubclassG' is explicitly mapped to [Table(""items"")] in 
                 );
             }
 
-            using (var cnx = new SQLiteConnection(":memory:"))
+            // When ContractType == ProxyType:
+            // - Any explicit [Table] attributes in base classes are moot.
+            void subtest_ProxySameAsContract()
             {
-                cnx.CreateTable<SelectableQFModelSubclass>();
-                tableNames = cnx.QueryScalars<string>(query);
+                var mdc = new MarkdownContext<SelectableQFModelSubclassA>();
+                mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
+                tableNames = mdc.GetTableNames();
+                "hello".ParseSqlMarkdown<SelectableQFModel>();
+
+                actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                // Even though [Table("items"]) exists in BC.
+                expected = @" 
+    [
+      ""itemsA""
+    ]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table"
+                );
+            }
+
+            void subtest_ProxyCoherence1()
+            {
+                var mdc = new MarkdownContext<SelectableQFModel>();
+                mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
+                tableNames = mdc.GetTableNames();
+                "hello".ParseSqlMarkdown<SelectableQFModel>();
 
                 actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[
-  ""items""
-]"
-                ;
+    [
+      ""items""
+    ]";
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting 'items' table of base class is NOT FOUND."
+                    "Expecting 'items' table"
                 );
 
-                // Now check parser where declared table identity DUPLICATES the BC
+            }
+
+            void subtest_ProxyCoherence2()
+            {
+                var mdc = new MarkdownContext<SelectableQFModelSubclassA>();
+                mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
+
+                tableNames = mdc.GetTableNames();
+                "hello".ParseSqlMarkdown<SelectableQFModel>();
+
+                actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+    [
+      ""itemsA""
+    ]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'itemsA' table because proxy and contract are the same."
+                );
+            }
+
+            void subtest_ParseInputTextInQueryMode()
+            {
+                // Check parser where declared table identities resolve as same
                 var mdc = new MarkdownContext<SelectableQFModelSubclass>();
                 mdc.InputText = "animal";
 
                 actual = mdc.ParseSqlMarkdown();
-                { }
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -1441,47 +1545,8 @@ SELECT * FROM items WHERE
                     actual.NormalizeResult(),
                     "Expecting table to match."
                 );
-
-                // Now check parser EXTENSION where declared table identity DUPLICATES the BC
-                actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclass>();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-SELECT * FROM items WHERE 
-(QueryTerm LIKE '%animal%')";
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting 'items' table identity."
-                );
             }
-
-            // Now check parser where declared table identity is INCONSISTENT WITH the BC
-            // v2.0+ "TO AVOID SPURIOUS TABLE CREATION - BASE CLASS WINS"
-            // v1.0  "Explicit [Table] attribute MUST BE RESPECTED."
-            actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclassA>();
-            actual.ToClipboardExpected();
-            { }
-
-            expected = @" 
-SELECT * FROM items WHERE
-(QueryTerm LIKE '%animal%')"
-            ;
-
-#if false && VERSION_1_CONTRACT
-            "Explicit [Table] attribute MUST BE RESPECTED."            
-
-            expected = @" 
-SELECT * FROM itemsA WHERE 
-(QueryTerm LIKE '%animal%')";
-#endif
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting 'itemsA' table identity."
-            );
+            #endregion S U B T E S T S
         }
 
         /// <summary>

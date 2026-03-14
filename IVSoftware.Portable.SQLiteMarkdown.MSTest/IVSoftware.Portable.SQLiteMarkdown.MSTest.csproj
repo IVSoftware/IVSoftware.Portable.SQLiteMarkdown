@@ -32,7 +32,7 @@
 	
 	<!-- Release mode -->
 	<ItemGroup Condition="'$(Configuration)' == 'Release'">
-		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="2.0.0-alpha12" />
+		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="2.0.0-alpha14" />
 	</ItemGroup>
 
 	<!--
@@ -46,6 +46,9 @@
 	</ItemGroup>
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Feedback\" />
   </ItemGroup>
 
 </Project>
