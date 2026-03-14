@@ -1217,20 +1217,34 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                     void localReplace()
                     {
-                        if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
+                        switch (eModel.Reason)
                         {
-                            projection.Remove(item);
-                        }
-                        if (eBCL.NewItems is not null)
-                        {
-                            var index =
-                                eBCL.NewStartingIndex == -1
-                                ? projection.Count
-                                : eBCL.NewStartingIndex;
-                            foreach (var item in eBCL.NewItems)
-                            {
-                                projection.Insert(index++, item);
-                            }
+                            case NotifyCollectionChangedReason.QueryResult:
+                            case NotifyCollectionChangedReason.ApplyFilter:
+                            case NotifyCollectionChangedReason.RemoveFilter:
+                                projection.Clear();
+                                if (eBCL.NewItems is not null)
+                                {
+                                    foreach (var item in eBCL.NewItems)
+                                    {
+                                        projection.Add(item);
+                                    }
+                                }
+                                break;
+                            default:
+                                // Normal BCL Replace
+                                if (eBCL.OldItems is not null &&
+                                    eBCL.NewItems is not null &&
+                                    eBCL.OldStartingIndex >= 0)
+                                {
+                                    int index = eBCL.OldStartingIndex;
+
+                                    foreach (var item in eBCL.NewItems)
+                                    {
+                                        projection[index++] = item;
+                                    }
+                                }
+                                break;
                         }
                     }
                     void localReset()

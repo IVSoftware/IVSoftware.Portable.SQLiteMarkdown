@@ -327,7 +327,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             this.ThrowFramework<NotSupportedException>($"The {eBCL.Action.ToFullKey()} case is not supported.");
                             break;
                     }
-                    CollectionChanged?.Invoke(this,eBCL);
+
+                    // Raising our own event (instead of calling base to do it indirectly)
+                    // is the point of NetProjectionOption.ObservableOnly mode.
+                    OnCollectionChanged(eBCL);
 
                     #region L o c a l F x
                     void localCommitProjectionSubset()
@@ -381,6 +384,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     {
                         switch (eModel.Reason)
                         {
+                            case NotifyCollectionChangedReason.QueryResult:
                             case NotifyCollectionChangedReason.ApplyFilter:
                             case NotifyCollectionChangedReason.RemoveFilter:
                                 projection.Clear();
@@ -393,6 +397,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                 }
                                 break;
                             default:
+                                // Normal BCL Replace
+                                if (eBCL.OldItems is not null &&
+                                    eBCL.NewItems is not null &&
+                                    eBCL.OldStartingIndex >= 0)
+                                {
+                                    int index = eBCL.OldStartingIndex;
+
+                                    foreach (var item in eBCL.NewItems)
+                                    {
+                                        projection[index++] = item;
+                                    }
+                                }
                                 break;
                         }
                     }
@@ -777,11 +793,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <summary>
         /// Public-facing CollectionChanged event, regardless of its source.
         /// </summary>
-        protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs eBCL)
         {
-            if(DHostAuthorityEpoch.Authority != CollectionChangeAuthority.None)
+            switch (DHostAuthorityEpoch.Authority)
             {
-                CollectionChanged?.Invoke(this, e);
+                case CollectionChangeAuthority.None:
+                    // Events are being supressed by this authority epoch.
+                    break;
+                case CollectionChangeAuthority.Model:
+                    // Raise only sanctioned events
+                    if(eBCL is ModelSettledEventArgs eModel)
+                    {
+                        CollectionChanged?.Invoke(this, eBCL);
+                    }
+                    break;
+                default:
+                    // Allow under normal collection self-authority.
+                    CollectionChanged?.Invoke(this, eBCL);
+                    break;
             }
         }
 
