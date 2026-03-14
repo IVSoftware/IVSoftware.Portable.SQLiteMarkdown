@@ -1222,7 +1222,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             case NotifyCollectionChangedReason.QueryResult:
                             case NotifyCollectionChangedReason.ApplyFilter:
                             case NotifyCollectionChangedReason.RemoveFilter:
-                                projection.Clear();
+                                // Avoid Clear() here. Some observers treat Clear as a semantic reset
+                                // (e.g., selection or virtualization state) rather than a sequence of
+                                // removes. Replaying the individual Remove/Add operations preserves
+                                // the original mutation semantics and avoids surprising state resets.
+                                if (eBCL.OldItems is not null)
+                                {
+                                    foreach (var item in eBCL.OldItems)
+                                    {
+                                        projection.Remove(item);
+                                    }
+                                }
                                 if (eBCL.NewItems is not null)
                                 {
                                     foreach (var item in eBCL.NewItems)
