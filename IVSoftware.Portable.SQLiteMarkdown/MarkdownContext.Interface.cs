@@ -1292,6 +1292,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public int PredicateMatchCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
 
+        public CollectionChangeAuthority Authority => DHostAuthorityEpoch.Authority;
+
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {
             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Model))
@@ -1305,5 +1307,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         public string[] GetTableNames() => FilterQueryDatabase.GetTableNames();
+
+        public IDisposable BeginBusy() => DHostBusy.GetToken();
     }
 }

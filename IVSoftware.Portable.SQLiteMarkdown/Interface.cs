@@ -152,7 +152,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
     [Careful("Must *never* implement INotifyCollectionChanged - this is reserved to detect inheritance..")]
-    [PublishedContract("2.0.0-alpha16", typeof(IMarkdownContext))]
+    [PublishedContract("2.0.0-alpha18", typeof(IMarkdownContext))]
     public interface IMarkdownContext
     {
         #region P A R S E
@@ -174,9 +174,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         XElement Model { get; }
 
         #region B I N D A B L E    P R O P E R T I E S
+
         /// <summary>
         /// Bindable property intended for external IME.
         /// </summary>
+        /// <remarks>
+        /// In Filter states, text changes are given a setting time before 
+        /// entering a query epoch on the internal SQLite filtering database.
+        /// </remarks>
         string InputText { get; set; }
 
         /// <summary>
@@ -205,6 +210,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Constrains the state machine to Query or Filter semantics only, or give the FSM full access to both.
         /// </summary>
         QueryFilterConfig QueryFilterConfig { get; set; }
+
+        /// <summary>
+        /// OPT-IN that allows MarkdownContext to modify the ObservableNetCollection directly.
+        /// </summary>
+        NetProjectionOption ProjectionOption { get; set; }
 
         /// <summary>
         /// Determines whether filter update events are provided as structural changes
@@ -244,6 +254,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// [X] to clear the visible list, ready for a new query.
         /// </remarks>
         FilteringState Clear(bool all);
+
+        TimeSpan InputTextSettlingTime { get; set; }
 
         event EventHandler? InputTextSettled;
 
@@ -285,9 +297,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Task LoadCanonAsync(IEnumerable? recordset);
         #endregion P R O J E C T I O N
 
-        // [Probationary("Maintain NetProjectionOption enum type as Internal until stable.")]
-        // NetProjectionOption ProjectionOptions { get; }
-
+        #region D I S P O S A B L E S
         /// <summary>
         /// Guards receptivity of the unfiltered items collection.
         /// </summary> 
@@ -295,6 +305,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Intended use: EpochFinalizing should be wrapped with this reference counter.
         /// </remarks>
         IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority);
+
+        /// <summary>
+        /// Returns the current collection DDX authority.
+        /// </summary>
+        CollectionChangeAuthority Authority { get; }
+
+        /// <summary>
+        /// Bindable property that returns true when the busy count is < 1;
+        /// </summary>
+        bool Busy { get; }
+
+        /// <summary>
+        /// Increments the internal busy count and returns a disposable token to decrement it on dispose.
+        /// </summary>
+        IDisposable BeginBusy();
+
+        #endregion D I S P O S A B L E S
+
 
         /// <summary>
         /// Gets the total number of items in the canonical ledger.
@@ -326,7 +354,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </c>
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
-    [PublishedContract("2.0.0-alpha16", typeof(IPredicateMarkdownContext))]
+    [PublishedContract("2.0.0-alpha18", typeof(IPredicateMarkdownContext))]
     public interface IPredicateMarkdownContext : IMarkdownContext
     {
         /// <summary>

@@ -71,6 +71,35 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             )!;
         }
 
+        /// <summary>
+        /// Semantic clarity for Interval, which comes from inheriting WatchDogTimer.
+        /// </summary>
+        TimeSpan IMarkdownContext.InputTextSettlingTime
+        {
+            get => Interval;
+            set => Interval = value;
+        }
+
+        /// <summary>
+        /// Adds minval to base.Interval.
+        /// </summary>
+        public new TimeSpan Interval
+        {
+            get => _interval;
+            set
+            {
+                if (value < TimeSpan.FromSeconds(0.1))
+                {
+                    base.Interval = TimeSpan.FromSeconds(0.1);
+                }
+                else
+                {
+                    base.Interval = value;
+                }
+            }
+        }
+        TimeSpan _interval = default;
+
         private IList PredicateMatchSubsetPrivate { get; }
         public ICollection PredicateMatchSubset => PredicateMatchSubsetPrivate;
 

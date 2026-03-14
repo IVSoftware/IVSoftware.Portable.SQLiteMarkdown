@@ -395,8 +395,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             public int PredicateMatchCount => ((IMarkdownContext)_mdc).PredicateMatchCount;
 
-            public NetProjectionOption ProjectionOption { get => ((IMarkdownContext)_mdc).ProjectionOption; set => ((IMarkdownContext)_mdc).ProjectionOption = value; }
+            public NetProjectionOption ProjectionOption
+            { 
+                get => ((IMarkdownContext)_mdc).ProjectionOption;
+                set => ((IMarkdownContext)_mdc).ProjectionOption = value;
+            }
             public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get => ((IMarkdownContext)_mdc).ReplaceItemsEventingOptions; set => ((IMarkdownContext)_mdc).ReplaceItemsEventingOptions = value; }
+
+            public CollectionChangeAuthority Authority => ((IMarkdownContext)_mdc).Authority;
+
+            public bool Busy => ((IMarkdownContext)_mdc).Busy;
+
+            public TimeSpan InputTextSettlingTime { get => ((IMarkdownContext)_mdc).InputTextSettlingTime; set => ((IMarkdownContext)_mdc).InputTextSettlingTime = value; }
 
             INotifyCollectionChanged? _observableNetProjection = default;
 
@@ -411,6 +421,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             public string[] GetTableNames()
             {
                 return ((IMarkdownContext)_mdc).GetTableNames();
+            }
+
+            public IDisposable BeginBusy()
+            {
+                return ((IMarkdownContext)_mdc).BeginBusy();
             }
 
             // We do not care about BC events.
