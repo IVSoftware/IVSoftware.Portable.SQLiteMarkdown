@@ -1102,8 +1102,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         protected virtual void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
         {
-            ModelSettled?.Invoke(this, eBCL);
-
             if (eBCL is not ModelSettledEventArgs eModel)
             {
                 this.ThrowFramework<InvalidOperationException>(
@@ -1111,60 +1109,71 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
+                // For filtering ops, update the internal snapshot here.
                 switch (eModel.Reason)
                 {
-                    case NotifyCollectionChangedReason.QueryResult:
-                        localLoadCanon();
-                        break;
                     case NotifyCollectionChangedReason.ApplyFilter:
                     case NotifyCollectionChangedReason.RemoveFilter:
-                        localModifyFilter();
-                        break;
-                    default:
+                        localCommitProjectionSubset();
                         break;
                 }
-                void localLoadCanon()
+
+                if(ProjectionOption == NetProjectionOption.AllowDirectChanges)
                 {
-                    switch (ProjectionOption)
+                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    // Subclass has OPTED-IN to direct changes.
+                    //
+                    // Every change made here will 'attempt to' raise events on that
+                    // object, but we expect that collection object to apply its own
+                    // suppression and instead raise eBCL when the churn has finished
+                    // in response to the ModelUpdated that is about to be raised.
+                    //
+                    // TO THAT END this operation is wrapped in an authority whereby
+                    // the ONP can tell this is taking place from the back end.
+                    Debug.Assert(
+                        DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Model,
+                        "Expecting this operation takes place under Model authority."
+                    );
+                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+                    switch (eBCL.Action)
                     {
-                        case NetProjectionOption.ObservableOnly:
-                            break;
-                        case NetProjectionOption.AllowDirectChanges:
-                            localApplyDirectChanges();
-                            break;
+                        case NotifyCollectionChangedAction.Add: localAdd(); break;
+                        case NotifyCollectionChangedAction.Move: localMove(); break;
+                        case NotifyCollectionChangedAction.Remove: localRemove(); break;
+                        case NotifyCollectionChangedAction.Replace: localReplace(); break;
+                        case NotifyCollectionChangedAction.Reset: localReset(); break;
                         default:
-                            this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                            this.ThrowFramework<NotSupportedException>($"The {eBCL.Action.ToFullKey()} case is not supported.");
                             break;
                     }
-                    #region L o c a l F x
-                    void localApplyDirectChanges()
+
+                    if (ObservableNetProjection is IList projection)
                     {
-                        if (ObservableNetProjection is IList projection)
+                        if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
                         {
-                            if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
+                            projection.Remove(item);
+                        }
+                        if (eBCL.NewStartingIndex == -1)
+                        {
+                            if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
                             {
-                                projection.Remove(item);
+                                projection.Add(item);
                             }
-                            if (eBCL.NewStartingIndex == -1)
+                        }
+                        else
+                        {
+                            if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
                             {
-                                if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
-                                {
-                                    projection.Add(item);
-                                }
-                            }
-                            else
-                            {
-                                if (eBCL.NewItems is not null) foreach (var item in eBCL.NewItems)
-                                {
-                                    projection.Add(item);
-                                }
+                                projection.Add(item);
                             }
                         }
                     }
-                    #endregion L o c a l F x
                 }
+                ModelSettled?.Invoke(this, eBCL);
 
-                void localModifyFilter()
+                #region L o c a l F x
+                void localCommitProjectionSubset()
                 {
                     if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
                     {
@@ -1185,6 +1194,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         }
                     }
                 }
+                void localAdd()
+                {
+                    throw new NotImplementedException("ToDo");
+                }
+                void localMove()
+                {
+                    throw new NotImplementedException("ToDo");
+                }
+                void localRemove()
+                {
+                    throw new NotImplementedException("ToDo");
+                }
+                void localReplace()
+                {
+                    throw new NotImplementedException("ToDo");
+                }
+                void localReset()
+                {
+                    throw new NotImplementedException("ToDo");
+                }
+                #endregion L o c a l F x
             }
         }
 
