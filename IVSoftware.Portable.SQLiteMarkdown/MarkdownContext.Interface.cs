@@ -769,8 +769,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             void localRaiseModelSettled()
             {
-                var e = context as NotifyCollectionChangedEventArgs 
-                    ?? new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset);
+                var e = context as ModelSettledEventArgs 
+                    ?? new ModelSettledEventArgs(
+                        reason: NotifyCollectionChangedReason.Reset,
+                        action: NotifyCollectionChangedAction.Reset);
                 OnModelSettled(e);
             }
             #endregion L o c a l F x
@@ -1179,18 +1181,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         }
                     }
                 }
+
                 void localAdd()
                 {
-                    Debug.Fail($@"IFD ADVISORY - First Time.");
+                    if (eBCL.NewItems is not null)
+                    {
+                        var index =
+                            eBCL.NewStartingIndex == -1
+                            ? projection.Count
+                            : eBCL.NewStartingIndex;
+                        foreach (var item in eBCL.NewItems)
+                        {
+                            projection.Insert(index++, item);
+                        }
+                    }
                 }
+
                 void localMove()
                 {
                     Debug.Fail($@"IFD ADVISORY - First Time.");
                 }
+
                 void localRemove()
                 {
                     Debug.Fail($@"IFD ADVISORY - First Time.");
                 }
+
                 void localReplace()
                 {
                     if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)

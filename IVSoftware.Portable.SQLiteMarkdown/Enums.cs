@@ -447,6 +447,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Unconditional full clear suppresses event churn and raises final Reset.
     /// </summary>
+    [CollectionChangeAuthority(CollectionChangeAuthority.Model)]
     internal enum NativeClearFSM
     {
         DetectFastTrack = StdFSMState.DetectFastTrack,
@@ -457,7 +458,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         UpdateStatesForEpoch = StdFSMState.UpdateStatesForEpoch,
 
-        RequestOutgoingCollectionChangedRequest = StdFSMState.ModelSettled,
+        RaiseModelSettledEvent = StdFSMState.ModelSettled,
     }
 
     public enum ProjectionTopology

@@ -1963,19 +1963,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if (SearchEntryState == SearchEntryState.Cleared)
             {
-                RunFSM<NativeClearFSM>();
-                if (ObservableNetProjection is IList projection
-                    && ProjectionOption == NetProjectionOption.AllowDirectChanges)
-                {
-                    if(projection.Count != 0)
-                    {
-                        Debug.Fail($@"BE ADVISED - THERE WILL BE A RESET EVENT.");
-                        projection.Clear();
-                    }
+                if (Equals(ReservedFSMState.FastTrack, RunFSM<NativeClearFSM>()))
+                {   /* G T K */
                 }
-                OnModelSettled(new ModelSettledEventArgs(
-                    reason: NotifyCollectionChangedReason.Reset,
-                    action: NotifyCollectionChangedAction.Reset));
             }
         }
 
