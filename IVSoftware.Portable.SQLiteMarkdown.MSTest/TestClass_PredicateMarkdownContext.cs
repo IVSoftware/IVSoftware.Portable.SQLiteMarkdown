@@ -12,6 +12,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using System.ComponentModel;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -307,8 +308,37 @@ public class TestClass_PredicateMarkdownContext
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-            pmdc.InputText = "green";
-            await pmdc;
+
+            int busyCount = 0;
+            #region L o c a l F x
+            void localOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+            {
+                switch (e.PropertyName)
+                {
+                    case nameof(pmdc.Busy):
+                        if(pmdc.Busy) busyCount++;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            #endregion L o c a l F x
+            using (pmdc.WithOnDispose(
+                onInit: (sender, e) =>
+                {
+                    pmdc.PropertyChanged += localOnPropertyChanged;
+                },
+                onDispose: (sender, e) =>
+                {
+                    pmdc.PropertyChanged -= localOnPropertyChanged;
+                }))
+            {
+
+                pmdc.InputText = "green";
+                await pmdc;
+            }
+            Assert.AreEqual(1, busyCount);
+            Assert.IsFalse(pmdc.Busy);
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
