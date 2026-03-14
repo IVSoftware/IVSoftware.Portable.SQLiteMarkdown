@@ -77,7 +77,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Represents a bindable collection governed by Markdown-based query and filter semantics.
     /// </summary>
-    [PublishedContract("Contract published in v1")]
+    [PublishedContract("1.x", typeof(IObservableQueryFilterSource))]
     public interface IObservableQueryFilterSource
         : IList
         , INotifyCollectionChanged
@@ -103,7 +103,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Strongly typed variant of IObservableQueryFilterSource.
     /// </summary>
-    [Canonical("Contract published in v1")]
+    [PublishedContract("1.x")]
     public interface IObservableQueryFilterSource<T>
         : IObservableQueryFilterSource
     {
@@ -152,10 +152,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
     [Careful("Must *never* implement INotifyCollectionChanged - this is reserved to detect inheritance..")]
-    internal interface IMarkdownContext
+    [PublishedContract("2.0.0-alpha16", typeof(IMarkdownContext))]
+    public interface IMarkdownContext
     {
+        #region P A R S E
+        string ParseSqlMarkdown();
+        string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast);
+        string ParseSqlMarkdown<T>();
+        string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query);
+        #endregion P A R S E
+
+        /// <summary>
+        /// Maintains the canonical recordset as a hierarchy.
+        /// </summary>
+        /// <remarks>
+        /// - The string value of the property designated as the PK is 
+        ///   used as the address in the item.
+        /// - For item types that support a FullPath property, the
+        ///   model can also represent depth.
+        /// </remarks>
         XElement Model { get; }
-        uint DefaultLimit { get; set; }
+
+        #region B I N D A B L E    P R O P E R T I E S
+        /// <summary>
+        /// Bindable property intended for external IME.
+        /// </summary>
+        string InputText { get; set; }
 
         /// <summary>
         /// Bindable property intended for UI configuration swaps. 
@@ -171,6 +193,49 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         FilteringState FilteringState { get; }
 
+        /// <summary>
+        /// Bindable property intended for visual colors, icon swaps, and placeholder text.
+        /// </summary>
+        SearchEntryState SearchEntryState { get; }
+
+        #endregion B I N D A B L E    P R O P E R T I E S
+
+        #region C O N F I G U R A T I O N    P R O P E R T I E S
+        /// <summary>
+        /// Constrains the state machine to Query or Filter semantics only, or give the FSM full access to both.
+        /// </summary>
+        QueryFilterConfig QueryFilterConfig { get; set; }
+
+        /// <summary>
+        /// Determines whether filter update events are provided as structural changes
+        /// with old-new item semantics, alternatively as a bulk reset, or both.
+        /// </summary>
+        /// <remarks>
+        /// Some UI platforms respond more efficiently to a raw reset.
+        /// </remarks>
+        ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; }
+        #endregion C O N F I G U R A T I O N    P R O P E R T I E S
+
+        /// <summary>
+        /// Describes the wiring between the canonical XML model and the net ("seen") projection.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "What is 'this'?"
+        /// If 'this' *is-a* MarkdownContext,
+        /// Then canon is projected by redirecting enumeration.
+        /// If 'this' *has-a* MarkdownContext and *is-a* bound enumerable,
+        /// Then the surface is always net, and canon is projected by copying as needed.
+        /// </remarks>
+        ProjectionTopology ProjectionTopology { get; }
+
+        /// <summary>
+        /// Default LIMIT term for SQLite term generation.
+        /// </summary>
+        /// <remarks>
+        /// LIMIT term is skipped when set to the default value of uint.MinValue
+        /// </remarks>
+        uint DefaultLimit { get; set; }
+
         /// <remarks>
         /// As a defining feature, the Clear method is a progressive state 
         /// demotion. An actively filtering collection UI will take:
@@ -179,10 +244,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// [X] to clear the visible list, ready for a new query.
         /// </remarks>
         FilteringState Clear(bool all);
-
-        string InputText { get; set; }
-        QueryFilterConfig QueryFilterConfig { get; set; }
-        SearchEntryState SearchEntryState { get; }
 
         event EventHandler? InputTextSettled;
 
@@ -200,30 +261,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         event NotifyCollectionChangedEventHandler ModelSettled;
 
-        #region P A R S E
-        string ParseSqlMarkdown();
-        string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast);
-        string ParseSqlMarkdown<T>();
-        string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query);
-        #endregion P A R S E
-
         #region P R O J E C T I O N
         /// <summary>
         /// Represents a bindable and observable collection representing 'net visible' filtered items.
         /// </summary>
         INotifyCollectionChanged? ObservableNetProjection { get;  set; }
-
-        /// <summary>
-        /// Describes the wiring between the canonical XML model and the net ("seen") projection.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model: "What is 'this'?"
-        /// If 'this' *is-a* MarkdownContext,
-        /// Then canon is projected by redirecting enumeration.
-        /// If 'this' *has-a* MarkdownContext and *is-a* bound enumerable,
-        /// Then the surface is always net, and canon is projected by copying as needed.
-        /// </remarks>
-        ProjectionTopology ProjectionTopology { get; }
 
         /// <summary>
         /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
@@ -239,6 +281,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
         /// </remarks>
+        [Probationary]
         Task LoadCanonAsync(IEnumerable? recordset);
         #endregion P R O J E C T I O N
 
@@ -263,9 +306,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         int PredicateMatchCount { get; }
 
-        NetProjectionOption ProjectionOption { get; set; }
-
-        ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; }
+        /// <summary>
+        /// Provides the current table names of the internal SQLite database used for filtering.
+        /// </summary>
         string[] GetTableNames();
     }
 
@@ -283,7 +326,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </c>
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
-    internal interface IPredicateMarkdownContext : IMarkdownContext
+    [PublishedContract("2.0.0-alpha16", typeof(IPredicateMarkdownContext))]
+    public interface IPredicateMarkdownContext : IMarkdownContext
     {
         /// <summary>
         /// Obtain a token that suspends updates.
