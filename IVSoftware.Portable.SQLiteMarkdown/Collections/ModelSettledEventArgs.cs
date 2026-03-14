@@ -11,9 +11,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     [Flags]
     public enum NotifyCollectionChangedReason
     {
-        Reset        = 0x0000,
+        /// <summary>
+        /// This is a pass-though BCL event structure.
+        /// </summary>
+        None         = 0x0000,
+
+        /// <summary>
+        /// These items (old and new) represent a new canonical recordset.
+        /// </summary>
         QueryResult  = 0x1000,
-        ApplyFilter  = 0x2000,
+
+        /// <summary>
+        /// These items (old and new) represent a narrower subset.
+        /// </summary>
+        ApplyFilter = 0x2000,
+
+        /// <summary>
+        /// These items (old and new) represent a wider subset.
+        /// </summary>
         RemoveFilter = 0x4000,
     }
     [Flags]

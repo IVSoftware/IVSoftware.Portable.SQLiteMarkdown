@@ -16,15 +16,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
         Move = NotifyCollectionChangedAction.Move,
         Reset = NotifyCollectionChangedAction.Reset,
 
-        #region C O N T E X T
         /// <summary>
-        /// The changes are taking place inside a QueryResult action
+        /// These items (old and new) represent a new canonical recordset.
         /// </summary>
-        QueryResult = 0x1000,
+        QueryResult = NotifyCollectionChangedReason.QueryResult,
 
-        ApplyFilter = 0x2000,
-        RemoveFilter = 0x4000,
-        #endregion C O N T E X T
+        /// <summary>
+        /// These items (old and new) represent a narrower subset.
+        /// </summary>
+        ApplyFilter = NotifyCollectionChangedReason.ApplyFilter,
+
+        /// <summary>
+        /// These items (old and new) represent a wider subset.
+        /// </summary>
+        RemoveFilter = NotifyCollectionChangedReason.RemoveFilter,
     }
 
     [Obsolete("Backward compatibility only. Use MarkdownContext.ModelSettledEventArgs for full capability.")]

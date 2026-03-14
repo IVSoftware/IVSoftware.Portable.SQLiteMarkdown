@@ -771,7 +771,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 var e = context as ModelSettledEventArgs 
                     ?? new ModelSettledEventArgs(
-                        reason: NotifyCollectionChangedReason.Reset,
+                        reason: NotifyCollectionChangedReason.None,
                         action: NotifyCollectionChangedAction.Reset);
                 OnModelSettled(e);
             }

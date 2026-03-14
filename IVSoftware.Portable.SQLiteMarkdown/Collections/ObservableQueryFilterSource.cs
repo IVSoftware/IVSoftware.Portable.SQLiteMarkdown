@@ -327,7 +327,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             this.ThrowFramework<NotSupportedException>($"The {eBCL.Action.ToFullKey()} case is not supported.");
                             break;
                     }
-                    base.OnModelSettled(eBCL);
+                    CollectionChanged?.Invoke(this,eBCL);
 
                     #region L o c a l F x
                     void localCommitProjectionSubset()
@@ -379,20 +379,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                     void localReplace()
                     {
-                        if (eBCL.OldItems is not null) foreach (var item in eBCL.OldItems)
+                        switch (eModel.Reason)
                         {
-                            projection.Remove(item);
-                        }
-                        if (eBCL.NewItems is not null)
-                        {
-                            var index =
-                                eBCL.NewStartingIndex == -1
-                                ? projection.Count
-                                : eBCL.NewStartingIndex;
-                            foreach (var item in eBCL.NewItems)
-                            {
-                                projection.Insert(index++, item);
-                            }
+                            case NotifyCollectionChangedReason.ApplyFilter:
+                            case NotifyCollectionChangedReason.RemoveFilter:
+                                projection.Clear();
+                                if (eBCL.NewItems is not null)
+                                {
+                                    foreach (var item in eBCL.NewItems)
+                                    {
+                                        projection.Add(item);
+                                    }
+                                }
+                                break;
+                            default:
+                                break;
                         }
                     }
                     void localReset()
