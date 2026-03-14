@@ -100,7 +100,44 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 _ => throw new ArgumentOutOfRangeException(nameof(e.Action), e.Action, null)
             };
         }
-        public NotifyCollectionChangedReason Reason { get; }
+        public NotifyCollectionChangedReason Reason
+        {
+            get => _reason;
+            private set
+            {
+                _reason = value;
+
+                if (base.Action == NotifyCollectionChangedAction.Replace &&
+                    OldItems is IList oldItems &&
+                    NewItems is IList newItems &&
+                    oldItems.Count == newItems.Count)
+                {
+                    bool identical = true;
+
+                    for (int i = 0; i < oldItems.Count; i++)
+                    {
+                        if (!ReferenceEquals(oldItems[i], newItems[i]))
+                        {
+                            identical = false;
+                            break;
+                        }
+                    }
+                    IsSemanticallyInert = identical;
+                }
+            }
+        }
+        NotifyCollectionChangedReason _reason = default;
+
+        /// <summary>
+        /// Indicates that the collection change carries no observable semantic effect.
+        /// </summary>
+        /// <remarks>
+        /// Certain UI pipelines (notably IME input flows) may emit Replace events even
+        /// when the underlying item sequence is unchanged. When detected, this flag
+        /// allows observers to fast-track the event and avoid unnecessary mutation
+        /// work or UI churn.
+        /// </remarks>
+        public bool IsSemanticallyInert { get; private set; }
 
         /// <summary>
         /// Construct a NotifyCollectionChangedEventArgs that describes a reset change.
