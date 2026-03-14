@@ -16,7 +16,7 @@
 		<!--
 		<VersionPrefix>$(BaseVersion)-beta</VersionPrefix>
 		-->
-		<VersionPrefix>$(BaseVersion)-alpha18</VersionPrefix>
+		<VersionPrefix>$(BaseVersion)-alpha20</VersionPrefix>
 		
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>

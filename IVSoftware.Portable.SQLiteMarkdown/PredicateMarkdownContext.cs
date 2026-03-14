@@ -9,11 +9,10 @@ using System.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public abstract class PredicateMarkdownContext 
-        : MarkdownContext
+    public class PredicateMarkdownContext<T> 
+        : MarkdownContext<T>
         , IPredicateMarkdownContext
     {
-        public PredicateMarkdownContext(Type type) : base(type) { }
         public IReadOnlyDictionary<string, Enum> ActiveFilters => ActiveFiltersProtected.AsReadOnly;
 
         [Careful("Don't draw inferences from changes in the collection itself.")]
@@ -170,11 +169,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             throw new NotImplementedException();
         }
-    }
-    public class PredicateMarkdownContext<T> 
-        : MarkdownContext<T>
-        where T : class, new()
-    {
-        public PredicateMarkdownContext() { }
     }
 }
