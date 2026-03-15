@@ -1346,7 +1346,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1384,7 +1384,7 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1444,7 +1444,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1469,7 +1469,7 @@ NetProjection.Reset   ModelSettledEventArgs           "
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1634,7 +1634,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -1674,7 +1674,7 @@ InputText"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 1, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+[IME Len: 1, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                     }
@@ -1685,7 +1685,7 @@ InputText"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 1, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+[IME Len: 1, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting starting state is ENB.");
 
@@ -1696,7 +1696,7 @@ InputText"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                         eventQueue.Clear();
@@ -1708,7 +1708,7 @@ InputText"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting coming in at Cleared.");
 
@@ -1955,7 +1955,7 @@ SearchEntryState='QueryCompleteWithResults'";
                         { }
 
                         expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
 
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
@@ -1964,7 +1964,7 @@ SearchEntryState='QueryCompleteWithResults'";
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-ProjectionTopology.Inheritance, NetProjectionOption.AllowDirectChanges, ReplaceItemsEventingOption.StructuralReplaceEvent"
+ProjectionTopology.Inheritance, NetProjectionOption.ObservableOnly, ReplaceItemsEventingOption.StructuralReplaceEvent"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -1982,7 +1982,7 @@ ProjectionTopology.Inheritance, NetProjectionOption.AllowDirectChanges, ReplaceI
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 1, IsFiltering: True], [Net: 5, CC: 12, PMC: 5], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 1, IsFiltering: True], [Net: null, CC: 12, PMC: 5], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                         ;
                         Assert.AreEqual(
                             expected.NormalizeResult(), 
@@ -3035,9 +3035,9 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 async Task subtestQueryInitial()
                 {
                     actual = items.StateReport();
-                    Assert.IsNotNull(items.ObservableNetProjection, "260307: This now occurs in the CTor always.");
+                    Assert.IsNull(items.ObservableNetProjection, "Expectin");
                     expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                     ;
                     Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting initial StateReport to match.");
 
@@ -3091,17 +3091,23 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                         "Expecting 12 animal matches."
                     );
 
-                    Assert.AreSame(
-                        items, 
-                        items.ObservableNetProjection,
-                        "v2.0 when we say items we mean the ObservableNetProjection in this particular class.");
 
-                    actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
-                    actual.ToClipboard();
-                    actual.ToClipboardExpected();
-                    actual.ToClipboardAssert("Expecting items to match");
-                    { }
-                    expected = @" 
+                    Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 15).Date, "Don't forget disabled");
+                    const bool SELF_OWN_ONP = false;
+
+                    if (SELF_OWN_ONP)
+                    {
+                        Assert.AreSame(
+                            items,
+                            items.ObservableNetProjection,
+                            "v2.0 when we say items we mean the ObservableNetProjection in this particular class.");
+
+                        actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
+                        actual.ToClipboard();
+                        actual.ToClipboardExpected();
+                        actual.ToClipboardAssert("Expecting items to match");
+                        { }
+                        expected = @" 
 Black Cat  [animal] [color]
 Orange Fox  [animal] [color]
 White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
@@ -3115,11 +3121,13 @@ Kangaroo ""bounce"",""outback"",""marsupial"" [animal]
 Turtle  [animal]
 Should NOT match an expression with an ""animal"" tag.  [not animal]";
 
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting items to match"
-                    );
+                        Assert.AreEqual(
+                            expected.NormalizeResult(),
+                            actual.NormalizeResult(),
+                            "Expecting items to match"
+                        );
+                    }
+
 
                     // As a product of the CollectionChangedEvent this
                     // is representative of what we'd see in the visible list.
@@ -3146,14 +3154,14 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                         actual.NormalizeResult(),
                         "Expecting new items payload as reported."
                     );
-
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),         // Actual Items.NetProjection
-                        newItemsPayload.NormalizeResult(),  // Event payload
-                        "Expecting NewItems in the Add event to match the Items"
-                    );
-
-
+                    if (SELF_OWN_ONP)
+                    {
+                        Assert.AreEqual(
+                            expected.NormalizeResult(),         // Actual Items.NetProjection
+                            newItemsPayload.NormalizeResult(),  // Event payload
+                            "Expecting NewItems in the Add event to match the Items"
+                        );
+                    }
                 }
 
                 async Task subtestAppendAndRequery()

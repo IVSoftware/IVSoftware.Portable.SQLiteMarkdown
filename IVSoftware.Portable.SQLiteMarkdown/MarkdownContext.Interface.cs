@@ -1043,6 +1043,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected virtual void OnIncomingProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         => OnCanonicalSupersetChanged(sender, e);
 
+        /// <summary>
+        /// Applies canonical reconciliation logic when the authoritative superset changes.
+        /// </summary>
+        /// <remarks>
+        /// This handler represents the back-end mutation sink for the context. All structural
+        /// changes to the canonical superset pass through here so the routed projection,
+        /// filtering state, and collection notifications remain consistent with the
+        /// authoritative dataset for the current epoch.
+        ///
+        /// Mental Model: "The canonical ledger changed. Reconcile projections and notify observers."
+        /// </remarks>
         protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (Authority)
