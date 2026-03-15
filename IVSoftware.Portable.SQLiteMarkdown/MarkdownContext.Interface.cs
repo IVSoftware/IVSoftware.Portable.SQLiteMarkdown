@@ -971,32 +971,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             get => _observableProjection;
             set
             {
-                if (!Equals(_observableProjection, value))
+                if (ProjectionTopology == ProjectionTopology.Inheritance)
                 {
-                    // Unsubscribe INCC
-                    if (_observableProjection is not null)
+                    this.ThrowHard<InvalidOperationException>(@"
+Cannot assign ObservableNetProjection when ProjectionTopology is Inheritance.
+Inherited contexts manage their projection internally.".TrimStart());
+                }
+                else
+                {
+                    if (!Equals(_observableProjection, value))
                     {
-                        _observableProjection.CollectionChanged -= OnIncomingProjectionCollectionChanged;
-                    }
+                        // Unsubscribe INCC
+                        if (_observableProjection is not null)
+                        {
+                            _observableProjection.CollectionChanged -= OnIncomingProjectionCollectionChanged;
+                        }
 
-                    _observableProjection = value;
+                        _observableProjection = value;
 
-                    // [Careful] This is safest when MDC is first in line.
-                    ProjectionTopology = _observableProjection switch
-                    {
-                        MarkdownContext _ => ProjectionTopology.Inheritance,
-                        INotifyCollectionChanged _ and not MarkdownContext
-                            => ProjectionTopology.Composition,
-                        _ => ProjectionTopology.None,
-                    };
+                        // Run the handler then subscribe to any subsequent changes.
+                        OnObservableProjectionChanged();
 
-                    // Run the handler then subscribe to any subsequent changes.
-                    OnObservableProjectionChanged();
-
-                    // Subscribe INCC
-                    if (_observableProjection is not null)
-                    {
-                        _observableProjection.CollectionChanged += OnIncomingProjectionCollectionChanged;
+                        // Subscribe INCC
+                        if (_observableProjection is not null)
+                        {
+                            _observableProjection.CollectionChanged += OnIncomingProjectionCollectionChanged;
+                        }
                     }
                 }
             }
@@ -1293,10 +1293,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public NetProjectionOption ProjectionOption
         {
             get =>
-                // This guards against attempting to write when the projection is null.
-                ObservableNetProjection is null         
-                ? NetProjectionOption.ObservableOnly
-                : _projectionOption;
+                ProjectionTopology == ProjectionTopology.Inheritance
+                ? NetProjectionOption.Inherited 
+                // Guards against attempting to write when the projection is null.
+                : ObservableNetProjection is null         
+                    ? NetProjectionOption.ObservableOnly
+                    : _projectionOption;
             set
             {
                 if (!Equals(_projectionOption, value))
@@ -1314,7 +1316,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Reports on whether this object is inherited or composed.
         /// </summary>
-        public ProjectionTopology ProjectionTopology { get; protected set; }
+        public ProjectionTopology ProjectionTopology { get; }
         #endregion P R O J E C T I O N
 
         [Obsolete("Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount.")]
