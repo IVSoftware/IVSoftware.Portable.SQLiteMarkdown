@@ -63,6 +63,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // - This class, however, doesn't do that on its own.
             // - Inheritance is the only possibility.
             _isInherited = typeof(INotifyCollectionChanged).IsAssignableFrom(GetType());
+            if(_isInherited)
+            {
+                if (this.GetType().GetMethod(nameof(Clear), Type.EmptyTypes) is { } clearMethod)
+                {   /* B C S - N O O P */
+                }
+                else
+                {
+                    // Avoid leaking the object itself as the awaited sender.
+                    nameof(MarkdownContext).Advisory(
+                        $"Inherited MarkdownContext detected, but no parameterless Clear() was found. " +
+                        "Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. " +
+                        "If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. " +
+                        "You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit."
+                    );
+                }
+            }
             
             // Construct the predicate subset with the correct element type
             // that ensures a cast to IReadOnlyList<T> will succeed.
@@ -1706,7 +1722,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                 }
             }
-            this.OnAwaited(new AwaitedEventArgs(caller: nameof(Clear))
+
+            // Avoid leaking the object itself as the awaited sender.
+            nameof(MarkdownContext).OnAwaited(new AwaitedEventArgs(caller: nameof(Clear))
             {
                 { nameof(all), all },
             });
