@@ -1041,62 +1041,73 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Mental Model: "User changed the filtered projection. Track these changes in the canonical ledger."
         /// </remarks>
         protected virtual void OnIncomingProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (DHostAuthorityEpoch.Authority)
-            {
-                case 0:
-                    switch (e.Action)
-                    {
-                        case NotifyCollectionChangedAction.Add:
-                            if (e.NewItems?.Count is 1)
-                            {
-                                RunFSM<TrackUserAddItem>(e.NewItems[0]);
-                            }
-                            else
-                            {
-                                LoadCanon(sender as IEnumerable);
-                            }
-                            break;
-                        case NotifyCollectionChangedAction.Move:
-                            break;
-                        case NotifyCollectionChangedAction.Remove:
-                            break;
-                        case NotifyCollectionChangedAction.Replace:
-                            break;
-                        case NotifyCollectionChangedAction.Reset:
-                            if (sender is IList list && list.Count == 0)
-                            {
-                                // #{A665C02F-B1DE-45AE-8DAD-67775114E725}
-                                if (Model.HasElements)
-                                {
-                                    Model.RemoveAll();
-                                }
-                                if (SearchEntryState != SearchEntryState.Cleared)
-                                {
-                                    SearchEntryState = SearchEntryState.Cleared;
-                                }
-                                if (FilteringState != FilteringState.Ineligible)
-                                {
-                                    FilteringState = FilteringState.Ineligible;
-                                }
-                            }
-                            else
-                            {
-                                LoadCanon(sender as IEnumerable);
-                            }
-                            break;
-                        default:
-                            this.ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");
-                            break;
-                    }
+        => OnCanonicalSupersetChanged(sender, e);
 
-                    break;
-                case CollectionChangeAuthority.None:
-                case CollectionChangeAuthority.Model:
-                default:
-                    {   /* G T K - N O O P */
-                    }
-                    break;
+        protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (Authority)
+            {
+                default: break;
+            }
+
+            if (ReferenceEquals(sender, ObservableNetProjection))
+            {
+                switch (DHostAuthorityEpoch.Authority)
+                {
+                    case 0:
+                        switch (e.Action)
+                        {
+                            case NotifyCollectionChangedAction.Add:
+                                if (e.NewItems?.Count is 1)
+                                {
+                                    RunFSM<TrackUserAddItem>(e.NewItems[0]);
+                                }
+                                else
+                                {
+                                    LoadCanon(sender as IEnumerable);
+                                }
+                                break;
+                            case NotifyCollectionChangedAction.Move:
+                                break;
+                            case NotifyCollectionChangedAction.Remove:
+                                break;
+                            case NotifyCollectionChangedAction.Replace:
+                                break;
+                            case NotifyCollectionChangedAction.Reset:
+                                if (sender is IList list && list.Count == 0)
+                                {
+                                    // #{A665C02F-B1DE-45AE-8DAD-67775114E725}
+                                    if (Model.HasElements)
+                                    {
+                                        Model.RemoveAll();
+                                    }
+                                    if (SearchEntryState != SearchEntryState.Cleared)
+                                    {
+                                        SearchEntryState = SearchEntryState.Cleared;
+                                    }
+                                    if (FilteringState != FilteringState.Ineligible)
+                                    {
+                                        FilteringState = FilteringState.Ineligible;
+                                    }
+                                }
+                                else
+                                {
+                                    LoadCanon(sender as IEnumerable);
+                                }
+                                break;
+                            default:
+                                this.ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");
+                                break;
+                        }
+
+                        break;
+                    case CollectionChangeAuthority.None:
+                    case CollectionChangeAuthority.Model:
+                    default:
+                        {   /* G T K - N O O P */
+                        }
+                        break;
+                }
             }
         }
 

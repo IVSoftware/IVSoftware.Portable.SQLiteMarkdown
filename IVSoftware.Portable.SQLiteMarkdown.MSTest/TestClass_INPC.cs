@@ -25,7 +25,7 @@ public class TestClass_INPC
         };
         items.CollectionChanged += (sender, e) =>
         {
-            builderINCC.Add(e.GetFormatted(true));
+            builderINCC.Add(e.ToString(true));
         };
         items.PropertyChanged += (sender, e) =>
         {

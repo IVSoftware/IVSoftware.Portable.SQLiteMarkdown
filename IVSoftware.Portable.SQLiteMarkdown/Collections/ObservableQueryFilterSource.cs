@@ -926,7 +926,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
 
         #region R O U T E D    C O N D I T I O N A L S
-
         protected override void OnSearchEntryStateChanged()
         {
             base.OnSearchEntryStateChanged();
@@ -962,7 +961,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
         IReadOnlyList<T>? _canonicalSuperset = null;
-        protected readonly ObservableCollection<T> CanonicalSupersetProtected = new ObservableCollection<T>();
+
+        /// <summary>
+        /// Factory-backed canonical superset used by the back-end event pipeline 
+        /// even when the visible ObservableNetProjection is filtered or divergent.
+        /// </summary>
+        /// <remarks>
+        /// This collection represents the authoritative recordset for the current epoch.
+        /// The ObservableNetProjection may expose a filtered or reordered view for UI
+        /// interaction, but all structural reconciliation ultimately resolves against
+        /// this canonical superset.
+        /// </remarks>
+        public ObservableCollection<T> CanonicalSupersetProtected
+        {
+            get
+            {
+                if (_canonicalSupersetProtected is null)
+                {
+                    _canonicalSupersetProtected = new ObservableCollection<T>();
+                    _canonicalSupersetProtected.CollectionChanged += OnCanonicalSupersetChanged;
+                }
+                return _canonicalSupersetProtected;
+            }
+        }
+        ObservableCollection<T>? _canonicalSupersetProtected = null;
 
         public new IEnumerator<T> GetEnumerator() => RoutedRecordset.Cast<T>().GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }

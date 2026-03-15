@@ -1338,7 +1338,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                         });
                     void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
                     {
-                        builder.Add(e.GetFormatted(ReferenceEquals(sender, itemsSource)));
+                        builder.Add(e.ToString(ReferenceEquals(sender, itemsSource)));
                     }
 
                     // 260311.A RETROFIT - StateReport came online later. Let's see if it agrees.
@@ -1435,7 +1435,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
                     {
                         eventQueue.Enqueue((sender, e));
-                        builder.Add(e.GetFormatted(ReferenceEquals(sender, itemsSource)));
+                        builder.Add(e.ToString(ReferenceEquals(sender, itemsSource)));
                     }
                     #endregion L o c a l F x
 
@@ -3006,7 +3006,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                         Debug.Fail($@"ADVISORY - First Time.");
                     }
                     eventQueue.Enqueue((sender, e));
-                    builder.Add(e.GetFormatted(ReferenceEquals(sender, items)));
+                    builder.Add(e.ToString(ReferenceEquals(sender, items)));
 
                     // G T K
                     switch (e.Action)
