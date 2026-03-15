@@ -310,29 +310,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             #endregion L o c a l F x
         }
 
-        /// <summary>
-        /// Base Class (WDT) Event Forwarder.
-        /// </summary>
-        /// <remarks>
-        /// Necessary because:
-        /// 1. At present, there is no OnPropertyChanged(e) virtual base method.
-        /// 2. We need to raise PropertyChanged with custom events for item changes.
-        /// </remarks>
-        private void OnBaseClassPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            OnPropertyChanged(new ItemPropertyChangedEventArgs(e.PropertyName, nameof(WatchdogTimer)));
-        }
-        protected new virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-        protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            PropertyChanged?.Invoke(this, e);
-        }
-
-        // An event that can be invoked by this class with custom events.
-        public new event PropertyChangedEventHandler? PropertyChanged;
-
         protected virtual void OnItemPropertyChanged(object item, PropertyChangedEventArgs e)
         {
             OnPropertyChanged(new ItemPropertyChangedEventArgs(e.PropertyName, item));

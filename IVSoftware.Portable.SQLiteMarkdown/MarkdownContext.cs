@@ -70,8 +70,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             PredicateMatchSubsetPrivate = (IList)Activator.CreateInstance(
                 typeof(List<>).MakeGenericType(type)
             )!;
-            // We still want to get the 
-            base.PropertyChanged += OnBaseClassPropertyChanged;
         }
 
         /// <summary>
