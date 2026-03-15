@@ -40,16 +40,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         : WatchdogTimer
         , INotifyPropertyChanged
     {
+        [Careful("The ContractType type must be known and captured regardless of GF mode.")]
+        private MarkdownContext() => 
+            throw new NotSupportedException("The ContractType type must be known and captured regardless of GF mode.");
+
         /// <summary>
         /// Creates a self-contained expression parsing environment, binding it
         /// to an XML-based AST using the IVSoftware.Portable.XBoundObject NuGet.
         /// </summary>
         /// <remarks>
-        /// [Careful] 
-        /// The initial type must be known and captured regardless of GF mode.
-        /// A parameterless CTOR would not be appropriate so avoid that.
-        /// </remarks>
-
         [Canonical]
         public MarkdownContext(Type type)
         {
@@ -60,11 +59,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             ContractType = type;
 
             // Self-detect the topology.
-            if (typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
-            {
-                ProjectionTopology = ProjectionTopology.Inheritance;
-            }
-
+            // - RTTI claims INotifyCollectionChange implementation.
+            // - This class, however, doesn't do that on its own.
+            // - Inheritance is the only possibility.
+            _isInherited = typeof(INotifyCollectionChanged).IsAssignableFrom(GetType());
+            
             // Construct the predicate subset with the correct element type
             // that ensures a cast to IReadOnlyList<T> will succeed.
             PredicateMatchSubsetPrivate = (IList)Activator.CreateInstance(
@@ -1707,6 +1706,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                 }
             }
+            this.OnAwaited(new AwaitedEventArgs(caller: nameof(Clear))
+            {
+                { nameof(all), all },
+            });
             // Fluent return;
             return FilteringState;
         }

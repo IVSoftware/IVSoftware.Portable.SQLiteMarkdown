@@ -943,6 +943,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         #region P R O J E C T I O N
+
         /// <summary>
         /// Gets or sets the observable projection representing the effective
         /// (net visible) collection after markdown and predicate filtering.
@@ -971,32 +972,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             get => _observableProjection;
             set
             {
-                if (!Equals(_observableProjection, value))
+                if (ProjectionTopology == ProjectionTopology.Inheritance)
                 {
-                    // Unsubscribe INCC
-                    if (_observableProjection is not null)
+                    this.ThrowHard<InvalidOperationException>(@"
+Cannot assign ObservableNetProjection when ProjectionTopology is Inheritance.
+Inherited contexts manage their projection internally.".TrimStart());
+                }
+                else
+                {
+                    if (!Equals(_observableProjection, value))
                     {
-                        _observableProjection.CollectionChanged -= OnIncomingProjectionCollectionChanged;
-                    }
+                        // Unsubscribe INCC
+                        if (_observableProjection is not null)
+                        {
+                            _observableProjection.CollectionChanged -= OnIncomingProjectionCollectionChanged;
+                        }
 
-                    _observableProjection = value;
+                        _observableProjection = value;
 
-                    // [Careful] This is safest when MDC is first in line.
-                    ProjectionTopology = _observableProjection switch
-                    {
-                        MarkdownContext _ => ProjectionTopology.Inheritance,
-                        INotifyCollectionChanged _ and not MarkdownContext
-                            => ProjectionTopology.Composition,
-                        _ => ProjectionTopology.None,
-                    };
+                        // Run the handler then subscribe to any subsequent changes.
+                        OnObservableProjectionChanged();
 
-                    // Run the handler then subscribe to any subsequent changes.
-                    OnObservableProjectionChanged();
-
-                    // Subscribe INCC
-                    if (_observableProjection is not null)
-                    {
-                        _observableProjection.CollectionChanged += OnIncomingProjectionCollectionChanged;
+                        // Subscribe INCC
+                        if (_observableProjection is not null)
+                        {
+                            _observableProjection.CollectionChanged += OnIncomingProjectionCollectionChanged;
+                        }
                     }
                 }
             }
@@ -1149,13 +1150,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         protected virtual void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
         {
-            if (ProjectionOption == NetProjectionOption.ObservableOnly)
+            switch (ProjectionOption)
             {
-                // Relies on the subclass calling the base class when
-                // all desired changes have been made bu subclass.
-                ModelSettled?.Invoke(this, eBCL);
+                case NetProjectionOption.Inherited:         // Subclass should apply policy first, then call base.
+                case NetProjectionOption.ObservableOnly:    // Maintain internal canon but do not push internal changes.
+                    ModelSettled?.Invoke(this, eBCL);
+                    break;
+                case NetProjectionOption.AllowDirectChanges:
+                    localApplyDirectChanges();
+                    break;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                    break;
             }
-            else
+            void localApplyDirectChanges()
             {
                 if (eBCL is not ModelSettledEventArgs eModel)
                 {
@@ -1164,7 +1172,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 else
                 {
-                    if(ObservableNetProjection is not IList projection)
+                    if (ObservableNetProjection is not IList projection)
                     {
                         this.ThrowFramework<InvalidOperationException>(
                             $"Expecting {nameof(ObservableNetProjection)} is determined to be non-null in the ProjectionOption property getter.");
@@ -1298,16 +1306,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public event NotifyCollectionChangedEventHandler? ModelSettled;
 
+
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.
         /// </summary>
         public NetProjectionOption ProjectionOption
         {
             get =>
-                // This guards against attempting to write when the projection is null.
-                ObservableNetProjection is null         
-                ? NetProjectionOption.ObservableOnly
-                : _projectionOption;
+                ProjectionTopology == ProjectionTopology.Inheritance
+                ? NetProjectionOption.Inherited
+                // Guards against attempting to write when the projection is null.
+                : ObservableNetProjection is null
+                    ? NetProjectionOption.ObservableOnly
+                    : _projectionOption;
             set
             {
                 if (!Equals(_projectionOption, value))
@@ -1317,15 +1328,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-        NetProjectionOption  _projectionOption = default;
+        NetProjectionOption _projectionOption = 0;
 
         public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; } = ReplaceItemsEventingOption.StructuralReplaceEvent;
-
 
         /// <summary>
         /// Reports on whether this object is inherited or composed.
         /// </summary>
-        public ProjectionTopology ProjectionTopology { get; protected set; }
+        public ProjectionTopology ProjectionTopology
+        {
+            get => _isInherited
+                    ? ProjectionTopology.Inheritance
+                    : ObservableNetProjection is null
+                         ? ProjectionTopology.None
+                         : ProjectionTopology.Composition;
+        }
+        readonly bool _isInherited;
+
+
         #endregion P R O J E C T I O N
 
         [Obsolete("Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount.")]

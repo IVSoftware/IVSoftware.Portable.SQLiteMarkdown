@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
+using IVSoftware.Portable.Threading;
 
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
@@ -110,9 +111,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             using var te = this.TestableEpoch();
             string actual, expected;
             int nResult;
-            IList<SelectableQFModel> oc;
 
-            var mdc = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
+            var inherited = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
 
             subtest_DetectTopology();
             subtest_PopulateAndClearEpoch();
@@ -123,20 +123,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             {
                 Assert.AreEqual(
                     ProjectionTopology.Inheritance,
-                    mdc.ProjectionTopology,
+                    inherited.ProjectionTopology,
                     "Expecting INHERITANCE is detectable from the start.");
             }
             void subtest_PopulateAndClearEpoch()
             {
+                inherited.LoadCanon(default(List<SelectableQFModel>).PopulateForDemo(2));
 
-                oc = 
-                    new ObservableCollection<SelectableQFModel>()
-                    .PopulateForDemo(2);
+                actual = JsonConvert.SerializeObject(inherited, Formatting.Indented);
 
-                mdc.ObservableNetProjection = (INotifyCollectionChanged)oc;
-
-
-                actual = JsonConvert.SerializeObject(oc, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
                 expected = @" 
 [
   {
@@ -177,7 +174,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     "Expecting TWO items on display."
                 );
 
-                actual = mdc.Model.ToString();
+                actual = inherited.Model.ToString();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -193,34 +190,54 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     "Expecting updated model."
                 );
 
-                actual = mdc.StateReport();
+                actual = inherited.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 2, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]";
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+                ;
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Expecting StateReport FSOL to match HasCounts."
                 );
 
-                nResult = mdc.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
+                nResult = inherited.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
 
                 Assert.AreEqual(
-                    mdc.CanonicalCount,
+                    inherited.CanonicalCount,
                     nResult,
                     "Expecting the database items track the model at all times.");
 
                 #region C L E A R
-                oc.Clear(); // This is an IList no-surprises clear.
-                Assert.AreEqual(0, mdc.CanonicalCount);
-                Assert.AreEqual(0, mdc.PredicateMatchCount);
-                Assert.IsFalse(mdc.Model.HasElements);
-                nResult = mdc.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
+
+                #region L o c a l F x 
+                int bcClearCount = 0;
+                void localOnAwaited(object? sender, AwaitedEventArgs e)
+                {
+                    switch (e.Caller)
+                    {
+                        case nameof(inherited.Clear) when e.ContainsKey("all"):
+                            bcClearCount++;
+                            break;
+                    }
+                }
+                #endregion L o c a l F x
+                using (this.WithOnDispose(
+                    onInit: (sender, e) => Threading.Extensions.Awaited += localOnAwaited,
+                    onDispose: (sender, e) => Threading.Extensions.Awaited -= localOnAwaited))
+                {
+                    inherited.Clear(); // This should be an IList no-surprises clear.
+                }
+                Assert.AreEqual(0, bcClearCount);
+                Assert.AreEqual(0, inherited.CanonicalCount);
+                Assert.AreEqual(0, inherited.PredicateMatchCount);
+                Assert.IsFalse(inherited.Model.HasElements);
+                nResult = inherited.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
                 Assert.AreEqual(0, nResult);
 
                 // #{A665C02F-B1DE-45AE-8DAD-67775114E725}
-                actual = mdc.StateReport();
+                actual = inherited.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -237,7 +254,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             void subtest_FilterTracking()
             {
-                mdc.QueryFilterConfig = QueryFilterConfig.Filter;
+                inherited.QueryFilterConfig = QueryFilterConfig.Filter;
             }
             #endregion S U B T E S T S
         }

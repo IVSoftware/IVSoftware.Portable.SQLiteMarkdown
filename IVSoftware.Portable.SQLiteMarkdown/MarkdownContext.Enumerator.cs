@@ -24,14 +24,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
     partial class MarkdownContext<T> : IEnumerable<T>
     {
-        public new IEnumerator<T> GetEnumerator()
-        {
-            throw new NotImplementedException("ToDo");
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        public new IEnumerator<T> GetEnumerator() => (IEnumerator<T>) base.GetEnumerator();
     }
 }

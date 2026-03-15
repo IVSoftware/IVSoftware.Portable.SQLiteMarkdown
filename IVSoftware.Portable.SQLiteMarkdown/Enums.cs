@@ -506,6 +506,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public enum NetProjectionOption
     {
         /// <summary>
+        /// External ObservableNetCollection is not allowed for ProjectionTopology.Inheritance.
+        /// </summary>
+        /// <remarks>
+        /// - Subclasses must enforce an internal update policy.
+        /// - External collections should not be allowed to influence this policy.
+        /// </remarks>
+        Inherited,
+
+        /// <summary>
         /// Observe the projection for reconciliation but do not mutate it.
         /// </summary>
         /// <remarks>

@@ -1362,7 +1362,8 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-ProjectionTopology.Inheritance, NetProjectionOption.ObservableOnly, ReplaceItemsEventingOption.StructuralReplaceEvent";
+ProjectionTopology.Inheritance, NetProjectionOption.Inherited, ReplaceItemsEventingOption.StructuralReplaceEvent"
+                    ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1964,7 +1965,7 @@ SearchEntryState='QueryCompleteWithResults'";
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-ProjectionTopology.Inheritance, NetProjectionOption.ObservableOnly, ReplaceItemsEventingOption.StructuralReplaceEvent"
+ProjectionTopology.Inheritance, NetProjectionOption.Inherited, ReplaceItemsEventingOption.StructuralReplaceEvent"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
