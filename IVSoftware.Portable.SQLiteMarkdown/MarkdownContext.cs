@@ -165,7 +165,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if (IsFiltering && expr.IsSemanticallyEmpty())
             {
-                this.ThrowPolicyException(SQLiteMarkdownPolicy.EmptyFilterString);
+                this.ThrowPolicyException(SQLiteMarkdownPolicyViolation.EmptyFilterString);
                 xast = null!; // We warned you.
                 return string.Empty;
             }

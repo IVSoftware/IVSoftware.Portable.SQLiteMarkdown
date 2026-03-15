@@ -3,6 +3,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.WinOS.MSTest.Extensions;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -29,9 +30,11 @@ public class TestClass_INPC
         };
         items.PropertyChanged += (sender, e) =>
         {
-            if (sender is SelectableQFModel item)
+            switch (e)
             {
-                builderINPC.Add($"{e.PropertyName!}: {item.Description.PadToMaxLength(10, true)}");
+                case ItemPropertyChangedEventArgs inpc when inpc.Item is SelectableQFModel item:
+                    builderINPC.Add($"{e.PropertyName!}: {item.Description.PadToMaxLength(10, true)}");
+                    break;
             }
         };
 
@@ -61,5 +64,23 @@ public class TestClass_INPC
             "Expecting: FILTER MODE => ALWAYS TRACKS."
         );
 
+        var inpcItem = items[0];
+        Assert.IsInstanceOfType<SelectableQFModel>(inpcItem);
+        { }
+
+        inpcItem.IsChecked = true;
+
+        actual = string.Join(Environment.NewLine, builderINPC);
+        actual.ToClipboardExpected();
+        { }
+        expected = @" 
+IsChecked: Brown Dog "
+        ;
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting property changed event(s)."
+        );
     }
 }

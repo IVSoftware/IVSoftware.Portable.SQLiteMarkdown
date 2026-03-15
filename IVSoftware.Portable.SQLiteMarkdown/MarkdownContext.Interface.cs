@@ -240,72 +240,90 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
         protected virtual void OnBoundItemObjectChange(XBoundAttribute xbo, XObjectChange action)
         {
-            if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+            var item = xbo.Tag;
+            switch (action)
             {
-                var item = xbo.Tag;
-                switch (action)
-                {
-                    case XObjectChange.Add:
-                        localSetModelAuthority(xbo);
-                        localAddEvents(item);
-                        if (SQLITE_STRICT)
-                        {
-                            if (1 != FilterQueryDatabase.Insert(item))
-                            {
-                                Debug.Fail($@"ADVISORY - Expecting operation to succeed.");
-                            }
-                        }
-                        else
-                        {
-                            if (1 != FilterQueryDatabase.InsertOrReplace(item))
-                            {
-
-                                Debug.Fail($@"ADVISORY - Expecting operation to succeed.");
-                            }
-                        }
-                        break;
-                    case XObjectChange.Remove:
-                        FilterQueryDatabase.Delete(item);
-                        localRemoveEvents(item);
-                        break;
-                }
-
-                // Associate the xml Model governing this ddx.
-                void localSetModelAuthority(XBoundAttribute xbo)
-                {
-                    if (xbo.Tag is IAffinityModel modeled)
-                    {
-                        if (xbo.Parent is null)
-                        {
-                            this.ThrowFramework<NullReferenceException>(
-                                "UNEXPECTED: An attribute that is added should have a parent. What was it added *to*?");
-                        }
-                        else
-                        {
-                            modeled.Model = xbo.Parent;
-                        }
-                    }
-                }
-            }
-            else
-            {   /* G T K - N O O P */
-                // There is no filter database to maintain.
+                case XObjectChange.Add:
+                    localSetModelAuthority();
+                    localAddEvents();
+                    _ = localTryAddToDatabase();
+                    break;
+                case XObjectChange.Remove:
+                    _ = localTryRemoveFromDatabase();
+                    localRemoveEvents();
+                    break;
             }
             #region L o c a l F x
 
-            void localAddEvents(object item)
+            // Associate the xml Model governing this ddx.
+            void localSetModelAuthority()
+            {
+                if (xbo.Tag is IAffinityModel modeled)
+                {
+                    if (xbo.Parent is null)
+                    {
+                        this.ThrowFramework<NullReferenceException>(
+                            "UNEXPECTED: An attribute that is added should have a parent. What was it added *to*?");
+                    }
+                    else
+                    {
+                        modeled.Model = xbo.Parent;
+                    }
+                }
+            }
+
+            void localAddEvents()
             {
                 if(item is INotifyPropertyChanged inpc)
                 {
                     inpc.PropertyChanged += OnItemPropertyChanged;
                 }
             }
-            void localRemoveEvents(object item)
+            void localRemoveEvents()
             {
                 if (item is INotifyPropertyChanged inpc)
                 {
                     inpc.PropertyChanged -= OnItemPropertyChanged;
                 }
+            }
+            bool? localTryAddToDatabase()
+            {
+                bool? isSuccess = null;
+                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                {
+                    if (SQLITE_STRICT)
+                    {
+                        isSuccess = 1 == FilterQueryDatabase.Insert(item);
+                    }
+                    else
+                    {
+                        isSuccess = 1 == FilterQueryDatabase.InsertOrReplace(item);
+                    }
+                }
+                else
+                {   /* G T K - N O O P */
+                    // There is no filter database to maintain.
+                    isSuccess = null;
+                }
+                if(isSuccess == false)
+                {
+                    this.ThrowPolicyException(SQLiteMarkdownPolicyViolation.SQLiteOperationFailed);
+                }
+                return isSuccess;
+            }
+
+            bool? localTryRemoveFromDatabase()
+            {
+                bool? isSuccess = null;
+                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                {
+                    isSuccess = 1 == FilterQueryDatabase.Delete(item);
+                }
+                else
+                { 
+                    isSuccess = null; 
+                }
+                return isSuccess;
             }
             #endregion L o c a l F x
         }
@@ -820,7 +838,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                 {
-                    this.ThrowPolicyException(SQLiteMarkdownPolicy.FilterEngineUnavailable);
+                    this.ThrowPolicyException(SQLiteMarkdownPolicyViolation.FilterEngineUnavailable);
                     // NOTE:
                     // Handling the Throw creates a benign condition where a DB
                     // that might not really be necessary is instantiated regardless.
@@ -842,7 +860,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     // The user must be given the benefit of the doubt if they are explicitly
                     // injecting a connection to be used for internal filter queries. This will
                     // silently upgrade the configuration unless escalated in the Throw handler.
-                    this.ThrowPolicyException(SQLiteMarkdownPolicy.ConfigurationModifiedByDatabaseAssignment);
+                    this.ThrowPolicyException(SQLiteMarkdownPolicyViolation.ConfigurationModifiedByDatabaseAssignment);
                     QueryFilterConfig |= QueryFilterConfig.Filter;
                 }
 
