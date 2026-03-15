@@ -105,9 +105,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 #endif
         }
 
-
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
-        public IReadOnlyList<T> UnfilteredItems => (List<T>)CanonicalSupersetProtected;
+        public IReadOnlyList<T> UnfilteredItems => CanonicalSuperset;
 
         public virtual async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
@@ -963,7 +962,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
         IReadOnlyList<T>? _canonicalSuperset = null;
-        protected readonly List<T> CanonicalSupersetProtected = new List<T>();
+        protected readonly ObservableCollection<T> CanonicalSupersetProtected = new ObservableCollection<T>();
 
         public new IEnumerator<T> GetEnumerator() => RoutedRecordset.Cast<T>().GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
