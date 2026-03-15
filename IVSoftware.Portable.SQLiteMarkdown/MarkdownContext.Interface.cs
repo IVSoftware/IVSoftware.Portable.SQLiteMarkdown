@@ -1050,7 +1050,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 default: break;
             }
 
-            if (ReferenceEquals(sender, ObservableNetProjection))
+            if (true || ReferenceEquals(sender, ObservableNetProjection))
             {
                 switch (DHostAuthorityEpoch.Authority)
                 {
