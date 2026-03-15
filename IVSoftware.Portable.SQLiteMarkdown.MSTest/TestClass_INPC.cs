@@ -3,6 +3,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.WinOS.MSTest.Extensions;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -25,13 +26,15 @@ public class TestClass_INPC
         };
         items.CollectionChanged += (sender, e) =>
         {
-            builderINCC.Add(e.GetFormatted(true));
+            builderINCC.Add(e.ToString(true));
         };
         items.PropertyChanged += (sender, e) =>
         {
-            if (sender is SelectableQFModel item)
+            switch (e)
             {
-                builderINPC.Add($"{e.PropertyName!}: {item.Description.PadToMaxLength(10, true)}");
+                case ItemPropertyChangedEventArgs inpc when inpc.Item is SelectableQFModel item:
+                    builderINPC.Add($"{e.PropertyName!}: {item.Description.PadToMaxLength(10, true)}");
+                    break;
             }
         };
 
@@ -39,16 +42,13 @@ public class TestClass_INPC
         actual.ToClipboardExpected();
         { }
         expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
         ;
         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
         items.AddDynamic("Brown Dog", "[canine] [color]", false, new() { "loyal", "friend", "furry" });
 
         Assert.AreEqual(1, items.Count);
-        { }
-        return;
-
         actual = items.Model.ToString();
         actual.ToClipboardExpected();
         { }
@@ -64,5 +64,23 @@ public class TestClass_INPC
             "Expecting: FILTER MODE => ALWAYS TRACKS."
         );
 
+        var inpcItem = items[0];
+        Assert.IsInstanceOfType<SelectableQFModel>(inpcItem);
+        { }
+
+        inpcItem.IsChecked = true;
+
+        actual = string.Join(Environment.NewLine, builderINPC);
+        actual.ToClipboardExpected();
+        { }
+        expected = @" 
+IsChecked: Brown Dog "
+        ;
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting property changed event(s)."
+        );
     }
 }

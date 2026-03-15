@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
+using IVSoftware.Portable.Threading;
 
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
@@ -100,9 +101,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         ///
         /// Clearing the observable source confirms that routed structural changes propagate
         /// back through the canonical store and database.
-        ///
-        /// Finally, enabling <see cref="QueryFilterConfig.Filter"/> verifies that switching the
-        /// configuration does not disturb the already established inheritance topology.
         /// </remarks>
         [TestMethod, DoNotParallelize]
         public void TestMethod_RouteInheritance()
@@ -110,33 +108,66 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             using var te = this.TestableEpoch();
             string actual, expected;
             int nResult;
-            IList<SelectableQFModel> oc;
 
-            var mdc = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
+            #region L o c a l F x
+            List<string> 
+                builder = new(),
+                builderThrow = new ();
+            var localCanon = default(List<SelectableQFModel>).PopulateForDemo(2);
+            void localOnBeginThrowOrAdvise(object? sender, Throw e)
+            {
+                var msg = $"{e.GetType().Name} {e.FormattedMessage}";
+                builderThrow.Add(msg);
+                e.Handled = true;
+            }
+            #endregion L o c a l F x
+            using var local = this.WithOnDispose(
+                onInit: (sender, e) =>
+                {
+                    Throw.BeginThrowOrAdvise += localOnBeginThrowOrAdvise;
+                },
+                onDispose: (sender, e) =>
+                {
+                    Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
+                });
 
+            var inherited = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
+
+            subtest_CheckForExpectedAdvisory();
             subtest_DetectTopology();
             subtest_PopulateAndClearEpoch();
             subtest_FilterTracking();
 
             #region S U B T E S T S
+            void subtest_CheckForExpectedAdvisory()
+            {
+                actual = string.Join(Environment.NewLine, builderThrow);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+Advisory .ctor | Inherited MarkdownContext detected, but no parameterless Clear() was found. Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit.";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    $"Expecting {nameof(ObservableNetProjectionInheritsMDC<SelectableQFModel>)} advises on missing parameterless Clear()."
+                );
+            }
             void subtest_DetectTopology()
             {
                 Assert.AreEqual(
                     ProjectionTopology.Inheritance,
-                    mdc.ProjectionTopology,
+                    inherited.ProjectionTopology,
                     "Expecting INHERITANCE is detectable from the start.");
             }
             void subtest_PopulateAndClearEpoch()
             {
+                inherited.LoadCanon(localCanon);
 
-                oc = 
-                    new ObservableCollection<SelectableQFModel>()
-                    .PopulateForDemo(2);
+                actual = JsonConvert.SerializeObject(inherited, Formatting.Indented);
 
-                mdc.ObservableNetProjection = (INotifyCollectionChanged)oc;
-
-
-                actual = JsonConvert.SerializeObject(oc, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
                 expected = @" 
 [
   {
@@ -177,7 +208,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     "Expecting TWO items on display."
                 );
 
-                actual = mdc.Model.ToString();
+                actual = inherited.Model.ToString();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -193,51 +224,131 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     "Expecting updated model."
                 );
 
-                actual = mdc.StateReport();
+                actual = inherited.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 2, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]";
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+                ;
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Expecting StateReport FSOL to match HasCounts."
                 );
 
-                nResult = mdc.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
+                nResult = inherited.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
 
                 Assert.AreEqual(
-                    mdc.CanonicalCount,
+                    inherited.CanonicalCount,
                     nResult,
                     "Expecting the database items track the model at all times.");
 
                 #region C L E A R
-                oc.Clear(); // This is an IList no-surprises clear.
-                Assert.AreEqual(0, mdc.CanonicalCount);
-                Assert.AreEqual(0, mdc.PredicateMatchCount);
-                Assert.IsFalse(mdc.Model.HasElements);
-                nResult = mdc.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
-                Assert.AreEqual(0, nResult);
 
-                // #{A665C02F-B1DE-45AE-8DAD-67775114E725}
-                actual = mdc.StateReport();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
-                ;
+                #region L o c a l F x 
+                void localOnAwaited(object? sender, AwaitedEventArgs e)
+                {
+                    switch (e.Caller)
+                    {
+                        case nameof(inherited.Clear) when e.ContainsKey("all"):
+                            builder.Add($"{sender} Clear(all={(e["all"])})");
+                            break;
+                    }
+                }
+                #endregion L o c a l F x
 
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting StateReport FSOL to match HasCounts."
-                );
+                using (this.WithOnDispose(
+                    onInit: (sender, e) =>
+                    {
+                        builder.Clear();
+                        Threading.Extensions.Awaited += localOnAwaited;
+                    },
+                    onDispose: (sender, e) =>
+                    {
+                        builder.Clear();
+                        Threading.Extensions.Awaited -= localOnAwaited;
+                    }))
+                {
+                    // This is supposed to be an IList "no surprises" clear.
+                    // We're listening for Awaited event is raised in the BC clear (with an 'all" key).
+                    // This is because we intentionally left out a parameterless Clear() in the subclass.
+                    inherited.Clear();
+
+                    actual = string.Join(Environment.NewLine, builder);
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+MarkdownContext Clear(all=False)";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting BC Clear raises Awaited event @ False."
+                    );
+
+                    Assert.AreNotEqual(
+                        0, 
+                        inherited.CanonicalCount,
+                        "Expecting 'surprise'! The unintended absence of effect.");
+
+                    // Verify State
+                    actual = inherited.StateReport();
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
+                    ;
+                    Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting non-terminal clear.");
+
+                    // Bunp state back up where it was.
+                    inherited.LoadCanon(localCanon);
+
+                    // Verify State
+                    actual = inherited.StateReport();
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+                    ;
+                    Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting QUERY COMPLETE WITH RESULTS.");
+                    { }
+
+                    // Perform terminal clear.
+                    builder.Clear();
+                    inherited.Clear(true);
+
+                    // Verify State
+                    actual = inherited.StateReport();
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+                    ;
+
+
+                    actual = string.Join(Environment.NewLine, builder);
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+MarkdownContext Clear(all=True)";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting BC Clear raises Awaited event."
+                    );
+                }
+
+                Assert.AreEqual(0, inherited.CanonicalCount);
+                Assert.AreEqual(0, inherited.PredicateMatchCount);
+                Assert.IsFalse(inherited.Model.HasElements);
+                Assert.AreEqual(0, inherited.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items"));
                 #endregion C L E A R
             }
 
             void subtest_FilterTracking()
             {
-                mdc.QueryFilterConfig = QueryFilterConfig.Filter;
+                inherited.QueryFilterConfig = QueryFilterConfig.Filter;
             }
             #endregion S U B T E S T S
         }

@@ -16,6 +16,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="coverlet.collector" Version="6.0.0" />
+		<PackageReference Include="IVSoftware.Portable.Threading" Version="1.3.1" />
 		<PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="1.0.8" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
 		<PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
@@ -40,7 +41,7 @@
 	- Use 'latest stable' floating reference, not prerelease floating reference.
 	-->
 	<ItemGroup>
-		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="2.0.0-beta" />
+		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="2.0.0-rc" />
 		<PackageReference Include="IVSoftware.Portable.Disposable" Version="2.0.0" />
 		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="2.0.3" />
 	</ItemGroup>

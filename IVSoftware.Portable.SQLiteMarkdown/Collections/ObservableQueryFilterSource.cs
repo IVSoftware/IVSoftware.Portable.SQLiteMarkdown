@@ -36,74 +36,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         , IList<T>
         where T : new()
     {
+#if false
         public ObservableQueryFilterSource()
         {
+            // Modify canon when changes made to this INCC.
             base.ObservableNetProjection = this;
+
+            // Because this object exposes a routed enumerator, there
+            // is no external collection "out there" to synchronize.
             base.ProjectionOption = NetProjectionOption.ObservableOnly;
-
-#if false && USER_OLD_INPC
-
-            _canonicalRecordset.CollectionChanged += (sender, e) =>
-            {
-                if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.MarkdownContext)
-                {   /* G T K - N O O P */
-                }
-                else
-                {
-                    if (_canonicalRecordset.Count < 2)
-                    {
-                        // 260301
-                        // FilteringState = FilteringState.Ineligible;
-                    }
-                    switch (e.Action)
-                    {
-                        case NotifyCollectionChangedAction.Add:
-                            foreach (var inpc in e.NewItems?.OfType<INotifyPropertyChanged>() ?? [])
-                            {
-                                inpc.PropertyChanged += OnItemPropertyChanged;
-                            }
-                            if (Busy)
-                            {   /* G T K */
-                            }
-                            else
-                            {
-                                if (FilteringState != FilteringState.Active)
-                                {
-                                    OnCollectionChanged(e);
-                                }
-                            }
-                            break;
-                        case NotifyCollectionChangedAction.Remove:
-                            foreach (var inpc in e.OldItems?.OfType<INotifyPropertyChanged>() ?? [])
-                            {
-                                inpc.PropertyChanged -= OnItemPropertyChanged;
-                            }
-                            if (Busy)
-                            {   /* G T K */
-                            }
-                            else
-                            {
-                                OnCollectionChanged(e);
-                            }
-                            break;
-                        case NotifyCollectionChangedAction.Reset:
-                            _predicateMatchSubset.Clear();
-                            foreach (var inpc in _unsubscribeItems)
-                            {
-                                inpc.PropertyChanged -= OnItemPropertyChanged;
-                            }
-                            OnCollectionChanged(e);
-                            break;
-                    }
-                    _unsubscribeItems = _canonicalRecordset.OfType<INotifyPropertyChanged>().ToArray();
-                }
-            };
-#endif
         }
-
+#endif
 
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
-        public IReadOnlyList<T> UnfilteredItems => (List<T>)CanonicalSupersetProtected;
+        public IReadOnlyList<T> UnfilteredItems => CanonicalSuperset;
 
         public virtual async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
@@ -923,7 +869,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
 
         #region R O U T E D    C O N D I T I O N A L S
-
         protected override void OnSearchEntryStateChanged()
         {
             base.OnSearchEntryStateChanged();
@@ -959,7 +904,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
         IReadOnlyList<T>? _canonicalSuperset = null;
-        protected readonly List<T> CanonicalSupersetProtected = new List<T>();
+
+        /// <summary>
+        /// Factory-backed canonical superset used by the back-end event pipeline 
+        /// even when the visible ObservableNetProjection is filtered or divergent.
+        /// </summary>
+        /// <remarks>
+        /// This collection represents the authoritative recordset for the current epoch.
+        /// The ObservableNetProjection may expose a filtered or reordered view for UI
+        /// interaction, but all structural reconciliation ultimately resolves against
+        /// this canonical superset.
+        /// </remarks>
+        public ObservableCollection<T> CanonicalSupersetProtected
+        {
+            get
+            {
+                if (_canonicalSupersetProtected is null)
+                {
+                    _canonicalSupersetProtected = new ObservableCollection<T>();
+                    _canonicalSupersetProtected.CollectionChanged += OnCanonicalSupersetChanged;
+                }
+                return _canonicalSupersetProtected;
+            }
+        }
+        ObservableCollection<T>? _canonicalSupersetProtected = null;
 
         public new IEnumerator<T> GetEnumerator() => RoutedRecordset.Cast<T>().GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }

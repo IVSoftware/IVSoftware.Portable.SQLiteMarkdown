@@ -3,6 +3,7 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
@@ -39,16 +40,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         : WatchdogTimer
         , INotifyPropertyChanged
     {
+        [Careful("The ContractType type must be known and captured regardless of GF mode.")]
+        private MarkdownContext() => 
+            throw new NotSupportedException("The ContractType type must be known and captured regardless of GF mode.");
+
         /// <summary>
         /// Creates a self-contained expression parsing environment, binding it
         /// to an XML-based AST using the IVSoftware.Portable.XBoundObject NuGet.
         /// </summary>
         /// <remarks>
-        /// [Careful] 
-        /// The initial type must be known and captured regardless of GF mode.
-        /// A parameterless CTOR would not be appropriate so avoid that.
-        /// </remarks>
-
         [Canonical]
         public MarkdownContext(Type type)
         {
@@ -59,11 +59,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             ContractType = type;
 
             // Self-detect the topology.
-            if (typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
+            // - RTTI claims INotifyCollectionChange implementation.
+            // - This class, however, doesn't do that on its own.
+            // - Inheritance is the only possibility.
+            _isInherited = typeof(INotifyCollectionChanged).IsAssignableFrom(GetType());
+            if(_isInherited)
             {
-                ProjectionTopology = ProjectionTopology.Inheritance;
+                if (this.GetType().GetMethod(nameof(Clear), Type.EmptyTypes) is { } clearMethod)
+                {   /* B C S - N O O P */
+                }
+                else
+                {
+                    // Avoid leaking the object itself as the awaited sender.
+                    nameof(MarkdownContext).Advisory(
+                        $"Inherited MarkdownContext detected, but no parameterless Clear() was found. " +
+                        "Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. " +
+                        "If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. " +
+                        "You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit."
+                    );
+                }
             }
-
+            
             // Construct the predicate subset with the correct element type
             // that ensures a cast to IReadOnlyList<T> will succeed.
             PredicateMatchSubsetPrivate = (IList)Activator.CreateInstance(
@@ -149,7 +165,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if (IsFiltering && expr.IsSemanticallyEmpty())
             {
-                this.ThrowPolicyException(SQLiteMarkdownPolicy.EmptyFilterString);
+                this.ThrowPolicyException(SQLiteMarkdownPolicyViolation.EmptyFilterString);
                 xast = null!; // We warned you.
                 return string.Empty;
             }
@@ -1706,6 +1722,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                 }
             }
+
+            // Avoid leaking the object itself as the awaited sender.
+            nameof(MarkdownContext).OnAwaited(new AwaitedEventArgs(caller: nameof(Clear))
+            {
+                { nameof(all), all },
+            });
             // Fluent return;
             return FilteringState;
         }

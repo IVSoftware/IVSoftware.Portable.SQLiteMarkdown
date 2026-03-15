@@ -257,39 +257,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             return string.Join(", ", builder);
         }
 
-        /// <summary>
-        /// Produces a compact diagnostic string describing a collection change event.
-        /// </summary>
-        /// <remarks>
-        /// Formats the source (projection vs other), action, and item counts for
-        /// quick inspection during debugging and tracing.
-        ///
-        /// Reports <see cref="NotifyCollectionChangedEventArgs.NewItems"/> and
-        /// <see cref="NotifyCollectionChangedEventArgs.OldItems"/> only when the
-        /// respective IList is non-null. Empty collections are reported with a
-        /// count of zero; null lists are omitted entirely.
-        /// </remarks>
-        public static string GetFormatted(
-            this NotifyCollectionChangedEventArgs e,
-            bool isProjection)
-        {
-            var sb = new System.Text.StringBuilder();
-
-            sb.Append($"{(isProjection ? "NetProjection" : "Other")}.{e.Action.ToString().PadRight(7)} ");
-
-            if (e.NewItems is { } newItems)
-            {
-                sb.Append($"NewItems={newItems.Count.ToString().PadLeft(2)} ");
-            }
-
-            if (e.OldItems is { } oldItems)
-            {
-                sb.Append($"OldItems={oldItems.Count.ToString().PadLeft(2)} ");
-            }
-
-            sb.Append(e.GetType().Name.PadRight(43));
-
-            return sb.ToString();
-        }
     }
 }

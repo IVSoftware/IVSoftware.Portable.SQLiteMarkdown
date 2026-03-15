@@ -277,7 +277,7 @@ public class TestClass_PredicateMarkdownContext
         #region L o c a l F x
         void localOnModelUpdated(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            builder.Add(e.GetFormatted(ReferenceEquals(sender, pmdc.ObservableNetProjection)));
+            builder.Add(e.ToString(ReferenceEquals(sender, pmdc.ObservableNetProjection)));
             switch (pmdc.ProjectionOption)
             {
                 case NetProjectionOption.ObservableOnly:

@@ -3,6 +3,7 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
@@ -22,6 +23,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -238,57 +240,99 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
         protected virtual void OnBoundItemObjectChange(XBoundAttribute xbo, XObjectChange action)
         {
-            if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+            var item = xbo.Tag;
+            switch (action)
             {
-                var item = xbo.Tag;
-                switch (action)
+                case XObjectChange.Add:
+                    localSetModelAuthority();
+                    localAddEvents();
+                    _ = localTryAddToDatabase();
+                    break;
+                case XObjectChange.Remove:
+                    _ = localTryRemoveFromDatabase();
+                    localRemoveEvents();
+                    break;
+            }
+            #region L o c a l F x
+
+            // Associate the xml Model governing this ddx.
+            void localSetModelAuthority()
+            {
+                if (xbo.Tag is IAffinityModel modeled)
                 {
-                    case XObjectChange.Add:
-                        localSetModelAuthority(xbo);
-
-                        if (SQLITE_STRICT)
-                        {
-                            if (1 != FilterQueryDatabase.Insert(item))
-                            {
-                                Debug.Fail($@"ADVISORY - Expecting operation to succeed.");
-                            }
-                        }
-                        else
-                        {
-                            if (1 != FilterQueryDatabase.InsertOrReplace(item))
-                            {
-
-                                Debug.Fail($@"ADVISORY - Expecting operation to succeed.");
-                            }
-                        }
-                        break;
-                    case XObjectChange.Remove:
-                        FilterQueryDatabase.Delete(item);
-                        break;
-                }
-
-                // Associate the xml Model governing this ddx.
-                void localSetModelAuthority(XBoundAttribute xbo)
-                {
-                    if (xbo.Tag is IAffinityModel modeled)
+                    if (xbo.Parent is null)
                     {
-                        if (xbo.Parent is null)
-                        {
-                            this.ThrowFramework<NullReferenceException>(
-                                "UNEXPECTED: An attribute that is added should have a parent. What was it added *to*?");
-                        }
-                        else
-                        {
-                            modeled.Model = xbo.Parent;
-                        }
+                        this.ThrowFramework<NullReferenceException>(
+                            "UNEXPECTED: An attribute that is added should have a parent. What was it added *to*?");
+                    }
+                    else
+                    {
+                        modeled.Model = xbo.Parent;
                     }
                 }
             }
-            else
-            {   /* G T K - N O O P */
-                // There is no filter database to maintain.
+
+            void localAddEvents()
+            {
+                if(item is INotifyPropertyChanged inpc)
+                {
+                    inpc.PropertyChanged += OnItemPropertyChanged;
+                }
             }
+            void localRemoveEvents()
+            {
+                if (item is INotifyPropertyChanged inpc)
+                {
+                    inpc.PropertyChanged -= OnItemPropertyChanged;
+                }
+            }
+            bool? localTryAddToDatabase()
+            {
+                bool? isSuccess = null;
+                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                {
+                    if (SQLITE_STRICT)
+                    {
+                        isSuccess = 1 == FilterQueryDatabase.Insert(item);
+                    }
+                    else
+                    {
+                        isSuccess = 1 == FilterQueryDatabase.InsertOrReplace(item);
+                    }
+                }
+                else
+                {   /* G T K - N O O P */
+                    // There is no filter database to maintain.
+                    isSuccess = null;
+                }
+                if(isSuccess == false)
+                {
+                    this.ThrowPolicyException(SQLiteMarkdownPolicyViolation.SQLiteOperationFailed);
+                }
+                return isSuccess;
+            }
+
+            bool? localTryRemoveFromDatabase()
+            {
+                bool? isSuccess = null;
+                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                {
+                    isSuccess = 1 == FilterQueryDatabase.Delete(item);
+                }
+                else
+                { 
+                    isSuccess = null; 
+                }
+                return isSuccess;
+            }
+            #endregion L o c a l F x
         }
+
+        protected virtual void OnItemPropertyChanged(object item, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(new ItemPropertyChangedEventArgs(e.PropertyName, item));
+        }
+
 
         /// <summary>
         /// Executes a declared FSM sequentially while temporarily asserting any collection-change authority required by the FSM type.
@@ -794,7 +838,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                 {
-                    this.ThrowPolicyException(SQLiteMarkdownPolicy.FilterEngineUnavailable);
+                    this.ThrowPolicyException(SQLiteMarkdownPolicyViolation.FilterEngineUnavailable);
                     // NOTE:
                     // Handling the Throw creates a benign condition where a DB
                     // that might not really be necessary is instantiated regardless.
@@ -816,7 +860,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     // The user must be given the benefit of the doubt if they are explicitly
                     // injecting a connection to be used for internal filter queries. This will
                     // silently upgrade the configuration unless escalated in the Throw handler.
-                    this.ThrowPolicyException(SQLiteMarkdownPolicy.ConfigurationModifiedByDatabaseAssignment);
+                    this.ThrowPolicyException(SQLiteMarkdownPolicyViolation.ConfigurationModifiedByDatabaseAssignment);
                     QueryFilterConfig |= QueryFilterConfig.Filter;
                 }
 
@@ -917,6 +961,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         #region P R O J E C T I O N
+
         /// <summary>
         /// Gets or sets the observable projection representing the effective
         /// (net visible) collection after markdown and predicate filtering.
@@ -945,32 +990,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             get => _observableProjection;
             set
             {
-                if (!Equals(_observableProjection, value))
+                if (ProjectionTopology == ProjectionTopology.Inheritance)
                 {
-                    // Unsubscribe INCC
-                    if (_observableProjection is not null)
+                    this.ThrowHard<InvalidOperationException>(@"
+Cannot assign ObservableNetProjection when ProjectionTopology is Inheritance.
+Inherited contexts manage their projection internally.".TrimStart());
+                }
+                else
+                {
+                    if (!Equals(_observableProjection, value))
                     {
-                        _observableProjection.CollectionChanged -= OnIncomingProjectionCollectionChanged;
-                    }
+                        // Unsubscribe INCC
+                        if (_observableProjection is not null)
+                        {
+                            _observableProjection.CollectionChanged -= OnIncomingProjectionCollectionChanged;
+                        }
 
-                    _observableProjection = value;
+                        _observableProjection = value;
 
-                    // [Careful] This is safest when MDC is first in line.
-                    ProjectionTopology = _observableProjection switch
-                    {
-                        MarkdownContext _ => ProjectionTopology.Inheritance,
-                        INotifyCollectionChanged _ and not MarkdownContext
-                            => ProjectionTopology.Composition,
-                        _ => ProjectionTopology.None,
-                    };
+                        // Run the handler then subscribe to any subsequent changes.
+                        OnObservableProjectionChanged();
 
-                    // Run the handler then subscribe to any subsequent changes.
-                    OnObservableProjectionChanged();
-
-                    // Subscribe INCC
-                    if (_observableProjection is not null)
-                    {
-                        _observableProjection.CollectionChanged += OnIncomingProjectionCollectionChanged;
+                        // Subscribe INCC
+                        if (_observableProjection is not null)
+                        {
+                            _observableProjection.CollectionChanged += OnIncomingProjectionCollectionChanged;
+                        }
                     }
                 }
             }
@@ -1015,62 +1060,84 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Mental Model: "User changed the filtered projection. Track these changes in the canonical ledger."
         /// </remarks>
         protected virtual void OnIncomingProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (DHostAuthorityEpoch.Authority)
-            {
-                case 0:
-                    switch (e.Action)
-                    {
-                        case NotifyCollectionChangedAction.Add:
-                            if (e.NewItems?.Count is 1)
-                            {
-                                RunFSM<TrackUserAddItem>(e.NewItems[0]);
-                            }
-                            else
-                            {
-                                LoadCanon(sender as IEnumerable);
-                            }
-                            break;
-                        case NotifyCollectionChangedAction.Move:
-                            break;
-                        case NotifyCollectionChangedAction.Remove:
-                            break;
-                        case NotifyCollectionChangedAction.Replace:
-                            break;
-                        case NotifyCollectionChangedAction.Reset:
-                            if (sender is IList list && list.Count == 0)
-                            {
-                                // #{A665C02F-B1DE-45AE-8DAD-67775114E725}
-                                if (Model.HasElements)
-                                {
-                                    Model.RemoveAll();
-                                }
-                                if (SearchEntryState != SearchEntryState.Cleared)
-                                {
-                                    SearchEntryState = SearchEntryState.Cleared;
-                                }
-                                if (FilteringState != FilteringState.Ineligible)
-                                {
-                                    FilteringState = FilteringState.Ineligible;
-                                }
-                            }
-                            else
-                            {
-                                LoadCanon(sender as IEnumerable);
-                            }
-                            break;
-                        default:
-                            this.ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");
-                            break;
-                    }
+        => OnCanonicalSupersetChanged(sender, e);
 
-                    break;
-                case CollectionChangeAuthority.None:
-                case CollectionChangeAuthority.Model:
-                default:
-                    {   /* G T K - N O O P */
-                    }
-                    break;
+        /// <summary>
+        /// Applies canonical reconciliation logic when the authoritative superset changes.
+        /// </summary>
+        /// <remarks>
+        /// This handler represents the back-end mutation sink for the context. All structural
+        /// changes to the canonical superset pass through here so the routed projection,
+        /// filtering state, and collection notifications remain consistent with the
+        /// authoritative dataset for the current epoch.
+        ///
+        /// Mental Model: "The canonical ledger changed. Reconcile projections and notify observers."
+        /// </remarks>
+        protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (Authority)
+            {
+                default: break;
+            }
+
+            if (true || ReferenceEquals(sender, ObservableNetProjection))
+            {
+                switch (DHostAuthorityEpoch.Authority)
+                {
+                    case 0:
+                        switch (e.Action)
+                        {
+                            case NotifyCollectionChangedAction.Add:
+                                if (e.NewItems?.Count is 1)
+                                {
+                                    RunFSM<TrackUserAddItem>(e.NewItems[0]);
+                                }
+                                else
+                                {
+                                    LoadCanon(sender as IEnumerable);
+                                }
+                                break;
+                            case NotifyCollectionChangedAction.Move:
+                                break;
+                            case NotifyCollectionChangedAction.Remove:
+                                break;
+                            case NotifyCollectionChangedAction.Replace:
+                                break;
+                            case NotifyCollectionChangedAction.Reset:
+                                if (sender is IList list && list.Count == 0)
+                                {
+                                    // #{A665C02F-B1DE-45AE-8DAD-67775114E725}
+                                    if (Model.HasElements)
+                                    {
+                                        Model.RemoveAll();
+                                    }
+                                    if (SearchEntryState != SearchEntryState.Cleared)
+                                    {
+                                        SearchEntryState = SearchEntryState.Cleared;
+                                    }
+                                    if (FilteringState != FilteringState.Ineligible)
+                                    {
+                                        FilteringState = FilteringState.Ineligible;
+                                    }
+                                }
+                                else
+                                {
+                                    LoadCanon(sender as IEnumerable);
+                                }
+                                break;
+                            default:
+                                this.ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");
+                                break;
+                        }
+
+                        break;
+                    case CollectionChangeAuthority.None:
+                    case CollectionChangeAuthority.Model:
+                    default:
+                        {   /* G T K - N O O P */
+                        }
+                        break;
+                }
             }
         }
 
@@ -1101,13 +1168,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         protected virtual void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
         {
-            if (ProjectionOption == NetProjectionOption.ObservableOnly)
+            switch (ProjectionOption)
             {
-                // Relies on the subclass calling the base class when
-                // all desired changes have been made bu subclass.
-                ModelSettled?.Invoke(this, eBCL);
+                case NetProjectionOption.Inherited:         // Subclass should apply policy first, then call base.
+                case NetProjectionOption.ObservableOnly:    // Maintain internal canon but do not push internal changes.
+                    ModelSettled?.Invoke(this, eBCL);
+                    break;
+                case NetProjectionOption.AllowDirectChanges:
+                    localApplyDirectChanges();
+                    break;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                    break;
             }
-            else
+            void localApplyDirectChanges()
             {
                 if (eBCL is not ModelSettledEventArgs eModel)
                 {
@@ -1116,7 +1190,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 else
                 {
-                    if(ObservableNetProjection is not IList projection)
+                    if (ObservableNetProjection is not IList projection)
                     {
                         this.ThrowFramework<InvalidOperationException>(
                             $"Expecting {nameof(ObservableNetProjection)} is determined to be non-null in the ProjectionOption property getter.");
@@ -1250,16 +1324,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public event NotifyCollectionChangedEventHandler? ModelSettled;
 
+
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.
         /// </summary>
         public NetProjectionOption ProjectionOption
         {
             get =>
-                // This guards against attempting to write when the projection is null.
-                ObservableNetProjection is null         
-                ? NetProjectionOption.ObservableOnly
-                : _projectionOption;
+                ProjectionTopology == ProjectionTopology.Inheritance
+                ? NetProjectionOption.Inherited
+                // Guards against attempting to write when the projection is null.
+                : ObservableNetProjection is null
+                    ? NetProjectionOption.ObservableOnly
+                    : _projectionOption;
             set
             {
                 if (!Equals(_projectionOption, value))
@@ -1269,15 +1346,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-        NetProjectionOption  _projectionOption = default;
+        NetProjectionOption _projectionOption = 0;
 
         public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; } = ReplaceItemsEventingOption.StructuralReplaceEvent;
-
 
         /// <summary>
         /// Reports on whether this object is inherited or composed.
         /// </summary>
-        public ProjectionTopology ProjectionTopology { get; protected set; }
+        public ProjectionTopology ProjectionTopology
+        {
+            get => _isInherited
+                    ? ProjectionTopology.Inheritance
+                    : ObservableNetProjection is null
+                         ? ProjectionTopology.None
+                         : ProjectionTopology.Composition;
+        }
+        readonly bool _isInherited;
+
+
         #endregion P R O J E C T I O N
 
         [Obsolete("Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount.")]
