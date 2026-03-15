@@ -38,7 +38,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterSource()
         {
+            // Modify canon when changes made to this INCC.
             base.ObservableNetProjection = this;
+
+            // Because this object exposes a routed enumerator, there
+            // is no external collection "out there" to synchronize.
             base.ProjectionOption = NetProjectionOption.ObservableOnly;
 
 #if false && USER_OLD_INPC
