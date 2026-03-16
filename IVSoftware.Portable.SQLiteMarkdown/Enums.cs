@@ -229,6 +229,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         preview,
 
         /// <summary>
+        /// Bound MarkdownContext
+        /// </summary>
+        mdc,
+
+        /// <summary>
         /// The XBoundAttribute that holds this data model.
         /// </summary>
         /// <remarks>
@@ -327,7 +332,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         Model = None + 1,
 
-#if false
         /// <summary>
         /// The user has effected a (presumably UI-related) change to a filtered collection.
         /// </summary>
@@ -336,7 +340,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// User-facing {add, edit, remove} operations that occur against a filtered projection are *exempt* from the filter.
         /// </remarks>
         Projection = Model + 1,
-#endif
     }
 
     /// <summary>

@@ -1073,24 +1073,26 @@ Inherited contexts manage their projection internally.".TrimStart());
         ///
         /// Mental Model: "The canonical ledger changed. Reconcile projections and notify observers."
         /// </remarks>
-        protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs eUnk)
         {
-            switch (Authority)
+            if (ReferenceEquals(sender, ObservableNetProjection))
             {
-                default: break;
+                if(FilteringState >= FilteringState.Armed)
+                {
+                    Debug.Fail($@"ADVISORY - First Time.");
+                }
             }
-
-            if (true || ReferenceEquals(sender, ObservableNetProjection))
+            else
             {
                 switch (DHostAuthorityEpoch.Authority)
                 {
                     case 0:
-                        switch (e.Action)
+                        switch (eUnk.Action)
                         {
                             case NotifyCollectionChangedAction.Add:
-                                if (e.NewItems?.Count is 1)
+                                if (eUnk.NewItems?.Count is 1)
                                 {
-                                    RunFSM<TrackUserAddItem>(e.NewItems[0]);
+                                    RunFSM<TrackUserAddItem>(eUnk.NewItems[0]);
                                 }
                                 else
                                 {
@@ -1126,7 +1128,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                                 }
                                 break;
                             default:
-                                ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");
+                                ThrowHard<NotSupportedException>($"The {eUnk.Action.ToFullKey()} case is not supported.");
                                 break;
                         }
 

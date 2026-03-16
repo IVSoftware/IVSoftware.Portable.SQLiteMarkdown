@@ -16,6 +16,7 @@ using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 using IVSoftware.Portable.Threading;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
@@ -403,6 +404,7 @@ MarkdownContext Clear(all=True)";
         {
             public ObservableNetProjectionWithComposition()
             {
+                Model.SetBoundAttributeValue(_mdc, name: nameof(StdMarkdownAttribute.mdc));
                 _mdc.ObservableNetProjection = this;
                 base.PropertyChanged += (sender, e) =>
                 {
@@ -412,24 +414,33 @@ MarkdownContext Clear(all=True)";
             }
         }
 
-        /// <summary>
-        /// Implementor of the IMarkdownContext interface.
-        /// </summary>
         partial class ObservableNetProjectionWithComposition<T> : IMarkdownContext
-            
         {
             private readonly MarkdownContext<T> _mdc = new MarkdownContext<T>();
 
             public XElement Model => ((IMarkdownContext)_mdc).Model;
 
-            public uint DefaultLimit { get => ((IMarkdownContext)_mdc).DefaultLimit; set => ((IMarkdownContext)_mdc).DefaultLimit = value; }
+            public uint DefaultLimit
+            {
+                get => ((IMarkdownContext)_mdc).DefaultLimit;
+                set => ((IMarkdownContext)_mdc).DefaultLimit = value;
+            }
 
             public bool IsFiltering => ((IMarkdownContext)_mdc).IsFiltering;
 
             public FilteringState FilteringState => ((IMarkdownContext)_mdc).FilteringState;
 
-            public string InputText { get => ((IMarkdownContext)_mdc).InputText; set => ((IMarkdownContext)_mdc).InputText = value; }
-            public QueryFilterConfig QueryFilterConfig { get => ((IMarkdownContext)_mdc).QueryFilterConfig; set => ((IMarkdownContext)_mdc).QueryFilterConfig = value; }
+            public string InputText
+            {
+                get => ((IMarkdownContext)_mdc).InputText;
+                set => ((IMarkdownContext)_mdc).InputText = value;
+            }
+
+            public QueryFilterConfig QueryFilterConfig
+            {
+                get => ((IMarkdownContext)_mdc).QueryFilterConfig;
+                set => ((IMarkdownContext)_mdc).QueryFilterConfig = value;
+            }
 
             public SearchEntryState SearchEntryState => ((IMarkdownContext)_mdc).SearchEntryState;
 
@@ -437,68 +448,40 @@ MarkdownContext Clear(all=True)";
 
             public event EventHandler? InputTextSettled
             {
-                add
-                {
-                    ((IMarkdownContext)_mdc).InputTextSettled += value;
-                }
-
-                remove
-                {
-                    ((IMarkdownContext)_mdc).InputTextSettled -= value;
-                }
+                add => ((IMarkdownContext)_mdc).InputTextSettled += value;
+                remove => ((IMarkdownContext)_mdc).InputTextSettled -= value;
             }
 
             public event NotifyCollectionChangedEventHandler ModelSettled
             {
-                add
-                {
-                    ((IMarkdownContext)_mdc).ModelSettled += value;
-                }
-
-                remove
-                {
-                    ((IMarkdownContext)_mdc).ModelSettled -= value;
-                }
+                add => ((IMarkdownContext)_mdc).ModelSettled += value;
+                remove => ((IMarkdownContext)_mdc).ModelSettled -= value;
             }
 
             public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority)
-            {
-                return ((IMarkdownContext)_mdc).BeginCollectionChangeAuthority(authority);
-            }
+                => ((IMarkdownContext)_mdc).BeginCollectionChangeAuthority(authority);
 
             public FilteringState Clear(bool all)
-            {
-                return ((IMarkdownContext)_mdc).Clear(all);
-            }
+                => ((IMarkdownContext)_mdc).Clear(all);
 
             public Task LoadCanonAsync(IEnumerable? recordset)
-            {
-                return ((IMarkdownContext)_mdc).LoadCanonAsync(recordset);
-            }
+                => ((IMarkdownContext)_mdc).LoadCanonAsync(recordset);
 
             public string ParseSqlMarkdown()
-            {
-                return ((IMarkdownContext)_mdc).ParseSqlMarkdown();
-            }
+                => ((IMarkdownContext)_mdc).ParseSqlMarkdown();
 
             public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
-            {
-                return ((IMarkdownContext)_mdc).ParseSqlMarkdown(expr, proxyType, qfMode, out xast);
-            }
+                => ((IMarkdownContext)_mdc).ParseSqlMarkdown(expr, proxyType, qfMode, out xast);
 
             public string ParseSqlMarkdown<T1>()
-            {
-                return ((IMarkdownContext)_mdc).ParseSqlMarkdown<T1>();
-            }
+                => ((IMarkdownContext)_mdc).ParseSqlMarkdown<T1>();
 
             public string ParseSqlMarkdown<T1>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
-            {
-                return ((IMarkdownContext)_mdc).ParseSqlMarkdown<T1>(expr, qfMode);
-            }
+                => ((IMarkdownContext)_mdc).ParseSqlMarkdown<T1>(expr, qfMode);
 
             public ProjectionTopology ProjectionTopology => ((IMarkdownContext)_mdc).ProjectionTopology;
 
-            public INotifyCollectionChanged? ObservableNetProjection 
+            public INotifyCollectionChanged? ObservableNetProjection
             {
                 get => ((IMarkdownContext)_mdc).ObservableNetProjection;
                 set => ((IMarkdownContext)_mdc).ObservableNetProjection = value;
@@ -507,44 +490,44 @@ MarkdownContext Clear(all=True)";
             public int PredicateMatchCount => ((IMarkdownContext)_mdc).PredicateMatchCount;
 
             public NetProjectionOption ProjectionOption
-            { 
+            {
                 get => ((IMarkdownContext)_mdc).ProjectionOption;
                 set => ((IMarkdownContext)_mdc).ProjectionOption = value;
             }
-            public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get => ((IMarkdownContext)_mdc).ReplaceItemsEventingOptions; set => ((IMarkdownContext)_mdc).ReplaceItemsEventingOptions = value; }
+
+            public ReplaceItemsEventingOption ReplaceItemsEventingOptions
+            {
+                get => ((IMarkdownContext)_mdc).ReplaceItemsEventingOptions;
+                set => ((IMarkdownContext)_mdc).ReplaceItemsEventingOptions = value;
+            }
 
             public CollectionChangeAuthority Authority => ((IMarkdownContext)_mdc).Authority;
 
             public bool Busy => ((IMarkdownContext)_mdc).Busy;
 
-            public TimeSpan InputTextSettlingTime { get => ((IMarkdownContext)_mdc).InputTextSettlingTime; set => ((IMarkdownContext)_mdc).InputTextSettlingTime = value; }
+            public TimeSpan InputTextSettlingTime
+            {
+                get => ((IMarkdownContext)_mdc).InputTextSettlingTime;
+                set => ((IMarkdownContext)_mdc).InputTextSettlingTime = value;
+            }
 
             INotifyCollectionChanged? _observableNetProjection = default;
 
-            protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+                => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
             public void LoadCanon(IEnumerable? recordset)
-            {
-                ((IMarkdownContext)_mdc).LoadCanon(recordset);
-            }
+                => ((IMarkdownContext)_mdc).LoadCanon(recordset);
 
             public string[] GetTableNames()
-            {
-                return ((IMarkdownContext)_mdc).GetTableNames();
-            }
+                => ((IMarkdownContext)_mdc).GetTableNames();
 
             public IDisposable BeginBusy()
-            {
-                return ((IMarkdownContext)_mdc).BeginBusy();
-            }
+                => ((IMarkdownContext)_mdc).BeginBusy();
 
             public void Commit()
-            {
-                ((IMarkdownContext)_mdc).Commit();
-            }
+                => ((IMarkdownContext)_mdc).Commit();
 
-            // We do not care about BC events.
             public new event PropertyChangedEventHandler? PropertyChanged;
         }
     }
