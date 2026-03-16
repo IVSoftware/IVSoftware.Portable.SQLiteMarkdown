@@ -10,8 +10,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     /// <summary>
     /// LTOQO = This class is "like tag on query only" and many tests rely on this being the case.
     /// </summary>
-    [DebuggerDisplay("{Description}")]
-    [Table("items")]
+    [Table("items"), DebuggerDisplay("{Description}")]
     public class SelectableQFModelTOQO : SelfIndexed, ISelectable
     {
         [PrimaryKey]
@@ -140,10 +139,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     }
 
 
-    [DebuggerDisplay("{Description}")]
-    [Table("items")]
-
     [Obsolete("Used in unit tests for early adopter (beta) migration support.")]
+    [Table("items"), DebuggerDisplay("{Description}")]
     public class SelectableQueryModelOR : SelfIndexedOR, ISelectable
     {
         [PrimaryKey]

@@ -1812,20 +1812,34 @@ InputText";
                         // "animal"
                         items.InputText += "mal";
                         Assert.IsFalse(items.IsFiltering, "Expecting NO NEED TO AWAIT HERE.");
-                        // NOPE: Assert.AreEqual(items.ProjectionOption, NetProjectionOption.ObservableOnly, "Expecting MANUAL POPULATE BELOW.");
-                        ((MarkdownContext)items).Commit();
+                        Assert.AreEqual(
+                            items.ProjectionOption,
+                            NetProjectionOption.Inherited,
+                            "260316" +
+                            "POSIT 1: This *is* the ONP without having to say so. " +
+                            "POSIT 2: This *will* populate itself.");
 
+                        ((MarkdownContext)items).Commit();
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
                             .OfType<PropertyChangedEventArgs>()
                             .Select(_ => _.PropertyName));
 
-                        // Limit touched 260304
-                        // Removed Running. We don't want that.
+                        actual.ToClipboardExpected();
+                        { }
+                        // Limit touched 260316
+                        // ADDED: 2x
+                        // REMOVED: Running - we don't want that.
                         expected = @" 
-InputText"
+InputText
+ProxyType
+TableName"
                         ;
+
+                        Assert.AreEqual("items", items.TableName);
+                        Assert.AreEqual(typeof(SelectableQFModelTOQO), items.ContractType);
+                        Assert.AreEqual(items.ProxyType, items.ContractType);
 
                         Assert.AreEqual(
                             expected.NormalizeResult(),
