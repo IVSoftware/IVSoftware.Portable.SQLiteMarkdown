@@ -56,28 +56,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority) => DHostAuthorityEpoch.GetToken(authority);
 
-        public void Commit()
-        {
-            var e = new RecordsetRequestEventArgs();
-            OnCommit(e);
-            if (e.CanonicalSuperset is null)
-            {   /* G T K - N O O P */
-            }
-            else
-            {
-                Debug.Fail($@"ADVISORY - First Time.");
-            }    
-        }
-        protected virtual void OnCommit(RecordsetRequestEventArgs e) { }
-
-        internal T ChangeSubsetType<T>() where T : class, new()
-        {
-            throw new NotImplementedException();
-        }
-
-        public event EventHandler<RecordsetRequestEventArgs>? RecordsetRequest;
-
-
         protected DHostAuthorityEpochProvider DHostAuthorityEpoch { get; } = new();
 
         [DebuggerDisplay("Count={ReferenceCount} Authority={Authority}")]

@@ -1362,8 +1362,6 @@ Inherited contexts manage their projection internally.".TrimStart());
                          : ProjectionTopology.Composition;
         }
         readonly bool _isInherited;
-
-
         #endregion P R O J E C T I O N
 
         [Obsolete("Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount.")]
@@ -1395,5 +1393,52 @@ Inherited contexts manage their projection internally.".TrimStart());
         public string[] GetTableNames() => FilterQueryDatabase.GetTableNames();
 
         public IDisposable BeginBusy() => DHostBusy.GetToken();
+
+        public void Commit()
+        {
+            var e = new RecordsetRequestEventArgs(ParseSqlMarkdown());
+
+            OnCommit(e);
+            if (e.CanonicalSuperset is null)
+            {   /* G T K - N O O P */
+            }
+            else
+            {
+                Debug.Fail($@"ADVISORY - First Time.");
+            }
+        }
+        protected virtual void OnCommit(RecordsetRequestEventArgs e)
+        {
+            RecordsetRequest?.Invoke(this, e);
+            if(!e.Handled)
+            {
+                if(e.CanonicalSuperset is null)
+                {
+                    if(MemoryDatabase is not null)
+                    {
+                        var canon = MemoryDatabase.Query(ContractType.GetSQLiteMapping(), e.SQL);
+                        LoadCanon(canon);
+                    }
+                    else
+                    {
+                        if (RecordsetRequest is null)
+                        {   /* G T K - N O O P */
+                            // This event has no subscribers.
+                        }
+                        else
+                        {
+                            nameof(MarkdownContext).ThrowHard<InvalidOperationException>(
+                                $"Expecting {nameof(e.CanonicalSuperset)} or {nameof(e.Handled)}.");
+                        }
+                    }
+                }
+                else
+                {
+                    LoadCanon(e.CanonicalSuperset);
+                }
+            }
+        }
+
+        public event EventHandler<RecordsetRequestEventArgs>? RecordsetRequest;
     }
 }

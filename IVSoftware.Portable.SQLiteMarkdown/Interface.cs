@@ -92,7 +92,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         QueryFilterConfig QueryFilterConfig { get; set; }
         string Title { get; set; }
         string SQL { get; }
+
+        /// <summary>
+        /// Canonical persistent data set (when available).
+        /// </summary>
+        /// <remarks>
+        /// EXAMPLE: Searchable settings.
+        /// </remarks>
         SQLiteConnection MemoryDatabase { get; set; }
+
         FilteringState Clear(bool all = false);
         void Commit();
 
@@ -156,10 +164,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public interface IMarkdownContext
     {
         #region P A R S E
+        /// <summary>
+        /// Use the current value of InputText to parse an expression against ContractType.
+        /// </summary>
         string ParseSqlMarkdown();
         string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast);
         string ParseSqlMarkdown<T>();
         string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query);
+
+        void Commit();
         #endregion P A R S E
 
         /// <summary>
