@@ -1061,7 +1061,10 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </remarks>
         protected virtual void OnObservableNetProjectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            OnCanonicalSupersetChanged(sender, e);
+            if (IsFiltering)
+            {
+                OnCanonicalSupersetChanged(sender, e);
+            }
         }
 
         /// <summary>
@@ -1077,6 +1080,18 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </remarks>
         protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            Debug.Assert(
+                !ReferenceEquals(ObservableNetProjection, CanonicalSupersetProtected),
+                "Different references, Different events. These are *never* the same reference."
+            );
+
+            if(ReferenceEquals(sender, ObservableNetProjection))
+            {
+                Debug.Assert(
+                    IsFiltering,
+                    "Expecting to *never* see this in a non-filtering context.");
+            }
+
             if (true || ReferenceEquals(sender, ObservableNetProjection))
             {
                 switch (DHostAuthorityEpoch.Authority)

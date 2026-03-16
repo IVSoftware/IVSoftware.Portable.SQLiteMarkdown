@@ -32,44 +32,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public new IReadOnlyList<T> PredicateMatchSubset
             => (IReadOnlyList<T>)base.PredicateMatchSubset;
 
+        public new IReadOnlyList<T> CanonicalSuperset
+            => (IReadOnlyList<T>)base.CanonicalSuperset;
 
-
-
-        public IReadOnlyList<T> CanonicalSuperset
-        {
-            get
-            {
-                if (_canonicalSuperset is null)
-                {
-                    _canonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetProtected);
-                }
-                return _canonicalSuperset;
-            }
-        }
-        IReadOnlyList<T>? _canonicalSuperset = null;
-
-        /// <summary>
-        /// Factory-backed canonical superset used by the back-end event pipeline 
-        /// even when the visible ObservableNetProjection is filtered or divergent.
-        /// </summary>
-        /// <remarks>
-        /// This collection represents the authoritative recordset for the current epoch.
-        /// The ObservableNetProjection may expose a filtered or reordered view for UI
-        /// interaction, but all structural reconciliation ultimately resolves against
-        /// this canonical superset.
-        /// </remarks>
-        public ObservableCollection<T> CanonicalSupersetProtected
-        {
-            get
-            {
-                if (_canonicalSupersetProtected is null)
-                {
-                    _canonicalSupersetProtected = new ObservableCollection<T>();
-                    _canonicalSupersetProtected.CollectionChanged += OnCanonicalSupersetChanged;
-                }
-                return _canonicalSupersetProtected;
-            }
-        }
-        protected ObservableCollection<T>? _canonicalSupersetProtected = null;
+        protected new ObservableCollection<T> CanonicalSupersetProtected
+            => (ObservableCollection<T>)base.CanonicalSupersetProtected;
     }
 }

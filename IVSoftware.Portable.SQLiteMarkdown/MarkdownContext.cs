@@ -3,7 +3,6 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
-using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
@@ -11,11 +10,11 @@ using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -79,12 +78,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     );
                 }
             }
-            
-            // Construct the predicate subset with the correct element type
-            // that ensures a cast to IReadOnlyList<T> will succeed.
-            PredicateMatchSubsetPrivate = (IList)Activator.CreateInstance(
-                typeof(List<>).MakeGenericType(type)
-            )!;
         }
 
         /// <summary>
@@ -116,9 +109,56 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         TimeSpan _interval = default;
 
-        private IList PredicateMatchSubsetPrivate { get; }
+        /// <summary>
+        /// Factory-backed canonical superset used by the back-end event pipeline 
+        /// even when the visible ObservableNetProjection is filtered or divergent.
+        /// </summary>
+        /// <remarks>
+        /// This collection represents the authoritative recordset for the current epoch.
+        /// The ObservableNetProjection may expose a filtered or reordered view for UI
+        /// interaction, but all structural reconciliation ultimately resolves against
+        /// this canonical superset.
+        /// </remarks>
+        public ICollection CanonicalSuperset => CanonicalSupersetProtected;
+        public IList CanonicalSupersetProtected
+        {
+            get
+            {
+                if (_canonicalSupersetProtected is null)
+                {
+                    // I N C C    O B S E R V A B L E
+                    _canonicalSupersetProtected = (IList)Activator.CreateInstance(
+                        typeof(ObservableCollection<>).MakeGenericType(ContractType)
+                    )!;
+
+                    ((INotifyCollectionChanged)_canonicalSupersetProtected).CollectionChanged
+                        += OnCanonicalSupersetChanged;
+                }
+                return _canonicalSupersetProtected;
+            }
+        }
+        IList? _canonicalSupersetProtected = null;
+
+
         public ICollection PredicateMatchSubset => PredicateMatchSubsetPrivate;
 
+        public IList PredicateMatchSubsetPrivate
+        {
+            get
+            {
+                if (_predicateMatchSubsetPrivate is null)
+                {
+                    // I L I S T    
+                    _predicateMatchSubsetPrivate =
+                        (IList)Activator
+                        .CreateInstance(
+                            typeof(List<>).MakeGenericType(ContractType)
+                        )!;
+                }
+                return _predicateMatchSubsetPrivate;
+            }
+        }
+        IList? _predicateMatchSubsetPrivate = null;
 
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
 
