@@ -3092,43 +3092,8 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                         "Expecting 12 animal matches."
                     );
 
-
-                    Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 15).Date, "Don't forget disabled");
+                    // After testing both schemes, "no self-own" is the clear winner.
                     const bool SELF_OWN_ONP = false;
-
-                    if (SELF_OWN_ONP)
-                    {
-                        Assert.AreSame(
-                            items,
-                            items.ObservableNetProjection,
-                            "v2.0 when we say items we mean the ObservableNetProjection in this particular class.");
-
-                        actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
-                        actual.ToClipboard();
-                        actual.ToClipboardExpected();
-                        actual.ToClipboardAssert("Expecting items to match");
-                        { }
-                        expected = @" 
-Black Cat  [animal] [color]
-Orange Fox  [animal] [color]
-White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
-Gray Wolf ""pack"",""howl"",""wild"" [animal] [color]
-Golden Lion  [animal] [color]
-Brown Bear ""strong"",""wild"",""forest"" [animal] [color]
-Black Panther ""stealthy"",""feline"",""night"" [animal] [color]
-Elephant ""trunk"",""herd"",""safari"" [animal]
-Giraffe  [animal]
-Kangaroo ""bounce"",""outback"",""marsupial"" [animal]
-Turtle  [animal]
-Should NOT match an expression with an ""animal"" tag.  [not animal]";
-
-                        Assert.AreEqual(
-                            expected.NormalizeResult(),
-                            actual.NormalizeResult(),
-                            "Expecting items to match"
-                        );
-                    }
-
 
                     // As a product of the CollectionChangedEvent this
                     // is representative of what we'd see in the visible list.
@@ -3155,14 +3120,6 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                         actual.NormalizeResult(),
                         "Expecting new items payload as reported."
                     );
-                    if (SELF_OWN_ONP)
-                    {
-                        Assert.AreEqual(
-                            expected.NormalizeResult(),         // Actual Items.NetProjection
-                            newItemsPayload.NormalizeResult(),  // Event payload
-                            "Expecting NewItems in the Add event to match the Items"
-                        );
-                    }
                 }
 
                 async Task subtestAppendAndRequery()

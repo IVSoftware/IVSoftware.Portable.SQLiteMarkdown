@@ -53,7 +53,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     [DebuggerDisplay("{Action}  OldCount={OldItems?.Count ?? 0}  NewCount={NewItems?.Count ?? 0}  OldIndex={OldStartingIndex}  NewIndex={NewStartingIndex}")]
     public class ModelSettledEventArgs : NotifyCollectionChangedEventArgs
     {
-        public new ModelSettledAction Action => (ModelSettledAction)((uint)Reason | (uint)base.Action);
         public static ModelSettledEventArgs FromNotifyCollectionChangedEventArgs(
             NotifyCollectionChangedReason reason,
             NotifyCollectionChangedEventArgs e)
@@ -67,35 +66,35 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 NotifyCollectionChangedAction.Add =>
                     new ModelSettledEventArgs(
-                        reason,
                         e.Action,
-                        changedItems: e.NewItems ?? Array.Empty<object>()),
+                        changedItems: e.NewItems ?? Array.Empty<object>(),
+                        reason),
 
                 NotifyCollectionChangedAction.Remove =>
                     new ModelSettledEventArgs(
-                        reason,
                         e.Action,
-                        changedItems: e.OldItems ?? Array.Empty<object>()),
+                        changedItems: e.OldItems ?? Array.Empty<object>(),
+                        reason),
 
                 NotifyCollectionChangedAction.Replace =>
                     new ModelSettledEventArgs(
-                        reason,
                         e.Action,
+                        newItems: e.NewItems ?? Array.Empty<object>(),
                         oldItems: e.OldItems ?? Array.Empty<object>(),
-                        newItems: e.NewItems ?? Array.Empty<object>()),
+                        reason),
 
                 NotifyCollectionChangedAction.Move =>
                 new ModelSettledEventArgs(
-                        reason,
                         e.Action,
-                    changedItems: e.NewItems ?? Array.Empty<object>(),
-                    index: e.NewStartingIndex,
-                    oldIndex: e.OldStartingIndex),
+                        changedItems: e.NewItems ?? Array.Empty<object>(),
+                        index: e.NewStartingIndex,
+                        oldIndex: e.OldStartingIndex,
+                        reason),
 
                 NotifyCollectionChangedAction.Reset =>
                     new ModelSettledEventArgs(
-                        reason,
-                        e.Action),
+                        e.Action,
+                        reason),
 
                 _ => throw new ArgumentOutOfRangeException(nameof(e.Action), e.Action, null)
             };
@@ -106,7 +105,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// Construct a NotifyCollectionChangedEventArgs that describes a reset change.
         /// </summary>
         /// <param name="action">The action that caused the event (must be Reset).</param>
-        public ModelSettledEventArgs(NotifyCollectionChangedReason reason, NotifyCollectionChangedAction action)
+        public ModelSettledEventArgs(NotifyCollectionChangedAction action, NotifyCollectionChangedReason reason)
             : base(action.ToNotifyCollectionChangedAction())
         {
             Reason = reason;
@@ -117,7 +116,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         /// <param name="action">The action that caused the event; can only be Reset, Add or Remove action.</param>
         /// <param name="changedItem">The item affected by the change.</param>
-        public ModelSettledEventArgs(NotifyCollectionChangedReason reason, NotifyCollectionChangedAction action, object? changedItem)
+        public ModelSettledEventArgs(NotifyCollectionChangedAction action, object? changedItem, NotifyCollectionChangedReason reason) 
             : base(action.ToNotifyCollectionChangedAction(), changedItem)
         {
             Reason = reason;
@@ -129,7 +128,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <param name="action">The action that caused the event.</param>
         /// <param name="changedItem">The item affected by the change.</param>
         /// <param name="index">The index where the change occurred.</param>
-        public ModelSettledEventArgs(NotifyCollectionChangedReason reason, NotifyCollectionChangedAction action, object? changedItem, int index)
+        public ModelSettledEventArgs(NotifyCollectionChangedAction action, object? changedItem, int index, NotifyCollectionChangedReason reason)
             : base(action.ToNotifyCollectionChangedAction(), changedItem, index)
         {
             Reason = reason;
@@ -140,7 +139,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         /// <param name="action">The action that caused the event.</param>
         /// <param name="changedItems">The items affected by the change.</param>
-        public ModelSettledEventArgs(NotifyCollectionChangedReason reason, NotifyCollectionChangedAction action, IList? changedItems)
+        public ModelSettledEventArgs(NotifyCollectionChangedAction action, IList? changedItems, NotifyCollectionChangedReason reason)
             : base(action.ToNotifyCollectionChangedAction(), changedItems)
         {
             Reason = reason;
@@ -152,7 +151,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <param name="action">The action that caused the event.</param>
         /// <param name="changedItems">The items affected by the change.</param>
         /// <param name="startingIndex">The index where the change occurred.</param>
-        public ModelSettledEventArgs(NotifyCollectionChangedReason reason, NotifyCollectionChangedAction action,IList? changedItems, int startingIndex)
+        public ModelSettledEventArgs(NotifyCollectionChangedAction action,IList? changedItems, int startingIndex, NotifyCollectionChangedReason reason)
             : base(action.ToNotifyCollectionChangedAction(), changedItems, startingIndex)
         {
             Reason = reason;
@@ -164,7 +163,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <param name="action">Can only be a Replace action.</param>
         /// <param name="newItem">The new item replacing the original item.</param>
         /// <param name="oldItem">The original item that is replaced.</param>
-        public ModelSettledEventArgs(NotifyCollectionChangedReason reason, NotifyCollectionChangedAction action,object? newItem, object? oldItem)
+        public ModelSettledEventArgs(NotifyCollectionChangedAction action,object? newItem, object? oldItem, NotifyCollectionChangedReason reason)
             : base(action.ToNotifyCollectionChangedAction(), newItem, oldItem)
         {
             Reason = reason;
@@ -177,7 +176,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <param name="newItem">The new item replacing the original item.</param>
         /// <param name="oldItem">The original item that is replaced.</param>
         /// <param name="index">The index of the item being replaced.</param>
-        public ModelSettledEventArgs(NotifyCollectionChangedReason reason, NotifyCollectionChangedAction action,object? newItem, object? oldItem, int index)
+        public ModelSettledEventArgs(NotifyCollectionChangedAction action, object? newItem, object? oldItem, int index, NotifyCollectionChangedReason reason)
             : base(action.ToNotifyCollectionChangedAction(), newItem, oldItem, index)
         {
             Reason = reason;
@@ -189,7 +188,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <param name="action">Can only be a Replace action.</param>
         /// <param name="newItems">The new items replacing the original items.</param>
         /// <param name="oldItems">The original items that are replaced.</param>
-        public ModelSettledEventArgs(NotifyCollectionChangedReason reason, NotifyCollectionChangedAction action,IList newItems, IList oldItems)
+        public ModelSettledEventArgs(NotifyCollectionChangedAction action,IList newItems, IList oldItems, NotifyCollectionChangedReason reason)
             : base(action.ToNotifyCollectionChangedAction(), newItems, oldItems)
         {
             Reason = reason;
@@ -202,7 +201,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <param name="newItems">The new items replacing the original items.</param>
         /// <param name="oldItems">The original items that are replaced.</param>
         /// <param name="startingIndex">The starting index of the items being replaced.</param>
-        public ModelSettledEventArgs(NotifyCollectionChangedReason reason, NotifyCollectionChangedAction action,IList newItems, IList oldItems, int startingIndex)
+        public ModelSettledEventArgs(NotifyCollectionChangedAction action,IList newItems, IList oldItems, int startingIndex, NotifyCollectionChangedReason reason)
             : base(action.ToNotifyCollectionChangedAction(), newItems, oldItems, startingIndex)
         {
             Reason = reason;
@@ -215,7 +214,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <param name="changedItem">The item affected by the change.</param>
         /// <param name="index">The new index for the changed item.</param>
         /// <param name="oldIndex">The old index for the changed item.</param>
-        public ModelSettledEventArgs(NotifyCollectionChangedReason reason, NotifyCollectionChangedAction action,object? changedItem, int index, int oldIndex)
+        public ModelSettledEventArgs(NotifyCollectionChangedAction action,object? changedItem, int index, int oldIndex, NotifyCollectionChangedReason reason)
             : base(action.ToNotifyCollectionChangedAction(), changedItem, index, oldIndex)
         {
             Reason = reason;
@@ -228,7 +227,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <param name="changedItems">The items affected by the change.</param>
         /// <param name="index">The new index for the changed items.</param>
         /// <param name="oldIndex">The old index for the changed items.</param>
-        public ModelSettledEventArgs(NotifyCollectionChangedReason reason, NotifyCollectionChangedAction action,IList? changedItems, int index, int oldIndex)
+        public ModelSettledEventArgs(NotifyCollectionChangedAction action,IList? changedItems, int index, int oldIndex, NotifyCollectionChangedReason reason)
             : base(action.ToNotifyCollectionChangedAction(), changedItems, index, oldIndex)
         {
             Reason = reason;
