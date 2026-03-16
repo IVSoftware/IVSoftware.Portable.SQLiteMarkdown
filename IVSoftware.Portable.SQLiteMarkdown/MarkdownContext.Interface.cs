@@ -1003,7 +1003,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                         // Unsubscribe INCC
                         if (_observableProjection is not null)
                         {
-                            _observableProjection.CollectionChanged -= OnIncomingProjectionCollectionChanged;
+                            _observableProjection.CollectionChanged -= OnObservableNetProjectionChanged;
                         }
 
                         _observableProjection = value;
@@ -1014,7 +1014,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                         // Subscribe INCC
                         if (_observableProjection is not null)
                         {
-                            _observableProjection.CollectionChanged += OnIncomingProjectionCollectionChanged;
+                            _observableProjection.CollectionChanged += OnObservableNetProjectionChanged;
                         }
                     }
                 }
@@ -1059,8 +1059,10 @@ Inherited contexts manage their projection internally.".TrimStart());
         ///
         /// Mental Model: "User changed the filtered projection. Track these changes in the canonical ledger."
         /// </remarks>
-        protected virtual void OnIncomingProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        => OnCanonicalSupersetChanged(sender, e);
+        protected virtual void OnObservableNetProjectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            OnCanonicalSupersetChanged(sender, e);
+        }
 
         /// <summary>
         /// Applies canonical reconciliation logic when the authoritative superset changes.
@@ -1075,14 +1077,6 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </remarks>
         protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 16).Date, "Don't forget disabled");
-            //return;
-
-            switch (Authority)
-            {
-                default: break;
-            }
-
             if (true || ReferenceEquals(sender, ObservableNetProjection))
             {
                 switch (DHostAuthorityEpoch.Authority)

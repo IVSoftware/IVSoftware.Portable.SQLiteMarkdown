@@ -119,6 +119,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         private IList PredicateMatchSubsetPrivate { get; }
         public ICollection PredicateMatchSubset => PredicateMatchSubsetPrivate;
 
+
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
 
         public string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
