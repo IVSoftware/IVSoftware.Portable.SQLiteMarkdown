@@ -1528,7 +1528,36 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
             }
         }
 
-        // [TestMethod, Ignore]
+        /// <summary>
+        /// Verifies the progressive input FSM and commit pipeline.
+        /// </summary>
+        /// <remarks>
+        /// This test exercises the full lifecycle of query entry, commit, and filtering to ensure
+        /// deterministic state transitions, property-change ordering, and canonical recordset integrity.
+        ///
+        /// The commit pipeline is validated under three acquisition modes:
+        ///
+        /// 1. **Handler-supplied canonical recordset**  
+        ///    Handler is assigned to `RecordsetRequest`; it intercepts the commit and provides the
+        ///    canonical superset directly. The context must transition through the expected Busy/settlement
+        ///    states while populating the canonical store and enabling filtering.
+        ///
+        /// 2. **Direct canonical injection (no commit pipeline)**  
+        ///    `ReplaceItemsAsync` is used to populate the canonical superset from an externally
+        ///    acquired recordset. This simulates a completed query result while bypassing the
+        ///    commit pipeline entirely.
+        ///
+        /// 3. **Commit with `MemoryDatabase` augmentation**  
+        ///    When `MemoryDatabase` is assigned, commit resolves through the internal query
+        ///    pathway, allowing the context to execute the SQL against the memory-backed
+        ///    database rather than requiring a handler to supply the recordset.
+        ///
+        /// Additional assertions confirm:
+        /// - Progressive `InputText` transitions (`Cleared → QueryENB → QueryEN → QueryComplete`).
+        /// - Deterministic `PropertyChanged` sequencing during commit and clear epochs.
+        /// - Correct routing between canonical superset and filtered projection.
+        /// - Stable filtering behavior when clearing input or re-entering filter expressions.
+        /// </remarks>
         [TestMethod, DoNotParallelize]
         public async Task Test_TrackProgressiveInputState()
         {
