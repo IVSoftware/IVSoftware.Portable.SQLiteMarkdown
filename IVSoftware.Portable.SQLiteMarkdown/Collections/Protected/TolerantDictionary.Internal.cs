@@ -149,6 +149,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     return false;
                 }
             }
+            public void Clear()
+            {
+                @base.Clear();
+                CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset));
+            }
+
             public virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs ePost)
             {
                 CollectionChanged?.Invoke(this, ePost);

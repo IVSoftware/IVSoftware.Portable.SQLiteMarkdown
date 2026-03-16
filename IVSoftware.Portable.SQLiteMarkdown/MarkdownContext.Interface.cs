@@ -720,7 +720,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 else
                 {
-                    this.ThrowHard<NullReferenceException>(
+                    ThrowHard<NullReferenceException>(
                         $"Expecting a non-empty value for PrimaryKey '{pk.Name}'.");
                     return null!;
                 }
@@ -797,7 +797,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 else
                 {
-                    this.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
+                    ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
                 }
             }
 
@@ -808,7 +808,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
 
                 }
-                else this.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
+                else ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
             }
 
             void localRaiseModelSettled()
@@ -992,7 +992,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (ProjectionTopology == ProjectionTopology.Inheritance)
                 {
-                    this.ThrowHard<InvalidOperationException>(@"
+                    ThrowHard<InvalidOperationException>(@"
 Cannot assign ObservableNetProjection when ProjectionTopology is Inheritance.
 Inherited contexts manage their projection internally.".TrimStart());
                 }
@@ -1126,7 +1126,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                                 }
                                 break;
                             default:
-                                this.ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");
+                                ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");
                                 break;
                         }
 
@@ -1142,27 +1142,14 @@ Inherited contexts manage their projection internally.".TrimStart());
         }
 
         /// <summary>
-        /// Signals that the canonical markdown model has reached a stable state
-        /// following an input-driven reconciliation.
+        /// Signals that the markdown model has reached a stable state following an input-driven reconciliation.
         /// </summary>
         /// <remarks>
-        /// <see cref="MarkdownContext"/> does not implement
-        /// <see cref="INotifyCollectionChanged"/>. Instead, once the input text
-        /// settles and the internal model completes its reconciliation cycle,
-        /// this method is invoked to indicate that the canonical model has
-        /// reached a stable state.
+        /// <see cref="MarkdownContext"/> does not implement <see cref="INotifyCollectionChanged"/> but
+        /// is designed to support collections that do (either through inheritance or composition). 
         ///
-        /// An owning surface—such as a UI adapter or derived collection that
-        /// implements <see cref="INotifyCollectionChanged"/>—may observe this
-        /// transition and decide whether to translate the change into a
-        /// corresponding collection notification.
-        ///
-        /// The supplied <see cref="NotifyCollectionChangedEventArgs"/> may be downcast 
-        /// to <c>ModelSettledEventArgs</c>. When cast in this way, which provides
-        /// additional semantics in its upper byte(s) indicating the reason the model
-        /// settled (for example query results, filter application, or filter
-        /// removal). The lower byte remains the standard
-        /// <see cref="NotifyCollectionChangedAction"/> value.
+        /// The supplied <see cref="NotifyCollectionChangedEventArgs"/> may be downcast to <c>ModelSettledEventArgs</c>. 
+        /// When cast in this way, the reason for the model iteration is provided.
         ///
         /// Mental Model: "Input text has settled; the model has reconciled."
         /// </remarks>
@@ -1236,7 +1223,11 @@ Inherited contexts manage their projection internally.".TrimStart());
 
                     void localAdd()
                     {
-                        if (eBCL.NewItems is not null)
+                        if (eBCL.NewItems is null)
+                        {
+                            ThrowHard<NullReferenceException>($"{nameof(eBCL.NewItems)} cannot be null.");
+                        }
+                        else
                         {
                             var index =
                                 eBCL.NewStartingIndex == -1
@@ -1251,12 +1242,68 @@ Inherited contexts manage their projection internally.".TrimStart());
 
                     void localMove()
                     {
-                        Debug.Fail($@"IFD ADVISORY - First Time.");
+                        if (eBCL.NewItems is null)
+                        {
+                            ThrowHard<NullReferenceException>($"{nameof(eBCL.NewItems)} cannot be null.");
+                        }
+                        else
+                        {
+                            if (eBCL.NewItems.Count != 1)
+                            {
+                                ThrowHard<NotSupportedException>(
+                                    $"In {nameof(OnModelSettled)} Multi item moves are not supported. Override this method for full control.");
+                                return;
+                            }
+                            int oldIndex = eBCL.OldStartingIndex;
+                            int newIndex = eBCL.NewStartingIndex;
+
+                            if (oldIndex < 0 || newIndex < 0)
+                            {
+                                this.ThrowFramework<InvalidOperationException>(
+                                    $"Expecting valid indices for {NotifyCollectionChangedAction.Move.ToFullKey()}.");
+                            }
+
+                            // Capture items first to preserve ordering for multi-item moves
+                            var moved = new List<object?>();
+                            foreach (var _ in eBCL.NewItems)
+                            {
+                                moved.Add(projection[oldIndex]);
+                                projection.RemoveAt(oldIndex);
+                            }
+
+                            int insertIndex = newIndex;
+                            foreach (var item in moved)
+                            {
+                                projection.Insert(insertIndex++, item);
+                            }
+                        }
                     }
 
                     void localRemove()
                     {
-                        Debug.Fail($@"IFD ADVISORY - First Time.");
+                        if (eBCL.OldItems is null)
+                        { 
+                            ThrowHard<NullReferenceException>($"{nameof(eBCL.OldItems)} cannot be null.");
+                        }
+                        else
+                        {
+                            if (eBCL.OldStartingIndex >= 0)
+                            {
+                                int index = eBCL.OldStartingIndex;
+
+                                foreach (var _ in eBCL.OldItems)
+                                {
+                                    projection.RemoveAt(index);
+                                }
+                            }
+                            else
+                            {
+                                foreach (var item in eBCL.OldItems)
+                                {
+                                    projection.Remove(item);
+                                }
+                            }
+                        }
                     }
 
                     void localReplace()
@@ -1322,8 +1369,11 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
         }
 
-        public event NotifyCollectionChangedEventHandler? ModelSettled;
+        // Don't expose the MDC itself on the static event.
+        protected Throw ThrowHard<T>(string messageOrId) => nameof(MarkdownContext).ThrowHard<T>(messageOrId);
+        protected Throw ThrowFramework<T>(string messageOrId) => nameof(MarkdownContext).ThrowFramework<T>(messageOrId);
 
+        public event NotifyCollectionChangedEventHandler? ModelSettled;
 
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.

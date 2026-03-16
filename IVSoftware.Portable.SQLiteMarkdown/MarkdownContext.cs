@@ -1550,7 +1550,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             set
             {
                 // To enable legacy behavior, handle this Throw.
-                if (this.ThrowHard<NotSupportedException>(
+                if (ThrowHard<NotSupportedException>(
                    "Use a subclass to gain access to the protected setter for FilteringState.").Handled)
                 {
                     FilteringState = value;

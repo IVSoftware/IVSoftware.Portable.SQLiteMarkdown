@@ -158,12 +158,68 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                     void localMove()
                     {
-                        Debug.Fail($@"IFD ADVISORY - First Time.");
+                        if (eBCL.NewItems is null)
+                        {
+                            ThrowHard<NullReferenceException>($"{nameof(eBCL.NewItems)} cannot be null.");
+                        }
+                        else
+                        {
+                            if (eBCL.NewItems.Count != 1)
+                            {
+                                ThrowHard<NotSupportedException>(
+                                    $"In {nameof(OnModelSettled)} Multi item moves are not supported. Override this method for full control.");
+                                return;
+                            }
+                            int oldIndex = eBCL.OldStartingIndex;
+                            int newIndex = eBCL.NewStartingIndex;
+
+                            if (oldIndex < 0 || newIndex < 0)
+                            {
+                                this.ThrowFramework<InvalidOperationException>(
+                                    $"Expecting valid indices for {NotifyCollectionChangedAction.Move.ToFullKey()}.");
+                            }
+
+                            // Capture items first to preserve ordering for multi-item moves
+                            var moved = new List<object?>();
+                            foreach (var _ in eBCL.NewItems)
+                            {
+                                moved.Add(projection[oldIndex]);
+                                projection.RemoveAt(oldIndex);
+                            }
+
+                            int insertIndex = newIndex;
+                            foreach (var item in moved)
+                            {
+                                projection.Insert(insertIndex++, item);
+                            }
+                        }
                     }
 
                     void localRemove()
                     {
-                        Debug.Fail($@"IFD ADVISORY - First Time.");
+                        if (eBCL.OldItems is null)
+                        {
+                            ThrowHard<NullReferenceException>($"{nameof(eBCL.OldItems)} cannot be null.");
+                        }
+                        else
+                        {
+                            if (eBCL.OldStartingIndex >= 0)
+                            {
+                                int index = eBCL.OldStartingIndex;
+
+                                foreach (var _ in eBCL.OldItems)
+                                {
+                                    projection.RemoveAt(index);
+                                }
+                            }
+                            else
+                            {
+                                foreach (var item in eBCL.OldItems)
+                                {
+                                    projection.Remove(item);
+                                }
+                            }
+                        }
                     }
 
                     void localReplace()
