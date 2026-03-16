@@ -1550,7 +1550,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             set
             {
                 // To enable legacy behavior, handle this Throw.
-                if (this.ThrowHard<NotSupportedException>(
+                if (ThrowHard<NotSupportedException>(
                    "Use a subclass to gain access to the protected setter for FilteringState.").Handled)
                 {
                     FilteringState = value;
@@ -2151,9 +2151,9 @@ SELECT * FROM items WHERE
 
 #if ABSTRACT
             // EXAMPLE<model autocount="3" count="3" matches="1">
-              <xitem text="312d1c21-0000-0000-0000-000000000001" model="[SelectableQFModelTOQO]" sort="0" />
-              <xitem text="312d1c21-0000-0000-0000-00000000002c" model="[SelectableQFModelTOQO]" sort="1" />
-              <xitem text="312d1c21-0000-0000-0000-00000000002e" model="[SelectableQFModelTOQO]" sort="2" ismatch="True" />
+              <xitem text="312d1c21-0000-0000-0000-000000000001" model="[SelectableQFModelLTOQO]" sort="0" />
+              <xitem text="312d1c21-0000-0000-0000-00000000002c" model="[SelectableQFModelLTOQO]" sort="1" />
+              <xitem text="312d1c21-0000-0000-0000-00000000002e" model="[SelectableQFModelLTOQO]" sort="2" ismatch="True" />
             </model>
 #endif
 

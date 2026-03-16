@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -447,33 +448,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
                     case ReplaceItemsEventingTriage.EmptyBefore:
                         Structural = new ModelSettledEventArgs(
-                            reason,
                             NotifyCollectionChangedAction.Add,
-                            changedItems: newItems);
+                            changedItems: newItems,
+                            reason);
                         Reset = new ModelSettledEventArgs(
-                            reason,
-                            NotifyCollectionChangedAction.Reset);
+                            NotifyCollectionChangedAction.Reset,
+                            reason);
                         break;
 
                     case ReplaceItemsEventingTriage.EmptyAfter:
                         Structural = new ModelSettledEventArgs(
-                            reason,
                             NotifyCollectionChangedAction.Remove,
-                            changedItems: oldItems);
+                            changedItems: oldItems,
+                            reason);
                         Reset = new ModelSettledEventArgs(
-                            reason,
-                            NotifyCollectionChangedAction.Reset);
+                            NotifyCollectionChangedAction.Reset,
+                            reason);
                         break;
 
                     case ReplaceItemsEventingTriage.NeverEmpty:
                         Structural = new ModelSettledEventArgs(
-                            reason,
                             NotifyCollectionChangedAction.Replace,
                             newItems: newItems,
-                            oldItems: oldItems);
+                            oldItems: oldItems,
+                            reason);
                         Reset = new ModelSettledEventArgs(
-                            reason,
-                            NotifyCollectionChangedAction.Reset);
+                            NotifyCollectionChangedAction.Reset,
+                            reason);
                         break;
 
                     default:
@@ -546,13 +547,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         }
 
         #region A C T I O N    M A S K S
+        [Obsolete("Action and Reason are entirely separate concerns in v2.0")]
         public static NotifyCollectionChangedAction ToNotifyCollectionChangedAction(this Enum @this)
-            => (NotifyCollectionChangedAction)
-               Enum.ToObject(typeof(NotifyCollectionChangedAction), Convert.ToInt32(@this) & 0x07);
+        {
+            var preview = (NotifyCollectionChangedAction) Enum.ToObject(typeof(NotifyCollectionChangedAction), Convert.ToInt32(@this) & 0x07);
+            Debug.Assert(Equals(@this, preview), "Expecting values are no longer OR'ed");
+            return preview;
+        }
 
+        [Obsolete("Action and Reason are entirely separate concerns in v2.0")]
         public static NotifyCollectionChangedReason ToNotifyCollectionChangedReason(this Enum @this)
-            => (NotifyCollectionChangedReason)
-               Enum.ToObject(typeof(NotifyCollectionChangedReason), Convert.ToInt32(@this) & ~0x07);
+        {
+            var preview = (NotifyCollectionChangedReason) Enum.ToObject(typeof(NotifyCollectionChangedReason), Convert.ToInt32(@this) & ~0x07);
+            Debug.Assert(Equals(@this, preview), "Expecting values are no longer OR'ed");
+            return preview;
+        }
         #endregion A C T I O N    M A S K S
 
         #endregion L E G I T

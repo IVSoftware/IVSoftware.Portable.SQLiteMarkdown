@@ -13,17 +13,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         : MarkdownContext<T>
         , IPredicateMarkdownContext
     {
-        public IReadOnlyDictionary<string, Enum> ActiveFilters => ActiveFiltersProtected.AsReadOnly;
+        public IReadOnlyDictionary<string, Enum> ActiveFilters => ActivePredicatesProtected.AsReadOnly;
 
         [Careful("Don't draw inferences from changes in the collection itself.")]
-        TolerantDictionary<string, Enum> ActiveFiltersProtected
+        TolerantDictionary<string, Enum> ActivePredicatesProtected
         {
             get
             {
-                if (_activeFiltersProtected is null)
+                if (_activePredicatesProtected is null)
                 {
-                    _activeFiltersProtected = new TolerantDictionary<string, Enum>();
-                    _activeFiltersProtected.CollectionChanging += (sender, e) =>
+                    _activePredicatesProtected = new TolerantDictionary<string, Enum>();
+                    _activePredicatesProtected.CollectionChanging += (sender, e) =>
                     {
                         switch (e.Action)
                         {
@@ -35,7 +35,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 break;
                         }
                     };
-                    _activeFiltersProtected.CollectionChanged += (sender, e) =>
+                    _activePredicatesProtected.CollectionChanged += (sender, e) =>
                     {
                         switch (e.Action)
                         {
@@ -66,10 +66,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         }
                     };
                 }
-                return _activeFiltersProtected;
+                return _activePredicatesProtected;
             }
         }
-        TolerantDictionary<string, Enum>? _activeFiltersProtected = null;
+        TolerantDictionary<string, Enum>? _activePredicatesProtected = null;
 
         [Obsolete]
         public string[] Predicates
@@ -93,7 +93,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (filter.GetCustomAttribute<WhereAttribute>()?.Binding is { } propertyName && !string.IsNullOrWhiteSpace(propertyName))
                 {
-                    ActiveFiltersProtected[propertyName] = filter;
+                    ActivePredicatesProtected[propertyName] = filter;
                 }
             }
         }
@@ -103,12 +103,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             if (filter.TryGetWhereAttribute(out binding, out predicate, @throw: true))
             {
                 // Retrieve the current property-bound predicate...
-                if (ActiveFiltersProtected[binding] is { } found)
+                if (ActivePredicatesProtected[binding] is { } found)
                 {
                     // ... but don't remove it unless it's a MATCH for the remove request.
                     if (Equals(found, filter))
                     {
-                        ActiveFiltersProtected.Remove(binding);
+                        ActivePredicatesProtected.Remove(binding);
                     }
                     else
                     {   /* G T K */
@@ -120,9 +120,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (more.TryGetWhereAttribute(out binding, out predicate, @throw: true))
                 {
-                    if (ActiveFiltersProtected[binding] is { } found && Equals(found, more))
+                    if (ActivePredicatesProtected[binding] is { } found && Equals(found, more))
                     {
-                        ActiveFiltersProtected.Remove(binding);
+                        ActivePredicatesProtected.Remove(binding);
                     }
                 }
             }
@@ -141,7 +141,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return _dhostAtomic;
             }
         }
-        public INotifyCollectionChanged ItemsSource { set => throw new NotImplementedException(); }
 
         private DisposableHost? _dhostAtomic = null;
 
@@ -150,24 +149,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             throw new NotImplementedException();
         }
 
-        public IDisposable BeginPredicateAtom()
-        {
-            throw new NotImplementedException();
-        }
+        public IDisposable BeginPredicateAtom() => DHostAtomic.GetToken();
 
         public void ActivatePredicates(Enum stdPredicate, params Enum[] more)
         {
-            throw new NotImplementedException();
         }
 
         public void DeactivatePredicates(Enum stdPredicate, params Enum[] more)
         {
-            throw new NotImplementedException();
         }
 
-        public void ClearPredicates(bool clearInputText = true)
-        {
-            throw new NotImplementedException();
-        }
+        public void ClearPredicates(bool clearInputText = true) => ActivePredicatesProtected.Clear();
     }
 }

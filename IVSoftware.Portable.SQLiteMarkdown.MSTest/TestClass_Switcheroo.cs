@@ -539,6 +539,11 @@ MarkdownContext Clear(all=True)";
                 return ((IMarkdownContext)_mdc).BeginBusy();
             }
 
+            public void Commit()
+            {
+                ((IMarkdownContext)_mdc).Commit();
+            }
+
             // We do not care about BC events.
             public new event PropertyChangedEventHandler? PropertyChanged;
         }

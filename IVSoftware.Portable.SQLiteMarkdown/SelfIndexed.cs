@@ -126,7 +126,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
 
 #if ABSTRACT
-recordset = cnx.Query<SelectableQFModelTOQO>($@"
+recordset = cnx.Query<SelectableQFModelLTOQO>($@"
     Select *
     From items 
     Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");

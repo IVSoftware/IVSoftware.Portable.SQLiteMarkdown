@@ -92,7 +92,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         QueryFilterConfig QueryFilterConfig { get; set; }
         string Title { get; set; }
         string SQL { get; }
+
+        /// <summary>
+        /// Canonical persistent data set (when available).
+        /// </summary>
+        /// <remarks>
+        /// EXAMPLE: Searchable settings.
+        /// </remarks>
         SQLiteConnection MemoryDatabase { get; set; }
+
         FilteringState Clear(bool all = false);
         void Commit();
 
@@ -152,14 +160,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
     [Careful("Must *never* implement INotifyCollectionChanged - this is reserved to detect inheritance..")]
-    [PublishedContract("2.0.0-alpha21", typeof(IMarkdownContext))]
+    [PublishedContract("2.0.0-alpha22", typeof(IMarkdownContext))]
     public interface IMarkdownContext
     {
         #region P A R S E
+        /// <summary>
+        /// Use the current value of InputText to parse an expression against ContractType.
+        /// </summary>
         string ParseSqlMarkdown();
         string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast);
         string ParseSqlMarkdown<T>();
         string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query);
+
+        void Commit();
         #endregion P A R S E
 
         /// <summary>
@@ -354,7 +367,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </c>
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
-    [PublishedContract("2.0.0-alpha21", typeof(IPredicateMarkdownContext))]
+    [PublishedContract("2.0.0-alpha22", typeof(IPredicateMarkdownContext))]
     public interface IPredicateMarkdownContext : IMarkdownContext
     {
         /// <summary>
