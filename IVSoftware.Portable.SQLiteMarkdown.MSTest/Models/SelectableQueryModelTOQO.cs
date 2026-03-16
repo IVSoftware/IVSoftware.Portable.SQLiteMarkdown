@@ -8,10 +8,10 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
 {
     /// <summary>
-    /// LTOQO = This class is "like tag on query only" and many tests rely on this being the case.
+    /// LTOQO = This class is "like Tag on Query Only" and many tests rely on this being the case.
     /// </summary>
     [Table("items"), DebuggerDisplay("{Description}")]
-    public class SelectableQFModelTOQO : SelfIndexed, ISelectable
+    public class SelectableQFModelLTOQO : SelfIndexed, ISelectable
     {
         [PrimaryKey]
         public override string Id { get; set; } = Guid.NewGuid().WithTestability().ToString();

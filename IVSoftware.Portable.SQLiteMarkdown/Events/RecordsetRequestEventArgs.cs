@@ -1,8 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
-using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.ComponentModel;
-using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Events
 {
@@ -15,6 +13,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
         public string SQL { get;  }
 
         [Careful("Null is not the same as Empty.")]
-        public object[]? CanonicalSuperset { get; internal set; }
+        public IList? CanonicalSuperset { get; internal set; }
     }
 }

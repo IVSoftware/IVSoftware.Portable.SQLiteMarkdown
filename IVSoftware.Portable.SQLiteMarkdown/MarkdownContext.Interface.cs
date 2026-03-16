@@ -1394,49 +1394,45 @@ Inherited contexts manage their projection internally.".TrimStart());
 
         public IDisposable BeginBusy() => DHostBusy.GetToken();
 
-        public void Commit()
+        public virtual void Commit()
         {
             var e = new RecordsetRequestEventArgs(ParseSqlMarkdown());
-
-            OnCommit(e);
-            if (e.CanonicalSuperset is null)
-            {   /* G T K - N O O P */
-            }
-            else
+            using (BeginBusy())
             {
-                Debug.Fail($@"ADVISORY - First Time.");
+                OnCommit(e);
+
+                if (!e.Handled)
+                {
+                    if (e.CanonicalSuperset is null)
+                    {
+                        if (MemoryDatabase is not null)
+                        {
+                            var canon = MemoryDatabase.Query(ContractType.GetSQLiteMapping(), e.SQL);
+                            LoadCanon(canon);
+                        }
+                        else
+                        {
+                            if (RecordsetRequest is null)
+                            {   /* G T K - N O O P */
+                                // This event has no subscribers.
+                            }
+                            else
+                            {
+                                nameof(MarkdownContext).ThrowHard<InvalidOperationException>(
+                                    $"Expecting {nameof(e.CanonicalSuperset)} or {nameof(e.Handled)}.");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        LoadCanon(e.CanonicalSuperset);
+                    }
+                }
             }
         }
         protected virtual void OnCommit(RecordsetRequestEventArgs e)
         {
             RecordsetRequest?.Invoke(this, e);
-            if(!e.Handled)
-            {
-                if(e.CanonicalSuperset is null)
-                {
-                    if(MemoryDatabase is not null)
-                    {
-                        var canon = MemoryDatabase.Query(ContractType.GetSQLiteMapping(), e.SQL);
-                        LoadCanon(canon);
-                    }
-                    else
-                    {
-                        if (RecordsetRequest is null)
-                        {   /* G T K - N O O P */
-                            // This event has no subscribers.
-                        }
-                        else
-                        {
-                            nameof(MarkdownContext).ThrowHard<InvalidOperationException>(
-                                $"Expecting {nameof(e.CanonicalSuperset)} or {nameof(e.Handled)}.");
-                        }
-                    }
-                }
-                else
-                {
-                    LoadCanon(e.CanonicalSuperset);
-                }
-            }
         }
 
         public event EventHandler<RecordsetRequestEventArgs>? RecordsetRequest;

@@ -51,17 +51,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
         public IReadOnlyList<T> UnfilteredItems => CanonicalSuperset;
 
-        public virtual async Task ReplaceItemsAsync(IEnumerable<T> items)
-        {
-            Debug.WriteLine($@"260306.a ADVISORY - {nameof(ReplaceItemsAsync)}.");
-            using (DHostBusy.GetToken())
-            {
-                await Task.Run(() =>
-                {
-                    base.LoadCanon(items);
-                });
-            }
-        }
 
         /// <summary>
         /// Removes any current items before copying the items passed.
@@ -72,137 +61,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </remarks>
         public virtual void ReplaceItems(IEnumerable<T> items)
         {
-            using (DHostBusy.GetToken())
-            {
-                // --------------
-                // UPGRADE 260301
-                base.LoadCanon(items);
-                // --------------
-            }
+            // --------------
+            // UPGRADE 260301
+            base.LoadCanon(items);
+            // --------------
         }
 
-#if false && SAVE
-        /// <summary>
-        /// Applies filtering based on incremental changes to the input text,
-        /// occurring after the initial query. Operates on the in-memory SQLite store
-        /// when in QueryAndFilter or Filter mode. Override to customize filter behavior.
-        /// </summary>
-        protected override async Task ApplyFilter()
+        [Probationary("Review  model should be built on a worker thread. ")]
+        public virtual async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
-            using (DHostBusy.GetToken())
-            {
-                await base.ApplyFilter();
-                try
-                {
-                    var matchesB4 = PredicateMatchSubset.Cast<T>().ToArray();
-                    Debug.Assert(IsFiltering);
-                    if (InputText.Length == 0)
-                    {
-                        // When we're filtering and go to 0 length, we show ALL the items.
-                        switch (FilteringState)
-                        {
-                            case FilteringState.Ineligible:
-                                break;
-                            case FilteringState.Armed:
-                                break;
-                            case FilteringState.Active:
-                                FilteringState = FilteringState.Armed;
-                                break;
-                            default:
-                                throw new NotImplementedException($"Bad case: {FilteringState}");
-                        }
-                    }
-                    else
-                    {
-                        switch (FilteringState)
-                        {
-                            case FilteringState.Ineligible:
-                                break;
-                            case FilteringState.Armed:
-                                FilteringState = FilteringState.Active;
-                                break;
-                            case FilteringState.Active:
-                                break;
-                            default:
-                                throw new NotImplementedException($"Bad case: {FilteringState}");
-                        }
-
-                        var searchEntryState = SearchEntryState;
-                        var sql = ParseSqlMarkdown<T>();
-                        // Must have "where" and must have at least 1 non whitespace char after it.
-                        if (Regex.IsMatch(sql ?? "", @"where\s+\S", RegexOptions.IgnoreCase))
-                        {
-
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException($"Expected WHERE clause with content. Parse result was:\n{sql}");
-                        }
-
-#if false && DEBUG && SAVE
-                        var context = InputText.ParseSqlMarkdown<T>(ref searchEntryState);
-                        var cstring = context.ToString();
-                        if (sql == cstring)
-                        {
-                        }
-                        else
-                        {
-                            // Probably 'not' the same so far. Here's what we need to happen:
-                            // - Using the string extension is stand-alone and always makes a new context.
-                            // - Going forward, the string extension should support only expr (a.k.a. @this), QueryFilterMode, and Minimum Length
-                            // - We're done with passing state into the string extension, however. If state is what you want, maintain a context.
-                            // - If you want, you can pull that context off the 'out XElement' from the first string call. But honestly this is more intended to be a test feature.
-                        }
-#endif
-
-                        var filteredRecords = FilterQueryDatabase.Query<T>(sql);
-
-                        // This is 'not' the place for a reconciled sync.
-                        // We would do that in the UI if at all.
-                        PredicateMatchSubsetProtected.Clear();
-                        foreach (var item in filteredRecords)
-                        {
-                            PredicateMatchSubsetProtected.Add(item);
-                        }
-                        // Active REGARDLESS of result because if unfiltered
-                        // count < 2 we're not supposed to be here in the first place.
-                        Debug.Assert(CanonicalSupersetProtected.Count >= 2, "ADVISORY - Filterable source is required.");
-                        FilteringState = FilteringState.Active;
-
-                        if(ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
-                        {
-                            OnCollectionChanged(
-                                new ModelSettledEventArgs
-                                (
-                                    reason: NotifyCollectionChangedReason.ApplyFilter,
-                                    action: NotifyCollectionChangedAction.Replace,
-                                    oldItems: matchesB4,
-                                    newItems: PredicateMatchSubsetProtected
-                                )
-                            );
-                        }
-                        if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
-                        {
-                            OnCollectionChanged(
-                                new ModelSettledEventArgs
-                                (
-                                    reason: NotifyCollectionChangedReason.ApplyFilter,
-                                    action: NotifyCollectionChangedAction.Reset
-                                )
-                            );
-                        }
-                    }
-                }
-                finally
-                {
-                    lock (_lock)
-                    {
-                        this.OnAwaited();
-                    }
-                }
-            }
+            await Task.Run(() => ReplaceItems(items));
         }
-#endif
 
         /// <summary>
         /// Provides full control over model settling semantics to this subclass.
@@ -759,39 +628,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [PublishedContract("1.0", typeof(IObservableQueryFilterSource))]
         [PublishedContract("2.0", typeof(IMarkdownContext))]
         public new void Commit() => base.Commit();
-        protected override void OnCommit(RecordsetRequestEventArgs e)
-        {
-            base.OnCommit(e);
-
-            if (MemoryDatabase != null)
-            {
-                switch (SearchEntryState)
-                {
-                    case SearchEntryState.Cleared:
-                        break;
-                    case SearchEntryState.QueryEmpty:
-                        break;
-                    case SearchEntryState.QueryENB:
-                        break;
-                    case SearchEntryState.QueryEN:
-                        // Nullable property, but we're not in
-                        // a target framework that supports it.
-                        if (MemoryDatabase != null)
-                        {
-                            // Please don't combine these two lines. This is for cMe purposes.
-                            var recordset = MemoryDatabase.Query<T>(InputText.ParseSqlMarkdown<T>());
-                            ReplaceItems(recordset);
-                        }
-                        break;
-                    case SearchEntryState.QueryCompleteNoResults:
-                        break;
-                    case SearchEntryState.QueryCompleteWithResults:
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
 
         [Obsolete("Legacy unit test support only.")]
         public MarkdownContextOR MarkdownContextOR
