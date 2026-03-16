@@ -1075,6 +1075,9 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </remarks>
         protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 16).Date, "Don't forget disabled");
+            //return;
+
             switch (Authority)
             {
                 default: break;
