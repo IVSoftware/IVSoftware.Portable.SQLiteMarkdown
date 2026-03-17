@@ -543,10 +543,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
         public void Clear() => base.Clear(all: true);
 
-        public new FilteringState Clear(bool all = false)
+#if false
+        public new FilteringState Clear(bool all)
         {
-            var fsBase = base.Clear(all);
-            if (fsBase < FilteringState.Armed)
+            var fsmAfterClear = base.Clear(all);
+            if (fsmAfterClear < FilteringState.Armed)
             {
                 // [Careful] 
                 // If we're responding to FilteringState changed to clear the
@@ -554,8 +555,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // add-remove changes to Items will bypass the input state machine. 
                 CanonicalSupersetProtected.Clear();
             }
-            return fsBase;
+            return fsmAfterClear;
         }
+#endif
 
         public bool Contains(T item) { return CanonicalSupersetProtected.Contains(item); }
 
@@ -766,7 +768,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             base.OnSearchEntryStateChanged();
             if (SearchEntryState == SearchEntryState.Cleared)
             {
-                CanonicalSupersetProtected.Clear();
+                Clear();
             }
         }
 
