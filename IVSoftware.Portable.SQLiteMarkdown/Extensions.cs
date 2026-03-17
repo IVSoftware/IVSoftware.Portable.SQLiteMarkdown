@@ -242,7 +242,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 @this
                 .Split(delimiter)
                 .Where(_ => !string.IsNullOrWhiteSpace(_));
-            return string.Join(string.Empty, split.Select(_ => _.EncloseInSquareBrackets().ApplyCasing(stringCasing)));
+
+            var preview = 
+                UseSpaceBetween
+                ? string.Join(" ", split.Select(_ => _.EncloseInSquareBrackets().ApplyCasing(stringCasing)))
+                : string.Join(string.Empty, split.Select(_ => _.EncloseInSquareBrackets().ApplyCasing(stringCasing)));
+            return preview;
         }
 
         internal static bool UseSpaceBetween { get; set; } = true;
@@ -264,6 +269,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <returns>A canonical bracketed tag string.</returns>
         public static string NormalizeTags(this string value)
         {
+            string preview;
             if (string.IsNullOrWhiteSpace(value))
             {
                 return string.Empty;
@@ -272,7 +278,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // 1. Explicit bracket grammar wins
             if (TryParseBracketGrammar(value, out var bracketTokens))
             {
-                return string.Concat(bracketTokens.Select(t => $"[{t}]"));
+                preview =
+                    UseSpaceBetween
+                    ? string.Concat(bracketTokens.Select(t => $" [{t}]")).TrimStart()
+                    : string.Concat(bracketTokens.Select(t => $"[{t}]"));
+                return preview;
             }
 
             // 2. Known delimiter grammar
@@ -304,7 +314,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 value
                     .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-            var preview = 
+            preview = 
                 UseSpaceBetween
                 ? string.Concat(tokens.Select(t => $" [{t}]")).TrimStart()
                 : string.Concat(tokens.Select(t => $"[{t}]"));
