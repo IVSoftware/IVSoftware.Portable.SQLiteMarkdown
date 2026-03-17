@@ -169,35 +169,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public IDisposable BeginBusy() => DHostBusy.GetToken();
 
+        /// <summary>
+        /// Parses the current <see cref="InputText"/> and raises the <see cref="RecordsetRequest"/> event.
+        /// </summary>
+        /// <remarks>
+        /// Represents the transition point between input parsing and recordset acquisition.
+        /// Subscribers may use the current SQL expression to supply a recordset, but are not required to do so.
+        ///
+        /// This method defines the execution boundary for Query mode. Unlike Filter mode, which
+        /// applies changes after a debounced settling interval, Query mode does not impose a
+        /// settling timeout on input changes and instead requires an explicit commit.
+        /// </remarks>
         public void Commit()
         {
-            var e = new RecordsetRequestEventArgs(ParseSqlMarkdown());
+            var e = new RecordsetRequestEventArgs(sql: ParseSqlMarkdown());
             using (BeginBusy())
             {
                 OnCommit(e);
             }
         }
+
+        /// <summary>
+        /// Raises the <see cref="RecordsetRequest"/> event for the current commit.
+        /// </summary>
         protected virtual void OnCommit(RecordsetRequestEventArgs e)
         {
             RecordsetRequest?.Invoke(this, e);
-            if (!e.Handled)
-            {
-                if(RecordsetRequest is null)
-                {   /* G T K - N O O P */
-                    // This event simply has no subscribers.
-                }
-                else
-                {
-                    // This on the other hand signals intention, so
-                    // at least one of these things should be available:
-                    if (e.CanonicalSuperset is null && MemoryDatabase is null)
-                    {
-                        // No recordset delivered. No obvious means of getting one.
-                        nameof(MarkdownContext).ThrowHard<InvalidOperationException>(
-                            $"Expecting {nameof(e.CanonicalSuperset)} or {nameof(e.Handled)}.");
-                    }
-                }
-            }
         }
 
         public event EventHandler<RecordsetRequestEventArgs>? RecordsetRequest;

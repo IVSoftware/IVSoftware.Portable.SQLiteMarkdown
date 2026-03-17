@@ -190,8 +190,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query);
 
         /// <summary>
-        /// Parses the current <see cref="InputText"/> and raises the <see cref="RecordsetRequested"/> event.
+        /// Parses the current <see cref="InputText"/> and raises the <see cref="RecordsetRequest"/> event.
         /// </summary>
+        /// <remarks>
+        /// Represents the transition point between input parsing and recordset acquisition.
+        /// Subscribers may use the current SQL expression to supply a recordset, but are not required to do so.
+        ///
+        /// This method defines the execution boundary for Query mode. Unlike Filter mode, which
+        /// applies changes after a debounced settling interval, Query mode does not impose a
+        /// settling timeout on input changes and instead requires an explicit commit.
+        /// </remarks>
         void Commit();
         #endregion P A R S E
 

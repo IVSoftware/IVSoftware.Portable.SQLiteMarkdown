@@ -3089,134 +3089,96 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
         public async Task Test_DemoFlow()
         {
             using var te = this.TestableEpoch();
-            using (var cnx = InitializeInMemoryDatabase())
+
+            string actual, expected, sql;
+            List<SelectableQFModelLTOQO> recordset;
+            IList newItems = Array.Empty<object>();
+            Queue<SenderEventPair> eventQueue = new();
+            var builder = new List<string>();
+
+            var items = new ObservableQueryFilterSource<SelectableQFModelLTOQO>
             {
-                string actual, expected, sql;
-                List<SelectableQFModelLTOQO> recordset;
-                IList newItems = Array.Empty<object>();
-                Queue<SenderEventPair> eventQueue = new();
-                var builder = new List<string>();
-
-                var items = new ObservableQueryFilterSource<SelectableQFModelLTOQO>
+                MemoryDatabase = InitializeInMemoryDatabase()
+            };
+            NavSearchBar nsb = new NavSearchBar
+            {
+                // NavSearchBar UI controls are designed
+                // to switch out sources many times.
+                ItemsSource = items,
+            };
+            items.InputTextSettled += async (sender, e) =>
+            {
+            };
+            items.CollectionChanged += (sender, e) =>
+            {
+                if (ReferenceEquals(sender, items.CanonicalSuperset))
                 {
-                    MemoryDatabase = cnx
-                };
-                NavSearchBar nsb = new NavSearchBar
+                    Debug.Fail($@"ADVISORY - First Time.");
+                }
+                eventQueue.Enqueue((sender, e));
+                builder.Add(e.ToString(ReferenceEquals(sender, items)));
+
+                // G T K
+                switch (e.Action)
                 {
-                    // NavSearchBar UI controls are designed
-                    // to switch out sources many times.
-                    ItemsSource = items,
-                };
-                items.InputTextSettled += async (sender, e) =>
-                {
-                    if (ReferenceEquals(sender, items))
-                    {
-                        switch (items.SearchEntryState)
-                        {
-                            case SearchEntryState.Cleared:
-                                break;
-                            case SearchEntryState.QueryEmpty:
-                                break;
-                            case SearchEntryState.QueryENB:
-                                break;
-                            case SearchEntryState.QueryEN:
-                                // Client is responsible for the query at large because
-                                // only they know what the data connection is. Once QFS
-                                // has the recordset, it can filter it using SQLite.
-                                sql = items.ParseSqlMarkdown<SelectableQFModelLTOQO>(items.InputText);
-                                recordset = cnx.Query<SelectableQFModelLTOQO>(sql);
-                                items.ReplaceItems(recordset);
-                                break;
-                            case SearchEntryState.QueryCompleteNoResults:
-                            case SearchEntryState.QueryCompleteWithResults:
-                                // No need for explicit. This is inherent on the
-                                // awaiter but give it a little extra time.
+                    case NotifyCollectionChangedAction.Add:
+                        newItems = e.NewItems?.Cast<object>().ToArray() ?? Array.Empty<object>();
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        break;
+                    case NotifyCollectionChangedAction.Replace:
+                        break;
+                    case NotifyCollectionChangedAction.Move:
+                        break;
+                    case NotifyCollectionChangedAction.Reset:
+                        break;
+                    default:
+                        break;
+                }
+            };
 
-                                // Do this
-                                await Task.Delay(TimeSpan.FromSeconds(0.5));
-
-                                // Not this (ApplyFilter is protected now anyway!)
-                                // items.ApplyFilter();
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException("Expecting events from OQFS only.");
-                    }
-                };
-                items.CollectionChanged += (sender, e) =>
-                {
-                    if (ReferenceEquals(sender, items.CanonicalSuperset))
-                    {
-                        Debug.Fail($@"ADVISORY - First Time.");
-                    }
-                    eventQueue.Enqueue((sender, e));
-                    builder.Add(e.ToString(ReferenceEquals(sender, items)));
-
-                    // G T K
-                    switch (e.Action)
-                    {
-                        case NotifyCollectionChangedAction.Add:
-                            newItems = e.NewItems?.Cast<object>().ToArray() ?? Array.Empty<object>(); 
-                            break;
-                        case NotifyCollectionChangedAction.Remove:
-                            break;
-                        case NotifyCollectionChangedAction.Replace:
-                            break;
-                        case NotifyCollectionChangedAction.Move:
-                            break;
-                        case NotifyCollectionChangedAction.Reset:
-                            break;
-                        default:
-                            break;
-                    }
-                };
-
-                await subtestQueryInitial();
-                await subtestAppendAndRequery();
+            await subtestQueryInitial();
+            await subtestAppendAndRequery();
 
 
-                #region S U B T E S T S
-                async Task subtestQueryInitial()
-                {
-                    actual = items.StateReport();
-                    Assert.IsNull(items.ObservableNetProjection, "Expectin");
-                    expected = @" 
+            #region S U B T E S T S
+            async Task subtestQueryInitial()
+            {
+                actual = items.StateReport();
+                Assert.IsNull(items.ObservableNetProjection);
+                expected = @" 
 [IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
-                    ;
-                    Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting initial StateReport to match.");
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting initial StateReport to match.");
 
-                    Assert.AreEqual(0, eventQueue.Count, "YES. It's zero.");
+                Assert.AreEqual(0, eventQueue.Count, "YES. It's zero.");
 
-                    // Nothing requires await here.
-                    nsb.InputText = "animal";   // Synchronous because IsFiltering is False.
-                    items.Commit();             // Query on a synchronous memory connection => ReplaceItems() => LoadCanon().
+                // Nothing requires await here.
+                nsb.InputText = "animal";   // Synchronous because IsFiltering is False.
+                items.Commit();             // Query on a synchronous memory connection => ReplaceItems() => LoadCanon().
 
-                    // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
-                    // Limit touched 260304
-                    actual = string.Join(Environment.NewLine, builder);
-                    actual.ToClipboardExpected();
-                    { }
-                    expected = @" 
+                // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
+                // Limit touched 260304
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
 NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
-                    ;
-                    ;
+                ;
+                ;
 
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting the Commit method has an add component (first) and a reset component (last)."
-                    );
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting the Commit method has an add component (first) and a reset component (last)."
+                );
 
-                    actual = items.Model.ToString();
-                    actual.ToClipboardExpected();
-                    { }
+                actual = items.Model.ToString();
+                actual.ToClipboardExpected();
+                { }
 
-                    // [Careful("What?")] No 'preview' attribute? THAT'S BECAUSE THIS IS SelectableQFModelLTOQO and *not* IAffinityModel.
-                    expected = @" 
+                // [Careful("What?")] No 'preview' attribute? THAT'S BECAUSE THIS IS SelectableQFModelLTOQO and *not* IAffinityModel.
+                expected = @" 
 <model autocount=""12"" count=""12"" matches=""12"">
   <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModelLTOQO]"" sort=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModelLTOQO]"" sort=""1"" />
@@ -3231,23 +3193,23 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
   <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModelLTOQO]"" sort=""10"" />
   <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModelLTOQO]"" sort=""11"" />
 </model>"
-                    ;
+                ;
 
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting 12 animal matches."
-                    );
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 12 animal matches."
+                );
 
-                    // After testing both schemes, "no self-own" is the clear winner.
-                    const bool SELF_OWN_ONP = false;
+                // After testing both schemes, "no self-own" is the clear winner.
+                const bool SELF_OWN_ONP = false;
 
-                    // As a product of the CollectionChangedEvent this
-                    // is representative of what we'd see in the visible list.
-                    actual = string.Join(Environment.NewLine, newItems.Cast<object>().Select(_ => _.ToString()));
-                    actual.ToClipboardExpected();
-                    { }
-                    var newItemsPayload = @" 
+                // As a product of the CollectionChangedEvent this
+                // is representative of what we'd see in the visible list.
+                actual = string.Join(Environment.NewLine, newItems.Cast<object>().Select(_ => _.ToString()));
+                actual.ToClipboardExpected();
+                { }
+                var newItemsPayload = @" 
 Black Cat  [animal] [color]
 Orange Fox  [animal] [color]
 White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
@@ -3260,77 +3222,76 @@ Giraffe  [animal]
 Kangaroo ""bounce"",""outback"",""marsupial"" [animal]
 Turtle  [animal]
 Should NOT match an expression with an ""animal"" tag.  [not animal]"
-                    ;
+                ;
 
-                    Assert.AreEqual(
-                        newItemsPayload.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting new items payload as reported."
-                    );
-                }
+                Assert.AreEqual(
+                    newItemsPayload.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting new items payload as reported."
+                );
+            }
 
-                async Task subtestAppendAndRequery()
-                {
-                    items.Clear(all: true);
-                    // Live-demo specific.
-                    Add("Appetizer Plate", "[dish]", false, new() { "starter", "appealing", "snack" });
-                    Add("Errata", "[notes]", false, new() { "crunchy", "green", "appended" });
-                    Add("Happy Camper", "[phrase]", false, new() { "joyful", "camp", "approach-west" });
-                    Add("Great example - Markdown Demo", "[app] [portable]", false, new() { "digital", "mobile", "software" });
-                    Add("Application Form", "[document]", false, new() { "paperwork", "apply" });
-                    Add("App Store", "[app]", false, new() { "digital", "mobile", "software" });
+            async Task subtestAppendAndRequery()
+            {
+                items.Clear(all: true);
+                // Live-demo specific.
+                Add("Appetizer Plate", "[dish]", false, new() { "starter", "appealing", "snack" });
+                Add("Errata", "[notes]", false, new() { "crunchy", "green", "appended" });
+                Add("Happy Camper", "[phrase]", false, new() { "joyful", "camp", "approach-west" });
+                Add("Great example - Markdown Demo", "[app] [portable]", false, new() { "digital", "mobile", "software" });
+                Add("Application Form", "[document]", false, new() { "paperwork", "apply" });
+                Add("App Store", "[app]", false, new() { "digital", "mobile", "software" });
 
-                    nsb.InputText = "app gre";
-                    items.Commit();
-                    await items;
+                nsb.InputText = "app gre";
+                items.Commit();
+                await items;
 
-                    actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
-                    expected = @" 
+                actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
+                expected = @" 
 Green Apple ""tart"",""snack"",""healthy"" [fruit] [color]
 Errata ""crunchy"",""green"",""appended"" [notes]
 Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portable]"
-                    ;
+                ;
 
-                    Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, items.SearchEntryState);
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, items.SearchEntryState);
 
-                    // Perform a filter
-                    nsb.InputText = "[app] gre";
-                    items.Commit();
-                    await items;
+                // Perform a filter
+                nsb.InputText = "[app] gre";
+                items.Commit();
+                await items;
 
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting items to match"
-                    );
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting items to match"
+                );
 
-                    actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
+                actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
 
-                    actual.ToClipboardExpected();
-                    expected = @" 
+                actual.ToClipboardExpected();
+                expected = @" 
 Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portable]"
-                    ;
-                }
-                #endregion S U B T E S T S
-
-                #region L o c a l F x
-
-                void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
-                {
-                    var instance = new SelectableQFModelLTOQO();
-                    var type = typeof(SelectableQFModelLTOQO);
-                    type.GetProperty("Description")?.SetValue(instance, description);
-                    type.GetProperty("Tags")?.SetValue(instance, tags);
-                    type.GetProperty("IsChecked")?.SetValue(instance, isChecked);
-                    if (keywords != null)
-                    {
-                        var json = JsonConvert.SerializeObject(keywords);
-                        type.GetProperty("Keywords")?.SetValue(instance, json);
-                    }
-                    cnx.Insert(instance);
-                }
-                #endregion L o c a l F x
+                ;
             }
+            #endregion S U B T E S T S
+
+            #region L o c a l F x
+
+            void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
+            {
+                var instance = new SelectableQFModelLTOQO();
+                var type = typeof(SelectableQFModelLTOQO);
+                type.GetProperty("Description")?.SetValue(instance, description);
+                type.GetProperty("Tags")?.SetValue(instance, tags);
+                type.GetProperty("IsChecked")?.SetValue(instance, isChecked);
+                if (keywords != null)
+                {
+                    var json = JsonConvert.SerializeObject(keywords);
+                    type.GetProperty("Keywords")?.SetValue(instance, json);
+                }
+                items.MemoryDatabase.Insert(instance);
+            }
+            #endregion L o c a l F x
         }
     }
 }
