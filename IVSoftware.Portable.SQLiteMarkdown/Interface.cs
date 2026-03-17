@@ -246,44 +246,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         event EventHandler? InputTextSettled;
 
-        #region P R O J E C T I O N
-        /// <summary>
-        /// Represents a bindable and observable collection representing 'net visible' filtered items.
-        /// </summary>
-        INotifyCollectionChanged? ObservableNetProjection { get;  set; }
-
-        /// <summary>
-        /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
-        /// </remarks>
-        void LoadCanon(IEnumerable? recordset);
-
-        /// <summary>
-        /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
-        /// </remarks>
-        [Probationary]
-        Task LoadCanonAsync(IEnumerable? recordset);
-        #endregion P R O J E C T I O N
-
-        #region D I S P O S A B L E S
-        /// <summary>
-        /// Guards receptivity of the unfiltered items collection.
-        /// </summary> 
-        /// <remarks>
-        /// Intended use: EpochFinalizing should be wrapped with this reference counter.
-        /// </remarks>
-        IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority);
-
-        /// <summary>
-        /// Returns the current collection DDX authority.
-        /// </summary>
-        CollectionChangeAuthority Authority { get; }
-
+        #region D I S P O S A B L E
         /// <summary>
         /// Bindable property that returns true when the busy count is < 1;
         /// </summary>
@@ -294,8 +257,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         IDisposable BeginBusy();
 
-        #endregion D I S P O S A B L E S
-
+        #endregion D I S P O S A B L E
 
         /// <summary>
         /// Gets the total number of items in the canonical ledger.
@@ -359,6 +321,46 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         event NotifyCollectionChangedEventHandler ModelSettled;
         #endregion M O D E L
+
+        #region P R O J E C T I O N
+        /// <summary>
+        /// Represents a bindable and observable collection representing 'net visible' filtered items.
+        /// </summary>
+        INotifyCollectionChanged? ObservableNetProjection { get; set; }
+
+        /// <summary>
+        /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
+        /// </remarks>
+        void LoadCanon(IEnumerable? recordset);
+
+        /// <summary>
+        /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
+        /// </remarks>
+        [Probationary]
+        Task LoadCanonAsync(IEnumerable? recordset);
+        #endregion P R O J E C T I O N
+
+        #region D I S P O S A B L E
+        /// <summary>
+        /// Guards receptivity of the unfiltered items collection.
+        /// </summary> 
+        /// <remarks>
+        /// Intended use: EpochFinalizing should be wrapped with this reference counter.
+        /// </remarks>
+        IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority);
+
+        /// <summary>
+        /// Returns the current collection DDX authority.
+        /// </summary>
+        CollectionChangeAuthority Authority { get; }
+
+        #endregion D I S P O S A B L E
     }
 
     /// <summary>

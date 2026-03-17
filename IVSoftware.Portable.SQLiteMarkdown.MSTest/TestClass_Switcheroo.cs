@@ -460,13 +460,13 @@ MarkdownContext Clear(all=True)";
             }
 
             public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority)
-                => ((IMarkdownContext)_mdc).BeginCollectionChangeAuthority(authority);
+                => ((IModeledMarkdownContext)_mdc).BeginCollectionChangeAuthority(authority);
 
             public FilteringState Clear(bool all)
                 => ((IMarkdownContext)_mdc).Clear(all);
 
             public Task LoadCanonAsync(IEnumerable? recordset)
-                => ((IMarkdownContext)_mdc).LoadCanonAsync(recordset);
+                => ((IModeledMarkdownContext)_mdc).LoadCanonAsync(recordset);
 
             public string ParseSqlMarkdown()
                 => ((IMarkdownContext)_mdc).ParseSqlMarkdown();
@@ -484,8 +484,8 @@ MarkdownContext Clear(all=True)";
 
             public INotifyCollectionChanged? ObservableNetProjection
             {
-                get => ((IMarkdownContext)_mdc).ObservableNetProjection;
-                set => ((IMarkdownContext)_mdc).ObservableNetProjection = value;
+                get => ((IModeledMarkdownContext)_mdc).ObservableNetProjection;
+                set => ((IModeledMarkdownContext)_mdc).ObservableNetProjection = value;
             }
 
             public int PredicateMatchCount => ((IMarkdownContext)_mdc).PredicateMatchCount;
@@ -502,7 +502,7 @@ MarkdownContext Clear(all=True)";
                 set => ((IModeledMarkdownContext)_mdc).ReplaceItemsEventingOptions = value;
             }
 
-            public CollectionChangeAuthority Authority => ((IMarkdownContext)_mdc).Authority;
+            public CollectionChangeAuthority Authority => ((IModeledMarkdownContext)_mdc).Authority;
 
             public bool Busy => ((IMarkdownContext)_mdc).Busy;
 
@@ -518,7 +518,7 @@ MarkdownContext Clear(all=True)";
                 => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
             public void LoadCanon(IEnumerable? recordset)
-                => ((IMarkdownContext)_mdc).LoadCanon(recordset);
+                => ((IModeledMarkdownContext)_mdc).LoadCanon(recordset);
 
             public string[] GetTableNames()
                 => ((IMarkdownContext)_mdc).GetTableNames();

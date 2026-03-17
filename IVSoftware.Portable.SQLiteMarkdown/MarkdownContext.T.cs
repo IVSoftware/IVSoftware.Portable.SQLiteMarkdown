@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public partial class MarkdownContext<T> : MarkdownContext
+    public partial class MarkdownContext<T> : MarkdownContext, IModeledMarkdownContext
     {
         /// <summary>
         /// Creates a typed context whose base infrastructure is initialized
