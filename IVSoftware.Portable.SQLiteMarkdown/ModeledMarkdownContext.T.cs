@@ -592,80 +592,14 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </summary>
         protected virtual void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            switch (Authority)
+            using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection);
+            if (Authority == CollectionChangeAuthority.Projection)
             {
-                case 0:
-                    using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection))
-                    {
-                        switch (e.Action)
-                        {
-                            case NotifyCollectionChangedAction.Add:
-                                if (e.NewItems is null)
-                                {
-                                    e.ThrowHard<InvalidOperationException>($"{nameof(e.NewItems)} cannot be null.");
-                                }
-                                else
-                                {
-                                    foreach (var item in e.NewItems)
-                                    {
-                                        AddItemToModel(item);
-                                    }
-                                }
-                                break;
-                            case NotifyCollectionChangedAction.Move:
-                                Debug.Fail($@"ADVISORY - First Time.");
-                                break;
-                            case NotifyCollectionChangedAction.Remove:
-                                if (e.OldItems is null)
-                                {
-                                    e.ThrowHard<InvalidOperationException>($"{nameof(e.OldItems)} cannot be null.");
-                                }
-                                else
-                                {
-                                    foreach (var item in e.OldItems)
-                                    {
-                                        AddItemToModel(item);
-                                    }
-                                }
-                                break;
-                            case NotifyCollectionChangedAction.Replace:
-                                LoadCanon(e.NewItems);
-                                break;
-                            case NotifyCollectionChangedAction.Reset:
-                                if (sender is IList list && list.Count == 0)
-                                {
-                                    // #{A665C02F-B1DE-45AE-8DAD-67775114E725}
-                                    if (Model.HasElements)
-                                    {
-                                        Model.RemoveAll();
-                                    }
-                                    if (SearchEntryState != SearchEntryState.Cleared)
-                                    {
-                                        SearchEntryState = SearchEntryState.Cleared;
-                                    }
-                                    if (FilteringState != FilteringState.Ineligible)
-                                    {
-                                        FilteringState = FilteringState.Ineligible;
-                                    }
-                                }
-                                else
-                                {
-                                    LoadCanon(sender as IEnumerable);
-                                }
-                                break;
-                            default:
-                                ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");
-                                break;
-                        }
-                    }
-                    break;
-                case CollectionChangeAuthority.None:    // Explicit suppress authority.
-                case CollectionChangeAuthority.Model:   // The external collection is changing under this model's authority.
-                    Debug.Fail($@"ADVISORY - First Time.");
-                    break;
-                default:
-                    this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
-                    break;
+                UpdateModelWithAuthority(sender, e);
+            }
+            else
+            {
+                Debug.Assert(Authority == CollectionChangeAuthority.Model);
             }
         }
 
@@ -683,15 +617,103 @@ Inherited contexts manage their projection internally.".TrimStart());
         protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             Debug.Assert(
-                !ReferenceEquals(ObservableNetProjection, CanonicalSupersetProtected),
-                "Different references, Different events. These are *never* the same reference."
-            );
+                ProjectionTopology == ProjectionTopology.Inheritance,
+                "Expecting this.GetType() is *not* IList and that it *does* inherit MDC");
+            Debug.Assert(
+                ObservableNetProjection is null,
+                "Expecting CanonicalSuperset *is* the source of all model changes.");
 
-            if (ReferenceEquals(sender, ObservableNetProjection))
+            using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Model);
+            if (Authority == CollectionChangeAuthority.Model)
             {
-                Debug.Assert(
-                    IsFiltering,
-                    "Expecting to *never* see this in a non-filtering context.");
+                UpdateModelWithAuthority(sender, e);
+            }
+            else 
+            {
+                Debug.Fail($@"ADVISORY - First Time.");
+            }
+        }
+
+        protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            #region A U T H O R I T Y    G U A R D
+            switch (Authority)
+            {
+                case CollectionChangeAuthority.Model:
+                case CollectionChangeAuthority.Projection:
+                    // The players.
+                    break;
+                case 0:
+                    this.ThrowFramework<InvalidOperationException>($"{nameof(CollectionChangeAuthority)} is required.");
+                    return;
+                case CollectionChangeAuthority.None:
+                    Debug.Fail($@"ADVISORY - Explicit no authority. Is this what we really want here?.");
+                    return;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                    return;
+            }
+            #endregion A U T H O R I T Y    G U A R D
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    if (e.NewItems is null)
+                    {
+                        e.ThrowHard<InvalidOperationException>($"{nameof(e.NewItems)} cannot be null.");
+                    }
+                    else
+                    {
+                        foreach (var item in e.NewItems)
+                        {
+                            AddItemToModel(item);
+                        }
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    Debug.Fail($@"ADVISORY - First Time.");
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    if (e.OldItems is null)
+                    {
+                        e.ThrowHard<InvalidOperationException>($"{nameof(e.OldItems)} cannot be null.");
+                    }
+                    else
+                    {
+                        foreach (var item in e.OldItems)
+                        {
+                            AddItemToModel(item);
+                        }
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    LoadCanon(e.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    if (sender is IList list && list.Count == 0)
+                    {
+                        // #{A665C02F-B1DE-45AE-8DAD-67775114E725}
+                        if (Model.HasElements)
+                        {
+                            Model.RemoveAll();
+                        }
+                        if (SearchEntryState != SearchEntryState.Cleared)
+                        {
+                            SearchEntryState = SearchEntryState.Cleared;
+                        }
+                        if (FilteringState != FilteringState.Ineligible)
+                        {
+                            FilteringState = FilteringState.Ineligible;
+                        }
+                    }
+                    else
+                    {
+                        LoadCanon(sender as IEnumerable);
+                    }
+                    break;
+                default:
+                    ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");
+                    break;
             }
         }
 
@@ -1224,10 +1246,10 @@ Inherited contexts manage their projection internally.".TrimStart());
                     localInitStatesForEpoch();
                     break;
                 case StdFSMState.AddItemToModel:
-                    localAddItemToModel();
+                    AddItemToModel(context);
                     break;
                 case StdFSMState.RemoveItemFromModel:
-                    localRemoveItemFromModel();
+                    RemoveItemFromModel(context);
                     break;
                 case StdFSMState.ModelSettled:
                     localRaiseModelSettled();
@@ -1482,7 +1504,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
         }
 
-        void localRemoveItemFromModel(object? item)
+        void RemoveItemFromModel(object? item)
         {
             if (item.GetFullPath() is { } full 
                 && !string.IsNullOrWhiteSpace(full)

@@ -327,18 +327,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         None = 1,
 
         /// <summary>
-        /// The markdown context is notifying a change to the net
-        /// projection, the (presumably visible) collection.
-        /// </summary>
-        Model = None + 1,
-        /// <summary>
-        /// The user has effected a (presumably UI-related) change to a filtered collection.
+        /// Signals that the exposed IList routes to CanonicalSuperset directly.
         /// </summary>
         /// <remarks>
-        /// Mental Model (typical): "When I add a new item, the current filter must not be allowed to 'immediately' hide it."
-        /// User-facing {add, edit, remove} operations that occur against a filtered projection are *exempt* from the filter.
+        /// AUTHORITY
+        /// - The markdown context is notifying that model changes, such as those 
+        ///   made by applying a new predicate, are outgoing to the net projection.
+        /// FILTERING TOPOLOGY
+        /// - No copying is required. Instead, the ItemsSource enumerator (the 'visible') surface
+        ///   is switched between the internal CanonicalSuperset and the internal PredicateSubset.
         /// </remarks>
-        Projection = Model + 1,
+        Model,
+
+        /// <summary>
+        /// Signals that the ItemsSource enumerator (the 'visible') surface *is* an external ObservableCollection.
+        /// </summary>
+        /// <remarks>
+        /// FILTERING TOPOLOGY
+        /// - When the state enters IsFiltering, the internal PredicateSubset is copied 
+        ///   to the external ObservableCollection.
+        /// - When the state exits IsFiltering, the internal CanonicalSubset is copied 
+        ///   to the external ObservableCollection.
+        /// AUTHORITY
+        /// - Mental Model (typical): "When I add a new item, the current filter must not be allowed to 'immediately' hide it."
+        /// - User-facing {add, edit, remove} operations that occur against a filtered projection are *exempt* from the filter.
+        /// </remarks>
+        Projection,
     }
 
     /// <summary>
