@@ -388,7 +388,7 @@ MarkdownContext Clear(all=True)";
         /// Uses routing for the net projection.
         /// </summary>
         class ObservableNetProjectionInheritsMDC<T>
-            : MarkdownContext<T>
+            : ModeledMarkdownContext<T>
             , INotifyCollectionChanged
         {
             public event NotifyCollectionChangedEventHandler? CollectionChanged;
@@ -417,7 +417,7 @@ MarkdownContext Clear(all=True)";
 
         partial class ObservableNetProjectionWithComposition<T> : IMarkdownContext
         {
-            private readonly MarkdownContext<T> _mdc = new MarkdownContext<T>();
+            private readonly ModeledMarkdownContext<T> _mdc = new ModeledMarkdownContext<T>();
 
             public XElement Model => ((IMarkdownContext)_mdc).Model;
 

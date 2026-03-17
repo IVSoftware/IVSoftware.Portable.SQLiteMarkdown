@@ -31,7 +31,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
     [DebuggerDisplay("Count={Count}")]
     public partial class ObservableQueryFilterSource<T>
-        : MarkdownContext<T>
+        : ModeledMarkdownContext<T>
         , IObservableQueryFilterSource<T>
         , IList<T>
         where T : new()

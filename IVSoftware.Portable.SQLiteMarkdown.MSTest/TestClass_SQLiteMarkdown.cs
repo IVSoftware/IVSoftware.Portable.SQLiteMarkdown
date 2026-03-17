@@ -398,7 +398,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             var extQueryHandle = default(List<PrioritizedAffinityQFModel>);
             int COUNT;
 
-            var mdc = new MarkdownContext<PrioritizedAffinityQFModel>();
+            var mdc = new ModeledMarkdownContext<PrioritizedAffinityQFModel>();
 
             actual = mdc.StateReport();
             actual.ToClipboardExpected();
@@ -673,7 +673,7 @@ InputText"
             const int COUNT = 2;
             var extQueryHandle = default(List<SelectableQFModel>);
 
-            var mdc = new MarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
+            var mdc = new ModeledMarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
             actual = mdc.StateReport();
             actual.ToClipboardExpected();
             { }
@@ -785,7 +785,7 @@ InputText"
 
             var extQueryHandle = default(List<SelectableQFModel>).PopulateForDemo(2);
 
-            MarkdownContext<SelectableQFModel> mdc;
+            ModeledMarkdownContext<SelectableQFModel> mdc;
 
             subtest_ConfigureThenLoad();
 
@@ -1436,7 +1436,7 @@ SELECT * FROM items WHERE
             // Different classes, but the explicit [Table] attributes all agree.
             void subtest_UncontroversialExplicitTableAttribute()
             {
-                var mdc = new MarkdownContext<SelectableQFModel>();
+                var mdc = new ModeledMarkdownContext<SelectableQFModel>();
                 mdc.ParseSqlMarkdown<SelectableQFModelSubclass>("hello");
                 tableNames = mdc.GetTableNames();
                 "hello".ParseSqlMarkdown<SelectableQFModel>();
@@ -1460,7 +1460,7 @@ SELECT * FROM items WHERE
             // - Any explicit [Table] attributes in base classes are moot.
             void subtest_ProxySameAsContract()
             {
-                var mdc = new MarkdownContext<SelectableQFModelSubclassA>();
+                var mdc = new ModeledMarkdownContext<SelectableQFModelSubclassA>();
                 mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
                 tableNames = mdc.GetTableNames();
                 "hello".ParseSqlMarkdown<SelectableQFModel>();
@@ -1483,7 +1483,7 @@ SELECT * FROM items WHERE
 
             void subtest_ProxyCoherence1()
             {
-                var mdc = new MarkdownContext<SelectableQFModel>();
+                var mdc = new ModeledMarkdownContext<SelectableQFModel>();
                 mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
                 tableNames = mdc.GetTableNames();
                 "hello".ParseSqlMarkdown<SelectableQFModel>();
@@ -1506,7 +1506,7 @@ SELECT * FROM items WHERE
 
             void subtest_ProxyCoherence2()
             {
-                var mdc = new MarkdownContext<SelectableQFModelSubclassA>();
+                var mdc = new ModeledMarkdownContext<SelectableQFModelSubclassA>();
                 mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
 
                 tableNames = mdc.GetTableNames();
@@ -1530,7 +1530,7 @@ SELECT * FROM items WHERE
             void subtest_ParseInputTextInQueryMode()
             {
                 // Check parser where declared table identities resolve as same
-                var mdc = new MarkdownContext<SelectableQFModelSubclass>();
+                var mdc = new ModeledMarkdownContext<SelectableQFModelSubclass>();
                 mdc.InputText = "animal";
 
                 actual = mdc.ParseSqlMarkdown();
@@ -1556,7 +1556,7 @@ SELECT * FROM items WHERE
         public async Task Test_Detect_QueryENB_or_QueryEN_when_IsFiltering()
         {
             string actual, expected;
-            var mdc = new MarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Filter };
+            var mdc = new ModeledMarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Filter };
 
             actual = mdc.StateReport();
             expected = @" 

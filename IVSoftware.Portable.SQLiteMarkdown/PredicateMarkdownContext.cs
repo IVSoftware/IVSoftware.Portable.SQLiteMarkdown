@@ -10,7 +10,7 @@ using System.Linq;
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
     public class PredicateMarkdownContext<T> 
-        : MarkdownContext<T>
+        : ModeledMarkdownContext<T>
         , IPredicateMarkdownContext
     {
         public IReadOnlyDictionary<string, Enum> ActiveFilters => ActivePredicatesProtected.AsReadOnly;
