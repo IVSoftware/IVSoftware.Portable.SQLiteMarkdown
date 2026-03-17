@@ -25,7 +25,10 @@ using static IVSoftware.Portable.SQLiteMarkdown.Internal.Extensions;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public partial class ModeledMarkdownContext<T> : MarkdownContext<T>, IModeledMarkdownContext
+    public partial class ModeledMarkdownContext<T> 
+        : MarkdownContext<T>
+        , IModeledMarkdownContext
+        where T : new()
     {
         public ModeledMarkdownContext()
         {
@@ -1500,6 +1503,11 @@ Inherited contexts manage their projection internally.".TrimStart());
                     {
                         var canon = MemoryDatabase.Query(ContractType.GetSQLiteMapping(), e.SQL);
                         LoadCanon(canon);
+
+#if DEBUG
+                        var loopbackCount = FilterQueryDatabase.Table<T>().Count();
+                        Debug.Assert(canon.Count == loopbackCount);
+#endif
                     }
                 }
                 else

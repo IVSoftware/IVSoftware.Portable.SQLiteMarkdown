@@ -390,6 +390,7 @@ MarkdownContext Clear(all=True)";
         class ObservableNetProjectionInheritsMDC<T>
             : ModeledMarkdownContext<T>
             , INotifyCollectionChanged
+            where T : new()
         {
             public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
@@ -415,7 +416,9 @@ MarkdownContext Clear(all=True)";
             }
         }
 
-        partial class ObservableNetProjectionWithComposition<T> : IMarkdownContext
+        partial class ObservableNetProjectionWithComposition<T> 
+            : IMarkdownContext
+            where T : new()
         {
             private readonly ModeledMarkdownContext<T> _mdc = new ModeledMarkdownContext<T>();
 

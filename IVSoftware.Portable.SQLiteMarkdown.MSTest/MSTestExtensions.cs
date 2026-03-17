@@ -7,6 +7,7 @@ using SQLite;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using static System.Windows.Forms.Design.AxImporter;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
@@ -163,78 +164,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 _ => throw new InvalidOperationException("Multiple items in queue."),
             };
 
-        /// <summary>
-        /// Supports await Unk with a timeout for deterministic fail on test instead of hanging. 
-        /// </summary>
-        /// <remarks>
-        /// There is a Task.WaitAsync(TimeSpan) but that’s an instance method 
-        /// on Task; an extension on object, overload resolution won’t confuse them.
-        /// </remarks>
-        public static async Task<object?> WaitAsync(this object awaitable, TimeSpan timeout)
-        {
-            if (awaitable is null)
-                throw new ArgumentNullException(nameof(awaitable));
-
-            Task<object?> ToTask()
-            {
-                var type = awaitable.GetType();
-                var getAwaiter = type.GetMethod("GetAwaiter", Type.EmptyTypes)
-                    ?? throw new InvalidOperationException("Object is not awaitable.");
-
-                var awaiter = getAwaiter.Invoke(awaitable, null)
-                    ?? throw new InvalidOperationException("GetAwaiter returned null.");
-
-                var awaiterType = awaiter.GetType();
-
-                var isCompletedProp = awaiterType.GetProperty("IsCompleted")
-                    ?? throw new InvalidOperationException("Awaiter missing IsCompleted.");
-
-                var onCompleted = awaiterType.GetMethod("OnCompleted", new[] { typeof(Action) })
-                    ?? throw new InvalidOperationException("Awaiter missing OnCompleted.");
-
-                var getResult = awaiterType.GetMethod("GetResult")
-                    ?? throw new InvalidOperationException("Awaiter missing GetResult.");
-
-                var tcs = new TaskCompletionSource<object?>();
-
-                void Complete()
-                {
-                    try
-                    {
-                        var result = getResult.Invoke(awaiter, null);
-                        tcs.TrySetResult(result);
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.TrySetException(ex.InnerException ?? ex);
-                    }
-                }
-
-                if ((bool)isCompletedProp.GetValue(awaiter)!)
-                {
-                    Complete();
-                }
-                else
-                {
-                    onCompleted.Invoke(awaiter, new object[] { (Action)Complete });
-                }
-
-                return tcs.Task;
-            }
-
-            var settleTask = ToTask();
-
-            var completed = await Task.WhenAny(
-                settleTask,
-                Task.Delay(timeout));
-
-            if (!ReferenceEquals(settleTask, completed))
-                throw new TimeoutException(
-                    $"Awaitable did not complete within {timeout}.");
-
-            return await settleTask;
-        }
-
         public static string StateReport(this MarkdownContext @this)
         {
             var builder = new List<string>();
@@ -259,6 +188,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             builder.Add($"{@this.ReplaceItemsEventingOptions.ToFullKey()}");
             return string.Join(", ", builder);
         }
-
     }
 }

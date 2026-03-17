@@ -1,6 +1,7 @@
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.DemoDB;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
@@ -41,7 +42,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     {
         public class NavSearchBar : INotifyPropertyChanged
         {
-            public IList<SelectableQFModelLTOQO>? ItemsSource
+            public IList<SelectableQFModel>? ItemsSource
             {
                 get => _itemsSource;
                 set
@@ -121,7 +122,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 throw new NotImplementedException();
             }
 
-            IList<SelectableQFModelLTOQO>? _itemsSource = null;
+            IList<SelectableQFModel>? _itemsSource = null;
             protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
             OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             protected virtual void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -3091,12 +3092,12 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
             using var te = this.TestableEpoch();
 
             string actual, expected, sql;
-            List<SelectableQFModelLTOQO> recordset;
+            List<SelectableQFModel> recordset;
             IList newItems = Array.Empty<object>();
             Queue<SenderEventPair> eventQueue = new();
             var builder = new List<string>();
 
-            var items = new ObservableQueryFilterSource<SelectableQFModelLTOQO>
+            var items = new ObservableQueryFilterSource<SelectableQFModel>
             {
                 MemoryDatabase = InitializeInMemoryDatabase()
             };
@@ -3108,6 +3109,17 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
             };
             items.InputTextSettled += async (sender, e) =>
             {
+                switch (items.FilteringState)
+                {
+                    case FilteringState.Ineligible:
+                        break;
+                    case FilteringState.Armed:
+                        break;
+                    case FilteringState.Active:
+                        break;
+                    default:
+                        break;
+                }
             };
             items.CollectionChanged += (sender, e) =>
             {
@@ -3165,7 +3177,6 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 expected = @" 
 NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                 ;
-                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -3201,9 +3212,6 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                     "Expecting 12 animal matches."
                 );
 
-                // After testing both schemes, "no self-own" is the clear winner.
-                const bool SELF_OWN_ONP = false;
-
                 // As a product of the CollectionChangedEvent this
                 // is representative of what we'd see in the visible list.
                 actual = string.Join(Environment.NewLine, newItems.Cast<object>().Select(_ => _.ToString()));
@@ -3229,6 +3237,10 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     actual.NormalizeResult(),
                     "Expecting new items payload as reported."
                 );
+
+                items.InputText += " ca";
+                await items;
+                { }
             }
 
             async Task subtestAppendAndRequery()
