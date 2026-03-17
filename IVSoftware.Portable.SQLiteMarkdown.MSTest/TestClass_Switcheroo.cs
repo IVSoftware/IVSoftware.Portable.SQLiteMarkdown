@@ -492,14 +492,14 @@ MarkdownContext Clear(all=True)";
 
             public NetProjectionOption ProjectionOption
             {
-                get => ((IMarkdownContext)_mdc).ProjectionOption;
-                set => ((IMarkdownContext)_mdc).ProjectionOption = value;
+                get => ((IModeledMarkdownContext)_mdc).ProjectionOption;
+                set => ((IModeledMarkdownContext)_mdc).ProjectionOption = value;
             }
 
             public ReplaceItemsEventingOption ReplaceItemsEventingOptions
             {
-                get => ((IMarkdownContext)_mdc).ReplaceItemsEventingOptions;
-                set => ((IMarkdownContext)_mdc).ReplaceItemsEventingOptions = value;
+                get => ((IModeledMarkdownContext)_mdc).ReplaceItemsEventingOptions;
+                set => ((IModeledMarkdownContext)_mdc).ReplaceItemsEventingOptions = value;
             }
 
             public CollectionChangeAuthority Authority => ((IMarkdownContext)_mdc).Authority;

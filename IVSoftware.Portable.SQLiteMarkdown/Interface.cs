@@ -218,26 +218,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         #endregion B I N D A B L E    P R O P E R T I E S
 
-        #region C O N F I G U R A T I O N    P R O P E R T I E S
+        #region C O N F I G U R A T I O N
         /// <summary>
         /// Constrains the state machine to Query or Filter semantics only, or give the FSM full access to both.
         /// </summary>
         QueryFilterConfig QueryFilterConfig { get; set; }
-
-        /// <summary>
-        /// OPT-IN that allows MarkdownContext to modify the ObservableNetCollection directly.
-        /// </summary>
-        NetProjectionOption ProjectionOption { get; set; }
-
-        /// <summary>
-        /// Determines whether filter update events are provided as structural changes
-        /// with old-new item semantics, alternatively as a bulk reset, or both.
-        /// </summary>
-        /// <remarks>
-        /// Some UI platforms respond more efficiently to a raw reset.
-        /// </remarks>
-        ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; }
-        #endregion C O N F I G U R A T I O N    P R O P E R T I E S
+        #endregion C O N F I G U R A T I O N
 
         /// <summary>
         /// Describes the wiring between the canonical XML model and the net ("seen") projection.
@@ -351,6 +337,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Provides the current table names of the internal SQLite database used for filtering.
         /// </summary>
         string[] GetTableNames();
+    }
+
+    public interface IModeledMarkdownContext : IMarkdownContext
+    {
+        #region C O N F I G U R A T I O N    P R O P E R T I E S
+
+        /// <summary>
+        /// OPT-IN that allows MarkdownContext to modify the ObservableNetCollection directly.
+        /// </summary>
+        NetProjectionOption ProjectionOption { get; set; }
+
+        /// <summary>
+        /// Determines whether filter update events are provided as structural changes
+        /// with old-new item semantics, alternatively as a bulk reset, or both.
+        /// </summary>
+        /// <remarks>
+        /// Some UI platforms respond more efficiently to a raw reset.
+        /// </remarks>
+        ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; }
+        #endregion C O N F I G U R A T I O N    P R O P E R T I E S
     }
 
     /// <summary>
