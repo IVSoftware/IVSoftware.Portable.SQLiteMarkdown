@@ -74,26 +74,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 }
             }
 
-            Add("Brown Dog", "[canine] [color]", false, new() { "loyal", "friend", "furry" });
-            Add("Green Apple", "[fruit] [color]", false, new() { "tart", "snack", "healthy" });
-            Add("Yellow Banana", "[fruit] [color]", false);
-            Add("Blue Bird", "[bird] [color]", false, new() { "sky", "feathered", "song" });
-            Add("Red Cherry", "[fruit] [color]", false, new() { "sweet", "summer", "dessert" });
-            Add("Black Cat", "[animal] [color]", false);
-            Add("Orange Fox", "[animal] [color]", false);
-            Add("White Rabbit", "[animal] [color]", false, new() { "bunny", "soft", "jump" });
-            Add("Purple Grape", "[fruit] [color]", false);
-            Add("Gray Wolf", "[animal] [color]", false, new() { "pack", "howl", "wild" });
-            Add("Pink Flamingo", "[bird] [color]", false);
-            Add("Golden Lion", "[animal] [color]", false);
-            Add("Brown Bear", "[animal] [color]", false, new() { "strong", "wild", "forest" });
-            Add("Green Pear", "[fruit] [color]", false);
-            Add("Red Strawberry", "[fruit] [color]", false);
-            Add("Black Panther", "[animal] [color]", false, new() { "stealthy", "feline", "night" });
-            Add("Yellow Lemon", "[fruit] [color]", false);
-            Add("White Swan", "[bird] [color]", false);
-            Add("Purple Plum", "[fruit] [color]", false);
-            Add("Blue Whale", "[marine-mammal] [ocean]", false, new() { "ocean", "mammal", "giant" });
+            Add("Brown Dog", "[canine][color]", false, new() { "loyal", "friend", "furry" });
+            Add("Green Apple", "[fruit][color]", false, new() { "tart", "snack", "healthy" });
+            Add("Yellow Banana", "[fruit][color]", false);
+            Add("Blue Bird", "[bird][color]", false, new() { "sky", "feathered", "song" });
+            Add("Red Cherry", "[fruit][color]", false, new() { "sweet", "summer", "dessert" });
+            Add("Black Cat", "[animal][color]", false);
+            Add("Orange Fox", "[animal][color]", false);
+            Add("White Rabbit", "[animal][color]", false, new() { "bunny", "soft", "jump" });
+            Add("Purple Grape", "[fruit][color]", false);
+            Add("Gray Wolf", "[animal][color]", false, new() { "pack", "howl", "wild" });
+            Add("Pink Flamingo", "[bird][color]", false);
+            Add("Golden Lion", "[animal][color]", false);
+            Add("Brown Bear", "[animal][color]", false, new() { "strong", "wild", "forest" });
+            Add("Green Pear", "[fruit][color]", false);
+            Add("Red Strawberry", "[fruit][color]", false);
+            Add("Black Panther", "[animal][color]", false, new() { "stealthy", "feline", "night" });
+            Add("Yellow Lemon", "[fruit][color]", false);
+            Add("White Swan", "[bird][color]", false);
+            Add("Purple Plum", "[fruit][color]", false);
+            Add("Blue Whale", "[marine-mammal][ocean]", false, new() { "ocean", "mammal", "giant" });
             Add("Elephant", "[animal]", false, new() { "trunk", "herd", "safari" });
             Add("Pineapple", "[fruit]", false);
             Add("Shark", "[fish]", false);

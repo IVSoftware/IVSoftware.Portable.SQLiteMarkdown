@@ -13,7 +13,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         public MainForm()
         {
             InitializeComponent();
-            QFSUT = new ObservableQueryFilterSource<SelectableQFModel>();
+            QFSUT = new QFSUT();
             QFSUT.ItemPropertyChanged += (sender, e) =>
             {
             };
@@ -222,8 +222,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
         /// <summary>
         /// QSF Under Test for ad hoc states and expr evals.
         /// </summary>
-        private ObservableQueryFilterSource<SelectableQFModel> QFSUT { get; }
+        private QFSUT QFSUT { get; }
 
-        public static Font IconBasics11 { get; private set; }
+        public static Font? IconBasics11 { get; private set; }
+    }
+    class QFSUT : ObservableQueryFilterSource<SelectableQFModel> 
+    {
+        public new FilteringState FilteringStateForTest
+        {
+            get => FilteringState;
+            set
+            {
+                FilteringState = value;
+            }
+        }
     }
 }
