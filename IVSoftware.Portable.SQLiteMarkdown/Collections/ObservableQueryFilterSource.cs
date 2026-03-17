@@ -31,7 +31,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
     [DebuggerDisplay("Count={Count}")]
     public partial class ObservableQueryFilterSource<T>
-        : MarkdownContext<T>
+        : ModeledMarkdownContext<T>
         , IObservableQueryFilterSource<T>
         , IList<T>
         where T : new()
@@ -543,10 +543,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
         public void Clear() => base.Clear(all: true);
 
-        public new FilteringState Clear(bool all = false)
+#if false
+        public new FilteringState Clear(bool all)
         {
-            var fsBase = base.Clear(all);
-            if (fsBase < FilteringState.Armed)
+            var fsmAfterClear = base.Clear(all);
+            if (fsmAfterClear < FilteringState.Armed)
             {
                 // [Careful] 
                 // If we're responding to FilteringState changed to clear the
@@ -554,8 +555,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 // add-remove changes to Items will bypass the input state machine. 
                 CanonicalSupersetProtected.Clear();
             }
-            return fsBase;
+            return fsmAfterClear;
         }
+#endif
 
         public bool Contains(T item) { return CanonicalSupersetProtected.Contains(item); }
 
@@ -766,7 +768,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             base.OnSearchEntryStateChanged();
             if (SearchEntryState == SearchEntryState.Cleared)
             {
-                CanonicalSupersetProtected.Clear();
+                Clear();
             }
         }
 
@@ -783,43 +785,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             RouteToFullRecordset 
             ? CanonicalSuperset 
             : PredicateMatchSubset;
-
-        public IReadOnlyList<T> CanonicalSuperset
-        {
-            get
-            {
-                if (_canonicalSuperset is null)
-                {
-                    _canonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetProtected);
-                }
-                return _canonicalSuperset;
-            }
-        }
-        IReadOnlyList<T>? _canonicalSuperset = null;
-
-        /// <summary>
-        /// Factory-backed canonical superset used by the back-end event pipeline 
-        /// even when the visible ObservableNetProjection is filtered or divergent.
-        /// </summary>
-        /// <remarks>
-        /// This collection represents the authoritative recordset for the current epoch.
-        /// The ObservableNetProjection may expose a filtered or reordered view for UI
-        /// interaction, but all structural reconciliation ultimately resolves against
-        /// this canonical superset.
-        /// </remarks>
-        public ObservableCollection<T> CanonicalSupersetProtected
-        {
-            get
-            {
-                if (_canonicalSupersetProtected is null)
-                {
-                    _canonicalSupersetProtected = new ObservableCollection<T>();
-                    _canonicalSupersetProtected.CollectionChanged += OnCanonicalSupersetChanged;
-                }
-                return _canonicalSupersetProtected;
-            }
-        }
-        ObservableCollection<T>? _canonicalSupersetProtected = null;
 
         public new IEnumerator<T> GetEnumerator() => RoutedRecordset.Cast<T>().GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }

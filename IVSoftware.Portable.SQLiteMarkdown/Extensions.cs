@@ -1,24 +1,14 @@
-﻿using IVSoftware.Portable;
-using IVSoftware.Portable.Common.Attributes;
+﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.Xml.Linq;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using SQLite;
-using SQLitePCL;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
@@ -252,9 +242,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 @this
                 .Split(delimiter)
                 .Where(_ => !string.IsNullOrWhiteSpace(_));
-            return string.Join(string.Empty, split.Select(_ => _.EncloseInSquareBrackets().ApplyCasing(stringCasing)));
+
+            var preview = 
+                InsertSpaceBetweenTags
+                ? string.Join(" ", split.Select(_ => _.EncloseInSquareBrackets().ApplyCasing(stringCasing)))
+                : string.Join(string.Empty, split.Select(_ => _.EncloseInSquareBrackets().ApplyCasing(stringCasing)));
+            return preview;
         }
 
+        internal static bool InsertSpaceBetweenTags { get; set; } = true;
         /// <summary>
         /// Normalizes a tag string into canonical bracketed form by detecting
         /// the applicable tag grammar.
@@ -273,6 +269,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <returns>A canonical bracketed tag string.</returns>
         public static string NormalizeTags(this string value)
         {
+            string preview;
             if (string.IsNullOrWhiteSpace(value))
             {
                 return string.Empty;
@@ -281,7 +278,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // 1. Explicit bracket grammar wins
             if (TryParseBracketGrammar(value, out var bracketTokens))
             {
-                return string.Concat(bracketTokens.Select(t => $"[{t}]"));
+                preview =
+                    InsertSpaceBetweenTags
+                    ? string.Concat(bracketTokens.Select(t => $" [{t}]")).TrimStart()
+                    : string.Concat(bracketTokens.Select(t => $"[{t}]"));
+                return preview;
             }
 
             // 2. Known delimiter grammar
@@ -313,7 +314,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 value
                     .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-            return string.Concat(tokens.Select(t => $"[{t}]"));
+            preview = 
+                InsertSpaceBetweenTags
+                ? string.Concat(tokens.Select(t => $" [{t}]")).TrimStart()
+                : string.Concat(tokens.Select(t => $"[{t}]"));
+            return preview;
         }
 
         private static bool TryParseBracketGrammar(string input, out IEnumerable<string> tokens)

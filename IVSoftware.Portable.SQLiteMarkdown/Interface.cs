@@ -160,10 +160,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
     [Careful("Must *never* implement INotifyCollectionChanged - this is reserved to detect inheritance..")]
-    [PublishedContract("2.0.0-alpha23", typeof(IMarkdownContext))]
+    [PublishedContract("2.0.0-alpha25", typeof(IMarkdownContext))]
     public interface IMarkdownContext
     {
         #region P A R S E
+        /// <summary>
+        /// The canonical contract type that defines the authoritative table shape for this context.
+        /// </summary>
+        Type ContractType { get; }
+
+        /// <summary>
+        /// The type whose attributes define the parsing behavior.
+        /// </summary>
+        /// <remarks>
+        /// Must be a non-interface type. Abstract types are permitted.
+        /// The proxy type must resolve to the same underlying table as <see cref="ContractType"/>.
+        /// 
+        /// Multiple proxy types may target the same table schema, each providing a different
+        /// attribute-driven interpretation for parsing and filtering.
+        /// </remarks>
+        Type ProxyType { get; }
+
         /// <summary>
         /// Use the current value of InputText to parse an expression against ContractType.
         /// </summary>
@@ -172,19 +189,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         string ParseSqlMarkdown<T>();
         string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query);
 
-        void Commit();
-        #endregion P A R S E
-
         /// <summary>
-        /// Maintains the canonical recordset as a hierarchy.
+        /// Parses the current <see cref="InputText"/> and raises the <see cref="RecordsetRequest"/> event.
         /// </summary>
         /// <remarks>
-        /// - The string value of the property designated as the PK is 
-        ///   used as the address in the item.
-        /// - For item types that support a FullPath property, the
-        ///   model can also represent depth.
+        /// Represents the transition point between input parsing and recordset acquisition.
+        /// Subscribers may use the current SQL expression to supply a recordset, but are not required to do so.
+        ///
+        /// This method defines the execution boundary for Query mode. Unlike Filter mode, which
+        /// applies changes after a debounced settling interval, Query mode does not impose a
+        /// settling timeout on input changes and instead requires an explicit commit.
         /// </remarks>
-        XElement Model { get; }
+        void Commit();
+        #endregion P A R S E
 
         #region B I N D A B L E    P R O P E R T I E S
 
@@ -218,38 +235,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         #endregion B I N D A B L E    P R O P E R T I E S
 
-        #region C O N F I G U R A T I O N    P R O P E R T I E S
+        #region C O N F I G U R A T I O N
         /// <summary>
         /// Constrains the state machine to Query or Filter semantics only, or give the FSM full access to both.
         /// </summary>
         QueryFilterConfig QueryFilterConfig { get; set; }
-
-        /// <summary>
-        /// OPT-IN that allows MarkdownContext to modify the ObservableNetCollection directly.
-        /// </summary>
-        NetProjectionOption ProjectionOption { get; set; }
-
-        /// <summary>
-        /// Determines whether filter update events are provided as structural changes
-        /// with old-new item semantics, alternatively as a bulk reset, or both.
-        /// </summary>
-        /// <remarks>
-        /// Some UI platforms respond more efficiently to a raw reset.
-        /// </remarks>
-        ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; }
-        #endregion C O N F I G U R A T I O N    P R O P E R T I E S
-
-        /// <summary>
-        /// Describes the wiring between the canonical XML model and the net ("seen") projection.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model: "What is 'this'?"
-        /// If 'this' *is-a* MarkdownContext,
-        /// Then canon is projected by redirecting enumeration.
-        /// If 'this' *has-a* MarkdownContext and *is-a* bound enumerable,
-        /// Then the surface is always net, and canon is projected by copying as needed.
-        /// </remarks>
-        ProjectionTopology ProjectionTopology { get; }
+        #endregion C O N F I G U R A T I O N
 
         /// <summary>
         /// Default LIMIT term for SQLite term generation.
@@ -272,6 +263,78 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         event EventHandler? InputTextSettled;
 
+        #region D I S P O S A B L E
+        /// <summary>
+        /// Bindable property that returns true when the busy count is < 1;
+        /// </summary>
+        bool Busy { get; }
+
+        /// <summary>
+        /// Increments the internal busy count and returns a disposable token to decrement it on dispose.
+        /// </summary>
+        IDisposable BeginBusy();
+
+        #endregion D I S P O S A B L E
+
+        /// <summary>
+        /// Gets the total number of items in the canonical ledger.
+        /// </summary>
+        int CanonicalCount { get; }
+
+        /// <summary>
+        /// Gets the number of canonical items that satisfy the active predicate.
+        /// </summary>
+        int PredicateMatchCount { get; }
+
+        /// <summary>
+        /// Provides the current table names of the internal SQLite database used for filtering.
+        /// </summary>
+        string[] GetTableNames();
+    }
+
+    public interface IModeledMarkdownContext : IMarkdownContext
+    {
+        /// <summary>
+        /// Describes the wiring between the canonical XML model and the net ("seen") projection.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "What is 'this'?"
+        /// If 'this' *is-a* MarkdownContext,
+        /// Then canon is projected by redirecting enumeration.
+        /// If 'this' *has-a* MarkdownContext and *is-a* bound enumerable,
+        /// Then the surface is always net, and canon is projected by copying as needed.
+        /// </remarks>
+        ProjectionTopology ProjectionTopology { get; }
+
+        #region C O N F I G U R A T I O N    P R O P E R T I E S
+
+        /// <summary>
+        /// OPT-IN that allows MarkdownContext to modify the ObservableNetCollection directly.
+        /// </summary>
+        NetProjectionOption ProjectionOption { get; set; }
+
+        /// <summary>
+        /// Determines whether filter update events are provided as structural changes
+        /// with old-new item semantics, alternatively as a bulk reset, or both.
+        /// </summary>
+        /// <remarks>
+        /// Some UI platforms respond more efficiently to a raw reset.
+        /// </remarks>
+        ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; }
+        #endregion C O N F I G U R A T I O N    P R O P E R T I E S
+
+        #region M O D E L
+        /// <summary>
+        /// Maintains the canonical recordset as a hierarchy.
+        /// </summary>
+        /// <remarks>
+        /// - The string value of the property designated as the PK is 
+        ///   used as the address in the item.
+        /// - For item types that support a FullPath property, the
+        ///   model can also represent depth.
+        /// </remarks>
+        XElement Model { get; }
+
         /// <summary>
         /// Requests that an external host raise a collection change notification.
         /// </summary>
@@ -285,12 +348,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Mental Model: "Filtering model has been reconfigured. Ask the host to raise INCC."
         /// </remarks>
         event NotifyCollectionChangedEventHandler ModelSettled;
+        #endregion M O D E L
 
         #region P R O J E C T I O N
         /// <summary>
         /// Represents a bindable and observable collection representing 'net visible' filtered items.
         /// </summary>
-        INotifyCollectionChanged? ObservableNetProjection { get;  set; }
+        INotifyCollectionChanged? ObservableNetProjection { get; set; }
 
         /// <summary>
         /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
@@ -310,7 +374,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Task LoadCanonAsync(IEnumerable? recordset);
         #endregion P R O J E C T I O N
 
-        #region D I S P O S A B L E S
+        #region D I S P O S A B L E
         /// <summary>
         /// Guards receptivity of the unfiltered items collection.
         /// </summary> 
@@ -324,33 +388,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         CollectionChangeAuthority Authority { get; }
 
-        /// <summary>
-        /// Bindable property that returns true when the busy count is < 1;
-        /// </summary>
-        bool Busy { get; }
-
-        /// <summary>
-        /// Increments the internal busy count and returns a disposable token to decrement it on dispose.
-        /// </summary>
-        IDisposable BeginBusy();
-
-        #endregion D I S P O S A B L E S
-
-
-        /// <summary>
-        /// Gets the total number of items in the canonical ledger.
-        /// </summary>
-        int CanonicalCount { get; }
-
-        /// <summary>
-        /// Gets the number of canonical items that satisfy the active predicate.
-        /// </summary>
-        int PredicateMatchCount { get; }
-
-        /// <summary>
-        /// Provides the current table names of the internal SQLite database used for filtering.
-        /// </summary>
-        string[] GetTableNames();
+        #endregion D I S P O S A B L E
     }
 
     /// <summary>
@@ -367,7 +405,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </c>
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
-    [PublishedContract("2.0.0-alpha23", typeof(IPredicateMarkdownContext))]
+    [PublishedContract("2.0.0-alpha25", typeof(IPredicateMarkdownContext))]
     public interface IPredicateMarkdownContext : IMarkdownContext
     {
         /// <summary>

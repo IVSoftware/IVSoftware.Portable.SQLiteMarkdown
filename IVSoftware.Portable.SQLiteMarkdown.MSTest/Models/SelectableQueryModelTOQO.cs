@@ -56,6 +56,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
             get => _tags;
             set
             {
+                value = value.NormalizeTags();
                 if (!Equals(_tags, value))
                 {
                     _tags = value;

@@ -22,7 +22,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 .GetEnumerator();
         }
     }
-    partial class MarkdownContext<T> : IEnumerable<T>
+    partial class ModeledMarkdownContext<T> : IEnumerable<T>
     {
         public new IEnumerator<T> GetEnumerator() => (IEnumerator<T>) base.GetEnumerator();
     }

@@ -137,7 +137,7 @@ public class TestClass_PredicateMarkdownContext
         #region S U B T E S T S
         void subtest_TriggerBy_ProjectionBeforeState()
         {
-            var mdc = new MarkdownContext<SelectableQFModel>
+            var mdc = new ModeledMarkdownContext<SelectableQFModel>
             {
                 ObservableNetProjection = (INotifyCollectionChanged)opc,
             };
@@ -173,7 +173,7 @@ public class TestClass_PredicateMarkdownContext
         }
         void subtest_TriggerBy_StateBeforeProjection()
         {
-            var mdc = new MarkdownContext<SelectableQFModel>
+            var mdc = new ModeledMarkdownContext<SelectableQFModel>
             {
                 QueryFilterConfig = QueryFilterConfig.Filter,
             };

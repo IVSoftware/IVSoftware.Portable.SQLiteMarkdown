@@ -3,7 +3,6 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
-using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
@@ -11,11 +10,11 @@ using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -57,35 +56,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 XElement(nameof(StdAstNode.ast))
                 .WithBoundAttributeValue(this);
             ContractType = type;
-
-            // Self-detect the topology.
-            // - RTTI claims INotifyCollectionChange implementation.
-            // - This class, however, doesn't do that on its own.
-            // - Inheritance is the only possibility.
-            _isInherited = typeof(INotifyCollectionChanged).IsAssignableFrom(GetType());
-            if(_isInherited)
-            {
-                if (this.GetType().GetMethod(nameof(Clear), Type.EmptyTypes) is { } clearMethod)
-                {   /* B C S - N O O P */
-                }
-                else
-                {
-                    // Avoid leaking the object itself as the awaited sender.
-                    nameof(MarkdownContext).Advisory(
-                        $"Inherited MarkdownContext detected, but no parameterless Clear() was found. " +
-                        "Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. " +
-                        "If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. " +
-                        "You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit."
-                    );
-                }
-            }
-            
-            // Construct the predicate subset with the correct element type
-            // that ensures a cast to IReadOnlyList<T> will succeed.
-            PredicateMatchSubsetPrivate = (IList)Activator.CreateInstance(
-                typeof(List<>).MakeGenericType(type)
-            )!;
         }
+
+        // Avoids exposing the MDC itself on the static Throw event.
+        protected Throw ThrowHard<T>(string messageOrId) => nameof(MarkdownContext).ThrowHard<T>(messageOrId);
+        protected Throw ThrowFramework<T>(string messageOrId) => nameof(MarkdownContext).ThrowFramework<T>(messageOrId);
+
+        public virtual XElement Model { get; } = new XElement(nameof(StdMarkdownElement.model));
 
         /// <summary>
         /// Semantic clarity for Interval, which comes from inheriting WatchDogTimer.
@@ -115,9 +92,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         TimeSpan _interval = default;
-
-        private IList PredicateMatchSubsetPrivate { get; }
-        public ICollection PredicateMatchSubset => PredicateMatchSubsetPrivate;
 
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
 
@@ -1592,33 +1566,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected bool _isFiltering = false;
 
         /// <summary>
-        /// True when InputText is empty regardless of IsFiltering.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model:
-        /// "If the input text is empty, just swap the handle instead of recalculating."
-        /// Functional Behavior:
-        /// - External predicate filters must still run even if IME doesn't contribute.
-        /// - This is the purview of the subclass. Override for full control.
-        /// </remarks>
-        public virtual bool RouteToFullRecordset
-        {
-            get
-            {
-                if(InputText.Trim().Length == 0)
-                {
-                    return true;
-                }
-                int
-                    autocount = Model.GetAttributeValue<int>(StdMarkdownAttribute.autocount, 0),
-                    matches = Model.GetAttributeValue<int>(StdMarkdownAttribute.matches, 0);
-                return autocount == matches;
-            }
-        }
-
-        bool _routeToFullRecordset = true;
-
-        /// <summary>
         /// Catch and release heuristic for canonical ObservableNetProjection entering and leaving IsFiltered state.
         /// </summary>
         protected virtual void OnIsFilteringChanged() { }
@@ -2032,15 +1979,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         SearchEntryState _searchEntryState = default;
 
-        protected virtual void OnSearchEntryStateChanged() 
-        {
-            if (SearchEntryState == SearchEntryState.Cleared)
-            {
-                if (Equals(ReservedFSMState.FastTrack, RunFSM<NativeClearFSM>()))
-                {   /* G T K */
-                }
-            }
-        }
+        protected virtual void OnSearchEntryStateChanged() { }
 
 #if DEBUG
         protected SemaphoreSlimWithTrace _ready { get; } = new SemaphoreSlimWithTrace(1, 1);
@@ -2072,129 +2011,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         public event EventHandler? InputTextSettled;
-
-        SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
-        protected virtual async Task ApplyFilter()
-        {
-            using (DHostBusy.GetToken())
-            {
-                await _sslimAF.WaitAsync();
-                try
-                {
-                    string sql;
-                    IList matches = Array.Empty<object>();
-                    string[] matchPaths;
-
-                    await Task.Run(async () =>
-                    {
-                        PredicateMatchSubsetPrivate.Clear();
-                        Model.RemoveDescendantAttributes(StdMarkdownAttribute.ismatch);
-
-                        #region F I L T E R    Q U E R Y
-                        sql = ParseSqlMarkdown();
-#if DEBUG
-                        if (InputText == "b")
-                        {
-                            Debug.Assert(sql == @"
-SELECT * FROM items WHERE
-(FilterTerm LIKE '%b%')".TrimStart(),
-                            "PROBABLY *NOT* BUGIRL - SCREENING FOR A SPURIOUS FAIL");
-                        }
-#endif
-                        // Execute the filter query against the proxy table. The returned rows are
-                        // lightweight proxy records used only to discover which canonical models
-                        // satisfy the predicate. These proxy instances are not inserted into the
-                        // projection; instead their paths are resolved back to the original model
-                        // objects bound in the AST.
-                        matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
-                        #endregion F I L T E R    Q U E R Y
-
-                        Model.SetAttributeValue(StdMarkdownAttribute.matches, (matchPaths = localGetPaths()).Length);
-
-                        foreach (var path in matchPaths)
-                        {
-                            switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
-                            {
-                                case PlacerResult.Exists:
-                                    xaf.SetAttributeValue(nameof(StdMarkdownAttribute.ismatch), bool.TrueString);
-                                    if (xaf.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
-                                        && xbaModel.Tag is { } model)
-                                    {
-                                        PredicateMatchSubsetPrivate.Add(model);
-                                    }
-                                    break;
-                                case PlacerResult.Created:
-                                    this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                        if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
-                        {
-                            await ApplyAffinities(matches);
-                        }
-                    });
-
-                    var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangedReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
-
-                    if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
-                    {
-                        OnModelSettled(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
-                            reason: NotifyCollectionChangedReason.ApplyFilter,
-                            e: eStructural));
-                    }
-                    if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
-                    {
-                        OnModelSettled(eReset);
-                    }
-
-#if ABSTRACT
-            // EXAMPLE<model autocount="3" count="3" matches="1">
-              <xitem text="312d1c21-0000-0000-0000-000000000001" model="[SelectableQFModelLTOQO]" sort="0" />
-              <xitem text="312d1c21-0000-0000-0000-00000000002c" model="[SelectableQFModelLTOQO]" sort="1" />
-              <xitem text="312d1c21-0000-0000-0000-00000000002e" model="[SelectableQFModelLTOQO]" sort="2" ismatch="True" />
-            </model>
-#endif
-
-
-                    #region L o c a l F x
-
-                    /// <summary>
-                    /// Resolves the path identifiers for the matched recordset. When the proxy
-                    /// implements <c>IPrioritizedAffinity</c>, paths are taken directly from
-                    /// <c>FullPath</c>; otherwise the value of the mapped SQLite primary key is
-                    /// used. A missing primary key mapping is treated as a framework error.
-                    /// </summary>
-                    string[] localGetPaths()
-                    {
-                        if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
-                        {
-                            return matches.Cast<IPrioritizedAffinity>().Select(_ => _.FullPath).ToArray();
-                        }
-                        else
-                        {
-                            if (ProxyType.GetSQLiteMapping().PK?.PropertyInfo is PropertyInfo pi)
-                            {
-                                return matches.Cast<object>().Select(_ => (string)pi.GetValue(_)).ToArray();
-                            }
-                            // Error fall-through.
-                            this.ThrowHard<InvalidOperationException>();
-                            return [];
-                        }
-                    }
-                    #endregion L o c a l F x
-                }
-                catch (Exception ex)
-                {
-                    this.RethrowHard(ex);
-                }
-                finally
-                {
-                    _sslimAF.Release();
-                }
-            }
-        }
+        protected virtual async Task ApplyFilter() { }
 
         /// <summary>
         /// Apply priorities where temporality may be involved.

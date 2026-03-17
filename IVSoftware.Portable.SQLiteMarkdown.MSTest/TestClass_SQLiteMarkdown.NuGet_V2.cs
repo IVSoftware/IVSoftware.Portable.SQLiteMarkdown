@@ -65,7 +65,7 @@ Materialized Path Policy violation: Path must end with Id."
     {
         string actual, expected;
 
-        MarkdownContext<SelectableQFModel> mdc = new();
+        ModeledMarkdownContext<SelectableQFModel> mdc = new();
         Assert.IsNotNull(mdc.ContractType);
     }
 
@@ -180,7 +180,7 @@ Materialized Path Policy violation: Path must end with Id."
             actual.ToClipboardExpected();
             { }
             expected = @" 
-hello~world~standard~greeting~[intro][101]"
+hello~world~standard~greeting~[intro]~[101]"
             ;
 
             Assert.AreEqual(
@@ -193,7 +193,7 @@ hello~world~standard~greeting~[intro][101]"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-hello~world~standard~greeting~[intro][101]"
+hello~world~standard~greeting~[intro]~[101]"
             ;
 
             Assert.AreEqual(
@@ -206,7 +206,7 @@ hello~world~standard~greeting~[intro][101]"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[intro][101]"
+[intro] [101]"
             ;
 
             Assert.AreEqual(
@@ -227,7 +227,7 @@ hello~world~standard~greeting~[intro][101]"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-hello~world!~standard~greeting~[intro][101]"
+hello~world!~standard~greeting~[intro]~[101]"
             ;
 
             Assert.AreEqual(
@@ -240,7 +240,7 @@ hello~world!~standard~greeting~[intro][101]"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-hello~world!~standard~greeting~[intro][101]"
+hello~world!~standard~greeting~[intro]~[101]"
             ;
 
             Assert.AreEqual(
@@ -253,7 +253,7 @@ hello~world!~standard~greeting~[intro][101]"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[intro][101]"
+[intro] [101]"
             ;
 
             Assert.AreEqual(
@@ -273,7 +273,7 @@ hello~world!~standard~greeting~[intro][101]"
     {
         string actual, expected, sql;
 
-        var mdc = new MarkdownContext<SelectableQFModel>();
+        var mdc = new ModeledMarkdownContext<SelectableQFModel>();
 
         using (var cnx = new SQLiteConnection(":memory:"))
         {
@@ -406,7 +406,7 @@ SELECT * FROM items WHERE
                 Throw.BeginThrowOrAdvise -= localOnEvent;
             });
 
-        MarkdownContext<SelectableQFModel> mdc;
+        ModeledMarkdownContext<SelectableQFModel> mdc;
 
         subtest_AssertCtorNoFQD();
 
@@ -467,7 +467,7 @@ SELECT * FROM items WHERE
         void subtest_IsWeakProxy()
         {
             // PREREQUISITE FOR ANY PROXY
-            var mdc = new MarkdownContext<SelectableQFModel>();
+            var mdc = new ModeledMarkdownContext<SelectableQFModel>();
 
             // Because ItemCardModel is a subclass of SelectableQFModel
             // it *is* a weak proxy by inheritance. But it's still a
@@ -492,7 +492,7 @@ SELECT * FROM items WHERE
         void subtest_IsTrueProxy()
         {
             // PREREQUISITE FOR ANY PROXY
-            var mdc = new MarkdownContext<SelectableQFModel>();
+            var mdc = new ModeledMarkdownContext<SelectableQFModel>();
 
             // Because ItemCardModel is a subclass of SelectableQFModel
             // it *is* a weak proxy by inheritance. But it's still a
@@ -517,7 +517,7 @@ SELECT * FROM items WHERE
         void subtest_IsTrueProxyWithExtendSchema()
         {
             // PREREQUISITE FOR ANY PROXY
-            var mdc = new MarkdownContext<SelectableQFModel>();
+            var mdc = new ModeledMarkdownContext<SelectableQFModel>();
 
             // Because ItemCardModel is a subclass of SelectableQFModel
             // it *is* a weak proxy by inheritance. But it's still a
@@ -560,7 +560,7 @@ SELECT * FROM items WHERE
             #endregion L o c a l F x
 
             // PREREQUISITE FOR ANY PROXY
-            var mdc = new MarkdownContext<SelectableQFModel>();
+            var mdc = new ModeledMarkdownContext<SelectableQFModel>();
 
             // Because ItemCardModel is a subclass of SelectableQFModel
             // it *is* a weak proxy by inheritance. But it's still a

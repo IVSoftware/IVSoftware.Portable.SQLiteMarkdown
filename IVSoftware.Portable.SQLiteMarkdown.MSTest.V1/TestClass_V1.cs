@@ -17,7 +17,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.V1
         {
             string actual, expected;
 
-            var asmFullName = typeof(MarkdownContext<SelectableQFModel>).Assembly.FullName;
+            var asmFullName = typeof(MarkdownContext<SelectableQFModel>).Assembly.FullName!;
 
             actual = asmFullName;
             actual.ToClipboardExpected();
@@ -32,6 +32,7 @@ IVSoftware.Portable.SQLiteMarkdown, Version=1.0.1.0, Culture=neutral, PublicKeyT
             );
 
             MarkdownContext<SelectableQFModel> mdc = new();
+            
             var cnx = mdc.MemoryDatabase;
 
             var ct = mdc.ContractType;

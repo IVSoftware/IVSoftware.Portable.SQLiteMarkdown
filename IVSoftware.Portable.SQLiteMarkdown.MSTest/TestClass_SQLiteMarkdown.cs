@@ -398,7 +398,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             var extQueryHandle = default(List<PrioritizedAffinityQFModel>);
             int COUNT;
 
-            var mdc = new MarkdownContext<PrioritizedAffinityQFModel>();
+            var mdc = new ModeledMarkdownContext<PrioritizedAffinityQFModel>();
 
             actual = mdc.StateReport();
             actual.ToClipboardExpected();
@@ -673,7 +673,7 @@ InputText"
             const int COUNT = 2;
             var extQueryHandle = default(List<SelectableQFModel>);
 
-            var mdc = new MarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
+            var mdc = new ModeledMarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
             actual = mdc.StateReport();
             actual.ToClipboardExpected();
             { }
@@ -785,7 +785,7 @@ InputText"
 
             var extQueryHandle = default(List<SelectableQFModel>).PopulateForDemo(2);
 
-            MarkdownContext<SelectableQFModel> mdc;
+            ModeledMarkdownContext<SelectableQFModel> mdc;
 
             subtest_ConfigureThenLoad();
 
@@ -949,12 +949,12 @@ InputText"
     ""Id"": ""38CFE38E-0D90-4C9F-A4E5-845089CB2BB0"",
     ""FirstName"": ""Tom"",
     ""LastName"": ""Tester"",
-    ""Tags"": ""[c# .net maui][c# wpf][c# winforms]"",
+    ""Tags"": ""[c# .net maui] [c# wpf] [c# winforms]"",
     ""PrimaryKey"": ""38CFE38E-0D90-4C9F-A4E5-845089CB2BB0"",
     ""QueryTerm"": ""tom~tester"",
     ""FilterTerm"": ""tom~tester"",
-    ""TagMatchTerm"": ""[c# .net maui][c# wpf][c# winforms]"",
-    ""Properties"": ""{  \""FirstName\"": \""Tom\"",  \""LastName\"": \""Tester\"",  \""Tags\"": \""[c# .net maui][c# wpf][c# winforms]\""}""
+    ""TagMatchTerm"": ""[c# .net maui] [c# wpf] [c# winforms]"",
+    ""Properties"": ""{  \""FirstName\"": \""Tom\"",  \""LastName\"": \""Tester\"",  \""Tags\"": \""[c# .net maui] [c# wpf] [c# winforms]\""}""
   }
 ]"
                 ;
@@ -1006,12 +1006,12 @@ InputText"
     ""Id"": ""38CFE38E-0D90-4C9F-A4E5-845089CB2BB0"",
     ""FirstName"": ""Tom"",
     ""LastName"": ""Tester"",
-    ""Tags"": ""[c# .net maui][c# wpf][c# winforms]"",
+    ""Tags"": ""[c# .net maui] [c# wpf] [c# winforms]"",
     ""PrimaryKey"": ""38CFE38E-0D90-4C9F-A4E5-845089CB2BB0"",
     ""QueryTerm"": ""tom~tester"",
     ""FilterTerm"": ""tom~tester"",
-    ""TagMatchTerm"": ""[c# .net maui][c# wpf][c# winforms]"",
-    ""Properties"": ""{\r\n  \""FirstName\"": \""Tom\"",\r\n  \""LastName\"": \""Tester\"",\r\n  \""Tags\"": \""[c# .net maui][c# wpf][c# winforms]\""\r\n}""
+    ""TagMatchTerm"": ""[c# .net maui] [c# wpf] [c# winforms]"",
+    ""Properties"": ""{\r\n  \""FirstName\"": \""Tom\"",\r\n  \""LastName\"": \""Tester\"",\r\n  \""Tags\"": \""[c# .net maui] [c# wpf] [c# winforms]\""\r\n}""
   }
 ]"
                 ;
@@ -1061,12 +1061,12 @@ InputText"
     ""Id"": ""38CFE38E-0D90-4C9F-A4E5-845089CB2BB0"",
     ""FirstName"": ""Tom"",
     ""LastName"": ""Tester"",
-    ""Tags"": ""[c# .net maui][c# wpf][c# winforms]"",
+    ""Tags"": ""[c# .net maui] [c# wpf] [c# winforms]"",
     ""PrimaryKey"": ""38CFE38E-0D90-4C9F-A4E5-845089CB2BB0"",
     ""QueryTerm"": ""tom~tester"",
     ""FilterTerm"": ""tom~tester"",
-    ""TagMatchTerm"": ""[c# .net maui][c# wpf][c# winforms]"",
-    ""Properties"": ""{\r\n  \""FirstName\"": \""Tom\"",\r\n  \""LastName\"": \""Tester\"",\r\n  \""Tags\"": \""[c# .net maui][c# wpf][c# winforms]\""\r\n}""
+    ""TagMatchTerm"": ""[c# .net maui] [c# wpf] [c# winforms]"",
+    ""Properties"": ""{\r\n  \""FirstName\"": \""Tom\"",\r\n  \""LastName\"": \""Tester\"",\r\n  \""Tags\"": \""[c# .net maui] [c# wpf] [c# winforms]\""\r\n}""
   }
 ]"
                 ;
@@ -1175,11 +1175,19 @@ FilterTerm";
                 .ToArray();
         }
 
-
-
         [TestMethod]
-        public void Test_NormalizeTags()
+        public void Test_NormalizeTags_False()
         {
+            bool revert = Extensions.InsertSpaceBetweenTags;
+            using var local = this.WithOnDispose(
+                onInit: (sender, e) =>
+                {
+                    Extensions.InsertSpaceBetweenTags = false;
+                },
+                onDispose: (sender, e) =>
+                {
+                    Extensions.InsertSpaceBetweenTags = revert;
+                });
             string actual, expected;
             SelectableQFModel model;
 
@@ -1336,6 +1344,158 @@ FilterTerm";
             );
         }
 
+        [TestMethod]
+        public void Test_NormalizeTags_True()
+        {
+            bool revert = Extensions.InsertSpaceBetweenTags;
+            using var local = this.WithOnDispose(
+                onInit: (sender, e) =>
+                {
+                    Extensions.InsertSpaceBetweenTags = true;
+                },
+                onDispose: (sender, e) =>
+                {
+                    Extensions.InsertSpaceBetweenTags = revert;
+                });
+            string actual, expected;
+            SelectableQFModel model;
+
+            model = new SelectableQFModel 
+            { 
+                Id = "1",
+                Description = "Purple Animal", 
+                Tags = "animal color" 
+            };
+
+            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+{
+  ""Id"": ""1"",
+  ""Description"": ""Purple Animal"",
+  ""Keywords"": ""[]"",
+  ""KeywordsDisplay"": """",
+  ""Tags"": ""[animal] [color]"",
+  ""IsChecked"": false,
+  ""Selection"": 0,
+  ""IsEditing"": false,
+  ""PrimaryKey"": ""1"",
+  ""QueryTerm"": ""purple~animal~[animal]~[color]"",
+  ""FilterTerm"": ""purple~animal~[animal]~[color]"",
+  ""TagMatchTerm"": ""[animal] [color]"",
+  ""Properties"": ""{\r\n  \""Description\"": \""Purple Animal\"",\r\n  \""Tags\"": \""[animal] [color]\""\r\n}""
+}"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting correct tag representation in Query and Filter exprs."
+            );
+
+            model = new SelectableQFModel
+            {
+                Id = "1",
+                Description = "Purple Animal",
+                Tags = "animal,color"
+            };
+
+            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual.ToClipboardExpected(); // For viewing only
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting that expected DOES NOT CHANGE."
+            );
+
+
+            model = new SelectableQFModel
+            {
+                Id = "1",
+                Description = "Purple Animal",
+                Tags = "animal;color"
+            };
+
+            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual.ToClipboardExpected(); // For viewing only
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting that expected DOES NOT CHANGE."
+            );
+
+
+            model = new SelectableQFModel
+            {
+                Id = "1",
+                Description = "Purple Animal",
+                Tags = "animal~color"
+            };
+
+            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual.ToClipboardExpected(); // For viewing only
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting that expected DOES NOT CHANGE."
+            );
+
+
+            model = new SelectableQFModel
+            {
+                Id = "1",
+                Description = "Purple Animal",
+                Tags = "[animal][color]"
+            };
+
+            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual.ToClipboardExpected(); // For viewing only
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting that expected DOES NOT CHANGE."
+            );
+
+
+            model = new SelectableQFModel
+            {
+                Id = "1",
+                Description = "Purple Animal",
+                Tags = "[animal,big]    [color]"
+            };
+
+            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+{
+  ""Id"": ""1"",
+  ""Description"": ""Purple Animal"",
+  ""Keywords"": ""[]"",
+  ""KeywordsDisplay"": """",
+  ""Tags"": ""[animal,big] [color]"",
+  ""IsChecked"": false,
+  ""Selection"": 0,
+  ""IsEditing"": false,
+  ""PrimaryKey"": ""1"",
+  ""QueryTerm"": ""purple~animal~[animal,big]~[color]"",
+  ""FilterTerm"": ""purple~animal~[animal,big]~[color]"",
+  ""TagMatchTerm"": ""[animal,big] [color]"",
+  ""Properties"": ""{\r\n  \""Description\"": \""Purple Animal\"",\r\n  \""Tags\"": \""[animal,big] [color]\""\r\n}""
+}"
+            ;
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting brackets beat commas."
+            );
+        }
+
         /// <summary>
         /// By design, the ParseSQLiteMarkdown method employs inheritance to determine table identity for parsing.
         /// </summary>
@@ -1436,7 +1596,7 @@ SELECT * FROM items WHERE
             // Different classes, but the explicit [Table] attributes all agree.
             void subtest_UncontroversialExplicitTableAttribute()
             {
-                var mdc = new MarkdownContext<SelectableQFModel>();
+                var mdc = new ModeledMarkdownContext<SelectableQFModel>();
                 mdc.ParseSqlMarkdown<SelectableQFModelSubclass>("hello");
                 tableNames = mdc.GetTableNames();
                 "hello".ParseSqlMarkdown<SelectableQFModel>();
@@ -1460,7 +1620,7 @@ SELECT * FROM items WHERE
             // - Any explicit [Table] attributes in base classes are moot.
             void subtest_ProxySameAsContract()
             {
-                var mdc = new MarkdownContext<SelectableQFModelSubclassA>();
+                var mdc = new ModeledMarkdownContext<SelectableQFModelSubclassA>();
                 mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
                 tableNames = mdc.GetTableNames();
                 "hello".ParseSqlMarkdown<SelectableQFModel>();
@@ -1483,7 +1643,7 @@ SELECT * FROM items WHERE
 
             void subtest_ProxyCoherence1()
             {
-                var mdc = new MarkdownContext<SelectableQFModel>();
+                var mdc = new ModeledMarkdownContext<SelectableQFModel>();
                 mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
                 tableNames = mdc.GetTableNames();
                 "hello".ParseSqlMarkdown<SelectableQFModel>();
@@ -1506,7 +1666,7 @@ SELECT * FROM items WHERE
 
             void subtest_ProxyCoherence2()
             {
-                var mdc = new MarkdownContext<SelectableQFModelSubclassA>();
+                var mdc = new ModeledMarkdownContext<SelectableQFModelSubclassA>();
                 mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
 
                 tableNames = mdc.GetTableNames();
@@ -1530,7 +1690,7 @@ SELECT * FROM items WHERE
             void subtest_ParseInputTextInQueryMode()
             {
                 // Check parser where declared table identities resolve as same
-                var mdc = new MarkdownContext<SelectableQFModelSubclass>();
+                var mdc = new ModeledMarkdownContext<SelectableQFModelSubclass>();
                 mdc.InputText = "animal";
 
                 actual = mdc.ParseSqlMarkdown();
@@ -1556,7 +1716,7 @@ SELECT * FROM items WHERE
         public async Task Test_Detect_QueryENB_or_QueryEN_when_IsFiltering()
         {
             string actual, expected;
-            var mdc = new MarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Filter };
+            var mdc = new ModeledMarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Filter };
 
             actual = mdc.StateReport();
             expected = @" 

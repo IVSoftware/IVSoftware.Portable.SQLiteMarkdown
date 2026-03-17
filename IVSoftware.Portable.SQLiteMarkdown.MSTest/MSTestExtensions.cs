@@ -7,6 +7,7 @@ using SQLite;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using static System.Windows.Forms.Design.AxImporter;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
@@ -73,26 +74,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 }
             }
 
-            Add("Brown Dog", "[canine] [color]", false, new() { "loyal", "friend", "furry" });
-            Add("Green Apple", "[fruit] [color]", false, new() { "tart", "snack", "healthy" });
-            Add("Yellow Banana", "[fruit] [color]", false);
-            Add("Blue Bird", "[bird] [color]", false, new() { "sky", "feathered", "song" });
-            Add("Red Cherry", "[fruit] [color]", false, new() { "sweet", "summer", "dessert" });
-            Add("Black Cat", "[animal] [color]", false);
-            Add("Orange Fox", "[animal] [color]", false);
-            Add("White Rabbit", "[animal] [color]", false, new() { "bunny", "soft", "jump" });
-            Add("Purple Grape", "[fruit] [color]", false);
-            Add("Gray Wolf", "[animal] [color]", false, new() { "pack", "howl", "wild" });
-            Add("Pink Flamingo", "[bird] [color]", false);
-            Add("Golden Lion", "[animal] [color]", false);
-            Add("Brown Bear", "[animal] [color]", false, new() { "strong", "wild", "forest" });
-            Add("Green Pear", "[fruit] [color]", false);
-            Add("Red Strawberry", "[fruit] [color]", false);
-            Add("Black Panther", "[animal] [color]", false, new() { "stealthy", "feline", "night" });
-            Add("Yellow Lemon", "[fruit] [color]", false);
-            Add("White Swan", "[bird] [color]", false);
-            Add("Purple Plum", "[fruit] [color]", false);
-            Add("Blue Whale", "[marine-mammal] [ocean]", false, new() { "ocean", "mammal", "giant" });
+            Add("Brown Dog", "[canine][color]", false, new() { "loyal", "friend", "furry" });
+            Add("Green Apple", "[fruit][color]", false, new() { "tart", "snack", "healthy" });
+            Add("Yellow Banana", "[fruit][color]", false);
+            Add("Blue Bird", "[bird][color]", false, new() { "sky", "feathered", "song" });
+            Add("Red Cherry", "[fruit][color]", false, new() { "sweet", "summer", "dessert" });
+            Add("Black Cat", "[animal][color]", false);
+            Add("Orange Fox", "[animal][color]", false);
+            Add("White Rabbit", "[animal][color]", false, new() { "bunny", "soft", "jump" });
+            Add("Purple Grape", "[fruit][color]", false);
+            Add("Gray Wolf", "[animal][color]", false, new() { "pack", "howl", "wild" });
+            Add("Pink Flamingo", "[bird][color]", false);
+            Add("Golden Lion", "[animal][color]", false);
+            Add("Brown Bear", "[animal][color]", false, new() { "strong", "wild", "forest" });
+            Add("Green Pear", "[fruit][color]", false);
+            Add("Red Strawberry", "[fruit][color]", false);
+            Add("Black Panther", "[animal][color]", false, new() { "stealthy", "feline", "night" });
+            Add("Yellow Lemon", "[fruit][color]", false);
+            Add("White Swan", "[bird][color]", false);
+            Add("Purple Plum", "[fruit][color]", false);
+            Add("Blue Whale", "[marine-mammal][ocean]", false, new() { "ocean", "mammal", "giant" });
             Add("Elephant", "[animal]", false, new() { "trunk", "herd", "safari" });
             Add("Pineapple", "[fruit]", false);
             Add("Shark", "[fish]", false);
@@ -163,84 +164,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 _ => throw new InvalidOperationException("Multiple items in queue."),
             };
 
-        /// <summary>
-        /// Supports await Unk with a timeout for deterministic fail on test instead of hanging. 
-        /// </summary>
-        /// <remarks>
-        /// There is a Task.WaitAsync(TimeSpan) but that’s an instance method 
-        /// on Task; an extension on object, overload resolution won’t confuse them.
-        /// </remarks>
-        public static async Task<object?> WaitAsync(this object awaitable, TimeSpan timeout)
-        {
-            if (awaitable is null)
-                throw new ArgumentNullException(nameof(awaitable));
-
-            Task<object?> ToTask()
-            {
-                var type = awaitable.GetType();
-                var getAwaiter = type.GetMethod("GetAwaiter", Type.EmptyTypes)
-                    ?? throw new InvalidOperationException("Object is not awaitable.");
-
-                var awaiter = getAwaiter.Invoke(awaitable, null)
-                    ?? throw new InvalidOperationException("GetAwaiter returned null.");
-
-                var awaiterType = awaiter.GetType();
-
-                var isCompletedProp = awaiterType.GetProperty("IsCompleted")
-                    ?? throw new InvalidOperationException("Awaiter missing IsCompleted.");
-
-                var onCompleted = awaiterType.GetMethod("OnCompleted", new[] { typeof(Action) })
-                    ?? throw new InvalidOperationException("Awaiter missing OnCompleted.");
-
-                var getResult = awaiterType.GetMethod("GetResult")
-                    ?? throw new InvalidOperationException("Awaiter missing GetResult.");
-
-                var tcs = new TaskCompletionSource<object?>();
-
-                void Complete()
-                {
-                    try
-                    {
-                        var result = getResult.Invoke(awaiter, null);
-                        tcs.TrySetResult(result);
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.TrySetException(ex.InnerException ?? ex);
-                    }
-                }
-
-                if ((bool)isCompletedProp.GetValue(awaiter)!)
-                {
-                    Complete();
-                }
-                else
-                {
-                    onCompleted.Invoke(awaiter, new object[] { (Action)Complete });
-                }
-
-                return tcs.Task;
-            }
-
-            var settleTask = ToTask();
-
-            var completed = await Task.WhenAny(
-                settleTask,
-                Task.Delay(timeout));
-
-            if (!ReferenceEquals(settleTask, completed))
-                throw new TimeoutException(
-                    $"Awaitable did not complete within {timeout}.");
-
-            return await settleTask;
-        }
-
         public static string StateReport(this MarkdownContext @this)
         {
             var builder = new List<string>();
             builder.Add($"[IME Len: {@this.InputText.Length}");
             builder.Add($"IsFiltering: {@this.IsFiltering}]");
-            builder.Add($"[Net: {(@this.ObservableNetProjection is IList list ? list.Count : "null")}");
+            if (@this is IModeledMarkdownContext mmdc)
+            {
+                builder.Add($"[Net: {(mmdc.ObservableNetProjection is IList list ? list.Count : "null")}");
+            }
             builder.Add($"CC: {@this.CanonicalCount}");
             builder.Add($"PMC: {@this.PredicateMatchCount}]");
             builder.Add($"[{@this.QueryFilterConfig}: {@this.SearchEntryState.ToFullKey()}");
@@ -248,7 +180,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             return string.Join(", ", builder);
         }
 
-        public static string OptionsReport(this MarkdownContext @this)
+        public static string OptionsReport(this IModeledMarkdownContext @this)
         {
             var builder = new List<string>();
             builder.Add($"{@this.ProjectionTopology.ToFullKey()}");
@@ -256,6 +188,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             builder.Add($"{@this.ReplaceItemsEventingOptions.ToFullKey()}");
             return string.Join(", ", builder);
         }
-
     }
 }

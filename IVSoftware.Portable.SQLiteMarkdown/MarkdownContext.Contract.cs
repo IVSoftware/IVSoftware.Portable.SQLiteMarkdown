@@ -40,58 +40,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     partial class MarkdownContext
     {
         /// <summary>
-        /// Gets the contract type associated with this context.
+        /// The canonical contract type that defines the authoritative table shape for this context.
+        /// </summary>
+        public Type ContractType { get; }
+
+        /// <summary>
+        /// The type whose attributes define the parsing behavior.
         /// </summary>
         /// <remarks>
-        /// Reference type for advisory reporting stream on the IVSoftware.Portable.Common.Exceptions.BeginThrowOrAdvise event.
+        /// Must be a non-interface type. Abstract types are permitted.
+        /// The proxy type must resolve to the same underlying table as <see cref="ContractType"/>.
+        /// 
+        /// Multiple proxy types may target the same table schema, each providing a different
+        /// attribute-driven interpretation for parsing and filtering.
         /// </remarks>
-        public Type ContractType
-        {
-            get
-            {
-                if (_contractType is null)
-                {
-                    this.ThrowHard<NullReferenceException>($"{nameof(ContractType)} cannot be null.");
-                }
-                return _contractType!;
-            }
-            set
-            {
-                if (value is null)
-                {
-                    this.ThrowHard<NullReferenceException>($"{nameof(ContractType)} cannot be null.");
-                }
-                else
-                {
-                    switch (_activeQFMode)
-                    {
-                        case QueryFilterMode.Query:
-                            // Allow unconditional
-                            if (!Equals(_contractType, value))
-                            {
-                                _contractType = value;
-                                OnPropertyChanged();
-                            }
-                            break;
-                        case QueryFilterMode.Filter:
-                            // Allow only if Type not set by previous query.
-                            Debug.Assert(
-                                QueryFilterConfig == QueryFilterConfig.Filter,
-                                "Expecting Query before Filter in any other mode!"
-                            );
-
-                            if (_contractType is null)
-                            {
-                                _contractType = value;
-                                OnPropertyChanged();
-                            }
-                            break;
-                    }
-                }
-            }
-        }
-        Type? _contractType = null;
-
         public Type ProxyType
         {
             get => _proxyType;
@@ -116,6 +78,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         Type _proxyType = null!;
+
         public TableMapping ProxyTypeTableMapping
         {
             get => _proxyTypeTableMapping;

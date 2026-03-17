@@ -229,6 +229,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         preview,
 
         /// <summary>
+        /// MarkdownContext
+        /// </summary>
+        mdc,
+
+        /// <summary>
         /// The XBoundAttribute that holds this data model.
         /// </summary>
         /// <remarks>

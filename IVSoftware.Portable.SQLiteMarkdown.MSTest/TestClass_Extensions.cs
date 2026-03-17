@@ -120,8 +120,11 @@ The string provided 'banana' is not numeric.";
                 // Note that the declared value of DefaultValuesForTest.Two (0x10000002)
                 // is irrelevant here; only the DefaultValue attribute participates.
 
-                @enum = model.GetAttributeValue<StdMarkdownAttribute>(DefaultValuesForTest.Two);
-                Assert.AreEqual(StdMarkdownAttribute.model, @enum);
+                StdMarkdownAttribute
+                    expectedEnum = (StdMarkdownAttribute)2,
+                    stdActual = model.GetAttributeValue<StdMarkdownAttribute>(DefaultValuesForTest.Two);
+                // Strict equality not Equals.
+                Assert.IsTrue(expectedEnum == stdActual);
             }
 
             void subtest_AttributeSimplyPresent()

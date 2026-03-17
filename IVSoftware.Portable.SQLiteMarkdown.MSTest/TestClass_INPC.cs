@@ -4,6 +4,8 @@ using IVSoftware.WinOS.MSTest.Extensions;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
+using System.Collections;
+using Newtonsoft.Json;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -46,7 +48,7 @@ public class TestClass_INPC
         ;
         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-        items.AddDynamic("Brown Dog", "[canine] [color]", false, new() { "loyal", "friend", "furry" });
+        items.AddDynamic("Brown Dog", "[canine][color]", false, new() { "loyal", "friend", "furry" });
 
         Assert.AreEqual(1, items.Count);
         actual = items.Model.ToString();
@@ -81,6 +83,82 @@ IsChecked: Brown Dog "
             expected.NormalizeResult(),
             actual.NormalizeResult(),
             "Expecting property changed event(s)."
+        );
+    }
+
+    /// <summary>
+    /// Demonstrates that the tilde ('~') used in source data produces non-idempotent normalization.
+    /// </summary>
+    /// <remarks>
+    /// Two distinct descriptions:
+    ///   "Bird~Feathered"
+    ///   "Bird Feathered"
+    /// both normalize to the same QueryTerm and FilterTerm ("bird~feathered").
+    ///
+    /// The tilde is always interpreted as an internal delimiter during tokenization,
+    /// not as a literal character. As a result, the original distinction is lost.
+    ///
+    /// Practical effect:
+    /// A query such as "bird~feathered" will match both records.
+    ///
+    /// This is an accepted limitation of the heuristic parser. "The worst that can happen isn't that bad."
+    /// </remarks>
+    [TestMethod, DoNotParallelize]
+    public void Test_WeirdCornerTilde()
+    {
+        using var te = this.TestableEpoch();
+
+        string actual, expected;
+
+        var items = new ObservableQueryFilterSource<SelectableQFModel>
+        {
+            QueryFilterConfig = QueryFilterConfig.Query
+        };
+        ((IList)items).AddDynamic<SelectableQFModel>(description: "Bird~Feathered", tags: "[]", isChecked: false);
+        ((IList)items).AddDynamic<SelectableQFModel>(description: "Bird Feathered", tags: "[]", isChecked: false);
+
+        actual = JsonConvert.SerializeObject(items, Formatting.Indented);
+        actual.ToClipboardExpected();
+        { }
+        expected = @" 
+[
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000000"",
+    ""Description"": ""Bird~Feathered"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000000"",
+    ""QueryTerm"": ""bird~feathered"",
+    ""FilterTerm"": ""bird~feathered"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Bird~Feathered\"",\r\n  \""Tags\"": \""[]\""\r\n}""
+  },
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000001"",
+    ""Description"": ""Bird Feathered"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000001"",
+    ""QueryTerm"": ""bird~feathered"",
+    ""FilterTerm"": ""bird~feathered"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Bird Feathered\"",\r\n  \""Tags\"": \""[]\""\r\n}""
+  }
+]"
+        ;
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting output to show the tilde problem."
         );
     }
 }
