@@ -226,18 +226,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         #endregion C O N F I G U R A T I O N
 
         /// <summary>
-        /// Describes the wiring between the canonical XML model and the net ("seen") projection.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model: "What is 'this'?"
-        /// If 'this' *is-a* MarkdownContext,
-        /// Then canon is projected by redirecting enumeration.
-        /// If 'this' *has-a* MarkdownContext and *is-a* bound enumerable,
-        /// Then the surface is always net, and canon is projected by copying as needed.
-        /// </remarks>
-        ProjectionTopology ProjectionTopology { get; }
-
-        /// <summary>
         /// Default LIMIT term for SQLite term generation.
         /// </summary>
         /// <remarks>
@@ -257,20 +245,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         TimeSpan InputTextSettlingTime { get; set; }
 
         event EventHandler? InputTextSettled;
-
-        /// <summary>
-        /// Requests that an external host raise a collection change notification.
-        /// </summary>
-        /// <remarks>
-        /// <see cref="MarkdownContext"/> itself does not implement <see cref="INotifyCollectionChanged"/>.
-        /// Instead, canonical mutations are surfaced through this request so that an owning
-        /// surface—often a derived type or UI adapter that *does* implement
-        /// <see cref="INotifyCollectionChanged"/>—may relay the corresponding
-        /// <see cref="NotifyCollectionChangedEventArgs"/> to observers.
-        ///
-        /// Mental Model: "Filtering model has been reconfigured. Ask the host to raise INCC."
-        /// </remarks>
-        event NotifyCollectionChangedEventHandler ModelSettled;
 
         #region P R O J E C T I O N
         /// <summary>
@@ -341,6 +315,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
     public interface IModeledMarkdownContext : IMarkdownContext
     {
+        /// <summary>
+        /// Describes the wiring between the canonical XML model and the net ("seen") projection.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "What is 'this'?"
+        /// If 'this' *is-a* MarkdownContext,
+        /// Then canon is projected by redirecting enumeration.
+        /// If 'this' *has-a* MarkdownContext and *is-a* bound enumerable,
+        /// Then the surface is always net, and canon is projected by copying as needed.
+        /// </remarks>
+        ProjectionTopology ProjectionTopology { get; }
+
         #region C O N F I G U R A T I O N    P R O P E R T I E S
 
         /// <summary>
@@ -357,6 +343,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; }
         #endregion C O N F I G U R A T I O N    P R O P E R T I E S
+
+        #region M O D E L
+        /// <summary>
+        /// Requests that an external host raise a collection change notification.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="MarkdownContext"/> itself does not implement <see cref="INotifyCollectionChanged"/>.
+        /// Instead, canonical mutations are surfaced through this request so that an owning
+        /// surface—often a derived type or UI adapter that *does* implement
+        /// <see cref="INotifyCollectionChanged"/>—may relay the corresponding
+        /// <see cref="NotifyCollectionChangedEventArgs"/> to observers.
+        ///
+        /// Mental Model: "Filtering model has been reconfigured. Ask the host to raise INCC."
+        /// </remarks>
+        event NotifyCollectionChangedEventHandler ModelSettled;
+        #endregion M O D E L
     }
 
     /// <summary>

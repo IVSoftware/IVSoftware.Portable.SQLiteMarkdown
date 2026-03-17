@@ -455,8 +455,8 @@ MarkdownContext Clear(all=True)";
 
             public event NotifyCollectionChangedEventHandler ModelSettled
             {
-                add => ((IMarkdownContext)_mdc).ModelSettled += value;
-                remove => ((IMarkdownContext)_mdc).ModelSettled -= value;
+                add => ((IModeledMarkdownContext)_mdc).ModelSettled += value;
+                remove => ((IModeledMarkdownContext)_mdc).ModelSettled -= value;
             }
 
             public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority)
@@ -480,7 +480,7 @@ MarkdownContext Clear(all=True)";
             public string ParseSqlMarkdown<T1>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
                 => ((IMarkdownContext)_mdc).ParseSqlMarkdown<T1>(expr, qfMode);
 
-            public ProjectionTopology ProjectionTopology => ((IMarkdownContext)_mdc).ProjectionTopology;
+            public ProjectionTopology ProjectionTopology => ((IModeledMarkdownContext)_mdc).ProjectionTopology;
 
             public INotifyCollectionChanged? ObservableNetProjection
             {
