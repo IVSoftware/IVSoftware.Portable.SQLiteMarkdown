@@ -180,7 +180,7 @@ Materialized Path Policy violation: Path must end with Id."
             actual.ToClipboardExpected();
             { }
             expected = @" 
-hello~world~standard~greeting~[intro][101]"
+hello~world~standard~greeting~[intro]~[101]"
             ;
 
             Assert.AreEqual(
@@ -193,7 +193,7 @@ hello~world~standard~greeting~[intro][101]"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-hello~world~standard~greeting~[intro][101]"
+hello~world~standard~greeting~[intro]~[101]"
             ;
 
             Assert.AreEqual(
@@ -206,7 +206,7 @@ hello~world~standard~greeting~[intro][101]"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[intro][101]"
+[intro] [101]"
             ;
 
             Assert.AreEqual(
@@ -227,7 +227,7 @@ hello~world~standard~greeting~[intro][101]"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-hello~world!~standard~greeting~[intro][101]"
+hello~world!~standard~greeting~[intro]~[101]"
             ;
 
             Assert.AreEqual(
@@ -240,7 +240,7 @@ hello~world!~standard~greeting~[intro][101]"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-hello~world!~standard~greeting~[intro][101]"
+hello~world!~standard~greeting~[intro]~[101]"
             ;
 
             Assert.AreEqual(
@@ -253,7 +253,7 @@ hello~world!~standard~greeting~[intro][101]"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[intro][101]"
+[intro] [101]"
             ;
 
             Assert.AreEqual(

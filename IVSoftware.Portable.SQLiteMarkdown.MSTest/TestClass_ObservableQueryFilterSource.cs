@@ -348,29 +348,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual = string.Join(Environment.NewLine, allRecords.Select(_ => _.ToString()));
                 actual.ToClipboard();
                 actual.ToClipboardExpected();
-                actual.ToClipboardAssert();
                 { }
                 expected = @" 
-Brown Dog ""loyal"",""friend"",""furry"" [canine][color]
-Green Apple ""tart"",""snack"",""healthy"" [fruit][color]
-Yellow Banana  [fruit][color]
-Blue Bird ""sky"",""feathered"",""song"" [bird][color]
-Red Cherry ""sweet"",""summer"",""dessert"" [fruit][color]
-Black Cat  [animal][color]
-Orange Fox  [animal][color]
-White Rabbit ""bunny"",""soft"",""jump"" [animal][color]
-Purple Grape  [fruit][color]
-Gray Wolf ""pack"",""howl"",""wild"" [animal][color]
-Pink Flamingo  [bird][color]
-Golden Lion  [animal][color]
-Brown Bear ""strong"",""wild"",""forest"" [animal][color]
-Green Pear  [fruit][color]
-Red Strawberry  [fruit][color]
-Black Panther ""stealthy"",""feline"",""night"" [animal][color]
-Yellow Lemon  [fruit][color]
-White Swan  [bird][color]
-Purple Plum  [fruit][color]
-Blue Whale ""ocean"",""mammal"",""giant"" [marine-mammal][ocean]
+Brown Dog ""loyal"",""friend"",""furry"" [canine] [color]
+Green Apple ""tart"",""snack"",""healthy"" [fruit] [color]
+Yellow Banana  [fruit] [color]
+Blue Bird ""sky"",""feathered"",""song"" [bird] [color]
+Red Cherry ""sweet"",""summer"",""dessert"" [fruit] [color]
+Black Cat  [animal] [color]
+Orange Fox  [animal] [color]
+White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
+Purple Grape  [fruit] [color]
+Gray Wolf ""pack"",""howl"",""wild"" [animal] [color]
+Pink Flamingo  [bird] [color]
+Golden Lion  [animal] [color]
+Brown Bear ""strong"",""wild"",""forest"" [animal] [color]
+Green Pear  [fruit] [color]
+Red Strawberry  [fruit] [color]
+Black Panther ""stealthy"",""feline"",""night"" [animal] [color]
+Yellow Lemon  [fruit] [color]
+White Swan  [bird] [color]
+Purple Plum  [fruit] [color]
+Blue Whale ""ocean"",""mammal"",""giant"" [marine-mammal] [ocean]
 Elephant ""trunk"",""herd"",""safari"" [animal]
 Pineapple  [fruit]
 Shark  [fish]
@@ -1409,19 +1408,22 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                     );
 
                     actual = string.Join(Environment.NewLine, itemsSource.Select(_ => _.ToString()));
+                    actual.ToClipboardExpected();
+                    { }
                     expected = @" 
-Black Cat  [animal][color]
-Orange Fox  [animal][color]
-White Rabbit ""bunny"",""soft"",""jump"" [animal][color]
-Gray Wolf ""pack"",""howl"",""wild"" [animal][color]
-Golden Lion  [animal][color]
-Brown Bear ""strong"",""wild"",""forest"" [animal][color]
-Black Panther ""stealthy"",""feline"",""night"" [animal][color]
+Black Cat  [animal] [color]
+Orange Fox  [animal] [color]
+White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
+Gray Wolf ""pack"",""howl"",""wild"" [animal] [color]
+Golden Lion  [animal] [color]
+Brown Bear ""strong"",""wild"",""forest"" [animal] [color]
+Black Panther ""stealthy"",""feline"",""night"" [animal] [color]
 Elephant ""trunk"",""herd"",""safari"" [animal]
 Giraffe  [animal]
 Kangaroo ""bounce"",""outback"",""marsupial"" [animal]
 Turtle  [animal]
-Should NOT match an expression with an ""animal"" tag.  [not animal]";
+Should NOT match an expression with an ""animal"" tag.  [not animal]"
+                    ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1510,27 +1512,28 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                         "Expecting add component (first) + rest component (last)."
                     );
 
-
+                    ecc = (NotifyCollectionChangedEventArgs)eventQueue.DequeueSingle().e;
                     actual = string.Join(
                         Environment.NewLine,
                         ecc
                         .NewItems?.OfType<SelectableQFModelLTOQO>()
                         .Select(_ => _.ToString()) ?? []);
+                    actual.ToClipboardExpected();
                     { }
-
                     expected = @" 
-Black Cat  [animal][color]
-Orange Fox  [animal][color]
-White Rabbit ""bunny"",""soft"",""jump"" [animal][color]
-Gray Wolf ""pack"",""howl"",""wild"" [animal][color]
-Golden Lion  [animal][color]
-Brown Bear ""strong"",""wild"",""forest"" [animal][color]
-Black Panther ""stealthy"",""feline"",""night"" [animal][color]
+Black Cat  [animal] [color]
+Orange Fox  [animal] [color]
+White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
+Gray Wolf ""pack"",""howl"",""wild"" [animal] [color]
+Golden Lion  [animal] [color]
+Brown Bear ""strong"",""wild"",""forest"" [animal] [color]
+Black Panther ""stealthy"",""feline"",""night"" [animal] [color]
 Elephant ""trunk"",""herd"",""safari"" [animal]
 Giraffe  [animal]
 Kangaroo ""bounce"",""outback"",""marsupial"" [animal]
 Turtle  [animal]
-Should NOT match an expression with an ""animal"" tag.  [not animal]";
+Should NOT match an expression with an ""animal"" tag.  [not animal]"
+                    ;
                 }
                 #endregion S U B T E S T S
             }
@@ -2011,19 +2014,22 @@ IsFiltering"
                         Assert.AreNotEqual(0, items.Count);
 
                         actual = string.Join(Environment.NewLine, items.OfType<object>().Select(_ => _.ToString()));
+                        actual.ToClipboardExpected();
+                        { }
                         expected = @" 
-Black Cat  [animal][color]
-Orange Fox  [animal][color]
-White Rabbit ""bunny"",""soft"",""jump"" [animal][color]
-Gray Wolf ""pack"",""howl"",""wild"" [animal][color]
-Golden Lion  [animal][color]
-Brown Bear ""strong"",""wild"",""forest"" [animal][color]
-Black Panther ""stealthy"",""feline"",""night"" [animal][color]
+Black Cat  [animal] [color]
+Orange Fox  [animal] [color]
+White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
+Gray Wolf ""pack"",""howl"",""wild"" [animal] [color]
+Golden Lion  [animal] [color]
+Brown Bear ""strong"",""wild"",""forest"" [animal] [color]
+Black Panther ""stealthy"",""feline"",""night"" [animal] [color]
 Elephant ""trunk"",""herd"",""safari"" [animal]
 Giraffe  [animal]
 Kangaroo ""bounce"",""outback"",""marsupial"" [animal]
 Turtle  [animal]
-Should NOT match an expression with an ""animal"" tag.  [not animal]";
+Should NOT match an expression with an ""animal"" tag.  [not animal]"
+                        ;
 
                         Assert.AreEqual(
                             expected.NormalizeResult(),
@@ -2149,13 +2155,13 @@ ProjectionTopology.Inheritance, NetProjectionOption.Inherited, ReplaceItemsEvent
                         actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
                         actual.ToClipboardExpected();
                         { }
-
                         expected = @" 
-Black Cat  [animal][color]
-White Rabbit ""bunny"",""soft"",""jump"" [animal][color]
-Brown Bear ""strong"",""wild"",""forest"" [animal][color]
-Black Panther ""stealthy"",""feline"",""night"" [animal][color]
-Kangaroo ""bounce"",""outback"",""marsupial"" [animal]";
+Black Cat  [animal] [color]
+White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
+Brown Bear ""strong"",""wild"",""forest"" [animal] [color]
+Black Panther ""stealthy"",""feline"",""night"" [animal] [color]
+Kangaroo ""bounce"",""outback"",""marsupial"" [animal]"
+                        ;
 
                         Assert.AreEqual(
                             expected.NormalizeResult(),
