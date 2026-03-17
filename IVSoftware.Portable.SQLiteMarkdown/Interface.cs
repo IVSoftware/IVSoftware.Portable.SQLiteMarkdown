@@ -175,17 +175,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         void Commit();
         #endregion P A R S E
 
-        /// <summary>
-        /// Maintains the canonical recordset as a hierarchy.
-        /// </summary>
-        /// <remarks>
-        /// - The string value of the property designated as the PK is 
-        ///   used as the address in the item.
-        /// - For item types that support a FullPath property, the
-        ///   model can also represent depth.
-        /// </remarks>
-        XElement Model { get; }
-
         #region B I N D A B L E    P R O P E R T I E S
 
         /// <summary>
@@ -307,6 +296,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         #endregion C O N F I G U R A T I O N    P R O P E R T I E S
 
         #region M O D E L
+        /// <summary>
+        /// Maintains the canonical recordset as a hierarchy.
+        /// </summary>
+        /// <remarks>
+        /// - The string value of the property designated as the PK is 
+        ///   used as the address in the item.
+        /// - For item types that support a FullPath property, the
+        ///   model can also represent depth.
+        /// </remarks>
+        XElement Model { get; }
+
         /// <summary>
         /// Requests that an external host raise a collection change notification.
         /// </summary>

@@ -419,7 +419,7 @@ MarkdownContext Clear(all=True)";
         {
             private readonly ModeledMarkdownContext<T> _mdc = new ModeledMarkdownContext<T>();
 
-            public XElement Model => ((IMarkdownContext)_mdc).Model;
+            public XElement Model => ((IModeledMarkdownContext)_mdc).Model;
 
             public uint DefaultLimit
             {
