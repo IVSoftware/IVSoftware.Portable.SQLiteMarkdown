@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public partial class ModeledMarkdownContext<T> : MarkdownContextBase<T>, IModeledMarkdownContext
+    public partial class ModeledMarkdownContext<T> : MarkdownContext<T>, IModeledMarkdownContext
     {
         /// <summary>
         /// Provides a typed, read-only view of the predicate-match subset.

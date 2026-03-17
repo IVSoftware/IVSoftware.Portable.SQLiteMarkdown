@@ -4,7 +4,7 @@ using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public class MarkdownContextBase<T> : MarkdownContext
+    public class MarkdownContext<T> : MarkdownContext
     {
         /// <summary>
         /// Creates a typed context whose base infrastructure is initialized
@@ -18,6 +18,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// contract). The generic context therefore only projects a typed
         /// read-only view and does not need to enforce the type at runtime.
         /// </remarks>
-        public MarkdownContextBase() : base(typeof(T)) { }
+        public MarkdownContext() : base(typeof(T)) { }
     }
 }
