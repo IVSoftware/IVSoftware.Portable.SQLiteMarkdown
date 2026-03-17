@@ -715,6 +715,18 @@ Inherited contexts manage their projection internally.".TrimStart());
                     ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");
                     break;
             }
+
+            // [Remember]
+            // The projection is not authoritative
+            // The model is.
+            if (Authority == CollectionChangeAuthority.Projection)
+            {
+                CanonicalSupersetProtected.Clear();
+                foreach (var item in Model.Descendants().Select(_ => _.To<T>()).OfType<T>())
+                {
+                    CanonicalSupersetProtected.Add(item);
+                }
+            }
         }
 
         /// <summary>
@@ -1569,13 +1581,34 @@ Inherited contexts manage their projection internally.".TrimStart());
             {
                 if (_canonicalSupersetProtected is null)
                 {
-                    _canonicalSupersetProtected = new ObservableCollection<T>();
+                    _canonicalSupersetProtected = new AuthoritativeObservableCollection(this);
                     _canonicalSupersetProtected.CollectionChanged += OnCanonicalSupersetChanged;
                 }
                 return _canonicalSupersetProtected;
             }
         }
-        ObservableCollection<T>? _canonicalSupersetProtected = null;
+        AuthoritativeObservableCollection? _canonicalSupersetProtected = null;
+
+        private class AuthoritativeObservableCollection : ObservableCollection<T> 
+        {
+            public AuthoritativeObservableCollection(IModeledMarkdownContext mmdc) 
+            {
+                MMDC = mmdc;
+            }
+            IModeledMarkdownContext MMDC { get; }
+            protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+            {
+                // Yield to ANY explicit authority.
+                // All that matters is when IList redirects to collection *directly*.
+                if(MMDC.Authority == 0)
+                {
+                    base.OnCollectionChanged(e);
+                }
+                else
+                {   /* G T K - N O O P */
+                }
+            }
+        }
 
         /// <summary>
         /// Provides a typed, read-only view of the predicate-match subset.
