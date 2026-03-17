@@ -3,8 +3,8 @@ using System.Collections.ObjectModel;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public partial class MarkdownContext<T> : MarkdownContext, IModeledMarkdownContext
-    {
+    public partial class MarkdownContextBase<T> : MarkdownContext
+    { 
         /// <summary>
         /// Creates a typed context whose base infrastructure is initialized
         /// with the element type <typeparamref name="T"/>.
@@ -17,8 +17,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// contract). The generic context therefore only projects a typed
         /// read-only view and does not need to enforce the type at runtime.
         /// </remarks>
-        public MarkdownContext() : base(typeof(T)) { }
-
+        public MarkdownContextBase() : base(typeof(T)) { }
+    }
+    public partial class MarkdownContext<T> : MarkdownContextBase<T>, IModeledMarkdownContext
+    {
         /// <summary>
         /// Provides a typed, read-only view of the predicate-match subset.
         /// </summary>
