@@ -80,6 +80,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
+        public virtual XElement Model { get; } = new XElement(nameof(StdMarkdownElement.model));
+
         /// <summary>
         /// Semantic clarity for Interval, which comes from inheriting WatchDogTimer.
         /// </summary>
