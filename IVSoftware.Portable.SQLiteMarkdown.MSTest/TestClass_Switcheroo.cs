@@ -407,7 +407,22 @@ MarkdownContext Clear(all=True)";
             public ObservableNetProjectionWithComposition()
             {
                 Model.SetBoundAttributeValue(_mdc, name: nameof(StdMarkdownAttribute.mdc));
-                _mdc.ObservableNetProjection = this;
+                ObservableNetProjection = this;
+                ProjectionOption = NetProjectionOption.ObservableOnly;
+                ModelSettled += (sender, e) =>
+                {
+                    switch (Authority)
+                    {
+                        case CollectionChangeAuthority.None:
+                            break;
+                        case CollectionChangeAuthority.Model:
+                            break;
+                        default:
+                            this.ThrowFramework<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
+                            break;
+                    }
+                };
+
                 base.PropertyChanged += (sender, e) =>
                 {
                     Debug.WriteLine($"260303 BC PropertyChange '{e.PropertyName}' is advisory only.");
@@ -417,7 +432,7 @@ MarkdownContext Clear(all=True)";
         }
 
         partial class ObservableNetProjectionWithComposition<T> 
-            : IMarkdownContext
+            : IMarkdownContext  // But we wouldn't really want to expose this.
             where T : new()
         {
             private readonly ModeledMarkdownContext<T> _mdc = new ModeledMarkdownContext<T>();

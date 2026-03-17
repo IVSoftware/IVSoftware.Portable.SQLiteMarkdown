@@ -86,16 +86,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             protected override void OnBeginUsing(BeginUsingEventArgs e)
             {
-                base.OnBeginUsing(e);   // <- Last
+                base.OnBeginUsing(e);
+                if(e.AutoDisposableContext.Sender is CollectionChangeAuthority authority)
+                {
+                    Authority = authority;
+                }
+                else
+                {
+                    this.ThrowFramework<InvalidOperationException>(
+                        $"{nameof(Authority)} must be specified as token sender that is {nameof(CollectionChangeAuthority)}.");
+                }
             }
             protected override void OnFinalDispose(FinalDisposeEventArgs e)
             {
-                base.OnFinalDispose(e); // <- First
+                Authority = 0;
+                base.OnFinalDispose(e);
             }
-            public CollectionChangeAuthority Authority =>
-                Tokens.LastOrDefault()?.Sender is CollectionChangeAuthority authority
-                ? authority
-                : 0;
+            public CollectionChangeAuthority Authority { get; private set; } = 0;
         }
     }
 }

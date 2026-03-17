@@ -545,18 +545,18 @@ Inherited contexts manage their projection internally.".TrimStart());
                         // Unsubscribe INCC
                         if (_observableProjection is not null)
                         {
-                            _observableProjection.CollectionChanged -= OnObservableNetProjectionChanged;
+                            _observableProjection.CollectionChanged -= OnNetProjectionCollectionChanged;
                         }
 
                         _observableProjection = value;
 
                         // Run the handler then subscribe to any subsequent changes.
-                        OnObservableProjectionChanged();
+                        OnNetProjectionHandleChanged();
 
                         // Subscribe INCC
                         if (_observableProjection is not null)
                         {
-                            _observableProjection.CollectionChanged += OnObservableNetProjectionChanged;
+                            _observableProjection.CollectionChanged += OnNetProjectionCollectionChanged;
                         }
                     }
                 }
@@ -574,7 +574,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// MentalMode (QueryAndFilter config): "The system must be reset to root cause in order to be stable."
         /// MentalMode (Filter         config): "The contents of the new projection must be regarded as a new canon."
         /// </remarks>
-        protected virtual void OnObservableProjectionChanged()
+        protected virtual void OnNetProjectionHandleChanged()
         {
             if (ObservableNetProjection is IEnumerable collection && collection.Cast<object>().Any())
             {
@@ -588,74 +588,48 @@ Inherited contexts manage their projection internally.".TrimStart());
         }
 
         /// <summary>
-        /// Receives projection change notifications required to maintain the canonical ledger during filtering.
+        /// Receives projection change notifications required to maintain the canonical ledger.
         /// </summary>
-        /// <remarks>
-        /// This handler is only meaningful when <see cref="IsFiltering"/> is true. In Filter modes
-        /// the observable projection becomes an interaction surface and its structural changes
-        /// must be reconciled back into the canonical model.
-        ///
-        /// Newly added items are treated as filter matches until the next filter evaluation.
-        /// This prevents user-initiated additions from immediately disappearing if they do
-        /// not satisfy the current filter predicate.
-        ///
-        /// Mental Model: "User changed the filtered projection. Track these changes in the canonical ledger."
-        /// </remarks>
-        protected virtual void OnObservableNetProjectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected virtual void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (IsFiltering)
+            switch (Authority)
             {
-                OnCanonicalSupersetChanged(sender, e);
-            }
-        }
-
-        /// <summary>
-        /// Applies canonical reconciliation logic when the authoritative superset changes.
-        /// </summary>
-        /// <remarks>
-        /// This handler represents the back-end mutation sink for the context. All structural
-        /// changes to the canonical superset pass through here so the routed projection,
-        /// filtering state, and collection notifications remain consistent with the
-        /// authoritative dataset for the current epoch.
-        ///
-        /// Mental Model: "The canonical ledger changed. Reconcile projections and notify observers."
-        /// </remarks>
-        protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            Debug.Assert(
-                !ReferenceEquals(ObservableNetProjection, CanonicalSupersetProtected),
-                "Different references, Different events. These are *never* the same reference."
-            );
-
-            if (ReferenceEquals(sender, ObservableNetProjection))
-            {
-                Debug.Assert(
-                    IsFiltering,
-                    "Expecting to *never* see this in a non-filtering context.");
-            }
-
-            if (true || ReferenceEquals(sender, ObservableNetProjection))
-            {
-                switch (DHostAuthorityEpoch.Authority)
-                {
-                    case 0:
+                case 0:
+                    using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection))
+                    {
                         switch (e.Action)
                         {
                             case NotifyCollectionChangedAction.Add:
-                                if (e.NewItems?.Count is 1)
+                                if (e.NewItems is null)
                                 {
-                                    RunFSM<TrackUserAddItem>(e.NewItems[0]);
+                                    e.ThrowHard<InvalidOperationException>($"{nameof(e.NewItems)} cannot be null.");
                                 }
                                 else
                                 {
-                                    LoadCanon(sender as IEnumerable);
+                                    foreach (var item in e.NewItems)
+                                    {
+                                        AddItemToModel(item);
+                                    }
                                 }
                                 break;
                             case NotifyCollectionChangedAction.Move:
+                                Debug.Fail($@"ADVISORY - First Time.");
                                 break;
                             case NotifyCollectionChangedAction.Remove:
+                                if (e.OldItems is null)
+                                {
+                                    e.ThrowHard<InvalidOperationException>($"{nameof(e.OldItems)} cannot be null.");
+                                }
+                                else
+                                {
+                                    foreach (var item in e.OldItems)
+                                    {
+                                        AddItemToModel(item);
+                                    }
+                                }
                                 break;
                             case NotifyCollectionChangedAction.Replace:
+                                LoadCanon(e.NewItems);
                                 break;
                             case NotifyCollectionChangedAction.Reset:
                                 if (sender is IList list && list.Count == 0)
@@ -683,15 +657,41 @@ Inherited contexts manage their projection internally.".TrimStart());
                                 ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");
                                 break;
                         }
+                    }
+                    break;
+                case CollectionChangeAuthority.None:    // Explicit suppress authority.
+                case CollectionChangeAuthority.Model:   // The external collection is changing under this model's authority.
+                    Debug.Fail($@"ADVISORY - First Time.");
+                    break;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                    break;
+            }
+        }
 
-                        break;
-                    case CollectionChangeAuthority.None:
-                    case CollectionChangeAuthority.Model:
-                    default:
-                        {   /* G T K - N O O P */
-                        }
-                        break;
-                }
+        /// <summary>
+        /// Applies canonical reconciliation logic when the authoritative superset changes.
+        /// </summary>
+        /// <remarks>
+        /// This handler represents the back-end mutation sink for the context. All structural
+        /// changes to the canonical superset pass through here so the routed projection,
+        /// filtering state, and collection notifications remain consistent with the
+        /// authoritative dataset for the current epoch.
+        ///
+        /// Mental Model: "The canonical ledger changed. Reconcile projections and notify observers."
+        /// </remarks>
+        protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            Debug.Assert(
+                !ReferenceEquals(ObservableNetProjection, CanonicalSupersetProtected),
+                "Different references, Different events. These are *never* the same reference."
+            );
+
+            if (ReferenceEquals(sender, ObservableNetProjection))
+            {
+                Debug.Assert(
+                    IsFiltering,
+                    "Expecting to *never* see this in a non-filtering context.");
             }
         }
 
@@ -1434,53 +1434,6 @@ Inherited contexts manage their projection internally.".TrimStart());
                 }
             }
 
-            void localAddItemToModel()
-            {
-                object? item = context;
-                if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
-                {
-                    int
-                        indexForAdd = Model.GetAttributeValue<int>(StdMarkdownAttribute.autocount),
-                        countB4 = Model.GetAttributeValue<int>(StdMarkdownAttribute.count, 0),
-                        matchesB4 = Model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
-
-                    var placerResult = Model.Place(full, out var xel);
-                    switch (placerResult)
-                    {
-                        case PlacerResult.Exists:
-                            break;
-                        case PlacerResult.Created:
-                            xel.Name = nameof(StdMarkdownElement.xitem);
-                            xel.SetBoundAttributeValue(
-                                tag: item,
-                                name: nameof(StdMarkdownAttribute.model));
-
-                            xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), indexForAdd);
-                            Model.SetAttributeValue(nameof(StdMarkdownAttribute.count), ++countB4);
-                            Model.SetAttributeValue(nameof(StdMarkdownAttribute.matches), ++matchesB4);
-                            break;
-                        default:
-                            this.ThrowFramework<NotSupportedException>(
-                                $"Unexpected result: `{placerResult.ToFullKey()}`. Expected options are {PlacerResult.Created} or {PlacerResult.Exists}");
-                            break;
-                    }
-                }
-                else
-                {
-                    ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
-                }
-            }
-
-            void localRemoveItemFromModel()
-            {
-                object? item = context;
-                if (ContractType.GetPK()?.PropertyInfo is { } pi)
-                {
-
-                }
-                else ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
-            }
-
             void localRaiseModelSettled()
             {
                 var e = context as ModelSettledEventArgs
@@ -1492,6 +1445,53 @@ Inherited contexts manage their projection internally.".TrimStart());
             #endregion L o c a l F x
         }
 
+
+        void AddItemToModel(object? item)
+        {            
+            if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
+            {
+                int
+                    indexForAdd = Model.GetAttributeValue<int>(StdMarkdownAttribute.autocount),
+                    countB4 = Model.GetAttributeValue<int>(StdMarkdownAttribute.count, 0),
+                    matchesB4 = Model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
+
+                var placerResult = Model.Place(full, out var xel);
+                switch (placerResult)
+                {
+                    case PlacerResult.Exists:
+                        break;
+                    case PlacerResult.Created:
+                        xel.Name = nameof(StdMarkdownElement.xitem);
+                        xel.SetBoundAttributeValue(
+                            tag: item,
+                            name: nameof(StdMarkdownAttribute.model));
+
+                        xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), indexForAdd);
+                        Model.SetAttributeValue(nameof(StdMarkdownAttribute.count), ++countB4);
+                        Model.SetAttributeValue(nameof(StdMarkdownAttribute.matches), ++matchesB4);
+                        break;
+                    default:
+                        this.ThrowFramework<NotSupportedException>(
+                            $"Unexpected result: `{placerResult.ToFullKey()}`. Expected options are {PlacerResult.Created} or {PlacerResult.Exists}");
+                        break;
+                }
+            }
+            else
+            {
+                ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
+            }
+        }
+
+        void localRemoveItemFromModel(object? item)
+        {
+            if (item.GetFullPath() is { } full 
+                && !string.IsNullOrWhiteSpace(full)
+                && PlacerResult.Exists ==Model.Place(full, out var xel, PlacerMode.FindOrPartial))
+            {
+                Debug.Fail($@"ADVISORY - First Time.");
+            }
+            else ThrowHard<NullReferenceException>("Expecting object exists.");
+        }
         protected override void OnCommit(RecordsetRequestEventArgs e)
         {
             base.OnCommit(e);

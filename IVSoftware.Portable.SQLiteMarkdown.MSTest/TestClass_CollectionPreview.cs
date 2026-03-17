@@ -38,6 +38,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             #endregion M D C    B O O T S T R A P
 
             opc.AddDynamic("Brown Dog", "[canine][color]", false, new() { "loyal", "friend", "furry" });
+            { }
         }
     }
 }

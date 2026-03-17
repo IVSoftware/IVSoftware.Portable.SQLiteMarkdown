@@ -331,8 +331,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// projection, the (presumably visible) collection.
         /// </summary>
         Model = None + 1,
-
-#if false
         /// <summary>
         /// The user has effected a (presumably UI-related) change to a filtered collection.
         /// </summary>
@@ -341,7 +339,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// User-facing {add, edit, remove} operations that occur against a filtered projection are *exempt* from the filter.
         /// </remarks>
         Projection = Model + 1,
-#endif
     }
 
     /// <summary>
