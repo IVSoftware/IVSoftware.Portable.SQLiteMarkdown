@@ -3188,21 +3188,21 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                 actual.ToClipboardExpected();
                 { }
 
-                // [Careful("What?")] No 'preview' attribute? THAT'S BECAUSE THIS IS SelectableQFModelLTOQO and *not* IAffinityModel.
+                // [Careful("What?")] No 'preview' attribute? THAT'S BECAUSE THIS IS SelectableQFModel and *not* IAffinityModel.
                 expected = @" 
 <model autocount=""12"" count=""12"" matches=""12"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModelLTOQO]"" sort=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModelLTOQO]"" sort=""1"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModelLTOQO]"" sort=""2"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModelLTOQO]"" sort=""3"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModelLTOQO]"" sort=""4"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModelLTOQO]"" sort=""5"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModelLTOQO]"" sort=""6"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModelLTOQO]"" sort=""7"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModelLTOQO]"" sort=""8"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModelLTOQO]"" sort=""9"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModelLTOQO]"" sort=""10"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModelLTOQO]"" sort=""11"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" sort=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" sort=""1"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" sort=""2"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" sort=""3"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" sort=""4"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" sort=""5"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" sort=""6"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" sort=""7"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" sort=""8"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" sort=""9"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" sort=""10"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" sort=""11"" />
 </model>"
                 ;
 
@@ -3216,15 +3216,14 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                 // is representative of what we'd see in the visible list.
                 actual = string.Join(Environment.NewLine, newItems.Cast<object>().Select(_ => _.ToString()));
                 actual.ToClipboardExpected();
-                { }
                 var newItemsPayload = @" 
-Black Cat  [animal] [color]
-Orange Fox  [animal] [color]
-White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
-Gray Wolf ""pack"",""howl"",""wild"" [animal] [color]
-Golden Lion  [animal] [color]
-Brown Bear ""strong"",""wild"",""forest"" [animal] [color]
-Black Panther ""stealthy"",""feline"",""night"" [animal] [color]
+Black Cat  [animal][color]
+Orange Fox  [animal][color]
+White Rabbit ""bunny"",""soft"",""jump"" [animal][color]
+Gray Wolf ""pack"",""howl"",""wild"" [animal][color]
+Golden Lion  [animal][color]
+Brown Bear ""strong"",""wild"",""forest"" [animal][color]
+Black Panther ""stealthy"",""feline"",""night"" [animal][color]
 Elephant ""trunk"",""herd"",""safari"" [animal]
 Giraffe  [animal]
 Kangaroo ""bounce"",""outback"",""marsupial"" [animal]
@@ -3260,9 +3259,9 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
 
                 actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
                 expected = @" 
-Green Apple ""tart"",""snack"",""healthy"" [fruit] [color]
+Green Apple ""tart"",""snack"",""healthy"" [fruit][color]
 Errata ""crunchy"",""green"",""appended"" [notes]
-Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portable]"
+Great example - Markdown Demo ""digital"",""mobile"",""software"" [app][portable]"
                 ;
 
                 Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, items.SearchEntryState);
