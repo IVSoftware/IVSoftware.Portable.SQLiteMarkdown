@@ -1,24 +1,14 @@
-﻿using IVSoftware.Portable;
-using IVSoftware.Portable.Common.Attributes;
+﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.Xml.Linq;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using SQLite;
-using SQLitePCL;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
@@ -255,6 +245,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return string.Join(string.Empty, split.Select(_ => _.EncloseInSquareBrackets().ApplyCasing(stringCasing)));
         }
 
+        internal static bool UseSpaceBetween { get; set; } = true;
         /// <summary>
         /// Normalizes a tag string into canonical bracketed form by detecting
         /// the applicable tag grammar.
@@ -271,7 +262,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         /// <param name="value">The raw tag input string.</param>
         /// <returns>A canonical bracketed tag string.</returns>
-        public static string NormalizeTags(this string value, bool useSpaceBetween = false)
+        public static string NormalizeTags(this string value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -314,7 +305,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
             var preview = 
-                useSpaceBetween
+                UseSpaceBetween
                 ? string.Concat(tokens.Select(t => $" [{t}]")).TrimStart()
                 : string.Concat(tokens.Select(t => $"[{t}]"));
             return preview;
