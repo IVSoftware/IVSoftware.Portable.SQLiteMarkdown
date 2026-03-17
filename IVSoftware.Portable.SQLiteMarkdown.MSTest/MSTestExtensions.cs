@@ -240,7 +240,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             var builder = new List<string>();
             builder.Add($"[IME Len: {@this.InputText.Length}");
             builder.Add($"IsFiltering: {@this.IsFiltering}]");
-            builder.Add($"[Net: {(@this.ObservableNetProjection is IList list ? list.Count : "null")}");
+            if (@this is IModeledMarkdownContext mmdc)
+            {
+                builder.Add($"[Net: {(mmdc.ObservableNetProjection is IList list ? list.Count : "null")}");
+            }
             builder.Add($"CC: {@this.CanonicalCount}");
             builder.Add($"PMC: {@this.PredicateMatchCount}]");
             builder.Add($"[{@this.QueryFilterConfig}: {@this.SearchEntryState.ToFullKey()}");
@@ -248,7 +251,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             return string.Join(", ", builder);
         }
 
-        public static string OptionsReport(this MarkdownContext @this)
+        public static string OptionsReport(this IModeledMarkdownContext @this)
         {
             var builder = new List<string>();
             builder.Add($"{@this.ProjectionTopology.ToFullKey()}");

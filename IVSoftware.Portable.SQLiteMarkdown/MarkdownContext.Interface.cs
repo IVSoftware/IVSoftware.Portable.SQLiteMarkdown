@@ -182,15 +182,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             RecordsetRequest?.Invoke(this, e);
             if (!e.Handled)
             {
-                if (e.CanonicalSuperset is null)
+                if(RecordsetRequest is null)
+                {   /* G T K - N O O P */
+                    // This event simply has no subscribers.
+                }
+                else
                 {
-                    if (MemoryDatabase is null && RecordsetRequest is null)
-                    {   /* G T K - N O O P */
-                        // This event simply has no subscribers.
-                    }
-                    else
+                    // This on the other hand signals intention, so
+                    // at least one of these things should be available:
+                    if (e.CanonicalSuperset is null && MemoryDatabase is null)
                     {
-                        // This on the other hand signals intention but no delivery.
+                        // No recordset delivered. No obvious means of getting one.
                         nameof(MarkdownContext).ThrowHard<InvalidOperationException>(
                             $"Expecting {nameof(e.CanonicalSuperset)} or {nameof(e.Handled)}.");
                     }

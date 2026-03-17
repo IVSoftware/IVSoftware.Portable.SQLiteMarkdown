@@ -29,7 +29,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         public ModeledMarkdownContext()
         {
-
             // Self-detect the topology.
             // - RTTI claims INotifyCollectionChange implementation.
             // - This class, however, doesn't do that on its own.
@@ -1541,6 +1540,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                 if (_canonicalSupersetProtected is null)
                 {
                     _canonicalSupersetProtected = new ObservableCollection<T>();
+                    _canonicalSupersetProtected.CollectionChanged += OnCanonicalSupersetChanged;
                 }
                 return _canonicalSupersetProtected;
             }

@@ -14,8 +14,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         {
             Switcheroo.ObservableNetProjectionWithComposition<ItemCardModel>
                 opc = new();
-            MarkdownContext
-                mdc = opc.Model.To<MarkdownContext>();
+            IModeledMarkdownContext
+                mdc = opc.Model.To<IModeledMarkdownContext>();
             { }
             // F I L T E R    M O D E    ! ! ! !
             opc.QueryFilterConfig = QueryFilterConfig.Filter;
