@@ -172,6 +172,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         string ParseSqlMarkdown<T>();
         string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query);
 
+        /// <summary>
+        /// Parses the current <see cref="InputText"/> and raises the <see cref="RecordsetRequested"/> event.
+        /// </summary>
         void Commit();
         #endregion P A R S E
 

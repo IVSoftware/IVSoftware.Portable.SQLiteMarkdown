@@ -1,14 +1,23 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
@@ -355,5 +364,131 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected new ObservableCollection<T> CanonicalSupersetProtected
             => (ObservableCollection<T>)base.CanonicalSupersetProtected;
+
+
+        SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
+        protected override async Task ApplyFilter()
+        {
+            await base.ApplyFilter();
+
+            using (DHostBusy.GetToken())
+            {
+                await _sslimAF.WaitAsync();
+                try
+                {
+                    string sql;
+                    IList matches = Array.Empty<object>();
+                    string[] matchPaths;
+
+                    await Task.Run(async () =>
+                    {
+                        PredicateMatchSubsetPrivate.Clear();
+                        Model.RemoveDescendantAttributes(StdMarkdownAttribute.ismatch);
+
+                        #region F I L T E R    Q U E R Y
+                        sql = ParseSqlMarkdown();
+#if DEBUG
+                        if (InputText == "b")
+                        {
+                            Debug.Assert(sql == @"
+SELECT * FROM items WHERE
+(FilterTerm LIKE '%b%')".TrimStart(),
+                            "PROBABLY *NOT* BUGIRL - SCREENING FOR A SPURIOUS FAIL");
+                        }
+#endif
+                        // Execute the filter query against the proxy table. The returned rows are
+                        // lightweight proxy records used only to discover which canonical models
+                        // satisfy the predicate. These proxy instances are not inserted into the
+                        // projection; instead their paths are resolved back to the original model
+                        // objects bound in the AST.
+                        matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
+                        #endregion F I L T E R    Q U E R Y
+
+                        Model.SetAttributeValue(StdMarkdownAttribute.matches, (matchPaths = localGetPaths()).Length);
+
+                        foreach (var path in matchPaths)
+                        {
+                            switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
+                            {
+                                case PlacerResult.Exists:
+                                    xaf.SetAttributeValue(nameof(StdMarkdownAttribute.ismatch), bool.TrueString);
+                                    if (xaf.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
+                                        && xbaModel.Tag is { } model)
+                                    {
+                                        PredicateMatchSubsetPrivate.Add(model);
+                                    }
+                                    break;
+                                case PlacerResult.Created:
+                                    this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                        {
+                            await ApplyAffinities(matches);
+                        }
+                    });
+
+                    var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangedReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
+
+                    if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
+                    {
+                        OnModelSettled(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
+                            reason: NotifyCollectionChangedReason.ApplyFilter,
+                            e: eStructural));
+                    }
+                    if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
+                    {
+                        OnModelSettled(eReset);
+                    }
+
+#if ABSTRACT
+            // EXAMPLE<model autocount="3" count="3" matches="1">
+              <xitem text="312d1c21-0000-0000-0000-000000000001" model="[SelectableQFModelLTOQO]" sort="0" />
+              <xitem text="312d1c21-0000-0000-0000-00000000002c" model="[SelectableQFModelLTOQO]" sort="1" />
+              <xitem text="312d1c21-0000-0000-0000-00000000002e" model="[SelectableQFModelLTOQO]" sort="2" ismatch="True" />
+            </model>
+#endif
+
+
+                    #region L o c a l F x
+
+                    /// <summary>
+                    /// Resolves the path identifiers for the matched recordset. When the proxy
+                    /// implements <c>IPrioritizedAffinity</c>, paths are taken directly from
+                    /// <c>FullPath</c>; otherwise the value of the mapped SQLite primary key is
+                    /// used. A missing primary key mapping is treated as a framework error.
+                    /// </summary>
+                    string[] localGetPaths()
+                    {
+                        if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                        {
+                            return matches.Cast<IPrioritizedAffinity>().Select(_ => _.FullPath).ToArray();
+                        }
+                        else
+                        {
+                            if (ProxyType.GetSQLiteMapping().PK?.PropertyInfo is PropertyInfo pi)
+                            {
+                                return matches.Cast<object>().Select(_ => (string)pi.GetValue(_)).ToArray();
+                            }
+                            // Error fall-through.
+                            this.ThrowHard<InvalidOperationException>();
+                            return [];
+                        }
+                    }
+                    #endregion L o c a l F x
+                }
+                catch (Exception ex)
+                {
+                    this.RethrowHard(ex);
+                }
+                finally
+                {
+                    _sslimAF.Release();
+                }
+            }
+        }
     }
 }
