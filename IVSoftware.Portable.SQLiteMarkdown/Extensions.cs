@@ -271,7 +271,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         /// <param name="value">The raw tag input string.</param>
         /// <returns>A canonical bracketed tag string.</returns>
-        public static string NormalizeTags(this string value)
+        public static string NormalizeTags(this string value, bool useSpaceBetween = false)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -313,7 +313,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 value
                     .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-            return string.Concat(tokens.Select(t => $"[{t}]"));
+            var preview = 
+                useSpaceBetween
+                ? string.Concat(tokens.Select(t => $" [{t}]")).TrimStart()
+                : string.Concat(tokens.Select(t => $"[{t}]"));
+            return preview;
         }
 
         private static bool TryParseBracketGrammar(string input, out IEnumerable<string> tokens)
