@@ -623,7 +623,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                 ObservableNetProjection is null,
                 "Expecting CanonicalSuperset *is* the source of all model changes.");
 
-            using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection);
+            using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Model);
             if (Authority == CollectionChangeAuthority.Model)
             {
                 UpdateModelWithAuthority(sender, e);
