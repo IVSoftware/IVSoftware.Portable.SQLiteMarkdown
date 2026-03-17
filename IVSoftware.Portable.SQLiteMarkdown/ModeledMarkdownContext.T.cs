@@ -599,7 +599,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
             else
             {
-                Debug.Fail($@"ADVISORY - First Time.");
+                Debug.Assert(Authority == CollectionChangeAuthority.Model);
             }
         }
 
@@ -636,19 +636,83 @@ Inherited contexts manage their projection internally.".TrimStart());
 
         protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
         {
+            #region A U T H O R I T Y    G U A R D
             switch (Authority)
             {
+                case CollectionChangeAuthority.Model:
+                case CollectionChangeAuthority.Projection:
+                    // The players.
+                    break;
                 case 0:
                     this.ThrowFramework<InvalidOperationException>($"{nameof(CollectionChangeAuthority)} is required.");
-                    break;
+                    return;
                 case CollectionChangeAuthority.None:
-                    break;
-                case CollectionChangeAuthority.Model:
-                    break;
-                case CollectionChangeAuthority.Projection:
-                    break;
+                    Debug.Fail($@"ADVISORY - Explicit no authority. Is this what we really want here?.");
+                    return;
                 default:
                     this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                    return;
+            }
+            #endregion A U T H O R I T Y    G U A R D
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    if (e.NewItems is null)
+                    {
+                        e.ThrowHard<InvalidOperationException>($"{nameof(e.NewItems)} cannot be null.");
+                    }
+                    else
+                    {
+                        foreach (var item in e.NewItems)
+                        {
+                            AddItemToModel(item);
+                        }
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    Debug.Fail($@"ADVISORY - First Time.");
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    if (e.OldItems is null)
+                    {
+                        e.ThrowHard<InvalidOperationException>($"{nameof(e.OldItems)} cannot be null.");
+                    }
+                    else
+                    {
+                        foreach (var item in e.OldItems)
+                        {
+                            AddItemToModel(item);
+                        }
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    LoadCanon(e.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    if (sender is IList list && list.Count == 0)
+                    {
+                        // #{A665C02F-B1DE-45AE-8DAD-67775114E725}
+                        if (Model.HasElements)
+                        {
+                            Model.RemoveAll();
+                        }
+                        if (SearchEntryState != SearchEntryState.Cleared)
+                        {
+                            SearchEntryState = SearchEntryState.Cleared;
+                        }
+                        if (FilteringState != FilteringState.Ineligible)
+                        {
+                            FilteringState = FilteringState.Ineligible;
+                        }
+                    }
+                    else
+                    {
+                        LoadCanon(sender as IEnumerable);
+                    }
+                    break;
+                default:
+                    ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");
                     break;
             }
         }
