@@ -165,6 +165,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         #region P A R S E
         /// <summary>
+        /// The canonical contract type that defines the authoritative table shape for this context.
+        /// </summary>
+        Type ContractType { get; }
+
+        /// <summary>
+        /// The type whose attributes define the parsing behavior.
+        /// </summary>
+        /// <remarks>
+        /// Must be a non-interface type. Abstract types are permitted.
+        /// The proxy type must resolve to the same underlying table as <see cref="ContractType"/>.
+        /// 
+        /// Multiple proxy types may target the same table schema, each providing a different
+        /// attribute-driven interpretation for parsing and filtering.
+        /// </remarks>
+        Type ProxyType { get; }
+
+        /// <summary>
         /// Use the current value of InputText to parse an expression against ContractType.
         /// </summary>
         string ParseSqlMarkdown();

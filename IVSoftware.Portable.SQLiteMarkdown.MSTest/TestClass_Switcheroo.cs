@@ -512,6 +512,10 @@ MarkdownContext Clear(all=True)";
                 set => ((IMarkdownContext)_mdc).InputTextSettlingTime = value;
             }
 
+            public Type ContractType => ((IMarkdownContext)_mdc).ContractType;
+
+            public Type ProxyType => ((IMarkdownContext)_mdc).ProxyType;
+
             INotifyCollectionChanged? _observableNetProjection = default;
 
             protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
