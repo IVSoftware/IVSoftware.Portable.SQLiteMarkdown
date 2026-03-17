@@ -56,29 +56,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 XElement(nameof(StdAstNode.ast))
                 .WithBoundAttributeValue(this);
             ContractType = type;
-
-            // Self-detect the topology.
-            // - RTTI claims INotifyCollectionChange implementation.
-            // - This class, however, doesn't do that on its own.
-            // - Inheritance is the only possibility.
-            _isInherited = typeof(INotifyCollectionChanged).IsAssignableFrom(GetType());
-            if(_isInherited)
-            {
-                if (this.GetType().GetMethod(nameof(Clear), Type.EmptyTypes) is { } clearMethod)
-                {   /* B C S - N O O P */
-                }
-                else
-                {
-                    // Avoid leaking the object itself as the awaited sender.
-                    nameof(MarkdownContext).Advisory(
-                        $"Inherited MarkdownContext detected, but no parameterless Clear() was found. " +
-                        "Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. " +
-                        "If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. " +
-                        "You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit."
-                    );
-                }
-            }
         }
+
+        // Avoids exposing the MDC itself on the static Throw event.
+        protected Throw ThrowHard<T>(string messageOrId) => nameof(MarkdownContext).ThrowHard<T>(messageOrId);
+        protected Throw ThrowFramework<T>(string messageOrId) => nameof(MarkdownContext).ThrowFramework<T>(messageOrId);
 
         public virtual XElement Model { get; } = new XElement(nameof(StdMarkdownElement.model));
 
@@ -110,57 +92,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         TimeSpan _interval = default;
-
-        /// <summary>
-        /// Factory-backed canonical superset used by the back-end event pipeline 
-        /// even when the visible ObservableNetProjection is filtered or divergent.
-        /// </summary>
-        /// <remarks>
-        /// This collection represents the authoritative recordset for the current epoch.
-        /// The ObservableNetProjection may expose a filtered or reordered view for UI
-        /// interaction, but all structural reconciliation ultimately resolves against
-        /// this canonical superset.
-        /// </remarks>
-        public ICollection CanonicalSuperset => CanonicalSupersetProtected;
-        public IList CanonicalSupersetProtected
-        {
-            get
-            {
-                if (_canonicalSupersetProtected is null)
-                {
-                    // I N C C    O B S E R V A B L E
-                    _canonicalSupersetProtected = (IList)Activator.CreateInstance(
-                        typeof(ObservableCollection<>).MakeGenericType(ContractType)
-                    )!;
-
-                    ((INotifyCollectionChanged)_canonicalSupersetProtected).CollectionChanged
-                        += OnCanonicalSupersetChanged;
-                }
-                return _canonicalSupersetProtected;
-            }
-        }
-        IList? _canonicalSupersetProtected = null;
-
-
-        public ICollection PredicateMatchSubset => PredicateMatchSubsetPrivate;
-
-        public IList PredicateMatchSubsetPrivate
-        {
-            get
-            {
-                if (_predicateMatchSubsetPrivate is null)
-                {
-                    // I L I S T    
-                    _predicateMatchSubsetPrivate =
-                        (IList)Activator
-                        .CreateInstance(
-                            typeof(List<>).MakeGenericType(ContractType)
-                        )!;
-                }
-                return _predicateMatchSubsetPrivate;
-            }
-        }
-        IList? _predicateMatchSubsetPrivate = null;
 
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
 
@@ -2048,15 +1979,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         SearchEntryState _searchEntryState = default;
 
-        protected virtual void OnSearchEntryStateChanged() 
-        {
-            if (SearchEntryState == SearchEntryState.Cleared)
-            {
-                if (Equals(ReservedFSMState.FastTrack, RunFSM<NativeClearFSM>()))
-                {   /* G T K */
-                }
-            }
-        }
+        protected virtual void OnSearchEntryStateChanged() { }
 
 #if DEBUG
         protected SemaphoreSlimWithTrace _ready { get; } = new SemaphoreSlimWithTrace(1, 1);
