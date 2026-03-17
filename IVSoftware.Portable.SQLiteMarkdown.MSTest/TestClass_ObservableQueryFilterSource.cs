@@ -1,4 +1,5 @@
 using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
@@ -453,17 +454,17 @@ SELECT * FROM items WHERE (FilterTerm LIKE '%animal%')"
 Description    =""Brown Dog""
 Keywords       =""[""loyal"",""friend"",""furry""]""
 KeywordsDisplay=""""loyal"",""friend"",""furry""""
-Tags           =""[canine][color][atomic tag]""
-TagsDisplay    =""[canine][color][atomic tag]""
+Tags           =""[canine] [color] [atomic tag]""
+TagsDisplay    =""[canine] [color] [atomic tag]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""brown~dog~loyal~friend~furry~[canine][color][atomic tag]""
+QueryTerm      =""brown~dog~loyal~friend~furry~[canine]~[color]~[atomic tag]""
 FilterTerm     =""brown~dog~loyal~friend~furry""
-TagMatchTerm   =""[canine][color][atomic tag]""
+TagMatchTerm   =""[canine] [color] [atomic tag]""
 Properties     =""{
   ""Description"": ""Brown Dog"",
-  ""Tags"": ""[canine][color][atomic tag]"",
+  ""Tags"": ""[canine] [color] [atomic tag]"",
   ""Keywords"": ""[\""loyal\"",\""friend\"",\""furry\""]""
 }""
 "
@@ -640,329 +641,329 @@ SELECT * FROM items WHERE
 Description    =""Brown Dog""
 Keywords       =""[""loyal"",""friend"",""furry""]""
 KeywordsDisplay=""""loyal"",""friend"",""furry""""
-Tags           =""[canine][color]""
-TagsDisplay    =""[canine][color]""
+Tags           =""[canine] [color]""
+TagsDisplay    =""[canine] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""brown~dog~loyal~friend~furry~[canine][color]""
+QueryTerm      =""brown~dog~loyal~friend~furry~[canine]~[color]""
 FilterTerm     =""brown~dog~loyal~friend~furry""
-TagMatchTerm   =""[canine][color]""
+TagMatchTerm   =""[canine] [color]""
 Properties     =""{
   ""Description"": ""Brown Dog"",
-  ""Tags"": ""[canine][color]"",
+  ""Tags"": ""[canine] [color]"",
   ""Keywords"": ""[\""loyal\"",\""friend\"",\""furry\""]""
 }""
 
 Description    =""Green Apple""
 Keywords       =""[""tart"",""snack"",""healthy""]""
 KeywordsDisplay=""""tart"",""snack"",""healthy""""
-Tags           =""[fruit][color]""
-TagsDisplay    =""[fruit][color]""
+Tags           =""[fruit] [color]""
+TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""green~apple~tart~snack~healthy~[fruit][color]""
+QueryTerm      =""green~apple~tart~snack~healthy~[fruit]~[color]""
 FilterTerm     =""green~apple~tart~snack~healthy""
-TagMatchTerm   =""[fruit][color]""
+TagMatchTerm   =""[fruit] [color]""
 Properties     =""{
   ""Description"": ""Green Apple"",
-  ""Tags"": ""[fruit][color]"",
+  ""Tags"": ""[fruit] [color]"",
   ""Keywords"": ""[\""tart\"",\""snack\"",\""healthy\""]""
 }""
 
 Description    =""Yellow Banana""
 Keywords       =""[]""
 KeywordsDisplay=""""
-Tags           =""[fruit][color]""
-TagsDisplay    =""[fruit][color]""
+Tags           =""[fruit] [color]""
+TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""yellow~banana~[fruit][color]""
+QueryTerm      =""yellow~banana~[fruit]~[color]""
 FilterTerm     =""yellow~banana""
-TagMatchTerm   =""[fruit][color]""
+TagMatchTerm   =""[fruit] [color]""
 Properties     =""{
   ""Description"": ""Yellow Banana"",
-  ""Tags"": ""[fruit][color]""
+  ""Tags"": ""[fruit] [color]""
 }""
 
 Description    =""Blue Bird""
 Keywords       =""[""sky"",""feathered"",""song""]""
 KeywordsDisplay=""""sky"",""feathered"",""song""""
-Tags           =""[bird][color]""
-TagsDisplay    =""[bird][color]""
+Tags           =""[bird] [color]""
+TagsDisplay    =""[bird] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""blue~bird~sky~feathered~song~[bird][color]""
+QueryTerm      =""blue~bird~sky~feathered~song~[bird]~[color]""
 FilterTerm     =""blue~bird~sky~feathered~song""
-TagMatchTerm   =""[bird][color]""
+TagMatchTerm   =""[bird] [color]""
 Properties     =""{
   ""Description"": ""Blue Bird"",
-  ""Tags"": ""[bird][color]"",
+  ""Tags"": ""[bird] [color]"",
   ""Keywords"": ""[\""sky\"",\""feathered\"",\""song\""]""
 }""
 
 Description    =""Red Cherry""
 Keywords       =""[""sweet"",""summer"",""dessert""]""
 KeywordsDisplay=""""sweet"",""summer"",""dessert""""
-Tags           =""[fruit][color]""
-TagsDisplay    =""[fruit][color]""
+Tags           =""[fruit] [color]""
+TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""red~cherry~sweet~summer~dessert~[fruit][color]""
+QueryTerm      =""red~cherry~sweet~summer~dessert~[fruit]~[color]""
 FilterTerm     =""red~cherry~sweet~summer~dessert""
-TagMatchTerm   =""[fruit][color]""
+TagMatchTerm   =""[fruit] [color]""
 Properties     =""{
   ""Description"": ""Red Cherry"",
-  ""Tags"": ""[fruit][color]"",
+  ""Tags"": ""[fruit] [color]"",
   ""Keywords"": ""[\""sweet\"",\""summer\"",\""dessert\""]""
 }""
 
 Description    =""Black Cat""
 Keywords       =""[]""
 KeywordsDisplay=""""
-Tags           =""[animal][color]""
-TagsDisplay    =""[animal][color]""
+Tags           =""[animal] [color]""
+TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""black~cat~[animal][color]""
+QueryTerm      =""black~cat~[animal]~[color]""
 FilterTerm     =""black~cat""
-TagMatchTerm   =""[animal][color]""
+TagMatchTerm   =""[animal] [color]""
 Properties     =""{
   ""Description"": ""Black Cat"",
-  ""Tags"": ""[animal][color]""
+  ""Tags"": ""[animal] [color]""
 }""
 
 Description    =""Orange Fox""
 Keywords       =""[]""
 KeywordsDisplay=""""
-Tags           =""[animal][color]""
-TagsDisplay    =""[animal][color]""
+Tags           =""[animal] [color]""
+TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""orange~fox~[animal][color]""
+QueryTerm      =""orange~fox~[animal]~[color]""
 FilterTerm     =""orange~fox""
-TagMatchTerm   =""[animal][color]""
+TagMatchTerm   =""[animal] [color]""
 Properties     =""{
   ""Description"": ""Orange Fox"",
-  ""Tags"": ""[animal][color]""
+  ""Tags"": ""[animal] [color]""
 }""
 
 Description    =""White Rabbit""
 Keywords       =""[""bunny"",""soft"",""jump""]""
 KeywordsDisplay=""""bunny"",""soft"",""jump""""
-Tags           =""[animal][color]""
-TagsDisplay    =""[animal][color]""
+Tags           =""[animal] [color]""
+TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""white~rabbit~bunny~soft~jump~[animal][color]""
+QueryTerm      =""white~rabbit~bunny~soft~jump~[animal]~[color]""
 FilterTerm     =""white~rabbit~bunny~soft~jump""
-TagMatchTerm   =""[animal][color]""
+TagMatchTerm   =""[animal] [color]""
 Properties     =""{
   ""Description"": ""White Rabbit"",
-  ""Tags"": ""[animal][color]"",
+  ""Tags"": ""[animal] [color]"",
   ""Keywords"": ""[\""bunny\"",\""soft\"",\""jump\""]""
 }""
 
 Description    =""Purple Grape""
 Keywords       =""[]""
 KeywordsDisplay=""""
-Tags           =""[fruit][color]""
-TagsDisplay    =""[fruit][color]""
+Tags           =""[fruit] [color]""
+TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""purple~grape~[fruit][color]""
+QueryTerm      =""purple~grape~[fruit]~[color]""
 FilterTerm     =""purple~grape""
-TagMatchTerm   =""[fruit][color]""
+TagMatchTerm   =""[fruit] [color]""
 Properties     =""{
   ""Description"": ""Purple Grape"",
-  ""Tags"": ""[fruit][color]""
+  ""Tags"": ""[fruit] [color]""
 }""
 
 Description    =""Gray Wolf""
 Keywords       =""[""pack"",""howl"",""wild""]""
 KeywordsDisplay=""""pack"",""howl"",""wild""""
-Tags           =""[animal][color]""
-TagsDisplay    =""[animal][color]""
+Tags           =""[animal] [color]""
+TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""gray~wolf~pack~howl~wild~[animal][color]""
+QueryTerm      =""gray~wolf~pack~howl~wild~[animal]~[color]""
 FilterTerm     =""gray~wolf~pack~howl~wild""
-TagMatchTerm   =""[animal][color]""
+TagMatchTerm   =""[animal] [color]""
 Properties     =""{
   ""Description"": ""Gray Wolf"",
-  ""Tags"": ""[animal][color]"",
+  ""Tags"": ""[animal] [color]"",
   ""Keywords"": ""[\""pack\"",\""howl\"",\""wild\""]""
 }""
 
 Description    =""Pink Flamingo""
 Keywords       =""[]""
 KeywordsDisplay=""""
-Tags           =""[bird][color]""
-TagsDisplay    =""[bird][color]""
+Tags           =""[bird] [color]""
+TagsDisplay    =""[bird] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""pink~flamingo~[bird][color]""
+QueryTerm      =""pink~flamingo~[bird]~[color]""
 FilterTerm     =""pink~flamingo""
-TagMatchTerm   =""[bird][color]""
+TagMatchTerm   =""[bird] [color]""
 Properties     =""{
   ""Description"": ""Pink Flamingo"",
-  ""Tags"": ""[bird][color]""
+  ""Tags"": ""[bird] [color]""
 }""
 
 Description    =""Golden Lion""
 Keywords       =""[]""
 KeywordsDisplay=""""
-Tags           =""[animal][color]""
-TagsDisplay    =""[animal][color]""
+Tags           =""[animal] [color]""
+TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""golden~lion~[animal][color]""
+QueryTerm      =""golden~lion~[animal]~[color]""
 FilterTerm     =""golden~lion""
-TagMatchTerm   =""[animal][color]""
+TagMatchTerm   =""[animal] [color]""
 Properties     =""{
   ""Description"": ""Golden Lion"",
-  ""Tags"": ""[animal][color]""
+  ""Tags"": ""[animal] [color]""
 }""
 
 Description    =""Brown Bear""
 Keywords       =""[""strong"",""wild"",""forest""]""
 KeywordsDisplay=""""strong"",""wild"",""forest""""
-Tags           =""[animal][color]""
-TagsDisplay    =""[animal][color]""
+Tags           =""[animal] [color]""
+TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""brown~bear~strong~wild~forest~[animal][color]""
+QueryTerm      =""brown~bear~strong~wild~forest~[animal]~[color]""
 FilterTerm     =""brown~bear~strong~wild~forest""
-TagMatchTerm   =""[animal][color]""
+TagMatchTerm   =""[animal] [color]""
 Properties     =""{
   ""Description"": ""Brown Bear"",
-  ""Tags"": ""[animal][color]"",
+  ""Tags"": ""[animal] [color]"",
   ""Keywords"": ""[\""strong\"",\""wild\"",\""forest\""]""
 }""
 
 Description    =""Green Pear""
 Keywords       =""[]""
 KeywordsDisplay=""""
-Tags           =""[fruit][color]""
-TagsDisplay    =""[fruit][color]""
+Tags           =""[fruit] [color]""
+TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""green~pear~[fruit][color]""
+QueryTerm      =""green~pear~[fruit]~[color]""
 FilterTerm     =""green~pear""
-TagMatchTerm   =""[fruit][color]""
+TagMatchTerm   =""[fruit] [color]""
 Properties     =""{
   ""Description"": ""Green Pear"",
-  ""Tags"": ""[fruit][color]""
+  ""Tags"": ""[fruit] [color]""
 }""
 
 Description    =""Red Strawberry""
 Keywords       =""[]""
 KeywordsDisplay=""""
-Tags           =""[fruit][color]""
-TagsDisplay    =""[fruit][color]""
+Tags           =""[fruit] [color]""
+TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""red~strawberry~[fruit][color]""
+QueryTerm      =""red~strawberry~[fruit]~[color]""
 FilterTerm     =""red~strawberry""
-TagMatchTerm   =""[fruit][color]""
+TagMatchTerm   =""[fruit] [color]""
 Properties     =""{
   ""Description"": ""Red Strawberry"",
-  ""Tags"": ""[fruit][color]""
+  ""Tags"": ""[fruit] [color]""
 }""
 
 Description    =""Black Panther""
 Keywords       =""[""stealthy"",""feline"",""night""]""
 KeywordsDisplay=""""stealthy"",""feline"",""night""""
-Tags           =""[animal][color]""
-TagsDisplay    =""[animal][color]""
+Tags           =""[animal] [color]""
+TagsDisplay    =""[animal] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""black~panther~stealthy~feline~night~[animal][color]""
+QueryTerm      =""black~panther~stealthy~feline~night~[animal]~[color]""
 FilterTerm     =""black~panther~stealthy~feline~night""
-TagMatchTerm   =""[animal][color]""
+TagMatchTerm   =""[animal] [color]""
 Properties     =""{
   ""Description"": ""Black Panther"",
-  ""Tags"": ""[animal][color]"",
+  ""Tags"": ""[animal] [color]"",
   ""Keywords"": ""[\""stealthy\"",\""feline\"",\""night\""]""
 }""
 
 Description    =""Yellow Lemon""
 Keywords       =""[]""
 KeywordsDisplay=""""
-Tags           =""[fruit][color]""
-TagsDisplay    =""[fruit][color]""
+Tags           =""[fruit] [color]""
+TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""yellow~lemon~[fruit][color]""
+QueryTerm      =""yellow~lemon~[fruit]~[color]""
 FilterTerm     =""yellow~lemon""
-TagMatchTerm   =""[fruit][color]""
+TagMatchTerm   =""[fruit] [color]""
 Properties     =""{
   ""Description"": ""Yellow Lemon"",
-  ""Tags"": ""[fruit][color]""
+  ""Tags"": ""[fruit] [color]""
 }""
 
 Description    =""White Swan""
 Keywords       =""[]""
 KeywordsDisplay=""""
-Tags           =""[bird][color]""
-TagsDisplay    =""[bird][color]""
+Tags           =""[bird] [color]""
+TagsDisplay    =""[bird] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""white~swan~[bird][color]""
+QueryTerm      =""white~swan~[bird]~[color]""
 FilterTerm     =""white~swan""
-TagMatchTerm   =""[bird][color]""
+TagMatchTerm   =""[bird] [color]""
 Properties     =""{
   ""Description"": ""White Swan"",
-  ""Tags"": ""[bird][color]""
+  ""Tags"": ""[bird] [color]""
 }""
 
 Description    =""Purple Plum""
 Keywords       =""[]""
 KeywordsDisplay=""""
-Tags           =""[fruit][color]""
-TagsDisplay    =""[fruit][color]""
+Tags           =""[fruit] [color]""
+TagsDisplay    =""[fruit] [color]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""purple~plum~[fruit][color]""
+QueryTerm      =""purple~plum~[fruit]~[color]""
 FilterTerm     =""purple~plum""
-TagMatchTerm   =""[fruit][color]""
+TagMatchTerm   =""[fruit] [color]""
 Properties     =""{
   ""Description"": ""Purple Plum"",
-  ""Tags"": ""[fruit][color]""
+  ""Tags"": ""[fruit] [color]""
 }""
 
 Description    =""Blue Whale""
 Keywords       =""[""ocean"",""mammal"",""giant""]""
 KeywordsDisplay=""""ocean"",""mammal"",""giant""""
-Tags           =""[marine-mammal][ocean]""
-TagsDisplay    =""[marine-mammal][ocean]""
+Tags           =""[marine-mammal] [ocean]""
+TagsDisplay    =""[marine-mammal] [ocean]""
 IsChecked      =""False""
 Selection      =""None""
 IsEditing      =""False""
-QueryTerm      =""blue~whale~ocean~mammal~giant~[marine-mammal][ocean]""
+QueryTerm      =""blue~whale~ocean~mammal~giant~[marine-mammal]~[ocean]""
 FilterTerm     =""blue~whale~ocean~mammal~giant""
-TagMatchTerm   =""[marine-mammal][ocean]""
+TagMatchTerm   =""[marine-mammal] [ocean]""
 Properties     =""{
   ""Description"": ""Blue Whale"",
-  ""Tags"": ""[marine-mammal][ocean]"",
+  ""Tags"": ""[marine-mammal] [ocean]"",
   ""Keywords"": ""[\""ocean\"",\""mammal\"",\""giant\""]""
 }""
 
@@ -1254,19 +1255,22 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%animal%')"
                     results = cnx.Query<SelectableQFModelLTOQO>(sql);
 
                     actual = string.Join(Environment.NewLine, results.Select(_ => _.ToString()));
+                    actual.ToClipboardExpected();
+                    { }
                     expected = @" 
-Black Cat  [animal][color]
-Orange Fox  [animal][color]
-White Rabbit ""bunny"",""soft"",""jump"" [animal][color]
-Gray Wolf ""pack"",""howl"",""wild"" [animal][color]
-Golden Lion  [animal][color]
-Brown Bear ""strong"",""wild"",""forest"" [animal][color]
-Black Panther ""stealthy"",""feline"",""night"" [animal][color]
+Black Cat  [animal] [color]
+Orange Fox  [animal] [color]
+White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
+Gray Wolf ""pack"",""howl"",""wild"" [animal] [color]
+Golden Lion  [animal] [color]
+Brown Bear ""strong"",""wild"",""forest"" [animal] [color]
+Black Panther ""stealthy"",""feline"",""night"" [animal] [color]
 Elephant ""trunk"",""herd"",""safari"" [animal]
 Giraffe  [animal]
 Kangaroo ""bounce"",""outback"",""marsupial"" [animal]
 Turtle  [animal]
-Should NOT match an expression with an ""animal"" tag.  [not animal]";
+Should NOT match an expression with an ""animal"" tag.  [not animal]"
+                    ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1286,19 +1290,22 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     results = cnx.Query<SelectableQFModelLTOQO>(sql);
 
                     actual = string.Join(Environment.NewLine, results.Select(_ => _.ToString()));
+                    actual.ToClipboardExpected();
+                    { }
                     expected = @" 
-Black Cat  [animal][color]
-Orange Fox  [animal][color]
-White Rabbit ""bunny"",""soft"",""jump"" [animal][color]
-Gray Wolf ""pack"",""howl"",""wild"" [animal][color]
-Golden Lion  [animal][color]
-Brown Bear ""strong"",""wild"",""forest"" [animal][color]
-Black Panther ""stealthy"",""feline"",""night"" [animal][color]
+Black Cat  [animal] [color]
+Orange Fox  [animal] [color]
+White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
+Gray Wolf ""pack"",""howl"",""wild"" [animal] [color]
+Golden Lion  [animal] [color]
+Brown Bear ""strong"",""wild"",""forest"" [animal] [color]
+Black Panther ""stealthy"",""feline"",""night"" [animal] [color]
 Elephant ""trunk"",""herd"",""safari"" [animal]
 Giraffe  [animal]
 Kangaroo ""bounce"",""outback"",""marsupial"" [animal]
 Turtle  [animal]
-Should NOT match an expression with an ""animal"" tag.  [not animal]";
+Should NOT match an expression with an ""animal"" tag.  [not animal]"
+                    ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -2195,19 +2202,22 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%animal%')"
                     recordset = cnx.Query<SelectableQFModelLTOQO>(sql);
 
                     actual = string.Join(Environment.NewLine, recordset.Select(_ => _.ToString()));
+                    actual.ToClipboardExpected();
+                    { }
                     expected = @" 
-Black Cat  [animal][color]
-Orange Fox  [animal][color]
-White Rabbit ""bunny"",""soft"",""jump"" [animal][color]
-Gray Wolf ""pack"",""howl"",""wild"" [animal][color]
-Golden Lion  [animal][color]
-Brown Bear ""strong"",""wild"",""forest"" [animal][color]
-Black Panther ""stealthy"",""feline"",""night"" [animal][color]
+Black Cat  [animal] [color]
+Orange Fox  [animal] [color]
+White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
+Gray Wolf ""pack"",""howl"",""wild"" [animal] [color]
+Golden Lion  [animal] [color]
+Brown Bear ""strong"",""wild"",""forest"" [animal] [color]
+Black Panther ""stealthy"",""feline"",""night"" [animal] [color]
 Elephant ""trunk"",""herd"",""safari"" [animal]
 Giraffe  [animal]
 Kangaroo ""bounce"",""outback"",""marsupial"" [animal]
 Turtle  [animal]
-Should NOT match an expression with an ""animal"" tag.  [not animal]";
+Should NOT match an expression with an ""animal"" tag.  [not animal]"
+                    ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -2227,19 +2237,22 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]";
                     recordset = cnx.Query<SelectableQFModelLTOQO>(sql);
 
                     actual = string.Join(Environment.NewLine, recordset.Select(_ => _.ToString()));
+                    actual.ToClipboardExpected();
+                    { }
                     expected = @" 
-Black Cat  [animal][color]
-Orange Fox  [animal][color]
-White Rabbit ""bunny"",""soft"",""jump"" [animal][color]
-Gray Wolf ""pack"",""howl"",""wild"" [animal][color]
-Golden Lion  [animal][color]
-Brown Bear ""strong"",""wild"",""forest"" [animal][color]
-Black Panther ""stealthy"",""feline"",""night"" [animal][color]
+Black Cat  [animal] [color]
+Orange Fox  [animal] [color]
+White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
+Gray Wolf ""pack"",""howl"",""wild"" [animal] [color]
+Golden Lion  [animal] [color]
+Brown Bear ""strong"",""wild"",""forest"" [animal] [color]
+Black Panther ""stealthy"",""feline"",""night"" [animal] [color]
 Elephant ""trunk"",""herd"",""safari"" [animal]
 Giraffe  [animal]
 Kangaroo ""bounce"",""outback"",""marsupial"" [animal]
 Turtle  [animal]
-Should NOT match an expression with an ""animal"" tag.  [not animal]";
+Should NOT match an expression with an ""animal"" tag.  [not animal]"
+                    ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -3091,8 +3104,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
         {
             using var te = this.TestableEpoch();
 
-            string actual, expected, sql;
-            List<SelectableQFModel> recordset;
+            string actual, expected;
             IList newItems = Array.Empty<object>();
             Queue<SenderEventPair> eventQueue = new();
             var builder = new List<string>();
@@ -3216,14 +3228,16 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                 // is representative of what we'd see in the visible list.
                 actual = string.Join(Environment.NewLine, newItems.Cast<object>().Select(_ => _.ToString()));
                 actual.ToClipboardExpected();
+                actual.ToClipboardExpected();
+                { }
                 var newItemsPayload = @" 
-Black Cat  [animal][color]
-Orange Fox  [animal][color]
-White Rabbit ""bunny"",""soft"",""jump"" [animal][color]
-Gray Wolf ""pack"",""howl"",""wild"" [animal][color]
-Golden Lion  [animal][color]
-Brown Bear ""strong"",""wild"",""forest"" [animal][color]
-Black Panther ""stealthy"",""feline"",""night"" [animal][color]
+Black Cat  [animal] [color]
+Orange Fox  [animal] [color]
+White Rabbit ""bunny"",""soft"",""jump"" [animal] [color]
+Gray Wolf ""pack"",""howl"",""wild"" [animal] [color]
+Golden Lion  [animal] [color]
+Brown Bear ""strong"",""wild"",""forest"" [animal] [color]
+Black Panther ""stealthy"",""feline"",""night"" [animal] [color]
 Elephant ""trunk"",""herd"",""safari"" [animal]
 Giraffe  [animal]
 Kangaroo ""bounce"",""outback"",""marsupial"" [animal]
@@ -3259,30 +3273,73 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
 
                 actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
                 expected = @" 
-Green Apple ""tart"",""snack"",""healthy"" [fruit][color]
+Green Apple ""tart"",""snack"",""healthy"" [fruit] [color]
 Errata ""crunchy"",""green"",""appended"" [notes]
-Great example - Markdown Demo ""digital"",""mobile"",""software"" [app][portable]"
+Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portable]"
                 ;
 
                 Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, items.SearchEntryState);
-
-                // Perform a filter
-                nsb.InputText = "[app] gre";
-                items.Commit();
-                await items;
-
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Expecting items to match"
                 );
 
-                actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
+                actual = items.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 7, IsFiltering: True], [Net: null, CC: 3, PMC: 3], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting State Report to match.");
 
+                // Perform a filter
+                nsb.InputText = "[app] gre";
+
+                #region L o c a l F x
+                var builderThrow = new List<string>();
+                void localOnBeginThrowOrAdvise(object? sender, Throw e)
+                {
+                    builderThrow.Add($"{e.Mode}: {e.Message}");
+                    e.Handled = true;
+                }
+                #endregion L o c a l F x
+                using (this.WithOnDispose(
+                    onInit: (sender, e) =>
+                    {
+                        Throw.BeginThrowOrAdvise += localOnBeginThrowOrAdvise;
+                    },
+                    onDispose: (sender, e) =>
+                    {
+                        Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
+                    }))
+                {
+                    items.Commit();
+
+                    actual = string.Join(Environment.NewLine, builderThrow);
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+ThrowSoft: Commit cannot execute while IsFiltering is true. Caller must ensure filtering is not active before invoking Commit.";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting soft throw."
+                    );
+                }
+                await items;
+
+                actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
                 actual.ToClipboardExpected();
                 expected = @" 
-Great example - Markdown Demo ""digital"",""mobile"",""software"" [app][portable]"
+Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portable]"
                 ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting items to match"
+                );
             }
             #endregion S U B T E S T S
 

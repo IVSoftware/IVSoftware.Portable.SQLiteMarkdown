@@ -182,10 +182,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public void Commit()
         {
-            var e = new RecordsetRequestEventArgs(sql: ParseSqlMarkdown());
-            using (BeginBusy())
+            if (IsFiltering)
             {
-                OnCommit(e);
+                nameof(MarkdownContext).ThrowSoft<InvalidOperationException>(
+                    $"{nameof(Commit)} cannot execute while {nameof(IsFiltering)} is true. " +
+                    $"Caller must ensure filtering is not active before invoking {nameof(Commit)}."
+                );
+                return;
+            }
+            else
+            {
+                var e = new RecordsetRequestEventArgs(sql: ParseSqlMarkdown());
+                using (BeginBusy())
+                {
+                    OnCommit(e);
+                }
             }
         }
 

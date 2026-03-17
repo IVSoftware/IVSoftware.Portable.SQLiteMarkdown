@@ -1178,15 +1178,15 @@ FilterTerm";
         [TestMethod]
         public void Test_NormalizeTags_False()
         {
-            bool revert = Extensions.UseSpaceBetween;
+            bool revert = Extensions.InsertSpaceBetweenTags;
             using var local = this.WithOnDispose(
                 onInit: (sender, e) =>
                 {
-                    Extensions.UseSpaceBetween = false;
+                    Extensions.InsertSpaceBetweenTags = false;
                 },
                 onDispose: (sender, e) =>
                 {
-                    Extensions.UseSpaceBetween = revert;
+                    Extensions.InsertSpaceBetweenTags = revert;
                 });
             string actual, expected;
             SelectableQFModel model;
@@ -1347,15 +1347,15 @@ FilterTerm";
         [TestMethod]
         public void Test_NormalizeTags_True()
         {
-            bool revert = Extensions.UseSpaceBetween;
+            bool revert = Extensions.InsertSpaceBetweenTags;
             using var local = this.WithOnDispose(
                 onInit: (sender, e) =>
                 {
-                    Extensions.UseSpaceBetween = true;
+                    Extensions.InsertSpaceBetweenTags = true;
                 },
                 onDispose: (sender, e) =>
                 {
-                    Extensions.UseSpaceBetween = revert;
+                    Extensions.InsertSpaceBetweenTags = revert;
                 });
             string actual, expected;
             SelectableQFModel model;

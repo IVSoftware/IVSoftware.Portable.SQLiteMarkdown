@@ -244,13 +244,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 .Where(_ => !string.IsNullOrWhiteSpace(_));
 
             var preview = 
-                UseSpaceBetween
+                InsertSpaceBetweenTags
                 ? string.Join(" ", split.Select(_ => _.EncloseInSquareBrackets().ApplyCasing(stringCasing)))
                 : string.Join(string.Empty, split.Select(_ => _.EncloseInSquareBrackets().ApplyCasing(stringCasing)));
             return preview;
         }
 
-        internal static bool UseSpaceBetween { get; set; } = true;
+        internal static bool InsertSpaceBetweenTags { get; set; } = true;
         /// <summary>
         /// Normalizes a tag string into canonical bracketed form by detecting
         /// the applicable tag grammar.
@@ -279,7 +279,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             if (TryParseBracketGrammar(value, out var bracketTokens))
             {
                 preview =
-                    UseSpaceBetween
+                    InsertSpaceBetweenTags
                     ? string.Concat(bracketTokens.Select(t => $" [{t}]")).TrimStart()
                     : string.Concat(bracketTokens.Select(t => $"[{t}]"));
                 return preview;
@@ -315,7 +315,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
             preview = 
-                UseSpaceBetween
+                InsertSpaceBetweenTags
                 ? string.Concat(tokens.Select(t => $" [{t}]")).TrimStart()
                 : string.Concat(tokens.Select(t => $"[{t}]"));
             return preview;
