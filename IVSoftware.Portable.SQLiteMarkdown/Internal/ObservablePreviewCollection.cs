@@ -1,4 +1,6 @@
-﻿using System;
+﻿using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -19,7 +21,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            // Forward only after canonical reconciliation (or suppress if Preview owns it)
             base.OnCollectionChanged(e);
         }
         RevertableObservableCollection PreviewCollection
@@ -29,6 +30,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 if (_previewCollection is null)
                 {
                     _previewCollection = new RevertableObservableCollection(this);
+                    _previewCollection.CollectionChanged += (sender, e) => OnCollectionChanged(e);
                 }
                 return _previewCollection;
             }
@@ -37,10 +39,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
         class RevertableObservableCollection : ObservableCollection<T>
         {
+            public DisposableHost DHostReverting { get; } = new();
             public RevertableObservableCollection(ObservableCollection<T> previewCollection)
             {
                 PreviewCollection = previewCollection;
             }
+
             ObservableCollection<T> PreviewCollection;
             public new void ClearItems() => base.ClearItems();
 
@@ -57,7 +61,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 => base.MoveItem(oldIndex, newIndex);
             protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
             {
-                base.OnCollectionChanged(e);
+                if (DHostReverting.IsZero())
+                {   /* G T K - N O O P */
+                }
+                else
+                {
+                    bool? isMutableB4 = NotifyCollectionChangingEventArgs.IsMutableDefault;
+                    using (this.WithOnDispose(
+                        onInit: (sender, e) =>
+                        {
+                            NotifyCollectionChangingEventArgs.IsMutableDefault = true;
+                        },
+                        onDispose: (sender, e) =>
+                        {
+                            NotifyCollectionChangingEventArgs.IsMutableDefault = isMutableB4;
+                        }))
+                    {
+                        base.OnCollectionChanged(e);
+                    }
+                }
             }
         }
     }
