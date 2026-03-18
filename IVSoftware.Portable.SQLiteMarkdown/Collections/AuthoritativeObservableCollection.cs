@@ -4,9 +4,9 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Text;
 
-namespace IVSoftware.Portable.SQLiteMarkdown.Internal
+namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
-    class AuthoritativeObservableCollection<T> : ObservableCollection<T>
+    public class AuthoritativeObservableCollection<T> : ObservableCollection<T>
     {
         public AuthoritativeObservableCollection(IModeledMarkdownContext mmdc)
         {
