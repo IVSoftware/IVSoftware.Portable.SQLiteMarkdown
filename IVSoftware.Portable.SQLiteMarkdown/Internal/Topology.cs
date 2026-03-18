@@ -68,7 +68,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 return _canonicalSuperset;
             }
         }
-        IReadOnlyList<T>? _canonicalSuperset = null;
+        IReadOnlyList<T> _canonicalSuperset;
 
         protected AuthoritativeObservableCollection<T> CanonicalSupersetProtected
         {
@@ -76,12 +76,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             {
                 if (_canonicalSupersetProtected is null)
                 {
-                    _canonicalSuperset = new AuthoritativeObservableCollection<T>(MMDC);
+                    _canonicalSupersetProtected = new AuthoritativeObservableCollection<T>(MMDC);
                 }
-                return _canonicalSupersetProtected!;
+                return _canonicalSupersetProtected;
             }
         }
-        AuthoritativeObservableCollection<T>? _canonicalSupersetProtected;
+        AuthoritativeObservableCollection<T> _canonicalSupersetProtected;
 
         public IReadOnlyList<T> PredicateMatchSubset
         {
@@ -94,7 +94,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 return _predicateMatchSubset;
             }
         }
-        IReadOnlyList<T>? _predicateMatchSubset = null;
+        IReadOnlyList<T> _predicateMatchSubset;
         protected List<T> PredicateMatchSubsetProtected { get; } = new();
 
         public bool Contains(T value)
@@ -109,7 +109,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             }
         }
 
-        public int IndexOf<T>(T value)
+        public int IndexOf(T value)
             => Read is IList list ? list.IndexOf(value) : -1;
 
         public object GetAt(int index)
@@ -118,11 +118,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
         #region P O L I C Y    A R B I T R A T I O N
         public int Count => Read.Count;
-        public bool IsSynchronized => Read.IsSynchronized;
-        public object SyncRoot => Read.SyncRoot;
+        public bool IsSynchronized => Write.IsSynchronized;
+        public object SyncRoot => Write.SyncRoot;
         public bool IsFixedSize { get; internal set; }
         public bool IsReadOnly { get; internal set; }
-        public void CopyTo(Array array, int index) => Read.CopyTo(array, index);
+
+        public void CopyTo(T[] array, int index)
+        {
+            for (int i = 0; i < Read.Count; i++)
+            {
+                array[index + i] = Read[i];
+            }
+        }
         #endregion P O L I C Y    A R B I T R A T I O N
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>

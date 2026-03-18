@@ -15,12 +15,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [Indexer]
         object IList.this[int index]
         {
-            get => ((IList)Routing.Read)[index];
+            get => ((IList)Topology.Read)[index];
             set
             {
                 if (value is T valueT)
                 {
-                    ((IList)Routing.Write)[index] = valueT;
+                    ((IList)Topology.Write)[index] = valueT;
                 }
                 else
                 {
@@ -31,18 +31,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        bool IList.IsFixedSize => Routing.IsFixedSize;
-        bool IList.IsReadOnly => Routing.IsReadOnly;
+        bool IList.IsFixedSize => Topology.IsFixedSize;
+        bool IList.IsReadOnly => Topology.IsReadOnly;
 
-        int ICollection.Count => Routing.Count;
-        bool ICollection.IsSynchronized => Routing.IsSynchronized;
-        object ICollection.SyncRoot => Routing.SyncRoot;
+        int ICollection.Count => Topology.Count;
+        bool ICollection.IsSynchronized => Topology.IsSynchronized;
+        object ICollection.SyncRoot => Topology.SyncRoot;
 
         int IList.Add(object value)
         {
             if (value is T valueT)
             {
-                return Routing.Write.Add(valueT);
+                Topology.Write.Add(valueT);
+                return Topology.Count - 1;
             }
             else
             {
@@ -54,22 +55,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         void IList.Clear()
-            => Routing.Write.Clear();
+            => Topology.Write.Clear();
 
         bool IList.Contains(object value)
-            => value is T valueT && Routing.Contains(valueT);
-
+            => value is T valueT && Topology.Contains(valueT);
         void ICollection.CopyTo(Array array, int index)
-            => Routing.CopyTo(array, index);
+        {
+            if (array is T[] typed)
+            {
+                Topology.CopyTo(typed, index);
+            }
+            else 
+            { 
+                ThrowHard<ArrayTypeMismatchException>(
+                    $"{nameof(ICollection.CopyTo)} requires array of type {typeof(T).Name}."
+                );
+            }
+        }
 
         int IList.IndexOf(object value)
-            => value is T valueT ? ((IList)Routing.Read).IndexOf(valueT) : -1;
+            => value is T valueT ? Topology.IndexOf(valueT) : -1;
 
         void IList.Insert(int index, object value)
         {
             if (value is T valueT)
             {
-                Routing.Write.Insert(index, valueT);
+                Topology.Write.Insert(index, valueT);
             }
             else
             {
@@ -83,51 +94,57 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if (value is T valueT)
             {
-                Routing.Write.Remove(valueT);
+                Topology.Write.Remove(valueT);
             }
         }
 
         void IList.RemoveAt(int index)
-            => Routing.Write.RemoveAt(index);
+        {
+            var item = Topology.Read[index];
+            Topology.Write.Remove(item);
+        }
     }
 
     partial class ModeledMarkdownContext<T> : IList<T>
     {
         T IList<T>.this[int index]
         {
-            get => (T)((IList)Routing.Read)[index];
-            set => Routing.Write[index] = value!;
+            get => (T)((IList)Topology.Read)[index];
+            set => Topology.Write[index] = value!;
         }
 
-        int ICollection<T>.Count => Routing.Count;
-        bool ICollection<T>.IsReadOnly => Routing.IsReadOnly;
+        int ICollection<T>.Count => Topology.Count;
+        bool ICollection<T>.IsReadOnly => Topology.IsReadOnly;
 
         void ICollection<T>.Add(T item)
-            => Routing.Write.Add(item!);
+            => Topology.Write.Add(item!);
 
         void ICollection<T>.Clear()
-            => Routing.Write.Clear();
+            => Topology.Write.Clear();
 
         bool ICollection<T>.Contains(T item)
-            => Routing.Contains(item!);
+            => Topology.Contains(item!);
 
         void ICollection<T>.CopyTo(T[] array, int arrayIndex)
-            => Routing.Read.CopyTo(array, arrayIndex);
+            => Topology.CopyTo(array, arrayIndex);
 
         int IList<T>.IndexOf(T item)
-            => ((IList)Routing.Read).IndexOf(item!);
+            => Topology.IndexOf(item!);
 
         void IList<T>.Insert(int index, T item)
-            => Routing.Write.Insert(index, item!);
+            => Topology.Write.Insert(index, item!);
 
         bool ICollection<T>.Remove(T item)
         {
-            bool exists = Routing.Contains(item);
-            Routing.Write.Remove(item!);
+            bool exists = Topology.Contains(item);
+            Topology.Write.Remove(item!);
             return exists;
         }
 
         void IList<T>.RemoveAt(int index)
-            => Routing.Write.RemoveAt(index);
+        {
+            var item = Topology.Read[index];
+            Topology.Write.Remove(item);
+        }
     }
 }
