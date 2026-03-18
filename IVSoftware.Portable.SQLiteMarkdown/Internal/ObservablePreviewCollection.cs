@@ -10,6 +10,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
     class ObservablePreviewCollection<T> : ObservableCollection<T>
     {
+        public ObservablePreviewCollection(bool useMutablePreviewEvents = false)
+        {
+            PreviewCollection = new RevertableObservableCollection<T>(this, useMutablePreviewEvents);
+
+            // The preview collection doesn't always change.
+            // This event signals that it has done so, i.e., the action was not canceled.
+            PreviewCollection.CollectionChanged += (sender, e) =>
+                OnCollectionChanged(e);
+        }
         protected override void ClearItems() => PreviewCollection.ClearItems(); protected override void InsertItem(int index, T item)
             => PreviewCollection.InsertItem(index, item);
 
@@ -87,23 +96,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 // Expected reentrancy.
             }
         }
-        RevertableObservableCollection<T> PreviewCollection
-        {
-            get
-            {
-                if (_previewCollection is null)
-                {
-                    _previewCollection = new RevertableObservableCollection<T>(this);
-
-                    // The preview collection doesn't always change.
-                    // This event signals that it has done so, i.e., the action was not canceled.
-                    _previewCollection.CollectionChanged += (sender, e) => 
-                        OnCollectionChanged(e);
-                }
-                return _previewCollection;
-            }
-        }
-        RevertableObservableCollection<T>? _previewCollection = null;
+        RevertableObservableCollection<T> PreviewCollection { get; }
 
         public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging
         {

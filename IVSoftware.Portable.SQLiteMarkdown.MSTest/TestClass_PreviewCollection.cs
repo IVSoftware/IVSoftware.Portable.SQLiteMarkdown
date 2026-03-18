@@ -1,9 +1,11 @@
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
+using System.Collections;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -18,16 +20,16 @@ public class TestClass_PreviewCollection
         SelectableQFModel? currentItem;
 
         var builder = new List<string>();
-        var opc = new ObservablePreviewCollection<SelectableQFModel>();
+        var opc = new ObservablePreviewCollection<SelectableQFModel>(useMutablePreviewEvents: false);
         DisposableHost dhostCancel = new();
         opc.CollectionChanging += (sender, e) =>
         {
             e.Cancel = !dhostCancel.IsZero();
 
-            Assert.IsFalse(e.IsMutable, "Expecting FALSE for this test.");
-            if(e.OldItems is not null)
+            Assert.IsInstanceOfType<NotifyCollectionChangingEventArgs>(e);
+            if(e.OldItems is IList list)
             {
-                e.OldItems.Add(new object());
+                Assert.IsTrue(list.IsReadOnly);
             }
         };
 
