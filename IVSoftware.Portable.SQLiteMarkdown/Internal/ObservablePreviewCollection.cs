@@ -18,69 +18,97 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
         protected override void MoveItem(int oldIndex, int newIndex)
             => PreviewCollection.MoveItem(oldIndex, newIndex);
+        protected override void RemoveItem(int index)
+            => PreviewCollection.RemoveItem(index);
 
+        bool _isUpdatingBase = false;
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            base.OnCollectionChanged(e);
+            if (!_isUpdatingBase)
+            {
+                try
+                {
+                    _isUpdatingBase = true;
+                    switch (e.Action)
+                    {
+                        case NotifyCollectionChangedAction.Add:
+                            if (e.NewItems is not null)
+                            {
+                                for (int i = 0; i < e.NewItems.Count; i++)
+                                {
+                                    base.InsertItem(e.NewStartingIndex + i, (T)e.NewItems[i]!);
+                                }
+                            }
+                            break;
+
+                        case NotifyCollectionChangedAction.Remove:
+                            if (e.OldItems is not null)
+                            {
+                                for (int i = 0; i < e.OldItems.Count; i++)
+                                {
+                                    base.RemoveItem(e.OldStartingIndex);
+                                }
+                            }
+                            break;
+
+                        case NotifyCollectionChangedAction.Replace:
+                            if (e.NewItems is not null)
+                            {
+                                for (int i = 0; i < e.NewItems.Count; i++)
+                                {
+                                    base.SetItem(e.NewStartingIndex + i, (T)e.NewItems[i]!);
+                                }
+                            }
+                            break;
+
+                        case NotifyCollectionChangedAction.Move:
+                            if (e.NewItems is not null)
+                            {
+                                for (int i = 0; i < e.NewItems.Count; i++)
+                                {
+                                    base.MoveItem(e.OldStartingIndex + i, e.NewStartingIndex + i);
+                                }
+                            }
+                            break;
+
+                        case NotifyCollectionChangedAction.Reset:
+                            base.ClearItems();
+                            break;
+                    }
+                    base.OnCollectionChanged(e);
+                }
+                finally
+                {
+                    _isUpdatingBase = false;
+                }
+            }
+            else
+            {   /* G T K - N O O P */
+                // Expected reentrancy.
+            }
         }
-        RevertableObservableCollection PreviewCollection
+        RevertableObservableCollection<T> PreviewCollection
         {
             get
             {
                 if (_previewCollection is null)
                 {
-                    _previewCollection = new RevertableObservableCollection(this);
-                    _previewCollection.CollectionChanged += (sender, e) => OnCollectionChanged(e);
+                    _previewCollection = new RevertableObservableCollection<T>(this);
+
+                    // The preview collection doesn't always change.
+                    // This event signals that it has done so, i.e., the action was not canceled.
+                    _previewCollection.CollectionChanged += (sender, e) => 
+                        OnCollectionChanged(e);
                 }
                 return _previewCollection;
             }
         }
-        RevertableObservableCollection? _previewCollection = null;
+        RevertableObservableCollection<T>? _previewCollection = null;
 
-        class RevertableObservableCollection : ObservableCollection<T>
+        public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging
         {
-            public DisposableHost DHostReverting { get; } = new();
-            public RevertableObservableCollection(ObservableCollection<T> previewCollection)
-            {
-                PreviewCollection = previewCollection;
-            }
-
-            ObservableCollection<T> PreviewCollection;
-            public new void ClearItems() => base.ClearItems();
-
-            public new void InsertItem(int index, T item)
-                => base.InsertItem(index, item);
-
-            public new void RemoveItem(int index)
-                => base.RemoveItem(index);
-
-            public new void SetItem(int index, T item)
-                => base.SetItem(index, item);
-
-            public new void MoveItem(int oldIndex, int newIndex)
-                => base.MoveItem(oldIndex, newIndex);
-            protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
-            {
-                if (DHostReverting.IsZero())
-                {   /* G T K - N O O P */
-                }
-                else
-                {
-                    bool? isMutableB4 = NotifyCollectionChangingEventArgs.IsMutableDefault;
-                    using (this.WithOnDispose(
-                        onInit: (sender, e) =>
-                        {
-                            NotifyCollectionChangingEventArgs.IsMutableDefault = true;
-                        },
-                        onDispose: (sender, e) =>
-                        {
-                            NotifyCollectionChangingEventArgs.IsMutableDefault = isMutableB4;
-                        }))
-                    {
-                        base.OnCollectionChanged(e);
-                    }
-                }
-            }
+            add => PreviewCollection.CollectionChanging += value;
+            remove => PreviewCollection.CollectionChanging -= value;
         }
     }
 }

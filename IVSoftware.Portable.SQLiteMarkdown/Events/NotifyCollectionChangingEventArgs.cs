@@ -237,8 +237,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
         }
 
         #region I M P L I C I T
-        public static implicit operator NotifyCollectionChangedEventArgs(
-    NotifyCollectionChangingEventArgs e)
+        public static implicit operator NotifyCollectionChangedEventArgs(NotifyCollectionChangingEventArgs e)
         {
             return e.Action switch
             {
@@ -298,8 +297,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
             };
         }
 
-        public static implicit operator NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangedEventArgs e)
+        public static implicit operator NotifyCollectionChangingEventArgs(NotifyCollectionChangedEventArgs e)
         {
             var action = (NotifyCollectionChangingAction)e.Action;
 
