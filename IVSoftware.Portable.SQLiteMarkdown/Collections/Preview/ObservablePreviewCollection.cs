@@ -1,5 +1,5 @@
-﻿using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown.Events;
+﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using System;
 using System.Collections.Generic;
