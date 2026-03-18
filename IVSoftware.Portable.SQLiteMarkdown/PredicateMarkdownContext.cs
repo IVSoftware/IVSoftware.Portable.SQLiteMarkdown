@@ -1,6 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown.Collections.Internal;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
