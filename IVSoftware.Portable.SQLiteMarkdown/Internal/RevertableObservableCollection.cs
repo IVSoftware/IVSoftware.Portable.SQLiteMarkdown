@@ -9,10 +9,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
     sealed class RevertableObservableCollection<T> : ObservableCollection<T>
     {
-        public RevertableObservableCollection(ObservableCollection<T> previewCollection)
+        public RevertableObservableCollection(ObservableCollection<T> previewCollection, bool useMutablePreviewEvents = false)
         {
+            UseMutablePreviewEventsPolicy = useMutablePreviewEvents;
             PreviewCollection = previewCollection;
         }
+
+        public bool UseMutablePreviewEventsPolicy { get; }
 
         ObservableCollection<T> PreviewCollection;
         public new void ClearItems() => base.ClearItems();
@@ -34,42 +37,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         {
             if (!_isReverting)
             {
-                bool isMutableB4 = NotifyCollectionChangingEventArgs.IsMutableDefault;
-                using (this.WithOnDispose(
-                    onInit: (sender, e) =>
-                    {
-                        NotifyCollectionChangingEventArgs.IsMutableDefault = true;
-                    },
-                    onDispose: (sender, e) =>
-                    {
-                        NotifyCollectionChangingEventArgs.IsMutableDefault = isMutableB4;
-                    }))
+                NotifyCollectionChangingEventArgs ePre = e;
+                CollectionChanging?.Invoke(this, ePre);
+                if (ePre.Cancel)
                 {
-                    NotifyCollectionChangingEventArgs ePre = e;
-                    CollectionChanging?.Invoke(this, ePre);
-                    if(ePre.Cancel)
+                    try
                     {
-                        try
+                        _isReverting = true;
                         {
-                            _isReverting = true;
+                            Clear();
+                            foreach (var item in PreviewCollection.ToArray())
                             {
-                                Clear();
-                                foreach (var item in PreviewCollection.ToArray())
-                                {
-                                    Add(item);
-                                }
+                                Add(item);
                             }
                         }
-                        finally
-                        {
-                            _isReverting = false;
-                        }
                     }
-                    else
+                    finally
                     {
-                        // Copy with possible mutations.
-                        base.OnCollectionChanged(ePre);
+                        _isReverting = false;
                     }
+                }
+                else
+                {
+                    // Copy with possible mutations.
+                    base.OnCollectionChanged(ePre);
                 }
             }
             else

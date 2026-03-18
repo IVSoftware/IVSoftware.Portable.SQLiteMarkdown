@@ -23,6 +23,12 @@ public class TestClass_PreviewCollection
         opc.CollectionChanging += (sender, e) =>
         {
             e.Cancel = !dhostCancel.IsZero();
+
+            Assert.IsFalse(e.IsMutable, "Expecting FALSE for this test.");
+            if(e.OldItems is not null)
+            {
+                e.OldItems.Add(new object());
+            }
         };
 
         opc.CollectionChanged += (sender, e) =>
