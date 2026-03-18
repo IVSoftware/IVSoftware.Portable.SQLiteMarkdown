@@ -76,6 +76,13 @@ NetProjection.Add     NewItems= 1 NotifyCollectionChangedEventArgs           ";
         using(dhostCancel.GetToken())
         {
             opc.Remove(currentItem);
+            Assert.AreEqual(1, opc.Count, "Expecting cancellation.");
+
+            // Do it AGAIN to test the REVERT of the underlying REVERTABLE COLLECTION.
+            // The thing is, if it hasn't actually reverted than there
+            // will be no item to 'preview remove' and this would throw.
+            opc.Remove(currentItem);
+            Assert.AreEqual(1, opc.Count, "Expecting cancellation.");
         }
         Assert.AreEqual(1, opc.Count, "Expecting cancellation.");
         { }
