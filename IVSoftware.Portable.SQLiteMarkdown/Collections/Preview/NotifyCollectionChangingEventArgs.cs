@@ -18,7 +18,7 @@ namespace IVSoftware.Portable.Collections
     {
         private readonly NotifyCollectionChangedEventArgs @base;
 
-        private NotifyCollectionChangingEventArgs(NotifyCollectionChangedEventArgs eBCL) => @base = eBCL;
+        protected NotifyCollectionChangingEventArgs(NotifyCollectionChangedEventArgs eBCL) => @base = eBCL;
         public NotifyCollectionChangingEventArgs(NotifyCollectionChangedAction action)
             => @base = new NotifyCollectionChangedEventArgs(action);
 
