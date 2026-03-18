@@ -1,16 +1,17 @@
-﻿using IVSoftware.Portable.SQLiteMarkdown.Util;
+﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
-using IVSoftware.Portable.SQLiteMarkdown.Collections;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
-using IVSoftware.Portable.Common.Exceptions;
-using System.Collections.Generic;
-using Newtonsoft.Json;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
@@ -38,7 +39,48 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             }
         }
         IModeledMarkdownContext MMDC { get; } = null!; // Guarded in CTor
-        public bool IsFiltering { get; set; }
+
+        public bool IsFiltering
+        {
+            get => _isFiltering;
+            set
+            {
+                if (!Equals(_isFiltering, value))
+                {
+                    if (value)
+                    {
+                        if (_authorityToken is null)
+                        {
+                            _isFiltering = true;
+                            _authorityToken = MMDC.BeginCollectionChangeAuthority(CollectionChangeAuthority.Model);
+                        }
+                        else
+                        {
+                            this.ThrowHard<InvalidOperationException>(
+                                "Filtering state invariant violated: token already present on enter.");
+                        }
+                    }
+                    else
+                    {
+                        if (_authorityToken is null)
+                        {
+                            this.ThrowHard<InvalidOperationException>(
+                                "Filtering state invariant violated: token missing on exit.");
+                        }
+                        else
+                        {
+                            var tmp = _authorityToken;
+                            _authorityToken = null;
+                            tmp.Dispose();
+                            _isFiltering = false;
+                        }
+                    }
+                }
+            }
+        }
+        bool _isFiltering = false;
+        IDisposable? _authorityToken = null;
+
 
         [JsonIgnore]
         public IReadOnlyList<T> Read =>
