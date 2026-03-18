@@ -193,16 +193,55 @@ NetProjection.Add     NewItems= 1 NotifyCollectionChangedEventArgs           ";
             }
             opc.Clear();
             Assert.AreEqual(0, opc.Count, "Expecting cancel.");
-            { }
-
-
 
             builder.Clear();
 
             var item1 = opc.AddDynamic("Alpha", "", false, new());
             var item2 = opc.AddDynamic("Beta", "", false, new());
 
-            Assert.AreEqual(2, opc.Count, "Expecting two items.");
+
+            actual = JsonConvert.SerializeObject(opc, Formatting.Indented);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000003"",
+    ""Description"": ""Alpha"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": """",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000003"",
+    ""QueryTerm"": ""alpha"",
+    ""FilterTerm"": ""alpha"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Alpha\""\r\n}""
+  },
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000004"",
+    ""Description"": ""Beta"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": """",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000004"",
+    ""QueryTerm"": ""beta"",
+    ""FilterTerm"": ""beta"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Beta\""\r\n}""
+  }
+]";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting two items in initial order."
+            );
 
             using (dhostCancel.GetToken())
             {
@@ -220,10 +259,49 @@ NetProjection.Add     NewItems= 1 NotifyCollectionChangedEventArgs           ";
 
             opc.Move(0, 1);
 
-            Assert.AreEqual(2, opc.Count, "Expecting count unchanged.");
+            actual = JsonConvert.SerializeObject(opc, Formatting.Indented);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000004"",
+    ""Description"": ""Beta"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": """",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000004"",
+    ""QueryTerm"": ""beta"",
+    ""FilterTerm"": ""beta"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Beta\""\r\n}""
+  },
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000003"",
+    ""Description"": ""Alpha"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": """",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000003"",
+    ""QueryTerm"": ""alpha"",
+    ""FilterTerm"": ""alpha"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Alpha\""\r\n}""
+  }
+]"
+            ;
 
-            Assert.AreEqual("Beta", opc[0].Description, "Expecting BETA @ index[0].");
-            Assert.AreEqual("Alpha", opc[1].Description, "Expecting ALPHA @ index[1].");
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting two items in moved order."
+            );
 
             actual = JsonConvert.SerializeObject(opc, Formatting.Indented);
             actual.ToClipboardExpected();
