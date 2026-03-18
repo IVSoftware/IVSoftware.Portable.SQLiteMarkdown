@@ -665,6 +665,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 sb.Append($"OldItems={oldItems.Count.ToString().PadLeft(2)} ");
             }
 
+            if (e.NewStartingIndex != -1)
+            {
+                sb.Append($"NewIndex={e.NewStartingIndex.ToString().PadLeft(2)} ");
+            }
+
+            if (e.OldStartingIndex != -1)
+            {
+                sb.Append($"OldIndex={e.OldStartingIndex.ToString().PadLeft(2)} ");
+            }
+
             sb.Append(e.GetType().Name.PadRight(43));
 
             return sb.ToString();

@@ -54,6 +54,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+        Topology<T> Topology { get; }
 
         /// <summary>
         /// Returns the singleton, non-replaceable root XElement, created on demand.
@@ -714,6 +715,18 @@ Inherited contexts manage their projection internally.".TrimStart());
                 default:
                     ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");
                     break;
+            }
+
+            // [Remember]
+            // The projection is not authoritative
+            // The model is.
+            if (Authority == CollectionChangeAuthority.Projection)
+            {
+                CanonicalSupersetProtected.Clear();
+                foreach (var item in Model.Descendants().Select(_ => _.To<T>()).OfType<T>())
+                {
+                    CanonicalSupersetProtected.Add(item);
+                }
             }
         }
 
@@ -1569,13 +1582,13 @@ Inherited contexts manage their projection internally.".TrimStart());
             {
                 if (_canonicalSupersetProtected is null)
                 {
-                    _canonicalSupersetProtected = new ObservableCollection<T>();
+                    _canonicalSupersetProtected = new AuthoritativeObservableCollection<T>(this);
                     _canonicalSupersetProtected.CollectionChanged += OnCanonicalSupersetChanged;
                 }
                 return _canonicalSupersetProtected;
             }
         }
-        ObservableCollection<T>? _canonicalSupersetProtected = null;
+        AuthoritativeObservableCollection<T>? _canonicalSupersetProtected = null;
 
         /// <summary>
         /// Provides a typed, read-only view of the predicate-match subset.
