@@ -6,6 +6,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using System.Collections;
+using System.Collections.Specialized;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -53,7 +54,8 @@ public class TestClass_PreviewCollection
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Add     NewItems= 1 NotifyCollectionChangedEventArgs           ";
+NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs           "
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -114,6 +116,19 @@ NetProjection.Add     NewItems= 1 NotifyCollectionChangedEventArgs           ";
 
             Assert.AreEqual(1, opc.Count, "Expecting ALPHA success only.");
 
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs           "
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting a single INCC."
+            );
+
             actual = JsonConvert.SerializeObject(opc[0], Formatting.Indented);
             actual.ToClipboardExpected();
             { }
@@ -151,9 +166,155 @@ NetProjection.Add     NewItems= 1 NotifyCollectionChangedEventArgs           ";
                 Assert.AreEqual("Alpha", opc[0].Description, "Still expecting cancel.");
             }
 
-            opc[0] = item2;
+            builder.Clear();
 
-            Assert.AreEqual(1, opc.Count, "Expecting ALPHA success only.");
+
+            #region L o c a l F x
+            void localOnCollectionChanging(object? sender, NotifyCollectionChangingEventArgs e)
+            {
+                actual = JsonConvert.SerializeObject(e.NewItems, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000002"",
+    ""Description"": ""Beta"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": """",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000002"",
+    ""QueryTerm"": ""beta"",
+    ""FilterTerm"": ""beta"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Beta\""\r\n}""
+  }
+]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting IList to match limit."
+                );
+                actual = JsonConvert.SerializeObject(e.OldItems, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000001"",
+    ""Description"": ""Alpha"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": """",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000001"",
+    ""QueryTerm"": ""alpha"",
+    ""FilterTerm"": ""alpha"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Alpha\""\r\n}""
+  }
+]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting IList to match limit."
+                );
+            }
+            void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+            {
+                actual = JsonConvert.SerializeObject(e.NewItems, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000002"",
+    ""Description"": ""Beta"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": """",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000002"",
+    ""QueryTerm"": ""beta"",
+    ""FilterTerm"": ""beta"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Beta\""\r\n}""
+  }
+]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting IList to match limit."
+                );
+                actual = JsonConvert.SerializeObject(e.OldItems, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000001"",
+    ""Description"": ""Alpha"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": """",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000001"",
+    ""QueryTerm"": ""alpha"",
+    ""FilterTerm"": ""alpha"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Alpha\""\r\n}""
+  }
+]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting IList to match limit."
+                );
+            }
+            #endregion L o c a l F x
+            using (opc.WithOnDispose(
+                onInit: (sender, e) =>
+                {
+                    opc.CollectionChanging += localOnCollectionChanging;
+                    opc.CollectionChanged += localOnCollectionChanged;
+                },
+                onDispose: (sender, e) =>
+                {
+                    opc.CollectionChanging -= localOnCollectionChanging;
+                    opc.CollectionChanged -= localOnCollectionChanged;
+                }))
+            {
+                opc[0] = item2;
+            }
+
+
+            Assert.AreEqual(1, opc.Count, "Expecting inert count");
+
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+NetProjection.Replace NewItems= 1 OldItems= 1 NewIndex= 0 OldIndex= 0 NotifyCollectionChangedEventArgs           "
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting a single INCC."
+            );
 
             actual = JsonConvert.SerializeObject(opc[0], Formatting.Indented);
             actual.ToClipboardExpected();
@@ -191,8 +352,23 @@ NetProjection.Add     NewItems= 1 NotifyCollectionChangedEventArgs           ";
                 opc.Clear();
                 Assert.AreNotEqual(0, opc.Count, "Expecting cancel.");
             }
+
+            builder.Clear();
             opc.Clear();
-            Assert.AreEqual(0, opc.Count, "Expecting cancel.");
+            Assert.AreEqual(0, opc.Count, "Expecting success.");
+
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+NetProjection.Reset   NotifyCollectionChangedEventArgs           "
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting a single INCC."
+            );
 
             builder.Clear();
 
@@ -257,7 +433,21 @@ NetProjection.Add     NewItems= 1 NotifyCollectionChangedEventArgs           ";
                 Assert.AreEqual("Beta", opc[1].Description, "Still unchanged.");
             }
 
+            builder.Clear();
             opc.Move(0, 1);
+
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+NetProjection.Move    NewItems= 1 OldItems= 1 NewIndex= 1 OldIndex= 0 NotifyCollectionChangedEventArgs           "
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting a single INCC."
+            );
 
             actual = JsonConvert.SerializeObject(opc, Formatting.Indented);
             actual.ToClipboardExpected();
@@ -301,17 +491,6 @@ NetProjection.Add     NewItems= 1 NotifyCollectionChangedEventArgs           ";
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting two items in moved order."
-            );
-
-            actual = JsonConvert.SerializeObject(opc, Formatting.Indented);
-            actual.ToClipboardExpected();
-            { }
-            // capture expected after first run
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting reordered collection."
             );
         }
         #endregion S U B T E S T S
