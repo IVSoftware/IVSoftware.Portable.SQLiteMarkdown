@@ -1,3 +1,4 @@
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using System.Collections;
 using System.Collections.ObjectModel;
@@ -11,26 +12,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         /// <summary>
         /// QueryFilter Router that inherits MMDC
         /// </summary>
-        [TestMethod]
-        public void Test_InheritObservableCollection()
+        [TestMethod, Probationary("While I think through what 'Topology' means.")]
+        public void Test_Topologies()
         {
-            var oqf = new InheritObservableCollection.OBQFC<SelectableQFModel>();
-        }
-        /// <summary>
-        /// QueryFilter Router that inherits MMDC
-        /// </summary>
-        [TestMethod]
-        public void Test_InheritMMDC_ObservableOnly()
-        {
-            var oqf = new InheritModeledMarkdownContext.ObservableOnly.OBQFC<SelectableQFModel>();
-        }
-        /// <summary>
-        /// QueryFilter Router that inherits MMDC
-        /// </summary>
-        [TestMethod]
-        public void Test_InheritMMDC_AllowDirectChanges()
-        {
-            var oqf = new InheritModeledMarkdownContext.AllowDirectUpdates.OBQFC<SelectableQFModel>();
+            subtest_InheritObservableCollection();
+            subtest_InheritMMDC_ObservableOnly();
+            subtest_InheritMMDC_AllowDirectChanges();
+
+            #region S U B T E S T S
+            void subtest_InheritObservableCollection()
+            {
+                var oqf = new InheritObservableCollection.OBQFC<SelectableQFModel>();
+            }
+            void subtest_InheritMMDC_ObservableOnly()
+            {
+                var oqf = new InheritModeledMarkdownContext.ObservableOnly.OBQFC<SelectableQFModel>();
+            }
+
+            void subtest_InheritMMDC_AllowDirectChanges()
+            {
+                var oqf = new InheritModeledMarkdownContext.AllowDirectUpdates.OBQFC<SelectableQFModel>();
+            }
+            
+
+            #endregion S U B T E S T S
         }
     }
     namespace InheritObservableCollection
@@ -40,11 +45,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             , INotifyCollectionChanged
             where T : new()
         {
-            public OBQFC() { }
+            public OBQFC()
+            {
+                _mmdc.ProjectionOption = NetProjectionOption.AllowDirectChanges;
+            }
             protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
             {
                 base.OnCollectionChanged(e);
             }
+
+            ModeledMarkdownContext<T> _mmdc = new ModeledMarkdownContext<T>();
         }
     }
 
@@ -58,14 +68,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         {
             public OBQFC()
             {
+                ProjectionOption = NetProjectionOption.AllowDirectChanges;
             }
             public virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
             {
                 CollectionChanged?.Invoke(this, e);
             }
             public event NotifyCollectionChangedEventHandler? CollectionChanged;
-
-            ModeledMarkdownContext<T> _mmdc = new ModeledMarkdownContext<T>();
         }
     }
 
@@ -77,7 +86,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             where T : new()
         {
             public OBQFC()
-            { 
+            {
+                ProjectionOption = NetProjectionOption.AllowDirectChanges;
             }
             public virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
             {

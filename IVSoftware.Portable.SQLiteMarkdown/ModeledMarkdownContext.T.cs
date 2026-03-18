@@ -54,6 +54,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+        Routing Routing { get; }
 
         /// <summary>
         /// Returns the singleton, non-replaceable root XElement, created on demand.
@@ -1581,34 +1582,13 @@ Inherited contexts manage their projection internally.".TrimStart());
             {
                 if (_canonicalSupersetProtected is null)
                 {
-                    _canonicalSupersetProtected = new AuthoritativeObservableCollection(this);
+                    _canonicalSupersetProtected = new AuthoritativeObservableCollection<T>(this);
                     _canonicalSupersetProtected.CollectionChanged += OnCanonicalSupersetChanged;
                 }
                 return _canonicalSupersetProtected;
             }
         }
-        AuthoritativeObservableCollection? _canonicalSupersetProtected = null;
-
-        private class AuthoritativeObservableCollection : ObservableCollection<T> 
-        {
-            public AuthoritativeObservableCollection(IModeledMarkdownContext mmdc) 
-            {
-                MMDC = mmdc;
-            }
-            IModeledMarkdownContext MMDC { get; }
-            protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
-            {
-                // Yield to ANY explicit authority.
-                // All that matters is when IList redirects to collection *directly*.
-                if(MMDC.Authority == 0)
-                {
-                    base.OnCollectionChanged(e);
-                }
-                else
-                {   /* G T K - N O O P */
-                }
-            }
-        }
+        AuthoritativeObservableCollection<T>? _canonicalSupersetProtected = null;
 
         /// <summary>
         /// Provides a typed, read-only view of the predicate-match subset.
