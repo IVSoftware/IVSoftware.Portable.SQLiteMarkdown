@@ -2,6 +2,7 @@
 using System.Collections;
 using System.ComponentModel;
 using System.Collections.Specialized;
+using IVSoftware.Portable.Common.Exceptions;
 
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Events
@@ -17,7 +18,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
 
     public sealed class NotifyCollectionChangingEventArgs : CancelEventArgs
     {
-        public NotifyCollectionChangingAction Action { get; }
+        public NotifyCollectionChangingAction Action
+        {
+            get => _action;
+            set
+            {
+                if(IsMutable)
+                {
+                    _action = value;
+                }
+                else
+                {
+                    this.ThrowHard<InvalidOperationException>(
+                        $"{nameof(Action)} cannot be modified because the event is not in a mutable scope.");
+                }
+            }
+        }
+        NotifyCollectionChangingAction _action = default;
 
         public IList? NewItems { get; }
         public IList? OldItems { get; }
@@ -25,7 +42,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
         public int NewStartingIndex { get; } = -1;
         public int OldStartingIndex { get; } = -1;
 
-        public static bool? IsMutableDefault { get; set; }
+        public static bool IsMutableDefault { get; set; } = false;
         public bool IsMutable { get; private set; }
 
         static IList? Freeze(IList? source, bool isMutable)
@@ -46,7 +63,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
             bool? isMutable = null)
         {
             Action = action;
-            IsMutable = isMutable ?? IsMutableDefault ?? false;
+            IsMutable = isMutable ?? IsMutableDefault;
         }
 
         /// <summary>

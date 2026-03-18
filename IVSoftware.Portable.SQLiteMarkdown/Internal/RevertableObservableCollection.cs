@@ -1,15 +1,13 @@
 ﻿using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Text;
+using System.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
-
-    class RevertableObservableCollection<T> : ObservableCollection<T>
+    sealed class RevertableObservableCollection<T> : ObservableCollection<T>
     {
         public RevertableObservableCollection(ObservableCollection<T> previewCollection)
         {
@@ -36,7 +34,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         {
             if (!_isReverting)
             {
-                bool? isMutableB4 = NotifyCollectionChangingEventArgs.IsMutableDefault;
+                bool isMutableB4 = NotifyCollectionChangingEventArgs.IsMutableDefault;
                 using (this.WithOnDispose(
                     onInit: (sender, e) =>
                     {
@@ -56,7 +54,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                             _isReverting = true;
                             {
                                 Clear();
-                                foreach (var item in PreviewCollection)
+                                foreach (var item in PreviewCollection.ToArray())
                                 {
                                     Add(item);
                                 }
