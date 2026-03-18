@@ -62,7 +62,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
             NotifyCollectionChangingAction action,
             bool? isMutable = null)
         {
-            Action = action;
+            _action = action;
             IsMutable = isMutable ?? IsMutableDefault;
         }
 
