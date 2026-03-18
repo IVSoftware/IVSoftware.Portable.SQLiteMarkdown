@@ -47,7 +47,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             ? PredicateMatchSubset
             : CanonicalSuperset;
         public IList Write =>
-            CanonicalSuperset;
+            CanonicalSupersetProtected;
 
         /// <summary>
         /// If present, this external IList must be kept in sync with the net filtered result.
@@ -61,25 +61,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         {
             get
             {
-                if (_predicateMatchSubset is null)
-                {
-                    _predicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetProtected);
-                }
-                return _predicateMatchSubset;
-            }
-        }
-        protected AuthoritativeObservableCollection<T> CanonicalSupersetProtected
-        {
-            get
-            {
                 if (_canonicalSuperset is null)
                 {
-                    _canonicalSuperset = new AuthoritativeObservableCollection<T>(MMDC);
+                    _canonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetProtected);
                 }
                 return _canonicalSuperset;
             }
         }
-        AuthoritativeObservableCollection<T>? _canonicalSuperset = null;
+        IReadOnlyList<T>? _canonicalSuperset = null;
+
+        protected AuthoritativeObservableCollection<T> CanonicalSupersetProtected
+        {
+            get
+            {
+                if (_canonicalSupersetProtected is null)
+                {
+                    _canonicalSuperset = new AuthoritativeObservableCollection<T>(MMDC);
+                }
+                return _canonicalSupersetProtected!;
+            }
+        }
+        AuthoritativeObservableCollection<T>? _canonicalSupersetProtected;
 
         public IReadOnlyList<T> PredicateMatchSubset
         {
