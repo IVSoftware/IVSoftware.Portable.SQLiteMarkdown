@@ -16,8 +16,9 @@ public class TestClass_PreviewCollection
     [TestMethod, DoNotParallelize]
     public void Test_IListBasics()
     {
-        List<SelectableQFModel> Ephemeral() => new List<SelectableQFModel>();
         string actual, expected;
+        List<SelectableQFModel> Ephemeral() =>
+            new List<SelectableQFModel>();
         using var te = this.TestableEpoch();
         SelectableQFModel? currentItem;
 

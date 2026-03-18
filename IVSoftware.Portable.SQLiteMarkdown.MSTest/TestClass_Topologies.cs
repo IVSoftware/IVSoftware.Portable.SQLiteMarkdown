@@ -1,14 +1,115 @@
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using IVSoftware.WinOS.MSTest.Extensions;
+using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
-    [TestClass]
+    [TestClass, DoNotParallelize]
     public class TestClass_Topologies
     {
+        [TestMethod]
+        public void Test_TopologyBasics()
+        {
+            string actual, expected;
+            using var te = this.TestableEpoch();
+            XElement model;
+            Topology<SelectableQFModel> topo;
+
+            #region L o c a l F x
+            List<SelectableQFModel> Ephemeral() => 
+                new List<SelectableQFModel>();
+            XElement CreateModel<T>() where T : new() => 
+                model = 
+                new XElement(nameof(StdMarkdownElement.model))
+                .WithBoundAttributeValue(
+                    new ModeledMarkdownContext<T>(), 
+                    name: nameof(StdMarkdownAttribute.mdc));
+            #endregion L o c a l F x
+
+            subtest_DefaultTopo();
+
+            #region S U B T E S T S
+            void subtest_DefaultTopo()
+            { 
+                topo = new(CreateModel<SelectableQFModel>());
+
+                actual = JsonConvert.SerializeObject(topo, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+{
+  ""IsFiltering"": false,
+  ""ObservableNetCollection"": null,
+  ""CanonicalSuperset"": [],
+  ""PredicateMatchSubset"": [],
+  ""Model"": {
+    ""model"": {
+      ""@mdc"": ""[ModeledMarkdownContext]""
+    }
+  },
+  ""Count"": 0
+}"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting json serialization to match."
+                );
+
+                topo.Write.Add(Ephemeral().AddDynamic("Cats", "[]", false));
+                { }
+
+                actual = JsonConvert.SerializeObject(topo, Formatting.Indented);
+                actual.ToClipboardAssert("Expecting json serialization to match.");
+                { }
+                expected = @" 
+{
+  ""IsFiltering"": false,
+  ""ObservableNetCollection"": null,
+  ""CanonicalSuperset"": [
+    {
+      ""Id"": ""312d1c21-0000-0000-0000-000000000000"",
+      ""Description"": ""Cats"",
+      ""Keywords"": ""[]"",
+      ""KeywordsDisplay"": """",
+      ""Tags"": ""[]"",
+      ""IsChecked"": false,
+      ""Selection"": 0,
+      ""IsEditing"": false,
+      ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000000"",
+      ""QueryTerm"": ""cats"",
+      ""FilterTerm"": ""cats"",
+      ""TagMatchTerm"": """",
+      ""Properties"": ""{\r\n  \""Description\"": \""Cats\"",\r\n  \""Tags\"": \""[]\""\r\n}""
+    }
+  ],
+  ""PredicateMatchSubset"": [],
+  ""Model"": {
+    ""model"": {
+      ""@mdc"": ""[ModeledMarkdownContext]""
+    }
+  },
+  ""Count"": 1
+}";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting json serialization to match."
+                );
+            }
+            #endregion S U B T E S T S
+        }
+
         /// <summary>
         /// QueryFilter Router that inherits MMDC
         /// </summary>

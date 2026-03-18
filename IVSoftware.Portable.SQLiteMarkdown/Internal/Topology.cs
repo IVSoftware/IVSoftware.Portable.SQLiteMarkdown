@@ -10,10 +10,11 @@ using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Common.Exceptions;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
-    class Topology<T> : INotifyPropertyChanged
+    class Topology<T>
     {
         public Topology(XElement model, ObservableCollection<T>? projection = null)
         {
@@ -21,6 +22,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             if(Model.To<IModeledMarkdownContext>() is { } mmdc)
             {
                 MMDC = mmdc;
+                mmdc.PropertyChanged += (sender, e) =>
+                {
+                    switch (e.PropertyName)
+                    {
+                        case nameof(IsFiltering):
+                            IsFiltering = mmdc.IsFiltering;
+                            break;
+                    }
+                };
             }
             else
             {
@@ -28,26 +38,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             }
         }
         IModeledMarkdownContext MMDC { get; } = null!; // Guarded in CTor
-        public bool IsFiltering
-        {
-            get => _isFiltering;
-            set
-            {
-                if (!Equals(_isFiltering, value))
-                {
-                    _isFiltering = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        bool _isFiltering = false;
+        public bool IsFiltering { get; set; }
 
+        [JsonIgnore]
         public IReadOnlyList<T> Read =>
             IsFiltering
             ? PredicateMatchSubset
             : CanonicalSuperset;
-        public IList Write =>
-            CanonicalSupersetProtected;
+
+        [JsonIgnore]
+        public IList Write 
+            => CanonicalSupersetProtected;
+
 
         /// <summary>
         /// If present, this external IList must be kept in sync with the net filtered result.
@@ -68,7 +70,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 return _canonicalSuperset;
             }
         }
-        IReadOnlyList<T> _canonicalSuperset;
+        IReadOnlyList<T> _canonicalSuperset = null!;
 
         protected AuthoritativeObservableCollection<T> CanonicalSupersetProtected
         {
@@ -81,7 +83,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 return _canonicalSupersetProtected;
             }
         }
-        AuthoritativeObservableCollection<T> _canonicalSupersetProtected;
+        AuthoritativeObservableCollection<T> _canonicalSupersetProtected = null!;
 
         public IReadOnlyList<T> PredicateMatchSubset
         {
@@ -94,7 +96,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 return _predicateMatchSubset;
             }
         }
-        IReadOnlyList<T> _predicateMatchSubset;
+        IReadOnlyList<T> _predicateMatchSubset = null!;
         protected List<T> PredicateMatchSubsetProtected { get; } = new();
 
         public bool Contains(T value)
@@ -114,13 +116,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
         public object GetAt(int index)
             => ((IList)Read)[index];
-        XElement Model { get; }
+
+        public XElement Model { get; }
 
         #region P O L I C Y    A R B I T R A T I O N
         public int Count => Read.Count;
+
+        [JsonIgnore]
         public bool IsSynchronized => Write.IsSynchronized;
+
+        [JsonIgnore]
         public object SyncRoot => Write.SyncRoot;
+
+        [JsonIgnore]
         public bool IsFixedSize { get; internal set; }
+
+        [JsonIgnore]
         public bool IsReadOnly { get; internal set; }
 
         public void CopyTo(T[] array, int index)
@@ -131,11 +142,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             }
         }
         #endregion P O L I C Y    A R B I T R A T I O N
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
     }
 }
