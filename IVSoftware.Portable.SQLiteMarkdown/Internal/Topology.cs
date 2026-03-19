@@ -26,12 +26,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             // Self-detect the topology.
             var type = GetType();
 
-            ProjectionTopology ptPreview;
-            if (typeof(INotifyCollectionChanged).IsAssignableFrom(type))
+            if (typeof(INotifyCollectionChanged).IsAssignableFrom(type)
+                && type != typeof(Topology<T>))
             {
-                ptPreview = ProjectionTopology.Inheritance;
-
-                var clearMethod = this.GetType().GetMethod(
+                var clearMethod = type.GetMethod(
                     nameof(Clear),
                     BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly,
                     binder: null,
@@ -53,23 +51,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                     );
                 }
             }
-            else
-            {
-                ptPreview = ProjectionTopology.Composition;
-            }
             CanonicalSupersetInternal = new ();
             CanonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetInternal);
             PredicateMatchSubsetInternal = new();
             PredicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetInternal);
             CanonicalSupersetInternal.CollectionChanging += OnCanonicalSupersetChanging;
             CanonicalSupersetInternal.CollectionChanged += OnCanonicalSupersetChanged;
-            InitAsync();
-
-            async void InitAsync()
-            {
-                await Task.Delay(1000);
-                ProjectionTopology = ptPreview;
-            }
         }
 
         protected override void OnFilteringStateChanged()

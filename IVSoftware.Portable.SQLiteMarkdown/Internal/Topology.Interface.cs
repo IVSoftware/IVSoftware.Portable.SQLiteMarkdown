@@ -144,17 +144,34 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// <summary>
         /// Reports on whether this object is inherited or composed.
         /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
+        // [JsonConverter(typeof(StringEnumConverter))]
+
+        [JsonIgnore]
         public ProjectionTopology ProjectionTopology
         {
-            get => _projectionTopology;
-            set
+            get
             {
-                if (!Equals(_projectionTopology, value))
+                if (_projectionTopology == ProjectionTopology.None)
                 {
-                    _projectionTopology = value;
-                    OnPropertyChanged();
+                    var type = GetType();
+                    if(type != typeof(Topology<T>))
+                    {
+                        if (typeof(INotifyCollectionChanged).IsAssignableFrom(type)
+                            && type != typeof(Topology<T>))
+                        {
+                            // _projectionTopology = ProjectionTopology.Inheritance;
+                        }
+                        else
+                        {
+                            // _projectionTopology = ProjectionTopology.Composition;
+                        }
+                    }
+                    else
+                    {   /* G T K - N O O P */
+                        // Leave at None.
+                    }
                 }
+                return _projectionTopology;
             }
         }
         ProjectionTopology _projectionTopology = ProjectionTopology.None;
