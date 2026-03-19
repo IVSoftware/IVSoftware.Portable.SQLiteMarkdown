@@ -1333,21 +1333,25 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 subtest_SerializeJSON();
                 void subtest_SerializeJSON()
                 {
-                    actual = JsonConvert.SerializeObject(itemsSource, Formatting.Indented);
+                    actual = itemsSource.SerializeTopology();
                     actual.ToClipboardExpected();
+                    { }
                     expected = @" 
-[]";
+{
+  ""CanonicalSuperset"": [],
+  ""Count"": 0,
+  ""ObservableNetProjection"": [],
+  ""PredicateMatchSubset"": [],
+  ""ProjectionTopology"": ""Inheritance"",
+  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent""
+}"
+                    ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
                         "Expecting json serialization to match."
                     );
-
-                    foreach (var pi in typeof(Typology<SelectableQFModelLTOQO>).GetProperties())
-                    {
-
-                    }
                 }
                 subtestBasicQueryAnimal();
                 subtestBasicQueryAnimalINPC();

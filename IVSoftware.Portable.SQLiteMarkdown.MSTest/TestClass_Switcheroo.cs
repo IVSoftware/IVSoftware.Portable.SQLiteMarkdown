@@ -104,7 +104,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         /// Clearing the observable source confirms that routed structural changes propagate
         /// back through the canonical store and database.
         /// </remarks>
-        [TestMethod, DoNotParallelize, Ignore]
+        [TestMethod, DoNotParallelize]
         public async Task TestMethod_RouteInheritance()
         {
             using var te = this.TestableEpoch();
@@ -520,7 +520,7 @@ MarkdownContext Clear(all=True)";
             public NetProjectionOption ProjectionOption
             {
                 get => ((IModeledMarkdownContext)_mdc).ProjectionOption;
-                set => ((IModeledMarkdownContext)_mdc).ProjectionOption = value;
+                set => _mdc.ProjectionOption = value;
             }
 
             public ReplaceItemsEventingOption ReplaceItemsEventingOptions

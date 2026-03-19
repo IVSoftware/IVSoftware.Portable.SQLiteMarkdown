@@ -297,17 +297,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         : IMarkdownContext
         , ITopology
     {
-        #region C O N F I G U R A T I O N    P R O P E R T I E S
-        /// <summary>
-        /// Determines whether filter update events are provided as structural changes
-        /// with old-new item semantics, alternatively as a bulk reset, or both.
-        /// </summary>
-        /// <remarks>
-        /// Some UI platforms respond more efficiently to a raw reset.
-        /// </remarks>
-        ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; }
-        #endregion C O N F I G U R A T I O N    P R O P E R T I E S
-
         #region M O D E L
         /// <summary>
         /// Maintains the canonical recordset as a hierarchy.
@@ -386,11 +375,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ProjectionTopology ProjectionTopology { get; }
 
         #region C O N F I G U R A T I O N    P R O P E R T I E S
-
         /// <summary>
         /// OPT-IN that allows MarkdownContext to modify the ObservableNetCollection directly.
         /// </summary>
-        NetProjectionOption ProjectionOption { get;  }
+        NetProjectionOption ProjectionOption { get; }
+
+        /// <summary>
+        /// Determines whether filter update events are provided as structural changes
+        /// with old-new item semantics, alternatively as a bulk reset, or both.
+        /// </summary>
+        /// <remarks>
+        /// Some UI platforms respond more efficiently to a raw reset.
+        /// </remarks>
+        ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; }
         #endregion C O N F I G U R A T I O N    P R O P E R T I E S
 
         #region P R O J E C T I O N
@@ -403,6 +400,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public IList PredicateMatchSubset { get; }
         #endregion  P R O J E C T I O N
+
+        public int Count { get; }
     }
     public interface IModeledMarkdownContext<T> : IModeledMarkdownContext
     {
@@ -411,9 +410,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         new ObservableCollection<T>? ObservableNetProjection { get; set; }
 
-        public IReadOnlyList<T> CanonicalSuperset { get; }
+        new IReadOnlyList<T> CanonicalSuperset { get; }
 
-        public IReadOnlyList<T> PredicateMatchSubset { get; }
+        new IReadOnlyList<T> PredicateMatchSubset { get; }
     }
 
     /// <summary>

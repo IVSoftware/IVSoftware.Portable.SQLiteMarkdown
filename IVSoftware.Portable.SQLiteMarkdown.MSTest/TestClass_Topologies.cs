@@ -45,12 +45,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 { }
                 expected = @" 
 {
-  ""ObservableNetProjection"": null,
+  ""ObservableNetProjection"": [],
   ""CanonicalSuperset"": [],
   ""PredicateMatchSubset"": [],
-  ""Count"": 0,
   ""ProjectionTopology"": ""None"",
-  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent""
+  ""ProjectionOption"": ""ObservableOnly"",
+  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent"",
+  ""Count"": 0
 }"
                 ;
 
@@ -68,12 +69,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 { }
                 expected = @" 
 {
-  ""ObservableNetProjection"": null,
+  ""ObservableNetProjection"": [],
   ""CanonicalSuperset"": [],
   ""PredicateMatchSubset"": [],
-  ""Count"": 0,
   ""ProjectionTopology"": ""None"",
-  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent""
+  ""ProjectionOption"": ""ObservableOnly"",
+  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent"",
+  ""Count"": 0
 }"
                 ;
 
@@ -92,7 +94,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 { }
                 expected = @" 
 {
-  ""ObservableNetProjection"": null,
+  ""ObservableNetProjection"": [],
   ""CanonicalSuperset"": [
     {
       ""Id"": ""312d1c21-0000-0000-0000-000000000000"",
@@ -111,9 +113,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     }
   ],
   ""PredicateMatchSubset"": [],
-  ""Count"": 1,
   ""ProjectionTopology"": ""None"",
-  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent""
+  ""ProjectionOption"": ""ObservableOnly"",
+  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent"",
+  ""Count"": 1
 }"
                 ;
 

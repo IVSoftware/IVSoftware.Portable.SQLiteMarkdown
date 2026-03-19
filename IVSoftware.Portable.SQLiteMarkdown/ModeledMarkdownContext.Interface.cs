@@ -11,8 +11,12 @@ using System.Xml.Linq;
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
 
-    partial class ModeledMarkdownContext<T> : IModeledMarkdownContext<T>
+    partial class ModeledMarkdownContext<T> : ITopology
     {
-        IList? IModeledMarkdownContext.ObservableNetProjection => ObservableNetProjection;
+        IList? ITopology.ObservableNetProjection => ObservableNetProjection;
+
+        IList ITopology.CanonicalSuperset => (IList)CanonicalSuperset;
+
+        IList ITopology.PredicateMatchSubset => (IList)PredicateMatchSubset;
     }
 }

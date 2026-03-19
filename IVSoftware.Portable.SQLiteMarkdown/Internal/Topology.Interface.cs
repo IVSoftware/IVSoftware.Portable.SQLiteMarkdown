@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -145,7 +146,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
     {
         public ProjectionTopology ProjectionTopology
         {
-            get => _projectionTopology;
+            get
+            {
+                var type = GetType();
+                if (typeof(INotifyCollectionChanged).IsAssignableFrom(type)
+                    && type != typeof(Topology<T>))
+                {
+                    _projectionTopology = ProjectionTopology.Inheritance;
+                }
+                return _projectionTopology;
+            }
             internal set
             {
                 if (!Equals(_projectionTopology, value))
