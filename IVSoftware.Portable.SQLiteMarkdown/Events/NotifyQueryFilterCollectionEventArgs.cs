@@ -19,17 +19,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
         /// <summary>
         /// These items (old and new) represent a new canonical recordset.
         /// </summary>
-        QueryResult = NotifyCollectionChangedReason.QueryResult,
+        QueryResult = NotifyCollectionChangeReason.QueryResult,
 
         /// <summary>
         /// These items (old and new) represent a narrower subset.
         /// </summary>
-        ApplyFilter = NotifyCollectionChangedReason.ApplyFilter,
+        ApplyFilter = NotifyCollectionChangeReason.ApplyFilter,
 
         /// <summary>
         /// These items (old and new) represent a wider subset.
         /// </summary>
-        RemoveFilter = NotifyCollectionChangedReason.RemoveFilter,
+        RemoveFilter = NotifyCollectionChangeReason.RemoveFilter,
     }
 
     [Obsolete("Backward compatibility only. Use MarkdownContext.ModelSettledEventArgs for full capability.")]
@@ -37,7 +37,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
     {
         public NotifyQueryFilterCollectionChangedEventArgs(NotifyQueryFilterCollectionChangedAction action, IList changedItems)
             : base(
-                  reason: (NotifyCollectionChangedReason)((int)action & ~0x7),
+                  reason: (NotifyCollectionChangeReason)((int)action & ~0x7),
                   action: (NotifyCollectionChangedAction)((int)action & 0x07),
                   changedItems: changedItems)
         { }

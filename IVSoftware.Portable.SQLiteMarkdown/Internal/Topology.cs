@@ -256,35 +256,26 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// - Outputs canonical action, items, and indices for downstream application.
         /// - Returns false only after throwing for unsupported inputs.
         /// </remarks>
-        public static bool TryNormalizeTargets<T>(
+        public static bool TryNormalizeTargets(
             this EventArgs eUnk,
-            out T action,
+            out NotifyCollectionChangeAction action,
+            out NotifyCollectionChangeReason reason,
             out IList? newItems,
             out int newStartingIndex,
             out IList? oldItems,
             out int oldStartingIndex
             )
-            where T : Enum
         {
             action = default!;
+            reason = NotifyCollectionChangeReason.None;
             newItems = null;
             oldItems = null;
             newStartingIndex = -1;
             oldStartingIndex = -1;
-            var type = typeof(T);
-            if (type != typeof(NotifyCollectionChangedAction) &&
-                type != typeof(NotifyCollectionChangingAction))
-            {
-                nameof(ChangeEventExtensions)
-                    .ThrowFramework<NotSupportedException>(
-                        $"The enum type '{type.Name}' is not supported. " +
-                        $"Expected one of: {nameof(NotifyCollectionChangedAction)}, {nameof(NotifyCollectionChangingAction)}.");
-                return false;
-            }
             switch (eUnk)
             {
                 case NotifyCollectionChangedEventArgs e:
-                    action = (T)(object)e.Action;
+                    action = (NotifyCollectionChangeAction)e.Action;
                     newItems = e.NewItems;
                     oldItems = e.OldItems;
                     newStartingIndex = e.NewStartingIndex;
@@ -292,7 +283,8 @@ Inherited contexts manage their projection internally.".TrimStart());
                     return true;
 
                 case NotifyCollectionChangingEventArgs e:
-                    action = (T)(object)e.Action;
+                    action = e.Action;
+                    reason = e.Reason;
                     newItems = e.NewItems;
                     oldItems = e.OldItems;
                     newStartingIndex = e.NewStartingIndex;
@@ -300,7 +292,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                     return true;
 
                 case MutableNotifyCollectionChangingEventArgs e:
-                    action = (T)(object)e.Action;
+                    action = e.Action;
                     newItems = e.NewItems;
                     oldItems = e.OldItems;
                     newStartingIndex = e.NewStartingIndex;
@@ -323,8 +315,9 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </remarks>
         public static void Apply(this XElement model, EventArgs eUnk)
         {
-            if (!eUnk.TryNormalizeTargets<NotifyCollectionChangingAction>(
+            if (!eUnk.TryNormalizeTargets(
                 out var action,
+                out var reason,
                 out var newItems,
                 out var newStartingIndex,
                 out var oldItems,
@@ -337,11 +330,11 @@ Inherited contexts manage their projection internally.".TrimStart());
 
             switch (action)
             {
-                case NotifyCollectionChangingAction.Add: localAddToModel(); break;
-                case NotifyCollectionChangingAction.Remove: localRemoveFromModel(); break;
-                case NotifyCollectionChangingAction.Replace: localReplaceInModel(); break;
-                case NotifyCollectionChangingAction.Move: localMoveInModel(); break;
-                case NotifyCollectionChangingAction.Reset: localResetModel(); break;
+                case NotifyCollectionChangeAction.Add: localAddToModel(); break;
+                case NotifyCollectionChangeAction.Remove: localRemoveFromModel(); break;
+                case NotifyCollectionChangeAction.Replace: localReplaceInModel(); break;
+                case NotifyCollectionChangeAction.Move: localMoveInModel(); break;
+                case NotifyCollectionChangeAction.Reset: localResetModel(); break;
                 default:
                     eUnk.ThrowFramework<NotSupportedException>(
                             $"The {action.ToFullKey()} case is not supported.");
@@ -446,6 +439,7 @@ Inherited contexts manage their projection internally.".TrimStart());
 
             void localResetModel()
             {
+                model.RemoveNodes();
             }
         }
 
@@ -459,8 +453,9 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </remarks>
         public static void Apply(this IList list, EventArgs eUnk)
         {
-            if (!eUnk.TryNormalizeTargets<NotifyCollectionChangingAction>(
+            if (!eUnk.TryNormalizeTargets(
                 out var action,
+                out var reason,
                 out var newItems,
                 out var newStartingIndex,
                 out var oldItems,
@@ -474,11 +469,11 @@ Inherited contexts manage their projection internally.".TrimStart());
 
             switch (action)
             {
-                case NotifyCollectionChangingAction.Add: localAddToList(); break;
-                case NotifyCollectionChangingAction.Remove: localRemoveFromList(); break;
-                case NotifyCollectionChangingAction.Replace: localReplaceInList(); break;
-                case NotifyCollectionChangingAction.Move: localMoveInList(); break;
-                case NotifyCollectionChangingAction.Reset: localResetList(); break;
+                case NotifyCollectionChangeAction.Add: localAddToList(); break;
+                case NotifyCollectionChangeAction.Remove: localRemoveFromList(); break;
+                case NotifyCollectionChangeAction.Replace: localReplaceInList(); break;
+                case NotifyCollectionChangeAction.Move: localMoveInList(); break;
+                case NotifyCollectionChangeAction.Reset: localResetList(); break;
                 default:
                     nameof(ChangeEventExtensions)
                         .ThrowFramework<NotSupportedException>(

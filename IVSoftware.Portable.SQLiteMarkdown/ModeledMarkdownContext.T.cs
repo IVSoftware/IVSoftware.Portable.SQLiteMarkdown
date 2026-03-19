@@ -104,12 +104,12 @@ SELECT * FROM items WHERE
                         }
                     });
 
-                    var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangedReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
+                    var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
 
                     if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
                     {
                         OnModelSettled(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
-                            reason: NotifyCollectionChangedReason.ApplyFilter,
+                            reason: NotifyCollectionChangeReason.ApplyFilter,
                             e: eStructural));
                     }
                     if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
@@ -479,9 +479,9 @@ SELECT * FROM items WHERE
                     {
                         switch (eModel.Reason)
                         {
-                            case NotifyCollectionChangedReason.QueryResult:
-                            case NotifyCollectionChangedReason.ApplyFilter:
-                            case NotifyCollectionChangedReason.RemoveFilter:
+                            case NotifyCollectionChangeReason.QueryResult:
+                            case NotifyCollectionChangeReason.ApplyFilter:
+                            case NotifyCollectionChangeReason.RemoveFilter:
                                 // Avoid Clear() here. Some observers treat Clear as a semantic reset
                                 // (e.g., selection or virtualization state) rather than a sequence of
                                 // removes. Replaying the individual Remove/Add operations preserves
@@ -1042,7 +1042,7 @@ SELECT * FROM items WHERE
             {
                 var e = context as ModelSettledEventArgs
                     ?? new ModelSettledEventArgs(
-                        reason: NotifyCollectionChangedReason.None,
+                        reason: NotifyCollectionChangeReason.None,
                         action: NotifyCollectionChangedAction.Reset);
                 OnModelSettled(e);
             }

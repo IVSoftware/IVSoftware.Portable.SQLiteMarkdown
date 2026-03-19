@@ -50,7 +50,7 @@ namespace IVSoftware.Portable.Collections
         /// <see cref="NewItems"/>, <see cref="OldItems"/>, and indices are consistent
         /// before commit.
         /// </remarks>
-        public NotifyCollectionChangingAction Action { get; set; }
+        public NotifyCollectionChangeAction Action { get; set; }
 
         /// <summary>
         /// Gets or sets the items being introduced by the mutation.
@@ -92,7 +92,7 @@ namespace IVSoftware.Portable.Collections
         /// Initializes a new instance describing a Reset change.
         /// </summary>
         public MutableNotifyCollectionChangingEventArgs(
-            NotifyCollectionChangingAction action)
+            NotifyCollectionChangeAction action)
         {
             Action = action;
         }
@@ -101,13 +101,13 @@ namespace IVSoftware.Portable.Collections
         /// Initializes a new instance describing a one-item change.
         /// </summary>
         public MutableNotifyCollectionChangingEventArgs(
-            NotifyCollectionChangingAction action,
+            NotifyCollectionChangeAction action,
             object? changedItem)
             : this(action)
         {
             if (changedItem is not null)
             {
-                if (action == NotifyCollectionChangingAction.Add)
+                if (action == NotifyCollectionChangeAction.Add)
                     NewItems = new object[] { changedItem };
                 else
                     OldItems = new object[] { changedItem };
@@ -115,42 +115,42 @@ namespace IVSoftware.Portable.Collections
         }
 
         public MutableNotifyCollectionChangingEventArgs(
-            NotifyCollectionChangingAction action,
+            NotifyCollectionChangeAction action,
             object? changedItem,
             int index)
             : this(action, changedItem)
         {
-            if (action == NotifyCollectionChangingAction.Add)
+            if (action == NotifyCollectionChangeAction.Add)
                 NewStartingIndex = index;
             else
                 OldStartingIndex = index;
         }
 
         public MutableNotifyCollectionChangingEventArgs(
-            NotifyCollectionChangingAction action,
+            NotifyCollectionChangeAction action,
             IList? changedItems)
             : this(action)
         {
-            if (action == NotifyCollectionChangingAction.Add)
+            if (action == NotifyCollectionChangeAction.Add)
                 NewItems = changedItems;
             else
                 OldItems = changedItems;
         }
 
         public MutableNotifyCollectionChangingEventArgs(
-            NotifyCollectionChangingAction action,
+            NotifyCollectionChangeAction action,
             IList? changedItems,
             int startingIndex)
             : this(action, changedItems)
         {
-            if (action == NotifyCollectionChangingAction.Add)
+            if (action == NotifyCollectionChangeAction.Add)
                 NewStartingIndex = startingIndex;
             else
                 OldStartingIndex = startingIndex;
         }
 
         public MutableNotifyCollectionChangingEventArgs(
-            NotifyCollectionChangingAction action,
+            NotifyCollectionChangeAction action,
             object? newItem,
             object? oldItem)
             : this(action)
@@ -160,7 +160,7 @@ namespace IVSoftware.Portable.Collections
         }
 
         public MutableNotifyCollectionChangingEventArgs(
-            NotifyCollectionChangingAction action,
+            NotifyCollectionChangeAction action,
             object? newItem,
             object? oldItem,
             int index)
@@ -171,7 +171,7 @@ namespace IVSoftware.Portable.Collections
         }
 
         public MutableNotifyCollectionChangingEventArgs(
-            NotifyCollectionChangingAction action,
+            NotifyCollectionChangeAction action,
             IList newItems,
             IList oldItems)
             : this(action)
@@ -181,7 +181,7 @@ namespace IVSoftware.Portable.Collections
         }
 
         public MutableNotifyCollectionChangingEventArgs(
-            NotifyCollectionChangingAction action,
+            NotifyCollectionChangeAction action,
             IList newItems,
             IList oldItems,
             int startingIndex)
@@ -192,7 +192,7 @@ namespace IVSoftware.Portable.Collections
         }
 
         public MutableNotifyCollectionChangingEventArgs(
-            NotifyCollectionChangingAction action,
+            NotifyCollectionChangeAction action,
             object? changedItem,
             int index,
             int oldIndex)
@@ -203,7 +203,7 @@ namespace IVSoftware.Portable.Collections
         }
 
         public MutableNotifyCollectionChangingEventArgs(
-            NotifyCollectionChangingAction action,
+            NotifyCollectionChangeAction action,
             IList? changedItems,
             int index,
             int oldIndex)
@@ -219,7 +219,7 @@ namespace IVSoftware.Portable.Collections
         {
             return e.Action switch
             {
-                NotifyCollectionChangingAction.Add =>
+                NotifyCollectionChangeAction.Add =>
                     e.NewItems is not null && e.NewItems.Count > 1
                         ? new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Add,
@@ -230,7 +230,7 @@ namespace IVSoftware.Portable.Collections
                             e.NewItems?[0],
                             e.NewStartingIndex),
 
-                NotifyCollectionChangingAction.Remove =>
+                NotifyCollectionChangeAction.Remove =>
                     e.OldItems is not null && e.OldItems.Count > 1
                         ? new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Remove,
@@ -241,7 +241,7 @@ namespace IVSoftware.Portable.Collections
                             e.OldItems?[0],
                             e.OldStartingIndex),
 
-                NotifyCollectionChangingAction.Replace =>
+                NotifyCollectionChangeAction.Replace =>
                     e.NewItems is not null && e.NewItems.Count > 1
                         ? new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Replace,
@@ -254,7 +254,7 @@ namespace IVSoftware.Portable.Collections
                             e.OldItems?[0],
                             e.NewStartingIndex),
 
-                NotifyCollectionChangingAction.Move =>
+                NotifyCollectionChangeAction.Move =>
                     e.NewItems is not null && e.NewItems.Count > 1
                         ? new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Move,
@@ -267,7 +267,7 @@ namespace IVSoftware.Portable.Collections
                             e.NewStartingIndex,
                             e.OldStartingIndex),
 
-                NotifyCollectionChangingAction.Reset =>
+                NotifyCollectionChangeAction.Reset =>
                     new NotifyCollectionChangedEventArgs(
                         NotifyCollectionChangedAction.Reset),
 
@@ -277,7 +277,7 @@ namespace IVSoftware.Portable.Collections
 
         public static implicit operator MutableNotifyCollectionChangingEventArgs(NotifyCollectionChangedEventArgs e)
         {
-            var action = (NotifyCollectionChangingAction)e.Action;
+            var action = (NotifyCollectionChangeAction)e.Action;
 
             return e.Action switch
             {

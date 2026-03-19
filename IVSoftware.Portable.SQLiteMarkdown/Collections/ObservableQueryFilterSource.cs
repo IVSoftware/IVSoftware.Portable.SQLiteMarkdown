@@ -622,7 +622,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         {
                             OnCollectionChanged(
                                 new ModelSettledEventArgs(
-                                    reason: NotifyCollectionChangedReason.RemoveFilter,
+                                    reason: NotifyCollectionChangeReason.RemoveFilter,
                                     action: NotifyCollectionChangedAction.Replace,
                                     oldItems: (IList)PredicateMatchSubset,
                                     newItems: (IList)CanonicalSuperset
@@ -634,7 +634,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             OnCollectionChanged(
                                 new ModelSettledEventArgs
                                 (
-                                    reason: NotifyCollectionChangedReason.RemoveFilter,
+                                    reason: NotifyCollectionChangeReason.RemoveFilter,
                                     action: NotifyCollectionChangedAction.Reset
                                 )
                             );
