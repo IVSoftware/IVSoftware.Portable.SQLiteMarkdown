@@ -362,8 +362,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
         protected override async Task ApplyFilter()
         {
-            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 18).Date, "Don't forget disabled");
-#if false
             await base.ApplyFilter();
 
             using (DHostBusy.GetToken())
@@ -377,7 +375,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                     await Task.Run(async () =>
                     {
-                        PredicateMatchSubsetPrivate.Clear();
+                        PredicateMatchSubsetInternal.Clear();
                         Model.RemoveDescendantAttributes(StdMarkdownAttribute.ismatch);
 
                         #region F I L T E R    Q U E R Y
@@ -410,7 +408,7 @@ SELECT * FROM items WHERE
                                     if (xaf.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
                                         && xbaModel.Tag is T model)
                                     {
-                                        PredicateMatchSubsetPrivate.Add(model);
+                                        PredicateMatchSubsetInternal.Add(model);
                                     }
                                     break;
                                 case PlacerResult.Created:
@@ -484,7 +482,6 @@ SELECT * FROM items WHERE
                     _sslimAF.Release();
                 }
             }
-#endif
         }
 
 
