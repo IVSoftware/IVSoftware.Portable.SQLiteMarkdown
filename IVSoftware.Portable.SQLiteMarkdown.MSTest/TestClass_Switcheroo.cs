@@ -407,7 +407,6 @@ MarkdownContext Clear(all=True)";
         {
             public ObservableNetProjectionWithComposition()
             {
-                Model.SetBoundAttributeValue(_mdc, name: nameof(StdMarkdownAttribute.mdc));
                 ObservableNetProjection = this;
                 ProjectionOption = NetProjectionOption.ObservableOnly;
                 ModelSettled += (sender, e) =>

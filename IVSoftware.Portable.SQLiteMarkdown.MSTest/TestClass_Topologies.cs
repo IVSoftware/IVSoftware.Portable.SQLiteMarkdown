@@ -28,6 +28,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             // Get a dynamic item using a dummy list.
             List<SelectableQFModel> Ephemeral() => new List<SelectableQFModel>();
             string SerializeTopology() => mmdc.SerializeTopology<SelectableQFModel>();
+            string ModelToString() => mmdc.Model.ToString();
             #endregion L o c a l F x
 
 
@@ -128,6 +129,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Expecting json serialization to match."
+                );
+
+
+                actual = ModelToString();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model mdc=""[ModeledMarkdownContext]"" autocount=""1"" count=""1"" matches=""1"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
+</model>";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting Model to match."
                 );
             }
             #endregion S U B T E S T S
