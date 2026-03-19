@@ -117,7 +117,8 @@ IsChecked: Brown Dog "
         ((IList)items).AddDynamic<SelectableQFModel>(description: "Bird~Feathered", tags: "[]", isChecked: false);
         ((IList)items).AddDynamic<SelectableQFModel>(description: "Bird Feathered", tags: "[]", isChecked: false);
 
-        actual = JsonConvert.SerializeObject(items.Read, Formatting.Indented);
+        // This *also* validates [JsonArray]
+        actual = JsonConvert.SerializeObject(items, Formatting.Indented);
         actual.ToClipboardExpected();
         { }
         expected = @" 

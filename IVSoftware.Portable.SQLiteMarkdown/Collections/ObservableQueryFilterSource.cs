@@ -4,6 +4,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -30,6 +31,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     /// </summary>
 
     [DebuggerDisplay("Count={Count}")]
+    [JsonArray]
     public partial class ObservableQueryFilterSource<T>
         : ModeledMarkdownContext<T>
         , IObservableQueryFilterSource<T>

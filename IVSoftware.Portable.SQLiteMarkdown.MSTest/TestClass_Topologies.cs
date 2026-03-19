@@ -27,7 +27,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             #region L o c a l F x
             // Get a dynamic item using a dummy list.
             List<SelectableQFModel> Ephemeral() => new List<SelectableQFModel>();
-            string SerializeTopology() => mmdc.SerializeTopology<SelectableQFModel>();
+            //string SerializeTopology() => mmdc.SerializeTopology<SelectableQFModel>();
+            string SerializeTopology() => mmdc.SerializeTopology();
             string ModelToString() => mmdc.Model.ToString();
             #endregion L o c a l F x
 
@@ -44,9 +45,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 { }
                 expected = @" 
 {
-  ""MatchContainsProto"": [],
-  ""RouteToFullRecordset"": true,
-  ""ProjectionOption"": ""ObservableOnly"",
   ""ObservableNetProjection"": null,
   ""CanonicalSuperset"": [],
   ""PredicateMatchSubset"": [],
@@ -70,9 +68,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 { }
                 expected = @" 
 {
-  ""MatchContainsProto"": [],
-  ""RouteToFullRecordset"": true,
-  ""ProjectionOption"": ""ObservableOnly"",
   ""ObservableNetProjection"": null,
   ""CanonicalSuperset"": [],
   ""PredicateMatchSubset"": [],
@@ -97,9 +92,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 { }
                 expected = @" 
 {
-  ""MatchContainsProto"": [],
-  ""RouteToFullRecordset"": true,
-  ""ProjectionOption"": ""ObservableOnly"",
   ""ObservableNetProjection"": null,
   ""CanonicalSuperset"": [
     {
