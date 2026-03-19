@@ -1,83 +1,73 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
-using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
-using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
-    [JsonObject]
     partial class Topology<T> : IList
     {
+        public bool IsFixedSize =>
+            ((IList?)ObservableNetCollection)?.IsFixedSize
+            ?? ((IList)CanonicalSupersetProtected).IsFixedSize;
+
+        public bool IsSynchronized =>
+            ((IList?)ObservableNetCollection)?.IsSynchronized
+            ?? ((IList)CanonicalSupersetProtected).IsSynchronized;
+
+        public object SyncRoot =>
+            ((IList?)ObservableNetCollection)?.SyncRoot
+            ?? ((IList)CanonicalSupersetProtected).SyncRoot;
+
         #region P O L I C Y    A R B I T R A T I O N
-        bool IList.IsFixedSize => throw new NotImplementedException();
 
-        bool IList.IsReadOnly => throw new NotImplementedException();
-
-        int ICollection.Count => throw new NotImplementedException();
-
-        bool ICollection.IsSynchronized => throw new NotImplementedException();
-
-        object ICollection.SyncRoot => throw new NotImplementedException();
-
-        object IList.this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        public int IndexOf(T value)
-            => Read is IList list ? list.IndexOf(value) : -1;
-
-        public object GetAt(int index)
-            => ((IList)Read)[index];
-
-        int IList.Add(object value)
+        [Indexer]
+        object IList.this[int index] 
+        { 
+            get => Read[index];
+            set
+            {
+                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection))
+                { 
+                    ((IList)CanonicalSupersetProtected)[index] = value;
+                }
+            }
+        }
+        public int Add(object value)
         {
-            throw new NotImplementedException();
+            return ((IList)CanonicalSupersetProtected).Add(value);
         }
 
-        void IList.Clear()
+        public bool Contains(object value)
         {
-            throw new NotImplementedException();
+            return ((IList)CanonicalSupersetProtected).Contains(value);
         }
 
-        bool IList.Contains(object value)
+        public void CopyTo(Array array, int index)
         {
-            throw new NotImplementedException();
+            ((ICollection)CanonicalSupersetProtected).CopyTo(array, index);
         }
 
-        int IList.IndexOf(object value)
+        public int IndexOf(object value)
         {
-            throw new NotImplementedException();
+            return ((IList)CanonicalSupersetProtected).IndexOf(value);
         }
 
-        void IList.Insert(int index, object value)
+        public void Insert(int index, object value)
         {
-            throw new NotImplementedException();
+            ((IList)CanonicalSupersetProtected).Insert(index, value);
         }
 
-        void IList.Remove(object value)
+        public void Remove(object value)
         {
-            throw new NotImplementedException();
+            ((IList)CanonicalSupersetProtected).Remove(value);
         }
-
-        void IList.RemoveAt(int index)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ICollection.CopyTo(Array array, int index)
-        {
-            throw new NotImplementedException();
-        }
+        #endregion P O L I C Y    A R B I T R A T I O N
 
         IEnumerator IEnumerable.GetEnumerator() => Read.GetEnumerator();
-        #endregion P O L I C Y    A R B I T R A T I O N
     }
 
     /// <summary>
@@ -125,6 +115,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         public IEnumerator<T> GetEnumerator()
         {
             return ((IEnumerable<T>)CanonicalSupersetProtected).GetEnumerator();
+        }
+
+        public int IndexOf(T item)
+        {
+            return ((IList<T>)CanonicalSupersetProtected).IndexOf(item);
         }
 
         public void Insert(int index, T item)

@@ -3,48 +3,32 @@ using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Reflection;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
+    [JsonObject]
     partial class Topology<T>
     {
-        public Topology(XElement model, ObservableCollection<T>? projection = null)
+        public Topology(IModeledMarkdownContext mmdc, ObservableCollection<T>? projection = null)
         {
-            Model = model;
-            if (Model.To<IModeledMarkdownContext>() is { } mmdc)
+            MMDC = mmdc;
+            mmdc.PropertyChanged += (sender, e) =>
             {
-                MMDC = mmdc;
-                mmdc.PropertyChanged += (sender, e) =>
+                switch (e.PropertyName)
                 {
-                    switch (e.PropertyName)
-                    {
-                        case nameof(IsFiltering):
-                            IsFiltering = mmdc.IsFiltering;
-                            break;
-                    }
-                };
-                BeginCollectionChangeAuthority = (authority) => mmdc.BeginCollectionChangeAuthority(authority);
-                GetAuthority = () => MMDC.Authority;
-            }
-            else
-            {
-                this.ThrowHard<ArgumentException>($"The {nameof(model)} argument requires a bound MMDC.");
-            }
+                    case nameof(IsFiltering):
+                        IsFiltering = mmdc.IsFiltering;
+                        break;
+                }
+            };
+            CanonicalSupersetProtected = new AuthoritativeObservableCollection<T>(() => MMDC.Authority);
+            CanonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetProtected);
+            PredicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetProtected);
         }
-        public XElement Model { get; }
-
-        #region N U L L    G U A R D E D    I N    C T O R
-        IModeledMarkdownContext MMDC { get; } = null!;
-
-        protected Func<CollectionChangeAuthority, IDisposable> BeginCollectionChangeAuthority { get; } = null!;
-
-        protected Func<CollectionChangeAuthority> GetAuthority { get; } = null!;
-        #endregion N U L L    G U A R D E D    I N    C T O R
+        private readonly IModeledMarkdownContext MMDC;
 
         public bool IsFiltering
         {
@@ -100,45 +84,44 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// To eliminate churn, user may inherit from <see cref="AuthoritativeObservableCollection{T}AuthoritativeObservableCollection"/>
         /// </remarks>
         public ObservableCollection<T>? ObservableNetCollection { get; }
+        public IReadOnlyList<T> CanonicalSuperset { get; }
+        readonly IReadOnlyList<T> _canonicalSuperset;
 
-        public IReadOnlyList<T> CanonicalSuperset
-        {
-            get
-            {
-                if (_canonicalSuperset is null)
-                {
-                    _canonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetProtected);
-                }
-                return _canonicalSuperset;
-            }
-        }
-        IReadOnlyList<T> _canonicalSuperset = null!;
+        /// <summary>
+        /// Provides the authoritative mutable superset that backs all collection operations.
+        /// </summary>
+        /// <remarks>
+        /// - All write operations are applied to this collection under enforced
+        ///   <see cref="CollectionChangeAuthority"/>.
+        /// - When <see cref="IsFiltering"/> is active or when a sorted projection is in effect,
+        ///   index-based operations are mediated through the model to resolve positions
+        ///   relative to the currently visible items.
+        /// - This collection is not used as the read surface; enumeration is routed through
+        ///   the active view (see <c>Read</c>), which selects between the canonical superset
+        ///   and the predicate-matched subset.
+        /// - <see cref="AuthoritativeObservableCollection{T}"/> suppresses redundant
+        ///   <see cref="System.Collections.Specialized.NotifyCollectionChangedEventArgs"/>
+        ///   emissions when changes originate from the model and are mirrored into the
+        ///   <c>ObservableNetCollection</c>, preventing feedback loops since projection
+        ///   updates ultimately target this canonical superset.
+        /// </remarks>
+        protected AuthoritativeObservableCollection<T> CanonicalSupersetProtected { get; }
 
-        protected AuthoritativeObservableCollection<T> CanonicalSupersetProtected
-        {
-            get
-            {
-                if (_canonicalSupersetProtected is null)
-                {
-                    _canonicalSupersetProtected = new AuthoritativeObservableCollection<T>(()=>MMDC.Authority);
-                }
-                return _canonicalSupersetProtected;
-            }
-        }
-        AuthoritativeObservableCollection<T> _canonicalSupersetProtected = null!;
+        /// <summary>
+        /// Exposes the current predicate-matched subset as a stable read-only view.
+        /// </summary>
+        public IReadOnlyList<T> PredicateMatchSubset { get; }
 
-        public IReadOnlyList<T> PredicateMatchSubset
-        {
-            get
-            {
-                if (_predicateMatchSubset is null)
-                {
-                    _predicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetProtected);
-                }
-                return _predicateMatchSubset;
-            }
-        }
-        IReadOnlyList<T> _predicateMatchSubset = null!;
+        /// <summary>
+        /// Stores the mutable backing list for the predicate-matched subset.
+        /// </summary>
+        /// <remarks>
+        /// - Rebuilt by the model during reconciliation based on the current filter state.
+        /// - Treated as an ephemeral projection snapshot, not a source of truth.
+        /// - Not exposed for external mutation; contents are fully controlled by the model.
+        /// - Updates are applied as a single settled snapshot; intermediate churn is suppressed
+        ///   and observers are notified via the model’s ModelSettled event.
+        /// </remarks>
         protected List<T> PredicateMatchSubsetProtected { get; } = new();
     }
 }
