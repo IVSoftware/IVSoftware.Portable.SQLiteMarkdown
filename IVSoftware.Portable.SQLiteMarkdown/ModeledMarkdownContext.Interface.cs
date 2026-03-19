@@ -12,139 +12,103 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 {
     partial class ModeledMarkdownContext<T> : IList
     {
+        public bool IsFixedSize => ((IList)Topology).IsFixedSize;
+
+        public bool IsReadOnly => ((IList)Topology).IsReadOnly;
+
+        public int Count => ((ICollection)Topology).Count;
+
+        public bool IsSynchronized => ((ICollection)Topology).IsSynchronized;
+
+        public object SyncRoot => ((ICollection)Topology).SyncRoot;
+
+
         [Indexer]
-        object IList.this[int index]
+        public object this[int index] 
         {
-            get => ((IList)Topology.Read)[index];
-            set
-            {
-                if (value is T valueT)
-                {
-                    ((IList)Topology.Write)[index] = valueT;
-                }
-                else
-                {
-                    ThrowHard<InvalidCastException>(
-                        $"[Indexer] setter requires value assignable to {typeof(T).Name}."
-                    );
-                }
-            }
+            get => ((IList)Topology)[index]; 
+            set => ((IList)Topology)[index] = value; 
         }
 
-        bool IList.IsFixedSize => Topology.IsFixedSize;
-        bool IList.IsReadOnly => Topology.IsReadOnly;
-
-        int ICollection.Count => Topology.Count;
-        bool ICollection.IsSynchronized => Topology.IsSynchronized;
-        object ICollection.SyncRoot => Topology.SyncRoot;
-
-        int IList.Add(object value)
+        public int Add(object value)
         {
-            if (value is T valueT)
-            {
-                Topology.Write.Add(valueT);
-                return Topology.Count - 1;
-            }
-            else
-            {
-                ThrowHard<InvalidCastException>(
-                    $"{nameof(IList.Add)} requires value assignable to {typeof(T).Name}."
-                );
-                return 0;
-            }
+            return ((IList)Topology).Add(value);
         }
 
-        void IList.Clear()
-            => Topology.Write.Clear();
-
-        bool IList.Contains(object value)
-            => value is T valueT && Topology.Contains(valueT);
-        void ICollection.CopyTo(Array array, int index)
+        public void Clear()
         {
-            if (array is T[] typed)
-            {
-                Topology.CopyTo(typed, index);
-            }
-            else 
-            { 
-                ThrowHard<ArrayTypeMismatchException>(
-                    $"{nameof(ICollection.CopyTo)} requires array of type {typeof(T).Name}."
-                );
-            }
+            ((IList)Topology).Clear();
         }
 
-        int IList.IndexOf(object value)
-            => value is T valueT ? Topology.IndexOf(valueT) : -1;
-
-        void IList.Insert(int index, object value)
+        public bool Contains(object value)
         {
-            if (value is T valueT)
-            {
-                Topology.Write.Insert(index, valueT);
-            }
-            else
-            {
-                ThrowHard<InvalidCastException>(
-                    $"{nameof(IList.Insert)} requires value assignable to {typeof(T).Name}."
-                );
-            }
+            return ((IList)Topology).Contains(value);
         }
 
-        void IList.Remove(object value)
+        public int IndexOf(object value)
         {
-            if (value is T valueT)
-            {
-                Topology.Write.Remove(valueT);
-            }
+            return ((IList)Topology).IndexOf(value);
         }
 
-        void IList.RemoveAt(int index)
+        public void Insert(int index, object value)
         {
-            var item = Topology.Read[index];
-            Topology.Write.Remove(item);
+            ((IList)Topology).Insert(index, value);
+        }
+
+        public void Remove(object value)
+        {
+            ((IList)Topology).Remove(value);
+        }
+
+        public void RemoveAt(int index)
+        {
+            ((IList)Topology).RemoveAt(index);
+        }
+
+        public void CopyTo(Array array, int index)
+        {
+            ((ICollection)Topology).CopyTo(array, index);
         }
     }
 
     partial class ModeledMarkdownContext<T> : IList<T>
     {
-        T IList<T>.this[int index]
-        {
-            get => (T)((IList)Topology.Read)[index];
-            set => Topology.Write[index] = value!;
+
+        [Indexer]
+        T IList<T>.this[int index] 
+        { 
+            get => ((IList<T>)Topology)[index];
+            set => ((IList<T>)Topology)[index] = value; 
         }
 
-        int ICollection<T>.Count => Topology.Count;
-        bool ICollection<T>.IsReadOnly => Topology.IsReadOnly;
-
-        void ICollection<T>.Add(T item)
-            => Topology.Write.Add(item!);
-
-        void ICollection<T>.Clear()
-            => Topology.Write.Clear();
-
-        bool ICollection<T>.Contains(T item)
-            => Topology.Contains(item!);
-
-        void ICollection<T>.CopyTo(T[] array, int arrayIndex)
-            => Topology.CopyTo(array, arrayIndex);
-
-        int IList<T>.IndexOf(T item)
-            => Topology.IndexOf(item!);
-
-        void IList<T>.Insert(int index, T item)
-            => Topology.Write.Insert(index, item!);
-
-        bool ICollection<T>.Remove(T item)
+        public void Add(T item)
         {
-            bool exists = Topology.Contains(item);
-            Topology.Write.Remove(item!);
-            return exists;
+            ((ICollection<T>)Topology).Add(item);
         }
 
-        void IList<T>.RemoveAt(int index)
+        public bool Contains(T item)
         {
-            var item = Topology.Read[index];
-            Topology.Write.Remove(item);
+            return ((ICollection<T>)Topology).Contains(item);
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            ((ICollection<T>)Topology).CopyTo(array, arrayIndex);
+        }
+
+        public int IndexOf(T item)
+        {
+            return ((IList<T>)Topology).IndexOf(item);
+        }
+
+        public void Insert(int index, T item)
+        {
+            ((IList<T>)Topology).Insert(index, item);
+        }
+
+        public bool Remove(T item)
+        {
+            return ((ICollection<T>)Topology).Remove(item);
         }
     }
 }

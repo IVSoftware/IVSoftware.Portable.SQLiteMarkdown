@@ -45,6 +45,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         DisposableHost? _dhostBusy = null;
 
+        /// <summary>
+        /// Reference count when an item is in the process of self-indexing.
+        /// </summary>
         public DisposableHost DHostSelfIndexing { get; } = new();
 
 

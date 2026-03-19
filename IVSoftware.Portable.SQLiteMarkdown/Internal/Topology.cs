@@ -28,14 +28,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                             break;
                     }
                 };
+                BeginCollectionChangeAuthority = (authority) => mmdc.BeginCollectionChangeAuthority(authority);
+                GetAuthority = () => MMDC.Authority;
             }
             else
             {
                 this.ThrowHard<ArgumentException>($"The {nameof(model)} argument requires a bound MMDC.");
             }
         }
-        IModeledMarkdownContext MMDC { get; } = null!; // Guarded in CTor
         public XElement Model { get; }
+
+        #region N U L L    G U A R D E D    I N    C T O R
+        IModeledMarkdownContext MMDC { get; } = null!;
+
+        protected Func<CollectionChangeAuthority, IDisposable> BeginCollectionChangeAuthority { get; } = null!;
+
+        protected Func<CollectionChangeAuthority> GetAuthority { get; } = null!;
+        #endregion N U L L    G U A R D E D    I N    C T O R
 
         public bool IsFiltering
         {
@@ -78,16 +87,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         bool _isFiltering = false;
         IDisposable? _authorityToken = null;
 
-
-        [JsonIgnore]
-        public IReadOnlyList<T> Read =>
+        protected IReadOnlyList<T> Read =>
             IsFiltering
             ? PredicateMatchSubset
             : CanonicalSuperset;
-
-        [JsonIgnore]
-        public IList Write 
-            => CanonicalSupersetProtected;
 
 
         /// <summary>

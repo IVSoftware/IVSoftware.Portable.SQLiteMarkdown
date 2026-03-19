@@ -1,4 +1,7 @@
-﻿using IVSoftware.Portable.SQLiteMarkdown.Util;
+﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;
 using System;
@@ -6,118 +9,137 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
-    partial class Topology<T> // : IList
+    [JsonObject]
+    partial class Topology<T> : IList
     {
+        #region P O L I C Y    A R B I T R A T I O N
+        bool IList.IsFixedSize => throw new NotImplementedException();
+
+        bool IList.IsReadOnly => throw new NotImplementedException();
+
+        int ICollection.Count => throw new NotImplementedException();
+
+        bool ICollection.IsSynchronized => throw new NotImplementedException();
+
+        object ICollection.SyncRoot => throw new NotImplementedException();
+
+        object IList.this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
         public int IndexOf(T value)
             => Read is IList list ? list.IndexOf(value) : -1;
 
         public object GetAt(int index)
             => ((IList)Read)[index];
 
-        #region P O L I C Y    A R B I T R A T I O N
-        public int Count => Read.Count;
-
-        [JsonIgnore]
-        public bool IsSynchronized => Write.IsSynchronized;
-
-        [JsonIgnore]
-        public object SyncRoot => Write.SyncRoot;
-
-        [JsonIgnore]
-        public bool IsFixedSize { get; internal set; }
-
-        [JsonIgnore]
-        public bool IsReadOnly { get; internal set; }
-
-        public object this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        public int Add(object value)
+        int IList.Add(object value)
         {
             throw new NotImplementedException();
+        }
+
+        void IList.Clear()
+        {
+            throw new NotImplementedException();
+        }
+
+        bool IList.Contains(object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        int IList.IndexOf(object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IList.Insert(int index, object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IList.Remove(object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IList.RemoveAt(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        void ICollection.CopyTo(Array array, int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => Read.GetEnumerator();
+        #endregion P O L I C Y    A R B I T R A T I O N
+    }
+
+    /// <summary>
+    /// Read routed, Write with authority.
+    /// </summary>
+    partial class Topology<T> : IList<T>
+    {
+        [Indexer]
+        public T this[int index]
+        { 
+            get => ((IList<T>)CanonicalSupersetProtected)[index];
+            set 
+            { 
+                ((IList<T>)CanonicalSupersetProtected)[index] = value;
+            }
+        }
+
+        public int Count => ((ICollection<T>)CanonicalSupersetProtected).Count;
+
+        public bool IsReadOnly => ((ICollection<T>)CanonicalSupersetProtected).IsReadOnly;
+
+        public void Add(T item)
+        {
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection))
+            {
+                ((ICollection<T>)CanonicalSupersetProtected).Add(item);
+            }
         }
 
         public void Clear()
         {
-            throw new NotImplementedException();
+            ((ICollection<T>)CanonicalSupersetProtected).Clear();
         }
 
-        public bool Contains(object value)
+        public bool Contains(T item)
         {
-            throw new NotImplementedException();
+            return ((ICollection<T>)CanonicalSupersetProtected).Contains(item);
         }
 
-        public int IndexOf(object value)
+        public void CopyTo(T[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            ((ICollection<T>)CanonicalSupersetProtected).CopyTo(array, arrayIndex);
         }
 
-        public void Insert(int index, object value)
+        public IEnumerator<T> GetEnumerator()
         {
-            throw new NotImplementedException();
-        }
-
-        public void Remove(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void RemoveAt(int index)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void CopyTo(Array array, int index)
-        {
-            throw new NotImplementedException();
-        }
-        #endregion P O L I C Y    A R B I T R A T I O N
-    }
-
-
-    partial class Topology<T> //  : IList<T>
-    {
-
-        public void CopyTo(T[] array, int index)
-        {
-            for (int i = 0; i < Read.Count; i++)
-            {
-                array[index + i] = Read[i];
-            }
-        }
-        public bool Contains(T value)
-        {
-            if (value?.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
-            {
-                return PlacerResult.Exists == Model.Place(full, PlacerMode.FindOrPartial);
-            }
-            else
-            {
-                return false;
-            }
+            return ((IEnumerable<T>)CanonicalSupersetProtected).GetEnumerator();
         }
 
         public void Insert(int index, T item)
         {
-            throw new NotImplementedException();
-        }
-
-        public void Add(T item)
-        {
-            throw new NotImplementedException();
+            ((IList<T>)CanonicalSupersetProtected).Insert(index, item);
         }
 
         public bool Remove(T item)
         {
-            throw new NotImplementedException();
+            return ((ICollection<T>)CanonicalSupersetProtected).Remove(item);
         }
 
-        IEnumerator<T> GetEnumerator()
+        public void RemoveAt(int index)
         {
-            throw new NotImplementedException();
+            ((IList<T>)CanonicalSupersetProtected).RemoveAt(index);
         }
     }
 
