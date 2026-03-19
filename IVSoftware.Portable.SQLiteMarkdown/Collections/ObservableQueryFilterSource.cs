@@ -49,7 +49,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 #endif
 
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
-        public IReadOnlyList<T> UnfilteredItems => CanonicalSuperset;
+        public IReadOnlyList<T> UnfilteredItems => Topology.CanonicalSuperset;
 
 
         /// <summary>
@@ -80,6 +80,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected override void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
         {
+            base.OnModelSettled(eBCL);
+#if false
             if(ProjectionOption == NetProjectionOption.AllowDirectChanges)
             {
                 base.OnModelSettled(eBCL);
@@ -292,6 +294,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     #endregion L o c a l F x
                 }
             }
+#endif
         }
 
 #if false
@@ -526,7 +529,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         #region I L I S T
-        public int IndexOf(T item) { return CanonicalSupersetProtected.IndexOf(item); }
 
         void IList.Clear() => Clear(all: true);
         void ICollection<T>.Clear() => Clear(all: true);
@@ -541,97 +543,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// 2. The UI-oriented [X] demoting clear state machine.
         /// </remarks>
         [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
-        public void Clear() => base.Clear(all: true);
-
-#if false
-        public new FilteringState Clear(bool all)
-        {
-            var fsmAfterClear = base.Clear(all);
-            if (fsmAfterClear < FilteringState.Armed)
-            {
-                // [Careful] 
-                // If we're responding to FilteringState changed to clear the
-                // canonical recordset it MIGHT NOT WORK. For example, manual
-                // add-remove changes to Items will bypass the input state machine. 
-                CanonicalSupersetProtected.Clear();
-            }
-            return fsmAfterClear;
-        }
-#endif
-
-        public bool Contains(T item) { return CanonicalSupersetProtected.Contains(item); }
-
-        public void CopyTo(T[] array, int arrayIndex) { CanonicalSupersetProtected.CopyTo(array, arrayIndex); }
-
-        bool IList.Contains(object value) { return ((IList)CanonicalSupersetProtected).Contains(value); }
-
-        int IList.IndexOf(object value) { return ((IList)CanonicalSupersetProtected).IndexOf(value); }
-        public void Insert(int index, T item)
-        {
-            CanonicalSupersetProtected.Insert(index, item);
-            OnExternalChange(item);
-        }
-
-        public void Add(T item)
-        {
-            CanonicalSupersetProtected.Add(item);
-            OnExternalChange(item);
-        }
-        public void RemoveAt(int index)
-        {
-            object? item;
-            if (index < CanonicalSupersetProtected.Count)
-            {
-                item = CanonicalSupersetProtected[index];
-            }
-            else
-            {
-                item = null;
-            }
-            CanonicalSupersetProtected.RemoveAt(index);
-            OnExternalChange(item);
-        }
-
-        int IList.Add(object item)
-        {
-            if (item is T itemT)
-            {
-                CanonicalSupersetProtected.Add(itemT);
-                return CanonicalSupersetProtected.IndexOf(itemT);
-            }
-            if (typeof(T) == typeof(StringWrapper))
-            {
-                var wrapper = new StringWrapper(item?.ToString() ?? string.Empty);
-                if (wrapper is T itemTT)
-                {
-                    CanonicalSupersetProtected.Add(itemTT);
-                    return CanonicalSupersetProtected.IndexOf(itemTT);
-                }
-            }
-            throw new ArgumentException($"Value of type {item?.GetType()} cannot be added to list of {typeof(T)}");
-        }
-
-        public bool Remove(T item)
-        {
-            var removed = CanonicalSupersetProtected.Remove(item);
-            if (removed) OnExternalChange(item);
-            return removed;
-        }
-
-        void IList.Insert(int index, object item)
-        {
-            CanonicalSupersetProtected.Insert(index, (T)item);
-            OnExternalChange(item);
-        }
-
-        void IList.Remove(object item)
-        {
-            if (CanonicalSupersetProtected.Contains((T)item))
-            {
-                CanonicalSupersetProtected.Remove((T)item);
-                OnExternalChange(item);
-            }
-        }
+        public new void Clear() => base.Clear(all: true);
 
         /// <summary>
         /// We need this, but this implementation is probationary and might need some tweaking.
@@ -644,12 +556,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
             FilteringState = FilteringState;
         }
-
-        void ICollection.CopyTo(Array array, int index) { ((ICollection)CanonicalSupersetProtected).CopyTo(array, index); }
-
-        bool ICollection.IsSynchronized { get { return ((ICollection)CanonicalSupersetProtected).IsSynchronized; } }
-
-        object ICollection.SyncRoot { get { return ((ICollection)CanonicalSupersetProtected).SyncRoot; } }
 
         #endregion I L I S T
 
@@ -716,8 +622,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                 new ModelSettledEventArgs(
                                     reason: NotifyCollectionChangedReason.RemoveFilter,
                                     action: NotifyCollectionChangedAction.Replace,
-                                    oldItems: (IList)PredicateMatchSubset,
-                                    newItems: (IList)CanonicalSuperset
+                                    oldItems: (IList)Topology.PredicateMatchSubset,
+                                    newItems: (IList)Topology.CanonicalSuperset
                                 )
                             );
                         }
@@ -783,23 +689,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Careful("This polarity was wrong, and has been fixed.")]
         private IReadOnlyList<T> RoutedRecordset =>
             RouteToFullRecordset 
-            ? CanonicalSuperset 
-            : PredicateMatchSubset;
+            ? Topology.CanonicalSuperset 
+            : Topology.PredicateMatchSubset;
 
         public new IEnumerator<T> GetEnumerator() => RoutedRecordset.Cast<T>().GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
-
-        public int Count => RoutedRecordset.Count;
-
-        /// <summary>
-        /// Required IList support
-        /// </summary>
-        public bool IsReadOnly => ((IList)CanonicalSupersetProtected).IsReadOnly;
-
-        /// <summary>
-        /// Required IList support
-        /// </summary>
-        public bool IsFixedSize => ((IList)CanonicalSupersetProtected).IsFixedSize;
 
         public T this[int index]
         {

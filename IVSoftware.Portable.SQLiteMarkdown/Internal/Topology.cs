@@ -71,7 +71,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         bool _isFiltering = false;
         IDisposable? _authorityToken = null;
 
-        protected IReadOnlyList<T> Read =>
+        internal IReadOnlyList<T> Read =>
             IsFiltering
             ? PredicateMatchSubset
             : CanonicalSuperset;
@@ -104,7 +104,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         ///   <c>ObservableNetCollection</c>, preventing feedback loops since projection
         ///   updates ultimately target this canonical superset.
         /// </remarks>
-        protected AuthoritativeObservableCollection<T> CanonicalSupersetProtected { get; }
+        internal AuthoritativeObservableCollection<T> CanonicalSupersetProtected { get; }
 
         /// <summary>
         /// Exposes the current predicate-matched subset as a stable read-only view.
@@ -121,6 +121,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// - Updates are applied as a single settled snapshot; intermediate churn is suppressed
         ///   and observers are notified via the model’s ModelSettled event.
         /// </remarks>
-        protected List<T> PredicateMatchSubsetProtected { get; } = new();
+        internal List<T> PredicateMatchSubsetProtected { get; } = new();
     }
 }

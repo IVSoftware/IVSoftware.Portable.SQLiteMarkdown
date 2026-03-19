@@ -387,6 +387,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
         protected override async Task ApplyFilter()
         {
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 18).Date, "Don't forget disabled");
+#if false
             await base.ApplyFilter();
 
             using (DHostBusy.GetToken())
@@ -507,6 +509,7 @@ SELECT * FROM items WHERE
                     _sslimAF.Release();
                 }
             }
+#endif
         }
 
 
@@ -644,6 +647,9 @@ Inherited contexts manage their projection internally.".TrimStart());
 
         protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
         {
+
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 18).Date, "Don't forget disabled");
+#if false
             #region A U T H O R I T Y    G U A R D
             switch (Authority)
             {
@@ -735,6 +741,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                     CanonicalSupersetProtected.Add(item);
                 }
             }
+#endif
         }
 
         /// <summary>

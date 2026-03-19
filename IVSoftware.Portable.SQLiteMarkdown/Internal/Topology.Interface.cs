@@ -91,7 +91,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
         public void Add(T item)
         {
-            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection))
+            using (MMDC.BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection))
             {
                 ((ICollection<T>)CanonicalSupersetProtected).Add(item);
             }
