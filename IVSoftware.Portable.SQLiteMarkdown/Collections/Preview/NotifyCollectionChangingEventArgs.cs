@@ -2,6 +2,9 @@
 using System.Collections;
 using System.ComponentModel;
 using System.Collections.Specialized;
+using System.Xml.Linq;
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 
 
 namespace IVSoftware.Portable.Collections
@@ -56,7 +59,7 @@ namespace IVSoftware.Portable.Collections
         // Projected contract
         // ----------------------------------------
 
-        public NotifyCollectionChangedAction Action => @base.Action;
+        public NotifyCollectionChangingAction Action => (NotifyCollectionChangingAction)@base.Action;
 
         public IList? NewItems => @base.NewItems;
 

@@ -1,14 +1,17 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Xml.Linq;
+using static System.Collections.Specialized.BitVector32;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
@@ -38,10 +41,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                     );
                 }
             }
-            CanonicalSupersetInternal = new AuthoritativeObservableCollection<T>(() => Authority);
+            CanonicalSupersetInternal = new ();
             CanonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetInternal);
             PredicateMatchSubsetInternal = new();
             PredicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetInternal);
+            CanonicalSupersetInternal.CollectionChanging += OnCanonicalSupersetChanging;
             CanonicalSupersetInternal.CollectionChanged += OnCanonicalSupersetChanged;
         }
 
@@ -157,6 +161,29 @@ Inherited contexts manage their projection internally.".TrimStart());
 
         protected virtual void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) { }
 
+        private void OnCanonicalSupersetChanging(object sender, NotifyCollectionChangingEventArgs e)
+        {
+            switch (Authority)
+            {
+                case 0:
+                    // Explicitly allowed.
+                    e.Cancel = false;
+                    break;
+                case CollectionChangeAuthority.None:
+                    e.Cancel = true;
+                    break;
+                case CollectionChangeAuthority.Model:
+                    e.Cancel = true;
+                    break;
+                case CollectionChangeAuthority.Projection:
+                    e.Cancel = true;
+                    Model.Apply(e);
+                    break;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
+                    break;
+            }
+        }
         protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e) 
         {
             Debug.Assert(CanonicalSuperset.Count == CanonicalSupersetInternal.Count);
@@ -184,7 +211,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         ///   <c>ObservableNetCollection</c>, preventing feedback loops since projection
         ///   updates ultimately target this canonical superset.
         /// </remarks>
-        internal AuthoritativeObservableCollection<T> CanonicalSupersetInternal { get; }
+        internal ObservablePreviewCollection<T> CanonicalSupersetInternal { get; }
 
         /// <summary>
         /// Exposes the current predicate-matched subset as a stable read-only view.
@@ -202,5 +229,303 @@ Inherited contexts manage their projection internally.".TrimStart());
         ///   and observers are notified via the model’s ModelSettled event.
         /// </remarks>
         internal List<T> PredicateMatchSubsetInternal { get; }
+    }
+    static class ChangeEventExtensions
+    {
+        /// <summary>
+        /// Normalizes supported collection change EventArgs into a unified action and payload.
+        /// </summary>
+        /// <remarks>
+        /// - Supports NotifyCollectionChangedEventArgs and internal changing variants.
+        /// - Outputs canonical action, items, and indices for downstream application.
+        /// - Returns false only after throwing for unsupported inputs.
+        /// </remarks>
+        public static bool TryNormalizeTargets<T>(
+            this EventArgs eUnk,
+            out T action,
+            out IList? newItems,
+            out int newStartingIndex,
+            out IList? oldItems,
+            out int oldStartingIndex
+            )
+            where T : Enum
+        {
+            action = default!;
+            newItems = null;
+            oldItems = null;
+            newStartingIndex = -1;
+            oldStartingIndex = -1;
+            var type = typeof(T);
+            if (type != typeof(NotifyCollectionChangedAction) &&
+                type != typeof(NotifyCollectionChangingAction))
+            {
+                nameof(ChangeEventExtensions)
+                    .ThrowFramework<NotSupportedException>(
+                        $"The enum type '{type.Name}' is not supported. " +
+                        $"Expected one of: {nameof(NotifyCollectionChangedAction)}, {nameof(NotifyCollectionChangingAction)}.");
+                return false;
+            }
+            switch (eUnk)
+            {
+                case NotifyCollectionChangedEventArgs e:
+                    action = (T)(object)e.Action;
+                    newItems = e.NewItems;
+                    oldItems = e.OldItems;
+                    newStartingIndex = e.NewStartingIndex;
+                    oldStartingIndex = e.OldStartingIndex;
+                    return true;
+
+                case NotifyCollectionChangingEventArgs e:
+                    action = (T)(object)e.Action;
+                    newItems = e.NewItems;
+                    oldItems = e.OldItems;
+                    newStartingIndex = e.NewStartingIndex;
+                    oldStartingIndex = e.OldStartingIndex;
+                    return true;
+
+                case MutableNotifyCollectionChangingEventArgs e:
+                    action = (T)(object)e.Action;
+                    newItems = e.NewItems;
+                    oldItems = e.OldItems;
+                    newStartingIndex = e.NewStartingIndex;
+                    oldStartingIndex = e.OldStartingIndex;
+                    return true;
+                default:
+                    nameof(ChangeEventExtensions)
+                        .ThrowFramework<NotSupportedException>($"The {eUnk.GetType().Name} case is not supported.");
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Applies a normalized collection change to the XML model.
+        /// </summary>
+        /// <remarks>
+        /// - Delegates structural updates to local handlers based on action.
+        /// - Consumes normalized payload (items, indices) without reinterpreting EventArgs.
+        /// - Intended as the authoritative model mutation entry point.
+        /// </remarks>
+        public static void Apply(this XElement model, EventArgs eUnk)
+        {
+            if (!eUnk.TryNormalizeTargets<NotifyCollectionChangingAction>(
+                out var action,
+                out var newItems,
+                out var newStartingIndex,
+                out var oldItems,
+                out var oldStartingIndex))
+            {
+                nameof(ChangeEventExtensions)
+                    .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name} case is not supported.");
+                return;
+            }
+
+            switch (action)
+            {
+                case NotifyCollectionChangingAction.Add: localAddToModel(); break;
+                case NotifyCollectionChangingAction.Remove: localRemoveFromModel(); break;
+                case NotifyCollectionChangingAction.Replace: localReplaceInModel(); break;
+                case NotifyCollectionChangingAction.Move: localMoveInModel(); break;
+                case NotifyCollectionChangingAction.Reset: localResetModel(); break;
+                default:
+                    nameof(ChangeEventExtensions)
+                        .ThrowFramework<NotSupportedException>(
+                            $"The {action.ToFullKey()} case is not supported.");
+                    break;
+            }
+
+            void localAddToModel()
+            {
+                if (newItems is null)
+                {
+                    nameof(ChangeEventExtensions)
+                        .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
+                }
+                else
+                {
+                    foreach (var item in newItems)
+                    {
+                    }
+                }
+            }
+
+            void localRemoveFromModel()
+            {
+                if (oldItems is null)
+                {
+                    nameof(ChangeEventExtensions)
+                        .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
+                }
+                else
+                {
+                    foreach (var item in oldItems)
+                    {
+                    }
+                }
+            }
+
+            void localReplaceInModel()
+            {
+                if (newItems is null || oldItems is null)
+                {
+                    nameof(ChangeEventExtensions)
+                        .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
+                }
+                else
+                {
+                    foreach (var item in oldItems)
+                    {
+                    }
+                    foreach (var item in newItems)
+                    {
+                    }
+                }
+            }
+
+            void localMoveInModel()
+            {
+                if (oldItems is null)
+                {
+                    nameof(ChangeEventExtensions)
+                        .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
+                }
+                else
+                {
+                    foreach (var item in oldItems)
+                    {
+                    }
+                }
+            }
+
+            void localResetModel()
+            {
+            }
+        }
+
+        /// <summary>
+        /// Applies a normalized collection change to a list target.
+        /// </summary>
+        /// <remarks>
+        /// - Mirrors model application semantics for IList-backed projections.
+        /// - Uses normalized action and payload for consistent mutation behavior.
+        /// - Serves as the projection-side execution counterpart to model updates.
+        /// </remarks>
+        public static void Apply(this IList list, EventArgs eUnk)
+        {
+            if (!eUnk.TryNormalizeTargets<NotifyCollectionChangingAction>(
+                out var action,
+                out var newItems,
+                out var newStartingIndex,
+                out var oldItems,
+                out var oldStartingIndex))
+            {
+                nameof(ChangeEventExtensions)
+                    .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name} case is not supported.");
+                return;
+            }
+
+            switch (action)
+            {
+                case NotifyCollectionChangingAction.Add: localAddToList(); break;
+                case NotifyCollectionChangingAction.Remove: localRemoveFromList(); break;
+                case NotifyCollectionChangingAction.Replace: localReplaceInList(); break;
+                case NotifyCollectionChangingAction.Move: localMoveInList(); break;
+                case NotifyCollectionChangingAction.Reset: localResetList(); break;
+                default:
+                    nameof(ChangeEventExtensions)
+                        .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name} case is not supported.");
+                    break;
+            }
+            void localAddToList()
+            {
+                if (newItems is null || newStartingIndex < 0)
+                {
+                    nameof(ChangeEventExtensions)
+                        .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
+                }
+                else
+                {
+                    var index = newStartingIndex;
+                    foreach (var item in newItems)
+                    {
+                        list.Insert(index++, item);
+                    }
+                }
+            }
+
+            void localRemoveFromList()
+            {
+                if (oldItems is null || oldStartingIndex < 0)
+                {
+                    nameof(ChangeEventExtensions)
+                        .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
+                }
+                else
+                {
+                    // Remove at index repeatedly (items shift left)
+                    for (int i = 0; i < oldItems.Count; i++)
+                    {
+                        list.RemoveAt(oldStartingIndex);
+                    }
+                }
+            }
+
+            void localMoveInList()
+            {
+                if (oldItems is null || oldStartingIndex < 0 || newStartingIndex < 0)
+                {
+                    nameof(ChangeEventExtensions)
+                        .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
+                }
+                else
+                {
+                    // Preserve order of moved block
+                    var buffer = new object[oldItems.Count];
+                    for (int i = 0; i < oldItems.Count; i++)
+                    {
+                        buffer[i] = list[oldStartingIndex];
+                        list.RemoveAt(oldStartingIndex);
+                    }
+
+                    var insertIndex = newStartingIndex;
+                    foreach (var item in buffer)
+                    {
+                        list.Insert(insertIndex++, item);
+                    }
+                }
+            }
+
+            void localReplaceInList()
+            {
+                if (newItems is null || oldItems is null || newStartingIndex < 0)
+                {
+                    nameof(ChangeEventExtensions)
+                        .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
+                }
+                else
+                {
+                    // Replace in place
+                    for (int i = 0; i < newItems.Count; i++)
+                    {
+                        list[newStartingIndex + i] = newItems[i];
+                    }
+                }
+            }
+
+            void localResetList()
+            {
+                list.Clear();
+            }
+        }
     }
 }
