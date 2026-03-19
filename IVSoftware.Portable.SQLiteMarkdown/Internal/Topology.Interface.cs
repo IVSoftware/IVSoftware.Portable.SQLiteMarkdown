@@ -141,12 +141,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
     partial class Topology<T> // IModeledMarkdownContext
     {
+        public ProjectionTopology ProjectionTopology
+        {
+            get => _projectionTopology;
+            internal set
+            {
+                if (!Equals(_projectionTopology, value))
+                {
+                    _projectionTopology = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        ProjectionTopology _projectionTopology = default;
+
+
+#if false
         /// <summary>
         /// Reports on whether this object is inherited or composed.
         /// </summary>
-        // [JsonConverter(typeof(StringEnumConverter))]
-
-        [JsonIgnore]
+        [JsonConverter(typeof(StringEnumConverter))]
         public ProjectionTopology ProjectionTopology
         {
             get
@@ -175,6 +189,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             }
         }
         ProjectionTopology _projectionTopology = ProjectionTopology.None;
+#endif
 
 
         public ReplaceItemsEventingOption ReplaceItemsEventingOptions

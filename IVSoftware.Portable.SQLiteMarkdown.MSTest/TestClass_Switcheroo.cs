@@ -134,6 +134,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 });
 
             var inherited = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
+            //inherited.ProjectionTopology = ProjectionTopology.Inheritance;
 
             await subtest_CheckForExpectedAdvisory();
             subtest_DetectTopology();
