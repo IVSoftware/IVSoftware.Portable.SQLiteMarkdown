@@ -66,35 +66,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         protected override void OnFilteringStateChanged()
         {
             base.OnFilteringStateChanged();
-
-            if (IsFiltering)
-            {
-                if (_authorityToken is null)
-                {
-                    _authorityToken = BeginCollectionChangeAuthority(CollectionChangeAuthority.Model);
-                }
-                else
-                {
-                    this.ThrowHard<InvalidOperationException>(
-                        "Filtering state invariant violated: token already present on enter.");
-                }
-            }
-            else
-            {
-                if (_authorityToken is null)
-                {
-                    this.ThrowHard<InvalidOperationException>(
-                        "Filtering state invariant violated: token missing on exit.");
-                }
-                else
-                {
-                    var tmp = _authorityToken;
-                    _authorityToken = null;
-                    tmp.Dispose();
-                }
-            }
         }
-        IDisposable? _authorityToken = null;
 
         internal IReadOnlyList<T> Read =>
             IsFiltering

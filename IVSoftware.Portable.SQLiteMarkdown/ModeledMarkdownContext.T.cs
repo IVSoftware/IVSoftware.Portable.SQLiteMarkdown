@@ -106,15 +106,21 @@ SELECT * FROM items WHERE
 
                     var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
 
-                    if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
+                    // The WDT epoch controls this!
+                    Debug.Assert(Authority == CollectionChangeAuthority.Model);
+
+                    using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Model))
                     {
-                        OnModelSettled(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
-                            reason: NotifyCollectionChangeReason.ApplyFilter,
-                            e: eStructural));
-                    }
-                    if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
-                    {
-                        OnModelSettled(eReset);
+                        if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
+                        {
+                            OnModelSettled(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
+                                reason: NotifyCollectionChangeReason.ApplyFilter,
+                                e: eStructural));
+                        }
+                        if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
+                        {
+                            OnModelSettled(eReset);
+                        }
                     }
 
 #if ABSTRACT

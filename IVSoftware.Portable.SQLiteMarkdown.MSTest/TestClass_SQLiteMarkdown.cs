@@ -616,7 +616,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model autocount=""2"" count=""2"" matches=""1"">
+<model mmdc=""[MMDC]"" count=""2"" matches=""1"" autocount=""2"">
   <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" sort=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" sort=""1"" ismatch=""True"" />
 </model>"
