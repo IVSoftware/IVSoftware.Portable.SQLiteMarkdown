@@ -825,7 +825,7 @@ SELECT * FROM items WHERE
                     localResetOrCanonizeModelForEpoch();
                     break;
                 case StdFSMState.UpdateStatesForEpoch:
-                    localInitStatesForEpoch();
+                    localUpdateStatesForEpoch();
                     break;
                 case StdFSMState.AddItemToModel:
                     AddItemToModel(context);
@@ -1000,7 +1000,7 @@ SELECT * FROM items WHERE
                 }
             }
 
-            void localInitStatesForEpoch()
+            void localUpdateStatesForEpoch()
             {
                 switch (state)
                 {

@@ -19,10 +19,13 @@ using System.Xml.Linq;
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
     [JsonObject]
-    public partial class Topology<T> : MarkdownContext<T>
+    public partial class Topology<T> : MarkdownContext<T> where T : new()
     {
         public Topology()
         {
+
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 19).Date, "Don't forget disabled");
+#if false
             // Self-detect the topology.
             var type = GetType();
 
@@ -51,6 +54,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                     );
                 }
             }
+#endif
             CanonicalSupersetInternal = new ();
             CanonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetInternal);
             PredicateMatchSubsetInternal = new();

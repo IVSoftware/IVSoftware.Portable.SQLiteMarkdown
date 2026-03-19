@@ -4,22 +4,18 @@ using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
     partial class Topology<T> : IList
     {
-
         #region P O L I C Y    A R B I T R A T I O N
         public int Count => Read.Count;
 
@@ -79,6 +75,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         }
 
         IEnumerator IEnumerable.GetEnumerator() => Read.GetEnumerator();
+
+        void IList.Clear()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>
@@ -98,10 +99,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             ((ICollection<T>)CanonicalSupersetInternal).Add(item);
         }
 
-        public void Clear()
-        {
-            ((ICollection<T>)CanonicalSupersetInternal).Clear();
-        }
+        /// <summary>
+        /// "No surprises Clear in the IList explicit interface.
+        /// </summary>
+        [Careful("Explicit interface implementation only. Do not hide the base class default.")]
+        void ICollection<T>.Clear() => base.Clear(all: true);
 
         public bool Contains(T item)
         {
@@ -202,12 +204,43 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         {
             using(BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection))
             {
+                // This calls Model.Apply(e) in the Changing handler.
                 CanonicalSupersetInternal.Clear();
+                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                {
+                    Debug.Assert(FilterQueryDatabase.Table<T>().Count() == 0, "Must be EMPTY.");
+                }
+
                 if (recordset is not null)
                 {
                     foreach (T item in recordset)
                     {
                         CanonicalSupersetInternal.Add(item);
+                    }
+                    switch (CanonicalCount)
+                    {
+                        case 0:
+                            SearchEntryState = SearchEntryState.QueryCompleteNoResults;
+                            FilteringState = FilteringState.Ineligible;
+                            break;
+                        case 1:
+                            SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                            FilteringState = FilteringState.Ineligible;
+                            break;
+                        default:
+                            SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                            switch (QueryFilterConfig)
+                            {
+                                case QueryFilterConfig.Query:
+                                case QueryFilterConfig.Filter:
+                                default:
+                                    FilteringState = FilteringState.Ineligible;
+                                    break;
+                                case QueryFilterConfig.QueryAndFilter:
+                                    FilteringState = FilteringState.Armed;
+                                    break;
+                            }
+                            break;
                     }
                 }
             }

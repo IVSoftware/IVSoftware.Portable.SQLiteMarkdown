@@ -738,7 +738,6 @@ InputText"
             // [Remember]
             // The *absence* of any ismatch attributes makes
             // each and every node a perceived match.
-
             expected = @" 
 [IME Len: 3, IsFiltering: False], [Net: null, CC: 2, PMC: 2], [Query: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
             ;
