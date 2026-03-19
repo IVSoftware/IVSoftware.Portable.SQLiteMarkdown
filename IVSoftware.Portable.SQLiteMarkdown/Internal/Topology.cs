@@ -391,6 +391,7 @@ Inherited contexts manage their projection internally.".TrimStart());
 
             void localRemoveFromModel()
             {
+                Debug.Fail($@"ADVISORY - First Time.");
                 if (oldItems is null)
                 {
                     eUnk.ThrowFramework<NotSupportedException>(
@@ -398,14 +399,44 @@ Inherited contexts manage their projection internally.".TrimStart());
                 }
                 else
                 {
+                    int
+                        count = model.GetAttributeValue<int>(StdMarkdownAttribute.count, 0),
+                        matches = model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
+
                     foreach (var item in oldItems)
                     {
+                        if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
+                        {
+                            var placerResult = model.Place(full, out var xel, PlacerMode.FindOrPartial);
+                            switch (placerResult)
+                            {
+                                case PlacerResult.Exists:
+                                    if (xel.Parent is not null)
+                                    {
+                                        xel.Remove();
+                                        count = Math.Max(0, count - 1);
+                                        matches = Math.Max(0, matches - 1);
+                                    }
+                                    break;
+                                default:
+                                    eUnk.ThrowFramework<NotSupportedException>(
+                                        $"Unexpected result: `{placerResult.ToFullKey()}`. Expected option is {PlacerResult.Exists}");
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            eUnk.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
+                        }
                     }
+                    model.SetAttributeValue(nameof(StdMarkdownAttribute.count), count);
+                    model.SetAttributeValue(nameof(StdMarkdownAttribute.matches), matches);
                 }
             }
 
             void localReplaceInModel()
             {
+                Debug.Fail($@"ADVISORY - First Time.");
                 if (newItems is null || oldItems is null)
                 {
                     eUnk.ThrowFramework<NotSupportedException>(
@@ -413,17 +444,81 @@ Inherited contexts manage their projection internally.".TrimStart());
                 }
                 else
                 {
+                    int
+                        indexForAdd = model.GetAttributeValue<int>(StdMarkdownAttribute.autocount),
+                        count = model.GetAttributeValue<int>(StdMarkdownAttribute.count, 0),
+                        matches = model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
+
+                    // REMOVE PHASE
                     foreach (var item in oldItems)
                     {
+                        if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
+                        {
+                            var placerResult = model.Place(full, out var xel, PlacerMode.FindOrPartial);
+                            switch (placerResult)
+                            {
+                                case PlacerResult.Exists:
+                                    if (xel.Parent is not null)
+                                    {
+                                        xel.Remove();
+                                        count = Math.Max(0, count - 1);
+                                        matches = Math.Max(0, matches - 1);
+                                    }
+                                    break;
+                                default:
+                                    eUnk.ThrowFramework<NotSupportedException>(
+                                        $"Unexpected result: `{placerResult.ToFullKey()}`. Expected option is {PlacerResult.Exists}");
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            eUnk.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
+                        }
                     }
+
+                    // ADD PHASE
                     foreach (var item in newItems)
                     {
+                        if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
+                        {
+                            var placerResult = model.Place(full, out var xel);
+                            switch (placerResult)
+                            {
+                                case PlacerResult.Exists:
+                                    break;
+
+                                case PlacerResult.Created:
+                                    xel.Name = nameof(StdMarkdownElement.xitem);
+                                    xel.SetBoundAttributeValue(
+                                        tag: item,
+                                        name: nameof(StdMarkdownAttribute.model));
+
+                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), indexForAdd++);
+                                    count++;
+                                    matches++;
+                                    break;
+
+                                default:
+                                    eUnk.ThrowFramework<NotSupportedException>(
+                                        $"Unexpected result: `{placerResult.ToFullKey()}`. Expected options are {PlacerResult.Created} or {PlacerResult.Exists}");
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            eUnk.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
+                        }
                     }
+
+                    model.SetAttributeValue(nameof(StdMarkdownAttribute.count), count);
+                    model.SetAttributeValue(nameof(StdMarkdownAttribute.matches), matches);
                 }
             }
 
             void localMoveInModel()
             {
+                Debug.Fail($@"ADVISORY - First Time.");
                 if (oldItems is null)
                 {
                     eUnk.ThrowFramework<NotSupportedException>(
@@ -431,15 +526,44 @@ Inherited contexts manage their projection internally.".TrimStart());
                 }
                 else
                 {
+                    int targetIndex = newStartingIndex;
+
                     foreach (var item in oldItems)
                     {
+                        if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
+                        {
+                            var placerResult = model.Place(full, out var xel, PlacerMode.FindOrPartial);
+                            switch (placerResult)
+                            {
+                                case PlacerResult.Exists:
+                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), targetIndex++);
+                                    break;
+
+                                default:
+                                    eUnk.ThrowFramework<NotSupportedException>(
+                                        $"Unexpected result: `{placerResult.ToFullKey()}`. Expected option is {PlacerResult.Exists}");
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            eUnk.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
+                        }
                     }
                 }
             }
 
             void localResetModel()
             {
-                model.RemoveNodes();
+                if(reason == NotifyCollectionChangeReason.None)
+                {
+                    model.RemoveNodes();
+                }
+                else
+                {
+                    Debug.Fail($@"ADVISORY - TODO distinguish ReplaceItemsEventingOption.");
+                    model.RemoveNodes();
+                }
             }
         }
 
