@@ -20,27 +20,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         {
             string actual, expected;
             using var te = this.TestableEpoch();
-            XElement model;
-            Topology<SelectableQFModel> topo;
+
+            ModeledMarkdownContext<SelectableQFModel> mmc = new();
+            XElement model = mmc.Model;
+            Topology<SelectableQFModel> topo = mmc.Topology; ;
 
             #region L o c a l F x
-            List<SelectableQFModel> Ephemeral() => 
-                new List<SelectableQFModel>();
-            XElement CreateModel<T>() where T : new() => 
-                model = 
-                new XElement(nameof(StdMarkdownElement.model))
-                .WithBoundAttributeValue(
-                    new ModeledMarkdownContext<T>(), 
-                    name: nameof(StdMarkdownAttribute.mdc));
+            // Get a dynamic item using a dummy list.
+            List<SelectableQFModel> Ephemeral() => new List<SelectableQFModel>();
             #endregion L o c a l F x
 
             subtest_DefaultTopo();
 
             #region S U B T E S T S
             void subtest_DefaultTopo()
-            { 
-                topo = new(CreateModel<SelectableQFModel>());
-
+            {
                 actual = JsonConvert.SerializeObject(topo, Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }

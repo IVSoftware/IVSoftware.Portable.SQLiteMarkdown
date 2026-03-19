@@ -30,7 +30,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             get => Read[index];
             set
             {
-                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection))
+                using (MMDC.BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection))
                 { 
                     ((IList)CanonicalSupersetProtected)[index] = value;
                 }
@@ -138,7 +138,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         }
     }
 
-    partial class Topology<T> // : IModeledMarkdownContext<T>
+    partial class Topology<T>
     {
         public ProjectionTopology ProjectionTopology { get; }
 

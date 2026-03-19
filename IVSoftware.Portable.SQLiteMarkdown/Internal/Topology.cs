@@ -85,7 +85,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// </remarks>
         public ObservableCollection<T>? ObservableNetCollection { get; }
         public IReadOnlyList<T> CanonicalSuperset { get; }
-        readonly IReadOnlyList<T> _canonicalSuperset;
 
         /// <summary>
         /// Provides the authoritative mutable superset that backs all collection operations.

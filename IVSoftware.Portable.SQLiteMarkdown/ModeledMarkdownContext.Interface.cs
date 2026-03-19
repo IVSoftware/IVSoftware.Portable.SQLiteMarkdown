@@ -111,4 +111,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return ((ICollection<T>)Topology).Remove(item);
         }
     }
+
+    partial class ModeledMarkdownContext<T> : IModeledMarkdownContext<T>
+    {
+        IList? IModeledMarkdownContext.ObservableNetProjection => ObservableNetProjection;
+    }
 }

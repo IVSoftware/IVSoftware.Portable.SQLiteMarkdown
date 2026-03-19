@@ -9,6 +9,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -53,8 +54,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     );
                 }
             }
+
+            Model.SetBoundAttributeValue(
+                this,
+                name: nameof(StdMarkdownAttribute.mdc));
+            Topology = new Topology<T>(this);
         }
-        Topology<T> Topology { get; }
+        [JsonIgnore]
+        internal Topology<T> Topology { get; }
 
         /// <summary>
         /// Returns the singleton, non-replaceable root XElement, created on demand.
@@ -996,6 +1003,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                          ? ProjectionTopology.None
                          : ProjectionTopology.Composition;
         }
+
         readonly bool _isInherited;
         #endregion P R O J E C T I O N
 
@@ -1562,48 +1570,5 @@ Inherited contexts manage their projection internally.".TrimStart());
                 }
             }
         }
-
-
-        /// <summary>
-        /// Factory-backed canonical superset used by the back-end event pipeline 
-        /// even when the visible ObservableNetProjection is filtered or divergent.
-        /// </summary>
-        /// <remarks>
-        /// This collection represents the authoritative recordset for the current epoch.
-        /// The ObservableNetProjection may expose a filtered or reordered view for UI
-        /// interaction, but all structural reconciliation ultimately resolves against
-        /// this canonical superset.
-        /// </remarks>
-        public IReadOnlyList<T> CanonicalSuperset => CanonicalSupersetProtected;
-
-        public ObservableCollection<T> CanonicalSupersetProtected
-        {
-            get
-            {
-                if (_canonicalSupersetProtected is null)
-                {
-                    _canonicalSupersetProtected = new AuthoritativeObservableCollection<T>(()=>this.Authority);
-                    _canonicalSupersetProtected.CollectionChanged += OnCanonicalSupersetChanged;
-                }
-                return _canonicalSupersetProtected;
-            }
-        }
-        AuthoritativeObservableCollection<T>? _canonicalSupersetProtected = null;
-
-        /// <summary>
-        /// Provides a typed, read-only view of the predicate-match subset.
-        /// </summary>
-        /// <remarks>
-        /// The underlying collection is created by the base context using
-        /// the element type supplied at construction. This property simply
-        /// re-exposes that collection as <see cref="IReadOnlyList{T}"/>.
-        /// Structural changes performed by the infrastructure remain visible
-        /// through this view.
-        /// </remarks>
-        public IReadOnlyList<T> PredicateMatchSubset
-            => PredicateMatchSubsetPrivate;
-
-        private List<T> PredicateMatchSubsetPrivate { get; } = new();
-        IList? IModeledMarkdownContext.ObservableNetProjection => ObservableNetProjection;
     }
 }
