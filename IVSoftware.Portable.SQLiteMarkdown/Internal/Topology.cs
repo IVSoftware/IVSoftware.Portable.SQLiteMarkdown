@@ -14,7 +14,6 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Reflection;
 using System.Xml.Linq;
-using static System.Collections.Specialized.BitVector32;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
@@ -23,27 +22,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
     {
         public Topology()
         {
-            // Self-detect the topology.
-            // - RTTI claims INotifyCollectionChange implementation.
-            // - This class, however, doesn't do that on its own.
-            // - Inheritance is the only possibility.
-            _isInherited = typeof(INotifyCollectionChanged).IsAssignableFrom(GetType());
-            if (_isInherited)
-            {
-                if (this.GetType().GetMethod(nameof(Clear), Type.EmptyTypes) is { } clearMethod)
-                {   /* B C S - N O O P */
-                }
-                else
-                {
-                    // Avoid leaking the object itself as the awaited sender.
-                    nameof(MarkdownContext).Advisory(
-                        $"Inherited MarkdownContext detected, but no parameterless Clear() was found. " +
-                        "Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. " +
-                        "If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. " +
-                        "You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit."
-                    );
-                }
-            }
             CanonicalSupersetInternal = new ();
             CanonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetInternal);
             PredicateMatchSubsetInternal = new();

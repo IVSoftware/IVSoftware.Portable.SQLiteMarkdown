@@ -1,4 +1,9 @@
-﻿using IVSoftware.Portable.SQLiteMarkdown.Internal;
+﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
+using Newtonsoft.Json;
+using System;
+using System.Reflection;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -16,7 +21,51 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// contract). The generic context therefore only projects a typed
         /// read-only view and does not need to enforce the type at runtime.
         /// </remarks>
-        public MarkdownContext() : base(typeof(T)) { }
+        public MarkdownContext() : base(typeof(T))
+        {
+
+            //if (IsInherited)
+            //{
+            //    var clearMethod = this.GetType().GetMethod(
+            //        nameof(Clear),
+            //        BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly,
+            //        binder: null,
+            //        types: Type.EmptyTypes,
+            //        modifiers: null);
+            //    if (clearMethod is not null)
+            //    {   /* B C S - N O O P */
+            //        // Located a declared parameterless Clear method.
+            //    }
+            //    else
+            //    {
+            //        nameof(MarkdownContext) // Avoid leaking the object itself as the awaited sender.
+            //            .Advisory(
+            //            $"Inherited MarkdownContext detected, but no parameterless Clear() was found. " +
+            //            "Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. " +
+            //            "If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. " +
+            //            "You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit."
+            //        );
+            //    }
+            //}
+        }
+        public bool IsInherited
+        {
+            get
+            {
+                if (_isInherited is null)
+                {
+                    // Self-detect the topology.
+                    var type = GetType();
+                    if (typeof(Topology<T>).IsAssignableFrom(type))
+                    {
+                        _isInherited = typeof(Topology<T>) != type;
+                    }
+                    else _isInherited = false;
+                }
+                return (bool)_isInherited;
+            }
+        }
+        bool? _isInherited = null;
 
         /// <summary>
         /// True when InputText is empty regardless of IsFiltering.

@@ -147,13 +147,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         [JsonConverter(typeof(StringEnumConverter))]
         public ProjectionTopology ProjectionTopology
         {
-            get => _isInherited
+            get => IsInherited
                     ? ProjectionTopology.Inheritance
                     : ObservableNetProjection is null
                          ? ProjectionTopology.None
                          : ProjectionTopology.Composition;
         }
-        readonly bool _isInherited;
 
         public ReplaceItemsEventingOption ReplaceItemsEventingOptions
         { 
