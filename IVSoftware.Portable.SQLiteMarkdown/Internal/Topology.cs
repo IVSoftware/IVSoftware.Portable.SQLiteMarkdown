@@ -162,25 +162,27 @@ Inherited contexts manage their projection internally.".TrimStart());
 
         protected virtual void OnNetProjectionHandleChanged() { }
 
-        protected virtual void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) { }
+        protected virtual void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) 
+        {
+            Debug.Fail($@"ADVISORY - First Time.");
+            using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection);
+            CanonicalSupersetInternal.Apply(e);
+        }
 
         private void OnCanonicalSupersetChanging(object sender, NotifyCollectionChangingEventArgs e)
         {
             switch (Authority)
             {
-                case 0:
-                    // Explicitly allowed.
+                case 0: // No authority claimed.
+                case CollectionChangeAuthority.Projection:
                     e.Cancel = false;
+                    Model.Apply(e);
                     break;
                 case CollectionChangeAuthority.None:
                     e.Cancel = true;
                     break;
                 case CollectionChangeAuthority.Model:
                     e.Cancel = true;
-                    break;
-                case CollectionChangeAuthority.Projection:
-                    e.Cancel = true;
-                    Model.Apply(e);
                     break;
                 default:
                     this.ThrowFramework<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");

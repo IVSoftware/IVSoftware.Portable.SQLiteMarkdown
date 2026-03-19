@@ -511,24 +511,6 @@ SELECT * FROM items WHERE
         }
 
         /// <summary>
-        /// Receives projection change notifications required to maintain the canonical ledger.
-        /// </summary>
-        protected override void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            base.OnNetProjectionCollectionChanged(sender, e);
-
-            //using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection);
-            //if (Authority == CollectionChangeAuthority.Projection)
-            //{
-            //    UpdateModelWithAuthority(sender, e);
-            //}
-            //else
-            //{
-            //    Debug.Assert(Authority == CollectionChangeAuthority.Model);
-            //}
-        }
-
-        /// <summary>
         /// Applies canonical reconciliation logic when the authoritative superset changes.
         /// </summary>
         /// <remarks>
