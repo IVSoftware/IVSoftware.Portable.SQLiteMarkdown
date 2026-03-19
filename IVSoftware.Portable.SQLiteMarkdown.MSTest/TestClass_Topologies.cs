@@ -30,9 +30,44 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             List<SelectableQFModel> Ephemeral() => new List<SelectableQFModel>();
             #endregion L o c a l F x
 
+
+            subtest_SerializeTopo();
             subtest_DefaultTopo();
 
             #region S U B T E S T S
+            void subtest_SerializeTopo()
+            {
+
+                actual = topo.SerializeTopology<SelectableQFModel>();
+                actual.ToClipboardExpected();
+                { } // <- FIRST TIME ONLY: Adjust the message.
+                actual.ToClipboardAssert("Expecting json serialization to match.");
+                { }
+                expected = @" 
+{
+  ""Model"": {
+    ""model"": {
+      ""@mdc"": ""[ModeledMarkdownContext]""
+    }
+  },
+  ""IsFiltering"": false,
+  ""ObservableNetProjection"": null,
+  ""CanonicalSuperset"": [],
+  ""PredicateMatchSubset"": [],
+  ""Count"": 0,
+  ""IsReadOnly"": false,
+  ""ProjectionTopology"": ""None"",
+  ""ProjectionOption"": ""ObservableOnly"",
+  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent""
+}";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting json serialization to match."
+                );
+            }
+
             void subtest_DefaultTopo()
             {
                 actual = JsonConvert.SerializeObject(topo, Formatting.Indented);

@@ -10,7 +10,7 @@ using System.Xml.Linq;
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
     [JsonObject]
-    partial class Topology<T>
+    partial class Topology<T> : MarkdownContext<T>
     {
         public Topology(IModeledMarkdownContext mmdc, ObservableCollection<T>? projection = null)
         {
