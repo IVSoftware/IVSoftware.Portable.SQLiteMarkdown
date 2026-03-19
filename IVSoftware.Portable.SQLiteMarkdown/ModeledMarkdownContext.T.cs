@@ -541,15 +541,6 @@ SELECT * FROM items WHERE
         /// </remarks>
         protected override void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-#if false
-            Debug.Assert(
-                ProjectionTopology == ProjectionTopology.Inheritance,
-                "Expecting this.GetType() is *not* IList and that it *does* inherit MDC");
-            Debug.Assert(
-                ObservableNetProjection is null,
-                "Expecting CanonicalSuperset *is* the source of all model changes.");
-#endif
-
             using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Model);
             if (Authority == CollectionChangeAuthority.Model)
             {

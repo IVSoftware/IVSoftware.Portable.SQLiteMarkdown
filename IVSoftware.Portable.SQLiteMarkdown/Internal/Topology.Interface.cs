@@ -137,6 +137,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// <summary>
         /// Reports on whether this object is inherited or composed.
         /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
         public ProjectionTopology ProjectionTopology
         {
             get => _isInherited

@@ -8,6 +8,7 @@ using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using SQLite;
 using System.Collections;
 using System.Collections.ObjectModel;
@@ -498,6 +499,7 @@ MarkdownContext Clear(all=True)";
             public string ParseSqlMarkdown<T1>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
                 => ((IMarkdownContext)_mdc).ParseSqlMarkdown<T1>(expr, qfMode);
 
+            [JsonConverter(typeof(StringEnumConverter))]
             public ProjectionTopology ProjectionTopology => ((IModeledMarkdownContext)_mdc).ProjectionTopology;
 
             public ObservableCollection<T>? ObservableNetProjection

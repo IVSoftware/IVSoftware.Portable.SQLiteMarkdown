@@ -62,6 +62,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected Throw ThrowHard<T>(string messageOrId) => nameof(MarkdownContext).ThrowHard<T>(messageOrId);
         protected Throw ThrowFramework<T>(string messageOrId) => nameof(MarkdownContext).ThrowFramework<T>(messageOrId);
 
+        [JsonIgnore]
         public virtual XElement Model { get; } = new XElement(nameof(StdMarkdownElement.model));
 
         /// <summary>

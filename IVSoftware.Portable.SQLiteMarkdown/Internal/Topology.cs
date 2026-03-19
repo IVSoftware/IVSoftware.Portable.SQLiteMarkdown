@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
@@ -156,7 +157,10 @@ Inherited contexts manage their projection internally.".TrimStart());
 
         protected virtual void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) { }
 
-        protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e) { }
+        protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e) 
+        {
+            Debug.Assert(CanonicalSuperset.Count == CanonicalSupersetInternal.Count);
+        }
 
         ObservableCollection<T>? _observableProjection = null;
         #endregion P R O J E C T I O N

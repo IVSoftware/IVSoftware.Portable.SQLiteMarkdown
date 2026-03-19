@@ -44,19 +44,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 expected = @" 
 {
   ""MatchContainsProto"": [],
-  ""Model"": {
-    ""model"": {
-      ""@mdc"": ""[ModeledMarkdownContext]""
-    }
-  },
   ""RouteToFullRecordset"": true,
   ""ProjectionOption"": ""ObservableOnly"",
   ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent"",
-  ""ProjectionTopology"": ""None"",
   ""ObservableNetProjection"": null,
   ""CanonicalSuperset"": [],
   ""PredicateMatchSubset"": [],
-  ""Count"": 0
+  ""Count"": 0,
+  ""ProjectionTopology"": ""None""
 }"
                 ;
 
@@ -75,19 +70,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 expected = @" 
 {
   ""MatchContainsProto"": [],
-  ""Model"": {
-    ""model"": {
-      ""@mdc"": ""[ModeledMarkdownContext]""
-    }
-  },
   ""RouteToFullRecordset"": true,
   ""ProjectionOption"": ""ObservableOnly"",
   ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent"",
-  ""ProjectionTopology"": ""None"",
   ""ObservableNetProjection"": null,
   ""CanonicalSuperset"": [],
   ""PredicateMatchSubset"": [],
-  ""Count"": 0
+  ""Count"": 0,
+  ""ProjectionTopology"": ""None""
 }"
                 ;
 
@@ -98,43 +88,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 );
 
                 mmdc.Add(Ephemeral().AddDynamic("Cats", "[]", false));
+                Assert.AreEqual(1, mmdc.CanonicalSupersetInternal.Count);
+                Assert.AreEqual(1, mmdc.CanonicalSuperset.Count);
 
                 actual = SerializeTopology();
-                actual.ToClipboardAssert("Expecting json serialization to match.");
+                actual.ToClipboardExpected();
                 { }
-expected = @" 
+                expected = @" 
 {
   ""MatchContainsProto"": [],
-  ""Model"": {
-    ""model"": {
-      ""@mdc"": ""[ModeledMarkdownContext]"",
-      ""@autocount"": ""1"",
-      ""@count"": ""1"",
-      ""@matches"": ""1"",
-      ""xitem"": {
-        ""@text"": ""312d1c21-0000-0000-0000-000000000000"",
-        ""@model"": ""[SelectableQFModel]"",
-        ""@sort"": ""0""
-      }
-    }
-  },
   ""RouteToFullRecordset"": true,
   ""ProjectionOption"": ""ObservableOnly"",
   ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent"",
-  ""ProjectionTopology"": ""None"",
   ""ObservableNetProjection"": null,
   ""CanonicalSuperset"": [
     {}
   ],
   ""PredicateMatchSubset"": [],
-  ""Count"": 1
-}";
+  ""Count"": 1,
+  ""ProjectionTopology"": ""None""
+}"
+                ;
 
-Assert.AreEqual(
-    expected.NormalizeResult(),
-    actual.NormalizeResult(),
-    "Expecting json serialization to match."
-);
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting json serialization to match."
+                );
                 expected = @" 
 {
   ""Model"": {
@@ -169,12 +149,6 @@ Assert.AreEqual(
   ""ReplaceItemsEventingOptions"": 0,
   ""ObservableNetProjection"": null
 }";
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting json serialization to match."
-                );
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
