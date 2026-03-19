@@ -1,4 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,60 +12,57 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
     partial class Topology<T> : IList
     {
+        [JsonIgnore]
         public bool IsFixedSize =>
-            ((IList?)ObservableNetCollection)?.IsFixedSize
-            ?? ((IList)CanonicalSupersetProtected).IsFixedSize;
+            ((IList?)ObservableNetProjection)?.IsFixedSize
+            ?? ((IList)CanonicalSupersetInternal).IsFixedSize;
 
+        [JsonIgnore]
         public bool IsSynchronized =>
-            ((IList?)ObservableNetCollection)?.IsSynchronized
-            ?? ((IList)CanonicalSupersetProtected).IsSynchronized;
+            ((IList?)ObservableNetProjection)?.IsSynchronized
+            ?? ((IList)CanonicalSupersetInternal).IsSynchronized;
 
+        [JsonIgnore]
         public object SyncRoot =>
-            ((IList?)ObservableNetCollection)?.SyncRoot
-            ?? ((IList)CanonicalSupersetProtected).SyncRoot;
+            ((IList?)ObservableNetProjection)?.SyncRoot
+            ?? ((IList)CanonicalSupersetInternal).SyncRoot;
 
         #region P O L I C Y    A R B I T R A T I O N
 
         [Indexer]
-        object IList.this[int index] 
+        object? IList.this[int index] 
         { 
             get => Read[index];
-            set
-            {
-                using (MMDC.BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection))
-                { 
-                    ((IList)CanonicalSupersetProtected)[index] = value;
-                }
-            }
+            set => ((IList)CanonicalSupersetInternal)[index] = value;
         }
         public int Add(object value)
         {
-            return ((IList)CanonicalSupersetProtected).Add(value);
+            return ((IList)CanonicalSupersetInternal).Add(value);
         }
 
         public bool Contains(object value)
         {
-            return ((IList)CanonicalSupersetProtected).Contains(value);
+            return ((IList)CanonicalSupersetInternal).Contains(value);
         }
 
         public void CopyTo(Array array, int index)
         {
-            ((ICollection)CanonicalSupersetProtected).CopyTo(array, index);
+            ((ICollection)CanonicalSupersetInternal).CopyTo(array, index);
         }
 
         public int IndexOf(object value)
         {
-            return ((IList)CanonicalSupersetProtected).IndexOf(value);
+            return ((IList)CanonicalSupersetInternal).IndexOf(value);
         }
 
         public void Insert(int index, object value)
         {
-            ((IList)CanonicalSupersetProtected).Insert(index, value);
+            ((IList)CanonicalSupersetInternal).Insert(index, value);
         }
 
         public void Remove(object value)
         {
-            ((IList)CanonicalSupersetProtected).Remove(value);
+            ((IList)CanonicalSupersetInternal).Remove(value);
         }
         #endregion P O L I C Y    A R B I T R A T I O N
 
@@ -78,75 +77,73 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         [Indexer]
         public T this[int index]
         { 
-            get => ((IList<T>)CanonicalSupersetProtected)[index];
-            set 
-            { 
-                ((IList<T>)CanonicalSupersetProtected)[index] = value;
-            }
+            get => ((IList<T>)CanonicalSupersetInternal)[index];
+            set => ((IList<T>)CanonicalSupersetInternal)[index] = value;
         }
 
-        public int Count => ((ICollection<T>)CanonicalSupersetProtected).Count;
+        public int Count => ((ICollection<T>)CanonicalSupersetInternal).Count;
 
-        public bool IsReadOnly => ((ICollection<T>)CanonicalSupersetProtected).IsReadOnly;
+        public bool IsReadOnly => ((ICollection<T>)CanonicalSupersetInternal).IsReadOnly;
 
         public void Add(T item)
         {
-            using (MMDC.BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection))
-            {
-                ((ICollection<T>)CanonicalSupersetProtected).Add(item);
-            }
+            ((ICollection<T>)CanonicalSupersetInternal).Add(item);
         }
 
         public void Clear()
         {
-            ((ICollection<T>)CanonicalSupersetProtected).Clear();
+            ((ICollection<T>)CanonicalSupersetInternal).Clear();
         }
 
         public bool Contains(T item)
         {
-            return ((ICollection<T>)CanonicalSupersetProtected).Contains(item);
+            return ((ICollection<T>)CanonicalSupersetInternal).Contains(item);
         }
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            ((ICollection<T>)CanonicalSupersetProtected).CopyTo(array, arrayIndex);
+            ((ICollection<T>)CanonicalSupersetInternal).CopyTo(array, arrayIndex);
         }
 
         public IEnumerator<T> GetEnumerator()
         {
-            return ((IEnumerable<T>)CanonicalSupersetProtected).GetEnumerator();
+            return ((IEnumerable<T>)CanonicalSupersetInternal).GetEnumerator();
         }
 
         public int IndexOf(T item)
         {
-            return ((IList<T>)CanonicalSupersetProtected).IndexOf(item);
+            return ((IList<T>)CanonicalSupersetInternal).IndexOf(item);
         }
 
         public void Insert(int index, T item)
         {
-            ((IList<T>)CanonicalSupersetProtected).Insert(index, item);
+            ((IList<T>)CanonicalSupersetInternal).Insert(index, item);
         }
 
         public bool Remove(T item)
         {
-            return ((ICollection<T>)CanonicalSupersetProtected).Remove(item);
+            return ((ICollection<T>)CanonicalSupersetInternal).Remove(item);
         }
 
         public void RemoveAt(int index)
         {
-            ((IList<T>)CanonicalSupersetProtected).RemoveAt(index);
+            ((IList<T>)CanonicalSupersetInternal).RemoveAt(index);
         }
     }
 
-    partial class Topology<T>
+    partial class Topology<T> // IModeledMarkdownContext
     {
-        public ProjectionTopology ProjectionTopology { get; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public ProjectionTopology ProjectionTopology => MMDC.ProjectionTopology;
 
-        public NetProjectionOption ProjectionOption { get; set; }
-        public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; }
-        public ObservableCollection<T>? ObservableNetProjection { get; set; }
 
-        public event NotifyCollectionChangedEventHandler? ModelSettled;
+        [JsonConverter(typeof(StringEnumConverter))]
+        public NetProjectionOption ProjectionOption => MMDC.ProjectionOption;
+
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public ReplaceItemsEventingOption ReplaceItemsEventingOptions => MMDC.ReplaceItemsEventingOptions;
+
 
         public void LoadCanon(IEnumerable? recordset)
         {

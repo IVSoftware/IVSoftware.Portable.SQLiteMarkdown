@@ -54,11 +54,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     );
                 }
             }
-
             Model.SetBoundAttributeValue(
                 this,
                 name: nameof(StdMarkdownAttribute.mdc));
             Topology = new Topology<T>(this);
+            Topology.ObservableNetProjection?.CollectionChanged += OnNetProjectionCollectionChanged;
+            Topology.CanonicalSupersetInternal.CollectionChanged += OnCanonicalSupersetChanged;
         }
         [JsonIgnore]
         internal Topology<T> Topology { get; }
@@ -627,6 +628,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </remarks>
         protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+#if false
             Debug.Assert(
                 ProjectionTopology == ProjectionTopology.Inheritance,
                 "Expecting this.GetType() is *not* IList and that it *does* inherit MDC");
@@ -643,12 +645,11 @@ Inherited contexts manage their projection internally.".TrimStart());
             {
                 Debug.Fail($@"ADVISORY - First Time.");
             }
+#endif
         }
 
         protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
         {
-
-            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 18).Date, "Don't forget disabled");
 #if false
             #region A U T H O R I T Y    G U A R D
             switch (Authority)

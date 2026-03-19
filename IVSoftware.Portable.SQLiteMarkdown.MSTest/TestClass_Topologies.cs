@@ -46,14 +46,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     }
   },
   ""IsFiltering"": false,
-  ""ObservableNetCollection"": null,
+  ""ObservableNetProjection"": null,
   ""CanonicalSuperset"": [],
   ""PredicateMatchSubset"": [],
   ""Count"": 0,
-  ""ProjectionTopology"": 0,
-  ""ProjectionOption"": 0,
-  ""ReplaceItemsEventingOptions"": 0,
-  ""ObservableNetProjection"": null
+  ""IsReadOnly"": false,
+  ""ProjectionTopology"": ""None"",
+  ""ProjectionOption"": ""ObservableOnly"",
+  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent""
 }"
                 ;
 
@@ -71,6 +71,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 { }
                 expected = @" 
 {
+  ""Model"": {
+    ""model"": {
+      ""@mdc"": ""[ModeledMarkdownContext]""
+    }
+  },
   ""IsFiltering"": false,
   ""ObservableNetCollection"": null,
   ""CanonicalSuperset"": [
@@ -91,13 +96,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     }
   ],
   ""PredicateMatchSubset"": [],
-  ""Model"": {
-    ""model"": {
-      ""@mdc"": ""[ModeledMarkdownContext]""
-    }
-  },
-  ""Count"": 1
+  ""Count"": 1,
+  ""IsReadOnly"": false,
+  ""ProjectionTopology"": ""None"",
+  ""ProjectionOption"": ""Inherited"",
+  ""ReplaceItemsEventingOptions"": 0,
+  ""ObservableNetProjection"": null
 }";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting json serialization to match."
+                );
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),

@@ -24,11 +24,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                         break;
                 }
             };
-            CanonicalSupersetProtected = new AuthoritativeObservableCollection<T>(() => MMDC.Authority);
-            CanonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetProtected);
-            PredicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetProtected);
+            CanonicalSupersetInternal = new AuthoritativeObservableCollection<T>(() => MMDC.Authority);
+            CanonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetInternal);
+            PredicateMatchSubsetInternal = new();
+            PredicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetInternal);
+            ObservableNetProjection = projection;
         }
         private readonly IModeledMarkdownContext MMDC;
+        public XElement Model => MMDC.Model;
 
         public bool IsFiltering
         {
@@ -83,7 +86,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// <remarks>
         /// To eliminate churn, user may inherit from <see cref="AuthoritativeObservableCollection{T}AuthoritativeObservableCollection"/>
         /// </remarks>
-        public ObservableCollection<T>? ObservableNetCollection { get; }
+        public ObservableCollection<T>? ObservableNetProjection { get; }
         public IReadOnlyList<T> CanonicalSuperset { get; }
 
         /// <summary>
@@ -104,7 +107,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         ///   <c>ObservableNetCollection</c>, preventing feedback loops since projection
         ///   updates ultimately target this canonical superset.
         /// </remarks>
-        internal AuthoritativeObservableCollection<T> CanonicalSupersetProtected { get; }
+        internal AuthoritativeObservableCollection<T> CanonicalSupersetInternal { get; }
 
         /// <summary>
         /// Exposes the current predicate-matched subset as a stable read-only view.
@@ -121,6 +124,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// - Updates are applied as a single settled snapshot; intermediate churn is suppressed
         ///   and observers are notified via the model’s ModelSettled event.
         /// </remarks>
-        internal List<T> PredicateMatchSubsetProtected { get; } = new();
+        internal List<T> PredicateMatchSubsetInternal { get; }
     }
 }
