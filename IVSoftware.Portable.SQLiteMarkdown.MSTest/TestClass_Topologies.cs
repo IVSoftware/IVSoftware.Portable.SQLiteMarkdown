@@ -47,12 +47,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
   ""MatchContainsProto"": [],
   ""RouteToFullRecordset"": true,
   ""ProjectionOption"": ""ObservableOnly"",
-  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent"",
   ""ObservableNetProjection"": null,
   ""CanonicalSuperset"": [],
   ""PredicateMatchSubset"": [],
   ""Count"": 0,
-  ""ProjectionTopology"": ""None""
+  ""ProjectionTopology"": ""None"",
+  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent""
 }"
                 ;
 
@@ -73,12 +73,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
   ""MatchContainsProto"": [],
   ""RouteToFullRecordset"": true,
   ""ProjectionOption"": ""ObservableOnly"",
-  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent"",
   ""ObservableNetProjection"": null,
   ""CanonicalSuperset"": [],
   ""PredicateMatchSubset"": [],
   ""Count"": 0,
-  ""ProjectionTopology"": ""None""
+  ""ProjectionTopology"": ""None"",
+  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent""
 }"
                 ;
 
@@ -100,7 +100,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
   ""MatchContainsProto"": [],
   ""RouteToFullRecordset"": true,
   ""ProjectionOption"": ""ObservableOnly"",
-  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent"",
   ""ObservableNetProjection"": null,
   ""CanonicalSuperset"": [
     {
@@ -121,7 +120,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
   ],
   ""PredicateMatchSubset"": [],
   ""Count"": 1,
-  ""ProjectionTopology"": ""None""
+  ""ProjectionTopology"": ""None"",
+  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent""
 }"
                 ;
 
@@ -136,7 +136,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[ModeledMarkdownContext]"" autocount=""1"" count=""1"" matches=""1"">
+<model mmdc=""[MMDC]"" autocount=""1"" count=""1"" matches=""1"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
 </model>";
 

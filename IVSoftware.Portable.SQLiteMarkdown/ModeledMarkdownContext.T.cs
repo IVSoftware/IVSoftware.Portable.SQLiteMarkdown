@@ -35,7 +35,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             Model.SetBoundAttributeValue(
                 this,
-                name: nameof(StdMarkdownAttribute.mdc));
+                name: nameof(StdMarkdownAttribute.mmdc),
+                text: $"[MMDC]");
         }
 
         /// <summary>

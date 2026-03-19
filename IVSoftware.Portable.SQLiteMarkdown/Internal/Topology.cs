@@ -1,7 +1,9 @@
 ﻿using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -10,6 +12,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Reflection;
 using System.Xml.Linq;
 using static System.Collections.Specialized.BitVector32;
 
@@ -314,8 +317,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                 out var oldItems,
                 out var oldStartingIndex))
             {
-                nameof(ChangeEventExtensions)
-                    .ThrowFramework<NotSupportedException>(
+                eUnk.ThrowFramework<NotSupportedException>(
                         $"The {eUnk.GetType().Name} case is not supported.");
                 return;
             }
@@ -328,8 +330,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                 case NotifyCollectionChangingAction.Move: localMoveInModel(); break;
                 case NotifyCollectionChangingAction.Reset: localResetModel(); break;
                 default:
-                    nameof(ChangeEventExtensions)
-                        .ThrowFramework<NotSupportedException>(
+                    eUnk.ThrowFramework<NotSupportedException>(
                             $"The {action.ToFullKey()} case is not supported.");
                     break;
             }
@@ -338,15 +339,47 @@ Inherited contexts manage their projection internally.".TrimStart());
             {
                 if (newItems is null)
                 {
-                    nameof(ChangeEventExtensions)
-                        .ThrowFramework<NotSupportedException>(
+                    eUnk.ThrowFramework<NotSupportedException>(
                         $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
                 }
                 else
                 {
+                    int
+                        indexForAdd = model.GetAttributeValue<int>(StdMarkdownAttribute.autocount),
+                        count = model.GetAttributeValue<int>(StdMarkdownAttribute.count, 0),
+                        matches = model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
                     foreach (var item in newItems)
                     {
+                        if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
+                        {
+                            var placerResult = model.Place(full, out var xel);
+                            switch (placerResult)
+                            {
+                                case PlacerResult.Exists:
+                                    break;
+                                case PlacerResult.Created:
+                                    xel.Name = nameof(StdMarkdownElement.xitem);
+                                    xel.SetBoundAttributeValue(
+                                        tag: item,
+                                        name: nameof(StdMarkdownAttribute.model));
+
+                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), indexForAdd++);
+                                    count++;
+                                    matches++;
+                                    break;
+                                default:
+                                    eUnk.ThrowFramework<NotSupportedException>(
+                                        $"Unexpected result: `{placerResult.ToFullKey()}`. Expected options are {PlacerResult.Created} or {PlacerResult.Exists}");
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            eUnk.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
+                        }
                     }
+                    model.SetAttributeValue(nameof(StdMarkdownAttribute.count), count);
+                    model.SetAttributeValue(nameof(StdMarkdownAttribute.matches), matches);
                 }
             }
 
@@ -354,8 +387,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             {
                 if (oldItems is null)
                 {
-                    nameof(ChangeEventExtensions)
-                        .ThrowFramework<NotSupportedException>(
+                    eUnk.ThrowFramework<NotSupportedException>(
                         $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
                 }
                 else
@@ -370,8 +402,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             {
                 if (newItems is null || oldItems is null)
                 {
-                    nameof(ChangeEventExtensions)
-                        .ThrowFramework<NotSupportedException>(
+                    eUnk.ThrowFramework<NotSupportedException>(
                         $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
                 }
                 else
@@ -389,8 +420,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             {
                 if (oldItems is null)
                 {
-                    nameof(ChangeEventExtensions)
-                        .ThrowFramework<NotSupportedException>(
+                    eUnk.ThrowFramework<NotSupportedException>(
                         $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
                 }
                 else
