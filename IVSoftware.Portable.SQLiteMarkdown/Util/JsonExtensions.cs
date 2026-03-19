@@ -24,7 +24,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                     Converters = { new StringEnumConverter() }
                 });
         }
-
         sealed class TopologyOnlyResolver<T> : DefaultContractResolver
         {
             public static readonly TopologyOnlyResolver<T> Instance = new();
@@ -33,11 +32,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
 
             protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization ms)
             {
-                return base.CreateProperties(type, ms)
-                    .Where(p =>
-                        p.DeclaringType != null &&
-                        _topologyType.IsAssignableFrom(p.DeclaringType))
-                    .ToList();
+                var props = base.CreateProperties(type, ms);
+
+                // Only filter when we're serializing the root (Topology/MMDC)
+                if (_topologyType.IsAssignableFrom(type))
+                {
+                    return props
+                        .Where(p =>
+                            p.DeclaringType != null &&
+                            _topologyType.IsAssignableFrom(p.DeclaringType))
+                        .ToList();
+                }
+
+                // For all other types (e.g. items in CanonicalSuperset), leave intact
+                return props;
             }
         }
     }

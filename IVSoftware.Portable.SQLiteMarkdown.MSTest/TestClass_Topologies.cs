@@ -102,29 +102,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
   ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent"",
   ""ObservableNetProjection"": null,
   ""CanonicalSuperset"": [
-    {}
-  ],
-  ""PredicateMatchSubset"": [],
-  ""Count"": 1,
-  ""ProjectionTopology"": ""None""
-}"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting json serialization to match."
-                );
-                expected = @" 
-{
-  ""Model"": {
-    ""model"": {
-      ""@mdc"": ""[ModeledMarkdownContext]""
-    }
-  },
-  ""IsFiltering"": false,
-  ""ObservableNetCollection"": null,
-  ""CanonicalSuperset"": [
     {
       ""Id"": ""312d1c21-0000-0000-0000-000000000000"",
       ""Description"": ""Cats"",
@@ -132,7 +109,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
       ""KeywordsDisplay"": """",
       ""Tags"": ""[]"",
       ""IsChecked"": false,
-      ""Selection"": 0,
+      ""Selection"": ""None"",
       ""IsEditing"": false,
       ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000000"",
       ""QueryTerm"": ""cats"",
@@ -143,12 +120,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
   ],
   ""PredicateMatchSubset"": [],
   ""Count"": 1,
-  ""IsReadOnly"": false,
-  ""ProjectionTopology"": ""None"",
-  ""ProjectionOption"": ""Inherited"",
-  ""ReplaceItemsEventingOptions"": 0,
-  ""ObservableNetProjection"": null
-}";
+  ""ProjectionTopology"": ""None""
+}"
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
