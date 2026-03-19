@@ -2,6 +2,7 @@
 using System.Collections;
 using System.ComponentModel;
 using System.Collections.Specialized;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 
 namespace IVSoftware.Portable.Collections
 {
@@ -51,6 +52,7 @@ namespace IVSoftware.Portable.Collections
         /// before commit.
         /// </remarks>
         public NotifyCollectionChangeAction Action { get; set; }
+        public NotifyCollectionChangeReason Reason { get; }
 
         /// <summary>
         /// Gets or sets the items being introduced by the mutation.
@@ -89,21 +91,27 @@ namespace IVSoftware.Portable.Collections
         public int OldStartingIndex { get; set; }
 
         /// <summary>
-        /// Initializes a new instance describing a Reset change.
+        /// Construct a NotifyCollectionChangedEventArgs that describes a reset change.
         /// </summary>
+        /// <param name="action">The action that caused the event (must be Reset).</param>
         public MutableNotifyCollectionChangingEventArgs(
-            NotifyCollectionChangeAction action)
+            NotifyCollectionChangeAction action,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
         {
             Action = action;
+            Reason = reason;
         }
 
         /// <summary>
-        /// Initializes a new instance describing a one-item change.
+        /// Construct a NotifyCollectionChangedEventArgs that describes a one-item change.
         /// </summary>
+        /// <param name="action">The action that caused the event; can only be Reset, Add or Remove action.</param>
+        /// <param name="changedItem">The item affected by the change.</param>
         public MutableNotifyCollectionChangingEventArgs(
             NotifyCollectionChangeAction action,
-            object? changedItem)
-            : this(action)
+            object? changedItem,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
+            : this(action, reason)
         {
             if (changedItem is not null)
             {
@@ -114,11 +122,18 @@ namespace IVSoftware.Portable.Collections
             }
         }
 
+        /// <summary>
+        /// Construct a NotifyCollectionChangedEventArgs that describes a one-item change.
+        /// </summary>
+        /// <param name="action">The action that caused the event.</param>
+        /// <param name="changedItem">The item affected by the change.</param>
+        /// <param name="index">The index where the change occurred.</param>
         public MutableNotifyCollectionChangingEventArgs(
             NotifyCollectionChangeAction action,
             object? changedItem,
-            int index)
-            : this(action, changedItem)
+            int index,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
+            : this(action, changedItem, reason)
         {
             if (action == NotifyCollectionChangeAction.Add)
                 NewStartingIndex = index;
@@ -126,10 +141,16 @@ namespace IVSoftware.Portable.Collections
                 OldStartingIndex = index;
         }
 
+        /// <summary>
+        /// Construct a NotifyCollectionChangedEventArgs that describes a multi-item change.
+        /// </summary>
+        /// <param name="action">The action that caused the event.</param>
+        /// <param name="changedItems">The items affected by the change.</param>
         public MutableNotifyCollectionChangingEventArgs(
             NotifyCollectionChangeAction action,
-            IList? changedItems)
-            : this(action)
+            IList? changedItems,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
+            : this(action, reason)
         {
             if (action == NotifyCollectionChangeAction.Add)
                 NewItems = changedItems;
@@ -137,11 +158,18 @@ namespace IVSoftware.Portable.Collections
                 OldItems = changedItems;
         }
 
+        /// <summary>
+        /// Construct a NotifyCollectionChangedEventArgs that describes a multi-item change (or a reset).
+        /// </summary>
+        /// <param name="action">The action that caused the event.</param>
+        /// <param name="changedItems">The items affected by the change.</param>
+        /// <param name="startingIndex">The index where the change occurred.</param>
         public MutableNotifyCollectionChangingEventArgs(
             NotifyCollectionChangeAction action,
             IList? changedItems,
-            int startingIndex)
-            : this(action, changedItems)
+            int startingIndex,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
+            : this(action, changedItems, reason)
         {
             if (action == NotifyCollectionChangeAction.Add)
                 NewStartingIndex = startingIndex;
@@ -149,65 +177,112 @@ namespace IVSoftware.Portable.Collections
                 OldStartingIndex = startingIndex;
         }
 
+        /// <summary>
+        /// Construct a NotifyCollectionChangedEventArgs that describes a one-item Replace event.
+        /// </summary>
+        /// <param name="action">Can only be a Replace action.</param>
+        /// <param name="newItem">The new item replacing the original item.</param>
+        /// <param name="oldItem">The original item that is replaced.</param>
         public MutableNotifyCollectionChangingEventArgs(
             NotifyCollectionChangeAction action,
             object? newItem,
-            object? oldItem)
-            : this(action)
+            object? oldItem,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
+            : this(action, reason)
         {
             NewItems = newItem is null ? null : new object[] { newItem };
             OldItems = oldItem is null ? null : new object[] { oldItem };
         }
 
+        /// <summary>
+        /// Construct a NotifyCollectionChangedEventArgs that describes a one-item Replace event.
+        /// </summary>
+        /// <param name="action">Can only be a Replace action.</param>
+        /// <param name="newItem">The new item replacing the original item.</param>
+        /// <param name="oldItem">The original item that is replaced.</param>
+        /// <param name="index">The index of the item being replaced.</param>
         public MutableNotifyCollectionChangingEventArgs(
             NotifyCollectionChangeAction action,
             object? newItem,
             object? oldItem,
-            int index)
-            : this(action, newItem, oldItem)
+            int index,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
+            : this(action, newItem, oldItem, reason)
         {
             NewStartingIndex = index;
             OldStartingIndex = index;
         }
 
+        /// <summary>
+        /// Construct a NotifyCollectionChangedEventArgs that describes a multi-item Replace event.
+        /// </summary>
+        /// <param name="action">Can only be a Replace action.</param>
+        /// <param name="newItems">The new items replacing the original items.</param>
+        /// <param name="oldItems">The original items that are replaced.</param>
         public MutableNotifyCollectionChangingEventArgs(
             NotifyCollectionChangeAction action,
             IList newItems,
-            IList oldItems)
-            : this(action)
+            IList oldItems,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
+            : this(action, reason)
         {
             NewItems = newItems;
             OldItems = oldItems;
         }
 
+        /// <summary>
+        /// Construct a NotifyCollectionChangedEventArgs that describes a multi-item Replace event.
+        /// </summary>
+        /// <param name="action">Can only be a Replace action.</param>
+        /// <param name="newItems">The new items replacing the original items.</param>
+        /// <param name="oldItems">The original items that are replaced.</param>
+        /// <param name="startingIndex">The starting index of the items being replaced.</param>
         public MutableNotifyCollectionChangingEventArgs(
             NotifyCollectionChangeAction action,
             IList newItems,
             IList oldItems,
-            int startingIndex)
-            : this(action, newItems, oldItems)
+            int startingIndex,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
+            : this(action, newItems, oldItems, reason)
         {
             NewStartingIndex = startingIndex;
             OldStartingIndex = startingIndex;
         }
 
+        /// <summary>
+        /// Construct a NotifyCollectionChangedEventArgs that describes a one-item Move event.
+        /// </summary>
+        /// <param name="action">Can only be a Move action.</param>
+        /// <param name="changedItem">The item affected by the change.</param>
+        /// <param name="index">The new index for the changed item.</param>
+        /// <param name="oldIndex">The old index for the changed item.</param>
+
         public MutableNotifyCollectionChangingEventArgs(
             NotifyCollectionChangeAction action,
             object? changedItem,
             int index,
-            int oldIndex)
-            : this(action, changedItem)
+            int oldIndex,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
+            : this(action, changedItem, reason)
         {
             NewStartingIndex = index;
             OldStartingIndex = oldIndex;
         }
 
+        /// <summary>
+        /// Construct a NotifyCollectionChangedEventArgs that describes a multi-item Move event.
+        /// </summary>
+        /// <param name="action">The action that caused the event.</param>
+        /// <param name="changedItems">The items affected by the change.</param>
+        /// <param name="index">The new index for the changed items.</param>
+        /// <param name="oldIndex">The old index for the changed items.</param>
         public MutableNotifyCollectionChangingEventArgs(
             NotifyCollectionChangeAction action,
             IList? changedItems,
             int index,
-            int oldIndex)
-            : this(action, changedItems)
+            int oldIndex,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
+            : this(action, changedItems, reason)
         {
             NewStartingIndex = index;
             OldStartingIndex = oldIndex;
