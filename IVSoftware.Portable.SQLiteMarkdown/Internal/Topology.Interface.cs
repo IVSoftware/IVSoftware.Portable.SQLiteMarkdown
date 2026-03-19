@@ -148,23 +148,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         {
             get
             {
-                var type = GetType();
-                if (type == typeof(Topology<T>))
-                {   /* G T K - N O O P */
-                    // Leave this at None.
+                if (ObservableNetProjection is null)
+                {
+                    return ProjectionTopology.None;
                 }
                 else
                 {
-                    if (typeof(INotifyCollectionChanged).IsAssignableFrom(type))
-                    {
-                        _projectionTopology = ProjectionTopology.Inheritance;
+                    var type = GetType();
+                    if (type == typeof(Topology<T>))
+                    {   /* G T K - N O O P */
+                        // Leave this at None.
                     }
                     else
                     {
-                        _projectionTopology = ProjectionTopology.Composition;
+                        if (typeof(INotifyCollectionChanged).IsAssignableFrom(type))
+                        {
+                            _projectionTopology = ProjectionTopology.Inheritance;
+                        }
+                        else
+                        {
+                            _projectionTopology = ProjectionTopology.Composition;
+                        }
                     }
+                    return _projectionTopology;
                 }
-                return _projectionTopology;
             }
             //internal set
             //{
@@ -175,7 +182,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             //    }
             //}
         }
-        ProjectionTopology _projectionTopology = default;
+        ProjectionTopology _projectionTopology = ProjectionTopology.None;
 
 
 #if false

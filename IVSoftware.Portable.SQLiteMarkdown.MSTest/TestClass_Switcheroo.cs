@@ -68,11 +68,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     mdcc.ProjectionTopology,
                     "Expecting COMPOSITION as assigned in CTor.");
 
+                // SET ONP TO NULL
                 mdcc.ObservableNetProjection = null;
                 Assert.AreEqual(
                     ProjectionTopology.None,
                     mdcc.ProjectionTopology,
-                    "Expecting NONE is the epistemic default.");
+                    "Expecting NONE is the epistemic default BECAUSE WE SET ONP TO NULL.");
 
                 var oc = new ObservableCollection<SelectableQFModel>();
                 mdcc.ObservableNetProjection = oc;
