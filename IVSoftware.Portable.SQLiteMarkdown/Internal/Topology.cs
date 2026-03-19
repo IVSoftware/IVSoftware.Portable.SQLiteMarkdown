@@ -13,6 +13,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
@@ -22,12 +23,49 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
     {
         public Topology()
         {
+            // Self-detect the topology.
+            var type = GetType();
+            if (typeof(INotifyCollectionChanged).IsAssignableFrom(type))
+            {
+                _projectionTopology = ProjectionTopology.Inheritance;
+
+                var clearMethod = this.GetType().GetMethod(
+                    nameof(Clear),
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly,
+                    binder: null,
+                    types: Type.EmptyTypes,
+                    modifiers: null);
+
+                if (clearMethod is not null)
+                {   /* B C S - N O O P */
+                    // Located a declared parameterless Clear method.
+                }
+                else
+                {
+                    nameof(MarkdownContext) // Avoid leaking the object itself as the awaited sender.
+                        .Advisory(
+                        $"Inherited MarkdownContext detected, but no parameterless Clear() was found. " +
+                        "Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. " +
+                        "If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. " +
+                        "You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit."
+                    );
+                }
+            }
+            else
+            {
+                _projectionTopology = ProjectionTopology.Composition;
+            }
             CanonicalSupersetInternal = new ();
             CanonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetInternal);
             PredicateMatchSubsetInternal = new();
             PredicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetInternal);
             CanonicalSupersetInternal.CollectionChanging += OnCanonicalSupersetChanging;
             CanonicalSupersetInternal.CollectionChanged += OnCanonicalSupersetChanged;
+        }
+
+        async Task InitAsync()
+        {
+
         }
 
         protected override void OnFilteringStateChanged()

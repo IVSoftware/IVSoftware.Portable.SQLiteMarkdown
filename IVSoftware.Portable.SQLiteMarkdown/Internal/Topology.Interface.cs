@@ -145,14 +145,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// Reports on whether this object is inherited or composed.
         /// </summary>
         [JsonConverter(typeof(StringEnumConverter))]
-        public ProjectionTopology ProjectionTopology
-        {
-            get => IsInherited
-                    ? ProjectionTopology.Inheritance
-                    : ObservableNetProjection is null
-                         ? ProjectionTopology.None
-                         : ProjectionTopology.Composition;
-        }
+        public ProjectionTopology ProjectionTopology { get; }
+        ProjectionTopology _projectionTopology;
+
 
         public ReplaceItemsEventingOption ReplaceItemsEventingOptions
         { 
