@@ -38,17 +38,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         , IList<T>
         where T : new()
     {
-#if false
         public ObservableQueryFilterSource()
         {
-            // Modify canon when changes made to this INCC.
-            base.ObservableNetProjection = this;
-
-            // Because this object exposes a routed enumerator, there
-            // is no external collection "out there" to synchronize.
-            base.ProjectionOption = NetProjectionOption.ObservableOnly;
+            base.ProjectionTopology = ProjectionTopology.Inheritance;
         }
-#endif
 
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
         public IReadOnlyList<T> UnfilteredItems => CanonicalSuperset;

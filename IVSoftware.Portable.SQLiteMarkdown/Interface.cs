@@ -293,27 +293,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         string[] GetTableNames();
     }
 
-    public interface IModeledMarkdownContext : IMarkdownContext
+    public interface IModeledMarkdownContext 
+        : IMarkdownContext
+        , ITopology
     {
-        /// <summary>
-        /// Describes the wiring between the canonical XML model and the net ("seen") projection.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model: "What is 'this'?"
-        /// If 'this' *is-a* MarkdownContext,
-        /// Then canon is projected by redirecting enumeration.
-        /// If 'this' *has-a* MarkdownContext and *is-a* bound enumerable,
-        /// Then the surface is always net, and canon is projected by copying as needed.
-        /// </remarks>
-        ProjectionTopology ProjectionTopology { get; }
-
         #region C O N F I G U R A T I O N    P R O P E R T I E S
-
-        /// <summary>
-        /// OPT-IN that allows MarkdownContext to modify the ObservableNetCollection directly.
-        /// </summary>
-        NetProjectionOption ProjectionOption { get; set; }
-
         /// <summary>
         /// Determines whether filter update events are provided as structural changes
         /// with old-new item semantics, alternatively as a bulk reset, or both.
@@ -352,10 +336,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         #endregion M O D E L
 
         #region P R O J E C T I O N
-        /// <summary>
-        /// Represents a bindable and observable collection representing 'net visible' filtered items.
-        /// </summary>
-        IList? ObservableNetProjection { get; }
 
         /// <summary>
         /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
@@ -391,12 +371,49 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         #endregion D I S P O S A B L E
     }
+    public interface ITopology
+    {
+        /// <summary>
+        /// Describes the wiring between the canonical XML model and the net ("seen") projection.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "What is 'this'?"
+        /// If 'this' *is-a* MarkdownContext,
+        /// Then canon is projected by redirecting enumeration.
+        /// If 'this' *has-a* MarkdownContext and *is-a* bound enumerable,
+        /// Then the surface is always net, and canon is projected by copying as needed.
+        /// </remarks>
+        ProjectionTopology ProjectionTopology { get; }
+
+        #region C O N F I G U R A T I O N    P R O P E R T I E S
+
+        /// <summary>
+        /// OPT-IN that allows MarkdownContext to modify the ObservableNetCollection directly.
+        /// </summary>
+        NetProjectionOption ProjectionOption { get;  }
+        #endregion C O N F I G U R A T I O N    P R O P E R T I E S
+
+        #region P R O J E C T I O N
+        /// <summary>
+        /// Represents a bindable and observable collection representing 'net visible' filtered items.
+        /// </summary>
+        IList? ObservableNetProjection { get; }
+
+        public IList CanonicalSuperset { get; }
+
+        public IList PredicateMatchSubset { get; }
+        #endregion  P R O J E C T I O N
+    }
     public interface IModeledMarkdownContext<T> : IModeledMarkdownContext
     {
         /// <summary>
         /// Represents a bindable and observable collection representing 'net visible' filtered items.
         /// </summary>
         new ObservableCollection<T>? ObservableNetProjection { get; set; }
+
+        public IReadOnlyList<T> CanonicalSuperset { get; }
+
+        public IReadOnlyList<T> PredicateMatchSubset { get; }
     }
 
     /// <summary>

@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -55,7 +56,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 }
             }
 #endif
-            CanonicalSupersetInternal = new ();
+            CanonicalSupersetInternal = new();
             CanonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetInternal);
             PredicateMatchSubsetInternal = new();
             PredicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetInternal);
@@ -145,7 +146,7 @@ Inherited contexts manage their projection internally.".TrimStart());
 
         protected virtual void OnNetProjectionHandleChanged() { }
 
-        protected virtual void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) 
+        protected virtual void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             Debug.Fail($@"ADVISORY - First Time.");
             using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection);
@@ -172,7 +173,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                     break;
             }
         }
-        protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e) 
+        protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             Debug.Assert(CanonicalSuperset.Count == CanonicalSupersetInternal.Count);
         }

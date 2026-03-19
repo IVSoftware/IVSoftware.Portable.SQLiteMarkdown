@@ -4,6 +4,7 @@ using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.DemoDB;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB;
@@ -1326,8 +1327,28 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
             Queue<SenderEventPair> eventQueue = new();
             List<SelectableQFModelLTOQO> results;
             var itemsSource = new ObservableQueryFilterSource<SelectableQFModelLTOQO>();
+
             using (var cnx = InitializeInMemoryDatabase())
             {
+                subtest_SerializeJSON();
+                void subtest_SerializeJSON()
+                {
+                    actual = JsonConvert.SerializeObject(itemsSource, Formatting.Indented);
+                    actual.ToClipboardExpected();
+                    expected = @" 
+[]";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting json serialization to match."
+                    );
+
+                    foreach (var pi in typeof(Typology<SelectableQFModelLTOQO>).GetProperties())
+                    {
+
+                    }
+                }
                 subtestBasicQueryAnimal();
                 subtestBasicQueryAnimalINPC();
 
