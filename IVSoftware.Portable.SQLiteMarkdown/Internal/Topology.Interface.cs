@@ -166,14 +166,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 }
                 return _projectionTopology;
             }
-            internal set
-            {
-                if (!Equals(_projectionTopology, value))
-                {
-                    _projectionTopology = value;
-                    OnPropertyChanged();
-                }
-            }
+            //internal set
+            //{
+            //    if (!Equals(_projectionTopology, value))
+            //    {
+            //        _projectionTopology = value;
+            //        OnPropertyChanged();
+            //    }
+            //}
         }
         ProjectionTopology _projectionTopology = default;
 

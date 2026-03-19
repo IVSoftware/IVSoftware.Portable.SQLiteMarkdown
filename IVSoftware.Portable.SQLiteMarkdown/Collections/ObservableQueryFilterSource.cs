@@ -38,10 +38,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         , IList<T>
         where T : new()
     {
-        public ObservableQueryFilterSource()
-        {
-            base.ProjectionTopology = ProjectionTopology.Inheritance;
-        }
+        public ObservableQueryFilterSource() { }
 
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
         public IReadOnlyList<T> UnfilteredItems => CanonicalSuperset;

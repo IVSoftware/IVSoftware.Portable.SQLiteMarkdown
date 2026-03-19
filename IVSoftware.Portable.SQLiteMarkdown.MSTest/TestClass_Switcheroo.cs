@@ -415,7 +415,6 @@ MarkdownContext Clear(all=True)";
             public ObservableNetProjectionWithComposition()
             {
                 ObservableNetProjection = this;
-                ProjectionTopology = ProjectionTopology.Inheritance;
                 ProjectionOption = NetProjectionOption.ObservableOnly;
                 ModelSettled += (sender, e) =>
                 {
@@ -507,11 +506,7 @@ MarkdownContext Clear(all=True)";
                 => ((IMarkdownContext)_mdc).ParseSqlMarkdown<T1>(expr, qfMode);
 
             [JsonConverter(typeof(StringEnumConverter))]
-            public ProjectionTopology ProjectionTopology
-            {
-                get => ((IModeledMarkdownContext)_mdc).ProjectionTopology;
-                internal set => _mdc.ProjectionTopology = value;
-            }
+            public ProjectionTopology ProjectionTopology => ((IModeledMarkdownContext)_mdc).ProjectionTopology;
 
             public ObservableCollection<T>? ObservableNetProjection
             {

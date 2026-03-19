@@ -180,10 +180,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             , INotifyCollectionChanged
             where T : new()
         {
-            public OBQFC()
-            {
-                _mmdc.ProjectionOption = NetProjectionOption.AllowDirectChanges;
-            }
             protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
             {
                 base.OnCollectionChanged(e);
@@ -201,10 +197,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             , INotifyCollectionChanged
             where T : new()
         {
-            public OBQFC()
-            {
-                ProjectionOption = NetProjectionOption.AllowDirectChanges;
-            }
             public virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
             {
                 CollectionChanged?.Invoke(this, e);
