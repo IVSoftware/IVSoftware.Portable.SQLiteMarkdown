@@ -52,8 +52,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             #region S U B T E S T S
             void subtest_Inheritor()
             {
-                var mdci = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
+                // Mental Model: "I inherit MDC to support a free-standing ObservableCollection {T}"
+                var mdci = new ObservableNetProjectionInheritsMDC<SelectableQFModel>
+                {
+                    ObservableNetProjection = new ObservableCollection<SelectableQFModel>(),
+                };
 
+                // This WORKS because ONP IS NOT NULL.
                 Assert.AreEqual(
                     ProjectionTopology.Inheritance,
                     mdci.ProjectionTopology,
@@ -410,8 +415,7 @@ MarkdownContext Clear(all=True)";
         /// Extension and general housekeeping.
         /// </summary>
         [JsonArray]
-        partial class ObservableNetProjectionWithComposition<T>
-            : ObservableCollection<T>
+        partial class ObservableNetProjectionWithComposition<T> : ObservableCollection<T>
         {
             public ObservableNetProjectionWithComposition()
             {

@@ -148,7 +148,6 @@ Inherited contexts manage their projection internally.".TrimStart());
 
         protected virtual void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            Debug.Fail($@"ADVISORY - First Time.");
             using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection);
             CanonicalSupersetInternal.Apply(e);
         }
