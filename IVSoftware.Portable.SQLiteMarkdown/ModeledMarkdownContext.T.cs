@@ -514,15 +514,17 @@ SELECT * FROM items WHERE
         /// </summary>
         protected override void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection);
-            if (Authority == CollectionChangeAuthority.Projection)
-            {
-                UpdateModelWithAuthority(sender, e);
-            }
-            else
-            {
-                Debug.Assert(Authority == CollectionChangeAuthority.Model);
-            }
+            base.OnNetProjectionCollectionChanged(sender, e);
+
+            //using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection);
+            //if (Authority == CollectionChangeAuthority.Projection)
+            //{
+            //    UpdateModelWithAuthority(sender, e);
+            //}
+            //else
+            //{
+            //    Debug.Assert(Authority == CollectionChangeAuthority.Model);
+            //}
         }
 
         /// <summary>
@@ -538,15 +540,17 @@ SELECT * FROM items WHERE
         /// </remarks>
         protected override void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Model);
-            if (Authority == CollectionChangeAuthority.Model)
-            {
-                UpdateModelWithAuthority(sender, e);
-            }
-            else
-            {
-                Debug.Fail($@"ADVISORY - First Time.");
-            }
+            base.OnCanonicalSupersetChanged(sender, e);
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 19).Date, "Don't forget disabled");
+            //using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Model);
+            //if (Authority == CollectionChangeAuthority.Model)
+            //{
+            //    UpdateModelWithAuthority(sender, e);
+            //}
+            //else
+            //{
+            //    Debug.Fail($@"ADVISORY - First Time.");
+            //}
         }
 
         protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
@@ -897,8 +901,6 @@ SELECT * FROM items WHERE
         }
         NetProjectionOption _projectionOption = 0;
 
-        public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; } = ReplaceItemsEventingOption.StructuralReplaceEvent;
-
         #endregion P R O J E C T I O N
 
 
@@ -917,8 +919,10 @@ SELECT * FROM items WHERE
         /// <remarks>
         /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
         /// </remarks>
-        public virtual void LoadCanon(IEnumerable? recordset)
+        public override void LoadCanon(IEnumerable? recordset)
         {
+            base.LoadCanon(recordset);
+#if false
             if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Model)
             {   /* G T K - N O O P */
             }
@@ -952,6 +956,7 @@ SELECT * FROM items WHERE
                     }
                 }
             }
+#endif
         }
 
         /// <summary>

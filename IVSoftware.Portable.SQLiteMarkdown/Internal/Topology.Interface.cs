@@ -146,7 +146,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                          ? ProjectionTopology.None
                          : ProjectionTopology.Composition;
         }
-
         readonly bool _isInherited;
+
+        public ReplaceItemsEventingOption ReplaceItemsEventingOptions
+        { 
+            get;
+            set;
+        } = ReplaceItemsEventingOption.StructuralReplaceEvent;
+
+        public virtual void LoadCanon(IEnumerable? recordset) 
+        {
+            using(BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection))
+            {
+                CanonicalSupersetInternal.Clear();
+                if (recordset is not null)
+                {
+                    foreach (T item in recordset)
+                    {
+                        CanonicalSupersetInternal.Add(item);
+                    }
+                }
+            }
+        }
     }
 }

@@ -18,8 +18,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             // Yield to ANY explicit authority.
             // All that matters is when IList redirects to collection *directly*.
-
-            switch (_authorityRequest())
+            var authority = _authorityRequest();
+            switch (authority)
             {
                 case 0:
                     base.OnCollectionChanged(e);
