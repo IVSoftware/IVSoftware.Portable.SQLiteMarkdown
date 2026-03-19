@@ -33,32 +33,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         public ModeledMarkdownContext()
         {
-            // Self-detect the topology.
-            // - RTTI claims INotifyCollectionChange implementation.
-            // - This class, however, doesn't do that on its own.
-            // - Inheritance is the only possibility.
-            _isInherited = typeof(INotifyCollectionChanged).IsAssignableFrom(GetType());
-            if (_isInherited)
-            {
-                if (this.GetType().GetMethod(nameof(Clear), Type.EmptyTypes) is { } clearMethod)
-                {   /* B C S - N O O P */
-                }
-                else
-                {
-                    // Avoid leaking the object itself as the awaited sender.
-                    nameof(MarkdownContext).Advisory(
-                        $"Inherited MarkdownContext detected, but no parameterless Clear() was found. " +
-                        "Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. " +
-                        "If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. " +
-                        "You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit."
-                    );
-                }
-            }
             Model.SetBoundAttributeValue(
                 this,
                 name: nameof(StdMarkdownAttribute.mdc));
-            ObservableNetProjection?.CollectionChanged += OnNetProjectionCollectionChanged;
-            CanonicalSupersetInternal.CollectionChanged += OnCanonicalSupersetChanged;
         }
 
         /// <summary>
@@ -562,7 +539,7 @@ SELECT * FROM items WHERE
         ///
         /// Mental Model: "The canonical ledger changed. Reconcile projections and notify observers."
         /// </remarks>
-        protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected override void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
 #if false
             Debug.Assert(
@@ -934,19 +911,6 @@ SELECT * FROM items WHERE
 
         public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; } = ReplaceItemsEventingOption.StructuralReplaceEvent;
 
-        /// <summary>
-        /// Reports on whether this object is inherited or composed.
-        /// </summary>
-        public ProjectionTopology ProjectionTopology
-        {
-            get => _isInherited
-                    ? ProjectionTopology.Inheritance
-                    : ObservableNetProjection is null
-                         ? ProjectionTopology.None
-                         : ProjectionTopology.Composition;
-        }
-
-        readonly bool _isInherited;
         #endregion P R O J E C T I O N
 
 

@@ -40,26 +40,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             {
                 actual = SerializeTopology();
                 actual.ToClipboardExpected();
-                { } // <- FIRST TIME ONLY: Adjust the message.
-                actual.ToClipboardAssert("Expecting json serialization to match.");
                 { }
                 expected = @" 
 {
+  ""MatchContainsProto"": [],
   ""Model"": {
     ""model"": {
       ""@mdc"": ""[ModeledMarkdownContext]""
     }
   },
-  ""IsFiltering"": false,
+  ""RouteToFullRecordset"": true,
+  ""ProjectionOption"": ""ObservableOnly"",
+  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent"",
+  ""ProjectionTopology"": ""None"",
   ""ObservableNetProjection"": null,
   ""CanonicalSuperset"": [],
   ""PredicateMatchSubset"": [],
-  ""Count"": 0,
-  ""IsReadOnly"": false,
-  ""ProjectionTopology"": ""None"",
-  ""ProjectionOption"": ""ObservableOnly"",
-  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent""
-}";
+  ""Count"": 0
+}"
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -75,20 +74,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 { }
                 expected = @" 
 {
+  ""MatchContainsProto"": [],
   ""Model"": {
     ""model"": {
       ""@mdc"": ""[ModeledMarkdownContext]""
     }
   },
-  ""IsFiltering"": false,
+  ""RouteToFullRecordset"": true,
+  ""ProjectionOption"": ""ObservableOnly"",
+  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent"",
+  ""ProjectionTopology"": ""None"",
   ""ObservableNetProjection"": null,
   ""CanonicalSuperset"": [],
   ""PredicateMatchSubset"": [],
-  ""Count"": 0,
-  ""IsReadOnly"": false,
-  ""ProjectionTopology"": ""None"",
-  ""ProjectionOption"": ""ObservableOnly"",
-  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent""
+  ""Count"": 0
 }"
                 ;
 
@@ -99,11 +98,43 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 );
 
                 mmdc.Add(Ephemeral().AddDynamic("Cats", "[]", false));
-                { }
 
                 actual = SerializeTopology();
                 actual.ToClipboardAssert("Expecting json serialization to match.");
                 { }
+expected = @" 
+{
+  ""MatchContainsProto"": [],
+  ""Model"": {
+    ""model"": {
+      ""@mdc"": ""[ModeledMarkdownContext]"",
+      ""@autocount"": ""1"",
+      ""@count"": ""1"",
+      ""@matches"": ""1"",
+      ""xitem"": {
+        ""@text"": ""312d1c21-0000-0000-0000-000000000000"",
+        ""@model"": ""[SelectableQFModel]"",
+        ""@sort"": ""0""
+      }
+    }
+  },
+  ""RouteToFullRecordset"": true,
+  ""ProjectionOption"": ""ObservableOnly"",
+  ""ReplaceItemsEventingOptions"": ""StructuralReplaceEvent"",
+  ""ProjectionTopology"": ""None"",
+  ""ObservableNetProjection"": null,
+  ""CanonicalSuperset"": [
+    {}
+  ],
+  ""PredicateMatchSubset"": [],
+  ""Count"": 1
+}";
+
+Assert.AreEqual(
+    expected.NormalizeResult(),
+    actual.NormalizeResult(),
+    "Expecting json serialization to match."
+);
                 expected = @" 
 {
   ""Model"": {

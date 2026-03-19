@@ -12,6 +12,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
     partial class Topology<T> : IList
     {
+
+        #region P O L I C Y    A R B I T R A T I O N
+        public int Count => Read.Count;
+
         [JsonIgnore]
         public bool IsFixedSize =>
             ((IList?)ObservableNetProjection)?.IsFixedSize
@@ -27,7 +31,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             ((IList?)ObservableNetProjection)?.SyncRoot
             ?? ((IList)CanonicalSupersetInternal).SyncRoot;
 
-        #region P O L I C Y    A R B I T R A T I O N
+        [JsonIgnore]
+        public bool IsReadOnly => ((ICollection<T>)CanonicalSupersetInternal).IsReadOnly;
+        #endregion P O L I C Y    A R B I T R A T I O N
 
         [Indexer]
         object? IList.this[int index] 
@@ -64,7 +70,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         {
             ((IList)CanonicalSupersetInternal).Remove(value);
         }
-        #endregion P O L I C Y    A R B I T R A T I O N
 
         IEnumerator IEnumerable.GetEnumerator() => Read.GetEnumerator();
     }
@@ -80,10 +85,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             get => ((IList<T>)CanonicalSupersetInternal)[index];
             set => ((IList<T>)CanonicalSupersetInternal)[index] = value;
         }
-
-        public int Count => ((ICollection<T>)CanonicalSupersetInternal).Count;
-
-        public bool IsReadOnly => ((ICollection<T>)CanonicalSupersetInternal).IsReadOnly;
 
         public void Add(T item)
         {
@@ -133,26 +134,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
     partial class Topology<T> // IModeledMarkdownContext
     {
-        [JsonConverter(typeof(StringEnumConverter))]
-        public ProjectionTopology ProjectionTopology => MMDC.ProjectionTopology;
-
-
-        [JsonConverter(typeof(StringEnumConverter))]
-        public NetProjectionOption ProjectionOption => MMDC.ProjectionOption;
-
-
-        [JsonConverter(typeof(StringEnumConverter))]
-        public ReplaceItemsEventingOption ReplaceItemsEventingOptions => MMDC.ReplaceItemsEventingOptions;
-
-
-        public void LoadCanon(IEnumerable? recordset)
+        /// <summary>
+        /// Reports on whether this object is inherited or composed.
+        /// </summary>
+        public ProjectionTopology ProjectionTopology
         {
-            throw new NotImplementedException();
+            get => _isInherited
+                    ? ProjectionTopology.Inheritance
+                    : ObservableNetProjection is null
+                         ? ProjectionTopology.None
+                         : ProjectionTopology.Composition;
         }
 
-        public Task LoadCanonAsync(IEnumerable? recordset)
-        {
-            throw new NotImplementedException();
-        }
+        readonly bool _isInherited;
     }
 }

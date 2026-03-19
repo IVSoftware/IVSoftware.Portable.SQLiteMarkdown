@@ -16,13 +16,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
     {
         public Topology()
         {
-            MMDC = this as IModeledMarkdownContext;
-            CanonicalSupersetInternal = new AuthoritativeObservableCollection<T>(() => MMDC.Authority);
+            // Self-detect the topology.
+            // - RTTI claims INotifyCollectionChange implementation.
+            // - This class, however, doesn't do that on its own.
+            // - Inheritance is the only possibility.
+            _isInherited = typeof(INotifyCollectionChanged).IsAssignableFrom(GetType());
+            if (_isInherited)
+            {
+                if (this.GetType().GetMethod(nameof(Clear), Type.EmptyTypes) is { } clearMethod)
+                {   /* B C S - N O O P */
+                }
+                else
+                {
+                    // Avoid leaking the object itself as the awaited sender.
+                    nameof(MarkdownContext).Advisory(
+                        $"Inherited MarkdownContext detected, but no parameterless Clear() was found. " +
+                        "Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. " +
+                        "If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. " +
+                        "You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit."
+                    );
+                }
+            }
+            CanonicalSupersetInternal = new AuthoritativeObservableCollection<T>(() => Authority);
             CanonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetInternal);
             PredicateMatchSubsetInternal = new();
             PredicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetInternal);
+            CanonicalSupersetInternal.CollectionChanged += OnCanonicalSupersetChanged;
         }
-        private readonly IModeledMarkdownContext? MMDC;
 
         protected override void OnFilteringStateChanged()
         {
@@ -32,7 +52,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             {
                 if (_authorityToken is null)
                 {
-                    _authorityToken = MMDC.BeginCollectionChangeAuthority(CollectionChangeAuthority.Model);
+                    _authorityToken = BeginCollectionChangeAuthority(CollectionChangeAuthority.Model);
                 }
                 else
                 {
@@ -135,6 +155,8 @@ Inherited contexts manage their projection internally.".TrimStart());
         protected virtual void OnNetProjectionHandleChanged() { }
 
         protected virtual void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) { }
+
+        protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e) { }
 
         ObservableCollection<T>? _observableProjection = null;
         #endregion P R O J E C T I O N
