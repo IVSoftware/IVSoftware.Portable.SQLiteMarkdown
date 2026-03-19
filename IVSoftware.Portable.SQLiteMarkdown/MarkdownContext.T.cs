@@ -4,50 +4,24 @@ using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using Newtonsoft.Json;
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
     public class MarkdownContext<T> : MarkdownContext
     {
         /// <summary>
-        /// Creates a typed context whose base infrastructure is initialized
-        /// with the element type <typeparamref name="T"/>.
+        /// Creates a typed context whose base infrastructure is initialized with the element type <typeparamref name="T"/>.
         /// </summary>
-        /// <remarks>
-        /// The base <see cref="MarkdownContext"/> constructs its internal
-        /// collections using the supplied element type. As a result, the
-        /// predicate-match subset is guaranteed to be backed by a
-        /// <c>List&lt;T&gt;</c> (exposed as <see cref="IList"/> in the base
-        /// contract). The generic context therefore only projects a typed
-        /// read-only view and does not need to enforce the type at runtime.
-        /// </remarks>
         public MarkdownContext() : base(typeof(T))
         {
-
-            //if (IsInherited)
-            //{
-            //    var clearMethod = this.GetType().GetMethod(
-            //        nameof(Clear),
-            //        BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly,
-            //        binder: null,
-            //        types: Type.EmptyTypes,
-            //        modifiers: null);
-            //    if (clearMethod is not null)
-            //    {   /* B C S - N O O P */
-            //        // Located a declared parameterless Clear method.
-            //    }
-            //    else
-            //    {
-            //        nameof(MarkdownContext) // Avoid leaking the object itself as the awaited sender.
-            //            .Advisory(
-            //            $"Inherited MarkdownContext detected, but no parameterless Clear() was found. " +
-            //            "Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. " +
-            //            "If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. " +
-            //            "You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit."
-            //        );
-            //    }
-            //}
+            _ = InitAsync();
         }
+        async Task InitAsync()
+        {
+            _ = IsInherited;
+        }
+
         public bool IsInherited
         {
             get
@@ -56,11 +30,31 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     // Self-detect the topology.
                     var type = GetType();
-                    if (typeof(Topology<T>).IsAssignableFrom(type))
-                    {
-                        _isInherited = typeof(Topology<T>) != type;
-                    }
-                    else _isInherited = false;
+                    _isInherited = 
+                        typeof(Topology<T>).IsAssignableFrom(type)
+                        && type != typeof(Topology<T>); 
+
+                    var clearMethod = this.GetType().GetMethod(
+                        nameof(Clear),
+                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly,
+                        binder: null,
+                        types: Type.EmptyTypes,
+                        modifiers: null);
+
+                    //if (clearMethod is not null)
+                    //{   /* B C S - N O O P */
+                    //    // Located a declared parameterless Clear method.
+                    //}
+                    //else
+                    //{
+                    //    nameof(MarkdownContext) // Avoid leaking the object itself as the awaited sender.
+                    //        .Advisory(
+                    //        $"Inherited MarkdownContext detected, but no parameterless Clear() was found. " +
+                    //        "Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. " +
+                    //        "If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. " +
+                    //        "You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit."
+                    //    );
+                    //}
                 }
                 return (bool)_isInherited;
             }

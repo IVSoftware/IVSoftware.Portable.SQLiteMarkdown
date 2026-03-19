@@ -105,7 +105,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         /// back through the canonical store and database.
         /// </remarks>
         [TestMethod, DoNotParallelize]
-        public void TestMethod_RouteInheritance()
+        public async Task TestMethod_RouteInheritance()
         {
             using var te = this.TestableEpoch();
             string actual, expected;
@@ -135,19 +135,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             var inherited = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
 
-            subtest_CheckForExpectedAdvisory();
+            await subtest_CheckForExpectedAdvisory();
             subtest_DetectTopology();
             subtest_PopulateAndClearEpoch();
             subtest_FilterTracking();
 
             #region S U B T E S T S
-            void subtest_CheckForExpectedAdvisory()
+            async Task subtest_CheckForExpectedAdvisory()
             {
+                await Task.Delay(250);
                 actual = string.Join(Environment.NewLine, builderThrow);
                 actual.ToClipboardExpected();
-                { }
                 expected = @" 
-Advisory .ctor | Inherited MarkdownContext detected, but no parameterless Clear() was found. Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit.";
+Advisory IsInherited | Inherited MarkdownContext detected, but no parameterless Clear() was found. Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit."
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
