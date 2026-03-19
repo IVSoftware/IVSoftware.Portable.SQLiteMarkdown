@@ -199,6 +199,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
 
             Controls.Add(new InfoOverlay
             {
+                Name = nameof(InfoOverlay),
                 Dock = DockStyle.Fill,
                 Visible = true,
             });

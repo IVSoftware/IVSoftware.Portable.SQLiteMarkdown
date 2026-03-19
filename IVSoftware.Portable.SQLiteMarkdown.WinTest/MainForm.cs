@@ -5,6 +5,7 @@ using IVSoftware.Portable.SQLiteMarkdown.WinTest.OP;
 using SQLite;
 using IVSoftware.Portable;
 using IVSoftware.WinForms;
+using System.Diagnostics;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
 {
@@ -217,6 +218,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             {   /* G T K */
             }
             labelSearchIcon.Text = GlyphProvider.IconBasics.Search.ToGlyph();
+
+#if DEBUG
+
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 19).Date, "Don't forget disabled");
+            if(Controls[nameof(InfoOverlay)] is Control control) control.Visible = false;
+            QFSUT.InputText = "green";
+            QFSUT.Commit();
+#endif
         }
 
         /// <summary>
