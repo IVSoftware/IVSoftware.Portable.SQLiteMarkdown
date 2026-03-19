@@ -21,13 +21,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             string actual, expected;
             using var te = this.TestableEpoch();
 
-            ModeledMarkdownContext<SelectableQFModel> mmc = new();
-            XElement model = mmc.Model;
-            Topology<SelectableQFModel> topo = mmc.Topology; ;
+            ModeledMarkdownContext<SelectableQFModel> mmdc = new();
+            XElement model = mmdc.Model;
 
             #region L o c a l F x
             // Get a dynamic item using a dummy list.
             List<SelectableQFModel> Ephemeral() => new List<SelectableQFModel>();
+            string SerializeTopology() => mmdc.SerializeTopology<SelectableQFModel>();
             #endregion L o c a l F x
 
 
@@ -35,10 +35,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             subtest_DefaultTopo();
 
             #region S U B T E S T S
+            // Test the custom JSON serializer itself!
             void subtest_SerializeTopo()
             {
-
-                actual = topo.SerializeTopology<SelectableQFModel>();
+                actual = SerializeTopology();
                 actual.ToClipboardExpected();
                 { } // <- FIRST TIME ONLY: Adjust the message.
                 actual.ToClipboardAssert("Expecting json serialization to match.");
@@ -70,7 +70,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             void subtest_DefaultTopo()
             {
-                actual = JsonConvert.SerializeObject(topo, Formatting.Indented);
+                actual = SerializeTopology();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -98,10 +98,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     "Expecting json serialization to match."
                 );
 
-                topo.Add(Ephemeral().AddDynamic("Cats", "[]", false));
+                mmdc.Add(Ephemeral().AddDynamic("Cats", "[]", false));
                 { }
 
-                actual = JsonConvert.SerializeObject(topo, Formatting.Indented);
+                actual = SerializeTopology();
                 actual.ToClipboardAssert("Expecting json serialization to match.");
                 { }
                 expected = @" 

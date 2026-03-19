@@ -27,7 +27,7 @@ using static IVSoftware.Portable.SQLiteMarkdown.Internal.Extensions;
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
     public partial class ModeledMarkdownContext<T>
-        : MarkdownContext<T>
+        : Topology<T>
         , IModeledMarkdownContext<T>
         where T : new()
     {
@@ -57,12 +57,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Model.SetBoundAttributeValue(
                 this,
                 name: nameof(StdMarkdownAttribute.mdc));
-            Topology = new Topology<T>(this);
-            Topology.ObservableNetProjection?.CollectionChanged += OnNetProjectionCollectionChanged;
-            Topology.CanonicalSupersetInternal.CollectionChanged += OnCanonicalSupersetChanged;
+            ObservableNetProjection?.CollectionChanged += OnNetProjectionCollectionChanged;
+            CanonicalSupersetInternal.CollectionChanged += OnCanonicalSupersetChanged;
         }
-        [JsonIgnore]
-        internal Topology<T> Topology { get; }
 
         /// <summary>
         /// Returns the singleton, non-replaceable root XElement, created on demand.
@@ -517,67 +514,6 @@ SELECT * FROM items WHERE
         #region P R O J E C T I O N
 
         /// <summary>
-        /// Gets or sets the observable projection representing the effective
-        /// (net visible) collection after markdown and predicate filtering.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model: "ItemsSource for a CollectionView with both initial query and subsequent filter refinement.
-        /// - OBSERVABLE: This is an INCC object that can be tracked.
-        /// - NET       : The items in this collection depend on the net result of the recordset and any state-dependent filters.
-        /// - PROJECTION: Conveys that this 'filtering' produces a PCL collection, albeit one that is likely to be visible.
-        ///
-        /// When assigned, this context subscribes to CollectionChanged as a
-        /// reconciliation sink. During refinement epochs, structural changes
-        /// made against the filtered projection are absorbed into the canonical
-        /// backing store so that the canon remains complete and relevant.
-        ///
-        /// The projection is an interaction surface, not a storage authority.
-        /// Its mutations are normalized and merged into the canonical collection
-        /// according to the active authority contract.
-        ///
-        /// Replacing this property detaches the previous projection and attaches the new one.
-        ///
-        /// This property is infrastructure wiring and is not intended for data binding.
-        /// </remarks>
-        public ObservableCollection<T>? ObservableNetProjection
-        {
-            get => _observableProjection;
-            set
-            {
-                if (ProjectionTopology == ProjectionTopology.Inheritance)
-                {
-                    ThrowHard<InvalidOperationException>(@"
-Cannot assign ObservableNetProjection when ProjectionTopology is Inheritance.
-Inherited contexts manage their projection internally.".TrimStart());
-                }
-                else
-                {
-                    if (!Equals(_observableProjection, value))
-                    {
-                        // Unsubscribe INCC
-                        if (_observableProjection is not null)
-                        {
-                            _observableProjection.CollectionChanged -= OnNetProjectionCollectionChanged;
-                        }
-
-                        _observableProjection = value;
-
-                        // Run the handler then subscribe to any subsequent changes.
-                        OnNetProjectionHandleChanged();
-
-                        // Subscribe INCC
-                        if (_observableProjection is not null)
-                        {
-                            _observableProjection.CollectionChanged += OnNetProjectionCollectionChanged;
-                        }
-                    }
-                }
-            }
-        }
-        ObservableCollection<T>? _observableProjection = null;
-
-
-        /// <summary>
         /// Raised when the *handle* to the ObservableNetCollection changes.
         /// </summary>
         /// <remarks>
@@ -586,7 +522,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// MentalMode (QueryAndFilter config): "The system must be reset to root cause in order to be stable."
         /// MentalMode (Filter         config): "The contents of the new projection must be regarded as a new canon."
         /// </remarks>
-        protected virtual void OnNetProjectionHandleChanged()
+        protected override void OnNetProjectionHandleChanged()
         {
             if (ObservableNetProjection is IEnumerable collection && collection.Cast<object>().Any())
             {
@@ -602,7 +538,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// <summary>
         /// Receives projection change notifications required to maintain the canonical ledger.
         /// </summary>
-        protected virtual void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected override void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection);
             if (Authority == CollectionChangeAuthority.Projection)
@@ -635,6 +571,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             Debug.Assert(
                 ObservableNetProjection is null,
                 "Expecting CanonicalSuperset *is* the source of all model changes.");
+#endif
 
             using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Model);
             if (Authority == CollectionChangeAuthority.Model)
@@ -645,12 +582,10 @@ Inherited contexts manage their projection internally.".TrimStart());
             {
                 Debug.Fail($@"ADVISORY - First Time.");
             }
-#endif
         }
 
         protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
         {
-#if false
             #region A U T H O R I T Y    G U A R D
             switch (Authority)
             {
@@ -736,13 +671,12 @@ Inherited contexts manage their projection internally.".TrimStart());
             // The model is.
             if (Authority == CollectionChangeAuthority.Projection)
             {
-                CanonicalSupersetProtected.Clear();
+                CanonicalSupersetInternal.Clear();
                 foreach (var item in Model.Descendants().Select(_ => _.To<T>()).OfType<T>())
                 {
-                    CanonicalSupersetProtected.Add(item);
+                    CanonicalSupersetInternal.Add(item);
                 }
             }
-#endif
         }
 
         /// <summary>

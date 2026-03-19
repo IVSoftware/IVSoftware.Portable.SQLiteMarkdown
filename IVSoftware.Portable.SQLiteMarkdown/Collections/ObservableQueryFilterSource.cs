@@ -49,7 +49,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 #endif
 
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
-        public IReadOnlyList<T> UnfilteredItems => Topology.CanonicalSuperset;
+        public IReadOnlyList<T> UnfilteredItems => CanonicalSuperset;
 
 
         /// <summary>
@@ -95,10 +95,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
                 else
                 {
-                    // This override can only occur for the Inheritance topology.
+                    // This override can only occur for the Inheritance 
                     // The assert verifies the CTor didn't misclassify this instance as Composition.
                     Debug.Assert(
-                        Equals(ProjectionTopology.Inheritance, ProjectionTopology),
+                        Equals(ProjectionInheritance, ProjectionTopology),
                         "Expecting, obviously, that this *is* inheritance but making sure the property is set."
                     );
 
@@ -622,8 +622,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                 new ModelSettledEventArgs(
                                     reason: NotifyCollectionChangedReason.RemoveFilter,
                                     action: NotifyCollectionChangedAction.Replace,
-                                    oldItems: (IList)Topology.PredicateMatchSubset,
-                                    newItems: (IList)Topology.CanonicalSuperset
+                                    oldItems: (IList)PredicateMatchSubset,
+                                    newItems: (IList)CanonicalSuperset
                                 )
                             );
                         }
@@ -689,8 +689,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Careful("This polarity was wrong, and has been fixed.")]
         private IReadOnlyList<T> RoutedRecordset =>
             RouteToFullRecordset 
-            ? Topology.CanonicalSuperset 
-            : Topology.PredicateMatchSubset;
+            ? CanonicalSuperset 
+            : PredicateMatchSubset;
 
         public new IEnumerator<T> GetEnumerator() => RoutedRecordset.Cast<T>().GetEnumerator();
 
