@@ -46,16 +46,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 { }
                 expected = @" 
 {
-  ""IsFiltering"": false,
-  ""ObservableNetCollection"": null,
-  ""CanonicalSuperset"": [],
-  ""PredicateMatchSubset"": [],
   ""Model"": {
     ""model"": {
       ""@mdc"": ""[ModeledMarkdownContext]""
     }
   },
-  ""Count"": 0
+  ""IsFiltering"": false,
+  ""ObservableNetCollection"": null,
+  ""CanonicalSuperset"": [],
+  ""PredicateMatchSubset"": [],
+  ""Count"": 0,
+  ""ProjectionTopology"": 0,
+  ""ProjectionOption"": 0,
+  ""ReplaceItemsEventingOptions"": 0,
+  ""ObservableNetProjection"": null
 }"
                 ;
 

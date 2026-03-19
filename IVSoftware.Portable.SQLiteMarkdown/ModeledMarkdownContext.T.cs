@@ -1582,7 +1582,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             {
                 if (_canonicalSupersetProtected is null)
                 {
-                    _canonicalSupersetProtected = new AuthoritativeObservableCollection<T>(this);
+                    _canonicalSupersetProtected = new AuthoritativeObservableCollection<T>(()=>this.Authority);
                     _canonicalSupersetProtected.CollectionChanged += OnCanonicalSupersetChanged;
                 }
                 return _canonicalSupersetProtected;
