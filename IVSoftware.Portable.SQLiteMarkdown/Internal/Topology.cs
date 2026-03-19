@@ -328,6 +328,11 @@ Inherited contexts manage their projection internally.".TrimStart());
                 return;
             }
 
+            int
+                indexForAdd = model.GetAttributeValue<int>(StdMarkdownAttribute.autocount),
+                count = model.GetAttributeValue<int>(StdMarkdownAttribute.count, 0),
+                matches = model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
+
             switch (action)
             {
                 case NotifyCollectionChangeAction.Add: localAddToModel(); break;
@@ -340,7 +345,22 @@ Inherited contexts manage their projection internally.".TrimStart());
                             $"The {action.ToFullKey()} case is not supported.");
                     break;
             }
+            switch (action)
+            {
+                case NotifyCollectionChangeAction.Add: localAddToModel(); break;
+                case NotifyCollectionChangeAction.Remove: localRemoveFromModel(); break;
+                case NotifyCollectionChangeAction.Replace: localReplaceInModel(); break;
+                case NotifyCollectionChangeAction.Move: localMoveInModel(); break;
+                case NotifyCollectionChangeAction.Reset: localResetModel(); break;
+                default:
+                    eUnk.ThrowFramework<NotSupportedException>(
+                            $"The {action.ToFullKey()} case is not supported.");
+                    break;
+            }
+            model.SetAttributeValue(nameof(StdMarkdownAttribute.count), count);
+            model.SetAttributeValue(nameof(StdMarkdownAttribute.matches), matches);
 
+            #region L o c a l F x
             void localAddToModel()
             {
                 if (newItems is null)
@@ -350,10 +370,6 @@ Inherited contexts manage their projection internally.".TrimStart());
                 }
                 else
                 {
-                    int
-                        indexForAdd = model.GetAttributeValue<int>(StdMarkdownAttribute.autocount),
-                        count = model.GetAttributeValue<int>(StdMarkdownAttribute.count, 0),
-                        matches = model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
                     foreach (var item in newItems)
                     {
                         if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
@@ -384,8 +400,6 @@ Inherited contexts manage their projection internally.".TrimStart());
                             eUnk.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
                         }
                     }
-                    model.SetAttributeValue(nameof(StdMarkdownAttribute.count), count);
-                    model.SetAttributeValue(nameof(StdMarkdownAttribute.matches), matches);
                 }
             }
 
@@ -399,10 +413,6 @@ Inherited contexts manage their projection internally.".TrimStart());
                 }
                 else
                 {
-                    int
-                        count = model.GetAttributeValue<int>(StdMarkdownAttribute.count, 0),
-                        matches = model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
-
                     foreach (var item in oldItems)
                     {
                         if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
@@ -429,8 +439,6 @@ Inherited contexts manage their projection internally.".TrimStart());
                             eUnk.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
                         }
                     }
-                    model.SetAttributeValue(nameof(StdMarkdownAttribute.count), count);
-                    model.SetAttributeValue(nameof(StdMarkdownAttribute.matches), matches);
                 }
             }
 
@@ -444,11 +452,6 @@ Inherited contexts manage their projection internally.".TrimStart());
                 }
                 else
                 {
-                    int
-                        indexForAdd = model.GetAttributeValue<int>(StdMarkdownAttribute.autocount),
-                        count = model.GetAttributeValue<int>(StdMarkdownAttribute.count, 0),
-                        matches = model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
-
                     // REMOVE PHASE
                     foreach (var item in oldItems)
                     {
@@ -510,9 +513,6 @@ Inherited contexts manage their projection internally.".TrimStart());
                             eUnk.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
                         }
                     }
-
-                    model.SetAttributeValue(nameof(StdMarkdownAttribute.count), count);
-                    model.SetAttributeValue(nameof(StdMarkdownAttribute.matches), matches);
                 }
             }
 
@@ -564,7 +564,10 @@ Inherited contexts manage their projection internally.".TrimStart());
                     Debug.Fail($@"ADVISORY - TODO distinguish ReplaceItemsEventingOption.");
                     model.RemoveNodes();
                 }
-            }
+                count = 0;
+                matches = 0;
+            }            
+            #endregion L o c a l F x
         }
 
         /// <summary>
