@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,22 +9,21 @@ using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    partial class MarkdownContext : IEnumerable
+    partial class ModeledMarkdownContext<T>
+        : IEnumerable 
+        , IEnumerable<T>
     {
-        public IEnumerator GetEnumerator()
+
+        public IEnumerator<T> GetEnumerator()
         {
             return
                 Model
                 .Descendants()
-                .Attributes()
-                .OfType<XBoundAttribute>()
-                .Where(_ => _.Tag.GetType() == ContractType)
-                .Select(_=>_.Tag)
+                .Select(_ => _.To<T>())
+                .OfType<T>()
                 .GetEnumerator();
         }
-    }
-    partial class ModeledMarkdownContext<T> : IEnumerable<T>
-    {
-        public new IEnumerator<T> GetEnumerator() => (IEnumerator<T>) base.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

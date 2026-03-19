@@ -1,26 +1,22 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
-using IVSoftware.Portable.SQLiteMarkdown.Common;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
-using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
-    class Topology<T>
+    partial class Topology<T>
     {
         public Topology(XElement model, ObservableCollection<T>? projection = null)
         {
             Model = model;
-            if(Model.To<IModeledMarkdownContext>() is { } mmdc)
+            if (Model.To<IModeledMarkdownContext>() is { } mmdc)
             {
                 MMDC = mmdc;
                 mmdc.PropertyChanged += (sender, e) =>
@@ -39,6 +35,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             }
         }
         IModeledMarkdownContext MMDC { get; } = null!; // Guarded in CTor
+        public XElement Model { get; }
 
         public bool IsFiltering
         {
@@ -120,7 +117,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             {
                 if (_canonicalSupersetProtected is null)
                 {
-                    _canonicalSupersetProtected = new AuthoritativeObservableCollection<T>(MMDC);
+                    _canonicalSupersetProtected = new AuthoritativeObservableCollection<T>(()=>MMDC.Authority);
                 }
                 return _canonicalSupersetProtected;
             }
@@ -140,49 +137,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         }
         IReadOnlyList<T> _predicateMatchSubset = null!;
         protected List<T> PredicateMatchSubsetProtected { get; } = new();
-
-        public bool Contains(T value)
-        {
-            if (value?.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
-            {
-                return PlacerResult.Exists == Model.Place(full, PlacerMode.FindOrPartial);
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public int IndexOf(T value)
-            => Read is IList list ? list.IndexOf(value) : -1;
-
-        public object GetAt(int index)
-            => ((IList)Read)[index];
-
-        public XElement Model { get; }
-
-        #region P O L I C Y    A R B I T R A T I O N
-        public int Count => Read.Count;
-
-        [JsonIgnore]
-        public bool IsSynchronized => Write.IsSynchronized;
-
-        [JsonIgnore]
-        public object SyncRoot => Write.SyncRoot;
-
-        [JsonIgnore]
-        public bool IsFixedSize { get; internal set; }
-
-        [JsonIgnore]
-        public bool IsReadOnly { get; internal set; }
-
-        public void CopyTo(T[] array, int index)
-        {
-            for (int i = 0; i < Read.Count; i++)
-            {
-                array[index + i] = Read[i];
-            }
-        }
-        #endregion P O L I C Y    A R B I T R A T I O N
     }
 }

@@ -25,9 +25,9 @@ using static IVSoftware.Portable.SQLiteMarkdown.Internal.Extensions;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public partial class ModeledMarkdownContext<T> 
+    public partial class ModeledMarkdownContext<T>
         : MarkdownContext<T>
-        , IModeledMarkdownContext
+        , IModeledMarkdownContext<T>
         where T : new()
     {
         public ModeledMarkdownContext()
@@ -528,7 +528,7 @@ SELECT * FROM items WHERE
         ///
         /// This property is infrastructure wiring and is not intended for data binding.
         /// </remarks>
-        public INotifyCollectionChanged? ObservableNetProjection
+        public ObservableCollection<T>? ObservableNetProjection
         {
             get => _observableProjection;
             set
@@ -563,7 +563,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                 }
             }
         }
-        INotifyCollectionChanged? _observableProjection = null;
+        ObservableCollection<T>? _observableProjection = null;
 
 
         /// <summary>
@@ -629,7 +629,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             {
                 UpdateModelWithAuthority(sender, e);
             }
-            else 
+            else
             {
                 Debug.Fail($@"ADVISORY - First Time.");
             }
@@ -1482,7 +1482,7 @@ Inherited contexts manage their projection internally.".TrimStart());
 
 
         void AddItemToModel(object? item)
-        {            
+        {
             if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
             {
                 int
@@ -1519,9 +1519,9 @@ Inherited contexts manage their projection internally.".TrimStart());
 
         void RemoveItemFromModel(object? item)
         {
-            if (item.GetFullPath() is { } full 
+            if (item.GetFullPath() is { } full
                 && !string.IsNullOrWhiteSpace(full)
-                && PlacerResult.Exists ==Model.Place(full, out var xel, PlacerMode.FindOrPartial))
+                && PlacerResult.Exists == Model.Place(full, out var xel, PlacerMode.FindOrPartial))
             {
                 Debug.Fail($@"ADVISORY - First Time.");
             }
@@ -1604,5 +1604,6 @@ Inherited contexts manage their projection internally.".TrimStart());
             => PredicateMatchSubsetPrivate;
 
         private List<T> PredicateMatchSubsetPrivate { get; } = new();
+        IList? IModeledMarkdownContext.ObservableNetProjection => ObservableNetProjection;
     }
 }

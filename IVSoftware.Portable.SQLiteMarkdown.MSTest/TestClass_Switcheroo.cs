@@ -500,10 +500,10 @@ MarkdownContext Clear(all=True)";
 
             public ProjectionTopology ProjectionTopology => ((IModeledMarkdownContext)_mdc).ProjectionTopology;
 
-            public INotifyCollectionChanged? ObservableNetProjection
+            public ObservableCollection<T>? ObservableNetProjection
             {
-                get => ((IModeledMarkdownContext)_mdc).ObservableNetProjection;
-                set => ((IModeledMarkdownContext)_mdc).ObservableNetProjection = value;
+                get => ((IModeledMarkdownContext<T>)_mdc).ObservableNetProjection;
+                set => ((IModeledMarkdownContext<T>)_mdc).ObservableNetProjection = value;
             }
 
             public int PredicateMatchCount => ((IMarkdownContext)_mdc).PredicateMatchCount;

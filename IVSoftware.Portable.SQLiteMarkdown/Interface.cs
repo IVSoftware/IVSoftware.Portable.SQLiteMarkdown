@@ -7,6 +7,7 @@ using SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -354,7 +355,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Represents a bindable and observable collection representing 'net visible' filtered items.
         /// </summary>
-        INotifyCollectionChanged? ObservableNetProjection { get; set; }
+        IList? ObservableNetProjection { get; }
 
         /// <summary>
         /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
@@ -389,6 +390,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         CollectionChangeAuthority Authority { get; }
 
         #endregion D I S P O S A B L E
+    }
+    public interface IModeledMarkdownContext<T> : IModeledMarkdownContext
+    {
+        /// <summary>
+        /// Represents a bindable and observable collection representing 'net visible' filtered items.
+        /// </summary>
+        new ObservableCollection<T>? ObservableNetProjection { get; set; }
     }
 
     /// <summary>

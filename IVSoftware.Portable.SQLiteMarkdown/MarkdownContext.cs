@@ -1318,6 +1318,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// or restricted character policies.
         /// </remarks>
         [PublishedContract("1.0", typeof(MarkdownContext))]
+        [JsonIgnore]
         public Predicate<string> ValidationPredicate
         {
             get

@@ -65,7 +65,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     "Expecting json serialization to match."
                 );
 
-                topo.Write.Add(Ephemeral().AddDynamic("Cats", "[]", false));
+                topo.Add(Ephemeral().AddDynamic("Cats", "[]", false));
                 { }
 
                 actual = JsonConvert.SerializeObject(topo, Formatting.Indented);

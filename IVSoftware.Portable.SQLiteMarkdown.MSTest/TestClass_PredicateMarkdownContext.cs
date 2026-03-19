@@ -125,9 +125,9 @@ public class TestClass_PredicateMarkdownContext
 
         string actual, expected;
         List<string> builder = new();
-        IList<SelectableQFModel> opc = 
-            new ObservableCollection<SelectableQFModel>()
-            .PopulateForDemo(10);
+
+        ObservableCollection<SelectableQFModel> opc = new();
+        opc.PopulateForDemo(10);
 
         subtest_TriggerBy_ProjectionBeforeState();
         subtest_TriggerBy_StateBeforeProjection();
@@ -139,7 +139,7 @@ public class TestClass_PredicateMarkdownContext
         {
             var mdc = new ModeledMarkdownContext<SelectableQFModel>
             {
-                ObservableNetProjection = (INotifyCollectionChanged)opc,
+                ObservableNetProjection = opc,
             };
 
             // In this test, the items are already populated
@@ -190,7 +190,7 @@ public class TestClass_PredicateMarkdownContext
                 "Expecting EMPTY because ONP is not assigned yet."
             );
 
-            mdc.ObservableNetProjection = (INotifyCollectionChanged)opc;
+            mdc.ObservableNetProjection = opc;
 
             actual = mdc.Model.ToString();
             actual.ToClipboardExpected();

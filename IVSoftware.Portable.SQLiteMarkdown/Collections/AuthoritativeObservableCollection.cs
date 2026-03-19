@@ -8,21 +8,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
     public class AuthoritativeObservableCollection<T> : ObservableCollection<T>
     {
-        public AuthoritativeObservableCollection(IModeledMarkdownContext mmdc)
+        public AuthoritativeObservableCollection(Func<CollectionChangeAuthority> authorityRequest)
         {
-            MMDC = mmdc;
+            _authorityRequest = authorityRequest;
         }
-        IModeledMarkdownContext MMDC { get; }
+
+        private readonly Func<CollectionChangeAuthority> _authorityRequest;
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
             // Yield to ANY explicit authority.
             // All that matters is when IList redirects to collection *directly*.
-            if (MMDC.Authority == 0)
+
+            switch (_authorityRequest())
             {
-                base.OnCollectionChanged(e);
-            }
-            else
-            {   /* G T K - N O O P */
+                case 0:
+                    base.OnCollectionChanged(e);
+                    break;
+                case CollectionChangeAuthority.None:
+                case CollectionChangeAuthority.Model:
+                case CollectionChangeAuthority.Projection:
+                default:
+                    break;
             }
         }
     }
