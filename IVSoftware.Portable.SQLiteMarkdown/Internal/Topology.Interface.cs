@@ -149,10 +149,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             get
             {
                 var type = GetType();
-                if (typeof(INotifyCollectionChanged).IsAssignableFrom(type)
-                    && type != typeof(Topology<T>))
+                if (type == typeof(Topology<T>))
+                {   /* G T K - N O O P */
+                    // Leave this at None.
+                }
+                else
                 {
-                    _projectionTopology = ProjectionTopology.Inheritance;
+                    if (typeof(INotifyCollectionChanged).IsAssignableFrom(type))
+                    {
+                        _projectionTopology = ProjectionTopology.Inheritance;
+                    }
+                    else
+                    {
+                        _projectionTopology = ProjectionTopology.Composition;
+                    }
                 }
                 return _projectionTopology;
             }

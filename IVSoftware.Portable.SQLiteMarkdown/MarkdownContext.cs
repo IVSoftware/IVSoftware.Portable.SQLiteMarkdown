@@ -1422,6 +1422,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// User may inject a persistent connection if:
         /// <c>using(MemoryDatabase = new SQLiteConnection("UserPath")); </c>
         /// </remarks>
+        [JsonIgnore]
         public SQLiteConnection MemoryDatabase
         {
             get => _memoryDatabase!;    // For compatibility with interface contract, this property must be null checked.

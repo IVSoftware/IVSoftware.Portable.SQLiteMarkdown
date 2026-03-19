@@ -11,6 +11,7 @@ using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
+using Newtonsoft.Json;
 using SQLite;
 using System;
 using System.Collections;
@@ -62,6 +63,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///   provide an advisory stream should this be called upon to service more
         ///   than the implicit single table for the collection.
         /// </remarks>
+
+        [JsonIgnore]
         protected SQLiteConnection FilterQueryDatabase
         {
             get
