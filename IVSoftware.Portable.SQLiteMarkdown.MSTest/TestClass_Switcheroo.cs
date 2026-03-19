@@ -218,7 +218,7 @@ Advisory .ctor | Inherited MarkdownContext detected, but no parameterless Clear(
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model autocount=""2"" count=""2"" matches=""2"">
+<model mmdc=""[MMDC]"" count=""2"" matches=""2"" autocount=""2"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" sort=""1"" />
 </model>"
@@ -392,7 +392,7 @@ MarkdownContext Clear(all=True)";
         /// <summary>
         /// Uses routing for the net projection.
         /// </summary>
-        
+        [JsonArray]
         class ObservableNetProjectionInheritsMDC<T>
             : ModeledMarkdownContext<T>
             , INotifyCollectionChanged
@@ -408,6 +408,7 @@ MarkdownContext Clear(all=True)";
         /// <summary>
         /// Extension and general housekeeping.
         /// </summary>
+        [JsonArray]
         partial class ObservableNetProjectionWithComposition<T>
             : ObservableCollection<T>
         {
