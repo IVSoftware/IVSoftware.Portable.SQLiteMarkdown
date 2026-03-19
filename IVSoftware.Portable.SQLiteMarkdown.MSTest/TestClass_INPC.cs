@@ -55,7 +55,7 @@ public class TestClass_INPC
         actual.ToClipboardExpected();
         { }
         expected = @" 
-<model autocount=""1"" count=""1"" matches=""1"">
+<model mmdc=""[MMDC]"" autocount=""1"" count=""1"" matches=""1"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
 </model>"
         ;
@@ -107,17 +107,17 @@ IsChecked: Brown Dog "
     public void Test_WeirdCornerTilde()
     {
         using var te = this.TestableEpoch();
-
         string actual, expected;
 
         var items = new ObservableQueryFilterSource<SelectableQFModel>
         {
             QueryFilterConfig = QueryFilterConfig.Query
         };
+
         ((IList)items).AddDynamic<SelectableQFModel>(description: "Bird~Feathered", tags: "[]", isChecked: false);
         ((IList)items).AddDynamic<SelectableQFModel>(description: "Bird Feathered", tags: "[]", isChecked: false);
 
-        actual = JsonConvert.SerializeObject(items, Formatting.Indented);
+        actual = JsonConvert.SerializeObject(items.Read, Formatting.Indented);
         actual.ToClipboardExpected();
         { }
         expected = @" 
