@@ -370,21 +370,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         /// <remarks>
         /// Mental Model: "No Surprises."
-        /// - Routes to CSS where all CSS events raise INCC on ONP.
+        /// - Routes to CanonicalSuperset(CSS) where all CSS events raise INCC on ObservableNetProjection(ONP).
         /// - The FSM is not allowed to change state in response.
         /// </remarks>
         None = 0,
 
         /// <summary>
-        /// Signals a hard return to first cause that produces a single BCL event.
+        /// Epoch that returns to first cause and produces a single Base Class Library (BCL) event.
         /// </summary>
         /// <remarks>
         /// Mental Model: "Clear everything while suppressing intermediate events. Raise a BCL Reset INCC when done."
+        /// Association: <c>Clear(true)</c>
         /// </remarks>
         Reset,
 
         /// <summary>
-        /// Signals an epoch that begins with a programmatic Commit() command that produces an INCC.
+        /// Epoch that begins with a programmatic Commit() command and produces an INotifyPpropertyChanged (INCC) event.
         /// </summary>
         /// <remarks>
         /// Mental Model: "Ask user to query their primary data source. Load this recordset as canon to the ONP."
@@ -392,7 +393,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Commit,
 
         /// <summary>
-        /// Signals that a change is being made to the ONP.
+        /// Epoch that begins with a direct change to the ONP and ends with an INCC.
         /// </summary>
         /// <remarks>
         /// Mental Model: "The UI user performs an Add, Remove, or Move action on a Full or Filtered list."
@@ -400,21 +401,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - The FSM is not allowed to change state in response.
         /// - The model must grant IsMatch status immediately to any 
         ///   new item for the current epoch, ensuring they they 
-        ///   don't mysteriously disappear the moment they commit. 
+        ///   don't mysteriously disappear the moment they commit.         ///   
+        /// Association: <c>Remodel(true)</c>
         /// </remarks>
         Projection,
 
         /// <summary>
-        /// Signals that a change is being made to the active filter predicates.
+        /// Epoch that begins when Input Method Entry (IME) changes to the InputText property have settled.
+        /// </summary>
+        /// <remarks> 
+        /// Mental Model: "User is refining a recordset by modifying text in the IME."
+        /// </remarks>
+        Settle,
+
+        /// <summary>
+        /// Signals that a change has been made to the active filter predicates.
         /// </summary>
         /// <remarks>
         /// Mental Model: "UI Radio selection, e.g., [ShowAll, ShowUnchecked, ShowChecked]."
         /// - The FSM is not allowed to change state in response.
         /// - Routes to PMS where all PMS events raise INCC on ONP.
+        /// Association: <c>Remodel(false)</c>
         /// </remarks>
-        Settle,
-
-
         [Description("Verb: PRED-ih-kate")]
         Predicate,
     }
