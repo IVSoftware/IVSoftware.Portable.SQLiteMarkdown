@@ -158,7 +158,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 Advisory .ctor | Inherited MarkdownContext detected, but no parameterless Clear() was found. Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit."
                 ;
 
-                Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 19).Date, "Don't forget disabled");
+                Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 20).Date, "Don't forget disabled");
                 //Assert.AreEqual(
                 //    expected.NormalizeResult(),
                 //    actual.NormalizeResult(),

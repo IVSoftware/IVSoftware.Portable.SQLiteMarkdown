@@ -225,7 +225,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
 
 #if DEBUG
             string actual;
-            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 19).Date, "Don't forget disabled");
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 20).Date, "Don't forget disabled");
             if(Controls[nameof(InfoOverlay)] is Control control) control.Visible = false;
             QFSUT.InputText = "green";
             QFSUT.Commit();
@@ -257,6 +257,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
     }
     class QFSUT : ObservableQueryFilterSource<SelectableQFModel> 
     {
+        public QFSUT()
+        {
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 20).Date, "Don't forget disabled");
+            QueryFilterConfig = QueryFilterConfig.Query;
+        }
         public new FilteringState FilteringStateForTest
         {
             get => FilteringState;

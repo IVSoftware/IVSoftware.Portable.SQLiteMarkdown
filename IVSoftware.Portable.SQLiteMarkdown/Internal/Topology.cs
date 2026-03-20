@@ -25,7 +25,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         public Topology()
         {
 
-            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 19).Date, "Don't forget disabled");
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 20).Date, "Don't forget disabled");
 #if true
             // Self-detect the topology.
             var type = GetType();
