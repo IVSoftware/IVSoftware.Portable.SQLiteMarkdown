@@ -312,7 +312,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// Authority may shift during refinement epochs to suppress upstream propagation
     /// and prevent circular collection change events.
     /// </remarks>
-    [NotFlags]
+    [NotFlags, Obsolete]
     public enum CollectionChangeAuthority
     {
         /// <summary>
@@ -361,6 +361,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Canon,
         Reset,
     }
+
+#if false && ABSTRACT && GRAVITY
+    ITEMS
+    Δ Always: PNP -> CSS with Projection authority. 
+    Δ Always: CSS -> Model 
+    Δ Always: Model -> PMS
+    Δ Always: Model.Changed -> <model autocount=N>
+    Δ Always: Model -> OnModelSettled event
+    - Then, one of:    
+    Δ Always: CSS -> FQDB
+    Δ Always: Model -> FQDB
+
+    COUNTS
+    Δ Always: CSS -> <model count=N>
+    Δ Always: PMS.Count -> <model matches=N>
+
+    ! Settle -> Remodel(true) -> ONP ! CSS (circularity suppressed by authority)
+    ! Predicate -> Remodel(true) -> ONP ! CSS (circularity suppressed by authority)
+
+    EVENTS
+    None: IList action produces normal BCL event for the action.
+    Reset: Produces normal BCL Reset event for the action.
+    Commit: ∴ ReplaceItemsEventingOption
+    Projection: Produces normal BCL event for the action where CSS ! ONP (circularity suppressed by authority)
+    Settle: ∴ ReplaceItemsEventingOption
+    Predicate: ∴ ReplaceItemsEventingOption
+#endif
 
     /// <summary>
     /// Laws of Gravity for the Markdown Context Domain
