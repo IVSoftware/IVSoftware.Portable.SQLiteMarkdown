@@ -312,6 +312,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// Authority may shift during refinement epochs to suppress upstream propagation
     /// and prevent circular collection change events.
     /// </remarks>
+    [NotFlags]
     public enum CollectionChangeAuthority
     {
         /// <summary>
@@ -360,6 +361,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Canon,
         Reset,
     }
+
+    [NotFlags, Description("Authority"), Probationary("260320")]
+    internal enum CollectionChangeAuthorityProto
+    {
+        /// <summary>
+        /// Programmatic calls on IList produce corresponding INCC events.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "No Surprises."
+        /// - Routes to CSS where all CSS events raise INCC on ONP.
+        /// - The FSM is not allowed to change state in response.
+        /// </remarks>
+        None = 0,
+
+        /// <summary>
+        /// Hard return to first cause, producing a single BCL event.
+        /// </summary>
+        Reset,
+    }
+
 
     /// <summary>
     /// Set of all supported states with canonical indexing.
