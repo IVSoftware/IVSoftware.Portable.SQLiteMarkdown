@@ -1114,7 +1114,6 @@ SELECT * FROM items WHERE
                     if (Equals(ReservedFSMState.FastTrack, RunFSM<NativeClearFSM>()))
                     {   /* G T K */
                     }
-                    Clear(true); // D T
                     break;
             }
         }

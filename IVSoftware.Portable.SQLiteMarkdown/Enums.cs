@@ -358,6 +358,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Unconditional load
         /// </summary>
         Canon,
+        Reset,
     }
 
     /// <summary>

@@ -591,5 +591,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         }
         NetProjectionOption _projectionOption = 0;
 
+
+        public new FilteringState Clear(bool all = false)
+        {
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Reset))
+            {
+                if (all || SearchEntryState <= SearchEntryState.QueryEmpty)
+                {
+                    Model.RemoveNodes();
+                    PredicateMatchSubsetInternal.Clear();
+                    CanonicalSupersetInternal.Clear();
+                }
+                else
+                {
+                   return base.Clear(all);
+                }
+                OnCanonicalSupersetChanged(
+                    ObservableNetProjection ?? CanonicalSuperset,
+                    new NotifyCollectionChangedEventArgs(
+                        action: NotifyCollectionChangedAction.Reset));
+                return FilteringState.Ineligible;
+            }
+        }
     }
 }
