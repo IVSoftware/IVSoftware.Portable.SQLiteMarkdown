@@ -566,7 +566,8 @@ SELECT * FROM items WHERE
         public override void LoadCanon(IEnumerable? recordset)
         {
             base.LoadCanon(recordset);
-#if false
+
+#if false && SAVE
             if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Model)
             {   /* G T K - N O O P */
             }

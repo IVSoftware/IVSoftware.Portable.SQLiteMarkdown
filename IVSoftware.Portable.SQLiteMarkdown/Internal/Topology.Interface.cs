@@ -229,7 +229,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
         public virtual void LoadCanon(IEnumerable? recordset) 
         {
-            using(BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection))
+            using(BeginCollectionChangeAuthority(CollectionChangeAuthority.Canon))
             {
                 // This calls Model.Apply(e) in the Changing handler.
                 CanonicalSupersetInternal.Clear();

@@ -72,23 +72,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 case FilteringState.Ineligible:
                     break;
                 case FilteringState.Armed:
-                    switch (FilteringStateDirection)
-                    {
-                        case FilteringStateDirection.Up:
-                            // Copy the canonical list, not the model for this.
-                            PredicateMatchSubsetInternal.Clear();
-                            foreach (var item in CanonicalSuperset)
-                            {
-                                PredicateMatchSubsetInternal.Add(item);
-                            }
-                            break;
-                        case FilteringStateDirection.Down:
-                            if(ProjectionOption == NetProjectionOption.AllowDirectChanges)
-                            {
-                                Debug.Fail($@"ADVISORY - First Time.");
-                            }
-                            break;
-                    }
                     break;
                 case FilteringState.Active:
                     break;
@@ -223,14 +206,21 @@ Inherited contexts manage their projection internally.".TrimStart());
             {
                 case 0: // No authority claimed.
                 case CollectionChangeAuthority.Projection:
-                    e.Cancel = false;
                     Model.Apply(e);
+                    if(IsFiltering)
+                    {
+                        PredicateMatchSubsetInternal.Apply(e);
+                    }
                     break;
                 case CollectionChangeAuthority.None:
                     e.Cancel = true;
                     break;
                 case CollectionChangeAuthority.Model:
                     e.Cancel = true;
+                    break;
+                case CollectionChangeAuthority.Canon:
+                    Model.Apply(e);
+                    PredicateMatchSubsetInternal.Apply(e);
                     break;
                 default:
                     this.ThrowFramework<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");

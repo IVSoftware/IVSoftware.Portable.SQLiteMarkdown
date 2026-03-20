@@ -82,12 +82,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         QueryAndFilter = Query | Filter,
     }
 
-    public enum FilteringStateDirection
-    {
-        Up,
-        Down,
-    }
-
     /// <summary>
     /// State machine whose specific behavior depends on QueryFilterConfig
     /// </summary>
@@ -359,6 +353,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - User-facing {add, edit, remove} operations that occur against a filtered projection are *exempt* from the filter.
         /// </remarks>
         Projection,
+
+        /// <summary>
+        /// Unconditional load
+        /// </summary>
+        Canon,
     }
 
     /// <summary>

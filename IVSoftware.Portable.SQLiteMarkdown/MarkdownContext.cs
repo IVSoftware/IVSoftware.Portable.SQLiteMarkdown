@@ -1489,14 +1489,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                 if (!Equals(_filteringState, value))
                 {
-                    if(value > FilteringStatePrev)
-                    {
-                        FilteringStateDirection = FilteringStateDirection.Up;
-                    }
-                    else
-                    {
-                        FilteringStateDirection = FilteringStateDirection.Down;
-                    }
                     FilteringStatePrev = _filteringState;
                     _filteringState = value;
 
@@ -1515,7 +1507,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         FilteringState _filteringState = FilteringState.Ineligible;
         protected FilteringState FilteringStatePrev { get; set; }
-        protected FilteringStateDirection FilteringStateDirection { get; private set; } 
 
 
         /// <summary>
