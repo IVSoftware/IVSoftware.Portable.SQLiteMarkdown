@@ -362,8 +362,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Reset,
     }
 
+    /// <summary>
+    /// Laws of Gravity for the Markdown Context Domain
+    /// </summary>
+    /// <remarks>
+    /// ASYNCHONOUS
+    /// - States should be Async and non-concurrent.
+    /// - Lower requested states should have the authority to cancel Higher states.
+    /// - Higher requested states should await the completion of Lower states.
+    /// WORK PRODUCT - An event (even an 'Empty' one) should always be produced.
+    /// - Empty: When IME is cleared.
+    /// - Empty: When state changes Filter->Query.
+    /// - BCL Reset: When Reset epoch completes.
+    /// - Replace with Reason: When Commit() epoch completes.
+    /// - Replace with Reason: When Remodel(bool) epoch completes.
+    /// ReplaceItemsEventingOption
+    /// - Replace with Reason is another way of saying Clear then Add.
+    /// - Depending on this setting, replace actions produce 'any or all' of
+    ///   1. BCL Reset event on the clear phase before the replace.
+    ///   2. Structural 'Replace with Reason' event, which is a digest of the transaction.
+    ///   3. BCL Add event on the repopulate phase after the replace.
+    /// </remarks>
     [NotFlags, Description("Authority"), Probationary("260320")]
-    internal enum CollectionChangeAuthorityProto
+    internal enum ModeledCollectionChangeAuthority
     {
         /// <summary>
         /// Programmatic calls on IList produce corresponding INCC events.
@@ -425,6 +446,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         [Description("Verb: PRED-ih-kate")]
         Predicate,
+    }
+
+
+    [NotFlags, Description("Query->Filter->Query"), Probationary("260320")]
+    internal enum StateChangingAuthorityProto
+    {
+        BeginningFilter,
+
+        ResumingFilter,
+
+        EndingFilter,
     }
 
 
