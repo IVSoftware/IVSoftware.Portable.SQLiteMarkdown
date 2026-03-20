@@ -376,9 +376,35 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         None = 0,
 
         /// <summary>
-        /// Hard return to first cause, producing a single BCL event.
+        /// Signals a hard return to first cause that produces a single BCL event.
         /// </summary>
+        /// <remarks>
+        /// Mental Model: "Clear everything while suppressing intermediate events. Raise a BCL Reset INCC when done."
+        /// </remarks>
         Reset,
+
+        /// <summary>
+        /// Signals an epoch that begins with a programmatic Commit() command that produces an INCC.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "Ask user to query their primary data source. Load this recordset as canon to the ONP."
+        /// </remarks>
+        Commit,
+
+        /// <summary>
+        /// Signals that a change is being made to the ONP.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "The UI user performs an Add, Remove, or Move action on a Full or Filtered list."
+        /// </remarks>
+        Projection,
+
+
+        Settle,
+
+
+        [Description("Verb: PRED-ih-kate")]
+        Predicate,
     }
 
 
