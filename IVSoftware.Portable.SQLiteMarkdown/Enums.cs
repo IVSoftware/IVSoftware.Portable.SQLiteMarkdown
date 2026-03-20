@@ -415,7 +415,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Settle,
 
         /// <summary>
-        /// Signals that a change has been made to the active filter predicates.
+        /// Epoch that begins when active filter predicates have immediate consequences (e.g., Radio or CheckBoxes).
         /// </summary>
         /// <remarks>
         /// Mental Model: "UI Radio selection, e.g., [ShowAll, ShowUnchecked, ShowChecked]."
