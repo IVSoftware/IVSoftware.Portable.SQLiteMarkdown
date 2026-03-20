@@ -1515,7 +1515,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         FilteringState _filteringState = FilteringState.Ineligible;
         protected FilteringState FilteringStatePrev { get; set; }
-
         protected FilteringStateDirection FilteringStateDirection { get; private set; } 
 
 
