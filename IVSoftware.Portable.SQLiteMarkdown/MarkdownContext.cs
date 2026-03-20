@@ -1446,7 +1446,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         #region N A V    S E A R C H    S T A T E    M A C H I N E
 
-        protected FilteringState FilteringStatePrev { get; set; }
         public FilteringState FilteringState
         {
             get => _filteringState;
@@ -1490,6 +1489,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                 if (!Equals(_filteringState, value))
                 {
+                    if(value > FilteringStatePrev)
+                    {
+                        FilteringStateDirection = FilteringStateDirection.Up;
+                    }
+                    else
+                    {
+                        FilteringStateDirection = FilteringStateDirection.Down;
+                    }
                     FilteringStatePrev = _filteringState;
                     _filteringState = value;
 
@@ -1507,6 +1514,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         FilteringState _filteringState = FilteringState.Ineligible;
+        protected FilteringState FilteringStatePrev { get; set; }
+
+        protected FilteringStateDirection FilteringStateDirection { get; private set; } 
+
 
         /// <summary>
         /// Exposes <see cref="FilteringState"/> for test scenarios while preventing direct production mutation.
@@ -1701,40 +1712,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     break;
                 case QueryFilterConfig.QueryAndFilter:
                     _isFiltering = FilteringState != FilteringState.Ineligible;
-
-#if false
-                    if(FilteringState == FilteringState.Ineligible)
-                    {
-                        // Apply hysteresis to SearchEntryState; obtain direction from prev state.
-                        switch (FilteringStatePrev)
-                        {
-                            case FilteringState.Ineligible:
-                                break;
-                            case FilteringState.Armed:
-                            case FilteringState.Active:
-                                Debug.Assert(InputText.Length == 0, "Otherwise, we've got a problem.");
-
-                                // IME downgrade FSM.
-                                switch (SearchEntryState)
-                                {
-                                    case SearchEntryState.QueryCompleteWithResults:
-                                        // Leave the projected items for now, while we enable a new Search.
-                                        SearchEntryState = SearchEntryState.QueryEmpty;
-                                        break;
-                                    case SearchEntryState.QueryCompleteNoResults:
-                                        // There aren't any projected items; No intermediate step is needed.
-                                        SearchEntryState = SearchEntryState.Cleared;
-                                        break;
-                                    case SearchEntryState.QueryEmpty:
-                                        SearchEntryState = SearchEntryState.Cleared;
-                                        break;
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-#endif
                     break;
                 default:
                     break;

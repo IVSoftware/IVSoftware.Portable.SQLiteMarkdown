@@ -67,7 +67,56 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         protected override void OnFilteringStateChanged()
         {
             base.OnFilteringStateChanged();
+            switch (FilteringState)
+            {
+                case FilteringState.Ineligible:
+                    break;
+                case FilteringState.Armed:
+                    { }
+                    break;
+                case FilteringState.Active:
+                    break;
+                default:
+                    break;
+            }
         }
+#if false
+        
+
+#if false
+                    if(FilteringState == FilteringState.Ineligible)
+                    {
+                        // Apply hysteresis to SearchEntryState; obtain direction from prev state.
+                        switch (FilteringStatePrev)
+                        {
+                            case FilteringState.Ineligible:
+                                break;
+                            case FilteringState.Armed:
+                            case FilteringState.Active:
+                                Debug.Assert(InputText.Length == 0, "Otherwise, we've got a problem.");
+
+                                // IME downgrade FSM.
+                                switch (SearchEntryState)
+                                {
+                                    case SearchEntryState.QueryCompleteWithResults:
+                                        // Leave the projected items for now, while we enable a new Search.
+                                        SearchEntryState = SearchEntryState.QueryEmpty;
+                                        break;
+                                    case SearchEntryState.QueryCompleteNoResults:
+                                        // There aren't any projected items; No intermediate step is needed.
+                                        SearchEntryState = SearchEntryState.Cleared;
+                                        break;
+                                    case SearchEntryState.QueryEmpty:
+                                        SearchEntryState = SearchEntryState.Cleared;
+                                        break;
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+#endif
+#endif
 
         internal IReadOnlyList<T> Read =>
             IsFiltering

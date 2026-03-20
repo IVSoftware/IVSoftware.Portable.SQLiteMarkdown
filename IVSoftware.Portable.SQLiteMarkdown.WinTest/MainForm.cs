@@ -6,6 +6,9 @@ using SQLite;
 using IVSoftware.Portable;
 using IVSoftware.WinForms;
 using System.Diagnostics;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
+using System.Collections.Specialized;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
 {
@@ -219,12 +222,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             }
             labelSearchIcon.Text = GlyphProvider.IconBasics.Search.ToGlyph();
 
-#if DEBUG
 
+#if DEBUG
+            string actual;
             Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 19).Date, "Don't forget disabled");
             if(Controls[nameof(InfoOverlay)] is Control control) control.Visible = false;
             QFSUT.InputText = "green";
             QFSUT.Commit();
+            { }
+            var mdc = QFSUT.Model.To<MarkdownContext>();
+            actual = mdc.StateReport();
+            actual = mdc.SerializeTopology();
+            { }
+            foreach (var item in QFSUT)
+            {
+
+            }
+
+
+            //QFSUT.InputText += " apple";
+            //await (QFSUT);
+            //actual = mdc.StateReport();
+            //actual = mdc.SerializeTopology();
+            //{ }
 #endif
         }
 
@@ -244,6 +264,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             {
                 FilteringState = value;
             }
+        }
+        protected override void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            base.OnCanonicalSupersetChanged(sender, e);
+            OnCollectionChanged(e);
         }
     }
 }

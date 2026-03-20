@@ -1130,11 +1130,15 @@ SELECT * FROM items WHERE
         protected override void OnSearchEntryStateChanged()
         {
             base.OnSearchEntryStateChanged();
-            if (SearchEntryState == SearchEntryState.Cleared)
+
+            switch (SearchEntryState)
             {
-                if (Equals(ReservedFSMState.FastTrack, RunFSM<NativeClearFSM>()))
-                {   /* G T K */
-                }
+                case SearchEntryState.Cleared:
+                    if (Equals(ReservedFSMState.FastTrack, RunFSM<NativeClearFSM>()))
+                    {   /* G T K */
+                    }
+                    Clear(true); // D T
+                    break;
             }
         }
     }

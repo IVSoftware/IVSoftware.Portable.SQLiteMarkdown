@@ -82,6 +82,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         QueryAndFilter = Query | Filter,
     }
 
+    public enum FilteringStateDirection
+    {
+        Up,
+        Down,
+    }
+
     /// <summary>
     /// State machine whose specific behavior depends on QueryFilterConfig
     /// </summary>
