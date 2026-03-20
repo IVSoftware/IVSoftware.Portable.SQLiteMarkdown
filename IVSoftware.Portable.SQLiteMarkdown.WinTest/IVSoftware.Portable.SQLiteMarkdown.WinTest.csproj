@@ -24,11 +24,6 @@
     <EmbeddedResource Remove="C:\Users\tgreg\.nuget\packages\ivsoftware.glyphprovider.winforms\1.0.0-rc1\contentFiles\any\net8.0-windows7.0\Fonts\icon-basics\font\icon-basics.woff" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="C:\Users\tgreg\.nuget\packages\ivsoftware.glyphprovider.winforms\1.0.0-rc1\contentFiles\any\net8.0-windows7.0\Fonts\icon-basics\config.json" />
-    <EmbeddedResource Include="C:\Users\tgreg\.nuget\packages\ivsoftware.glyphprovider.winforms\1.0.0-rc1\contentFiles\any\net8.0-windows7.0\Fonts\icon-basics\font\icon-basics.ttf" />
-  </ItemGroup>
-
 	<ItemGroup>
 		<PackageReference Include="IVSoftware.GlyphProvider.Winforms" Version="1.0.0-rc1" />
 		<PackageReference Include="IVSoftware.Portable.Threading" Version="*" />
