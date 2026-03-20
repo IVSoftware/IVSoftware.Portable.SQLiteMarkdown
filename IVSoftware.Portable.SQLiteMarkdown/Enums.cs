@@ -436,7 +436,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Epoch that begins with a programmatic Commit() command and produces an INotifyPpropertyChanged (INCC) event.
         /// </summary>
         /// <remarks>
-        /// Mental Model: "Ask user to query their primary data source. Load this recordset as canon to the ONP."
+        /// Mental Model: "Ask user to query their primary data source. Load this recordset as canon."
+        /// BEHAVIOR
+        /// This is a direct action on CSS. 
+        /// - Then ONP if it exists will be cleared and repopulated with the CSS items.
+        /// - Epistemically, the ONP that is 'out there' might handle the changes one by 
+        ///   one, or it can opt in to Replace with Reason events in addition or instead of.
+        /// - Another good option for ONP is to check authority for suppression, then do
+        ///   a settled reset when changes stop occurring.
         /// </remarks>
         Commit,
 
