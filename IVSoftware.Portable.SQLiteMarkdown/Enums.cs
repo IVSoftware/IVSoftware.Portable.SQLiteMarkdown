@@ -396,10 +396,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         /// <remarks>
         /// Mental Model: "The UI user performs an Add, Remove, or Move action on a Full or Filtered list."
+        /// - Routes to CSS where all CSS events raise INCC on ONP.
+        /// - The FSM is not allowed to change state in response.
+        /// - The model must grant IsMatch status immediately to any 
+        ///   new item for the current epoch, ensuring they they 
+        ///   don't mysteriously disappear the moment they commit. 
         /// </remarks>
         Projection,
 
-
+        /// <summary>
+        /// Signals that a change is being made to the active filter predicates.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "UI Radio selection, e.g., [ShowAll, ShowUnchecked, ShowChecked]."
+        /// - The FSM is not allowed to change state in response.
+        /// - Routes to PMS where all PMS events raise INCC on ONP.
+        /// </remarks>
         Settle,
 
 
