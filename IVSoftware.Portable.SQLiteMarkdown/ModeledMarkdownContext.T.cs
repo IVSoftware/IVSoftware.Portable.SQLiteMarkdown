@@ -545,30 +545,6 @@ SELECT * FROM items WHERE
         }
 
         public event NotifyCollectionChangedEventHandler? ModelSettled;
-
-        /// <summary>
-        /// Determines whether MDC is allowed to puppeteer the projection directly.
-        /// </summary>
-        public NetProjectionOption ProjectionOption
-        {
-            get =>
-                ProjectionTopology == ProjectionTopology.Inheritance
-                ? NetProjectionOption.Inherited
-                // Guards against attempting to write when the projection is null.
-                : ObservableNetProjection is null
-                    ? NetProjectionOption.ObservableOnly
-                    : _projectionOption;
-            set
-            {
-                if (!Equals(_projectionOption, value))
-                {
-                    _projectionOption = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        NetProjectionOption _projectionOption = 0;
-
         #endregion P R O J E C T I O N
 
 

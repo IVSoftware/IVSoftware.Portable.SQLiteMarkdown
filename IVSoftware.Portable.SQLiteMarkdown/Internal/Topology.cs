@@ -72,7 +72,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 case FilteringState.Ineligible:
                     break;
                 case FilteringState.Armed:
-                    { }
+                    switch (FilteringStateDirection)
+                    {
+                        case FilteringStateDirection.Up:
+                            // Copy the canonical list, not the model for this.
+                            PredicateMatchSubsetInternal.Clear();
+                            foreach (var item in CanonicalSuperset)
+                            {
+                                PredicateMatchSubsetInternal.Add(item);
+                            }
+                            break;
+                        case FilteringStateDirection.Down:
+                            if(ProjectionOption == NetProjectionOption.AllowDirectChanges)
+                            {
+                                Debug.Fail($@"ADVISORY - First Time.");
+                            }
+                            break;
+                    }
                     break;
                 case FilteringState.Active:
                     break;
