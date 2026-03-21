@@ -358,6 +358,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         Enum Authority { get; }
 
+        public event EventHandler<NotifyCollectionChangedEventArgs> CanonicalCollectionChanged;
+
         #endregion D I S P O S A B L E
     }
     public interface ITopology

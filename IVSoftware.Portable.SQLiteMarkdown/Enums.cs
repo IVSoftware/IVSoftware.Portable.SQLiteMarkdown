@@ -315,6 +315,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     [NotFlags, Obsolete]
     public enum CollectionChangeAuthority
     {
+        Reset = ModeledCollectionChangeAuthority.Reset,
+
         /// <summary>
         /// Explicit "no authority" grant.
         /// </summary>
@@ -325,7 +327,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - Can be combined with a reset authority, which raises a Reset
         ///   collection changed event when the churn has settled out.
         /// </remarks>
-        None = 1,
+        SupressAllEvents = ModeledCollectionChangeAuthority.Predicate + 1,
 
         /// <summary>
         /// Signals that the exposed IList routes to CanonicalSuperset directly.
@@ -359,7 +361,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Unconditional load
         /// </summary>
         Canon,
-        Reset,
     }
 
 #if false && ABSTRACT && GRAVITY

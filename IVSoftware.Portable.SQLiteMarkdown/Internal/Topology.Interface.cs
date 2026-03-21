@@ -11,6 +11,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
@@ -330,7 +331,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
         protected virtual void OnXAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
         {
-            if (Equals(AuthorityEpoch.Authority, CollectionChangeAuthority.None))
+            if (Equals(AuthorityEpoch.Authority, CollectionChangeAuthority.SupressAllEvents))
             {   /* G T K - N O O P */
             }
             else
@@ -385,7 +386,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
         protected virtual void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
-            if (Equals(AuthorityEpoch.Authority, CollectionChangeAuthority.None))
+            if (Equals(AuthorityEpoch.Authority, CollectionChangeAuthority.SupressAllEvents))
             {   /* G T K - N O O P */
             }
             else
@@ -594,24 +595,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
         public new FilteringState Clear(bool all = false)
         {
-            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Reset))
+            using (BeginCollectionChangeAuthority(ModeledCollectionChangeAuthority.Reset))
             {
                 if (all || SearchEntryState <= SearchEntryState.QueryEmpty)
                 {
-                    Model.RemoveNodes();
-                    PredicateMatchSubsetInternal.Clear();
                     CanonicalSupersetInternal.Clear();
+                    PredicateMatchSubsetInternal.Clear();
+                    Model.RemoveNodes();
                 }
                 else
                 {
                    return base.Clear(all);
                 }
-                OnCanonicalSupersetChanged(
-                    ObservableNetProjection ?? CanonicalSuperset,
-                    new NotifyCollectionChangedEventArgs(
-                        action: NotifyCollectionChangedAction.Reset));
-                return FilteringState.Ineligible;
             }
-        }
+
+            // - Unconditionally return a "no surprises" BCL reset event.
+            // - This is the Policy, regardless of whether any change took
+            //   place, the rationale being that Clear(all) is a return to
+            //  first cause, full stop.
+            OnCanonicalSupersetChanged(
+                ObservableNetProjection ?? CanonicalSuperset,
+                new NotifyCollectionChangedEventArgs(
+                    action: NotifyCollectionChangedAction.Reset));
+            return FilteringState.Ineligible;
+        }        
     }
 }

@@ -558,7 +558,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             switch (AuthorityEpoch.Authority)
             {
-                case CollectionChangeAuthority.None:
+                case CollectionChangeAuthority.SupressAllEvents:
                     // Events are being supressed by this authority epoch.
                     break;
                 case CollectionChangeAuthority.Model:

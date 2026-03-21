@@ -209,7 +209,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                         PredicateMatchSubsetInternal.Apply(e);
                     }
                     break;
-                case CollectionChangeAuthority.None:
+                case CollectionChangeAuthority.SupressAllEvents:
                     e.Cancel = true;
                     break;
                 case CollectionChangeAuthority.Model:

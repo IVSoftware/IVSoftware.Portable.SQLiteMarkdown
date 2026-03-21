@@ -210,7 +210,7 @@ SELECT * FROM items WHERE
         protected override void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             base.OnCanonicalSupersetChanged(sender, e);
-            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 20).Date, "Don't forget disabled");
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 21).Date, "Don't forget decommissioning");
             //using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Model);
             //if (Authority == CollectionChangeAuthority.Model)
             //{
@@ -234,7 +234,7 @@ SELECT * FROM items WHERE
                 case CollectionChangeAuthority.Projection:
                     // The players.
                     break;
-                case CollectionChangeAuthority.None:
+                case CollectionChangeAuthority.SupressAllEvents:
                     Debug.Fail($@"ADVISORY - Explicit no authority. Is this what we really want here?.");
                     return;
                 default:

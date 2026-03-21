@@ -425,7 +425,7 @@ MarkdownContext Clear(all=True)";
                 {
                     switch (Authority)
                     {
-                        case CollectionChangeAuthority.None:
+                        case CollectionChangeAuthority.SupressAllEvents:
                             break;
                         case CollectionChangeAuthority.Model:
                             break;
