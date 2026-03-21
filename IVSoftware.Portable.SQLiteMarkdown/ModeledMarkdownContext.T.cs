@@ -1071,7 +1071,6 @@ SELECT * FROM items WHERE
                 ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
             }
         }
-
         void RemoveItemFromModel(object? item)
         {
             if (item.GetFullPath() is { } full
@@ -1095,8 +1094,11 @@ SELECT * FROM items WHERE
                         LoadCanon(canon);
 
 #if DEBUG
-                        var loopbackCount = FilterQueryDatabase.Table<T>().Count();
-                        Debug.Assert(canon.Count == loopbackCount);
+                        if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                        {
+                            var loopbackCount = FilterQueryDatabase.Table<T>().Count();
+                            Debug.Assert(canon.Count == loopbackCount);
+                        }
 #endif
                     }
                 }

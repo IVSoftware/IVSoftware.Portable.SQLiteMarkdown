@@ -40,9 +40,7 @@ public class TestClass_Authority
                 }
             }
         }
-
         IModeledMarkdownContext? _mmdc = default;
-
     }
 
     [TestMethod, DoNotParallelize]
@@ -119,7 +117,6 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs   "
                 actual.NormalizeResult(),
                 "Expecting that an arbitrary item is present in order to test the clear."
             );
-            { }
             builder.Clear();
             // Clear, when non-empty.
             mmdc.Clear(all: true);
@@ -141,109 +138,143 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
         #endregion S U B T E S T S
     }
 
-    [TestMethod]
+    [TestMethod, DoNotParallelize]
     public void Test_Commit()
     {
-        subtest_ExternalONP();
+        string actual, expected;
+        using var te = this.TestableEpoch();
+
+        ComposedObservableCollection<SelectableQFModel> onp = new();
+
+        // [Careful]
+        // - This isn't a subscription to MMDC at all.
+        // - In particular, it doesn't make the ONP event show up first in builder.
+        onp.CollectionChanged += (sender, e) =>
+        {
+            builder.Add(e.ToString(ReferenceEquals(sender, onp)));
+        };
+        var mmdc = new ModeledMarkdownContext<SelectableQFModel>
+        {
+            ObservableNetProjection = onp,
+        };
+
+        #region E V E N T S
+        // This is the order that matters:
+        // FIRST - subscribe the MMDC direct
+        mmdc.ModelChanged += (sender, e) =>
+        {
+            builder.Add(e.ToString(ReferenceEquals(sender, onp)));
+        };
+        // SECOND - subscribe the MMDC in the Composed collection
+        onp.MMDC = mmdc; // Cross-linked ONP will now forware the ModelChanged event.
+        #endregion E V E N T S
 
         #region S U B T E S T S
-        void subtest_ExternalONP()
-        {
-            builder.Clear();
-            ObservableCollection<SelectableQFModel> onp = new();
-            onp.CollectionChanged += (sender, e) =>
-            {
-                builder.Add(e.ToString(ReferenceEquals(sender, onp)));
-            };
-            var mmdc = new ModeledMarkdownContext<SelectableQFModel>
-            {
-                ObservableNetProjection = onp,
-            };
-        }
         #endregion
     }
 
-    [TestMethod]
+    [TestMethod, DoNotParallelize]
     public void Test_Projection()
     {
-        subtest_ExternalONP();
+        string actual, expected;
+        using var te = this.TestableEpoch();
+
+        ComposedObservableCollection<SelectableQFModel> onp = new();
+
+        // [Careful]
+        // - This isn't a subscription to MMDC at all.
+        // - In particular, it doesn't make the ONP event show up first in builder.
+        onp.CollectionChanged += (sender, e) =>
+        {
+            builder.Add(e.ToString(ReferenceEquals(sender, onp)));
+        };
+        var mmdc = new ModeledMarkdownContext<SelectableQFModel>
+        {
+            ObservableNetProjection = onp,
+        };
+
+        #region E V E N T S
+        // This is the order that matters:
+        // FIRST - subscribe the MMDC direct
+        mmdc.ModelChanged += (sender, e) =>
+        {
+            builder.Add(e.ToString(ReferenceEquals(sender, onp)));
+        };
+        // SECOND - subscribe the MMDC in the Composed collection
+        onp.MMDC = mmdc; // Cross-linked ONP will now forware the ModelChanged event.
+        #endregion E V E N T S
 
         #region S U B T E S T S
-        void subtest_ExternalONP()
-        {
-            builder.Clear();
-            ObservableCollection<SelectableQFModel> onp = new();
-            onp.CollectionChanged += (sender, e) =>
-            {
-                builder.Add(e.ToString(ReferenceEquals(sender, onp)));
-            };
-            var mmdc = new ModeledMarkdownContext<SelectableQFModel>
-            {
-                ObservableNetProjection = onp,
-            };
-        }
         #endregion
     }
 
-    [TestMethod]
+    [TestMethod, DoNotParallelize]
     public void Test_Settle()
     {
-        subtest_ExternalONP();
+        string actual, expected;
+        using var te = this.TestableEpoch();
+
+        ComposedObservableCollection<SelectableQFModel> onp = new();
+
+        // [Careful]
+        // - This isn't a subscription to MMDC at all.
+        // - In particular, it doesn't make the ONP event show up first in builder.
+        onp.CollectionChanged += (sender, e) =>
+        {
+            builder.Add(e.ToString(ReferenceEquals(sender, onp)));
+        };
+        var mmdc = new ModeledMarkdownContext<SelectableQFModel>
+        {
+            ObservableNetProjection = onp,
+        };
+
+        #region E V E N T S
+        // This is the order that matters:
+        // FIRST - subscribe the MMDC direct
+        mmdc.ModelChanged += (sender, e) =>
+        {
+            builder.Add(e.ToString(ReferenceEquals(sender, onp)));
+        };
+        // SECOND - subscribe the MMDC in the Composed collection
+        onp.MMDC = mmdc; // Cross-linked ONP will now forware the ModelChanged event.
+        #endregion E V E N T S
 
         #region S U B T E S T S
-        void subtest_ExternalONP()
-        {
-            builder.Clear();
-            ObservableCollection<SelectableQFModel> onp = new();
-            onp.CollectionChanged += (sender, e) =>
-            {
-                builder.Add(e.ToString(ReferenceEquals(sender, onp)));
-            };
-            var mmdc = new ModeledMarkdownContext<SelectableQFModel>
-            {
-                ObservableNetProjection = onp,
-            };
-        }
         #endregion
     }
 
-    [TestMethod]
+    [TestMethod, DoNotParallelize]
     public void Test_Predicate()
     {
-        subtest_ExternalONP();
+        string actual, expected;
+        using var te = this.TestableEpoch();
+
+        ComposedObservableCollection<SelectableQFModel> onp = new();
+
+        // [Careful]
+        // - This isn't a subscription to MMDC at all.
+        // - In particular, it doesn't make the ONP event show up first in builder.
+        onp.CollectionChanged += (sender, e) =>
+        {
+            builder.Add(e.ToString(ReferenceEquals(sender, onp)));
+        };
+        var mmdc = new ModeledMarkdownContext<SelectableQFModel>
+        {
+            ObservableNetProjection = onp,
+        };
+
+        #region E V E N T S
+        // This is the order that matters:
+        // FIRST - subscribe the MMDC direct
+        mmdc.ModelChanged += (sender, e) =>
+        {
+            builder.Add(e.ToString(ReferenceEquals(sender, onp)));
+        };
+        // SECOND - subscribe the MMDC in the Composed collection
+        onp.MMDC = mmdc; // Cross-linked ONP will now forware the ModelChanged event.
+        #endregion E V E N T S
 
         #region S U B T E S T S
-        void subtest_ExternalONP()
-        {
-            builder.Clear();
-            ObservableCollection<SelectableQFModel> onp = new();
-            onp.CollectionChanged += (sender, e) =>
-            {
-                builder.Add(e.ToString(ReferenceEquals(sender, onp)));
-            };
-            var mmdc = new ModeledMarkdownContext<SelectableQFModel>
-            {
-                ObservableNetProjection = onp,
-            };
-
-            #region L o c a l F x				
-            using var local = mmdc.WithOnDispose(
-                onInit: (sender, e) =>
-                {
-                    mmdc.ModelChanged += localOnModelChanged;
-                },
-                onDispose: (sender, e) =>
-                {
-                    mmdc.ModelChanged -= localOnModelChanged;
-                });
-            void localOnModelChanged(object? sender, NotifyCollectionChangedEventArgs eUnk)
-            {
-                builder.Add(eUnk.ToString(ReferenceEquals(sender, onp)));
-            }
-            #endregion L o c a l F x
-
-            mmdc.Clear();
-        }
         #endregion
     }
 }
