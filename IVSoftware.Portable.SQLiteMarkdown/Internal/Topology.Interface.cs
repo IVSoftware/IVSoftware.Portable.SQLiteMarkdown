@@ -286,7 +286,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             {
                 if (_model is null)
                 {
-                    _model = new XElement(nameof(StdMarkdownElement.model));
+                    _model = new XElement(
+                        nameof(StdMarkdownElement.model),
+                        new XAttribute(nameof(StdMarkdownAttribute.autocount), 0),
+                        new XAttribute(nameof(StdMarkdownAttribute.count), 0),
+                        new XAttribute(nameof(StdMarkdownAttribute.matches), 0));
                     _model.Changing += (sender, e) =>
                     {
                         if (sender is XElement xel && e.ObjectChange == XObjectChange.Remove)
@@ -599,6 +603,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             {
                 if (all || SearchEntryState <= SearchEntryState.QueryEmpty)
                 {
+                    Model.SetAttributeValue(StdMarkdownAttribute.autocount, 0);
+                    Model.SetAttributeValue(StdMarkdownAttribute.count, 0);
+                    Model.SetAttributeValue(StdMarkdownAttribute.matches, 0);
                     FilterQueryDatabase.DeleteAll<T>();
                     CanonicalSupersetInternal.Clear();
                     PredicateMatchSubsetInternal.Clear();

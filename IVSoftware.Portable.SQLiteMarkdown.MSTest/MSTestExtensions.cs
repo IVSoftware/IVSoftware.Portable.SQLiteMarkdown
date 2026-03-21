@@ -188,5 +188,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             builder.Add($"{@this.ReplaceItemsEventingOptions.ToFullKey()}");
             return string.Join(", ", builder);
         }
+
+        /// <summary>
+        /// Fluently sort attributes in alphabetical order.
+        /// </summary>
+        public static XElement SortAttributes(this XElement @this)
+        {
+            var ordered = @this.Attributes()
+                .OrderBy(a => a.Name.NamespaceName)
+                .ThenBy(a => a.Name.LocalName)
+                .ToArray();
+
+            if (ordered.Length > 1)
+            {
+                @this.RemoveAttributes();
+                foreach (var attr in ordered)
+                {
+                    @this.Add(attr);
+                }
+            }
+            return @this;
+        }
     }
 }
