@@ -58,6 +58,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             PredicateMatchSubsetInternal = new();
             PredicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetInternal);
             CanonicalSupersetInternal.CollectionChanging += (sender, e) =>OnCanonicalSupersetChanging(e);
+            CanonicalSupersetInternal.CollectionChanged += (sender, e) =>OnCanonicalSupersetChanged(e);
         }
 
         protected override void OnFilteringStateChanged()
@@ -200,6 +201,13 @@ Inherited contexts manage their projection internally.".TrimStart());
         {
             switch (Authority)
             {
+                case ModeledCollectionChangeAuthority.Reset:
+                    e.Cancel = true;    // Will raise reset when granular clearing is all finished.
+                    break;
+                case ModeledCollectionChangeAuthority.Commit:
+                    e.Cancel = true;    // Will raise digest replace when model building is finished.
+                    break;
+
                 case FsmReserved.NoAuthority: // No authority claimed.
                 case CollectionChangeAuthority.Projection:
                     Model.Apply(e);

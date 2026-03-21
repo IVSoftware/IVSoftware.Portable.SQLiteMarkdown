@@ -233,6 +233,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             using (BeginCollectionChangeAuthority(ModeledCollectionChangeAuthority.Commit))
             {
                 Clear(all: true);
+                //foreach(T item in recordset)
+                //{
+                //    CanonicalSupersetInternal.Add(item);
+                //}
             }
 #if false
             using(BeginCollectionChangeAuthority(CollectionChangeAuthority.Canon))

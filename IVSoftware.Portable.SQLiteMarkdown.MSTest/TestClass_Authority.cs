@@ -175,6 +175,8 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
         subtest_CanonizeOne();
         void subtest_CanonizeOne()
         {
+            recordset.PopulateForDemo(1);
+
             builder.Clear();
             mmdc.LoadCanon(recordset);
             Assert.AreEqual(0, builder.Count, "TEMPORARY LIMIT");
