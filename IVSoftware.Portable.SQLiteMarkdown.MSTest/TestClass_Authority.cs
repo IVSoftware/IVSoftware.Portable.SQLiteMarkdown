@@ -55,20 +55,29 @@ public class TestClass_Authority
         void subtest_ExternalONP()
         {
             ComposedObservableCollection<SelectableQFModel> onp = new();
+
+            // [Careful]
+            // - This isn't a subscription to MMDC at all.
+            // - In particular, it doesn't make the ONP event show up first in builder.
             onp.CollectionChanged += (sender, e) =>
             {
                 builder.Add(e.ToString(ReferenceEquals(sender, onp)));
             };
             var mmdc = new ModeledMarkdownContext<SelectableQFModel>
-            {
-                ObservableNetProjection = onp,
+            { 
+                ObservableNetProjection = onp, 
             };
-            onp.MMDC = mmdc; // Cross-link.
+
+            #region E V E N T S
+            // This is the order that matters:
+            // FIRST - subscribe the MMDC direct
             mmdc.ModelChanged += (sender, e) =>
             {
                 builder.Add(e.ToString(ReferenceEquals(sender, onp)));
             };
-
+            // SECOND - subscribe the MMDC in the Composed collection
+            onp.MMDC = mmdc; // Cross-linked ONP will now forware the ModelChanged event.
+            #endregion E V E N T S
 
             builder.Clear();
 
@@ -77,16 +86,15 @@ public class TestClass_Authority
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
-            { }
-            expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           
-Other.Reset   NotifyCollectionChangedEventArgs           "
+            expected = @"         
+Other.Reset   NotifyCollectionChangedEventArgs           
+NetProjection.Reset   NotifyCollectionChangedEventArgs   "
             ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting builder content to match."
+                "Expecting events received in order of subscription."
             );
         }
         #endregion S U B T E S T S
