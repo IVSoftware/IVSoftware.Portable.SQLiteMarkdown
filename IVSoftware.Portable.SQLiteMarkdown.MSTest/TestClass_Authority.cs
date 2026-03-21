@@ -179,6 +179,8 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
 
             builder.Clear();
             mmdc.LoadCanon(recordset);
+
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 21).Date, "Don't forget disabled");
             Assert.AreEqual(0, builder.Count, "TEMPORARY LIMIT");
 
             actual = onp.MMDC.Model.ToString();
