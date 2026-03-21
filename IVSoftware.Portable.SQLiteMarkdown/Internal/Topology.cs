@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.StateMachine;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;
@@ -204,7 +205,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         {
             switch (Authority)
             {
-                case 0: // No authority claimed.
+                case FsmReserved.NoAuthority: // No authority claimed.
                 case CollectionChangeAuthority.Projection:
                     Model.Apply(e);
                     if(IsFiltering)

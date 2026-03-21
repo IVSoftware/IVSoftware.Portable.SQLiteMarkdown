@@ -6,6 +6,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.StateMachine;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
@@ -107,7 +108,7 @@ SELECT * FROM items WHERE
                     var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
 
                     // The WDT epoch controls this!
-                    Debug.Assert(Authority == CollectionChangeAuthority.Model);
+                    Debug.Assert(Equals(Authority, CollectionChangeAuthority.Model));
 
                     using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Model))
                     {
@@ -226,13 +227,13 @@ SELECT * FROM items WHERE
             #region A U T H O R I T Y    G U A R D
             switch (Authority)
             {
+                case FsmReserved.NoAuthority:
+                    this.ThrowFramework<InvalidOperationException>($"{nameof(CollectionChangeAuthority)} is required.");
+                    return;
                 case CollectionChangeAuthority.Model:
                 case CollectionChangeAuthority.Projection:
                     // The players.
                     break;
-                case 0:
-                    this.ThrowFramework<InvalidOperationException>($"{nameof(CollectionChangeAuthority)} is required.");
-                    return;
                 case CollectionChangeAuthority.None:
                     Debug.Fail($@"ADVISORY - Explicit no authority. Is this what we really want here?.");
                     return;
@@ -306,7 +307,7 @@ SELECT * FROM items WHERE
             // [Remember]
             // The projection is not authoritative
             // The model is.
-            if (Authority == CollectionChangeAuthority.Projection)
+            if (Equals(Authority, CollectionChangeAuthority.Projection))
             {
                 CanonicalSupersetInternal.Clear();
                 foreach (var item in Model.Descendants().Select(_ => _.To<T>()).OfType<T>())
@@ -375,7 +376,7 @@ SELECT * FROM items WHERE
                         // way in in which to determine authority because *that* collection
                         // raises *those* events, i.e., is the sender of them.
                         Debug.Assert(
-                            DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Model,
+                            Equals(DHostAuthorityEpoch.Authority, CollectionChangeAuthority.Model),
                             "Expecting this operation takes place under Model authority."
                         );
                         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -634,7 +635,7 @@ SELECT * FROM items WHERE
             }
             using (new TokenDisposer(authorityToken))
             {
-                Enum result = ReservedFSMState.None;
+                Enum result = FsmReservedState.None;
                 // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
                 // * Reuse an incoming value that is already an object[] to avoid an unnecessary allocation.
                 if (context is IEnumerable collection)
@@ -651,11 +652,11 @@ SELECT * FROM items WHERE
 
                     switch (result)
                     {
-                        case ReservedFSMState.Canceled:
-                        case ReservedFSMState.FastTrack:
-                        case ReservedFSMState.None:
+                        case FsmReservedState.Canceled:
+                        case FsmReservedState.FastTrack:
+                        case FsmReservedState.None:
                             return result;
-                        case ReservedFSMState.Next:
+                        case FsmReservedState.Next:
                             break;
                         default:
                             return await localRunOOB(state, context);
@@ -676,15 +677,15 @@ SELECT * FROM items WHERE
 
                     switch (outOfBand)
                     {
-                        case ReservedFSMState.Canceled:
-                        case ReservedFSMState.FastTrack:
-                        case ReservedFSMState.None:
+                        case FsmReservedState.Canceled:
+                        case FsmReservedState.FastTrack:
+                        case FsmReservedState.None:
                             return outOfBand;
-                        case ReservedFSMState.Next:
+                        case FsmReservedState.Next:
                             break;
                     }
                 }
-                return ReservedFSMState.MaxOOB;
+                return FsmReservedState.MaxOOB;
             }
             #endregion L o c a l F x
         }
@@ -717,7 +718,7 @@ SELECT * FROM items WHERE
             }
             using (new TokenDisposer(authorityToken))
             {
-                Enum result = ReservedFSMState.None;
+                Enum result = FsmReservedState.None;
                 // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
                 // * Reuse an incoming value that is already an object[] to avoid an unnecessary allocation.
                 if (context is IEnumerable collection)
@@ -734,11 +735,11 @@ SELECT * FROM items WHERE
 
                     switch (result)
                     {
-                        case ReservedFSMState.Canceled:
-                        case ReservedFSMState.FastTrack:
-                        case ReservedFSMState.None:
+                        case FsmReservedState.Canceled:
+                        case FsmReservedState.FastTrack:
+                        case FsmReservedState.None:
                             return result;
-                        case ReservedFSMState.Next:
+                        case FsmReservedState.Next:
                             break;
                         default:
                             return localRunOOB(state, context);
@@ -759,21 +760,21 @@ SELECT * FROM items WHERE
 
                     switch (outOfBand)
                     {
-                        case ReservedFSMState.Canceled:
-                        case ReservedFSMState.FastTrack:
-                        case ReservedFSMState.None:
+                        case FsmReservedState.Canceled:
+                        case FsmReservedState.FastTrack:
+                        case FsmReservedState.None:
                             return outOfBand;
-                        case ReservedFSMState.Next:
+                        case FsmReservedState.Next:
                             break;
                     }
                 }
-                return ReservedFSMState.MaxOOB;
+                return FsmReservedState.MaxOOB;
             }
             #endregion L o c a l F x
         }
         protected virtual async Task<Enum> ExecStateAsync(Enum state, object? context = null)
         {
-            return ReservedFSMState.Canceled;
+            return FsmReservedState.Canceled;
         }
 
         protected Enum ExecState(Enum state, object? context = null)
@@ -793,9 +794,9 @@ SELECT * FROM items WHERE
             switch ((StdFSMState)state)
             {
                 case StdFSMState.DetectFastTrack:
-                    if (Equals(localDetectFastTrack(), ReservedFSMState.FastTrack))
+                    if (Equals(localDetectFastTrack(), FsmReservedState.FastTrack))
                     {
-                        return ReservedFSMState.FastTrack;
+                        return FsmReservedState.FastTrack;
                     }
                     else
                     {
@@ -823,7 +824,7 @@ SELECT * FROM items WHERE
                     Debug.Fail($@"ADVISORY - Unrecognized action.");
                     break;
             }
-            return ReservedFSMState.Next;
+            return FsmReservedState.Next;
 
             #region L o c a l F x
             Enum localDetectFastTrack()
@@ -838,14 +839,14 @@ SELECT * FROM items WHERE
                             && !Model.HasElements
                             && isEmptyProjection)
                         {
-                            return ReservedFSMState.FastTrack;
+                            return FsmReservedState.FastTrack;
                         }
                         else
                         {
                             break;
                         }
                 }
-                return ReservedFSMState.Next;
+                return FsmReservedState.Next;
             }
 
             Enum localResetOrCanonizeFQDBForEpoch()
@@ -869,14 +870,14 @@ SELECT * FROM items WHERE
                     catch (Exception ex)
                     {
                         this.RethrowHard(ex);
-                        return ReservedFSMState.Canceled;
+                        return FsmReservedState.Canceled;
                     }
                 }
                 else
                 {   /* G T K - N O O P */
                     // There is no FQDB to maintain in Query-Only mode.
                 }
-                return ReservedFSMState.Next;
+                return FsmReservedState.Next;
             }
 
             void localResetOrCanonizeModelForEpoch()
@@ -1111,7 +1112,7 @@ SELECT * FROM items WHERE
             switch (SearchEntryState)
             {
                 case SearchEntryState.Cleared:
-                    if (Equals(ReservedFSMState.FastTrack, RunFSM<NativeClearFSM>()))
+                    if (Equals(FsmReservedState.FastTrack, RunFSM<NativeClearFSM>()))
                     {   /* G T K */
                     }
                     break;

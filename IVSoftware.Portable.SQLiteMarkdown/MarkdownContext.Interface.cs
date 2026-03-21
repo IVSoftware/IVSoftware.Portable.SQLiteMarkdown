@@ -154,7 +154,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public int PredicateMatchCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
 
-        public CollectionChangeAuthority Authority => DHostAuthorityEpoch.Authority;
+        public Enum Authority => DHostAuthorityEpoch.Authority;
 
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {

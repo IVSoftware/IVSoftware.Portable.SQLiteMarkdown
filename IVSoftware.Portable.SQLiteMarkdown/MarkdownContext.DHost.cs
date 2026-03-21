@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
+using IVSoftware.Portable.StateMachine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -57,32 +58,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Acts as an authority monitor and circularity guard for DDX between collections.
         /// </remarks>
-        public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority) => DHostAuthorityEpoch.GetToken(authority);
+        public IDisposable BeginCollectionChangeAuthority(Enum authority) => DHostAuthorityEpoch.GetToken(authority);
 
         protected DHostAuthorityEpochProvider DHostAuthorityEpoch { get; } = new();
 
         [DebuggerDisplay("Count={ReferenceCount} Authority={Authority}")]
         protected class DHostAuthorityEpochProvider : DisposableHost
         {
-            public IDisposable GetToken(CollectionChangeAuthority authority)
+            public IDisposable GetToken(Enum authority)
                 => base.GetToken(sender: authority, properties: null);
 
             public new IDisposable GetToken(object? sender = null, Dictionary<string, object>? properties = null)
             {
                 sender = 
-                    (sender is CollectionChangeAuthority authority) 
+                    (sender is Enum authority) 
                     ? authority 
                     : 0;
                 return base.GetToken(sender , null, properties);
             }
 
             public new IDisposable GetToken(string key, object value)
-                => base.GetToken((CollectionChangeAuthority)0, key, value);
+                => base.GetToken((Enum)(object)0, key, value);
 
             public new IDisposable GetToken(object sender, string? key, object? value)
             {
                 sender =
-                    (sender is CollectionChangeAuthority authority)
+                    (sender is Enum authority)
                     ? authority
                     : 0;
                 return base.GetToken(sender, key, value);
@@ -90,22 +91,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             protected override void OnBeginUsing(BeginUsingEventArgs e)
             {
                 base.OnBeginUsing(e);
-                if(e.AutoDisposableContext.Sender is CollectionChangeAuthority authority)
+                if(e.AutoDisposableContext.Sender is Enum authority)
                 {
                     Authority = authority;
                 }
                 else
                 {
                     this.ThrowFramework<InvalidOperationException>(
-                        $"{nameof(Authority)} must be specified as token sender that is {nameof(CollectionChangeAuthority)}.");
+                        $"{nameof(Authority)} must be specified as token sender that is {nameof(Enum)}.");
                 }
             }
             protected override void OnFinalDispose(FinalDisposeEventArgs e)
             {
-                Authority = 0;
+                Authority = (Enum)(object)0;
                 base.OnFinalDispose(e);
             }
-            public CollectionChangeAuthority Authority { get; private set; } = 0;
+            public Enum Authority { get; private set; } = FsmReserved.NoAuthority;
         }
     }
 }

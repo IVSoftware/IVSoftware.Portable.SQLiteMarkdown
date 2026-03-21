@@ -351,12 +351,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Intended use: EpochFinalizing should be wrapped with this reference counter.
         /// </remarks>
-        IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority);
+        IDisposable BeginCollectionChangeAuthority(Enum authority);
 
         /// <summary>
         /// Returns the current collection DDX authority.
         /// </summary>
-        CollectionChangeAuthority Authority { get; }
+        Enum Authority { get; }
 
         #endregion D I S P O S A B L E
     }
@@ -1119,15 +1119,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     internal enum ReservedAffinityStateMachine
     { 
         Idle = -1, 
-    }
-
-    internal enum ReservedFSMState
-    {
-        None        = 0,
-        FastTrack   = None -1,
-        Next        = FastTrack - 1,
-        Canceled    = Next - 1,
-        MaxOOB      = Canceled - 1,
     }
 
     internal enum AffinityFsm
