@@ -599,7 +599,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             {
                 if (all || SearchEntryState <= SearchEntryState.QueryEmpty)
                 {
-                    FilterQueryDatabase.Table<T>().Delete();
+                    FilterQueryDatabase.Table<T>().Delete((item)=>true);
                     CanonicalSupersetInternal.Clear();
                     PredicateMatchSubsetInternal.Clear();
                     Model.RemoveNodes();
