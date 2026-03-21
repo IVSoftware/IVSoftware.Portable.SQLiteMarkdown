@@ -230,6 +230,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
         public virtual void LoadCanon(IEnumerable? recordset) 
         {
+            using (BeginCollectionChangeAuthority(ModeledCollectionChangeAuthority.Commit))
+            {
+                Clear(all: true);
+            }
+#if false
             using(BeginCollectionChangeAuthority(CollectionChangeAuthority.Canon))
             {
                 // This calls Model.Apply(e) in the Changing handler.
@@ -272,6 +277,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                     }
                 }
             }
+#endif
         }
 
         /// <summary>
@@ -603,6 +609,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             {
                 if (all || SearchEntryState <= SearchEntryState.QueryEmpty)
                 {
+                    // [Canonical] First cause.
+                    SearchEntryState = SearchEntryState.Cleared;
+                    FilteringState = FilteringState.Ineligible;
                     Model.SetAttributeValue(StdMarkdownAttribute.autocount, 0);
                     Model.SetAttributeValue(StdMarkdownAttribute.count, 0);
                     Model.SetAttributeValue(StdMarkdownAttribute.matches, 0);
@@ -617,14 +626,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 }
             }
 
-            // - Unconditionally return a "no surprises" BCL reset event.
-            // - This is the Policy, regardless of whether any change took
-            //   place, the rationale being that Clear(all) is a return to
-            //  first cause, full stop.
-            OnModelChanged(
-                CanonicalSuperset,
-                new NotifyCollectionChangedEventArgs(
-                    action: NotifyCollectionChangedAction.Reset));
+            if (Equals(Authority, ModeledCollectionChangeAuthority.Reset))
+            {
+                // - Raise a "no surprises" BCL reset event.
+                // - This is the Policy, regardless of whether any change took place, the
+                //   rationale being that Clear(all) is a return to first cause, full stop.
+                OnModelChanged(
+                    CanonicalSuperset,
+                    new NotifyCollectionChangedEventArgs(
+                        action: NotifyCollectionChangedAction.Reset));
+            }
             return FilteringState.Ineligible;
         }        
     }
