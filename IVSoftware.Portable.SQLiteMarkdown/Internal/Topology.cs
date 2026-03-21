@@ -25,9 +25,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
     {
         public Topology()
         {
-
-            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 20).Date, "Don't forget disabled");
-#if true
             // Self-detect the topology.
             var type = GetType();
 
@@ -56,7 +53,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                     );
                 }
             }
-#endif
             CanonicalSupersetInternal = new();
             CanonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetInternal);
             PredicateMatchSubsetInternal = new();
