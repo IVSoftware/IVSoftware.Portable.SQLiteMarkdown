@@ -270,9 +270,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
                 FilteringState = value;
             }
         }
-        protected override void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected override void OnCanonicalSupersetChanged(NotifyCollectionChangedEventArgs e)
         {
-            base.OnCanonicalSupersetChanged(sender, e);
+            base.OnCanonicalSupersetChanged(e);
             OnCollectionChanged(e);
         }
     }

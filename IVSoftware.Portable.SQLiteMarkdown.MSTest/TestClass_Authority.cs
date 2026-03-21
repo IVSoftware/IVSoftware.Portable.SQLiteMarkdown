@@ -1,5 +1,7 @@
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.StateMachine;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
@@ -21,12 +23,12 @@ public class TestClass_Authority
                 {
                     if(_mmdc is not null)
                     {
-                        _mmdc.CanonicalCollectionChanged -= localOnCollectionChangedForward;
+                        _mmdc.ModelChanged -= localOnCollectionChangedForward;
                     }
                     _mmdc = value;
                     if (_mmdc is not null)
                     {
-                        _mmdc.CanonicalCollectionChanged += localOnCollectionChangedForward;
+                        _mmdc.ModelChanged += localOnCollectionChangedForward;
                     }
                 }
 
@@ -49,8 +51,7 @@ public class TestClass_Authority
         #region S U B T E S T S
         void subtest_ExternalONP()
         {
-            builder.Clear();
-            CompositedObservableCollection<SelectableQFModel> onp = new();
+            ObservableCollection<SelectableQFModel> onp = new();
             onp.CollectionChanged += (sender, e) =>
             {
                 builder.Add(e.ToString(ReferenceEquals(sender, onp)));
@@ -59,7 +60,9 @@ public class TestClass_Authority
             {
                 ObservableNetProjection = onp,
             };
-            onp.MMDC = mmdc;
+            builder.Clear();
+
+            // Clear when empty.
             mmdc.Clear(all: true);
         }
         #endregion S U B T E S T S
@@ -149,6 +152,24 @@ public class TestClass_Authority
             {
                 ObservableNetProjection = onp,
             };
+
+            #region L o c a l F x				
+            using var local = mmdc.WithOnDispose(
+                onInit: (sender, e) =>
+                {
+                    mmdc.ModelChanged += localOnModelChanged;
+                },
+                onDispose: (sender, e) =>
+                {
+                    mmdc.ModelChanged -= localOnModelChanged;
+                });
+            void localOnModelChanged(object? sender, NotifyCollectionChangedEventArgs eUnk)
+            {
+                builder.Add(eUnk.ToString(ReferenceEquals(sender, onp)));
+            }
+            #endregion L o c a l F x
+
+            mmdc.Clear();
         }
         #endregion
     }

@@ -207,9 +207,9 @@ SELECT * FROM items WHERE
         ///
         /// Mental Model: "The canonical ledger changed. Reconcile projections and notify observers."
         /// </remarks>
-        protected override void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected override void OnCanonicalSupersetChanged(NotifyCollectionChangedEventArgs e)
         {
-            base.OnCanonicalSupersetChanged(sender, e);
+            base.OnCanonicalSupersetChanged(e);
             Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 21).Date, "Don't forget decommissioning");
             //using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Model);
             //if (Authority == CollectionChangeAuthority.Model)
@@ -329,13 +329,16 @@ SELECT * FROM items WHERE
         ///
         /// Mental Model: "Input text has settled; the model has reconciled."
         /// </remarks>
+        [Obsolete]
         protected virtual void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
         {
+            throw new NotImplementedException("[Obsolete]");
+#if false
             switch (ProjectionOption)
             {
                 case NetProjectionOption.Inherited:         // Subclass should apply policy first, then call base.
                 case NetProjectionOption.ObservableOnly:    // Maintain internal canon but do not push internal changes.
-                    ModelSettled?.Invoke(this, eBCL);
+                    ModelChanged?.Invoke(this, eBCL);
                     break;
                 case NetProjectionOption.AllowDirectChanges:
                     localApplyDirectChanges();
@@ -393,7 +396,7 @@ SELECT * FROM items WHERE
                                 break;
                         }
                     }
-                    ModelSettled?.Invoke(this, eBCL);
+                    ModelChanged?.Invoke(this, eBCL);
 
                     #region L o c a l F x
 
@@ -543,9 +546,8 @@ SELECT * FROM items WHERE
                     #endregion L o c a l F x
                 }
             }
+#endif
         }
-
-        public event NotifyCollectionChangedEventHandler? ModelSettled;
         #endregion P R O J E C T I O N
 
 

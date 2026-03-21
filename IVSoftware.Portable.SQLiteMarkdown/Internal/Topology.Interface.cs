@@ -599,6 +599,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             {
                 if (all || SearchEntryState <= SearchEntryState.QueryEmpty)
                 {
+                    FilterQueryDatabase.Table<T>().Delete();
                     CanonicalSupersetInternal.Clear();
                     PredicateMatchSubsetInternal.Clear();
                     Model.RemoveNodes();
@@ -613,8 +614,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             // - This is the Policy, regardless of whether any change took
             //   place, the rationale being that Clear(all) is a return to
             //  first cause, full stop.
-            OnCanonicalSupersetChanged(
-                ObservableNetProjection ?? CanonicalSuperset,
+            OnModelChanged(
+                CanonicalSuperset,
                 new NotifyCollectionChangedEventArgs(
                     action: NotifyCollectionChangedAction.Reset));
             return FilteringState.Ineligible;

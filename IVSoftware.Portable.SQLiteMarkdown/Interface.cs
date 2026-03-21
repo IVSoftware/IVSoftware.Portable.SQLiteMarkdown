@@ -321,7 +321,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///
         /// Mental Model: "Filtering model has been reconfigured. Ask the host to raise INCC."
         /// </remarks>
-        event NotifyCollectionChangedEventHandler ModelSettled;
+        event NotifyCollectionChangedEventHandler ModelChanged;
         #endregion M O D E L
 
         #region P R O J E C T I O N
@@ -357,8 +357,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Returns the current collection DDX authority.
         /// </summary>
         Enum Authority { get; }
-
-        public event EventHandler<NotifyCollectionChangedEventArgs> CanonicalCollectionChanged;
 
         #endregion D I S P O S A B L E
     }

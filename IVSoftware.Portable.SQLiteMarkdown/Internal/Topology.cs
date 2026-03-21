@@ -57,8 +57,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             CanonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetInternal);
             PredicateMatchSubsetInternal = new();
             PredicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetInternal);
-            CanonicalSupersetInternal.CollectionChanging += OnCanonicalSupersetChanging;
-            CanonicalSupersetInternal.CollectionChanged += OnCanonicalSupersetChanged;
+            CanonicalSupersetInternal.CollectionChanging += (sender, e) =>OnCanonicalSupersetChanging(e);
         }
 
         protected override void OnFilteringStateChanged()
@@ -197,7 +196,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             CanonicalSupersetInternal.Apply(e);
         }
 
-        private void OnCanonicalSupersetChanging(object sender, NotifyCollectionChangingEventArgs e)
+        protected virtual void OnCanonicalSupersetChanging(NotifyCollectionChangingEventArgs e)
         {
             switch (Authority)
             {
@@ -224,10 +223,19 @@ Inherited contexts manage their projection internally.".TrimStart());
                     break;
             }
         }
-        protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
+
+        protected virtual void OnCanonicalSupersetChanged(NotifyCollectionChangedEventArgs e)
+        {
+            // The changing event was not canceled.
+            OnModelChanged(CanonicalSuperset, e);
+        }
+        protected virtual void OnModelChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             Debug.Assert(CanonicalSuperset.Count == CanonicalSupersetInternal.Count);
+            ModelChanged?.Invoke(sender, e);
         }
+
+        public event NotifyCollectionChangedEventHandler? ModelChanged;
 
         ObservableCollection<T>? _observableProjection = null;
         #endregion P R O J E C T I O N

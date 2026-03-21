@@ -485,8 +485,8 @@ MarkdownContext Clear(all=True)";
 
             public event NotifyCollectionChangedEventHandler ModelSettled
             {
-                add => ((IModeledMarkdownContext)_mdc).ModelSettled += value;
-                remove => ((IModeledMarkdownContext)_mdc).ModelSettled -= value;
+                add => ((IModeledMarkdownContext)_mdc).ModelChanged += value;
+                remove => ((IModeledMarkdownContext)_mdc).ModelChanged -= value;
             }
 
             public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority)
