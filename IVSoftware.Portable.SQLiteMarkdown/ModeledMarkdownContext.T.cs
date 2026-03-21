@@ -376,7 +376,7 @@ SELECT * FROM items WHERE
                         // way in in which to determine authority because *that* collection
                         // raises *those* events, i.e., is the sender of them.
                         Debug.Assert(
-                            Equals(DHostAuthorityEpoch.Authority, CollectionChangeAuthority.Model),
+                            Equals(AuthorityEpoch.Authority, CollectionChangeAuthority.Model),
                             "Expecting this operation takes place under Model authority."
                         );
                         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

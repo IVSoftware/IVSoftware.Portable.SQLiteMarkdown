@@ -330,7 +330,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
         protected virtual void OnXAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
         {
-            if (Equals(DHostAuthorityEpoch.Authority, CollectionChangeAuthority.None))
+            if (Equals(AuthorityEpoch.Authority, CollectionChangeAuthority.None))
             {   /* G T K - N O O P */
             }
             else
@@ -385,7 +385,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
         protected virtual void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
-            if (Equals(DHostAuthorityEpoch.Authority, CollectionChangeAuthority.None))
+            if (Equals(AuthorityEpoch.Authority, CollectionChangeAuthority.None))
             {   /* G T K - N O O P */
             }
             else

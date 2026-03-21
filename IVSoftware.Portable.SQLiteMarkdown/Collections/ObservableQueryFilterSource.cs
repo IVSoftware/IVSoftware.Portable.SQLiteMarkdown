@@ -556,7 +556,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs eBCL)
         {
-            switch (DHostAuthorityEpoch.Authority)
+            switch (AuthorityEpoch.Authority)
             {
                 case CollectionChangeAuthority.None:
                     // Events are being supressed by this authority epoch.

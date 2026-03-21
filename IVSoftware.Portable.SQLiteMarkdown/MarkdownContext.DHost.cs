@@ -58,55 +58,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Acts as an authority monitor and circularity guard for DDX between collections.
         /// </remarks>
-        public IDisposable BeginCollectionChangeAuthority(Enum authority) => DHostAuthorityEpoch.GetToken(authority);
+        public IDisposable BeginCollectionChangeAuthority(Enum authority) => AuthorityEpoch.GetToken(authority);
 
-        protected DHostAuthorityEpochProvider DHostAuthorityEpoch { get; } = new();
-
-        [DebuggerDisplay("Count={ReferenceCount} Authority={Authority}")]
-        protected class DHostAuthorityEpochProvider : DisposableHost
-        {
-            public IDisposable GetToken(Enum authority)
-                => base.GetToken(sender: authority, properties: null);
-
-            public new IDisposable GetToken(object? sender = null, Dictionary<string, object>? properties = null)
-            {
-                sender = 
-                    (sender is Enum authority) 
-                    ? authority 
-                    : 0;
-                return base.GetToken(sender , null, properties);
-            }
-
-            public new IDisposable GetToken(string key, object value)
-                => base.GetToken((Enum)(object)0, key, value);
-
-            public new IDisposable GetToken(object sender, string? key, object? value)
-            {
-                sender =
-                    (sender is Enum authority)
-                    ? authority
-                    : 0;
-                return base.GetToken(sender, key, value);
-            }
-            protected override void OnBeginUsing(BeginUsingEventArgs e)
-            {
-                base.OnBeginUsing(e);
-                if(e.AutoDisposableContext.Sender is Enum authority)
-                {
-                    Authority = authority;
-                }
-                else
-                {
-                    this.ThrowFramework<InvalidOperationException>(
-                        $"{nameof(Authority)} must be specified as token sender that is {nameof(Enum)}.");
-                }
-            }
-            protected override void OnFinalDispose(FinalDisposeEventArgs e)
-            {
-                Authority = (Enum)(object)0;
-                base.OnFinalDispose(e);
-            }
-            public Enum Authority { get; private set; } = FsmReserved.NoAuthority;
-        }
+        protected AuthorityEpochProvider AuthorityEpoch { get; } = new();
     }
 }
