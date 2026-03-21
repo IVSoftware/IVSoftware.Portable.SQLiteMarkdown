@@ -533,7 +533,7 @@ MarkdownContext Clear(all=True)";
                 set => ((IModeledMarkdownContext)_mdc).ReplaceItemsEventingOptions = value;
             }
 
-            public CollectionChangeAuthority Authority => ((IModeledMarkdownContext)_mdc).Authority;
+            public Enum Authority => ((IModeledMarkdownContext)_mdc).Authority;
 
             public bool Busy => ((IMarkdownContext)_mdc).Busy;
 
