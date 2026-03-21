@@ -13,7 +13,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 public class TestClass_Authority
 {
     List<string> builder = new();
-    class CompositedObservableCollection<T> : ObservableCollection<T>
+    class ComposedObservableCollection<T> : ObservableCollection<T>
     {
         public IModeledMarkdownContext? MMDC
         {
@@ -54,15 +54,22 @@ public class TestClass_Authority
         #region S U B T E S T S
         void subtest_ExternalONP()
         {
-            ObservableCollection<SelectableQFModel> onp = new();
+            ComposedObservableCollection<SelectableQFModel> onp = new();
+            onp.CollectionChanged += (sender, e) =>
+            {
+                builder.Add(e.ToString(ReferenceEquals(sender, onp)));
+            };
             var mmdc = new ModeledMarkdownContext<SelectableQFModel>
             {
                 ObservableNetProjection = onp,
             };
+            onp.MMDC = mmdc; // Cross-link.
             mmdc.ModelChanged += (sender, e) =>
             {
                 builder.Add(e.ToString(ReferenceEquals(sender, onp)));
             };
+
+
             builder.Clear();
 
             // Clear when empty.
@@ -70,11 +77,11 @@ public class TestClass_Authority
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
-            { } // <- FIRST TIME ONLY: Adjust the message.
-            actual.ToClipboardAssert("Expecting builder content to match.");
             { }
             expected = @" 
-Other.Reset   NotifyCollectionChangedEventArgs           ";
+NetProjection.Reset   NotifyCollectionChangedEventArgs           
+Other.Reset   NotifyCollectionChangedEventArgs           "
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
