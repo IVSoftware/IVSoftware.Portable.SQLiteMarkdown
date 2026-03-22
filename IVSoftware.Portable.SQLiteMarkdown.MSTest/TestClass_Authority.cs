@@ -423,13 +423,26 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewI
     {
         string actual, expected;
         using var te = this.TestableEpoch();
+        IList<SelectableQFModel>? eph = null;
+        var srce = new ObservableNetProjection<SelectableQFModel>();
+        var builder = new List<string>();
+        // CREATE (no side effects)
+        var i1 = eph.AddDynamic("Item01");
+        var i2 = eph.AddDynamic("Item02");
+        var i3 = eph.AddDynamic("Item03");
 
-        // Δ Always: ONP -> CSS with Projection authority (If it can be obtained). 
-        subtest_Name();
+        var mmdc = new TestableMMDC
+        {
+            ObservableNetProjection = srce,
+        };
+
+        // Δ Always: ONP -> CSS !-> ONP when Projection authority can be obtained.
+        subtest_ProjectionAuthority();
 
         #region S U B T E S T S
-        void subtest_Name()
+        void subtest_ProjectionAuthority()
         {
+            mmdc
         }
         #endregion S U B T E S T S
     }
