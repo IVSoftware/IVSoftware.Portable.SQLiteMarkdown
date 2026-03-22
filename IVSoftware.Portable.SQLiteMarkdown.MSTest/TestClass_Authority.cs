@@ -1,17 +1,18 @@
 using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.StateMachine;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.WinOS.MSTest.Extensions;
+using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using Newtonsoft.Json;
-using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using System.Runtime.InteropServices.JavaScript;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -95,7 +96,8 @@ public class TestClass_Authority
         }
         #endregion L o c a l F x
 
-        subtest_WithProjectionAuthority();
+        // subtest_WithProjectionAuthority();
+        subtest_BatchWithAuthority();
         subtest_WithoutProjectionAuthority();
 
         #region S U B T E S T S
@@ -380,33 +382,32 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Remove  OldI
             // RESET
             srce.Clear();
             Assert.IsTrue(EqualsSrceAndDest());
+        }
+
+        void subtest_BatchWithAuthority()
+        {
+            using var token = authorityEpoch.BeginAuthority(ModeledCollectionChangeAuthority.Projection);
+            Assert.AreEqual(ModeledCollectionChangeAuthority.Projection, authorityEpoch.Authority);
 
             builder.Clear();
-            var dhost = new DHostBatchCollectionChange();
-            dhost.FinalDispose += (sender, e) =>
-            {
-                if(e is BatchFinalDisposeEventArgs eFD)
-                {
-                    actual = eFD.BatchEventArgs.ToString(true, authorityEpoch.Authority);
-                    actual.ToClipboardExpected();
-                    { }
-                    expected = @" 
-Projection NotifyCollectionChangingEventArgs          NetProjection Add     NewItems= 3"
-                    ;
-
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting result to match."
-                    );
-                }
-            };
-            using (dhost.GetToken(srce))
+            using (srce.BeginBatch())
             {
                 srce.Add(i1);
                 srce.Add(i2);
                 srce.Add(i3);
             }
+
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Projection NotifyCollectionChangedEventArgs           NetProjection Reset";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting one batch event only."
+            );
         }
         void subtest_WithoutProjectionAuthority()
         {

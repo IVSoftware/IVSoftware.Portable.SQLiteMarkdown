@@ -28,9 +28,45 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         protected override void RemoveItem(int index)
             => PreviewCollection.RemoveItem(index);
 
+        public IDisposable BeginBatch() => DHostBatch.GetToken(this);
+        DHostBatchCollectionChange DHostBatch
+        {
+            get
+            {
+                if (_dhostBatch is null)
+                {
+                    _dhostBatch = new DHostBatchCollectionChange();
+                    _dhostBatch.FinalDispose += (sender, e) =>
+                    {
+                        if (e is BatchFinalDisposeEventArgs eFD)
+                        {
+                            OnCollectionChanged(eFD.Digest);
+                        }
+                    };
+                }
+                return _dhostBatch;
+            }
+        }
+        DHostBatchCollectionChange? _dhostBatch = null;
+
         bool _isUpdatingBase = false;
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
+
+#if false
+            
+        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            if (DHostBatch.TryApply(e))
+            {   /* G T K - N O O P */
+                // Batch is in progress.
+            }
+            else
+            {
+                base.OnCollectionChanged(e);
+            }
+        }
+#endif
             if (!_isUpdatingBase)
             {
                 try

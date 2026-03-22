@@ -21,6 +21,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
     {
         private readonly NotifyCollectionChangedEventArgs @base;
 
+        public static implicit operator NotifyCollectionChangingEventArgs(NotifyCollectionChangedEventArgs eBCL)
+            => new NotifyCollectionChangingEventArgs(eBCL);
+
+        public static implicit operator NotifyCollectionChangedEventArgs(NotifyCollectionChangingEventArgs ePre)
+            => ePre.@base;
         protected NotifyCollectionChangingEventArgs(NotifyCollectionChangedEventArgs eBCL) => @base = eBCL;
         public NotifyCollectionChangingEventArgs(
             NotifyCollectionChangeAction action,
@@ -125,11 +130,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         public int NewStartingIndex => @base.NewStartingIndex;
 
         public int OldStartingIndex => @base.OldStartingIndex;
-
-        public static implicit operator NotifyCollectionChangingEventArgs(NotifyCollectionChangedEventArgs eBCL)
-            => new NotifyCollectionChangingEventArgs(eBCL);
-
-        public static implicit operator NotifyCollectionChangedEventArgs(NotifyCollectionChangingEventArgs ePre)
-            => ePre.@base;
     }
 }

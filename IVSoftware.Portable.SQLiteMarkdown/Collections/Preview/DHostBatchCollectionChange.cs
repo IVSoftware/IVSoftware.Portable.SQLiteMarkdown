@@ -13,9 +13,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
     internal class DHostBatchCollectionChange : DisposableHost
     {
-        IList 
-            _listB4 = null!,
-            _listFTR = null!;
+        object[] _listB4 = [];
+        IList _listFTR = null!;
 
         /// <summary>
         /// Heuristically determines the simplest approach to reaching ListFTR from ListB4.
@@ -77,10 +76,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             throw new NotSupportedException();
         }
 
-        void InitializeToken(IList list)
+        private void InitializeToken(IList list)
         {
-            _listB4 = list.Cast<object>().ToList();
-            _listFTR = list;
+            _listB4 = list.Cast<object>().ToArray();
+            _listFTR = _listB4.ToList();
+        }
+
+        /// <summary>
+        /// Returns true if a batch is in progress.
+        /// </summary>
+        public bool TryApply(NotifyCollectionChangedEventArgs e)
+        {
+            if(IsZero())
+            {
+                return false;
+            }
+            else
+            {
+                _listFTR.Apply(e);
+                return true;
+            }
         }
     }
 
@@ -93,11 +108,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             IList finalList)
             : base(releasedSenders, snapshot)
         {
-            BatchEventArgs = batchEventArgs;
+            Digest = batchEventArgs;
             FinalList = finalList;
         }
 
-        public NotifyCollectionChangingEventArgs BatchEventArgs { get; }
+        public NotifyCollectionChangingEventArgs Digest { get; }
 
         public IList FinalList { get; }
     }
