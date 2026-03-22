@@ -52,21 +52,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         bool _isUpdatingBase = false;
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-
-#if false
-            
-        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
-        {
-            if (DHostBatch.TryApply(e))
-            {   /* G T K - N O O P */
-                // Batch is in progress.
-            }
-            else
-            {
-                base.OnCollectionChanged(e);
-            }
-        }
-#endif
             if (!_isUpdatingBase)
             {
                 try
@@ -118,7 +103,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                             base.ClearItems();
                             break;
                     }
-                    base.OnCollectionChanged(e);
+
+                    if (DHostBatch.TryApply(e))
+                    {   /* G T K - N O O P */
+                        // Batch is in progress.
+                    }
+                    else
+                    {
+                        base.OnCollectionChanged(e);
+                    }
                 }
                 finally
                 {

@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using SQLite;
 using System;
@@ -11,6 +12,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -802,6 +804,58 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 this IList listBefore,
                 IList listAfter)
         {
+            int
+                current = 0,
+                countB4 = listBefore.Count,
+                countAfter = listAfter.Count;
+
+            if (countAfter == 0)
+            {
+
+            }
+            else
+            {
+                string path1, path2;
+
+                while (current < countB4 && current < countAfter)
+                {
+
+                }
+
+                while (current < countB4)
+                {
+
+                }
+
+                while (current < countB4)
+                {
+
+                }
+                throw new NotImplementedException("ToDo");
+
+                #region L o c a l F x
+                static bool localTryGetFullPath(object? item, out string path)
+                {
+                    if (item is not null && item.GetFullPath() is { } aspirant && !string.IsNullOrWhiteSpace(aspirant))
+                    {
+                        path = aspirant;
+                        return true;
+                    }
+                    else
+                    {
+                        item.ThrowHard<InvalidOperationException>("GetFullPath() failed for item.");
+                        path = null!; // we warned you.
+                        return false;
+                    }
+                }
+                #endregion L o c a l F x
+            }
+        }
+
+        internal static NotifyCollectionChangingEventArgs DiffOR(
+                this IList listBefore,
+                IList listAfter)
+        {
             var before = listBefore.Cast<object>().ToList();
             var after = listAfter.Cast<object>().ToList();
 
@@ -815,19 +869,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     NotifyCollectionChangeReason.Batch);
             }
 
-            if (newItems.Count > 0 && oldItems.Count == 0)
-            {
+            if(newItems.Count == 1 && oldItems.Count == 0)
+{
+                var startIndex = after.IndexOf(newItems[0]);
+
                 return new NotifyCollectionChangingEventArgs(
                     NotifyCollectionChangeAction.Add,
                     newItems,
+                    startIndex,
                     NotifyCollectionChangeReason.Batch);
             }
 
-            if (oldItems.Count > 0 && newItems.Count == 0)
+            if (oldItems.Count == 1 && newItems.Count == 0)
             {
+                var startIndex = before.IndexOf(oldItems[0]);
+
                 return new NotifyCollectionChangingEventArgs(
                     NotifyCollectionChangeAction.Remove,
                     oldItems,
+                    startIndex,
                     NotifyCollectionChangeReason.Batch);
             }
 
