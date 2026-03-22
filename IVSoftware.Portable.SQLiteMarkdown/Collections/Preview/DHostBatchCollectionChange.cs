@@ -21,7 +21,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         {
             base.OnBeginUsing(e);
         }
-
         protected override void OnFinalDispose(FinalDisposeEventArgs e)
         {
             if (_handler is not null)
@@ -30,9 +29,42 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 _handler = null;
             }
 
-            var batchArgs = new NotifyCollectionChangingEventArgs(
-                action: NotifyCollectionChangeAction.Replace, 
-                reason: NotifyCollectionChangeReason.Batch);
+            var before = (_listB4 as IList)?.Cast<object>().ToList() ?? new List<object>();
+            var after = _listFTR.Cast<object>().ToList();
+
+            var oldItems = before.Except(after).ToList();
+            var newItems = after.Except(before).ToList();
+
+            NotifyCollectionChangingEventArgs batchArgs;
+
+            if (newItems.Count > 0 && oldItems.Count == 0)
+            {
+                batchArgs = new NotifyCollectionChangingEventArgs(
+                    NotifyCollectionChangeAction.Add,
+                    newItems,
+                    NotifyCollectionChangeReason.Batch);
+            }
+            else if (oldItems.Count > 0 && newItems.Count == 0)
+            {
+                batchArgs = new NotifyCollectionChangingEventArgs(
+                    NotifyCollectionChangeAction.Remove,
+                    oldItems,
+                    NotifyCollectionChangeReason.Batch);
+            }
+            else if (newItems.Count == 0 && oldItems.Count == 0)
+            {
+                batchArgs = new NotifyCollectionChangingEventArgs(
+                    NotifyCollectionChangeAction.Reset,
+                    NotifyCollectionChangeReason.Batch);
+            }
+            else
+            {
+                batchArgs = new NotifyCollectionChangingEventArgs(
+                    NotifyCollectionChangeAction.Replace,
+                    newItems,
+                    oldItems,
+                    NotifyCollectionChangeReason.Batch);
+            }
 
             var snapshot = e.Keys.ToDictionary(
                 key => key,
