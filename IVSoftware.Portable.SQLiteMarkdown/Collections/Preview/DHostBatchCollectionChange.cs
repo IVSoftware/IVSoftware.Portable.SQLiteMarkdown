@@ -22,9 +22,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         {
             base.OnBeginUsing(e);
         }
+
+        /// <summary>
+        /// Heuristically determines the simplest approach to reaching ListFTR from ListB4.
+        /// </summary>
+        /// <remarks>
+        /// The batch event is one of:
+        /// - Simple Reset
+        /// - Single or Multiple Add Only
+        /// - Single or Multiple Remove Only
+        /// - Single Relace only, or
+        /// - IList consisting or multiple, single, indexed Replace events.
+        /// The probably response when a consumer inspects NewItems and sees multiple replace events is a reset + add.
+        /// </remarks>
         protected override void OnFinalDispose(FinalDisposeEventArgs e)
         {
-            Debug.Fail($@"ADVISORY - First Time Needs Testing!.");
             if (_handler is not null)
             {
                 _listB4.CollectionChanged -= _handler;
@@ -39,15 +51,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 
             NotifyCollectionChangingEventArgs batchArgs;
 
-            if (newItems.Count == 1 && oldItems.Count == 1)
-            {
-                batchArgs = new NotifyCollectionChangingEventArgs(
-                    NotifyCollectionChangeAction.Replace,
-                    newItems,
-                    oldItems,
-                    NotifyCollectionChangeReason.Batch);
-            }
-            else if (newItems.Count == 0 && oldItems.Count == 0)
+            if (newItems.Count == 0 && oldItems.Count == 0)
             {
                 batchArgs = new NotifyCollectionChangingEventArgs(
                     NotifyCollectionChangeAction.Reset,
@@ -67,20 +71,79 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     oldItems,
                     NotifyCollectionChangeReason.Batch);
             }
+            else if (newItems.Count == 1 && oldItems.Count == 1)
+            {
+                var newIndex = after.IndexOf(newItems[0]);
+                var oldIndex = before.IndexOf(oldItems[0]);
+
+                batchArgs = new NotifyCollectionChangingEventArgs(
+                    NotifyCollectionChangeAction.Replace,
+                    newItems[0],
+                    oldItems[0],
+                    newIndex,
+                    NotifyCollectionChangeReason.Batch);
+            }
             else
             {
                 var ops = new List<object>();
 
                 foreach (var item in oldItems)
-                    ops.Add(new { Action = NotifyCollectionChangeAction.Remove, Item = item });
+                {
+                    var oldIndex = before.IndexOf(item);
+                    ops.Add(new
+                    {
+                        Action = NotifyCollectionChangeAction.Remove,
+                        Item = item,
+                        OldIndex = oldIndex
+                    });
+                }
 
                 foreach (var item in newItems)
-                    ops.Add(new { Action = NotifyCollectionChangeAction.Add, Item = item });
+                {
+                    var newIndex = after.IndexOf(item);
+                    ops.Add(new
+                    {
+                        Action = NotifyCollectionChangeAction.Add,
+                        Item = item,
+                        NewIndex = newIndex
+                    });
+                }
 
-                batchArgs = new NotifyCollectionChangingEventArgs(
-                    NotifyCollectionChangeAction.Replace,
-                    ops,
-                    NotifyCollectionChangeReason.Batch);
+                var replaces = new List<object>();
+
+                var paired = Math.Min(oldItems.Count, newItems.Count);
+                for (int i = 0; i < paired; i++)
+                {
+                    var oldItem = oldItems[i];
+                    var newItem = newItems[i];
+
+                    var oldIndex = before.IndexOf(oldItem);
+                    var newIndex = after.IndexOf(newItem);
+
+                    replaces.Add(new
+                    {
+                        Action = NotifyCollectionChangeAction.Replace,
+                        OldItem = oldItem,
+                        NewItem = newItem,
+                        OldIndex = oldIndex,
+                        NewIndex = newIndex
+                    });
+                }
+
+                if (replaces.Count > 0)
+                {
+                    batchArgs = new NotifyCollectionChangingEventArgs(
+                        NotifyCollectionChangeAction.Replace,
+                        replaces,
+                        NotifyCollectionChangeReason.Batch);
+                }
+                else
+                {
+                    batchArgs = new NotifyCollectionChangingEventArgs(
+                        NotifyCollectionChangeAction.Replace,
+                        ops,
+                        NotifyCollectionChangeReason.Batch);
+                }
             }
 
             var snapshot = e.Keys.ToDictionary(
@@ -92,7 +155,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             var eBatch = new BatchFinalDisposeEventArgs(
                 e.ReleasedSenders,
                 snapshot,
-                batchArgs);
+                batchArgs,
+                _listFTR);
 
             base.OnFinalDispose(eBatch);
         }
@@ -149,12 +213,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         public BatchFinalDisposeEventArgs(
             IReadOnlyCollection<object> releasedSenders,
             IReadOnlyDictionary<string, object> snapshot,
-            NotifyCollectionChangingEventArgs batchEventArgs)
+            NotifyCollectionChangingEventArgs batchEventArgs,
+            IList finalList)
             : base(releasedSenders, snapshot)
         {
             BatchEventArgs = batchEventArgs;
+            FinalList = finalList;
         }
 
         public NotifyCollectionChangingEventArgs BatchEventArgs { get; }
+
+        public IList FinalList { get; }
     }
 }
