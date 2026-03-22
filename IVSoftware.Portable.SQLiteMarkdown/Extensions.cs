@@ -654,7 +654,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             var sb = new System.Text.StringBuilder();
 
-            if(authority is not null) sb.Append($"{authority.ToString().PadRight(10)});
+            if(authority is not null) sb.Append($"{authority.ToString().PadRight(10)}");
 
             sb.Append(e.GetType().Name.PadRight(43));
 

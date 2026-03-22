@@ -272,8 +272,6 @@ public class TestClass_Authority
 
             actual = JsonConvert.SerializeObject(dest, Formatting.Indented);
             actual.ToClipboardExpected();
-            { } // <- FIRST TIME ONLY: Adjust the message.
-            actual.ToClipboardAssert("Expecting json serialization to match.");
             { }
             expected = @" 
 [
@@ -346,8 +344,15 @@ public class TestClass_Authority
             );
 
             // REMOVE (by index for determinism)
+            builder.Clear();
             srce.RemoveAt(1);
             Assert.IsTrue(EqualsSrceAndDest());
+
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { } // <- FIRST TIME ONLY: Adjust the message.
+            actual.ToClipboardAssert("Expecting builder content to match.");
+            { }
 
             // RESET
             srce.Clear();
