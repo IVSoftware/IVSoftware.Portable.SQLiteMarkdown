@@ -4,11 +4,13 @@ using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.StateMachine;
-using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.WinOS.MSTest.Extensions;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using Newtonsoft.Json;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -58,12 +60,26 @@ public class TestClass_Authority
     public void Test_ApplyToList()
     {
         string actual, expected;
-        IList<SelectableQFModel> eph = null;
+        IList<SelectableQFModel>? eph = null;
         using var te = this.TestableEpoch();
         var srce = new ObservableNetProjection<SelectableQFModel>();
         var dest = new ObservableCollection<SelectableQFModel>();
 
-        #region L o c a l F x
+
+        #region L o c a l F x				
+        using var local = srce.WithOnDispose(
+            onInit: (sender, e) =>
+            {
+                srce.CollectionChanged += localOnCollectionChanged;
+            },
+            onDispose: (sender, e) =>
+            {
+                srce.CollectionChanged -= localOnCollectionChanged;
+            });
+        void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            dest.Apply(e);
+        }
         bool EqualsSrceAndDest()
         {
             return srce
@@ -78,8 +94,261 @@ public class TestClass_Authority
         #region S U B T E S T S
         void subtest_WithProjectionAuthority()
         {
-            var item = eph.AddDynamic("Item01");
+            // CREATE (no side effects)
+            var i1 = eph.AddDynamic("Item01");
+            var i2 = eph.AddDynamic("Item02");
+            var i3 = eph.AddDynamic("Item03");
+
+            // ADD
+            srce.Add(i1);
+            srce.Add(i2);
+            srce.Add(i3);
+            Assert.IsTrue(EqualsSrceAndDest());
+
+            // INSERT (middle)
+            var i4 = eph.AddDynamic("Item04");
+            srce.Insert(1, i4);
+            Assert.IsTrue(EqualsSrceAndDest());
+
+            actual = JsonConvert.SerializeObject(dest, Formatting.Indented);
+            actual.ToClipboardExpected();
             { }
+            expected = @" 
+[
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000000"",
+    ""Description"": ""Item01"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000000"",
+    ""QueryTerm"": ""item01"",
+    ""FilterTerm"": ""item01"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item01\"",\r\n  \""Tags\"": \""[]\""\r\n}""
+  },
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000003"",
+    ""Description"": ""Item04"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000003"",
+    ""QueryTerm"": ""item04"",
+    ""FilterTerm"": ""item04"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item04\"",\r\n  \""Tags\"": \""[]\""\r\n}""
+  },
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000001"",
+    ""Description"": ""Item02"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000001"",
+    ""QueryTerm"": ""item02"",
+    ""FilterTerm"": ""item02"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item02\"",\r\n  \""Tags\"": \""[]\""\r\n}""
+  },
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000002"",
+    ""Description"": ""Item03"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000002"",
+    ""QueryTerm"": ""item03"",
+    ""FilterTerm"": ""item03"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item03\"",\r\n  \""Tags\"": \""[]\""\r\n}""
+  }
+]";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting json shows Item04 @ Index 1."
+            );
+
+            // REPLACE (index-based)
+            var i2b = eph.AddDynamic("Item02B");
+            srce[2] = i2b;
+            Assert.IsTrue(EqualsSrceAndDest());
+
+            actual = JsonConvert.SerializeObject(dest, Formatting.Indented);
+            actual.ToClipboardExpected();
+            { } // <- FIRST TIME ONLY: Adjust the message.
+            actual.ToClipboardAssert("Expecting replacement @ Index 2.");
+            { }
+            expected = @" 
+[
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000000"",
+    ""Description"": ""Item01"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000000"",
+    ""QueryTerm"": ""item01"",
+    ""FilterTerm"": ""item01"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item01\"",\r\n  \""Tags\"": \""[]\""\r\n}""
+  },
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000003"",
+    ""Description"": ""Item04"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000003"",
+    ""QueryTerm"": ""item04"",
+    ""FilterTerm"": ""item04"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item04\"",\r\n  \""Tags\"": \""[]\""\r\n}""
+  },
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000004"",
+    ""Description"": ""Item02B"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000004"",
+    ""QueryTerm"": ""item02b"",
+    ""FilterTerm"": ""item02b"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item02B\"",\r\n  \""Tags\"": \""[]\""\r\n}""
+  },
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000002"",
+    ""Description"": ""Item03"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000002"",
+    ""QueryTerm"": ""item03"",
+    ""FilterTerm"": ""item03"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item03\"",\r\n  \""Tags\"": \""[]\""\r\n}""
+  }
+]";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting replacement @ Index 2."
+            );
+
+            // MOVE
+            srce.Move(3, 0);
+            Assert.IsTrue(EqualsSrceAndDest());
+
+            actual = JsonConvert.SerializeObject(dest, Formatting.Indented);
+            actual.ToClipboardExpected();
+            { } // <- FIRST TIME ONLY: Adjust the message.
+            actual.ToClipboardAssert("Expecting json serialization to match.");
+            { }
+            expected = @" 
+[
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000002"",
+    ""Description"": ""Item03"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000002"",
+    ""QueryTerm"": ""item03"",
+    ""FilterTerm"": ""item03"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item03\"",\r\n  \""Tags\"": \""[]\""\r\n}""
+  },
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000000"",
+    ""Description"": ""Item01"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000000"",
+    ""QueryTerm"": ""item01"",
+    ""FilterTerm"": ""item01"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item01\"",\r\n  \""Tags\"": \""[]\""\r\n}""
+  },
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000003"",
+    ""Description"": ""Item04"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000003"",
+    ""QueryTerm"": ""item04"",
+    ""FilterTerm"": ""item04"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item04\"",\r\n  \""Tags\"": \""[]\""\r\n}""
+  },
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000004"",
+    ""Description"": ""Item02B"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000004"",
+    ""QueryTerm"": ""item02b"",
+    ""FilterTerm"": ""item02b"",
+    ""TagMatchTerm"": """",
+    ""Properties"": ""{\r\n  \""Description\"": \""Item02B\"",\r\n  \""Tags\"": \""[]\""\r\n}""
+  }
+]";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting Item03 moved to Index 0"
+            );
+
+            // REMOVE (by index for determinism)
+            srce.RemoveAt(1);
+            Assert.IsTrue(EqualsSrceAndDest());
+
+            // RESET
+            srce.Clear();
+            Assert.IsTrue(EqualsSrceAndDest());
         }
         void subtest_WithoutProjectionAuthority()
         {

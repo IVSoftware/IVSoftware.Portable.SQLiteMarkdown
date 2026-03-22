@@ -33,7 +33,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
     }
 
     [Obsolete("Backward compatibility only. Use MarkdownContext.ModelSettledEventArgs for full capability.")]
-    public class NotifyQueryFilterCollectionChangedEventArgs : ModelSettledEventArgs
+    public class NotifyQueryFilterCollectionChangedEventArgs : ModelChangedEventArgs
     {
         public NotifyQueryFilterCollectionChangedEventArgs(NotifyQueryFilterCollectionChangedAction action, IList changedItems)
             : base(

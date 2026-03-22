@@ -114,7 +114,7 @@ SELECT * FROM items WHERE
                     {
                         if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
                         {
-                            OnModelSettled(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
+                            OnModelSettled(ModelChangedEventArgs.FromNotifyCollectionChangedEventArgs(
                                 reason: NotifyCollectionChangeReason.ApplyFilter,
                                 e: eStructural));
                         }
@@ -1026,8 +1026,8 @@ SELECT * FROM items WHERE
 
             void localRaiseModelSettled()
             {
-                var e = context as ModelSettledEventArgs
-                    ?? new ModelSettledEventArgs(
+                var e = context as ModelChangedEventArgs
+                    ?? new ModelChangedEventArgs(
                         reason: NotifyCollectionChangeReason.None,
                         action: NotifyCollectionChangedAction.Reset);
                 OnModelSettled(e);

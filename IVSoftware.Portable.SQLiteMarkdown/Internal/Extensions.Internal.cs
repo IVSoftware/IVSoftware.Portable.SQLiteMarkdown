@@ -447,32 +447,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                         break;
 
                     case ReplaceItemsEventingTriage.EmptyBefore:
-                        Structural = new ModelSettledEventArgs(
+                        Structural = new ModelChangedEventArgs(
                             NotifyCollectionChangedAction.Add,
                             changedItems: newItems,
                             reason);
-                        Reset = new ModelSettledEventArgs(
+                        Reset = new ModelChangedEventArgs(
                             NotifyCollectionChangedAction.Reset,
                             reason);
                         break;
 
                     case ReplaceItemsEventingTriage.EmptyAfter:
-                        Structural = new ModelSettledEventArgs(
+                        Structural = new ModelChangedEventArgs(
                             NotifyCollectionChangedAction.Remove,
                             changedItems: oldItems,
                             reason);
-                        Reset = new ModelSettledEventArgs(
+                        Reset = new ModelChangedEventArgs(
                             NotifyCollectionChangedAction.Reset,
                             reason);
                         break;
 
                     case ReplaceItemsEventingTriage.NeverEmpty:
-                        Structural = new ModelSettledEventArgs(
+                        Structural = new ModelChangedEventArgs(
                             NotifyCollectionChangedAction.Replace,
                             newItems: newItems,
                             oldItems: oldItems,
                             reason);
-                        Reset = new ModelSettledEventArgs(
+                        Reset = new ModelChangedEventArgs(
                             NotifyCollectionChangedAction.Reset,
                             reason);
                         break;
@@ -483,7 +483,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 }
             }
             public ReplaceItemsEventingOption Options { get; }
-            public ModelSettledEventArgs? Structural
+            public ModelChangedEventArgs? Structural
             {
                 get => _structural;
                 private set
@@ -494,9 +494,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                     }
                 }
             }
-            ModelSettledEventArgs? _structural = default;
+            ModelChangedEventArgs? _structural = default;
 
-            public ModelSettledEventArgs? Reset
+            public ModelChangedEventArgs? Reset
             {
                 get => _reset;
                 private set
@@ -507,7 +507,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                     }
                 }
             }
-            ModelSettledEventArgs? _reset = default;
+            ModelChangedEventArgs? _reset = default;
         }
 
         /// <summary>

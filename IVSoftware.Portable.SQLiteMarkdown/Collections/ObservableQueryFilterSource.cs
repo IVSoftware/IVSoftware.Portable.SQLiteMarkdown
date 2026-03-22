@@ -563,7 +563,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     break;
                 case CollectionChangeAuthority.Model:
                     // Raise only sanctioned events
-                    if(eBCL is ModelSettledEventArgs eModel)
+                    if(eBCL is ModelChangedEventArgs eModel)
                     {
                         CollectionChanged?.Invoke(this, eBCL);
                     }
@@ -611,7 +611,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
                         {
                             OnCollectionChanged(
-                                new ModelSettledEventArgs(
+                                new ModelChangedEventArgs(
                                     reason: NotifyCollectionChangeReason.RemoveFilter,
                                     action: NotifyCollectionChangedAction.Replace,
                                     oldItems: (IList)PredicateMatchSubset,
@@ -622,7 +622,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
                         {
                             OnCollectionChanged(
-                                new ModelSettledEventArgs
+                                new ModelChangedEventArgs
                                 (
                                     reason: NotifyCollectionChangeReason.RemoveFilter,
                                     action: NotifyCollectionChangedAction.Reset
