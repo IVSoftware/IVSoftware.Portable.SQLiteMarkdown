@@ -1,8 +1,11 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using SQLite;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -111,7 +114,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 QueryFilterConfig = QueryFilterConfig.Query,    // For ad hoc parsing, be sure to lock out filtering. 
             }.ParseSqlMarkdown(
-                expr, 
+                expr,
                 proxyType: type,    // These are always the same thing for a string extension.
                 qfMode,             // Not to be confused with QueryFilterConfig. The MDC can parse as-though filtering regardless.
                 out xast);
@@ -243,7 +246,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 .Split(delimiter)
                 .Where(_ => !string.IsNullOrWhiteSpace(_));
 
-            var preview = 
+            var preview =
                 InsertSpaceBetweenTags
                 ? string.Join(" ", split.Select(_ => _.EncloseInSquareBrackets().ApplyCasing(stringCasing)))
                 : string.Join(string.Empty, split.Select(_ => _.EncloseInSquareBrackets().ApplyCasing(stringCasing)));
@@ -314,7 +317,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 value
                     .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-            preview = 
+            preview =
                 InsertSpaceBetweenTags
                 ? string.Concat(tokens.Select(t => $" [{t}]")).TrimStart()
                 : string.Concat(tokens.Select(t => $"[{t}]"));
@@ -654,7 +657,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             var sb = new System.Text.StringBuilder();
 
-            if(authority is not null) sb.Append($"{authority.ToString().PadRight(10)}");
+            if (authority is not null) sb.Append($"{authority.ToString().PadRight(10)}");
 
             sb.Append(e.GetType().Name.PadRight(43));
 
@@ -760,6 +763,136 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 binding = expr = string.Empty;
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Heuristically derives a batch <see cref="NotifyCollectionChangingEventArgs"/> describing
+        /// the transition from <paramref name="listBefore"/> to <paramref name="listAfter"/>.
+        /// </summary>
+        /// <remarks>
+        /// This method classifies the change into one of the following shapes:
+        /// - <b>Reset</b>: No detectable delta.
+        /// - <b>Add</b>: One or more items added, no removals.
+        /// - <b>Remove</b>: One or more items removed, no additions.
+        /// - <b>Replace (single)</b>: Exactly one item replaced with index fidelity.
+        /// - <b>Replace (batch)</b>: Mixed add/remove operations encoded as a sequence of
+        ///   micro-operations carried in <see cref="NotifyCollectionChangingEventArgs.NewItems"/>.
+        ///
+        /// For batch replace:
+        /// - Each element is an anonymous payload describing an atomic operation
+        ///   (Add, Remove, or Replace) with associated index information.
+        /// - Positional intent is preserved where possible via <c>OldIndex</c> and <c>NewIndex</c>.
+        ///
+        /// This is a heuristic diff:
+        /// - Uses set-based comparison (<c>Except</c>) and therefore does not account for duplicates
+        ///   or stable ordering beyond index lookup.
+        /// - Complex rearrangements may degrade to a batch replace envelope.
+        /// - Consumers are expected to interpret batch payloads or fall back to reset semantics,
+        ///   optionally using an externally supplied final state.
+        ///
+        /// All emitted events carry <see cref="NotifyCollectionChangeReason.Batch"/>.
+        /// </remarks>
+        internal static NotifyCollectionChangingEventArgs Diff(
+                this IList listBefore,
+                IList listAfter)
+        {
+            var before = listBefore.Cast<object>().ToList();
+            var after = listAfter.Cast<object>().ToList();
+
+            var oldItems = before.Except(after).ToList();
+            var newItems = after.Except(before).ToList();
+
+            if (newItems.Count == 0 && oldItems.Count == 0)
+            {
+                return new NotifyCollectionChangingEventArgs(
+                    NotifyCollectionChangeAction.Reset,
+                    NotifyCollectionChangeReason.Batch);
+            }
+
+            if (newItems.Count > 0 && oldItems.Count == 0)
+            {
+                return new NotifyCollectionChangingEventArgs(
+                    NotifyCollectionChangeAction.Add,
+                    newItems,
+                    NotifyCollectionChangeReason.Batch);
+            }
+
+            if (oldItems.Count > 0 && newItems.Count == 0)
+            {
+                return new NotifyCollectionChangingEventArgs(
+                    NotifyCollectionChangeAction.Remove,
+                    oldItems,
+                    NotifyCollectionChangeReason.Batch);
+            }
+
+            if (newItems.Count == 1 && oldItems.Count == 1)
+            {
+                var newItem = newItems[0];
+                var oldItem = oldItems[0];
+
+                var newIndex = after.IndexOf(newItem);
+                var oldIndex = before.IndexOf(oldItem);
+
+                return new NotifyCollectionChangingEventArgs(
+                    NotifyCollectionChangeAction.Replace,
+                    newItem,
+                    oldItem,
+                    newIndex,
+                    NotifyCollectionChangeReason.Batch);
+            }
+
+            var replaces = new List<object>();
+            var paired = Math.Min(oldItems.Count, newItems.Count);
+
+            for (int i = 0; i < paired; i++)
+            {
+                var oldItem = oldItems[i];
+                var newItem = newItems[i];
+
+                replaces.Add(new
+                {
+                    Action = NotifyCollectionChangeAction.Replace,
+                    OldItem = oldItem,
+                    NewItem = newItem,
+                    OldIndex = before.IndexOf(oldItem),
+                    NewIndex = after.IndexOf(newItem)
+                });
+            }
+
+            if (replaces.Count > 0)
+            {
+                return new NotifyCollectionChangingEventArgs(
+                    NotifyCollectionChangeAction.Replace,
+                    replaces,
+                    NotifyCollectionChangeReason.Batch);
+            }
+
+            var ops = new List<object>();
+
+            foreach (var item in oldItems)
+            {
+                ops.Add(new
+                {
+                    Action = NotifyCollectionChangeAction.Remove,
+                    Item = item,
+                    OldIndex = before.IndexOf(item)
+                });
+            }
+
+            foreach (var item in newItems)
+            {
+                ops.Add(new
+                {
+                    Action = NotifyCollectionChangeAction.Add,
+                    Item = item,
+                    NewIndex = after.IndexOf(item)
+                });
+            }
+
+            return new NotifyCollectionChangingEventArgs(
+                NotifyCollectionChangeAction.Replace,
+                ops,
+                NotifyCollectionChangeReason.Batch);
         }
     }
 }
