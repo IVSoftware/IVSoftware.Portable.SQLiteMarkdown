@@ -33,6 +33,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// These items (old and new) represent a wider subset.
         /// </summary>
         RemoveFilter = 0x4000,
+
+        /// <summary>
+        /// These items (old and new) represent a deferred collection change digest.
+        /// </summary>
+        Batch = 0x8000,
     }
     [Flags]
     public enum ModelSettledAction
