@@ -41,10 +41,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             _listB4 = listB4;
             return base.GetToken();
         }
+    }
     internal class BatchFinalDisposeEventArgs : FinalDisposeEventArgs
     {
         public BatchFinalDisposeEventArgs(
-            IReadOnlyCollection<object> releasedSenders, 
+            IReadOnlyCollection<object> releasedSenders,
             IReadOnlyDictionary<string, object> snapshot) : base(releasedSenders, snapshot)
         {
             throw new NotImplementedException("ToDo");
