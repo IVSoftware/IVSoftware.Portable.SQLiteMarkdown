@@ -800,38 +800,167 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///
         /// All emitted events carry <see cref="NotifyCollectionChangeReason.Batch"/>.
         /// </remarks>
+
         internal static NotifyCollectionChangingEventArgs Diff(
-                this IList listBefore,
-                IList listAfter)
+            this IList listBefore,
+            IList listAfter)
         {
             int
                 current = 0,
                 countB4 = listBefore.Count,
                 countAfter = listAfter.Count;
 
+            NotifyCollectionChangingEventArgs? result = null;
+
             if (countAfter == 0)
             {
+                if (countB4 == 0)
+                {
+                    result = new NotifyCollectionChangingEventArgs(
+                        NotifyCollectionChangeAction.Reset,
+                        NotifyCollectionChangeReason.Batch);
+                }
+                else
+                {
+                    var ops = new List<object>();
+                    for (int i = 0; i < countB4; i++)
+                    {
+                        ops.Add(new
+                        {
+                            Action = NotifyCollectionChangeAction.Remove,
+                            Item = listBefore[i],
+                            OldIndex = i
+                        });
+                    }
 
+                    result = new NotifyCollectionChangingEventArgs(
+                        NotifyCollectionChangeAction.Replace,
+                        ops,
+                        NotifyCollectionChangeReason.Batch);
+                }
             }
             else
             {
                 string path1, path2;
 
+                var replaces = new List<(object OldItem, object NewItem, int Index)>();
+                var adds = new List<(object Item, int Index)>();
+                var removes = new List<(object Item, int Index)>();
+
                 while (current < countB4 && current < countAfter)
                 {
+                    var itemB4 = listBefore[current];
+                    var itemAfter = listAfter[current];
 
+                    if (localTryGetFullPath(itemB4, out path1) &&
+                        localTryGetFullPath(itemAfter, out path2))
+                    {
+                        if (!string.Equals(path1, path2, StringComparison.Ordinal))
+                        {
+                            replaces.Add((itemB4, itemAfter, current));
+                        }
+                    }
+
+                    current++;
                 }
 
                 while (current < countB4)
                 {
-
+                    removes.Add((listBefore[current], current));
+                    current++;
                 }
 
-                while (current < countB4)
+                while (current < countAfter)
                 {
-
+                    adds.Add((listAfter[current], current));
+                    current++;
                 }
-                throw new NotImplementedException("ToDo");
+
+                if (replaces.Count == 1 && adds.Count == 0 && removes.Count == 0)
+                {
+                    var r = replaces[0];
+
+                    result = new NotifyCollectionChangingEventArgs(
+                        NotifyCollectionChangeAction.Replace,
+                        r.NewItem,
+                        r.OldItem,
+                        r.Index,
+                        NotifyCollectionChangeReason.Batch);
+                }
+                else if (replaces.Count == 0 && adds.Count > 0 && removes.Count == 0)
+                {
+                    var items = adds.Select(a => a.Item).ToList();
+                    var startIndex = adds[0].Index;
+
+                    result = new NotifyCollectionChangingEventArgs(
+                        NotifyCollectionChangeAction.Add,
+                        items,
+                        startIndex,
+                        NotifyCollectionChangeReason.Batch);
+                }
+                else if (replaces.Count == 0 && removes.Count > 0 && adds.Count == 0)
+                {
+                    var items = removes.Select(r => r.Item).ToList();
+                    var startIndex = removes[0].Index;
+
+                    result = new NotifyCollectionChangingEventArgs(
+                        NotifyCollectionChangeAction.Remove,
+                        items,
+                        startIndex,
+                        NotifyCollectionChangeReason.Batch);
+                }
+                else if (replaces.Count == 0 && adds.Count == 0 && removes.Count == 0)
+                {
+                    result = new NotifyCollectionChangingEventArgs(
+                        NotifyCollectionChangeAction.Reset,
+                        NotifyCollectionChangeReason.Batch);
+                }
+                else
+                {
+                    var ops = new List<object>();
+
+                    foreach (var r in replaces)
+                    {
+                        ops.Add(new
+                        {
+                            Action = NotifyCollectionChangeAction.Replace,
+                            OldItem = r.OldItem,
+                            NewItem = r.NewItem,
+                            OldIndex = r.Index,
+                            NewIndex = r.Index
+                        });
+                    }
+
+                    foreach (var r in removes)
+                    {
+                        ops.Add(new
+                        {
+                            Action = NotifyCollectionChangeAction.Remove,
+                            Item = r.Item,
+                            OldIndex = r.Index
+                        });
+                    }
+
+                    foreach (var a in adds)
+                    {
+                        ops.Add(new
+                        {
+                            Action = NotifyCollectionChangeAction.Add,
+                            Item = a.Item,
+                            NewIndex = a.Index
+                        });
+                    }
+
+                    result = new NotifyCollectionChangingEventArgs(
+                        NotifyCollectionChangeAction.Replace,
+                        ops,
+                        NotifyCollectionChangeReason.Batch);
+                }
+
+                if (result is null)
+                {
+                    throw new NotImplementedException("ToDo");
+                }
 
                 #region L o c a l F x
                 static bool localTryGetFullPath(object? item, out string path)
@@ -844,12 +973,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     else
                     {
                         item.ThrowHard<InvalidOperationException>("GetFullPath() failed for item.");
-                        path = null!; // we warned you.
+                        path = null!;
                         return false;
                     }
                 }
                 #endregion L o c a l F x
             }
+
+            return result!;
         }
 
         internal static NotifyCollectionChangingEventArgs DiffOR(
