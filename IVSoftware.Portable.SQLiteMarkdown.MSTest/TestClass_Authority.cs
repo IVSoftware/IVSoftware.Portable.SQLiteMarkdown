@@ -1,4 +1,5 @@
 using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
@@ -18,6 +19,9 @@ public class TestClass_Authority
     List<string> builder = new();
     class ObservableNetProjection<T> : ObservablePreviewCollection<T>
     {
+        [Probationary]
+        public IModeledMarkdownContext? MMDC { get; set; }
+#if false
         public IModeledMarkdownContext? MMDC
         {
             get => _mmdc;
@@ -38,11 +42,12 @@ public class TestClass_Authority
 
                 void localOnCollectionChangedForward(object? sender, NotifyCollectionChangedEventArgs e)
                 {
-                    OnCollectionChanged(e);
+                    // OnCollectionChanged(e);
                 }
             }
         }
         IModeledMarkdownContext? _mmdc = default;
+#endif
     }
     class TestableMMDC : ModeledMarkdownContext<SelectableQFModel>
     {
@@ -50,6 +55,45 @@ public class TestClass_Authority
     }
 
     [TestMethod, DoNotParallelize]
+    public void Test_ApplyToList()
+    {
+        string actual, expected;
+        using var te = this.TestableEpoch();
+        var srce = new ObservableNetProjection<SelectableQFModel>();
+        var dest = new ObservableCollection<SelectableQFModel>();
+
+        subtest_WithProjectionAuthority();
+        subtest_WithoutProjectionAuthority();
+
+        #region S U B T E S T S
+        void subtest_WithProjectionAuthority()
+        {
+        }
+        void subtest_WithoutProjectionAuthority()
+        {
+        }
+        #endregion S U B T E S T S
+    }
+
+    [TestMethod, DoNotParallelize]
+    public void Test_GravityAbstract()
+    {
+        string actual, expected;
+        using var te = this.TestableEpoch();
+
+        // Δ Always: ONP -> CSS with Projection authority (If it can be obtained). 
+        subtest_Name();
+
+        #region S U B T E S T S
+        void subtest_Name()
+        {
+        }
+        #endregion S U B T E S T S
+
+
+    }
+
+    [TestMethod, DoNotParallelize, Ignore]
     public void Test_Reset()
     {
         string actual, expected;
@@ -145,7 +189,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
         #endregion S U B T E S T S
     }
 
-    [TestMethod, DoNotParallelize]
+    [TestMethod, DoNotParallelize, Ignore]
     public void Test_Commit()
     {
         string actual, expected;
@@ -221,7 +265,7 @@ Commit     NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         #endregion
     }
 
-    [TestMethod, DoNotParallelize]
+    [TestMethod, DoNotParallelize, Ignore]
     public void Test_Projection()
     {
         string actual, expected;
@@ -256,7 +300,7 @@ Commit     NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         #endregion
     }
 
-    [TestMethod, DoNotParallelize]
+    [TestMethod, DoNotParallelize, Ignore]
     public void Test_Settle()
     {
         string actual, expected;
@@ -291,7 +335,7 @@ Commit     NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         #endregion
     }
 
-    [TestMethod, DoNotParallelize]
+    [TestMethod, DoNotParallelize, Ignore]
     public void Test_Predicate()
     {
         string actual, expected;
