@@ -38,114 +38,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         protected override void OnFinalDispose(FinalDisposeEventArgs e)
         {
             Debug.Fail($@"ADVISORY - First Time NTW.");
+
             if (_handler is not null)
             {
                 _listB4.CollectionChanged -= _handler;
                 _handler = null;
             }
 
-            var before = (_listB4 as IList)?.Cast<object>().ToList() ?? new List<object>();
-            var after = _listFTR.Cast<object>().ToList();
+            var before = _listB4 as IList ?? Array.Empty<object>();
+            var after = _listFTR;
 
-            var oldItems = before.Except(after).ToList();
-            var newItems = after.Except(before).ToList();
-
-            NotifyCollectionChangingEventArgs batchArgs;
-
-            if (newItems.Count == 0 && oldItems.Count == 0)
-            {
-                batchArgs = new NotifyCollectionChangingEventArgs(
-                    NotifyCollectionChangeAction.Reset,
-                    NotifyCollectionChangeReason.Batch);
-            }
-            else if (newItems.Count > 0 && oldItems.Count == 0)
-            {
-                batchArgs = new NotifyCollectionChangingEventArgs(
-                    NotifyCollectionChangeAction.Add,
-                    newItems,
-                    NotifyCollectionChangeReason.Batch);
-            }
-            else if (oldItems.Count > 0 && newItems.Count == 0)
-            {
-                batchArgs = new NotifyCollectionChangingEventArgs(
-                    NotifyCollectionChangeAction.Remove,
-                    oldItems,
-                    NotifyCollectionChangeReason.Batch);
-            }
-            else if (newItems.Count == 1 && oldItems.Count == 1)
-            {
-                var newIndex = after.IndexOf(newItems[0]);
-                var oldIndex = before.IndexOf(oldItems[0]);
-
-                batchArgs = new NotifyCollectionChangingEventArgs(
-                    NotifyCollectionChangeAction.Replace,
-                    newItems[0],
-                    oldItems[0],
-                    newIndex,
-                    NotifyCollectionChangeReason.Batch);
-            }
-            else
-            {
-                var ops = new List<object>();
-
-                foreach (var item in oldItems)
-                {
-                    var oldIndex = before.IndexOf(item);
-                    ops.Add(new
-                    {
-                        Action = NotifyCollectionChangeAction.Remove,
-                        Item = item,
-                        OldIndex = oldIndex
-                    });
-                }
-
-                foreach (var item in newItems)
-                {
-                    var newIndex = after.IndexOf(item);
-                    ops.Add(new
-                    {
-                        Action = NotifyCollectionChangeAction.Add,
-                        Item = item,
-                        NewIndex = newIndex
-                    });
-                }
-
-                var replaces = new List<object>();
-
-                var paired = Math.Min(oldItems.Count, newItems.Count);
-                for (int i = 0; i < paired; i++)
-                {
-                    var oldItem = oldItems[i];
-                    var newItem = newItems[i];
-
-                    var oldIndex = before.IndexOf(oldItem);
-                    var newIndex = after.IndexOf(newItem);
-
-                    replaces.Add(new
-                    {
-                        Action = NotifyCollectionChangeAction.Replace,
-                        OldItem = oldItem,
-                        NewItem = newItem,
-                        OldIndex = oldIndex,
-                        NewIndex = newIndex
-                    });
-                }
-
-                if (replaces.Count > 0)
-                {
-                    batchArgs = new NotifyCollectionChangingEventArgs(
-                        NotifyCollectionChangeAction.Replace,
-                        replaces,
-                        NotifyCollectionChangeReason.Batch);
-                }
-                else
-                {
-                    batchArgs = new NotifyCollectionChangingEventArgs(
-                        NotifyCollectionChangeAction.Replace,
-                        ops,
-                        NotifyCollectionChangeReason.Batch);
-                }
-            }
+            var batchArgs = before.Diff(after);
 
             var snapshot = e.Keys.ToDictionary(
                 key => key,
