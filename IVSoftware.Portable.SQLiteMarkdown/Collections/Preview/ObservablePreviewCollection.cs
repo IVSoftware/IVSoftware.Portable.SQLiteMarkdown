@@ -1,11 +1,12 @@
-﻿using IVSoftware.Portable.SQLiteMarkdown.Internal;
+﻿using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
-namespace IVSoftware.Portable.Collections
+namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
-    public class ObservablePreviewCollection<T> : ObservableCollection<T>
+    internal class ObservablePreviewCollection<T> : ObservableCollection<T>
     {
         public ObservablePreviewCollection(bool useMutablePreviewEvents = false)
         {

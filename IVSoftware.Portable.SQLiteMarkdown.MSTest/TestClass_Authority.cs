@@ -11,6 +11,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using Newtonsoft.Json;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -103,10 +104,26 @@ public class TestClass_Authority
             var i3 = eph.AddDynamic("Item03");
 
             // ADD
+            builder.Clear();
             srce.Add(i1);
             srce.Add(i2);
             srce.Add(i3);
             Assert.IsTrue(EqualsSrceAndDest());
+
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+ProjectionNotifyCollectionChangedEventArgs           NetProjection Add     NewItems= 1 NewIndex= 0
+ProjectionNotifyCollectionChangedEventArgs           NetProjection Add     NewItems= 1 NewIndex= 1
+ProjectionNotifyCollectionChangedEventArgs           NetProjection Add     NewItems= 1 NewIndex= 2"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting builder content to match."
+            );
 
             // INSERT (middle)
             var i4 = eph.AddDynamic("Item04");
@@ -350,9 +367,15 @@ public class TestClass_Authority
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
-            { } // <- FIRST TIME ONLY: Adjust the message.
-            actual.ToClipboardAssert("Expecting builder content to match.");
             { }
+            expected = @" 
+ProjectionNotifyCollectionChangedEventArgs           NetProjection Remove  OldItems= 1 OldIndex= 1";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting builder content to match."
+            );
 
             // RESET
             srce.Clear();

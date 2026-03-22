@@ -3,6 +3,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Collections.Specialized;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 
 namespace IVSoftware.Portable.Collections
 {
@@ -40,7 +41,7 @@ namespace IVSoftware.Portable.Collections
     /// </list>
     /// </para>
     /// </remarks>
-    public sealed class MutableNotifyCollectionChangingEventArgs : CancelEventArgs
+    internal sealed class MutableNotifyCollectionChangingEventArgs : CancelEventArgs
     {
         /// <summary>
         /// Gets or sets the action describing the intended mutation.

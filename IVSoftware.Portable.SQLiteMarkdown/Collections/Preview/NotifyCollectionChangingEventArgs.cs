@@ -2,18 +2,14 @@
 using System.Collections;
 using System.ComponentModel;
 using System.Collections.Specialized;
-using System.Xml.Linq;
-using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
-using IVSoftware.Portable.SQLiteMarkdown.Collections;
 
 
-namespace IVSoftware.Portable.Collections
+namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
     /// <summary>
     /// An action describes either a Changed or Changing event.
     /// </summary>
-    public enum NotifyCollectionChangeAction
+    internal enum NotifyCollectionChangeAction
     {
         Add = NotifyCollectionChangedAction.Add,
         Remove = NotifyCollectionChangedAction.Remove,
@@ -21,7 +17,7 @@ namespace IVSoftware.Portable.Collections
         Move = NotifyCollectionChangedAction.Move,
         Reset = NotifyCollectionChangedAction.Reset
     }
-    public class NotifyCollectionChangingEventArgs : CancelEventArgs
+    internal class NotifyCollectionChangingEventArgs : CancelEventArgs
     {
         private readonly NotifyCollectionChangedEventArgs @base;
 

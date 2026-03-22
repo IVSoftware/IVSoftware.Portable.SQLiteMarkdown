@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.StateMachine;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -209,8 +210,10 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
         }
 
-        protected virtual void OnCanonicalSupersetChanging(NotifyCollectionChangingEventArgs e)
+        protected virtual void OnCanonicalSupersetChanging(EventArgs eInternal)
         {
+            // Use internal class.
+            var e = (NotifyCollectionChangingEventArgs)eInternal;
             switch (Authority)
             {
                 case ModeledCollectionChangeAuthority.Reset:
