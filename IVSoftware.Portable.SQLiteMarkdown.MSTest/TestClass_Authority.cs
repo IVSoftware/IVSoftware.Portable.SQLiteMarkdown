@@ -96,7 +96,7 @@ public class TestClass_Authority
         }
         #endregion L o c a l F x
 
-        // subtest_WithProjectionAuthority();
+        subtest_WithProjectionAuthority();
         subtest_BatchWithAuthority();
         subtest_WithoutProjectionAuthority();
 
