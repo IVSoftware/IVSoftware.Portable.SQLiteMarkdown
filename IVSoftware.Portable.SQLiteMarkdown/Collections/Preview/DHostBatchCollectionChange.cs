@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -23,6 +24,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         }
         protected override void OnFinalDispose(FinalDisposeEventArgs e)
         {
+            Debug.Fail($@"ADVISORY - First Time Needs Testing!.");
             if (_handler is not null)
             {
                 _listB4.CollectionChanged -= _handler;
@@ -37,7 +39,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 
             NotifyCollectionChangingEventArgs batchArgs;
 
-            if (newItems.Count > 0 && oldItems.Count == 0)
+            if (newItems.Count == 1 && oldItems.Count == 1)
+            {
+                batchArgs = new NotifyCollectionChangingEventArgs(
+                    NotifyCollectionChangeAction.Replace,
+                    newItems,
+                    oldItems,
+                    NotifyCollectionChangeReason.Batch);
+            }
+            else if (newItems.Count == 0 && oldItems.Count == 0)
+            {
+                batchArgs = new NotifyCollectionChangingEventArgs(
+                    NotifyCollectionChangeAction.Reset,
+                    NotifyCollectionChangeReason.Batch);
+            }
+            else if (newItems.Count > 0 && oldItems.Count == 0)
             {
                 batchArgs = new NotifyCollectionChangingEventArgs(
                     NotifyCollectionChangeAction.Add,
@@ -51,24 +67,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     oldItems,
                     NotifyCollectionChangeReason.Batch);
             }
-            else if (newItems.Count == 0 && oldItems.Count == 0)
-            {
-                batchArgs = new NotifyCollectionChangingEventArgs(
-                    NotifyCollectionChangeAction.Reset,
-                    NotifyCollectionChangeReason.Batch);
-            }
             else
             {
+                var ops = new List<object>();
+
+                foreach (var item in oldItems)
+                    ops.Add(new { Action = NotifyCollectionChangeAction.Remove, Item = item });
+
+                foreach (var item in newItems)
+                    ops.Add(new { Action = NotifyCollectionChangeAction.Add, Item = item });
+
                 batchArgs = new NotifyCollectionChangingEventArgs(
                     NotifyCollectionChangeAction.Replace,
-                    newItems,
-                    oldItems,
+                    ops,
                     NotifyCollectionChangeReason.Batch);
             }
 
             var snapshot = e.Keys.ToDictionary(
                 key => key,
                 key => e[key]);
+
+            snapshot["FinalList"] = _listFTR;
 
             var eBatch = new BatchFinalDisposeEventArgs(
                 e.ReleasedSenders,
