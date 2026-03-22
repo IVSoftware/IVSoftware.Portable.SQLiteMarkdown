@@ -649,9 +649,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         public static string ToString(
             this NotifyCollectionChangedEventArgs e,
-            bool isProjection)
+            bool isProjection,
+            Enum? authority = null)
         {
             var sb = new System.Text.StringBuilder();
+
+            if(authority is not null) sb.Append($"{authority.ToString().PadRight(10)});
 
             sb.Append(e.GetType().Name.PadRight(43));
 

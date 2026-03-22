@@ -64,7 +64,8 @@ public class TestClass_Authority
         using var te = this.TestableEpoch();
         var srce = new ObservableNetProjection<SelectableQFModel>();
         var dest = new ObservableCollection<SelectableQFModel>();
-
+        var authorityEpoch = new AuthorityEpochProvider();
+        var builder = new List<string>();
 
         #region L o c a l F x				
         using var local = srce.WithOnDispose(
@@ -78,6 +79,7 @@ public class TestClass_Authority
             });
         void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            builder.Add(e.ToString(true, authorityEpoch.Authority));
             dest.Apply(e);
         }
         bool EqualsSrceAndDest()
@@ -94,6 +96,7 @@ public class TestClass_Authority
         #region S U B T E S T S
         void subtest_WithProjectionAuthority()
         {
+            var authority = authorityEpoch.BeginAuthority(ModeledCollectionChangeAuthority.Projection);
             // CREATE (no side effects)
             var i1 = eph.AddDynamic("Item01");
             var i2 = eph.AddDynamic("Item02");
@@ -370,8 +373,6 @@ public class TestClass_Authority
         {
         }
         #endregion S U B T E S T S
-
-
     }
 
     [TestMethod, DoNotParallelize, Ignore]
