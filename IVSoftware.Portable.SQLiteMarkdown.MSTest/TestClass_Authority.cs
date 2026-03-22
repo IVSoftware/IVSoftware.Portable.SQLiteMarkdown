@@ -401,8 +401,8 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Remove  OldI
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Projection NotifyCollectionChangedEventArgs           NetProjection Reset";
-
+Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewItems= 3 NewIndex= 0"
+            ;
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),

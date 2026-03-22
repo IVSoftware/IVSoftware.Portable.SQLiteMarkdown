@@ -33,7 +33,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             var before = (IList)_listB4;
             var after = _listFTR;
 
-            var batchArgs = before.Diff(after);
+            var digest = before.Diff(after);
 
             var snapshot = e.Keys.ToDictionary(
                 key => key,
@@ -44,7 +44,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             var eBatch = new BatchFinalDisposeEventArgs(
                 e.ReleasedSenders,
                 snapshot,
-                batchArgs,
+                digest,
                 _listFTR);
 
             base.OnFinalDispose(eBatch);
