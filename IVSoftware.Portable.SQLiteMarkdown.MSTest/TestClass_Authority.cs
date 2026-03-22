@@ -389,9 +389,16 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Remove  OldI
                 {
                     actual = eFD.BatchEventArgs.ToString(true, authorityEpoch.Authority);
                     actual.ToClipboardExpected();
-                    { } // <- FIRST TIME ONLY: Adjust the message.
-                    actual.ToClipboardAssert("Expecting result to match.");
                     { }
+                    expected = @" 
+Projection NotifyCollectionChangingEventArgs          NetProjection Add     NewItems= 3"
+                    ;
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting result to match."
+                    );
                 }
             };
             using (dhost.GetToken(srce))

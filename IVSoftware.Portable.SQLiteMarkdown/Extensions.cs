@@ -638,10 +638,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             #endregion
         }
 
-        internal static string ToString(
-            this NotifyCollectionChangingEventArgs e,
-            bool isProjection,
-            Enum? authority = null) => ((NotifyCollectionChangedEventArgs)e).ToString(isProjection, authority);
         /// <summary>
         /// Produces a compact diagnostic string describing a collection change event.
         /// </summary>
@@ -655,36 +651,42 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// count of zero; null lists are omitted entirely.
         /// </remarks>
         public static string ToString(
-            this NotifyCollectionChangedEventArgs e,
+            this EventArgs @this,
             bool isProjection,
             Enum? authority = null)
         {
+            var proto = @this switch
+            {
+                NotifyCollectionChangingEventArgs e => (NotifyCollectionChangedEventArgs)e,
+                NotifyCollectionChangedEventArgs e => e,
+                _ => throw new NotSupportedException("Receiver expects a known change type.")
+            };
             var sb = new System.Text.StringBuilder();
 
             if (authority is not null) sb.Append($"{authority.ToString().PadRight(11)}");
 
-            sb.Append(e.GetType().Name.PadRight(43));
+            sb.Append(@this.GetType().Name.PadRight(43));
 
-            sb.Append($"{(isProjection ? "NetProjection" : "Other        ")} {e.Action.ToString().PadRight(7)} ");
+            sb.Append($"{(isProjection ? "NetProjection" : "Other        ")} {proto.Action.ToString().PadRight(7)} ");
 
-            if (e.NewItems is { } newItems)
+            if (proto.NewItems is { } newItems)
             {
                 sb.Append($"NewItems={newItems.Count.ToString().PadLeft(2)} ");
             }
 
-            if (e.OldItems is { } oldItems)
+            if (proto.OldItems is { } oldItems)
             {
                 sb.Append($"OldItems={oldItems.Count.ToString().PadLeft(2)} ");
             }
 
-            if (e.NewStartingIndex != -1)
+            if (proto.NewStartingIndex != -1)
             {
-                sb.Append($"NewIndex={e.NewStartingIndex.ToString().PadLeft(2)} ");
+                sb.Append($"NewIndex={proto.NewStartingIndex.ToString().PadLeft(2)} ");
             }
 
-            if (e.OldStartingIndex != -1)
+            if (proto.OldStartingIndex != -1)
             {
-                sb.Append($"OldIndex={e.OldStartingIndex.ToString().PadLeft(2)} ");
+                sb.Append($"OldIndex={proto.OldStartingIndex.ToString().PadLeft(2)} ");
             }
 
             return sb.ToString().TrimEnd();

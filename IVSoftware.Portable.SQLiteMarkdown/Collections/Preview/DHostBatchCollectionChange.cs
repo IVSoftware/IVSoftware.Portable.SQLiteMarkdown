@@ -13,15 +13,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
     internal class DHostBatchCollectionChange : DisposableHost
     {
-        INotifyCollectionChanged _listB4 = null!;
-        IList _listFTR = null!;
-        NotifyCollectionChangedEventHandler? _handler;
-        bool _initialized;
-
-        protected override void OnBeginUsing(BeginUsingEventArgs e)
-        {
-            base.OnBeginUsing(e);
-        }
+        IList 
+            _listB4 = null!,
+            _listFTR = null!;
 
         /// <summary>
         /// Heuristically determines the simplest approach to reaching ListFTR from ListB4.
@@ -37,13 +31,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         /// </remarks>
         protected override void OnFinalDispose(FinalDisposeEventArgs e)
         {
-            if (_handler is not null)
-            {
-                _listB4.CollectionChanged -= _handler;
-                _handler = null;
-            }
-
-            var before = _listB4 as IList ?? Array.Empty<object>();
+            var before = (IList)_listB4;
             var after = _listFTR;
 
             var batchArgs = before.Diff(after);
@@ -66,20 +54,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         [Canonical]
         public new IDisposable GetToken(object? sender = null, Dictionary<string, object>? properties = null)
         {
-            if (sender is INotifyCollectionChanged incc)
+            if (sender is IList list)
             {
-                InitializeToken(incc);
-                return base.GetToken(incc, properties);
+                InitializeToken(list);
+                return base.GetToken(list, properties);
             }
             throw new ArgumentException($"Expecting {nameof(sender)} is {nameof(INotifyCollectionChanged)}.");
         }
 
         public new IDisposable GetToken(object sender, string key, object value)
         {
-            if (sender is INotifyCollectionChanged incc)
+            if (sender is IList list)
             {
-                InitializeToken(incc);
-                return base.GetToken(incc, key, value);
+                InitializeToken(list);
+                return base.GetToken(list, key, value);
             }
             throw new ArgumentException($"Expecting {nameof(sender)} is {nameof(INotifyCollectionChanged)}.");
         }
@@ -89,24 +77,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             throw new NotSupportedException();
         }
 
-        void InitializeToken(INotifyCollectionChanged incc)
+        void InitializeToken(IList list)
         {
-            if (_initialized) return;
-            _initialized = true;
-
-            _listB4 = incc;
-
-            if (incc is not IList list)
-                throw new ArgumentException(nameof(incc));
-
-            _listFTR = list.Cast<object>().ToList();
-
-            _handler = (s, e) =>
-            {
-                _listFTR.Apply(e);
-            };
-
-            _listB4.CollectionChanged += _handler;
+            _listB4 = list.Cast<object>().ToList();
+            _listFTR = list;
         }
     }
 
