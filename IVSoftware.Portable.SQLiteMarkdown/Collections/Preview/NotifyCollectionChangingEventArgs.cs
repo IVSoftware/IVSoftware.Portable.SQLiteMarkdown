@@ -23,91 +23,91 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 
         protected NotifyCollectionChangingEventArgs(NotifyCollectionChangedEventArgs eBCL) => @base = eBCL;
         public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangedAction action,
+            NotifyCollectionChangeAction action,
             NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
         {
             Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs(action);
+            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action);
         }
 
         public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangedAction action, IList changedItems,
+            NotifyCollectionChangeAction action, IList changedItems,
             NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
         {
             Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs(action, changedItems);
+            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, changedItems);
         }
 
         public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangedAction action, object changedItem,
+            NotifyCollectionChangeAction action, object changedItem,
             NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
         {
             Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs(action, changedItem);
+            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, changedItem);
         }
 
         public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangedAction action, IList newItems, IList oldItems,
+            NotifyCollectionChangeAction action, IList newItems, IList oldItems,
             NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
         {
             Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs(action, newItems, oldItems);
+            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, newItems, oldItems);
         }
 
         public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangedAction action, IList changedItems, int startingIndex,
+            NotifyCollectionChangeAction action, IList changedItems, int startingIndex,
             NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
         {
             Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs(action, changedItems, startingIndex);
+            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, changedItems, startingIndex);
         }
 
         public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangedAction action, object changedItem, int index,
+            NotifyCollectionChangeAction action, object changedItem, int index,
             NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
         {
             Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs(action, changedItem, index);
+            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, changedItem, index);
         }
 
         public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangedAction action, object newItem, object oldItem,
+            NotifyCollectionChangeAction action, object newItem, object oldItem,
             NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
         {
             Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs(action, newItem, oldItem);
+            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, newItem, oldItem);
         }
 
         public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangedAction action, IList newItems, IList oldItems, int startingIndex,
+            NotifyCollectionChangeAction action, IList newItems, IList oldItems, int startingIndex,
             NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
         {
             Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs(action, newItems, oldItems, startingIndex);
+            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, newItems, oldItems, startingIndex);
         }
 
         public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangedAction action, IList changedItems, int index, int oldIndex,
+            NotifyCollectionChangeAction action, IList changedItems, int index, int oldIndex,
             NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
         {
             Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs(action, changedItems, index, oldIndex);
+            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, changedItems, index, oldIndex);
         }
 
         public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangedAction action, object changedItem, int index, int oldIndex,
+            NotifyCollectionChangeAction action, object changedItem, int index, int oldIndex,
             NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
         {
             Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs(action, changedItem, index, oldIndex);
+            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, changedItem, index, oldIndex);
         }
 
         public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangedAction action, object newItem, object oldItem, int index,
+            NotifyCollectionChangeAction action, object newItem, object oldItem, int index,
             NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
         {
             Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs(action, newItem, oldItem, index);
+            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, newItem, oldItem, index);
         }
 
         // ----------------------------------------
