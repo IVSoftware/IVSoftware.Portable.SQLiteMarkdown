@@ -233,11 +233,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             using (BeginCollectionChangeAuthority(ModeledCollectionChangeAuthority.Commit))
             {
                 Clear(all: true);
-                //foreach(T item in recordset)
-                //{
-                //    CanonicalSupersetInternal.Add(item);
-                //}
+                foreach (T item in recordset)
+                {
+                    CanonicalSupersetInternal.Add(item);
+                }
+                OnModelChanged(
+                    CanonicalSuperset,
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                OnModelChanged(
+                    CanonicalSuperset,
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, changedItems: recordset?.OfType<T>().ToArray()));
             }
+
 #if false
             using(BeginCollectionChangeAuthority(CollectionChangeAuthority.Canon))
             {
@@ -604,7 +611,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 }
             }
         }
-        NetProjectionOption _projectionOption = 0;
+        NetProjectionOption _projectionOption = NetProjectionOption.AllowDirectChanges;
 
 
         public new FilteringState Clear(bool all = false)

@@ -365,14 +365,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
 #if false && ABSTRACT && GRAVITY
     ITEMS
-    Δ Always: PNP -> CSS with Projection authority. 
-    Δ Always: CSS -> Model 
-    Δ Always: Model -> PMS
-    Δ Always: Model.Changed -> <model autocount=N>
-    Δ Always: Model -> OnModelSettled event
-    - Then, one of:    
+    Δ Always: ONP -> CSS with Projection authority (If it can be obtained). 
     Δ Always: CSS -> FQDB
-    Δ Always: Model -> FQDB
+    Δ Always: CSS -> Model 
+    Δ Always: Model.Changed -> <model autocount=N>
+    AUTHORITY BASED
+    Δ Commit: CSS -> OnModelChanged event
+    Δ Settled: Model -> PMS
+    Δ Predicate: Model -> PMS
 
     COUNTS
     Δ Always: CSS -> <model count=N>

@@ -6,6 +6,7 @@ using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -180,8 +181,25 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             builder.Clear();
             mmdc.LoadCanon(recordset);
 
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { } // <- FIRST TIME ONLY: Adjust the message.
+            actual.ToClipboardAssert("Expecting 2 events x 2 subscribers (FOUR)");
+            { }
+            expected = @" 
+Other.Reset   NotifyCollectionChangedEventArgs           
+NetProjection.Reset   NotifyCollectionChangedEventArgs           
+Other.Add     NewItems= 1 NotifyCollectionChangedEventArgs           
+NetProjection.Add     NewItems= 1 NotifyCollectionChangedEventArgs           ";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting 2 events x 2 subscribers (FOUR)"
+            );
+
             Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 21).Date, "Don't forget disabled");
-            Assert.AreEqual(0, builder.Count, "TEMPORARY LIMIT");
+            Assert.AreEqual(4, builder.Count, "TEMPORARY LIMIT");
 
             actual = onp.MMDC.Model.ToString();
             actual.ToClipboardExpected();

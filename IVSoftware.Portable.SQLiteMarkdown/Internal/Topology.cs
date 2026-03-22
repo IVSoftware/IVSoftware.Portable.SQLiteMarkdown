@@ -193,8 +193,20 @@ Inherited contexts manage their projection internally.".TrimStart());
 
         protected virtual void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection);
-            CanonicalSupersetInternal.Apply(e);
+            using (BeginCollectionChangeAuthority(ModeledCollectionChangeAuthority.Projection))
+            {
+                if (Equals(Authority, ModeledCollectionChangeAuthority.Projection))
+                {
+                    // Checking out the token gave the requested authority.
+                    CanonicalSupersetInternal.Apply(e);
+                }
+                else
+                {
+                    Debug.Assert(
+                        AuthorityEpoch.ReferenceCount > 1, 
+                        "Suppression expected in this case; a different authority is already primary.");
+                }
+            }
         }
 
         protected virtual void OnCanonicalSupersetChanging(NotifyCollectionChangingEventArgs e)
@@ -241,6 +253,14 @@ Inherited contexts manage their projection internally.".TrimStart());
         {
             Debug.Assert(CanonicalSuperset.Count == CanonicalSupersetInternal.Count);
             ModelChanged?.Invoke(sender, e);
+            if(Equals(NetProjectionOption.AllowDirectChanges, ProjectionOption))
+            {
+                // Guaranteed not null by ProjectionOption getter.
+                ObservableNetProjection!.Apply(e);
+            }
+            else
+            {   /* G T K - N O O P */
+            }
         }
 
         public event NotifyCollectionChangedEventHandler? ModelChanged;
