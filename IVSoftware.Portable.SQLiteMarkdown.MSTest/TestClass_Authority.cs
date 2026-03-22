@@ -97,7 +97,7 @@ public class TestClass_Authority
         #region S U B T E S T S
         void subtest_WithProjectionAuthority()
         {
-            var authority = authorityEpoch.BeginAuthority(ModeledCollectionChangeAuthority.Projection);
+            using var authority = authorityEpoch.BeginAuthority(ModeledCollectionChangeAuthority.Projection);
             // CREATE (no side effects)
             var i1 = eph.AddDynamic("Item01");
             var i2 = eph.AddDynamic("Item02");
@@ -114,9 +114,9 @@ public class TestClass_Authority
             actual.ToClipboardExpected();
             { }
             expected = @" 
-ProjectionNotifyCollectionChangedEventArgs           NetProjection Add     NewItems= 1 NewIndex= 0
-ProjectionNotifyCollectionChangedEventArgs           NetProjection Add     NewItems= 1 NewIndex= 1
-ProjectionNotifyCollectionChangedEventArgs           NetProjection Add     NewItems= 1 NewIndex= 2"
+Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewItems= 1 NewIndex= 0
+Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewItems= 1 NewIndex= 1
+Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewItems= 1 NewIndex= 2"
             ;
 
             Assert.AreEqual(
@@ -369,7 +369,7 @@ ProjectionNotifyCollectionChangedEventArgs           NetProjection Add     NewIt
             actual.ToClipboardExpected();
             { }
             expected = @" 
-ProjectionNotifyCollectionChangedEventArgs           NetProjection Remove  OldItems= 1 OldIndex= 1";
+Projection NotifyCollectionChangedEventArgs           NetProjection Remove  OldItems= 1 OldIndex= 1";
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -383,6 +383,8 @@ ProjectionNotifyCollectionChangedEventArgs           NetProjection Remove  OldIt
         }
         void subtest_WithoutProjectionAuthority()
         {
+            using var authority1 = authorityEpoch.BeginAuthority(ModeledCollectionChangeAuthority.Settle);
+            using var authority2 = authorityEpoch.BeginAuthority(ModeledCollectionChangeAuthority.Projection);
         }
         #endregion S U B T E S T S
     }
