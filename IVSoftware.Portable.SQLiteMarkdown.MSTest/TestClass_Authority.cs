@@ -58,9 +58,19 @@ public class TestClass_Authority
     public void Test_ApplyToList()
     {
         string actual, expected;
+        IList<SelectableQFModel> eph = null;
         using var te = this.TestableEpoch();
         var srce = new ObservableNetProjection<SelectableQFModel>();
         var dest = new ObservableCollection<SelectableQFModel>();
+
+        #region L o c a l F x
+        bool EqualsSrceAndDest()
+        {
+            return srce
+                .Select(_ => _.GetFullPath())
+                .SequenceEqual(dest.Select(_ => _.GetFullPath()));
+        }
+        #endregion L o c a l F x
 
         subtest_WithProjectionAuthority();
         subtest_WithoutProjectionAuthority();
@@ -68,6 +78,8 @@ public class TestClass_Authority
         #region S U B T E S T S
         void subtest_WithProjectionAuthority()
         {
+            var item = eph.AddDynamic("Item01");
+            { }
         }
         void subtest_WithoutProjectionAuthority()
         {
