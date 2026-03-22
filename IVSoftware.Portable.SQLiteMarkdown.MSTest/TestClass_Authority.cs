@@ -23,35 +23,6 @@ public class TestClass_Authority
     List<string> builder = new();
     class ObservableNetProjection<T> : ObservablePreviewCollection<T>
     {
-        [Probationary]
-        public IModeledMarkdownContext? MMDC { get; set; }
-#if false
-        public IModeledMarkdownContext? MMDC
-        {
-            get => _mmdc;
-            set
-            {
-                if (!Equals(_mmdc, value))
-                {
-                    if(_mmdc is not null)
-                    {
-                        _mmdc.ModelChanged -= localOnCollectionChangedForward;
-                    }
-                    _mmdc = value;
-                    if (_mmdc is not null)
-                    {
-                        _mmdc.ModelChanged += localOnCollectionChangedForward;
-                    }
-                }
-
-                void localOnCollectionChangedForward(object? sender, NotifyCollectionChangedEventArgs e)
-                {
-                    // OnCollectionChanged(e);
-                }
-            }
-        }
-        IModeledMarkdownContext? _mmdc = default;
-#endif
     }
     class TestableMMDC : ModeledMarkdownContext<SelectableQFModel>
     {
@@ -436,14 +407,41 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewI
             ObservableNetProjection = srce,
         };
 
+        #region E V E N T 
+        mmdc.ModelChanged += (sender, e) =>
+        {
+            builder.Add($"{mmdc.Authority.ToString().PadRight(10)} {e.ToString(ReferenceEquals(sender, srce))}");
+        };
+        srce.CollectionChanged += (sender, e) =>
+        {
+            builder.Add($"{mmdc.Authority.ToString().PadRight(10)} {e.ToString(ReferenceEquals(sender, srce))}");
+        };
+        #endregion E V E N T S
+
         // Δ Always: ONP -> CSS !-> ONP when Projection authority can be obtained.
         subtest_ProjectionAuthority();
 
         #region S U B T E S T S
         void subtest_ProjectionAuthority()
         {
-            mmdc
+            builder.Clear();
+            srce.Add(i1);
+
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Projection NotifyCollectionChangedEventArgs           Other         Add     NewItems= 1 NewIndex= 0
+NoAuthority NotifyCollectionChangedEventArgs           NetProjection Add     NewItems= 1 NewIndex= 0"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting builder content to match."
+            );
         }
+        { }
         #endregion S U B T E S T S
     }
 
@@ -468,14 +466,10 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         };
 
         #region E V E N T S
-        // This is the order that matters:
-        // FIRST - subscribe the MMDC direct
         mmdc.ModelChanged += (sender, e) =>
         {
             builder.Add($"{mmdc.Authority.ToString().PadRight(10)} {e.ToString(ReferenceEquals(sender, onp))}" );
         };
-        // SECOND - subscribe the MMDC in the Composed collection
-        onp.MMDC = mmdc; // Cross-linked ONP will now forware the ModelChanged event.
         #endregion E V E N T S
 
         subtest_ResetWhenEmpty();
@@ -509,7 +503,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs   "
             onp.PopulateForDemo(1);
             Assert.AreEqual(1, mmdc.CanonicalCount);
 
-            actual = onp.MMDC.Model.ToString();
+            actual = mmdc.Model.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -565,14 +559,10 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
         };
 
         #region E V E N T S
-        // This is the order that matters:
-        // FIRST - subscribe the MMDC direct
         mmdc.ModelChanged += (sender, e) =>
         {
             builder.Add($"{mmdc.Authority.ToString().PadRight(10)} {e.ToString(ReferenceEquals(sender, onp))}");
         };
-        // SECOND - subscribe the MMDC in the Composed collection
-        onp.MMDC = mmdc; // Cross-linked ONP will now forware the ModelChanged event.
         #endregion E V E N T S
 
         #region S U B T E S T S
@@ -602,7 +592,7 @@ Commit     NotifyCollectionChangedEventArgs           NetProjection Add     NewI
             );
             Assert.AreEqual(4, builder.Count, "TEMPORARY LIMIT");
 
-            actual = onp.MMDC.Model.ToString();
+            actual = mmdc.Model.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -640,14 +630,10 @@ Commit     NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         };
 
         #region E V E N T S
-        // This is the order that matters:
-        // FIRST - subscribe the MMDC direct
         mmdc.ModelChanged += (sender, e) =>
         {
             builder.Add(e.ToString(ReferenceEquals(sender, onp)));
         };
-        // SECOND - subscribe the MMDC in the Composed collection
-        onp.MMDC = mmdc; // Cross-linked ONP will now forware the ModelChanged event.
         #endregion E V E N T S
 
         #region S U B T E S T S
@@ -675,14 +661,10 @@ Commit     NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         };
 
         #region E V E N T S
-        // This is the order that matters:
-        // FIRST - subscribe the MMDC direct
         mmdc.ModelChanged += (sender, e) =>
         {
             builder.Add(e.ToString(ReferenceEquals(sender, onp)));
         };
-        // SECOND - subscribe the MMDC in the Composed collection
-        onp.MMDC = mmdc; // Cross-linked ONP will now forware the ModelChanged event.
         #endregion E V E N T S
 
         #region S U B T E S T S
@@ -710,14 +692,10 @@ Commit     NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         };
 
         #region E V E N T S
-        // This is the order that matters:
-        // FIRST - subscribe the MMDC direct
         mmdc.ModelChanged += (sender, e) =>
         {
             builder.Add(e.ToString(ReferenceEquals(sender, onp)));
         };
-        // SECOND - subscribe the MMDC in the Composed collection
-        onp.MMDC = mmdc; // Cross-linked ONP will now forware the ModelChanged event.
         #endregion E V E N T S
 
         #region S U B T E S T S
