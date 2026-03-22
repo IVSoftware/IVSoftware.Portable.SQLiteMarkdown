@@ -37,8 +37,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         /// </remarks>
         protected override void OnFinalDispose(FinalDisposeEventArgs e)
         {
-            Debug.Fail($@"ADVISORY - First Time NTW.");
-
             if (_handler is not null)
             {
                 _listB4.CollectionChanged -= _handler;

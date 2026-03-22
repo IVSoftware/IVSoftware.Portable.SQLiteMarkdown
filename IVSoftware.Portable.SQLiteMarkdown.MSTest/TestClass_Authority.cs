@@ -67,6 +67,10 @@ public class TestClass_Authority
         var dest = new ObservableCollection<SelectableQFModel>();
         var authorityEpoch = new AuthorityEpochProvider();
         var builder = new List<string>();
+        // CREATE (no side effects)
+        var i1 = eph.AddDynamic("Item01");
+        var i2 = eph.AddDynamic("Item02");
+        var i3 = eph.AddDynamic("Item03");
 
         #region L o c a l F x				
         using var local = srce.WithOnDispose(
@@ -97,12 +101,8 @@ public class TestClass_Authority
         #region S U B T E S T S
         void subtest_WithProjectionAuthority()
         {
-            using var authority = authorityEpoch.BeginAuthority(ModeledCollectionChangeAuthority.Projection);
-            // CREATE (no side effects)
-            var i1 = eph.AddDynamic("Item01");
-            var i2 = eph.AddDynamic("Item02");
-            var i3 = eph.AddDynamic("Item03");
-
+            using var token = authorityEpoch.BeginAuthority(ModeledCollectionChangeAuthority.Projection);
+            Assert.AreEqual(ModeledCollectionChangeAuthority.Projection, authorityEpoch.Authority);
             // ADD
             builder.Clear();
             srce.Add(i1);
@@ -380,11 +380,32 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Remove  OldI
             // RESET
             srce.Clear();
             Assert.IsTrue(EqualsSrceAndDest());
+
+            builder.Clear();
+            var dhost = new DHostBatchCollectionChange();
+            dhost.FinalDispose += (sender, e) =>
+            {
+                if(e is BatchFinalDisposeEventArgs eFD)
+                {
+                    actual = eFD.BatchEventArgs.ToString(true, authorityEpoch.Authority);
+                    actual.ToClipboardExpected();
+                    { } // <- FIRST TIME ONLY: Adjust the message.
+                    actual.ToClipboardAssert("Expecting result to match.");
+                    { }
+                }
+            };
+            using (dhost.GetToken(srce))
+            {
+                srce.Add(i1);
+                srce.Add(i2);
+                srce.Add(i3);
+            }
         }
         void subtest_WithoutProjectionAuthority()
         {
             using var authority1 = authorityEpoch.BeginAuthority(ModeledCollectionChangeAuthority.Settle);
             using var authority2 = authorityEpoch.BeginAuthority(ModeledCollectionChangeAuthority.Projection);
+            Assert.AreNotEqual(ModeledCollectionChangeAuthority.Projection, authorityEpoch.Authority);
         }
         #endregion S U B T E S T S
     }

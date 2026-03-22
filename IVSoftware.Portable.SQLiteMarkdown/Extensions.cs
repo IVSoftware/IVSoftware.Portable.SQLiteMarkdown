@@ -638,6 +638,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             #endregion
         }
 
+        internal static string ToString(
+            this NotifyCollectionChangingEventArgs e,
+            bool isProjection,
+            Enum? authority = null) => ((NotifyCollectionChangedEventArgs)e).ToString(isProjection, authority);
         /// <summary>
         /// Produces a compact diagnostic string describing a collection change event.
         /// </summary>
