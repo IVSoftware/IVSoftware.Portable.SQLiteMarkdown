@@ -1,3 +1,4 @@
+using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
@@ -15,7 +16,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 public class TestClass_Authority
 {
     List<string> builder = new();
-    class ComposedObservableCollection<T> : ObservableCollection<T>
+    class ObservableNetProjection<T> : ObservablePreviewCollection<T>
     {
         public IModeledMarkdownContext? MMDC
         {
@@ -43,6 +44,10 @@ public class TestClass_Authority
         }
         IModeledMarkdownContext? _mmdc = default;
     }
+    class TestableMMDC : ModeledMarkdownContext<SelectableQFModel>
+    {
+
+    }
 
     [TestMethod, DoNotParallelize]
     public void Test_Reset()
@@ -50,7 +55,7 @@ public class TestClass_Authority
         string actual, expected;
         using var te = this.TestableEpoch();
 
-        ComposedObservableCollection<SelectableQFModel> onp = new();
+        ObservableNetProjection<SelectableQFModel> onp = new();
 
         // [Careful]
         // - This isn't a subscription to MMDC at all.
@@ -69,7 +74,7 @@ public class TestClass_Authority
         // FIRST - subscribe the MMDC direct
         mmdc.ModelChanged += (sender, e) =>
         {
-            builder.Add(e.ToString(ReferenceEquals(sender, onp)));
+            builder.Add($"{mmdc.Authority.ToString().PadRight(10)} {e.ToString(ReferenceEquals(sender, onp))}" );
         };
         // SECOND - subscribe the MMDC in the Composed collection
         onp.MMDC = mmdc; // Cross-linked ONP will now forware the ModelChanged event.
@@ -88,6 +93,7 @@ public class TestClass_Authority
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
+            { }
             expected = @"         
 Other.Reset   NotifyCollectionChangedEventArgs           
 NetProjection.Reset   NotifyCollectionChangedEventArgs   "
@@ -146,18 +152,18 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
         using var te = this.TestableEpoch();
         List<SelectableQFModel> recordset = new();
 
-        ComposedObservableCollection<SelectableQFModel> onp = new();
+        ObservableNetProjection<SelectableQFModel> onp = new();
+        var mmdc = new ModeledMarkdownContext<SelectableQFModel>
+        {
+            ObservableNetProjection = onp,
+        };
 
         // [Careful]
         // - This isn't a subscription to MMDC at all.
         // - In particular, it doesn't make the ONP event show up first in builder.
         onp.CollectionChanged += (sender, e) =>
         {
-            builder.Add(e.ToString(ReferenceEquals(sender, onp)));
-        };
-        var mmdc = new ModeledMarkdownContext<SelectableQFModel>
-        {
-            ObservableNetProjection = onp,
+            builder.Add($"{mmdc.Authority.ToString().PadRight(10)} {e.ToString(ReferenceEquals(sender, onp))}");
         };
 
         #region E V E N T S
@@ -165,7 +171,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
         // FIRST - subscribe the MMDC direct
         mmdc.ModelChanged += (sender, e) =>
         {
-            builder.Add(e.ToString(ReferenceEquals(sender, onp)));
+            builder.Add($"{mmdc.Authority.ToString().PadRight(10)} {e.ToString(ReferenceEquals(sender, onp))}");
         };
         // SECOND - subscribe the MMDC in the Composed collection
         onp.MMDC = mmdc; // Cross-linked ONP will now forware the ModelChanged event.
@@ -183,22 +189,19 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
-            { } // <- FIRST TIME ONLY: Adjust the message.
-            actual.ToClipboardAssert("Expecting 2 events x 2 subscribers (FOUR)");
             { }
             expected = @" 
-Other.Reset   NotifyCollectionChangedEventArgs           
-NetProjection.Reset   NotifyCollectionChangedEventArgs           
-Other.Add     NewItems= 1 NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NotifyCollectionChangedEventArgs           ";
-
+Commit     NotifyCollectionChangedEventArgs           Other         Reset   
+Commit     NotifyCollectionChangedEventArgs           NetProjection Reset   
+Commit     NotifyCollectionChangedEventArgs           NetProjection Reset   
+Commit     NotifyCollectionChangedEventArgs           Other         Add     NewItems= 1 
+Commit     NotifyCollectionChangedEventArgs           NetProjection Add     NewItems= 1"
+            ;
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting 2 events x 2 subscribers (FOUR)"
             );
-
-            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 21).Date, "Don't forget disabled");
             Assert.AreEqual(4, builder.Count, "TEMPORARY LIMIT");
 
             actual = onp.MMDC.Model.ToString();
@@ -224,7 +227,7 @@ NetProjection.Add     NewItems= 1 NotifyCollectionChangedEventArgs           ";
         string actual, expected;
         using var te = this.TestableEpoch();
 
-        ComposedObservableCollection<SelectableQFModel> onp = new();
+        ObservableNetProjection<SelectableQFModel> onp = new();
 
         // [Careful]
         // - This isn't a subscription to MMDC at all.
@@ -259,7 +262,7 @@ NetProjection.Add     NewItems= 1 NotifyCollectionChangedEventArgs           ";
         string actual, expected;
         using var te = this.TestableEpoch();
 
-        ComposedObservableCollection<SelectableQFModel> onp = new();
+        ObservableNetProjection<SelectableQFModel> onp = new();
 
         // [Careful]
         // - This isn't a subscription to MMDC at all.
@@ -294,7 +297,7 @@ NetProjection.Add     NewItems= 1 NotifyCollectionChangedEventArgs           ";
         string actual, expected;
         using var te = this.TestableEpoch();
 
-        ComposedObservableCollection<SelectableQFModel> onp = new();
+        ObservableNetProjection<SelectableQFModel> onp = new();
 
         // [Careful]
         // - This isn't a subscription to MMDC at all.
