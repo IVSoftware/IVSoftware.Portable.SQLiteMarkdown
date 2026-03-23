@@ -28,3 +28,26 @@ In most scenarios, changes to the UI initiated by a non UI thread are rare but a
 1. Local-first databases are cloud synced.
 2. Remote user deletes a record that is currently displayed in the ONP.
 3. The ONP updates, removing the item after determining that there is no active edit lock on the item.
+
+___
+
+### Asynchronous Operations
+
+The platform-agnostic MDC performs sequential background work under the jurisdiction of its semaphore, and is directly awaitable. 
+
+___
+
+## Authority Scopes
+
+This section details what takes place in each authority scope, what causes one to be entered, and references unit tests by the reference guid for each stated policy. Some may be familiar with the MFC paradigm of Dialog Data Exchange (DDX) where there is a component of directionality, and this documentation will borrow the acronym and use it loosely to indicate when one agent of change needs to interact with others in a manner that does not create circularity.
+
+The quiescent state of MDC has no authority.
+
+___
+
+### Projection
+
+This represents the state that is most like a normal observable collection bound to a typical platform-specific collection view. Suppose that UI actions like [Add] and [Delete] are available on the selection, or that column reordering or drag-drop are available.
+
+In 
+
