@@ -44,12 +44,12 @@ This section details what takes place in each authority scope, what causes one t
 The "net" of ONP implies that there are "other" backing stores that contribute to the current population. Here's a listing of the _local_ epoch-driven sources.
 
 **CanonicalSuperset** (or CSS which is unambiguous in this context)
-This collection represents the stack that is pushed when the system goes into Filtering mode. The ONP - the collection being viewed - is obviously not canonical, but at the same time must be revertable to the full unfiltered set.
+This collection represents the stack that is pushed when the system goes into Filtering mode. The ONP - the collection being viewed - is obviously not canonical, but at the same time must be revertable to the full unfiltered set. CSS _never_ raises `ModelChanged` on its own.
 
 **Model** Represents a hierarchy based on the `FullPath` property (if available) or the `Id` property (required - maps to the PK of the model). The model tracks CSS and always has an identical population of items. Whenever IME text changes settle, the `fmatch` attribute updates to reflect whether the item matches the new filter. When predicate sources toggle, the `pmatch` attribute updates to reflect whether the item matches the new predicate. Whenever `fmatch` or `pmatch` changes, the `ismatch` attribute updates to reflect whether the item satisfies both conditions.
 
 
-**PredicateMatchSubset** (PMSS) represents the selection of items from the Model where `ismatch`? == true;
+**PredicateMatchSubset** (PMSS) represents the selection of items from the Model where `ismatch`? == true. When PMSS collection changes, it raises ModelChanged. This includes model initialization in response to LoadCanon.
 
 ___
 _There is also a wildcard situation where a remote synchronization might, for example, permanently remove an item from contention._
