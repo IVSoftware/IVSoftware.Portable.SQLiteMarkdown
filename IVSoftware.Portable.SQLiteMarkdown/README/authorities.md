@@ -47,7 +47,9 @@ ___
 
 ### Projection
 
-This represents the state that is most like a normal observable collection bound to a typical platform-specific collection view. Suppose that UI actions like [Add] and [Delete] are available on the selection, or that column reordering or drag-drop are available.
+This represents the state that is most like a normal observable collection bound to a typical platform-specific collection view. When UI actions like [Add] and [Delete] are available on the selection, the user has the ability to modify the canonical backing stores permanently and directly.
 
-In 
+Permanent insert or remove operations are straightforward when the full list is shown, but when the ONP is already filtered heuristics are required to map new items in terms of the likely intent with respect to items that are currently hidden. That is, when those items are maded visible again, the ordering should feel intuitive when placed alongside any new items.
+
+
 
