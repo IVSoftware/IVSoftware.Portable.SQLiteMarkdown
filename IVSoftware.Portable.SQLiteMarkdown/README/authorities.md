@@ -85,6 +85,26 @@ An MDC configured as `QueryFilterConfig.QueryAndFilter` will advance to a filter
 
 ___
 
+## Authority Epochs
+
+At rest, MDC has no authority. Authority is established only within an active epoch, and determines how changes propagate between the view (ONP), the canonical superset (CSS), and the model.
+
+The system operates over three coordinated structures:
+- **CanonicalSuperset (CSS)** — the authoritative recordset for the current epoch.
+- **Model** — a structural representation of CSS, tracking match state and hierarchy.
+- **PredicateMatchSubset (PMSS)** — the currently visible subset based on filter and predicate evaluation.
+
+Authority within an epoch governs:
+- where mutations are applied first (ONP vs CSS),
+- whether intermediate changes are suppressed or propagated,
+- and what final `INotifyCollectionChanged` shape is emitted.
+
+To avoid circularity, the active authority must suppress feedback from downstream structures. For example, when the UI (projection) initiates a change, it is applied to CSS, but resulting model updates must not re-trigger changes back onto the originating projection.
+
+The flows described in the following sections (UI, Commit, Settle, Predicate) are expressions of this authority under different epoch types.
+
+___
+
 ## Topologies
 
 The MDC is platform-agnostic and does not require a UI surface, but it is designed to interoperate with one.
@@ -118,7 +138,6 @@ The view continues to interact exclusively with the `ObservableCollection<T>` in
 
 [Claim("{179C424C-B39D-444E-8AB0-AD567551742F}")]
 **UI Flow (Default)**
-
 1. Interactive changes to the visible surface invoke `ItemsSource` (the ONP), raising `CollectionChanged` on the ONP.
 2. The MDC internal handler obtains `Projection` authority, and updates the `Model` based on the BCL `NotifyCollectionChangedEventArgs`.
 3. If filter aware, the PMSS is synchronized inline.
@@ -158,12 +177,8 @@ The view continues to interact with the collection through standard BCL contract
 
 [Claim("{179C424C-B39D-444E-8AB0-AD567551742F}")]
 **UI Flow (Default)**
-
-1. 
-
 **Commit Flow**
 [Claim("{DC169D72-BE19-4A83-8106-EA702664DE8B}")]
-
 **Settle Flow**
 [Claim("{CAD5D55D-80DC-46E6-BAE3-46C69A99F8B0}")]
 **Predicate Flow**
