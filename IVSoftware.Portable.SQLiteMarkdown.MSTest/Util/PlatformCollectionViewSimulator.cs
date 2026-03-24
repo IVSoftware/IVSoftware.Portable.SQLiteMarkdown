@@ -2,7 +2,7 @@
 using IVSoftware.Portable.StateMachine;
 using System.Collections;
 using System.Collections.Specialized;
-
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Util
 {
     class PlatformCollectionViewSimulator<T> : ObservablePreviewCollection<T>
@@ -15,7 +15,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Util
 
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            base.OnCollectionChanged(e);
+            switch (ViewAuthority.Authority)
+            {
+                case ModeledCollectionChangeAuthority.Settle:
+                case ModeledCollectionChangeAuthority.Predicate:
+                    break;
+                default:
+                    base.OnCollectionChanged(e);
+                    ItemsSource.Apply(e);
+                    break;
+            }
         }
         AuthorityEpochProvider ViewAuthority { get; } = new ();
     }
