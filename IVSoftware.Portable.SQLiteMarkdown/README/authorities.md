@@ -87,9 +87,11 @@ ___
 
 ## Topologies
 
-The MDC is designed to interact with a platform-specific collection view, but the functionality of the MDC (which is platform agnostic) does not require one.
+The MDC is platform-agnostic and does not require a UI surface, but it is designed to interoperate with one.
 
-Assume that the MDC has a two-way binding to a view. When a user makes a permanent change to the visible surface (i.e. adds or removes an item) this change is pushed onto the `IList` interface. When the model initiates a change (i.e. applies a new filter or predicate) this is broadcast an a `CollectionChanged` event.
+In most applications, a view is already bound to a collection (e.g., `ItemsSource = {Binding Items}`), where `Items` is typically an `ObservableCollection<T>`. That established binding is the starting point.
+
+This section examines how MDC integrates into that existing shape. Each topology reflects a different way of satisfying the `ItemsSource` contract (`IList` + `INotifyCollectionChanged`), and explores the tradeoffs between preserving the familiar `ObservableCollection<T>` pattern versus treating the collection as a routed projection over a canonical model.
 
 From the perspective of the view binding, this takes one of the following shapes:
 
@@ -98,9 +100,19 @@ ___
 [Claim("{FA7BB019-E8BA-4B81-A4DF-34528279044A}")]
 ### Discrete `ObservableCollection<T>`
 
-In this topology, the view model exposes a property that is a discrete `ObservableCollection<T>` and binds it in the role of items source. (In other words, this would be a typical arrangement for an app prior to integrating MDC.) The view model then injects that reference into MDC using `MDC.SetNetObservableCollection(ObservableCollection<T>, option)` where, the `option` specifies whether the MDC is allowed to make direct changes to the collection directly.
+[Claim("{FA7BB019-E8BA-4B81-A4DF-34528279044A}")]
+### Discrete `ObservableCollection<T>`
 
-View <-> ItemsSource = `ObservableCollection<T>` when `MDC.SetNetObservableCollection(ItemsSource, option)`.
+In this topology, the view model exposes a property that is a discrete `ObservableCollection<T>` and binds it as the `ItemsSource`. This reflects the typical arrangement prior to integrating MDC.
+
+MDC is introduced by injecting that existing instance via `MDC.SetNetObservableCollection(ObservableCollection<T>, option)`, where `option` determines whether MDC may apply direct mutations to the collection.
+
+This approach preserves established behaviors—including override points such as `InsertItem`, `SetItem`, and `ClearItems` - and provides a low-friction entry point for adopting MDC without restructuring the view model.From the perspective of the view, interaction remains anchored to the `ObservableCollection<T>`:
+
+View <-> ItemsSource = `ObservableCollection<T>`  
+when `MDC.SetNetObservableCollection(ItemsSource, option)`
+
+The view continues to interact exclusively with the `ObservableCollection<T>` instance, even after it has been registered with MDC.
 
 #### _Altering the `CanonicalSuperset`_
 
@@ -118,7 +130,6 @@ View <-> ItemsSource = `ObservableCollection<T>` when `MDC.SetNetObservableColle
 
 **Settle Flow**
 [Claim("{CAD5D55D-80DC-46E6-BAE3-46C69A99F8B0}")]
-
 **Predicate Flow**
 [Claim("{6E400ED2-537A-40F5-B3FF-ED39CA223680}")]
 
@@ -127,9 +138,33 @@ ___
 [Claim("{34FC2036-8748-4D91-8DB7-E57934D0A351}")]
 ### Pure Implementer<T>
 
-In this topology, the view model exposes an instance of `ModeledMarkdownContext<T>` performs the two-way binding directly to it.
+Many platform-specific collection views rely on `IList` and `INotifyCollectionChanged` for the `ItemsSource` contract, but do not require `ObservableCollection<T>` specifically. This topology implements that contract directly, eliminating the standalone `ObservableCollection<T>` intermediate layer.
 
-Platform-specific collection views typically rely on `IList` and `INotifyCollectionChanged` for the `ItemsSource` contract, and don't really care whether the implementation is (or inherits) `ObservableCollection<T>`.
+**Pro**  
+Rather than copying items into a canonical backing store when entering `IsFiltering` (and restoring them when exiting), the collection routes between canonical and filtered views. This avoids push/pop synchronization, reduces churn, and reflects the current state without reconstruction.
 
+**Con**  
+This approach does not inherit from `ObservableCollection<T>`, so override points such as `InsertItem`, `SetItem`, and `ClearItems` are not available. Custom mutation logic must be implemented explicitly rather than relying on BCL hooks.
 
+From the perspective of the view, interaction is anchored to the contract rather than a concrete type:
 
+View <-> ItemsSource = MDC
+where: `MDC : IList, INotifyCollectionChanged`  
+when ItemsSource is not `ObservableCollection<T>`
+
+The view continues to interact with the collection through standard BCL contracts, without requiring `ObservableCollection<T>` as an intermediate.
+
+#### _Altering the `CanonicalSuperset`_
+
+[Claim("{179C424C-B39D-444E-8AB0-AD567551742F}")]
+**UI Flow (Default)**
+
+1. 
+
+**Commit Flow**
+[Claim("{DC169D72-BE19-4A83-8106-EA702664DE8B}")]
+
+**Settle Flow**
+[Claim("{CAD5D55D-80DC-46E6-BAE3-46C69A99F8B0}")]
+**Predicate Flow**
+[Claim("{6E400ED2-537A-40F5-B3FF-ED39CA223680}")]
