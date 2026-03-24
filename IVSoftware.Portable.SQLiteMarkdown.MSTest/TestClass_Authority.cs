@@ -25,7 +25,7 @@ public class TestClass_Authority
     {
         public TestableMMDC(ObservablePreviewCollection<SelectableQFModel> onp, NetProjectionOption option)
         {
-            base.SetObservableNetCollection(onp, option);
+            base.SetObservableNetProjection(onp, option);
         }
     }
 
@@ -477,10 +477,7 @@ NoAuthority NotifyCollectionChangedEventArgs           NetProjection Add     New
         {
             builder.Add(e.ToString(ReferenceEquals(sender, onp)));
         };
-        var mmdc = new ModeledMarkdownContext<SelectableQFModel>
-        {
-            ObservableNetProjection = onp,
-        };
+        var mmdc = new ModeledMarkdownContext<SelectableQFModel>(onp, NetProjectionOption.AllowDirectChanges);
 
         #region E V E N T S
         mmdc.ModelChanged += (sender, e) =>
@@ -562,10 +559,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
         List<SelectableQFModel> recordset = new();
 
         ObservablePreviewCollection<SelectableQFModel> onp = new();
-        var mmdc = new ModeledMarkdownContext<SelectableQFModel>
-        {
-            ObservableNetProjection = onp,
-        };
+        var mmdc = new ModeledMarkdownContext<SelectableQFModel>(onp, NetProjectionOption.AllowDirectChanges);
 
         // [Careful]
         // - This isn't a subscription to MMDC at all.
@@ -641,10 +635,7 @@ Commit     NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         {
             builder.Add(e.ToString(ReferenceEquals(sender, onp)));
         };
-        var mmdc = new ModeledMarkdownContext<SelectableQFModel>
-        {
-            ObservableNetProjection = onp,
-        };
+        var mmdc = new ModeledMarkdownContext<SelectableQFModel>(onp, NetProjectionOption.AllowDirectChanges);
 
         #region E V E N T S
         mmdc.ModelChanged += (sender, e) =>
@@ -672,10 +663,7 @@ Commit     NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         {
             builder.Add(e.ToString(ReferenceEquals(sender, onp)));
         };
-        var mmdc = new ModeledMarkdownContext<SelectableQFModel>
-        {
-            ObservableNetProjection = onp,
-        };
+        var mmdc = new ModeledMarkdownContext<SelectableQFModel>(onp, NetProjectionOption.AllowDirectChanges);
 
         #region E V E N T S
         mmdc.ModelChanged += (sender, e) =>
@@ -703,10 +691,7 @@ Commit     NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         {
             builder.Add(e.ToString(ReferenceEquals(sender, onp)));
         };
-        var mmdc = new ModeledMarkdownContext<SelectableQFModel>
-        {
-            ObservableNetProjection = onp,
-        };
+        var mmdc = new ModeledMarkdownContext<SelectableQFModel>(onp, NetProjectionOption.AllowDirectChanges);
 
         #region E V E N T S
         mmdc.ModelChanged += (sender, e) =>

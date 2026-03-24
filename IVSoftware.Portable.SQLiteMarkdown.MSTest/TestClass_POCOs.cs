@@ -28,9 +28,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             string actual, expected;
 
             // IOC - Construct inline then pull.
-            var pmdc = new PredicateMarkdownContext<SelectableQFModel>
+            var pmdc = new PredicateMarkdownContext<SelectableQFModel>(
+                new ObservableCollection<SelectableQFModel>(), 
+                NetProjectionOption.AllowDirectChanges)
             {
-                ObservableNetProjection = new ObservableCollection<SelectableQFModel>(),
                 QueryFilterConfig = QueryFilterConfig.Filter,
             };
             pmdc.ObservableNetProjection.CollectionChanged += (sender, e) =>

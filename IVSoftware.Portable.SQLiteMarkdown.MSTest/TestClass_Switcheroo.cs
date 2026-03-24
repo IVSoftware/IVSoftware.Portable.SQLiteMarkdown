@@ -54,9 +54,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             void subtest_Inheritor()
             {
                 // Mental Model: "I inherit MDC to support a free-standing ObservableCollection {T}"
-                var mdci = new ObservableNetProjectionInheritsMDC<SelectableQFModel>
+                var mdci = new ObservableNetProjectionInheritsMDC<SelectableQFModel>(
+                    new ObservableCollection<SelectableQFModel>(),
+                    NetProjectionOption.AllowDirectChanges)
                 {
-                    ObservableNetProjection = new ObservableCollection<SelectableQFModel>(),
                 };
 
                 // This WORKS because ONP IS NOT NULL.
@@ -76,14 +77,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
                 var mdcc = onpc.Model.To<ModeledMarkdownContext<SelectableQFModel>>();
                 // SET ONP TO NULL
-                mdcc.ObservableNetProjection = null;
+                mdcc.SetObservableNetProjection(null, NetProjectionOption.ObservableOnly);
                 Assert.AreEqual(
                     ProjectionTopology.None,
                     onpc.ProjectionTopology,
                     "Expecting NONE is the epistemic default BECAUSE WE SET ONP TO NULL.");
 
                 var oc = new ObservableCollection<SelectableQFModel>();
-                mdcc.ObservableNetProjection = oc;
+                mdcc.SetObservableNetProjection(oc, NetProjectionOption.ObservableOnly);
 
                 Assert.AreEqual(
                     ProjectionTopology.Composition,
@@ -142,7 +143,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 });
 
             var inherited = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
-            //inherited.ProjectionTopology = ProjectionTopology.Inheritance;
 
             await subtest_CheckForExpectedAdvisory();
             subtest_DetectTopology();
@@ -386,7 +386,7 @@ MarkdownContext Clear(all=True)";
                     "Expecting ABSENCE OF INHERITANCE is detectable from the start as 'COMPOSITION'.");
 
                 var mdcc = onpc.Model.To<ModeledMarkdownContext<SelectableQFModel>>();
-                mdcc.ObservableNetProjection = null;
+                mdcc.SetObservableNetProjection(null);
                 Assert.AreEqual(
                     ProjectionTopology.None,
                     onpc.ProjectionTopology,
@@ -407,6 +407,14 @@ MarkdownContext Clear(all=True)";
             , INotifyCollectionChanged
             where T : new()
         {
+            public ObservableNetProjectionInheritsMDC() { }
+            public ObservableNetProjectionInheritsMDC(
+                ObservableCollection<T> onp, 
+                NetProjectionOption option)
+                : base(onp, option)
+            {
+            }
+
             public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
             // Expose for test.
@@ -422,7 +430,7 @@ MarkdownContext Clear(all=True)";
         {
             public ObservableNetProjectionWithComposition()
             {
-                _mdc.SetObservableNetCollection(this, NetProjectionOption.AllowDirectChanges);
+                _mdc.SetObservableNetProjection(this, NetProjectionOption.AllowDirectChanges);
                 ProjectionOption = NetProjectionOption.ObservableOnly;
                 ModelSettled += (sender, e) =>
                 {

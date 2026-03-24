@@ -63,7 +63,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         }
         public Topology(ObservableCollection<T> onp, NetProjectionOption option) : this()
         {
-            SetObservableNetCollection(onp, option);
+            SetObservableNetProjection(onp, option);
         }
 
         protected override void OnFilteringStateChanged()
@@ -188,7 +188,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
         protected virtual void OnNetProjectionHandleChanged() { }
 
-        public void SetObservableNetCollection(ObservableCollection<T> onp, NetProjectionOption option)
+        public void SetObservableNetProjection(
+            ObservableCollection<T>? onp, 
+            NetProjectionOption option = NetProjectionOption.AllowDirectChanges)
         {
 #if false
             if (ProjectionTopology == ProjectionTopology.Inheritance)

@@ -41,7 +41,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 name: nameof(StdMarkdownAttribute.mmdc),
                 text: $"[MMDC]");
         }
-        public ModeledMarkdownContext(ObservableCollection<T> onp, NetProjectionOption option)
+        public ModeledMarkdownContext(
+            ObservableCollection<T> onp,
+            NetProjectionOption option)
             : base(onp, option) { }
 
         SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);

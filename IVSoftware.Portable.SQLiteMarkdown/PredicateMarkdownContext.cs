@@ -1,8 +1,10 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
@@ -14,6 +16,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         , IPredicateMarkdownContext
         where T : new()
     {
+        public PredicateMarkdownContext() 
+        { }
+        public PredicateMarkdownContext(
+            ObservableCollection<T> onp,
+            NetProjectionOption option)
+            : base(onp, option) { }
+
         public IReadOnlyDictionary<string, Enum> ActiveFilters => ActivePredicatesProtected.AsReadOnly;
 
         [Careful("Don't draw inferences from changes in the collection itself.")]

@@ -126,8 +126,8 @@ public class TestClass_PredicateMarkdownContext
         string actual, expected;
         List<string> builder = new();
 
-        ObservableCollection<SelectableQFModel> opc = new();
-        opc.PopulateForDemo(10);
+        ObservableCollection<SelectableQFModel> onp = new();
+        onp.PopulateForDemo(10);
 
         subtest_TriggerBy_ProjectionBeforeState();
         subtest_TriggerBy_StateBeforeProjection();
@@ -137,11 +137,7 @@ public class TestClass_PredicateMarkdownContext
         #region S U B T E S T S
         void subtest_TriggerBy_ProjectionBeforeState()
         {
-            var mdc = new ModeledMarkdownContext<SelectableQFModel>
-            {
-                ObservableNetProjection = opc,
-            };
-
+            var mdc = new ModeledMarkdownContext<SelectableQFModel>(onp, NetProjectionOption.AllowDirectChanges);
             // In this test, the items are already populated
             // before switching into filter mode.
             mdc.QueryFilterConfig = QueryFilterConfig.Filter;
@@ -190,7 +186,7 @@ public class TestClass_PredicateMarkdownContext
                 "Expecting EMPTY because ONP is not assigned yet."
             );
 
-            mdc.ObservableNetProjection = opc;
+            mdc.SetObservableNetProjection(onp, NetProjectionOption.AllowDirectChanges);
 
             actual = mdc.Model.ToString();
             actual.ToClipboardExpected();
@@ -238,18 +234,16 @@ public class TestClass_PredicateMarkdownContext
         const bool INCLUDE_LIVE_DEMO = true;
         int COUNT = INCLUDE_LIVE_DEMO ? 37 : 31;
 
-        var opc = new ObservableCollection<TemporalAffinityQFModel>();
+        var onp = new ObservableCollection<TemporalAffinityQFModel>();
         Assert.AreEqual(
             COUNT,
-            opc.PopulateForDemo(includeLiveDemo: true).Count, 
+            onp.PopulateForDemo(includeLiveDemo: true).Count, 
             "Expecting initial population.");
 
         // Filter-only MDC: Wakes up loaded with opc as canon.
-        var pmdc = new PredicateMarkdownContext<TemporalAffinityQFModel>
+        var pmdc = new PredicateMarkdownContext<TemporalAffinityQFModel>(onp, NetProjectionOption.AllowDirectChanges)
         {
             QueryFilterConfig = QueryFilterConfig.Filter,
-            ObservableNetProjection = opc,
-            ProjectionOption = NetProjectionOption.AllowDirectChanges,
         };
 
         Assert.IsTrue(pmdc.IsFiltering);
