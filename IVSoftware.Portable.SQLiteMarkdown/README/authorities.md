@@ -2,11 +2,11 @@
 
 ## Authorities
 
-Authority epochs refer to the provenance of any cylclical FSM state that has been entered.
+Authority epochs refer to the provenance of any cyclical FSM state that has been entered.
 
-### UI Thread
+## UI Thread
 
-Changes of state occur, nearly all of the time, by user actions on a visible projection surface. The UI surface that interacts with a `MarkdownContext` (MDC) typically presents a list, grid, or tree-style view. This element is referred to as the `ObservableNetProjection` (ONP) and is intended for binding to the platform-specific control directly. The UI elements that can also include:
+Changes of state _usually_ occur because of user actions on a visible projection surface. The UI surface that interacts with a `MarkdownContext` (MDC) typically presents a list, grid, or tree-style view. This element is referred to as the `ObservableNetProjection` (ONP) and is intended for binding to the platform-specific control directly. The UI elements that can also include:
 
 - **Input Method Entry (IME)** - A textbox-style control for query search terms that can also change state to serve as a filter to refine a recordset once received.
 
@@ -21,9 +21,9 @@ Changes of state occur, nearly all of the time, by user actions on a visible pro
 
 ___
 
-### Synchronization thread
+## Synchronization thread
 
-In most scenarios, changes to the UI initiated by a non UI thread are rare but are shown by this example.
+Changes to the UI initiated by a non UI thread are less common but can be shown by this example.
 
 1. Local-first databases are cloud synced.
 2. Remote user deletes a record that is currently displayed in the ONP.
@@ -31,9 +31,86 @@ In most scenarios, changes to the UI initiated by a non UI thread are rare but a
 
 ___
 
-### Asynchronous Operations
+## Asynchronous Operations
 
 The platform-agnostic MDC performs sequential background work under the jurisdiction of its semaphore, and is directly awaitable. 
+
+___
+
+## Canon
+
+The MDC exposes a `LoadCanon(IEnumerable recordset)` method which establishes a baseline model for any subsequent operations that occur inside the recordset's **Epoch**.
+___
+
+## Epoch
+
+In Query states, a recordset that is captured as a result of a `Commit()` becomes replaces any existing items and becomes the new canon.
+
+___
+
+### Query Only
+
+An MDC configured as `QueryFilterConfig.Query` does not advance to a Filter state. The visible surface always shows all of the items, albeit the order and depth can change. These change might be ephemeral (e.g., a column header sort) or permanent (e.g. a drag-drop).
+
+As policy, the `ObservableNetCollection` and the `CanonicalSupersetInternal` are set to the same reference.
+___
+
+### Filter Only
+
+An MDC configured as `QueryFilterConfig.Filter` typically receives an initial `LoadCanon()` and filters on the same items for its lifetime.
+
+___
+
+### Query and Filter
+
+An MDC configured as `QueryFilterConfig.QueryAndFilter` will advance to a filtering state when `LoadCanon()` injects a collection of two or more items.
+
+___
+
+
+## Topologies
+
+The MDC is designed to interact with a platform-specific collection view, but the functionality of the MDC (which is platform agnostic) does not require one.
+
+Assume that the MDC has a two-way binding to a view. When a user makes a permanent change to the visible surface (i.e. adds or removes an item) this change is pushed onto the `IList` interface. When the model initiates a change (i.e. applies a new filter or predicate) this is broadcast an a `CollectionChanged` event.
+
+From the perspective of the view binding, this takes one of the following shapes:
+
+{95085EED-A92D-4BA8-B7A2-8568477F6524}
+### Discrete `ObservableCollection<T>`
+
+In this topology, the view model exposes a property that is a discrete `ObservableCollection<T>` and binds it in the role of items source. (In other words, this would be a typical arrangement for an app prior to integrating MDC.) The view model then injects that reference into MDC using `MDC.SetNetObservableCollection(ObservableCollection<T>, option)` where, the `option` specifies whether the MDC is allowed to make direct changes to the collection directly.
+
+View <-> ItemsSource = `ObservableCollection<T>` when `MDC.SetNetObservableCollection(ItemsSource, option)`.
+
+### Minimal Migration Step
+
+If the `MDC` is set to `QueryFilterConfig.Query` then the ItemsSource is always canonical. That is, there are no `Filter` operations that would ever cause it to hold less than the full recordset. The main difference is that changes now propagate to `MDC.Model` which is based on the Primary Key (PK) of the item.
+
+Internally, the `CanonicalSuperset` is set so that ReferenceEquals(ItemsSource).
+___
+
+_MODEL - Salient Points_
+
+- If the item type supports a `FullPath` property, the model is hierarchal and supports a `Depth` property for the item.
+- A canonical sort order is captured that allows ephemeral sorts (e.g. column header clicks) to be reverted.
+
+___
+
+
+
+
+
+
+
+
+
+- The MDC itself (`INotifyCollectionChanged` via `ModeledMarkdownContext<T>`)
+- An `ObservableCollection<T>` (or more likely an `ObservablePreviewCollection<T>`) injected as the ONP
+
+
+
+In the first case, the `IList` interface can be invoked be invoked
 
 ___
 
@@ -63,23 +140,23 @@ ___
 
 The Projection authority represents the state that is most like a normal observable collection bound to a typical platform-specific collection view. When UI actions like [Add] and [Delete] are available on the selection, the user has the ability to modify the canonical backing stores permanently and directly.
 
-Assume that the MDC is bound to a platform-specific collection view. Either:
-- The MDC itself (`INotifyCollectionChanged` via `ModeledMarkdownContext<T>`)
-- An `ObservableCollection<T>` (or more likely an `ObservablePreviewCollection<T>`) injected as the ONP
-
+___
 In the first case, when the `IList` interface is invoked.
 
-Δ `CanonicalSuperset` (CSS) raises its own collection changed
+Δ `CanonicalSuperset` (CSS) raises its own `CollectionChanged` 
 -> Model
 -> PredicateMatchSubset
 -> ModelChanged
+-> `MDC.CollectionChanged` 
 
 The question now is whether ModelChanged should be applied to ONP which is one of:
 - Null (Inherited option)
 - ObservableOnly
 - AllowDirectChanges
+___
+In the second case, the platform-specific collection view is already listening to `MDC.CollectionChanged`.
 
-
+___
 These persistent insert or remove operations are straightforward when the full list is shown, but when the ONP is already filtered heuristics are required to map new items in terms of the likely intent with respect to items that are currently hidden. That is, when those items are made visible again, the ordering should feel intuitive when placed alongside any new items.
 
 ___
