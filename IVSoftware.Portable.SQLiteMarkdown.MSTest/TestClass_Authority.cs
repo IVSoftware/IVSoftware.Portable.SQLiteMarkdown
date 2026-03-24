@@ -4,6 +4,7 @@ using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
+using IVSoftware.Portable.SQLiteMarkdown.MSTest.Util;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.StateMachine;
 using IVSoftware.WinOS.MSTest.Extensions;
@@ -404,6 +405,8 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         var i3 = eph.AddDynamic("Item03");
 
         var srce = new ObservablePreviewCollection<SelectableQFModel>();
+        var view = new PlatformCollectionViewSimulator<SelectableQFModel>(srce);
+
         var builder = new List<string>();
 
         var mmdc = new TestableMMDC(onp: srce, option: NetProjectionOption.AllowDirectChanges);
@@ -414,7 +417,9 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         [Claim("{179C424C-B39D-444E-8AB0-AD567551742F}")]
         void subtest_UIFlow()
         {
-            Assert.AreSame(srce, mmdc.CanonicalSupersetInternal);
+            Assert.AreEqual(0, srce.Count);
+            view.Add(i1);
+            Assert.AreEqual(1, srce.Count);
             { }
         }
         #endregion S U B T E S T S
