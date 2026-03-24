@@ -391,6 +391,7 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewI
 
 
     [TestMethod, DoNotParallelize]
+    [Claim("{FA7BB019-E8BA-4B81-A4DF-34528279044A}")]
     public void Test_Discrete()
     {
         string actual, expected;
@@ -406,6 +407,14 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         var builder = new List<string>();
 
         var mmdc = new TestableMMDC(onp: srce, option: NetProjectionOption.AllowDirectChanges);
+
+        subtest_UIFlow();
+
+        #region S U B T E S T S
+        void subtest_UIFlow()
+        {
+        }
+        #endregion S U B T E S T S
     }
 
 

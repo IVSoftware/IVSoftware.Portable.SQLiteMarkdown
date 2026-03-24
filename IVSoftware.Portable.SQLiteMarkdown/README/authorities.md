@@ -97,6 +97,7 @@ From the perspective of the view binding, this takes one of the following shapes
 
 ___
 
+[Claim("{FA7BB019-E8BA-4B81-A4DF-34528279044A}")]
 ### Discrete `ObservableCollection<T>`
 
 In this topology, the view model exposes a property that is a discrete `ObservableCollection<T>` and binds it in the role of items source. (In other words, this would be a typical arrangement for an app prior to integrating MDC.) The view model then injects that reference into MDC using `MDC.SetNetObservableCollection(ObservableCollection<T>, option)` where, the `option` specifies whether the MDC is allowed to make direct changes to the collection directly.
@@ -105,7 +106,7 @@ View <-> ItemsSource = `ObservableCollection<T>` when `MDC.SetNetObservableColle
 
 #### _Altering the `CanonicalSuperset`_
 
-[Unit Test {179C424C-B39D-444E-8AB0-AD567551742F}]
+[Claim("{179C424C-B39D-444E-8AB0-AD567551742F}")]
 **UI Flow (Default)**
 
 1. Interactive changes to the visible surface invoke `ItemsSource` (the ONP), raising `CollectionChanged` on the ONP.
@@ -115,12 +116,12 @@ View <-> ItemsSource = `ObservableCollection<T>` when `MDC.SetNetObservableColle
 5. Holding `Projection` authority means that _no attempt_ will be made to modify eithr ONP or CSS. 
 
 **Commit Flow**
-[Unit Test {DC169D72-BE19-4A83-8106-EA702664DE8B}]
+[Claim("{DC169D72-BE19-4A83-8106-EA702664DE8B}")]
 
 **Settle Flow**
-[Unit Test {CAD5D55D-80DC-46E6-BAE3-46C69A99F8B0}]
+[Claim("{CAD5D55D-80DC-46E6-BAE3-46C69A99F8B0}")]
 
 **Predicate Flow**
-[Unit Test {6E400ED2-537A-40F5-B3FF-ED39CA223680}]
+[Claim("{6E400ED2-537A-40F5-B3FF-ED39CA223680}")]
 
 ___
