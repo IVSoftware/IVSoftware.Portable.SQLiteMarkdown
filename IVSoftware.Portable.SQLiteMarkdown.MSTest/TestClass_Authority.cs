@@ -411,8 +411,11 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         subtest_UIFlow();
 
         #region S U B T E S T S
+        [Claim("{179C424C-B39D-444E-8AB0-AD567551742F}")]
         void subtest_UIFlow()
         {
+            Assert.AreSame(srce, mmdc.CanonicalSupersetInternal);
+            { }
         }
         #endregion S U B T E S T S
     }

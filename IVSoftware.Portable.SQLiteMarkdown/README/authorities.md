@@ -71,8 +71,6 @@ ___
 ### Query Only
 
 An MDC configured as `QueryFilterConfig.Query` does not advance to a Filter state. The visible surface always shows all of the items, albeit the order and depth can change. These change might be ephemeral (e.g., a column header sort) or permanent (e.g. a drag-drop).
-
-As policy, the `ObservableNetCollection` and the `CanonicalSupersetInternal` are set to the same reference.
 ___
 
 ### Filter Only
@@ -125,3 +123,13 @@ View <-> ItemsSource = `ObservableCollection<T>` when `MDC.SetNetObservableColle
 [Claim("{6E400ED2-537A-40F5-B3FF-ED39CA223680}")]
 
 ___
+
+[Claim("{34FC2036-8748-4D91-8DB7-E57934D0A351}")]
+### Pure Implementer<T>
+
+In this topology, the view model exposes an instance of `ModeledMarkdownContext<T>` performs the two-way binding directly to it.
+
+Platform-specific collection views typically rely on `IList` and `INotifyCollectionChanged` for the `ItemsSource` contract, and don't really care whether the implementation is (or inherits) `ObservableCollection<T>`.
+
+
+
