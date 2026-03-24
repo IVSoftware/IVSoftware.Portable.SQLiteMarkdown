@@ -493,9 +493,6 @@ MarkdownContext Clear(all=True)";
                 remove => ((IModeledMarkdownContext)_mdc).ModelChanged -= value;
             }
 
-            public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority)
-                => ((IModeledMarkdownContext)_mdc).BeginCollectionChangeAuthority(authority);
-
             public FilteringState Clear(bool all)
                 => ((IMarkdownContext)_mdc).Clear(all);
 
@@ -518,9 +515,7 @@ MarkdownContext Clear(all=True)";
             public ProjectionTopology ProjectionTopology => ((IModeledMarkdownContext)_mdc).ProjectionTopology;
 
             public ObservableCollection<T>? ObservableNetProjection => 
-                (ObservableCollection<T>?)
-                ((IModeledMarkdownContext<T>)_mdc)
-                .ObservableNetProjection;
+                ((IModeledMarkdownContext<T>)_mdc).ObservableNetProjection;
 
             public int PredicateMatchCount => ((IMarkdownContext)_mdc).PredicateMatchCount;
 
