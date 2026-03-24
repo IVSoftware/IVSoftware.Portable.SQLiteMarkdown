@@ -58,8 +58,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             CanonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetInternal);
             PredicateMatchSubsetInternal = new();
             PredicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetInternal);
-            CanonicalSupersetInternal.CollectionChanging += (sender, e) =>OnCanonicalSupersetChanging(e);
-            CanonicalSupersetInternal.CollectionChanged += (sender, e) =>OnCanonicalSupersetChanged(e);
+            CanonicalSupersetInternal.CollectionChanging += (sender, e) => OnCanonicalSupersetChanging(e);
+            CanonicalSupersetInternal.CollectionChanged += (sender, e) => OnCanonicalSupersetChanged(e);
         }
         public Topology(ObservableCollection<T> onp, NetProjectionOption option) : this()
         {

@@ -48,14 +48,13 @@ public class TestClass_PreviewCollection
         #region S U B T E S T S
         void subtest_BasicAddRemoveWithCancellation()
         {
-
             currentItem = opc.AddDynamic("Brown Dog", "[canine][color]", false, new() { "loyal", "friend", "furry" });
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs           "
+NotifyCollectionChangedEventArgs           NetProjection Add     NewItems= 1 NewIndex= 0"
             ;
 
             Assert.AreEqual(
@@ -121,7 +120,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs  
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs           "
+NotifyCollectionChangedEventArgs           NetProjection Add     NewItems= 1 NewIndex= 0"
             ;
 
             Assert.AreEqual(
@@ -308,7 +307,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs  
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Replace NewItems= 1 OldItems= 1 NewIndex= 0 OldIndex= 0 NotifyCollectionChangedEventArgs           "
+NotifyCollectionChangedEventArgs           NetProjection Replace NewItems= 1 OldItems= 1 NewIndex= 0 OldIndex= 0"
             ;
 
             Assert.AreEqual(
@@ -362,7 +361,7 @@ NetProjection.Replace NewItems= 1 OldItems= 1 NewIndex= 0 OldIndex= 0 NotifyColl
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           "
+NotifyCollectionChangedEventArgs           NetProjection Reset"
             ;
 
             Assert.AreEqual(
@@ -440,9 +439,9 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
             { }
-            expected = @" 
-NetProjection.Move    NewItems= 1 OldItems= 1 NewIndex= 1 OldIndex= 0 NotifyCollectionChangedEventArgs           "
-            ;
+expected = @" 
+NotifyCollectionChangedEventArgs           NetProjection Move    NewItems= 1 OldItems= 1 NewIndex= 1 OldIndex= 0"
+;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
