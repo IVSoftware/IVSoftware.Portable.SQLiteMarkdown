@@ -386,7 +386,31 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         #endregion S U B T E S T S
     }
 
+
     [TestMethod, DoNotParallelize]
+    public void Test_Discrete()
+    {
+        string actual, expected;
+        using var te = this.TestableEpoch();
+
+        IList<SelectableQFModel>? eph = null;
+        // CREATE (no side effects)
+        var i1 = eph.AddDynamic("Item01");
+        var i2 = eph.AddDynamic("Item02");
+        var i3 = eph.AddDynamic("Item03");
+
+        var srce = new ObservablePreviewCollection<SelectableQFModel>();
+        var builder = new List<string>();
+
+        var mmdc = new TestableMMDC
+        {
+            ObservableNetProjection = srce,
+        };
+
+    }
+
+
+    [TestMethod, DoNotParallelize, Ignore, Obsolete]
     public void Test_GravityAbstract()
     {
         string actual, expected;
