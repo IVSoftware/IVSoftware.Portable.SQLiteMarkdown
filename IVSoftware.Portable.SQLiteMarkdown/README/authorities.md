@@ -110,7 +110,9 @@ View <-> ItemsSource = `ObservableCollection<T>` when `MDC.SetNetObservableColle
 1. Interactive changes to the visible surface invoke `ItemsSource` (the ONP), raising `CollectionChanged` on the ONP.
 2. The MDC internal handler obtains `Projection` authority, and updates the `Model` based on the BCL `NotifyCollectionChangedEventArgs`.
 3. If filter aware, the PMSS is synchronized inline.
-3. The `ModelChanged` event is raised. This is a before-and-after diff with respect to ONP (which might already be reduced).
+4. The `ModelChanged` event is raised. This is a before-and-after diff with respect to ONP (which might already be reduced).
+5. Holding `Projection` authority means that _no attempt_ will be made to modify eithr ONP or CSS. 
+
 
 ___
 
