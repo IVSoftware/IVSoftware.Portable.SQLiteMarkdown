@@ -45,7 +45,27 @@ ___
 ## Epoch
 
 In Query states, a recordset that is captured as a result of a `Commit()` becomes replaces any existing items and becomes the new canon.
+___
 
+## Model
+
+An `XElement` root model tracks changes to the canonical superset. These changes come from one of these sources.
+
+- _Load Canon_ - Existing items are replaced by the new canonical recordset, and the `Model` is reinitialized from it.
+- _Add-Remove UI Surface_ - When existing items are permanently removed (i.e., from a master database) interactively.
+- _Remote Sync_ - For example, when an item removal is detected in a remote sync operation.
+
+If the item type supports a `FullPath` property, the model is hierarchal and supports a `Depth` property for the item.
+
+The canonical sort order is captured so that ephemeral sorts (e.g. column header clicks) can be reverted.
+
+### Filtering
+
+The `qmatch` attribute is set based on the internal `FilterQueryDatabase` returning a matching PK for a filter expression.
+
+The `pmatch` attribute is set based on toggles of active predicates.
+
+The `ismatch` attribute is an AND of the other two if either are present, but otherwise defaults to "effectively true".
 ___
 
 ### Query Only
@@ -67,7 +87,6 @@ An MDC configured as `QueryFilterConfig.QueryAndFilter` will advance to a filter
 
 ___
 
-
 ## Topologies
 
 The MDC is designed to interact with a platform-specific collection view, but the functionality of the MDC (which is platform agnostic) does not require one.
@@ -76,24 +95,13 @@ Assume that the MDC has a two-way binding to a view. When a user makes a permane
 
 From the perspective of the view binding, this takes one of the following shapes:
 
-{95085EED-A92D-4BA8-B7A2-8568477F6524}
+___
+
 ### Discrete `ObservableCollection<T>`
 
 In this topology, the view model exposes a property that is a discrete `ObservableCollection<T>` and binds it in the role of items source. (In other words, this would be a typical arrangement for an app prior to integrating MDC.) The view model then injects that reference into MDC using `MDC.SetNetObservableCollection(ObservableCollection<T>, option)` where, the `option` specifies whether the MDC is allowed to make direct changes to the collection directly.
 
 View <-> ItemsSource = `ObservableCollection<T>` when `MDC.SetNetObservableCollection(ItemsSource, option)`.
-
-### Minimal Migration Step
-
-If the `MDC` is set to `QueryFilterConfig.Query` then the ItemsSource is always canonical. That is, there are no `Filter` operations that would ever cause it to hold less than the full recordset. The main difference is that changes now propagate to `MDC.Model` which is based on the Primary Key (PK) of the item.
-
-Internally, the `CanonicalSuperset` is set so that ReferenceEquals(ItemsSource).
-___
-
-_MODEL - Salient Points_
-
-- If the item type supports a `FullPath` property, the model is hierarchal and supports a `Depth` property for the item.
-- A canonical sort order is captured that allows ephemeral sorts (e.g. column header clicks) to be reverted.
 
 ___
 
