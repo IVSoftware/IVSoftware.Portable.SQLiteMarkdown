@@ -7,6 +7,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
+using Microsoft.VisualStudio.TestPlatform.Common.DataCollection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using SQLite;
@@ -67,17 +68,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             void subtest_Compositor()
             {
-                var mdcc = new ObservableNetProjectionWithComposition<SelectableQFModel>();
+                var onpc = new ObservableNetProjectionWithComposition<SelectableQFModel>();
                 Assert.AreEqual(
                     ProjectionTopology.Composition,
-                    mdcc.ProjectionTopology,
+                    onpc.ProjectionTopology,
                     "Expecting COMPOSITION as assigned in CTor.");
 
+                var mdcc = onpc.Model.To<ModeledMarkdownContext<SelectableQFModel>>();
                 // SET ONP TO NULL
                 mdcc.ObservableNetProjection = null;
                 Assert.AreEqual(
                     ProjectionTopology.None,
-                    mdcc.ProjectionTopology,
+                    onpc.ProjectionTopology,
                     "Expecting NONE is the epistemic default BECAUSE WE SET ONP TO NULL.");
 
                 var oc = new ObservableCollection<SelectableQFModel>();
@@ -85,7 +87,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
                 Assert.AreEqual(
                     ProjectionTopology.Composition,
-                    mdcc.ProjectionTopology,
+                    onpc.ProjectionTopology,
                     "Expecting promotion to COMPOSITION now that assignment has been made.");
             }
             #endregion S U B T E S T S
@@ -370,23 +372,24 @@ MarkdownContext Clear(all=True)";
         {
             string actual, expected;
             List<string> builder = new();
-            ObservableNetProjectionWithComposition<SelectableQFModel> mdc;
+            ObservableNetProjectionWithComposition<SelectableQFModel> onpc;
 
             subtest_DetectTopology();
 
             #region S U B T E S T S
             void subtest_DetectTopology()
             {
-                mdc = new ObservableNetProjectionWithComposition<SelectableQFModel>();
+                onpc = new ObservableNetProjectionWithComposition<SelectableQFModel>();
                 Assert.AreEqual(
                     ProjectionTopology.Composition,
-                    mdc.ProjectionTopology,
+                    onpc.ProjectionTopology,
                     "Expecting ABSENCE OF INHERITANCE is detectable from the start as 'COMPOSITION'.");
 
-                mdc.ObservableNetProjection = null;
+                var mdcc = onpc.Model.To<ModeledMarkdownContext<SelectableQFModel>>();
+                mdcc.ObservableNetProjection = null;
                 Assert.AreEqual(
                     ProjectionTopology.None,
-                    mdc.ProjectionTopology,
+                    onpc.ProjectionTopology,
                     "Expecting NONE.");
             }
             #endregion S U B T E S T S
@@ -419,10 +422,11 @@ MarkdownContext Clear(all=True)";
         {
             public ObservableNetProjectionWithComposition()
             {
-                ObservableNetProjection = this;
+                _mdc.SetObservableNetCollection(this, NetProjectionOption.AllowDirectChanges);
                 ProjectionOption = NetProjectionOption.ObservableOnly;
                 ModelSettled += (sender, e) =>
                 {
+                    Debug.Fail($@"ADVISORY - First Time.");
                     switch (Authority)
                     {
                         case CollectionChangeAuthority.SupressAllEvents:
@@ -513,11 +517,10 @@ MarkdownContext Clear(all=True)";
             [JsonConverter(typeof(StringEnumConverter))]
             public ProjectionTopology ProjectionTopology => ((IModeledMarkdownContext)_mdc).ProjectionTopology;
 
-            public ObservableCollection<T>? ObservableNetProjection
-            {
-                get => ((IModeledMarkdownContext<T>)_mdc).ObservableNetProjection;
-                set => ((IModeledMarkdownContext<T>)_mdc).ObservableNetProjection = value;
-            }
+            public ObservableCollection<T>? ObservableNetProjection => 
+                (ObservableCollection<T>?)
+                ((IModeledMarkdownContext<T>)_mdc)
+                .ObservableNetProjection;
 
             public int PredicateMatchCount => ((IMarkdownContext)_mdc).PredicateMatchCount;
 

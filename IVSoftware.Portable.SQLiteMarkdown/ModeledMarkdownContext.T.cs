@@ -1122,5 +1122,10 @@ SELECT * FROM items WHERE
                     break;
             }
         }
+
+        public void SetObservableNetCollection(ObservableCollection<T> onp, NetProjectionOption option)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
