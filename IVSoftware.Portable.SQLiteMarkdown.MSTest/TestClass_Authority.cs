@@ -21,9 +21,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 public class TestClass_Authority
 {
     List<string> builder = new();
-    class ObservableNetProjection<T> : ObservablePreviewCollection<T>
-    {
-    }
     class TestableMMDC : ModeledMarkdownContext<SelectableQFModel>
     {
 
@@ -35,7 +32,7 @@ public class TestClass_Authority
         string actual, expected;
         IList<SelectableQFModel>? eph = null;
         using var te = this.TestableEpoch();
-        var srce = new ObservableNetProjection<SelectableQFModel>();
+        var srce = new ObservablePreviewCollection<SelectableQFModel>();
         var dest = new ObservableCollection<SelectableQFModel>();
         var authorityEpoch = new AuthorityEpochProvider();
         var builder = new List<string>();
@@ -395,7 +392,7 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         string actual, expected;
         using var te = this.TestableEpoch();
         IList<SelectableQFModel>? eph = null;
-        var srce = new ObservableNetProjection<SelectableQFModel>();
+        var srce = new ObservablePreviewCollection<SelectableQFModel>();
         var builder = new List<string>();
         // CREATE (no side effects)
         var i1 = eph.AddDynamic("Item01");
@@ -451,7 +448,7 @@ NoAuthority NotifyCollectionChangedEventArgs           NetProjection Add     New
         string actual, expected;
         using var te = this.TestableEpoch();
 
-        ObservableNetProjection<SelectableQFModel> onp = new();
+        ObservablePreviewCollection<SelectableQFModel> onp = new();
 
         // [Careful]
         // - This isn't a subscription to MMDC at all.
@@ -544,7 +541,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
         using var te = this.TestableEpoch();
         List<SelectableQFModel> recordset = new();
 
-        ObservableNetProjection<SelectableQFModel> onp = new();
+        ObservablePreviewCollection<SelectableQFModel> onp = new();
         var mmdc = new ModeledMarkdownContext<SelectableQFModel>
         {
             ObservableNetProjection = onp,
@@ -615,7 +612,7 @@ Commit     NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         string actual, expected;
         using var te = this.TestableEpoch();
 
-        ObservableNetProjection<SelectableQFModel> onp = new();
+        ObservablePreviewCollection<SelectableQFModel> onp = new();
 
         // [Careful]
         // - This isn't a subscription to MMDC at all.
@@ -646,7 +643,7 @@ Commit     NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         string actual, expected;
         using var te = this.TestableEpoch();
 
-        ObservableNetProjection<SelectableQFModel> onp = new();
+        ObservablePreviewCollection<SelectableQFModel> onp = new();
 
         // [Careful]
         // - This isn't a subscription to MMDC at all.
@@ -677,7 +674,7 @@ Commit     NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         string actual, expected;
         using var te = this.TestableEpoch();
 
-        ObservableNetProjection<SelectableQFModel> onp = new();
+        ObservablePreviewCollection<SelectableQFModel> onp = new();
 
         // [Careful]
         // - This isn't a subscription to MMDC at all.

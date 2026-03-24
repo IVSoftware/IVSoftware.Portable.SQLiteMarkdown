@@ -59,9 +59,26 @@ The quiescent state of MDC has no authority.
 
 ___
 
-### Projection Policies
+### Projection Authority - Policies
 
 The Projection authority represents the state that is most like a normal observable collection bound to a typical platform-specific collection view. When UI actions like [Add] and [Delete] are available on the selection, the user has the ability to modify the canonical backing stores permanently and directly.
+
+Assume that the MDC is bound to a platform-specific collection view. Either:
+- The MDC itself (`INotifyCollectionChanged` via `ModeledMarkdownContext<T>`)
+- An `ObservableCollection<T>` (or more likely an `ObservablePreviewCollection<T>`) injected as the ONP
+
+In the first case, when the `IList` interface is invoked.
+
+Δ `CanonicalSuperset` (CSS) raises its own collection changed
+-> Model
+-> PredicateMatchSubset
+-> ModelChanged
+
+The question now is whether ModelChanged should be applied to ONP which is one of:
+- Null (Inherited option)
+- ObservableOnly
+- AllowDirectChanges
+
 
 These persistent insert or remove operations are straightforward when the full list is shown, but when the ONP is already filtered heuristics are required to map new items in terms of the likely intent with respect to items that are currently hidden. That is, when those items are made visible again, the ordering should feel intuitive when placed alongside any new items.
 
