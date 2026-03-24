@@ -59,7 +59,7 @@ If the item type supports a `FullPath` property, the model is hierarchal and sup
 
 The canonical sort order is captured so that ephemeral sorts (e.g. column header clicks) can be reverted.
 
-### Filtering
+### Filtering (when Filter flag is present in Config)
 
 The `qmatch` attribute is set based on the internal `FilterQueryDatabase` returning a matching PK for a filter expression.
 
@@ -102,6 +102,15 @@ ___
 In this topology, the view model exposes a property that is a discrete `ObservableCollection<T>` and binds it in the role of items source. (In other words, this would be a typical arrangement for an app prior to integrating MDC.) The view model then injects that reference into MDC using `MDC.SetNetObservableCollection(ObservableCollection<T>, option)` where, the `option` specifies whether the MDC is allowed to make direct changes to the collection directly.
 
 View <-> ItemsSource = `ObservableCollection<T>` when `MDC.SetNetObservableCollection(ItemsSource, option)`.
+
+#### _Altering the `CanonicalSuperset`_
+
+**UI Flow**
+
+1. Interactive changes to the visible surface invoke `ItemsSource` (the ONP), raising `CollectionChanged` on the ONP.
+2. The MDC internal handler obtains `Projection` authority, and updates the `Model` based on the BCL `NotifyCollectionChangedEventArgs`.
+3. If filter aware, the PMSS is synchronized inline.
+3. The `ModelChanged` event is raised. This is a before-and-after diff with respect to ONP (which might already be reduced).
 
 ___
 
