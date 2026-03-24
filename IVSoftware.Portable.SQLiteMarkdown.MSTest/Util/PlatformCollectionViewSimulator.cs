@@ -13,15 +13,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Util
         }
         public IList ItemsSource { get; }
 
+        /// <summary>
+        /// Intercept and suppress the BC CollectionChanged event.
+        /// </summary>
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
             switch (ViewAuthority.Authority)
             {
                 case ModeledCollectionChangeAuthority.Settle:
                 case ModeledCollectionChangeAuthority.Predicate:
+                    base.OnCollectionChanged(e);
                     break;
                 default:
-                    base.OnCollectionChanged(e);
                     ItemsSource.Apply(e);
                     break;
             }

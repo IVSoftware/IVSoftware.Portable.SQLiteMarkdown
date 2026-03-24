@@ -396,20 +396,40 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewI
     public void Test_Discrete()
     {
         string actual, expected;
+        var builder = new List<string>();
         using var te = this.TestableEpoch();
 
+        #region I T E M    G E N
         IList<SelectableQFModel>? eph = null;
         // CREATE (no side effects)
         var i1 = eph.AddDynamic("Item01");
         var i2 = eph.AddDynamic("Item02");
         var i3 = eph.AddDynamic("Item03");
+        #endregion I T E M    G E N
 
-        var srce = new ObservablePreviewCollection<SelectableQFModel>();
-        var view = new PlatformCollectionViewSimulator<SelectableQFModel>(srce);
+        var itemsSource = new ObservablePreviewCollection<SelectableQFModel>();
+        var mmdc = new TestableMMDC(onp: itemsSource, option: NetProjectionOption.AllowDirectChanges);
+        var simView = new PlatformCollectionViewSimulator<SelectableQFModel>(itemsSource);
 
-        var builder = new List<string>();
+        #region E V E N T S
+        // Differentiate between the itemsSource being driven
+        // by the simView and the simView being driven by itemsSource.
+        simView.CollectionChanged += (sender, e) =>
+        {
+            var isProjection = ReferenceEquals(sender, itemsSource);
+            if (isProjection)
+            {
+                builder.Add(e.ToString(true));
+            }
+            else
+            {
+                builder.Add(e.ToString(false).Replace(
+                    "Other        ",
+                    "SimView      "));
+            }
 
-        var mmdc = new TestableMMDC(onp: srce, option: NetProjectionOption.AllowDirectChanges);
+        };
+        #endregion E V E N T S
 
         subtest_UIFlow();
 
@@ -417,9 +437,27 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         [Claim("{179C424C-B39D-444E-8AB0-AD567551742F}")]
         void subtest_UIFlow()
         {
-            Assert.AreEqual(0, srce.Count);
-            view.Add(i1);
-            Assert.AreEqual(1, srce.Count);
+            Assert.AreEqual(0, itemsSource.Count);
+
+            // [+] button.
+            builder.Clear();
+            simView.Add(i1);
+
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { } // <- FIRST TIME ONLY: Adjust the message.
+            actual.ToClipboardAssert("Expecting itemsSource driven by the View.");
+            { }
+            expected = @" 
+";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting itemsSource driven by the View."
+            );
+
+            Assert.AreEqual(1, itemsSource.Count);
             { }
         }
         #endregion S U B T E S T S
