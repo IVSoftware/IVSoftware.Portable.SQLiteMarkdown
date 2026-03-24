@@ -137,20 +137,21 @@ The view continues to interact exclusively with the `ObservableCollection<T>` in
 #### _Altering the `CanonicalSuperset`_
 
 [Claim("{179C424C-B39D-444E-8AB0-AD567551742F}")]
-**UI Flow (Default)**
+**Projection Authority (UI)**
 1. Interactive changes to the visible surface invoke `ItemsSource` (the ONP), raising `CollectionChanged` on the ONP.
 2. The MDC internal handler obtains `Projection` authority, and updates the `Model` based on the BCL `NotifyCollectionChangedEventArgs`.
 3. If filter aware, the PMSS is synchronized inline.
 4. The `ModelChanged` event is raised. This is a before-and-after diff with respect to ONP (which might already be reduced).
 5. Holding `Projection` authority means that _no attempt_ will be made to modify eithr ONP or CSS. 
 
-**Commit Flow**
 [Claim("{DC169D72-BE19-4A83-8106-EA702664DE8B}")]
+**Commit Authority**
 
-**Settle Flow**
 [Claim("{CAD5D55D-80DC-46E6-BAE3-46C69A99F8B0}")]
-**Predicate Flow**
+**Settle Authority**
+
 [Claim("{6E400ED2-537A-40F5-B3FF-ED39CA223680}")]
+**Predicate Authority**
 
 ___
 
@@ -176,10 +177,13 @@ The view continues to interact with the collection through standard BCL contract
 #### _Altering the `CanonicalSuperset`_
 
 [Claim("{179C424C-B39D-444E-8AB0-AD567551742F}")]
-**UI Flow (Default)**
-**Commit Flow**
+**Projection Authority (UI)**
+
 [Claim("{DC169D72-BE19-4A83-8106-EA702664DE8B}")]
-**Settle Flow**
+**Commit Authority**
+
 [Claim("{CAD5D55D-80DC-46E6-BAE3-46C69A99F8B0}")]
-**Predicate Flow**
+**Settle Authority**
+
 [Claim("{6E400ED2-537A-40F5-B3FF-ED39CA223680}")]
+**Predicate Authority**
