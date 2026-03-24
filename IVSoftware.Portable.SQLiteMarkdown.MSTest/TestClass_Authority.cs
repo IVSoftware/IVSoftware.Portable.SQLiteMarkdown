@@ -23,7 +23,10 @@ public class TestClass_Authority
     List<string> builder = new();
     class TestableMMDC : ModeledMarkdownContext<SelectableQFModel>
     {
-
+        public TestableMMDC(ObservablePreviewCollection<SelectableQFModel> onp, NetProjectionOption option)
+        {
+            base.SetObservableNetCollection(onp, option);
+        }
     }
 
     [TestMethod, DoNotParallelize]
@@ -402,11 +405,7 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         var srce = new ObservablePreviewCollection<SelectableQFModel>();
         var builder = new List<string>();
 
-        var mmdc = new TestableMMDC
-        {
-            ObservableNetProjection = srce,
-        };
-
+        var mmdc = new TestableMMDC(onp: srce, option: NetProjectionOption.AllowDirectChanges);
     }
 
 
@@ -423,10 +422,7 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         var i2 = eph.AddDynamic("Item02");
         var i3 = eph.AddDynamic("Item03");
 
-        var mmdc = new TestableMMDC
-        {
-            ObservableNetProjection = srce,
-        };
+        var mmdc = new TestableMMDC(srce, NetProjectionOption.AllowDirectChanges);
 
         #region E V E N T 
         mmdc.ModelChanged += (sender, e) =>

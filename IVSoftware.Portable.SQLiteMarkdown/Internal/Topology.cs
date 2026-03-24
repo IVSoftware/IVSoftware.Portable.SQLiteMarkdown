@@ -61,6 +61,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             CanonicalSupersetInternal.CollectionChanging += (sender, e) =>OnCanonicalSupersetChanging(e);
             CanonicalSupersetInternal.CollectionChanged += (sender, e) =>OnCanonicalSupersetChanged(e);
         }
+        public Topology(ObservableCollection<T> onp, NetProjectionOption option) : this()
+        {
+            SetObservableNetCollection(onp, option);
+        }
 
         protected override void OnFilteringStateChanged()
         {
@@ -156,41 +160,65 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// </remarks>
         public ObservableCollection<T>? ObservableNetProjection
         {
-            get => _observableProjection;
-            set
+            get => _observableNetProjection;
+            protected set
             {
-                if (ProjectionTopology == ProjectionTopology.Inheritance)
+                if (!Equals(_observableNetProjection, value))
                 {
-                    ThrowHard<InvalidOperationException>(@"
-Cannot assign ObservableNetProjection when ProjectionTopology is Inheritance.
-Inherited contexts manage their projection internally.".TrimStart());
-                }
-                else
-                {
-                    if (!Equals(_observableProjection, value))
+                    // Unsubscribe INCC
+                    if (_observableNetProjection is not null)
                     {
-                        // Unsubscribe INCC
-                        if (_observableProjection is not null)
-                        {
-                            _observableProjection.CollectionChanged -= OnNetProjectionCollectionChanged;
-                        }
+                        _observableNetProjection.CollectionChanged -= OnNetProjectionCollectionChanged;
+                    }
 
-                        _observableProjection = value;
+                    _observableNetProjection = value;
 
-                        // Run the handler then subscribe to any subsequent changes.
-                        OnNetProjectionHandleChanged();
+                    // Run the handler then subscribe to any subsequent changes.
+                    OnNetProjectionHandleChanged();
 
-                        // Subscribe INCC
-                        if (_observableProjection is not null)
-                        {
-                            _observableProjection.CollectionChanged += OnNetProjectionCollectionChanged;
-                        }
+                    // Subscribe INCC
+                    if (_observableNetProjection is not null)
+                    {
+                        _observableNetProjection.CollectionChanged += OnNetProjectionCollectionChanged;
                     }
                 }
             }
         }
+        ObservableCollection<T>? _observableNetProjection = null;
 
         protected virtual void OnNetProjectionHandleChanged() { }
+
+        public void SetObservableNetCollection(ObservableCollection<T> onp, NetProjectionOption option)
+        {
+#if false
+            if (ProjectionTopology == ProjectionTopology.Inheritance)
+            {
+                ThrowHard<InvalidOperationException>(@"
+Cannot assign ObservableNetProjection when ProjectionTopology is Inheritance.
+Inherited contexts manage their projection internally.".TrimStart());
+            }
+#endif
+
+            if (!ReferenceEquals(ObservableNetProjection, onp))
+            {
+                // Unsubscribe INCC
+                if (ObservableNetProjection is not null)
+                {
+                    ObservableNetProjection.CollectionChanged -= OnNetProjectionCollectionChanged;
+                }
+
+                ObservableNetProjection = onp;
+
+                // Run the handler then subscribe to any subsequent changes.
+                OnNetProjectionHandleChanged();
+
+                // Subscribe INCC
+                if (ObservableNetProjection is not null)
+                {
+                    ObservableNetProjection.CollectionChanged += OnNetProjectionCollectionChanged;
+                }
+            }
+        }
 
         protected virtual void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -267,8 +295,6 @@ Inherited contexts manage their projection internally.".TrimStart());
         }
 
         public event NotifyCollectionChangedEventHandler? ModelChanged;
-
-        ObservableCollection<T>? _observableProjection = null;
         #endregion P R O J E C T I O N
         public IReadOnlyList<T> CanonicalSuperset { get; }
 

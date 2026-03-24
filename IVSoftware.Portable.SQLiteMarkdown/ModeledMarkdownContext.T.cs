@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
@@ -11,6 +12,7 @@ using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -39,6 +41,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 name: nameof(StdMarkdownAttribute.mmdc),
                 text: $"[MMDC]");
         }
+        public ModeledMarkdownContext(ObservableCollection<T> onp, NetProjectionOption option)
+            : base(onp, option) { }
 
         SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
         protected override async Task ApplyFilter()
@@ -1121,11 +1125,6 @@ SELECT * FROM items WHERE
                     }
                     break;
             }
-        }
-
-        public void SetObservableNetCollection(ObservableCollection<T> onp, NetProjectionOption option)
-        {
-            throw new NotImplementedException();
         }
     }
 }

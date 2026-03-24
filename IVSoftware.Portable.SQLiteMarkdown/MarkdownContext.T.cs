@@ -3,6 +3,8 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Reflection;
 using System.Threading.Tasks;
