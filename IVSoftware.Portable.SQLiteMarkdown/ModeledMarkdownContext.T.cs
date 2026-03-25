@@ -1005,6 +1005,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
+            recordset = recordset.Cast<T>().ToList();
             using var token = BeginCollectionChangeAuthority(CollectionChangeAuthority.Commit);
             if (Equals(Authority, CollectionChangeAuthority.Commit))
             {
@@ -1012,12 +1013,16 @@ Inherited contexts manage their projection internally.".TrimStart());
                     StdMarkdownAttribute.triage,
                     Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.QueryResult, recordset, ReplaceItemsEventingOptions)))
                 {
+#if false && CHECK_FAST_TRACK
                     if(Equals(FsmReservedState.FastTrack, ExecState(StdFSMState.DetectFastTrack, recordset)))
                     {
                         Debug.Fail($@"ADVISORY - First Time.");
                     }
-                    ExecState(StdFSMState.ResetOrCanonizeFQBDForEpoch, recordset);
-                    ExecState(StdFSMState.ResetOrCanonizeModelForEpoch, recordset);
+#endif
+                    ExecState(StdFSMState.ResetOrCanonizeFQBDForEpoch, (IList)recordset);
+                    var diff = CanonicalSupersetProtected.Diff(recordset.Cast<T>().ToList());
+                    // ExecState(StdFSMState.ResetOrCanonizeModelForEpoch, recordset);
+
                     ExecState(StdFSMState.UpdateStatesForEpoch, recordset);
 
 
@@ -1059,10 +1064,12 @@ Inherited contexts manage their projection internally.".TrimStart());
                     StdMarkdownAttribute.triage,
                     Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.QueryResult, recordset, ReplaceItemsEventingOptions)))
                 {
+#if false && CHECK_FAST_TRACK
                     if (Equals(FsmReservedState.FastTrack, await ExecStateAsync(StdFSMState.DetectFastTrack, recordset)))
                     {
                         Debug.Fail($@"ADVISORY - First Time.");
                     }
+#endif
                     await ExecStateAsync(StdFSMState.ResetOrCanonizeFQBDForEpoch, recordset);
                     await ExecStateAsync(StdFSMState.ResetOrCanonizeModelForEpoch, recordset);
                     await ExecStateAsync(StdFSMState.UpdateStatesForEpoch, recordset);
