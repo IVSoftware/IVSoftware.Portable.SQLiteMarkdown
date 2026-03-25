@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -27,7 +28,7 @@ using static IVSoftware.Portable.SQLiteMarkdown.Internal.Extensions;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public partial class ModeledMarkdownContext<T> 
+    public partial class ModeledMarkdownContext<T>
         : MarkdownContext<T>
         , IModeledMarkdownContext<T>
         where T : new()
@@ -992,16 +993,6 @@ Inherited contexts manage their projection internally.".TrimStart());
         readonly bool _isInherited;
         #endregion P R O J E C T I O N
 
-
-        /// <summary>
-        /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
-        /// </remarks>
-        public virtual async Task LoadCanonAsync(IEnumerable? recordset)
-            => await RunFSMAsync<LoadIsFilteringEpochFSM>(recordset);
-
         /// <summary>
         /// Established a new canonical model for subsequent operations.
         /// </summary>
@@ -1047,6 +1038,46 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
         }
 
+        public virtual async Task LoadCanonAsync(IEnumerable? recordset)
+        {
+            using var token = BeginCollectionChangeAuthority(CollectionChangeAuthority.Commit);
+            if (Equals(Authority, CollectionChangeAuthority.Commit))
+            {
+                using (var eventHost = Model.SetSelfRemovingXBoundAttribute(
+                    StdMarkdownAttribute.triage,
+                    Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.QueryResult, recordset, ReplaceItemsEventingOptions)))
+                {
+                    RunFSMAsync<LoadIsFilteringEpochFSM>(recordset);
+                    if (eventHost.Tag is ReplaceItemsEventingContext context)
+                    {
+                        if (context.Structural is NotifyCollectionChangedEventArgs eStructural)
+                        {
+                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
+                            {
+                                OnModelChanged(eStructural);
+                            }
+                        }
+                        if (context.Reset is NotifyCollectionChangedEventArgs eReset)
+                        {
+                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
+                            {
+                                OnModelChanged(eReset);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        this.ThrowFramework<NullReferenceException>($"Expecting {nameof(ReplaceItemsEventingContext)}");
+                    }
+                }
+            }
+            else
+            {
+                Debug.Fail($@"ADVISORY - First Time UNEXPECTED failed to gain authority.");
+            }
+        }
+
+#if false && LEGACY_RUN_FSM
         /// <summary>
         /// Executes a declared FSM sequentially while temporarily asserting any collection-change authority required by the FSM type.
         /// </summary>
@@ -1131,266 +1162,10 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
             #endregion L o c a l F x
         }
-
+#endif
         protected virtual async Task<Enum> ExecStateAsync(Enum state, object? context = null)
         {
             return FsmReservedState.Canceled;
-        }
-
-        protected Enum ExecState(Enum state, object? context = null)
-        {
-            IEnumerable<object>? canon = context as IEnumerable<object>;
-            bool
-                isEmptyProjection = canon?.Any() != true;
-#if DEBUG
-            switch (state)
-            {
-                case NativeClearFSM:
-                    break;
-                case LoadIsFilteringEpochFSM:
-                    break;
-            }
-#endif
-            switch ((StdFSMState)state)
-            {
-                case StdFSMState.DetectFastTrack:
-                    if (Equals(localDetectFastTrack(), FsmReservedState.FastTrack))
-                    {
-                        return FsmReservedState.FastTrack;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                case StdFSMState.ResetOrCanonizeFQBDForEpoch:
-                    localResetOrCanonizeFQDBForEpoch();
-                    break;
-                case StdFSMState.ResetOrCanonizeModelForEpoch:
-                    localResetOrCanonizeModelForEpoch();
-                    break;
-                case StdFSMState.UpdateStatesForEpoch:
-                    localInitStatesForEpoch();
-                    break;
-                case StdFSMState.AddItemToModel:
-                    AddItemToModel(context);
-                    break;
-                case StdFSMState.RemoveItemFromModel:
-                    RemoveItemFromModel(context);
-                    break;
-                case StdFSMState.ModelSettled:
-                    localRaiseModelSettled();
-                    break;
-                default:
-                    Debug.Fail($@"ADVISORY - Unrecognized action.");
-                    break;
-            }
-            return FsmReservedState.Next;
-
-            #region L o c a l F x
-            Enum localDetectFastTrack()
-            {
-                bool isEmptyProjection =
-                    !(ObservableNetProjection is IEnumerable projection && projection.Cast<object>().Any());
-                switch (state)
-                {
-                    case NativeClearFSM:
-                        // If ALL are true.
-                        if (SearchEntryState == SearchEntryState.Cleared
-                            && !Model.HasElements
-                            && isEmptyProjection)
-                        {
-                            return FsmReservedState.FastTrack;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                }
-                return FsmReservedState.Next;
-            }
-
-            Enum localResetOrCanonizeFQDBForEpoch()
-            {
-                // Check to see whether we should have a FQDB in the first place.
-                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
-                {
-                    try
-                    {
-                        FilterQueryDatabase.RunInTransaction(() =>
-                        {
-                            // Ensure table exists.
-                            FilterQueryDatabase.CreateTable(ContractType);
-                            // Clear any entries from a pre-existing table.
-                            FilterQueryDatabase.DeleteAll(ContractType.GetSQLiteMapping());
-                            // [Remember]
-                            // - Canonization happens via XML changes as they arrive.
-                            // - N O O P
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        this.RethrowHard(ex);
-                        return FsmReservedState.Canceled;
-                    }
-                }
-                else
-                {   /* G T K - N O O P */
-                    // There is no FQDB to maintain in Query-Only mode.
-                }
-                return FsmReservedState.Next;
-            }
-
-            void localResetOrCanonizeModelForEpoch()
-            {
-                if (canon is not IEnumerable)
-                {
-                    Model.RemoveNodes(StdMarkdownAttribute.autocount, StdMarkdownAttribute.count, StdMarkdownAttribute.matches);
-                    return;
-                }
-                else
-                {
-#if DEBUG
-                    int nRemoved = 0;
-#endif
-                    Model.SetAttributeValue(StdMarkdownAttribute.count, null);
-                    Model.SetAttributeValue(StdMarkdownAttribute.matches, null);
-
-                    PropertyInfo? pk = ContractType.GetSQLiteMapping().PK?.PropertyInfo;
-#if RELEASE
-                Model.RemoveNodes();
-#else
-                    // DEBUG:
-                    // Provides clarity on how the XML Changed events work on a bulk RemoveNodes.
-                    #region L o c a l F x
-                    void localOnXObjectChanged(object? sender, XObjectChangeEventArgs e)
-                    {
-                        Debug.WriteLine($@"260306.A: Removed {++nRemoved}");
-                    }
-                    #endregion L o c a l F x
-                    using (Model.WithOnDispose(
-                        onInit: (sender, e) =>
-                        {
-                            Model.Changed += localOnXObjectChanged;
-                        },
-                        onDispose: (sender, e) =>
-                        {
-                            Model.Changed -= localOnXObjectChanged;
-                        }))
-                    {
-                        if (Model.HasElements)
-                        {
-                            Model.RemoveNodes();
-                        }
-                    }
-#endif
-                    int
-                        countDistinct = 0,
-                        countDuplicate = 0;
-
-                    if (pk is null)
-                    {
-                        throw new NotSupportedException($"Type '{ContractType.Name}' has no PK and such types are not (yet) supported.");
-                    }
-                    foreach (var item in canon)
-                    {
-                        // ToDo: Test with item.GetFullPath() extension.
-                        var placerResult = Model.Place(path: localGetFullPath(pk, item), out var xel);
-
-                        switch (placerResult)
-                        {
-                            case PlacerResult.Exists:
-                                countDuplicate++;
-                                break;
-                            case PlacerResult.Created:
-                                xel.Name = nameof(StdMarkdownElement.xitem);
-                                xel.SetBoundAttributeValue(
-                                    tag: item,
-                                    name: nameof(StdMarkdownAttribute.model));
-                                xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), countDistinct);
-                                countDistinct++;
-                                break;
-                            default:
-                                this.ThrowFramework<NotSupportedException>(
-                                    $"Unexpected result: `{placerResult.ToFullKey()}`. Expected options are {PlacerResult.Created} or {PlacerResult.Exists}");
-                                break;
-                        }
-                    }
-
-                    Model.SetAttributeValue(StdMarkdownAttribute.count, countDistinct);
-                    if (Model.GetAttributeValue<IList?>(StdMarkdownAttribute.predicates) is { } predicates)
-                    {
-                        Debug.Fail($@"ADVISORY - First Time.");
-                        Model.SetAttributeValue(StdMarkdownAttribute.matches, countDistinct); // This will change.
-                    }
-                    else
-                    {
-                        Model.SetAttributeValue(StdMarkdownAttribute.matches, countDistinct);
-                    }
-                    Model.SetAttributeValue(StdMarkdownAttribute.ismatch, null);
-                }
-            }
-
-            string localGetFullPath(PropertyInfo pk, object unk)
-            {
-                if (pk.GetValue(unk)?.ToString() is { } id && !string.IsNullOrWhiteSpace(id))
-                {
-                    return id;
-                }
-                else
-                {
-                    ThrowHard<NullReferenceException>(
-                        $"Expecting a non-empty value for PrimaryKey '{pk.Name}'.");
-                    return null!;
-                }
-            }
-
-            void localInitStatesForEpoch()
-            {
-                switch (state)
-                {
-                    case NativeClearFSM:
-                        SearchEntryState = SearchEntryState.Cleared;
-                        FilteringState = FilteringState.Ineligible;
-                        return;
-                    default:
-                        break;
-                }
-                switch (CanonicalCount)
-                {
-                    case 0:
-                        SearchEntryState = SearchEntryState.QueryCompleteNoResults;
-                        FilteringState = FilteringState.Ineligible;
-                        break;
-                    case 1:
-                        SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                        FilteringState = FilteringState.Ineligible;
-                        break;
-                    default:
-                        SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                        switch (QueryFilterConfig)
-                        {
-                            case QueryFilterConfig.Query:
-                            case QueryFilterConfig.Filter:
-                            default:
-                                FilteringState = FilteringState.Ineligible;
-                                break;
-                            case QueryFilterConfig.QueryAndFilter:
-                                FilteringState = FilteringState.Armed;
-                                break;
-                        }
-                        break;
-                }
-            }
-
-            void localRaiseModelSettled()
-            {
-                var e = context as ModelSettledEventArgs
-                    ?? new ModelSettledEventArgs(
-                        reason: NotifyCollectionChangeReason.None,
-                        action: NotifyCollectionChangedAction.Reset);
-                OnModelChanged(e);
-            }
-            #endregion L o c a l F x
         }
 
 

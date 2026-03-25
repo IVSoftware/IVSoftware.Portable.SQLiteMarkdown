@@ -40,19 +40,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
-        /// Enumerates the values of the enum type <typeparamref name="TFsm"/> in their
-        /// declaration order rather than their underlying numeric order. This is used
-        /// by the FSM runner to evaluate states exactly in the sequence authored in
-        /// the enum definition.
-        /// </summary>
-        protected IEnumerable<TFsm> GetDeclaredValues<TFsm>() where TFsm : Enum
-        {
-            return typeof(TFsm)
-                .GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
-                .Select(field => (TFsm)field.GetValue(null)!);
-        }
-
-        /// <summary>
         /// The ephemeral backing store for this collection's contract filtering.
         /// </summary>
         /// <remarks>
