@@ -63,19 +63,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         Enum IStateRunner.ExecState(Enum state, object? context) => StateRunner.ExecState(state, context);
 
-        public Enum RunFSMAsync<T1>(object? context = null)
+        public Task<Enum> RunFSMAsync<TFsm>(object? context = null)
         {
-            throw new NotImplementedException();
+            return ((IStateRunnerAsync)StateRunnerAsync).RunFSMAsync<TFsm>(context);
         }
 
-        public Enum RunTokenRingAsync<T1>(object? context = null)
+        public Task<Enum> RunTokenRingAsync<TFsm>(object? context = null)
         {
-            throw new NotImplementedException();
+            return ((IStateRunnerAsync)StateRunnerAsync).RunTokenRingAsync<TFsm>(context);
         }
 
         Task<Enum> IStateRunnerAsync.ExecStateAsync(Enum state, object? context)
         {
-            return ExecStateAsync(state, context);
+            return ((IStateRunnerAsync)StateRunnerAsync).ExecStateAsync(state, context);
         }
 
         class StateRunnerMMDC : StateRunner
