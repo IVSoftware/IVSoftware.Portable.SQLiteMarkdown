@@ -54,7 +54,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-        Topology<T> Topology { get; }
 
         /// <summary>
         /// Returns the singleton, non-replaceable root XElement, created on demand.

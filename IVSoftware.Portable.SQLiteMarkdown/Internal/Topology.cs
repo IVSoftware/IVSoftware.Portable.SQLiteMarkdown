@@ -13,9 +13,10 @@ using System.Collections.Generic;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
-    class Topology<T> : INotifyPropertyChanged
+    [Obsolete]
+    class TopologyObsolete<T> : INotifyPropertyChanged
     {
-        public Topology(XElement model, ObservableCollection<T>? projection = null)
+        public TopologyObsolete(XElement model, ObservableCollection<T>? projection = null)
         {
             Model = model;
             if(Model.To<IModeledMarkdownContext>() is { } mmdc)
