@@ -3,13 +3,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
     partial class ModeledMarkdownContext<T> : IList
     {
         [Indexer]
-        object IList.this[int index]
+        public T this[int index]
         {
             get => Read[index];
             set
@@ -26,8 +27,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+        [Indexer]
+        object? IList.this[int index]
+        {
+            get => this[index];
+            set
+            {
+                if (value is T valueT)
+                {
+                    this[index] = valueT;
+                }
+                else
+                {
+                    ThrowHard<InvalidCastException>(
+                        $"{nameof(IList.Add)} requires value assignable to {typeof(T).Name}."
+                    );
+                }
+            }
+        }
 
-        IList Read =>
+        IList<T> Read =>
             IsFiltering
             ? PredicateMatchSubsetPrivate
             : CanonicalSupersetProtected;
@@ -55,7 +74,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        bool IList.Contains(object value) => Read.Contains(value);
+        bool IList.Contains(object value) =>
+            value is T valueT
+            ? IsFiltering
+                ? PredicateMatchSubset.Contains(valueT)
+                : CanonicalSuperset.Contains(valueT)
+            : false;
 
         void ICollection.CopyTo(Array array, int index)
         {

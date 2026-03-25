@@ -963,25 +963,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.
         /// </summary>
-        public NetProjectionOption ProjectionOption
-        {
-            get =>
-                ProjectionTopology == ProjectionTopology.Inheritance
-                ? NetProjectionOption.Inherited
-                // Guards against attempting to write when the projection is null.
-                : ObservableNetProjection is null
-                    ? NetProjectionOption.ObservableOnly
-                    : _projectionOption;
-            protected set
-            {
-                if (!Equals(_projectionOption, value))
-                {
-                    _projectionOption = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        NetProjectionOption _projectionOption = 0;
+        public NetProjectionOption? ProjectionOption { get; protected set; }
 
         public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; } = ReplaceItemsEventingOption.StructuralReplaceEvent;
 
@@ -1565,9 +1547,22 @@ Inherited contexts manage their projection internally.".TrimStart());
 
         public void SetObservableNetProjection(
             ObservableCollection<T>? onp, 
-            NetProjectionOption option = NetProjectionOption.AllowDirectChanges)
+            NetProjectionOption? option = null)
         {
-            throw new NotImplementedException();
+            ObservableNetProjection = onp;
+            if(onp is null)
+            {
+                ProjectionOption = null;
+                if(option is not null)
+                {
+                    this.ThrowSoft<ArgumentException>(
+                        $"The value {option.ToFullKey()} is invalid when {nameof(option)} is null.");
+                }
+            }
+            else
+            {
+                ProjectionOption = option;
+            }
         }
 
 

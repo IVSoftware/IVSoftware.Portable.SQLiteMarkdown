@@ -9,32 +9,18 @@ using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.QFTemplates;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
-using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
-using Microsoft.VisualBasic.Logging;
-using Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client;
 using Newtonsoft.Json;
 using SQLite;
 using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
-using System.Dynamic;
-using System.Net.Http.Headers;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml.Linq;
-using static IVSoftware.Portable.Threading.Extensions;
-using static SQLite.SQLite3;
-using static System.Net.Mime.MediaTypeNames;
-using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {

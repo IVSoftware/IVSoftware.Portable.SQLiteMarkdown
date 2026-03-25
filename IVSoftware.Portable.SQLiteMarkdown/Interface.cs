@@ -378,7 +378,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// OPT-IN that allows MarkdownContext to modify the ObservableNetCollection directly.
         /// </summary>
-        NetProjectionOption ProjectionOption { get; }
+        NetProjectionOption? ProjectionOption { get; }
 
         /// <summary>
         /// Determines whether filter update events are provided as structural changes
@@ -411,7 +411,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         new ObservableCollection<T>? ObservableNetProjection { get; }
         void SetObservableNetProjection(
             ObservableCollection<T>? onp, 
-            NetProjectionOption option = NetProjectionOption.AllowDirectChanges);
+            NetProjectionOption? option = null);
 
         new IReadOnlyList<T> CanonicalSuperset { get; }
 

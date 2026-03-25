@@ -30,23 +30,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     /// </summary>
 
     [DebuggerDisplay("Count={Count}")]
-    public partial class ObservableQueryFilterSource<T>
+    [PublishedContract("1.0.0")]
+    public class ObservableQueryFilterSource<T>
         : ModeledMarkdownContext<T>
         , IObservableQueryFilterSource<T>
+        , IList
         , IList<T>
         where T : new()
     {
-#if false
-        public ObservableQueryFilterSource()
-        {
-            // Modify canon when changes made to this INCC.
-            base.ObservableNetProjection = this;
-
-            // Because this object exposes a routed enumerator, there
-            // is no external collection "out there" to synchronize.
-            base.ProjectionOption = NetProjectionOption.ObservableOnly;
-        }
-#endif
+        public ObservableQueryFilterSource() { }
 
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
         public IReadOnlyList<T> UnfilteredItems => CanonicalSuperset;
@@ -525,134 +517,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             LoadCanon(items);
         }
 
-        #region I L I S T
-        public int IndexOf(T item) { return CanonicalSupersetProtected.IndexOf(item); }
-
-        void IList.Clear() => Clear(all: true);
-        void ICollection<T>.Clear() => Clear(all: true);
-
-        /// <summary>
-        /// "No Suprises" clear on an IList.
-        /// </summary>
-        /// <remarks>
-        /// Collections that inherit MarkdownContext *must* distinguish clear semantics.
-        /// Subclass should implement both:
-        /// 1. The parameterless "no surprises" Clear().
-        /// 2. The UI-oriented [X] demoting clear state machine.
-        /// </remarks>
-        [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
-        public void Clear() => base.Clear(all: true);
-
-#if false
-        public new FilteringState Clear(bool all)
-        {
-            var fsmAfterClear = base.Clear(all);
-            if (fsmAfterClear < FilteringState.Armed)
-            {
-                // [Careful] 
-                // If we're responding to FilteringState changed to clear the
-                // canonical recordset it MIGHT NOT WORK. For example, manual
-                // add-remove changes to Items will bypass the input state machine. 
-                CanonicalSupersetProtected.Clear();
-            }
-            return fsmAfterClear;
-        }
-#endif
-
-        public bool Contains(T item) { return CanonicalSupersetProtected.Contains(item); }
-
-        public void CopyTo(T[] array, int arrayIndex) { CanonicalSupersetProtected.CopyTo(array, arrayIndex); }
-
-        bool IList.Contains(object value) { return ((IList)CanonicalSupersetProtected).Contains(value); }
-
-        int IList.IndexOf(object value) { return ((IList)CanonicalSupersetProtected).IndexOf(value); }
-        public void Insert(int index, T item)
-        {
-            CanonicalSupersetProtected.Insert(index, item);
-            OnExternalChange(item);
-        }
-
-        public void Add(T item)
-        {
-            CanonicalSupersetProtected.Add(item);
-            OnExternalChange(item);
-        }
-        public void RemoveAt(int index)
-        {
-            object? item;
-            if (index < CanonicalSupersetProtected.Count)
-            {
-                item = CanonicalSupersetProtected[index];
-            }
-            else
-            {
-                item = null;
-            }
-            CanonicalSupersetProtected.RemoveAt(index);
-            OnExternalChange(item);
-        }
-
-        int IList.Add(object item)
-        {
-            if (item is T itemT)
-            {
-                CanonicalSupersetProtected.Add(itemT);
-                return CanonicalSupersetProtected.IndexOf(itemT);
-            }
-            if (typeof(T) == typeof(StringWrapper))
-            {
-                var wrapper = new StringWrapper(item?.ToString() ?? string.Empty);
-                if (wrapper is T itemTT)
-                {
-                    CanonicalSupersetProtected.Add(itemTT);
-                    return CanonicalSupersetProtected.IndexOf(itemTT);
-                }
-            }
-            throw new ArgumentException($"Value of type {item?.GetType()} cannot be added to list of {typeof(T)}");
-        }
-
-        public bool Remove(T item)
-        {
-            var removed = CanonicalSupersetProtected.Remove(item);
-            if (removed) OnExternalChange(item);
-            return removed;
-        }
-
-        void IList.Insert(int index, object item)
-        {
-            CanonicalSupersetProtected.Insert(index, (T)item);
-            OnExternalChange(item);
-        }
-
-        void IList.Remove(object item)
-        {
-            if (CanonicalSupersetProtected.Contains((T)item))
-            {
-                CanonicalSupersetProtected.Remove((T)item);
-                OnExternalChange(item);
-            }
-        }
-
-        /// <summary>
-        /// We need this, but this implementation is probationary and might need some tweaking.
-        /// </summary>
-        private void OnExternalChange(object? value)
-        {
-            if (value is ISelectable selectable)
-            {
-                selectable.Selection = ItemSelection.None;
-            }
-            FilteringState = FilteringState;
-        }
-
-        void ICollection.CopyTo(Array array, int index) { ((ICollection)CanonicalSupersetProtected).CopyTo(array, index); }
-
-        bool ICollection.IsSynchronized { get { return ((ICollection)CanonicalSupersetProtected).IsSynchronized; } }
-
-        object ICollection.SyncRoot { get { return ((ICollection)CanonicalSupersetProtected).SyncRoot; } }
-
-        #endregion I L I S T
-
         /// <summary>
         /// Public-facing CollectionChanged event, regardless of its source.
         /// </summary>
@@ -676,7 +540,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     break;
             }
         }
-
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
         /// <summary>
@@ -697,7 +560,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        public string SQL => MarkdownContextOR?.ToString();
+        public string SQL => Query;
 
         protected override void OnInputTextChanged()
         {
@@ -734,11 +597,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     }
                     break;
             }
-        }
-
-        protected virtual void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            ItemPropertyChanged?.Invoke(this, new ItemPropertyChangedEventArgs(e.PropertyName, sender));
         }
         public event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
         private INotifyPropertyChanged[] _unsubscribeItems = new INotifyPropertyChanged[] { };
@@ -788,53 +646,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public new IEnumerator<T> GetEnumerator() => RoutedRecordset.Cast<T>().GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
-
-        public int Count => RoutedRecordset.Count;
-
-        /// <summary>
-        /// Required IList support
-        /// </summary>
-        public bool IsReadOnly => ((IList)CanonicalSupersetProtected).IsReadOnly;
-
-        /// <summary>
-        /// Required IList support
-        /// </summary>
-        public bool IsFixedSize => ((IList)CanonicalSupersetProtected).IsFixedSize;
-
-        public T this[int index]
-        {
-            get => 
-                RoutedRecordset[index] is T itemT
-                ? itemT 
-                : default!;
-            set
-            {
-                // Eventually we'll want to add an item to a filtered list, but to do so:
-                // - New item needs to be added to the clients external (maybe) database.
-                // - New item needs to be added to the local FilterQueryDatabase,
-                // - Finally, we need to add it to the filtered items regardless
-                //   of whether it meets the current filter (otherwise you might
-                //   add it and have it disappear due to the filter.
-                // WE WILL NEED TO DO THIS CAREFULLY WHEN THE TIME COMES!
-                throw new NotSupportedException();
-            }
-        }
-
-        object IList.this[int index]
-        {
-            get => this[index]!;
-            set
-            {
-                if (value is T t)
-                {
-                    this[index] = t;
-                }
-                else
-                {
-                    Debug.Fail("ADVISORY - Invalid cast but don't crash.");
-                }
-            }
-        }
         #endregion R O U T E D    C O N D I T I O N A L S
     }
 }

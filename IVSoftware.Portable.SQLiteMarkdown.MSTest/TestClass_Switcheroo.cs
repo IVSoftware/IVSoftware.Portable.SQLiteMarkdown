@@ -505,7 +505,7 @@ MarkdownContext Clear(all=True)";
 
             public int PredicateMatchCount => ((IMarkdownContext)_mdc).PredicateMatchCount;
 
-            public NetProjectionOption ProjectionOption => ((IModeledMarkdownContext)_mdc).ProjectionOption;
+            public NetProjectionOption? ProjectionOption => ((IModeledMarkdownContext)_mdc).ProjectionOption;
 
             public ReplaceItemsEventingOption ReplaceItemsEventingOptions
             {

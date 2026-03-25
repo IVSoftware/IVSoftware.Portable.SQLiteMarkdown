@@ -1151,7 +1151,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 var builder = new List<string> { Preamble };
                 if (!string.IsNullOrWhiteSpace(WherePredicate))
                 {
-                    builder.Add(WherePredicate);
+                    builder.Add(WherePredicate!);
                 }
                 if (CanExecutePrimaryKeyClause())
                 {

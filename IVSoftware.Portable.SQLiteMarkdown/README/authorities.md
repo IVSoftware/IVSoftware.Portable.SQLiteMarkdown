@@ -1,6 +1,6 @@
 # [<](../../README.md)
 
-## Authorities
+## Authorities for Modeled Markdown Context
 
 Authority epochs refer to the provenance of any cyclical FSM state that has been entered.
 
@@ -117,11 +117,8 @@ From the perspective of the view binding, this takes one of the following shapes
 
 ___
 
-[Claim("{FA7BB019-E8BA-4B81-A4DF-34528279044A}")]
-### Discrete `ObservableCollection<T>`
-
-[Claim("{FA7BB019-E8BA-4B81-A4DF-34528279044A}")]
-### Discrete `ObservableCollection<T>`
+[Claim("FA7BB019-E8BA-4B81-A4DF-34528279044A")]
+### 1. Discrete `ObservableCollection<T>`
 
 In this topology, the view model exposes a property that is a discrete `ObservableCollection<T>` and binds it as the `ItemsSource`. This reflects the typical arrangement prior to integrating MDC.
 
@@ -130,13 +127,13 @@ MDC is introduced by injecting that existing instance via `MDC.SetNetObservableC
 This approach preserves established behaviors—including override points such as `InsertItem`, `SetItem`, and `ClearItems` - and provides a low-friction entry point for adopting MDC without restructuring the view model.From the perspective of the view, interaction remains anchored to the `ObservableCollection<T>`:
 
 View <-> ItemsSource = `ObservableCollection<T>`  
-when `MDC.SetNetObservableCollection(ItemsSource, option)`
+**when** `MDC.SetNetObservableCollection(ItemsSource, option)`
 
 The view continues to interact exclusively with the `ObservableCollection<T>` instance, even after it has been registered with MDC.
 
 #### _Altering the `CanonicalSuperset`_
 
-[Claim("{179C424C-B39D-444E-8AB0-AD567551742F}")]
+[Claim("179C424C-B39D-444E-8AB0-AD567551742F")]
 **Projection Authority (UI)**
 1. Interactive changes to the visible surface invoke `ItemsSource` (the ONP), raising `CollectionChanged` on the ONP.
 2. The MDC internal handler obtains `Projection` authority, and updates the `Model` based on the BCL `NotifyCollectionChangedEventArgs`.
@@ -144,18 +141,18 @@ The view continues to interact exclusively with the `ObservableCollection<T>` in
 4. The `ModelChanged` event is raised. This is a before-and-after diff with respect to ONP (which might already be reduced).
 5. Holding `Projection` authority means that _no attempt_ will be made to modify eithr ONP or CSS. 
 
-[Claim("{DC169D72-BE19-4A83-8106-EA702664DE8B}")]
+[Claim("DC169D72-BE19-4A83-8106-EA702664DE8B")]
 **Commit Authority**
 
-[Claim("{CAD5D55D-80DC-46E6-BAE3-46C69A99F8B0}")]
+[Claim("CAD5D55D-80DC-46E6-BAE3-46C69A99F8B0")]
 **Settle Authority**
 
-[Claim("{6E400ED2-537A-40F5-B3FF-ED39CA223680}")]
+[Claim("6E400ED2-537A-40F5-B3FF-ED39CA223680")]
 **Predicate Authority**
 
 ___
 
-[Claim("{34FC2036-8748-4D91-8DB7-E57934D0A351}")]
+[Claim("34FC2036-8748-4D91-8DB7-E57934D0A351")]
 ### Pure Implementer<T>
 
 Many platform-specific collection views rely on `IList` and `INotifyCollectionChanged` for the `ItemsSource` contract, but do not require `ObservableCollection<T>` specifically. This topology implements that contract directly, eliminating the standalone `ObservableCollection<T>` intermediate layer.
@@ -169,21 +166,21 @@ This approach does not inherit from `ObservableCollection<T>`, so override point
 From the perspective of the view, interaction is anchored to the contract rather than a concrete type:
 
 View <-> ItemsSource = MDC
-where: `MDC : IList, INotifyCollectionChanged`  
-when ItemsSource is not `ObservableCollection<T>`
+**where**: `MDC : IList, INotifyCollectionChanged`  
+**when** ItemsSource is not `ObservableCollection<T>`
 
 The view continues to interact with the collection through standard BCL contracts, without requiring `ObservableCollection<T>` as an intermediate.
 
 #### _Altering the `CanonicalSuperset`_
 
-[Claim("{179C424C-B39D-444E-8AB0-AD567551742F}")]
+[Claim("179C424C-B39D-444E-8AB0-AD567551742F")]
 **Projection Authority (UI)**
 
-[Claim("{DC169D72-BE19-4A83-8106-EA702664DE8B}")]
+[Claim("DC169D72-BE19-4A83-8106-EA702664DE8B")]
 **Commit Authority**
 
-[Claim("{CAD5D55D-80DC-46E6-BAE3-46C69A99F8B0}")]
+[Claim("CAD5D55D-80DC-46E6-BAE3-46C69A99F8B0")]
 **Settle Authority**
 
-[Claim("{6E400ED2-537A-40F5-B3FF-ED39CA223680}")]
+[Claim("6E400ED2-537A-40F5-B3FF-ED39CA223680")]
 **Predicate Authority**

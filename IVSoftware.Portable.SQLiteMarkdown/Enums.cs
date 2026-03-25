@@ -557,6 +557,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public enum NetProjectionOption
     {
         /// <summary>
+        /// No interactions are possible (e.g., when ONP is null).
+        /// </summary>
+        None,
+
+        /// <summary>
         /// External ObservableNetCollection is not allowed for ProjectionTopology.Inheritance.
         /// </summary>
         /// <remarks>
