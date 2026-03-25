@@ -155,7 +155,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {
-            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Model))
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
             {
                 await base.OnEpochFinalizingAsync(e);
                 if (!e.Cancel)

@@ -118,7 +118,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     // way in in which to determine authority because *that* collection
                     // raises *those* events, i.e., is the sender of them.
                     Debug.Assert(
-                        DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Model,
+                        DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Settle,
                         "Expecting this operation takes place under Model authority."
                     );
                     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -660,10 +660,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             switch (DHostAuthorityEpoch.Authority)
             {
-                case CollectionChangeAuthority.None:
+                case CollectionChangeAuthority.Reset:
                     // Events are being supressed by this authority epoch.
                     break;
-                case CollectionChangeAuthority.Model:
+                case CollectionChangeAuthority.Settle:
                     // Raise only sanctioned events
                     if(eBCL is ModelSettledEventArgs eModel)
                     {
