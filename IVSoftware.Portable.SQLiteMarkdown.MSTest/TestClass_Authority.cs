@@ -434,6 +434,7 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewI
         subtest_UIFlow();
 
         #region S U B T E S T S
+        // UI [Add][Delete]
         [Claim("{179C424C-B39D-444E-8AB0-AD567551742F}")]
         void subtest_UIFlow()
         {
@@ -455,6 +456,21 @@ Projection NotifyCollectionChangedEventArgs           NetProjection Add     NewI
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting itemsSource driven by the View."
+            );
+
+
+            actual = mmdc.Model.ToString();
+            actual.ToClipboardExpected();
+            { } // <- FIRST TIME ONLY: Adjust the message.
+            actual.ToClipboardAssert("Expecting result to match.");
+            { }
+            expected = @" 
+<model autocount=""0"" count=""0"" matches=""0"" mmdc=""[MMDC]"" />";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
             );
 
             Assert.AreEqual(1, itemsSource.Count);

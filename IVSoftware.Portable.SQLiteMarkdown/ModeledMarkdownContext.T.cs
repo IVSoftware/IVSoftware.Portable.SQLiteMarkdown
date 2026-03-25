@@ -216,7 +216,7 @@ SELECT * FROM items WHERE
         protected override void OnCanonicalSupersetChanged(NotifyCollectionChangedEventArgs e)
         {
             base.OnCanonicalSupersetChanged(e);
-            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 24).Date, "Don't forget decommissioning");
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 25).Date, "Don't forget decommissioning");
             //using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Model);
             //if (Authority == CollectionChangeAuthority.Model)
             //{

@@ -627,10 +627,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                     Model.SetAttributeValue(StdMarkdownAttribute.autocount, 0);
                     Model.SetAttributeValue(StdMarkdownAttribute.count, 0);
                     Model.SetAttributeValue(StdMarkdownAttribute.matches, 0);
-                    FilterQueryDatabase.DeleteAll<T>();
                     CanonicalSupersetInternal.Clear();
                     PredicateMatchSubsetInternal.Clear();
                     Model.RemoveNodes();
+                    if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                    {
+                        FilterQueryDatabase.DeleteAll<T>();
+                    }
                 }
                 else
                 {
