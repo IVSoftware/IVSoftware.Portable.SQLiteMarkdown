@@ -1593,10 +1593,8 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 @"\& \| \! \( \) \[ \] \' \"" \\".ParseSqlMarkdown<PetProfileN>();
                 Queue<SenderEventPair> eventQueue = new();
                 List<T> recordset;
-                var items = new ObservableQueryFilterSource<T>
-                {
-                    ProjectionOption = NetProjectionOption.AllowDirectChanges,
-                };
+                var items = new ObservableQueryFilterSource<T>();
+                Assert.AreEqual(NetProjectionOption.AllowDirectChanges, items.ProjectionOption);
                 string caller = string.Empty;
 
 

@@ -28,7 +28,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 {
     public partial class ModeledMarkdownContext<T> 
         : MarkdownContext<T>
-        , IModeledMarkdownContext
+        , IModeledMarkdownContext<T>
         where T : new()
     {
         public ModeledMarkdownContext()
@@ -972,7 +972,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                 : ObservableNetProjection is null
                     ? NetProjectionOption.ObservableOnly
                     : _projectionOption;
-            set
+            protected set
             {
                 if (!Equals(_projectionOption, value))
                 {
@@ -1563,6 +1563,13 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
         }
 
+        public void SetObservableNetProjection(
+            ObservableCollection<T>? onp, 
+            NetProjectionOption option = NetProjectionOption.AllowDirectChanges)
+        {
+            throw new NotImplementedException();
+        }
+
 
         /// <summary>
         /// Factory-backed canonical superset used by the back-end event pipeline 
@@ -1606,5 +1613,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         IList ITopology.PredicateMatchSubset => (IList)PredicateMatchSubset;
 
         private List<T> PredicateMatchSubsetPrivate { get; } = new();
+
+        ObservableCollection<T>? IModeledMarkdownContext<T>.ObservableNetProjection => throw new NotImplementedException();
     }
 }

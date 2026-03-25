@@ -47,7 +47,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         {
             public OBQFC()
             {
-                _mmdc.ProjectionOption = NetProjectionOption.AllowDirectChanges;
+                _mmdc.SetObservableNetProjection(this, NetProjectionOption.AllowDirectChanges);
             }
             protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
             {

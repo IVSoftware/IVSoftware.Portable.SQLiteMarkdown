@@ -61,24 +61,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             void subtest_Compositor()
             {
-                var mdcc = new ObservableNetProjectionWithComposition<SelectableQFModel>();
+                var onpc = new ObservableNetProjectionWithComposition<SelectableQFModel>();
                 Assert.AreEqual(
                     ProjectionTopology.Composition,
-                    mdcc.ProjectionTopology,
+                    onpc.ProjectionTopology,
                     "Expecting COMPOSITION as assigned in CTor.");
 
-                mdcc.ObservableNetProjection = null;
+                var mmdc = onpc.Model.To < ModeledMarkdownContext<SelectableQFModel>>();
+
+                mmdc.SetObservableNetProjection(null);
                 Assert.AreEqual(
                     ProjectionTopology.None,
-                    mdcc.ProjectionTopology,
+                    onpc.ProjectionTopology,
                     "Expecting NONE is the epistemic default.");
 
                 var oc = new ObservableCollection<SelectableQFModel>();
-                mdcc.ObservableNetProjection = oc;
+                mmdc.SetObservableNetProjection(oc);
 
                 Assert.AreEqual(
                     ProjectionTopology.Composition,
-                    mdcc.ProjectionTopology,
+                    onpc.ProjectionTopology,
                     "Expecting promotion to COMPOSITION now that assignment has been made.");
             }
             #endregion S U B T E S T S
@@ -359,23 +361,23 @@ MarkdownContext Clear(all=True)";
         {
             string actual, expected;
             List<string> builder = new();
-            ObservableNetProjectionWithComposition<SelectableQFModel> mdc;
+            ObservableNetProjectionWithComposition<SelectableQFModel> onp;
 
             subtest_DetectTopology();
 
             #region S U B T E S T S
             void subtest_DetectTopology()
             {
-                mdc = new ObservableNetProjectionWithComposition<SelectableQFModel>();
+                onp = new ObservableNetProjectionWithComposition<SelectableQFModel>();
                 Assert.AreEqual(
                     ProjectionTopology.Composition,
-                    mdc.ProjectionTopology,
+                    onp.ProjectionTopology,
                     "Expecting ABSENCE OF INHERITANCE is detectable from the start as 'COMPOSITION'.");
-
-                mdc.ObservableNetProjection = null;
+                var mdcc = onp.Model.To<ModeledMarkdownContext<SelectableQFModel>>();
+                mdcc.SetObservableNetProjection(null);
                 Assert.AreEqual(
                     ProjectionTopology.None,
-                    mdc.ProjectionTopology,
+                    onp.ProjectionTopology,
                     "Expecting NONE.");
             }
             #endregion S U B T E S T S
@@ -407,8 +409,7 @@ MarkdownContext Clear(all=True)";
             public ObservableNetProjectionWithComposition()
             {
                 Model.SetBoundAttributeValue(_mdc, name: nameof(StdMarkdownAttribute.mdc));
-                ObservableNetProjection = this;
-                ProjectionOption = NetProjectionOption.ObservableOnly;
+                _mdc.SetObservableNetProjection(this, NetProjectionOption.ObservableOnly);
                 ModelChanged += (sender, e) =>
                 {
                     switch (Authority)

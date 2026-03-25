@@ -409,7 +409,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Represents a bindable and observable collection representing 'net visible' filtered items.
         /// </summary>
         new ObservableCollection<T>? ObservableNetProjection { get; }
-        void SetObservableNetProjection(ObservableCollection<T> onp, NetProjectionOption option);
+        void SetObservableNetProjection(
+            ObservableCollection<T>? onp, 
+            NetProjectionOption option = NetProjectionOption.AllowDirectChanges);
 
         new IReadOnlyList<T> CanonicalSuperset { get; }
 

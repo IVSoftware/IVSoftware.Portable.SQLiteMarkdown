@@ -29,12 +29,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <summary>
         /// This is a pass-though BCL event structure.
         /// </summary>
-        None         = 0x0000,
+        None = 0x0000,
 
         /// <summary>
         /// These items (old and new) represent a new canonical recordset.
         /// </summary>
-        QueryResult  = 0x1000,
+        QueryResult = 0x1000,
 
         /// <summary>
         /// These items (old and new) represent a narrower subset.
@@ -45,24 +45,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// These items (old and new) represent a wider subset.
         /// </summary>
         RemoveFilter = 0x4000,
-    }
-    [Flags]
-    public enum ModelSettledAction
-    {
-        Add = NotifyCollectionChangedAction.Add,
-        Remove = NotifyCollectionChangedAction.Remove,
-        Replace = NotifyCollectionChangedAction.Replace,
-        Move = NotifyCollectionChangedAction.Move,
-        Reset = NotifyCollectionChangedAction.Reset,
 
-        #region C O N T E X T
         /// <summary>
-        /// The changes are taking place inside a QueryResult action
+        /// These items (old and new) represent a deferred collection change digest.
         /// </summary>
-        QueryResult = NotifyCollectionChangeReason.QueryResult,
-        ApplyFilter = NotifyCollectionChangeReason.ApplyFilter,
-        RemoveFilter = NotifyCollectionChangeReason.RemoveFilter,
-        #endregion C O N T E X T
+        Batch = 0x8000,
     }
 
     [DebuggerDisplay("{Action}  OldCount={OldItems?.Count ?? 0}  NewCount={NewItems?.Count ?? 0}  OldIndex={OldStartingIndex}  NewIndex={NewStartingIndex}")]
