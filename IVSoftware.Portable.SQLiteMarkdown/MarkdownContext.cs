@@ -1565,6 +1565,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         // Different! Protected because it's in play inside OnFilteringStateChanged.
         protected bool _isFiltering = false;
 
+        public void Sort(IComparer? comparer)
+        {
+            if(comparer is null)
+            {
+                throw new NotImplementedException("ToDo");
+            }
+            else
+            {
+                throw new NotImplementedException("ToDo");
+            }
+        }
+        protected bool IsEphemeralSort
+        {
+            get => _isEphemeralSort;
+            set
+            {
+                if (!Equals(_isEphemeralSort, value))
+                {
+                    _isEphemeralSort = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        bool _isEphemeralSort = false;
+
+
         /// <summary>
         /// Catch and release heuristic for canonical ObservableNetProjection entering and leaving IsFiltered state.
         /// </summary>

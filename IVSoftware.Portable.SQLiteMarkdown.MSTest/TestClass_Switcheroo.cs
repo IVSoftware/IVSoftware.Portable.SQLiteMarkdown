@@ -409,7 +409,7 @@ MarkdownContext Clear(all=True)";
                 Model.SetBoundAttributeValue(_mdc, name: nameof(StdMarkdownAttribute.mdc));
                 ObservableNetProjection = this;
                 ProjectionOption = NetProjectionOption.ObservableOnly;
-                ModelSettled += (sender, e) =>
+                ModelChanged += (sender, e) =>
                 {
                     switch (Authority)
                     {
@@ -471,10 +471,10 @@ MarkdownContext Clear(all=True)";
                 remove => ((IMarkdownContext)_mdc).InputTextSettled -= value;
             }
 
-            public event NotifyCollectionChangedEventHandler ModelSettled
+            public event NotifyCollectionChangedEventHandler ModelChanged
             {
-                add => ((IModeledMarkdownContext)_mdc).ModelSettled += value;
-                remove => ((IModeledMarkdownContext)_mdc).ModelSettled -= value;
+                add => ((IModeledMarkdownContext)_mdc).ModelChanged += value;
+                remove => ((IModeledMarkdownContext)_mdc).ModelChanged -= value;
             }
 
             public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority)
@@ -500,19 +500,11 @@ MarkdownContext Clear(all=True)";
 
             public ProjectionTopology ProjectionTopology => ((IModeledMarkdownContext)_mdc).ProjectionTopology;
 
-            public INotifyCollectionChanged? ObservableNetProjection
-            {
-                get => ((IModeledMarkdownContext)_mdc).ObservableNetProjection;
-                set => ((IModeledMarkdownContext)_mdc).ObservableNetProjection = value;
-            }
+            public IList? ObservableNetProjection => _mdc.ObservableNetProjection;
 
             public int PredicateMatchCount => ((IMarkdownContext)_mdc).PredicateMatchCount;
 
-            public NetProjectionOption ProjectionOption
-            {
-                get => ((IModeledMarkdownContext)_mdc).ProjectionOption;
-                set => ((IModeledMarkdownContext)_mdc).ProjectionOption = value;
-            }
+            public NetProjectionOption ProjectionOption => ((IModeledMarkdownContext)_mdc).ProjectionOption;
 
             public ReplaceItemsEventingOption ReplaceItemsEventingOptions
             {

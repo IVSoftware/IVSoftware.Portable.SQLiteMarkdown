@@ -6,6 +6,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.StateMachine;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
@@ -527,10 +528,10 @@ SELECT * FROM items WHERE
         ///
         /// This property is infrastructure wiring and is not intended for data binding.
         /// </remarks>
-        public INotifyCollectionChanged? ObservableNetProjection
+        public IList? ObservableNetProjection
         {
             get => _observableProjection;
-            set
+            protected set
             {
                 if (ProjectionTopology == ProjectionTopology.Inheritance)
                 {
@@ -543,9 +544,9 @@ Inherited contexts manage their projection internally.".TrimStart());
                     if (!Equals(_observableProjection, value))
                     {
                         // Unsubscribe INCC
-                        if (_observableProjection is not null)
+                        if (_observableProjection is INotifyCollectionChanged)
                         {
-                            _observableProjection.CollectionChanged -= OnNetProjectionCollectionChanged;
+                            ((INotifyCollectionChanged)_observableProjection).CollectionChanged -= OnNetProjectionCollectionChanged;
                         }
 
                         _observableProjection = value;
@@ -554,15 +555,15 @@ Inherited contexts manage their projection internally.".TrimStart());
                         OnNetProjectionHandleChanged();
 
                         // Subscribe INCC
-                        if (_observableProjection is not null)
+                        if (_observableProjection is INotifyCollectionChanged)
                         {
-                            _observableProjection.CollectionChanged += OnNetProjectionCollectionChanged;
+                            ((INotifyCollectionChanged)_observableProjection).CollectionChanged += OnNetProjectionCollectionChanged;
                         }
                     }
                 }
             }
         }
-        INotifyCollectionChanged? _observableProjection = null;
+        IList? _observableProjection = null;
 
 
         /// <summary>
@@ -747,7 +748,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             {
                 case NetProjectionOption.Inherited:         // Subclass should apply policy first, then call base.
                 case NetProjectionOption.ObservableOnly:    // Maintain internal canon but do not push internal changes.
-                    ModelSettled?.Invoke(this, eBCL);
+                    ModelChanged?.Invoke(this, eBCL);
                     break;
                 case NetProjectionOption.AllowDirectChanges:
                     localApplyDirectChanges();
@@ -805,7 +806,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                                 break;
                         }
                     }
-                    ModelSettled?.Invoke(this, eBCL);
+                    ModelChanged?.Invoke(this, eBCL);
 
                     #region L o c a l F x
 
@@ -957,7 +958,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
         }
 
-        public event NotifyCollectionChangedEventHandler? ModelSettled;
+        public event NotifyCollectionChangedEventHandler? ModelChanged;
 
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.
@@ -1081,7 +1082,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
             using (new TokenDisposer(authorityToken))
             {
-                Enum result = ReservedFSMState.None;
+                Enum result = FsmReservedState.None;
                 // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
                 // * Reuse an incoming value that is already an object[] to avoid an unnecessary allocation.
                 if (context is IEnumerable collection)
@@ -1098,11 +1099,11 @@ Inherited contexts manage their projection internally.".TrimStart());
 
                     switch (result)
                     {
-                        case ReservedFSMState.Canceled:
-                        case ReservedFSMState.FastTrack:
-                        case ReservedFSMState.None:
+                        case FsmReservedState.Canceled:
+                        case FsmReservedState.FastTrack:
+                        case FsmReservedState.None:
                             return result;
-                        case ReservedFSMState.Next:
+                        case FsmReservedState.Next:
                             break;
                         default:
                             return await localRunOOB(state, context);
@@ -1123,15 +1124,15 @@ Inherited contexts manage their projection internally.".TrimStart());
 
                     switch (outOfBand)
                     {
-                        case ReservedFSMState.Canceled:
-                        case ReservedFSMState.FastTrack:
-                        case ReservedFSMState.None:
+                        case FsmReservedState.Canceled:
+                        case FsmReservedState.FastTrack:
+                        case FsmReservedState.None:
                             return outOfBand;
-                        case ReservedFSMState.Next:
+                        case FsmReservedState.Next:
                             break;
                     }
                 }
-                return ReservedFSMState.MaxOOB;
+                return FsmReservedState.MaxOOB;
             }
             #endregion L o c a l F x
         }
@@ -1164,7 +1165,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
             using (new TokenDisposer(authorityToken))
             {
-                Enum result = ReservedFSMState.None;
+                Enum result = FsmReservedState.None;
                 // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
                 // * Reuse an incoming value that is already an object[] to avoid an unnecessary allocation.
                 if (context is IEnumerable collection)
@@ -1181,11 +1182,11 @@ Inherited contexts manage their projection internally.".TrimStart());
 
                     switch (result)
                     {
-                        case ReservedFSMState.Canceled:
-                        case ReservedFSMState.FastTrack:
-                        case ReservedFSMState.None:
+                        case FsmReservedState.Canceled:
+                        case FsmReservedState.FastTrack:
+                        case FsmReservedState.None:
                             return result;
-                        case ReservedFSMState.Next:
+                        case FsmReservedState.Next:
                             break;
                         default:
                             return localRunOOB(state, context);
@@ -1206,21 +1207,21 @@ Inherited contexts manage their projection internally.".TrimStart());
 
                     switch (outOfBand)
                     {
-                        case ReservedFSMState.Canceled:
-                        case ReservedFSMState.FastTrack:
-                        case ReservedFSMState.None:
+                        case FsmReservedState.Canceled:
+                        case FsmReservedState.FastTrack:
+                        case FsmReservedState.None:
                             return outOfBand;
-                        case ReservedFSMState.Next:
+                        case FsmReservedState.Next:
                             break;
                     }
                 }
-                return ReservedFSMState.MaxOOB;
+                return FsmReservedState.MaxOOB;
             }
             #endregion L o c a l F x
         }
         protected virtual async Task<Enum> ExecStateAsync(Enum state, object? context = null)
         {
-            return ReservedFSMState.Canceled;
+            return FsmReservedState.Canceled;
         }
 
         protected Enum ExecState(Enum state, object? context = null)
@@ -1240,9 +1241,9 @@ Inherited contexts manage their projection internally.".TrimStart());
             switch ((StdFSMState)state)
             {
                 case StdFSMState.DetectFastTrack:
-                    if (Equals(localDetectFastTrack(), ReservedFSMState.FastTrack))
+                    if (Equals(localDetectFastTrack(), FsmReservedState.FastTrack))
                     {
-                        return ReservedFSMState.FastTrack;
+                        return FsmReservedState.FastTrack;
                     }
                     else
                     {
@@ -1270,7 +1271,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                     Debug.Fail($@"ADVISORY - Unrecognized action.");
                     break;
             }
-            return ReservedFSMState.Next;
+            return FsmReservedState.Next;
 
             #region L o c a l F x
             Enum localDetectFastTrack()
@@ -1285,14 +1286,14 @@ Inherited contexts manage their projection internally.".TrimStart());
                             && !Model.HasElements
                             && isEmptyProjection)
                         {
-                            return ReservedFSMState.FastTrack;
+                            return FsmReservedState.FastTrack;
                         }
                         else
                         {
                             break;
                         }
                 }
-                return ReservedFSMState.Next;
+                return FsmReservedState.Next;
             }
 
             Enum localResetOrCanonizeFQDBForEpoch()
@@ -1316,14 +1317,14 @@ Inherited contexts manage their projection internally.".TrimStart());
                     catch (Exception ex)
                     {
                         this.RethrowHard(ex);
-                        return ReservedFSMState.Canceled;
+                        return FsmReservedState.Canceled;
                     }
                 }
                 else
                 {   /* G T K - N O O P */
                     // There is no FQDB to maintain in Query-Only mode.
                 }
-                return ReservedFSMState.Next;
+                return FsmReservedState.Next;
             }
 
             void localResetOrCanonizeModelForEpoch()
@@ -1556,7 +1557,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             base.OnSearchEntryStateChanged();
             if (SearchEntryState == SearchEntryState.Cleared)
             {
-                if (Equals(ReservedFSMState.FastTrack, RunFSM<NativeClearFSM>()))
+                if (Equals(FsmReservedState.FastTrack, RunFSM<NativeClearFSM>()))
                 {   /* G T K */
                 }
             }
@@ -1574,6 +1575,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// this canonical superset.
         /// </remarks>
         public IReadOnlyList<T> CanonicalSuperset => CanonicalSupersetProtected;
+        IList ITopology.CanonicalSuperset => (IList)CanonicalSuperset;
 
         public ObservableCollection<T> CanonicalSupersetProtected
         {
@@ -1601,6 +1603,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </remarks>
         public IReadOnlyList<T> PredicateMatchSubset
             => PredicateMatchSubsetPrivate;
+        IList ITopology.PredicateMatchSubset => (IList)PredicateMatchSubset;
 
         private List<T> PredicateMatchSubsetPrivate { get; } = new();
     }

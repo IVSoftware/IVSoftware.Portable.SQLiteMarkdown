@@ -305,12 +305,12 @@ public class TestClass_PredicateMarkdownContext
         using (pmdc.WithOnDispose(
             onInit: (sender, e) =>
             {
-                pmdc.ModelSettled += localOnModelUpdated;
+                pmdc.ModelChanged += localOnModelUpdated;
                 pmdc.PropertyChanged += localOnPropertyChanged;
             },
             onDispose: (sender, e) =>
             {
-                pmdc.ModelSettled -= localOnModelUpdated;
+                pmdc.ModelChanged -= localOnModelUpdated;
                 pmdc.PropertyChanged -= localOnPropertyChanged;
             }))
         {

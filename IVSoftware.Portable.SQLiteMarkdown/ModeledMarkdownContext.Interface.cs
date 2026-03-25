@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -107,6 +108,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
     partial class ModeledMarkdownContext<T> : IList<T>
     {
+        int IndexOfAction(CollectionChangeAction action, int index)
+        {
+            if(IsFiltering)
+            {
+                if(IsEphemeralSort)
+                {
+
+                }
+                throw new NotImplementedException("ToDo");
+            }
+            else
+            {
+                return index;
+            }
+        }
         T IList<T>.this[int index]
         {
             get => (T)((IList)Read)[index];
