@@ -113,7 +113,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnXAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
         {
-            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Reset)
+            if (Equals(DHostAuthorityEpoch.Authority, CollectionChangeAuthority.Reset))
             {   /* G T K - N O O P */
             }
             else
@@ -167,7 +167,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
-            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Reset)
+            if (Equals(DHostAuthorityEpoch.Authority, CollectionChangeAuthority.Reset))
             {   /* G T K - N O O P */
             }
             else
@@ -789,7 +789,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                         // way in in which to determine authority because *that* collection
                         // raises *those* events, i.e., is the sender of them.
                         Debug.Assert(
-                            DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Settle,
+                            Equals(DHostAuthorityEpoch.Authority, CollectionChangeAuthority.Settle),
                             "Expecting this operation takes place under Model authority."
                         );
                         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1017,7 +1017,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
-            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Settle)
+            if (Equals(DHostAuthorityEpoch.Authority, CollectionChangeAuthority.Settle))
             {   /* G T K - N O O P */
             }
             else
