@@ -298,65 +298,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// States authority inside a NotifyCollectionChanged event handler.
-    /// </summary>
-    /// <remarks>
-    /// Defines which side is authoritative when propagating changes between
-    /// the canonical unfiltered collection and its filtered projection.
-    /// 
-    /// Terminology:
-    /// - NetProjection (typically a UI surface) refers to the items allowed by any active queries or filters. 
-    /// - Canonical refers to the backend collection captured when state enters IsFiltering.
-    /// - PredicateMatchSubset refers to the backend collection maintained by the Model.
-    /// 
-    /// Authority may shift during refinement epochs to suppress upstream propagation
-    /// and prevent circular collection change events.
-    /// </remarks>
-    public enum CollectionChangeAuthority
-    {
-        /// <summary>
-        /// Explicit "no authority" grant.
-        /// </summary>
-        /// <remarks>
-        /// Distinct from 0, which is the idle state of authority grants.
-        /// - In practical terms, collection changed events are suppressed
-        ///   in a manner that prevents internal collections from interacting.
-        /// - Can be combined with a reset authority, which raises a Reset
-        ///   collection changed event when the churn has settled out.
-        /// </remarks>
-        Reset = ModeledCollectionChangeAuthority.Reset,
-
-        /// <summary>
-        /// Signals that the exposed IList routes to CanonicalSuperset directly.
-        /// </summary>
-        /// <remarks>
-        /// AUTHORITY
-        /// - The markdown context is notifying that model changes, such as those 
-        ///   made by applying a new predicate, are outgoing to the net projection.
-        /// FILTERING TOPOLOGY
-        /// - No copying is required. Instead, the ItemsSource enumerator (the 'visible') surface
-        ///   is switched between the internal CanonicalSuperset and the internal PredicateSubset.
-        /// </remarks>
-        Settle = ModeledCollectionChangeAuthority.Settle,
-
-        /// <summary>
-        /// Signals that the ItemsSource enumerator (the 'visible') surface *is* an external ObservableCollection.
-        /// </summary>
-        /// <remarks>
-        /// FILTERING TOPOLOGY
-        /// - When the state enters IsFiltering, the internal PredicateSubset is copied 
-        ///   to the external ObservableCollection.
-        /// - When the state exits IsFiltering, the internal CanonicalSubset is copied 
-        ///   to the external ObservableCollection.
-        /// AUTHORITY
-        /// - Mental Model (typical): "When I add a new item, the current filter must not be allowed to 'immediately' hide it."
-        /// - User-facing {add, edit, remove} operations that occur against a filtered projection are *exempt* from the filter.
-        /// </remarks>
-        Projection,
-    }
-
-
-    /// <summary>
     /// Laws of Gravity for the Markdown Context Domain
     /// </summary>
     /// <remarks>
@@ -378,7 +319,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     ///   3. BCL Add event on the repopulate phase after the replace.
     /// </remarks>
     [NotFlags, Description("Authority"), Probationary("260320")]
-    internal enum ModeledCollectionChangeAuthority
+    public enum CollectionChangeAuthority
     {
         /// <summary>
         /// Programmatic calls on IList produce corresponding INCC events.
