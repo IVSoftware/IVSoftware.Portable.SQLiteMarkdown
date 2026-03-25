@@ -418,15 +418,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             await subtestQueryWithFilteredResultsClearSequence();
 
             #region S U B T E S T S 
+
             async Task subtestExtQueryNoResult()
             {
-                COUNT = 0;
+                COUNT = 0;  // The 'query' has returned no matches.
                 mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
                 Assert.AreEqual(COUNT, mdc.CanonicalCount);
                 Assert.AreEqual(SearchEntryState.QueryCompleteNoResults, mdc.SearchEntryState);
                 Assert.AreEqual(FilteringState.Ineligible, mdc.FilteringState);
                 Assert.IsFalse(mdc.IsFiltering);
             }
+
             async Task subtestExtQueryOneResult()
             {
                 COUNT = 1;

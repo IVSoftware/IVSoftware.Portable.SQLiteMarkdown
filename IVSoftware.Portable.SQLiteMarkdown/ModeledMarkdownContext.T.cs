@@ -999,10 +999,8 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
-            if (Equals(AuthorityEpochProvider.Authority, CollectionChangeAuthority.Settle))
-            {   /* G T K - N O O P */
-            }
-            else
+            using var token = BeginCollectionChangeAuthority(CollectionChangeAuthority.Commit);
+            if (Equals(Authority, CollectionChangeAuthority.Commit))
             {
                 using (var eventHost = Model.SetSelfRemovingXBoundAttribute(
                     StdMarkdownAttribute.triage,
@@ -1031,6 +1029,10 @@ Inherited contexts manage their projection internally.".TrimStart());
                         this.ThrowFramework<NullReferenceException>($"Expecting {nameof(ReplaceItemsEventingContext)}");
                     }
                 }
+            }
+            else
+            {
+                Debug.Fail($@"ADVISORY - First Time UNEXPECTED failed to gain authority.");
             }
         }
 
