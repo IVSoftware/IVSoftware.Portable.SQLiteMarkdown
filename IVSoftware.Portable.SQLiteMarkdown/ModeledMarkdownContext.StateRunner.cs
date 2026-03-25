@@ -348,9 +348,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             public StateRunnerAsyncMMDC(ModeledMarkdownContext<T> mmdc) => MMDC = mmdc;
 
             ModeledMarkdownContext<T> MMDC { get; }
-            public override Task<Enum> ExecStateAsync(Enum state, object? context)
+            public override async Task<Enum> ExecStateAsync(Enum state, object? context)
             {
-                throw new NotImplementedException("ToDo");
+                if(state.GetCustomAttribute<SynchronousStateAttribute>() is null)
+                {
+                    return await Task.Run(() => MMDC.StateRunner.ExecState(state, context));
+                }
+                else
+                {
+                    return MMDC.StateRunner.ExecState(state, context);
+                }
             }
         }
     }
