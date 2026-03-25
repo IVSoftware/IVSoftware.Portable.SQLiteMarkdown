@@ -61,22 +61,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public Enum RunTokenRing<TFsm>(object? context = null) => StateRunner.RunTokenRing<TFsm>(context);
 
-        Enum IStateRunner.ExecState(Enum state, object? context) => StateRunner.ExecState(state, context);
+        public Enum ExecState(Enum state, object? context) => StateRunner.ExecState(state, context);
 
-        public Task<Enum> RunFSMAsync<TFsm>(object? context = null)
-        {
-            return ((IStateRunnerAsync)StateRunnerAsync).RunFSMAsync<TFsm>(context);
-        }
+        public Task<Enum> RunFSMAsync<TFsm>(object? context = null) => ((IStateRunnerAsync)StateRunnerAsync).RunFSMAsync<TFsm>(context);
 
-        public Task<Enum> RunTokenRingAsync<TFsm>(object? context = null)
-        {
-            return ((IStateRunnerAsync)StateRunnerAsync).RunTokenRingAsync<TFsm>(context);
-        }
-
-        Task<Enum> IStateRunnerAsync.ExecStateAsync(Enum state, object? context)
-        {
-            return ((IStateRunnerAsync)StateRunnerAsync).ExecStateAsync(state, context);
-        }
+        public Task<Enum> RunTokenRingAsync<TFsm>(object? context = null) => ((IStateRunnerAsync)StateRunnerAsync).RunTokenRingAsync<TFsm>(context);
+        Task<Enum> IStateRunnerAsync.ExecStateAsync(Enum state, object? context) => ((IStateRunnerAsync)StateRunnerAsync).ExecStateAsync(state, context);
 
         class StateRunnerMMDC : StateRunner
         {
@@ -95,8 +85,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 switch (state)
                 {
                     case NativeClearFSM:
-                        break;
-                    case LoadIsFilteringEpochFSM:
                         break;
                 }
 #endif

@@ -758,6 +758,10 @@ Inherited contexts manage their projection internally.".TrimStart());
         {
             switch (ProjectionOption)
             {
+                case null: 
+                    // N O O P
+                    // There is no projection to update.
+                    break;
                 case NetProjectionOption.Inherited:         // Subclass should apply policy first, then call base.
                 case NetProjectionOption.ObservableOnly:    // Maintain internal canon but do not push internal changes.
                     ModelChanged?.Invoke(this, eBCL);
@@ -1008,7 +1012,15 @@ Inherited contexts manage their projection internally.".TrimStart());
                     StdMarkdownAttribute.triage,
                     Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.QueryResult, recordset, ReplaceItemsEventingOptions)))
                 {
-                    RunFSM<LoadIsFilteringEpochFSM>(recordset);
+                    if(Equals(FsmReservedState.FastTrack, ExecState(StdFSMState.DetectFastTrack, recordset)))
+                    {
+                        Debug.Fail($@"ADVISORY - First Time.");
+                    }
+                    ExecState(StdFSMState.ResetOrCanonizeFQBDForEpoch, recordset);
+                    ExecState(StdFSMState.ResetOrCanonizeModelForEpoch, recordset);
+                    ExecState(StdFSMState.UpdateStatesForEpoch, recordset);
+
+
                     if (eventHost.Tag is ReplaceItemsEventingContext context)
                     {
                         if (context.Structural is NotifyCollectionChangedEventArgs eStructural)
@@ -1047,7 +1059,14 @@ Inherited contexts manage their projection internally.".TrimStart());
                     StdMarkdownAttribute.triage,
                     Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.QueryResult, recordset, ReplaceItemsEventingOptions)))
                 {
-                    RunFSMAsync<LoadIsFilteringEpochFSM>(recordset);
+                    if (Equals(FsmReservedState.FastTrack, await ExecStateAsync(StdFSMState.DetectFastTrack, recordset)))
+                    {
+                        Debug.Fail($@"ADVISORY - First Time.");
+                    }
+                    await ExecStateAsync(StdFSMState.ResetOrCanonizeFQBDForEpoch, recordset);
+                    await ExecStateAsync(StdFSMState.ResetOrCanonizeModelForEpoch, recordset);
+                    await ExecStateAsync(StdFSMState.UpdateStatesForEpoch, recordset);
+
                     if (eventHost.Tag is ReplaceItemsEventingContext context)
                     {
                         if (context.Structural is NotifyCollectionChangedEventArgs eStructural)

@@ -441,20 +441,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Executes on rising edge of IsFiltering.
     /// </summary>
-    internal enum LoadIsFilteringEpochFSM
-    {
-        DetectFastTrack = StdFSMState.DetectFastTrack,
-
-        ResetOrCanonizeFQBDForEpoch = StdFSMState.ResetOrCanonizeFQBDForEpoch,
-
-        ResetOrCanonizeModelForEpoch = StdFSMState.ResetOrCanonizeModelForEpoch,
-
-        UpdateStatesForEpoch = StdFSMState.UpdateStatesForEpoch,
-    }
-
-    /// <summary>
-    /// Executes on rising edge of IsFiltering.
-    /// </summary>
     internal enum TrackUserAddItem
     {
         AddItemToModel = StdFSMState.AddItemToModel,
