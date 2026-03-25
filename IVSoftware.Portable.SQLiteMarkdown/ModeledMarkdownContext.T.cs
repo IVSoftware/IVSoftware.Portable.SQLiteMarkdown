@@ -113,7 +113,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnXAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
         {
-            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.None)
+            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Reset)
             {   /* G T K - N O O P */
             }
             else
@@ -167,7 +167,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
-            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.None)
+            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Reset)
             {   /* G T K - N O O P */
             }
             else
@@ -600,7 +600,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
             else
             {
-                Debug.Assert(Authority == CollectionChangeAuthority.Model);
+                Debug.Assert(Authority == CollectionChangeAuthority.Settle);
             }
         }
 
@@ -624,8 +624,8 @@ Inherited contexts manage their projection internally.".TrimStart());
                 ObservableNetProjection is null,
                 "Expecting CanonicalSuperset *is* the source of all model changes.");
 
-            using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Model);
-            if (Authority == CollectionChangeAuthority.Model)
+            using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle);
+            if (Authority == CollectionChangeAuthority.Settle)
             {
                 UpdateModelWithAuthority(sender, e);
             }
@@ -640,14 +640,14 @@ Inherited contexts manage their projection internally.".TrimStart());
             #region A U T H O R I T Y    G U A R D
             switch (Authority)
             {
-                case CollectionChangeAuthority.Model:
+                case CollectionChangeAuthority.Settle:
                 case CollectionChangeAuthority.Projection:
                     // The players.
                     break;
                 case 0:
                     this.ThrowFramework<InvalidOperationException>($"{nameof(CollectionChangeAuthority)} is required.");
                     return;
-                case CollectionChangeAuthority.None:
+                case CollectionChangeAuthority.Reset:
                     Debug.Fail($@"ADVISORY - Explicit no authority. Is this what we really want here?.");
                     return;
                 default:
@@ -789,7 +789,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                         // way in in which to determine authority because *that* collection
                         // raises *those* events, i.e., is the sender of them.
                         Debug.Assert(
-                            DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Model,
+                            DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Settle,
                             "Expecting this operation takes place under Model authority."
                         );
                         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1017,7 +1017,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
-            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Model)
+            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Settle)
             {   /* G T K - N O O P */
             }
             else
@@ -1031,14 +1031,14 @@ Inherited contexts manage their projection internally.".TrimStart());
                     {
                         if (context.Structural is NotifyCollectionChangedEventArgs eStructural)
                         {
-                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Model))
+                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
                             {
                                 OnModelSettled(eStructural);
                             }
                         }
                         if (context.Reset is NotifyCollectionChangedEventArgs eReset)
                         {
-                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Model))
+                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
                             {
                                 OnModelSettled(eReset);
                             }

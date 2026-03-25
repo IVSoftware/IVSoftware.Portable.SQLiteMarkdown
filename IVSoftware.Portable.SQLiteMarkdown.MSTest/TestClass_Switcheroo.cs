@@ -413,9 +413,9 @@ MarkdownContext Clear(all=True)";
                 {
                     switch (Authority)
                     {
-                        case CollectionChangeAuthority.None:
+                        case CollectionChangeAuthority.Reset:
                             break;
-                        case CollectionChangeAuthority.Model:
+                        case CollectionChangeAuthority.Settle:
                             break;
                         default:
                             this.ThrowFramework<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");

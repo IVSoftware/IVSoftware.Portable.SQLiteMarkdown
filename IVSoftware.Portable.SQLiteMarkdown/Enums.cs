@@ -324,7 +324,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - Can be combined with a reset authority, which raises a Reset
         ///   collection changed event when the churn has settled out.
         /// </remarks>
-        None = 1,
+        Reset = ModeledCollectionChangeAuthority.Reset,
 
         /// <summary>
         /// Signals that the exposed IList routes to CanonicalSuperset directly.
@@ -337,7 +337,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - No copying is required. Instead, the ItemsSource enumerator (the 'visible') surface
         ///   is switched between the internal CanonicalSuperset and the internal PredicateSubset.
         /// </remarks>
-        Model,
+        Settle = ModeledCollectionChangeAuthority.Settle,
 
         /// <summary>
         /// Signals that the ItemsSource enumerator (the 'visible') surface *is* an external ObservableCollection.
@@ -353,6 +353,100 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - User-facing {add, edit, remove} operations that occur against a filtered projection are *exempt* from the filter.
         /// </remarks>
         Projection,
+    }
+
+
+    /// <summary>
+    /// Laws of Gravity for the Markdown Context Domain
+    /// </summary>
+    /// <remarks>
+    /// ASYNCHONOUS
+    /// - States should be Async and non-concurrent.
+    /// - Lower requested states should have the authority to cancel Higher states.
+    /// - Higher requested states should await the completion of Lower states.
+    /// WORK PRODUCT - An event (even an 'Empty' one) should always be produced.
+    /// - Empty: When IME is cleared.
+    /// - Empty: When state changes Filter->Query.
+    /// - BCL Reset: When Reset epoch completes.
+    /// - Replace with Reason: When Commit() epoch completes.
+    /// - Replace with Reason: When Remodel(bool) epoch completes.
+    /// ReplaceItemsEventingOption
+    /// - Replace with Reason is another way of saying Clear then Add.
+    /// - Depending on this setting, replace actions produce 'any or all' of
+    ///   1. BCL Reset event on the clear phase before the replace.
+    ///   2. Structural 'Replace with Reason' event, which is a digest of the transaction.
+    ///   3. BCL Add event on the repopulate phase after the replace.
+    /// </remarks>
+    [NotFlags, Description("Authority"), Probationary("260320")]
+    internal enum ModeledCollectionChangeAuthority
+    {
+        /// <summary>
+        /// Programmatic calls on IList produce corresponding INCC events.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "No Surprises."
+        /// - Routes to CanonicalSuperset(CSS) where all CSS events raise INCC on ObservableNetProjection(ONP).
+        /// - The FSM is not allowed to change state in response.
+        /// </remarks>
+        None = 0,
+
+        /// <summary>
+        /// Epoch that returns to first cause and produces a single Base Class Library (BCL) event.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "Clear everything while suppressing intermediate events. Raise a BCL Reset INCC when done."
+        /// Association: <c>Clear(true)</c>
+        /// </remarks>
+        Reset,
+
+        /// <summary>
+        /// Epoch that begins with a programmatic Commit() command and produces an INotifyPpropertyChanged (INCC) event.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "Ask user to query their primary data source. Load this recordset as canon."
+        /// BEHAVIOR
+        /// This is a direct action on CSS. 
+        /// - Then ONP if it exists will be cleared and repopulated with the CSS items.
+        /// - Epistemically, the ONP that is 'out there' might handle the changes one by 
+        ///   one, or it can opt in to Replace with Reason events in addition or instead of.
+        /// - Another good option for ONP is to check authority for suppression, then do
+        ///   a settled reset when changes stop occurring.
+        /// </remarks>
+        Commit,
+
+        /// <summary>
+        /// Epoch that begins with a direct change to the ONP and ends with an INCC.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "The UI user performs an Add, Remove, or Move action on a Full or Filtered list."
+        /// - Routes to CSS where all CSS events raise INCC on ONP.
+        /// - The FSM is not allowed to change state in response.
+        /// - The model must grant IsMatch status immediately to any 
+        ///   new item for the current epoch, ensuring they they 
+        ///   don't mysteriously disappear the moment they commit.         ///   
+        /// Association: <c>Remodel(true)</c>
+        /// </remarks>
+        Projection,
+
+        /// <summary>
+        /// Epoch that begins when Input Method Entry (IME) changes to the InputText property have settled.
+        /// </summary>
+        /// <remarks> 
+        /// Mental Model: "User is refining a recordset by modifying text in the IME."
+        /// </remarks>
+        Settle,
+
+        /// <summary>
+        /// Epoch that begins when active filter predicates have immediate consequences (e.g., Radio or CheckBoxes).
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "UI Radio selection, e.g., [ShowAll, ShowUnchecked, ShowChecked]."
+        /// - The FSM is not allowed to change state in response.
+        /// - Routes to PMS where all PMS events raise INCC on ONP.
+        /// Association: <c>Remodel(false)</c>
+        /// </remarks>
+        [Description("Verb: PRED-ih-kate")]
+        Predicate,
     }
 
     /// <summary>
@@ -463,7 +557,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Unconditional full clear suppresses event churn and raises final Reset.
     /// </summary>
-    [CollectionChangeAuthority(CollectionChangeAuthority.Model)]
+    [CollectionChangeAuthority(CollectionChangeAuthority.Settle)]
     internal enum NativeClearFSM
     {
         DetectFastTrack = StdFSMState.DetectFastTrack,
