@@ -152,8 +152,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             get => (T)((IList)Read)[index];
             set => CanonicalSupersetProtected[index] = value!;
         }
-
-        public int Count => ((IList)this).Count;
+        public override int CanonicalCount => CanonicalSuperset.Count;
+        public override int PredicateMatchCount => PredicateMatchSubset.Count;
+        public int Count =>
+            IsFiltering
+            ? PredicateMatchCount
+            : CanonicalCount;
 
         public bool IsReadOnly => ((IList)this).IsReadOnly;
 

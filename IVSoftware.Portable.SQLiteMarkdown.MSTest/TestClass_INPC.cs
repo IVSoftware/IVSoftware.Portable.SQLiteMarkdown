@@ -50,6 +50,7 @@ public class TestClass_INPC
 
         items.AddDynamic("Brown Dog", "[canine][color]", false, new() { "loyal", "friend", "furry" });
 
+        Assert.IsFalse(items.IsFiltering);
         Assert.AreEqual(1, items.Count);
         actual = items.Model.ToString();
         actual.ToClipboardExpected();

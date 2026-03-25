@@ -147,9 +147,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             protected set => Model.SetAttributeValue(StdMarkdownAttribute.count, value);
         }
 
-        public int CanonicalCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.count);
+        public virtual int CanonicalCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.count);
 
-        public int PredicateMatchCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
+        public virtual int PredicateMatchCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
 
         public CollectionChangeAuthority Authority => (CollectionChangeAuthority)AuthorityEpochProvider.Authority;
 

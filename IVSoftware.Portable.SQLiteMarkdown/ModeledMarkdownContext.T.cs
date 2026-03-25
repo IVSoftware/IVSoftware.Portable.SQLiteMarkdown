@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
@@ -54,6 +55,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     );
                 }
             }
+            CanonicalSupersetProtected = new();
+            CanonicalSupersetProtected.CollectionChanged += (sender, e) => OnCanonicalSupersetChanged(e);
         }
 
         /// <summary>
@@ -446,13 +449,13 @@ SELECT * FROM items WHERE
 
                     if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
                     {
-                        OnModelSettled(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
+                        OnModelChanged(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
                             reason: NotifyCollectionChangeReason.ApplyFilter,
                             e: eStructural));
                     }
                     if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
                     {
-                        OnModelSettled(eReset);
+                        OnModelChanged(eReset);
                     }
 
 #if ABSTRACT
@@ -615,23 +618,20 @@ Inherited contexts manage their projection internally.".TrimStart());
         ///
         /// Mental Model: "The canonical ledger changed. Reconcile projections and notify observers."
         /// </remarks>
-        protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected virtual void OnCanonicalSupersetChanged(NotifyCollectionChangedEventArgs e)
         {
-            Debug.Assert(
-                ProjectionTopology == ProjectionTopology.Inheritance,
-                "Expecting this.GetType() is *not* IList and that it *does* inherit MDC");
-            Debug.Assert(
-                ObservableNetProjection is null,
-                "Expecting CanonicalSuperset *is* the source of all model changes.");
+            Model.Apply(e);
 
-            using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle);
-            if (Authority == CollectionChangeAuthority.Settle)
+            switch (Authority)
             {
-                UpdateModelWithAuthority(sender, e);
-            }
-            else 
-            {
-                Debug.Fail($@"ADVISORY - First Time.");
+                case CollectionChangeAuthority.Settle:
+                case CollectionChangeAuthority.Predicate:
+                    OnModelChanged(e);
+                    break;
+                default:
+                    // N O O P
+                    // Break the circularity here.
+                    break;
             }
         }
 
@@ -742,7 +742,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         ///
         /// Mental Model: "Input text has settled; the model has reconciled."
         /// </remarks>
-        protected virtual void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
+        protected virtual void OnModelChanged(NotifyCollectionChangedEventArgs eBCL)
         {
             switch (ProjectionOption)
             {
@@ -840,7 +840,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                             if (eBCL.NewItems.Count != 1)
                             {
                                 ThrowHard<NotSupportedException>(
-                                    $"In {nameof(OnModelSettled)} Multi item moves are not supported. Override this method for full control.");
+                                    $"In {nameof(OnModelChanged)} Multi item moves are not supported. Override this method for full control.");
                                 return;
                             }
                             int oldIndex = eBCL.OldStartingIndex;
@@ -1015,14 +1015,14 @@ Inherited contexts manage their projection internally.".TrimStart());
                         {
                             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
                             {
-                                OnModelSettled(eStructural);
+                                OnModelChanged(eStructural);
                             }
                         }
                         if (context.Reset is NotifyCollectionChangedEventArgs eReset)
                         {
                             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
                             {
-                                OnModelSettled(eReset);
+                                OnModelChanged(eReset);
                             }
                         }
                     }
@@ -1457,7 +1457,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                     ?? new ModelSettledEventArgs(
                         reason: NotifyCollectionChangeReason.None,
                         action: NotifyCollectionChangedAction.Reset);
-                OnModelSettled(e);
+                OnModelChanged(e);
             }
             #endregion L o c a l F x
         }
@@ -1579,19 +1579,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         public IReadOnlyList<T> CanonicalSuperset => CanonicalSupersetProtected;
         IList ITopology.CanonicalSuperset => (IList)CanonicalSuperset;
 
-        public ObservableCollection<T> CanonicalSupersetProtected
-        {
-            get
-            {
-                if (_canonicalSupersetProtected is null)
-                {
-                    _canonicalSupersetProtected = new AuthoritativeObservableCollection<T>(this);
-                    _canonicalSupersetProtected.CollectionChanged += OnCanonicalSupersetChanged;
-                }
-                return _canonicalSupersetProtected;
-            }
-        }
-        AuthoritativeObservableCollection<T>? _canonicalSupersetProtected = null;
+        protected ObservableCollection<T> CanonicalSupersetProtected { get; }
 
         /// <summary>
         /// Provides a typed, read-only view of the predicate-match subset.

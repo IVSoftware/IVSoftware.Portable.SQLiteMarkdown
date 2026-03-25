@@ -70,11 +70,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         [Careful("Do not expect 'MDC by Composition' to invoke this for tests.")]
 
-        protected override void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
+        protected override void OnModelChanged(NotifyCollectionChangedEventArgs eBCL)
         {
             if(ProjectionOption == NetProjectionOption.AllowDirectChanges)
             {
-                base.OnModelSettled(eBCL);
+                base.OnModelChanged(eBCL);
             }
             else
             {
@@ -159,7 +159,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             if (eBCL.NewItems.Count != 1)
                             {
                                 ThrowHard<NotSupportedException>(
-                                    $"In {nameof(OnModelSettled)} Multi item moves are not supported. Override this method for full control.");
+                                    $"In {nameof(OnModelChanged)} Multi item moves are not supported. Override this method for full control.");
                                 return;
                             }
                             int oldIndex = eBCL.OldStartingIndex;
