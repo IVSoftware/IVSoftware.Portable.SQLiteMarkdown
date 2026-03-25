@@ -1021,6 +1021,7 @@ Inherited contexts manage their projection internally.".TrimStart());
 #endif
                     ExecState(StdFSMState.ResetOrCanonizeFQBDForEpoch, (IList)recordset);
                     var diff = CanonicalSupersetProtected.Diff(recordset.Cast<T>().ToList());
+                    CanonicalSupersetProtected.Apply(diff);
                     // ExecState(StdFSMState.ResetOrCanonizeModelForEpoch, recordset);
 
                     ExecState(StdFSMState.UpdateStatesForEpoch, recordset);
