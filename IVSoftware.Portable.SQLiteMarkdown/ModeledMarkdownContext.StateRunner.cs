@@ -18,9 +18,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         StateRunnerMMDC<T>? _stateRunner = null;
 
-        public Enum RunFSM<TFsm>(TFsm @enum) => StateRunner.RunFSM(@enum);
+        protected AuthorityEpochProvider AuthorityEpochProvider => StateRunner.AuthorityProvider;
 
-        public Enum RunTokenRing<TFsm>(TFsm @enum) => StateRunner.RunTokenRing(@enum);
+        /// <summary>
+        /// Identifies provenance of INCC.
+        /// </summary>
+        /// <remarks>
+        /// Acts as an authority monitor and circularity guard for DDX between collections.
+        /// </remarks>
+        public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority) => AuthorityEpochProvider.GetToken(authority);
+
+        public Enum RunFSM<TFsm>(object? context = null) => StateRunner.RunFSM<TFsm>(context);
+
+        public Enum RunTokenRing<TFsm>(object? context = null) => StateRunner.RunTokenRing<TFsm>(context);
 
         Enum IStateRunner.ExecState(Enum state, object? context) => StateRunner.ExecState(state, context);
     }

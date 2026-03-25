@@ -48,16 +48,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public DisposableHost DHostSelfIndexing { get; } = new();
 
-        protected AuthorityEpochProvider AuthorityEpochProvider { get; } = new();
-
-        /// <summary>
-        /// Identifies provenance of INCC.
-        /// </summary>
-        /// <remarks>
-        /// Acts as an authority monitor and circularity guard for DDX between collections.
-        /// </remarks>
-        public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority) => AuthorityEpochProvider.GetToken(authority);
-
 #if false
         protected DHostAuthorityEpochProvider DHostAuthorityEpoch { get; } = new();
 

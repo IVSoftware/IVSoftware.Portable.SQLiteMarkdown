@@ -151,17 +151,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public virtual int PredicateMatchCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
 
-        public CollectionChangeAuthority Authority => (CollectionChangeAuthority)AuthorityEpochProvider.Authority;
-
+        /// <summary>
+        /// Responsible for raising the InputTextSettled event.
+        /// </summary>
+        /// <remarks>
+        /// The override in ModeledMarkdownContest adds 
+        /// authority, but should still make the call to base.
+        /// </remarks>
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {
-            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
+            await base.OnEpochFinalizingAsync(e);
+            if (!e.Cancel)
             {
-                await base.OnEpochFinalizingAsync(e);
-                if (!e.Cancel)
-                {
-                    await OnInputTextSettled(new CancelEventArgs());
-                }
+                await OnInputTextSettled(new CancelEventArgs());
             }
         }
 

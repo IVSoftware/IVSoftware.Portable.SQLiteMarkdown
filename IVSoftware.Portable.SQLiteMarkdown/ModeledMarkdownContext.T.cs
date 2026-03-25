@@ -591,6 +591,17 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
         }
 
+        public CollectionChangeAuthority Authority =>
+            (CollectionChangeAuthority)StateRunner.AuthorityProvider.Authority;
+
+        protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
+        {
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
+            {
+                await base.OnEpochFinalizingAsync(e);
+            }
+        }
+
         /// <summary>
         /// Receives projection change notifications required to maintain the canonical ledger.
         /// </summary>
@@ -1121,88 +1132,6 @@ Inherited contexts manage their projection internally.".TrimStart());
             #endregion L o c a l F x
         }
 
-        /// <summary>
-        /// Executes a declared FSM sequentially while temporarily asserting any collection-change authority required by the FSM type.
-        /// </summary>
-        /// <remarks>
-        /// If the FSM enum <typeparamref name="TFsm"/> is decorated with
-        /// <c>CollectionChangeAuthorityAttribute</c>, an authority token is claimed for the
-        /// duration of the FSM execution window. This enables controlled mutation of the
-        /// canonical/projection collections during state execution without leaking that
-        /// authority outside the run scope.
-        ///
-        /// The FSM is executed deterministically by iterating the declared enum values
-        /// in order and invoking <c>ExecState</c> for each state. The final state
-        /// result is returned to the caller.
-        ///
-        /// This mechanism allows authority to behave as a dynamic capability rather than
-        /// a static property of the context, constraining mutation rights to the precise
-        /// interval in which the FSM is running.
-        /// </remarks>
-        protected Enum RunFSM<TFsm>(object? context = null) where TFsm : struct, Enum
-        {
-            IDisposable? authorityToken = null;
-
-            if (typeof(TFsm).GetCustomAttribute<CollectionChangeAuthorityAttribute>()?.Authority is CollectionChangeAuthority authority)
-            {
-                authorityToken = BeginCollectionChangeAuthority(authority);
-            }
-            using (new TokenDisposer(authorityToken))
-            {
-                Enum result = FsmReservedState.None;
-                // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
-                // * Reuse an incoming value that is already an object[] to avoid an unnecessary allocation.
-                if (context is IEnumerable collection)
-                {
-                    context = collection is object[] array
-                        ? array
-                        : collection.Cast<object>().ToArray();
-                }
-
-                foreach (Enum state in GetDeclaredValues<TFsm>())
-                {
-                    // Expecting 'Next' for linear flow.
-                    result = ExecState(state, context);
-
-                    switch (result)
-                    {
-                        case FsmReservedState.Canceled:
-                        case FsmReservedState.FastTrack:
-                        case FsmReservedState.None:
-                            return result;
-                        case FsmReservedState.Next:
-                            break;
-                        default:
-                            return localRunOOB(state, context);
-                    }
-                }
-                return result;
-            }
-
-            #region L o c a l F x
-            Enum localRunOOB(Enum outOfBand, object? context)
-            {
-                Debug.Fail($@"ADVISORY - First Time.");
-                int oobCurrent = 0;
-                const int OOB_MAX = 100;
-                while (++oobCurrent <= OOB_MAX)
-                {
-                    outOfBand = ExecState(outOfBand, context);
-
-                    switch (outOfBand)
-                    {
-                        case FsmReservedState.Canceled:
-                        case FsmReservedState.FastTrack:
-                        case FsmReservedState.None:
-                            return outOfBand;
-                        case FsmReservedState.Next:
-                            break;
-                    }
-                }
-                return FsmReservedState.MaxOOB;
-            }
-            #endregion L o c a l F x
-        }
         protected virtual async Task<Enum> ExecStateAsync(Enum state, object? context = null)
         {
             return FsmReservedState.Canceled;
