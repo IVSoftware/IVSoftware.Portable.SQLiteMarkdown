@@ -369,7 +369,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return word;
         }
 
-
         /// <summary>
         /// Forms a fuzzy query expression by checking and replacing terms enclosed in '%' characters 
         /// within the provided SQL string with their singular forms. If no terms can be singularized, 

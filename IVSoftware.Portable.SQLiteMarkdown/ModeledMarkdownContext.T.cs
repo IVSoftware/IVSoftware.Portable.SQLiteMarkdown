@@ -113,7 +113,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnXAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
         {
-            if (Equals(DHostAuthorityEpoch.Authority, CollectionChangeAuthority.Reset))
+            if (Equals(AuthorityEpochProvider.Authority, CollectionChangeAuthority.Reset))
             {   /* G T K - N O O P */
             }
             else
@@ -167,7 +167,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
-            if (Equals(DHostAuthorityEpoch.Authority, CollectionChangeAuthority.Reset))
+            if (Equals(AuthorityEpochProvider.Authority, CollectionChangeAuthority.Reset))
             {   /* G T K - N O O P */
             }
             else
@@ -442,12 +442,12 @@ SELECT * FROM items WHERE
                         }
                     });
 
-                    var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangedReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
+                    var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
 
                     if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
                     {
                         OnModelSettled(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
-                            reason: NotifyCollectionChangedReason.ApplyFilter,
+                            reason: NotifyCollectionChangeReason.ApplyFilter,
                             e: eStructural));
                     }
                     if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
@@ -789,7 +789,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                         // way in in which to determine authority because *that* collection
                         // raises *those* events, i.e., is the sender of them.
                         Debug.Assert(
-                            Equals(DHostAuthorityEpoch.Authority, CollectionChangeAuthority.Settle),
+                            Equals(AuthorityEpochProvider.Authority, CollectionChangeAuthority.Settle),
                             "Expecting this operation takes place under Model authority."
                         );
                         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -899,9 +899,9 @@ Inherited contexts manage their projection internally.".TrimStart());
                     {
                         switch (eModel.Reason)
                         {
-                            case NotifyCollectionChangedReason.QueryResult:
-                            case NotifyCollectionChangedReason.ApplyFilter:
-                            case NotifyCollectionChangedReason.RemoveFilter:
+                            case NotifyCollectionChangeReason.QueryResult:
+                            case NotifyCollectionChangeReason.ApplyFilter:
+                            case NotifyCollectionChangeReason.RemoveFilter:
                                 // Avoid Clear() here. Some observers treat Clear as a semantic reset
                                 // (e.g., selection or virtualization state) rather than a sequence of
                                 // removes. Replaying the individual Remove/Add operations preserves
@@ -1017,14 +1017,14 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
-            if (Equals(DHostAuthorityEpoch.Authority, CollectionChangeAuthority.Settle))
+            if (Equals(AuthorityEpochProvider.Authority, CollectionChangeAuthority.Settle))
             {   /* G T K - N O O P */
             }
             else
             {
                 using (var eventHost = Model.SetSelfRemovingXBoundAttribute(
                     StdMarkdownAttribute.triage,
-                    Model.GetReplacementTriageEvents(NotifyCollectionChangedReason.QueryResult, recordset, ReplaceItemsEventingOptions)))
+                    Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.QueryResult, recordset, ReplaceItemsEventingOptions)))
                 {
                     RunFSM<LoadIsFilteringEpochFSM>(recordset);
                     if (eventHost.Tag is ReplaceItemsEventingContext context)
@@ -1473,7 +1473,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             {
                 var e = context as ModelSettledEventArgs
                     ?? new ModelSettledEventArgs(
-                        reason: NotifyCollectionChangedReason.None,
+                        reason: NotifyCollectionChangeReason.None,
                         action: NotifyCollectionChangedAction.Reset);
                 OnModelSettled(e);
             }

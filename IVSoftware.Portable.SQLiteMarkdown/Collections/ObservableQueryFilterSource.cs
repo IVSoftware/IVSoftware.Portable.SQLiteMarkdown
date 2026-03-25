@@ -118,7 +118,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     // way in in which to determine authority because *that* collection
                     // raises *those* events, i.e., is the sender of them.
                     Debug.Assert(
-                        Equals(DHostAuthorityEpoch.Authority, CollectionChangeAuthority.Settle),
+                        Equals(AuthorityEpochProvider.Authority, CollectionChangeAuthority.Settle),
                         "Expecting this operation takes place under Model authority."
                     );
                     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -226,9 +226,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     {
                         switch (eModel.Reason)
                         {
-                            case NotifyCollectionChangedReason.QueryResult:
-                            case NotifyCollectionChangedReason.ApplyFilter:
-                            case NotifyCollectionChangedReason.RemoveFilter:
+                            case NotifyCollectionChangeReason.QueryResult:
+                            case NotifyCollectionChangeReason.ApplyFilter:
+                            case NotifyCollectionChangeReason.RemoveFilter:
                                 // Avoid Clear() here. Some observers treat Clear as a semantic reset
                                 // (e.g., selection or virtualization state) rather than a sequence of
                                 // removes. Replaying the individual Remove/Add operations preserves
@@ -658,7 +658,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs eBCL)
         {
-            switch (DHostAuthorityEpoch.Authority)
+            switch (AuthorityEpochProvider.Authority)
             {
                 case CollectionChangeAuthority.Reset:
                     // Events are being supressed by this authority epoch.
@@ -714,7 +714,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         {
                             OnCollectionChanged(
                                 new ModelSettledEventArgs(
-                                    reason: NotifyCollectionChangedReason.RemoveFilter,
+                                    reason: NotifyCollectionChangeReason.RemoveFilter,
                                     action: NotifyCollectionChangedAction.Replace,
                                     oldItems: (IList)PredicateMatchSubset,
                                     newItems: (IList)CanonicalSuperset
@@ -726,7 +726,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             OnCollectionChanged(
                                 new ModelSettledEventArgs
                                 (
-                                    reason: NotifyCollectionChangedReason.RemoveFilter,
+                                    reason: NotifyCollectionChangeReason.RemoveFilter,
                                     action: NotifyCollectionChangedAction.Reset
                                 )
                             );
