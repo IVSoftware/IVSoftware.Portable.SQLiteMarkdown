@@ -19,7 +19,7 @@ public class TestClass_260325_Authorities
 
     [TestMethod, DoNotParallelize]
     [Claim("00000000-0000-0000-0000-000000000000")]
-    public void Test_Method()
+    public void Test_CSStoModel()
     {
         string actual, expected;
         var builder = new List<string>();
