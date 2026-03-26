@@ -39,17 +39,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <summary>
         /// These items (old and new) represent a narrower subset.
         /// </summary>
-        ApplyFilter = 0x2000,
+        ApplyFilter = QueryResult << 1,
 
         /// <summary>
         /// These items (old and new) represent a wider subset.
         /// </summary>
-        RemoveFilter = 0x4000,
+        RemoveFilter = ApplyFilter << 1,
 
         /// <summary>
         /// These items (old and new) represent a deferred collection change digest.
         /// </summary>
-        Batch = 0x8000,
+        Batch = RemoveFilter << 1,
+
+        /// <summary>
+        /// Attributes a Reset action produced by an illegal configuration request.
+        /// </summary>
+        Exception = Batch << 1,
     }
 
     /// <summary>
