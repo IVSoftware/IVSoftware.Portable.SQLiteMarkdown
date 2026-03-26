@@ -68,13 +68,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 {
                     if (Scope != NotifyCollectionChangeScope.FullControl)
                     {
+                        try
+                        {
+                            _isReverting = true;
+                            NewItems.Clear();
+                            foreach (var item in NewItemsReadOnly)
+                            {
+                                NewItems.Add(item);
+                            }
+                        }
+                        finally
+                        {
+                            _isReverting = false;
+                        }
                         this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
-                    }
-                    _isReverting = true;
-                    NewItems.Clear();
-                    foreach (var item in NewItemsReadOnly)
-                    {
-                        NewItems.Add(item);
                     }
                 }
             };
@@ -84,13 +91,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 {
                     if (Scope != NotifyCollectionChangeScope.FullControl)
                     {
+                        try
+                        {
+                            _isReverting = true;
+                            OldItems.Clear();
+                            foreach (var item in OldItemsReadOnly)
+                            {
+                                OldItems.Add(item);
+                            }
+                        }
+                        finally
+                        {
+                            _isReverting = false;
+                        }
                         this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
-                    }
-                    _isReverting = true;
-                    OldItems.Clear();
-                    foreach (var item in OldItemsReadOnly)
-                    {
-                        OldItems.Add(item);
                     }
                 }
             };
@@ -311,7 +325,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 
         public ObservableCollection<object?> NewItems { get; } = new();
 
-        public object?[] NewItemsReadOnly { get; } = [];
+        private object?[] NewItemsReadOnly { get; } = [];
 
         public ObservableCollection<object?> OldItems { get; } = new();
         public object?[] OldItemsReadOnly { get; } = [];
