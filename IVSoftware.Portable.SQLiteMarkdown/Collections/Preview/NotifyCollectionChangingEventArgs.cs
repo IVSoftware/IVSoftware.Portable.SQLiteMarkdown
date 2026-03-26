@@ -2,122 +2,117 @@
 using System.Collections;
 using System.ComponentModel;
 using System.Collections.Specialized;
+using IVSoftware.Portable.Common.Exceptions;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
-    internal class NotifyCollectionChangingEventArgs : CancelEventArgs
+    internal sealed class NotifyCollectionChangingEventArgs : CancelEventArgs
     {
-        private readonly NotifyCollectionChangedEventArgs @base;
-
-        public static implicit operator NotifyCollectionChangingEventArgs(NotifyCollectionChangedEventArgs eBCL)
-            => new NotifyCollectionChangingEventArgs(eBCL);
-
-        public static implicit operator NotifyCollectionChangedEventArgs(NotifyCollectionChangingEventArgs ePre)
-            => ePre.@base;
-        protected NotifyCollectionChangingEventArgs(NotifyCollectionChangedEventArgs eBCL) => @base = eBCL;
         public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangeAction action,
-            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
+                NotifyCollectionChangeAction action,
+                NotifyCollectionChangeReason reason,
+                NotifyCollectionChangeScope scope = NotifyCollectionChangeScope.ReadOnly,
+                IEnumerable? newItems = null,
+                IEnumerable? oldItems = null,
+                int newStartingIndex = -1,
+                int oldStartingIndex = -1
+            )
         {
-            Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action);
         }
-
-        public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangeAction action, IList changedItems,
-            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
+        public NotifyCollectionChangeAction Action
         {
-            Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, changedItems);
+            get => _action;
+            set
+            {
+                _action = value;
+            }
         }
-
-        public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangeAction action, object changedItem,
-            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
-        {
-            Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, changedItem);
-        }
-
-        public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangeAction action, IList newItems, IList oldItems,
-            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
-        {
-            Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, newItems, oldItems);
-        }
-
-        public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangeAction action, IList changedItems, int startingIndex,
-            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
-        {
-            Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, changedItems, startingIndex);
-        }
-
-        public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangeAction action, object changedItem, int index,
-            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
-        {
-            Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, changedItem, index);
-        }
-
-        public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangeAction action, object newItem, object oldItem,
-            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
-        {
-            Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, newItem, oldItem);
-        }
-
-        public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangeAction action, IList newItems, IList oldItems, int startingIndex,
-            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
-        {
-            Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, newItems, oldItems, startingIndex);
-        }
-
-        public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangeAction action, IList changedItems, int index, int oldIndex,
-            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
-        {
-            Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, changedItems, index, oldIndex);
-        }
-
-        public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangeAction action, object changedItem, int index, int oldIndex,
-            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
-        {
-            Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, changedItem, index, oldIndex);
-        }
-
-        public NotifyCollectionChangingEventArgs(
-            NotifyCollectionChangeAction action, object newItem, object oldItem, int index,
-            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
-        {
-            Reason = reason;
-            @base = new NotifyCollectionChangedEventArgs((NotifyCollectionChangedAction)action, newItem, oldItem, index);
-        }
-
-        // ----------------------------------------
-        // Projected contract
-        // ----------------------------------------
-
-        public NotifyCollectionChangeAction Action => (NotifyCollectionChangeAction)@base.Action;
-
+        NotifyCollectionChangeAction _action = default;
         public NotifyCollectionChangeReason Reason { get; }
+        public NotifyCollectionChangeScope Scope{ get; }
 
-        public IList? NewItems => @base.NewItems;
+        public bool IsBclCompatible { get; private set; }
 
-        public IList? OldItems => @base.OldItems;
+        public IList? NewItems 
+        {
+            get => 
+                Scope == NotifyCollectionChangeScope.FullControl 
+                ? _newItems 
+                : (IList)NewItemsReadOnly; 
+        }
+        private readonly ObservableCollection<object> _newItems;
 
-        public int NewStartingIndex => @base.NewStartingIndex;
+        public IReadOnlyList<object> NewItemsReadOnly
+        {
+            get
+            {
+                if (_newItemsReadOnly is null)
+                {
+                    _newItemsReadOnly = new ReadOnlyCollection<object>(null);
+                }
+                return _newItemsReadOnly;
+            }
+        }
+        IReadOnlyList<object>? _newItemsReadOnly = null;
 
-        public int OldStartingIndex => @base.OldStartingIndex;
+        public IList? OldItems
+        {
+            get =>
+                Scope == NotifyCollectionChangeScope.FullControl
+                ? _oldItems
+                : (IList)OldItemsReadOnly;
+        }
+        private readonly ObservableCollection<object> _oldItems;
+
+        public IReadOnlyList<object> OldItemsReadOnly
+        {
+            get
+            {
+                if (_oldItemsReadOnly is null)
+                {
+                    _oldItemsReadOnly = new ReadOnlyCollection<object>(null);
+                }
+                return _oldItemsReadOnly;
+            }
+        }
+        IReadOnlyList<object>? _oldItemsReadOnly = null;
+
+        public int NewStartingIndex
+        {
+            get => _newStartingIndex;
+            set
+            {
+                if (!Equals(_newStartingIndex, value))
+                {
+                    if (Scope == NotifyCollectionChangeScope.FullControl)
+                    {
+                        _newStartingIndex = value;
+                    }
+                    else
+                    {
+                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                    }
+                }
+            }
+        }
+        int _newStartingIndex = default;
+
+        public int OldStartingIndex
+        {
+            get => _oldStartingIndex;
+            set
+            {
+                if (!Equals(_oldStartingIndex, value))
+                {
+                    _oldStartingIndex = value;
+                }
+            }
+        }
+        int _oldStartingIndex = default;
+
+        const string SCOPE_POLICY_VIOLATION_MESSAGE = "TODO: Basically, you can't do this";
     }
 }
