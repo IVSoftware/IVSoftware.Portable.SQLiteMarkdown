@@ -11,6 +11,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
     internal sealed class NotifyCollectionChangingEventArgs : CancelEventArgs
     {
+        public static implicit operator NotifyCollectionChangedEventArgs(NotifyCollectionChangingEventArgs @this)
+            => @this.EventArgsBCL;
+
+        public static implicit operator NotifyCollectionChangingEventArgs(NotifyCollectionChangedEventArgs @this)
+            => new NotifyCollectionChangingEventArgs(@this);
+
+        public NotifyCollectionChangingEventArgs(NotifyCollectionChangedEventArgs eBCL)
+        {
+            NewItems = MakeOPC(eBCL.NewItems);
+            OldItems = MakeOPC(eBCL.OldItems);
+
+            NewStartingIndex = eBCL.NewStartingIndex;
+            OldStartingIndex = eBCL.OldStartingIndex;
+            EventArgsBCL = eBCL;
+        }
         public NotifyCollectionChangingEventArgs(
                 NotifyCollectionChangeAction action,
                 NotifyCollectionChangeReason reason,
@@ -39,10 +54,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     e.Cancel = true;
                 }
             };
-            _eBCL = MakeBCL();
-
-            #region L o c a l F x
-            #endregion L o c a l F x
+            MakeBCL();
         }
         private ObservablePreviewCollection<object> MakeOPC(IEnumerable? items)
         {
@@ -57,125 +69,199 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             return opc;
         }
 
-        private NotifyCollectionChangedEventArgs MakeBCL()
+        private void MakeBCL()
         {
-            switch (Action)
+            bool hasIndex;
+            if (NewItems.Count > 0 && NewItems[0] is EventArgs)
             {
-                case NotifyCollectionChangeAction.Add:
-                    if (NewStartingIndex < -1)
-                    {
-                        return MakeReset(true);
-                    }
-                    switch (NewItems.Count)
-                    {
-                        case 0: 
-                            return MakeReset(true);
-                        case 1:
-                            if(NewStartingIndex == -1)
-                            { 
-                                return new NotifyCollectionChangedEventArgs(
-                                    action: NotifyCollectionChangedAction.Add,
-                                    changedItem: NewItems[0]);
-                            }
-                            else
+                IsBclCompatible = false;
+                MakeReset(false);
+            }
+            else
+            {
+                switch (Action)
+                {
+                    case NotifyCollectionChangeAction.Add:
+                        if (NewStartingIndex < -1)
+                        {
+                            MakeReset(true);
+                            return;
+                        }
+                        if (NewItems.Count == 0)
+                        {
+                            MakeReset(true);
+                            return;
+                        }
+
+                        hasIndex = NewStartingIndex >= 0;
+
+                        if (NewItems.Count == 1)
+                        {
+                            if (hasIndex)
                             {
-                                return new NotifyCollectionChangedEventArgs(
-                                    action: NotifyCollectionChangedAction.Add,
+                                EventArgsBCL = new NotifyCollectionChangedEventArgs(
+                                    NotifyCollectionChangedAction.Add,
                                     changedItem: NewItems[0],
                                     index: NewStartingIndex);
                             }
-                        default:
-                            if (NewStartingIndex == -1)
-                            {
-                                return new NotifyCollectionChangedEventArgs(
-                                    action: NotifyCollectionChangedAction.Add,
-                                    changedItems: NewItems);
-                            }
                             else
                             {
-                                return new NotifyCollectionChangedEventArgs(
-                                    action: NotifyCollectionChangedAction.Add,
-                                    changedItems: NewItems,
-                                    startingIndex: NewStartingIndex);
+                                EventArgsBCL = new NotifyCollectionChangedEventArgs(
+                                    NotifyCollectionChangedAction.Add,
+                                    changedItem: NewItems[0]);
                             }
-                    }
-                case NotifyCollectionChangeAction.Remove:
-                    if (OldStartingIndex < -1)
-                    {
-                        return MakeReset(true);
-                    }
-                    switch (OldItems.Count)
-                    {
-                        case 0:
-                            return MakeReset(true);
-                        case 1:
-                            if (OldStartingIndex == -1)
+                        }
+                        else
+                        {
+                            EventArgsBCL = new NotifyCollectionChangedEventArgs(
+                                NotifyCollectionChangedAction.Add,
+                                changedItems: NewItems,
+                                startingIndex: hasIndex ? NewStartingIndex : -1);
+                        }
+                        break;
+
+                    case NotifyCollectionChangeAction.Remove:
+                        if (OldStartingIndex < -1)
+                        {
+                            MakeReset(true);
+                            return;
+                        }
+                        if (OldItems.Count == 0)
+                        {
+                            MakeReset(true);
+                            return;
+                        }
+
+                        hasIndex = OldStartingIndex >= 0;
+
+                        if (OldItems.Count == 1)
+                        {
+                            if (hasIndex)
                             {
-                                return new NotifyCollectionChangedEventArgs(
-                                    action: NotifyCollectionChangedAction.Remove,
-                                    changedItem: OldItems[0]);
-                            }
-                            else
-                            {
-                                return new NotifyCollectionChangedEventArgs(
-                                    action: NotifyCollectionChangedAction.Remove,
+                                EventArgsBCL = new NotifyCollectionChangedEventArgs(
+                                    NotifyCollectionChangedAction.Remove,
                                     changedItem: OldItems[0],
                                     index: OldStartingIndex);
                             }
-                        default:
-                            if (OldStartingIndex == -1)
+                            else
                             {
-                                return new NotifyCollectionChangedEventArgs(
-                                    action: NotifyCollectionChangedAction.Remove,
-                                    changedItems: OldItems);
+                                EventArgsBCL = new NotifyCollectionChangedEventArgs(
+                                    NotifyCollectionChangedAction.Remove,
+                                    changedItem: OldItems[0]);
+                            }
+                        }
+                        else
+                        {
+                            EventArgsBCL = new NotifyCollectionChangedEventArgs(
+                                NotifyCollectionChangedAction.Remove,
+                                changedItems: OldItems,
+                                startingIndex: hasIndex ? OldStartingIndex : -1);
+                        }
+                        break;
+
+                    case NotifyCollectionChangeAction.Replace:
+                        if (NewItems.Count != OldItems.Count)
+                        {
+                            MakeReset(true);
+                            return;
+                        }
+
+                        hasIndex = NewStartingIndex >= 0 && OldStartingIndex >= 0;
+
+                        if (NewItems.Count == 1)
+                        {
+                            if (hasIndex)
+                            {
+                                EventArgsBCL = new NotifyCollectionChangedEventArgs(
+                                    NotifyCollectionChangedAction.Replace,
+                                    newItem: NewItems[0],
+                                    oldItem: OldItems[0],
+                                    index: NewStartingIndex);
                             }
                             else
                             {
-                                return new NotifyCollectionChangedEventArgs(
-                                    action: NotifyCollectionChangedAction.Remove,
-                                    changedItems: OldItems,
-                                    startingIndex: OldStartingIndex);
+                                EventArgsBCL = new NotifyCollectionChangedEventArgs(
+                                    NotifyCollectionChangedAction.Replace,
+                                    newItem: NewItems[0],
+                                    oldItem: OldItems[0]);
                             }
-                    }
-                case NotifyCollectionChangeAction.Replace:
-                    break;
-                case NotifyCollectionChangeAction.Move:
-                    break;
-                case NotifyCollectionChangeAction.Reset:
-                    return new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset);
-                default:
-                    break;
+                        }
+                        else
+                        {
+                            if (hasIndex)
+                            {
+                                EventArgsBCL = new NotifyCollectionChangedEventArgs(
+                                    NotifyCollectionChangedAction.Replace,
+                                    newItems: NewItems,
+                                    oldItems: OldItems,
+                                    startingIndex: NewStartingIndex);
+                            }
+                            else
+                            {
+                                EventArgsBCL = new NotifyCollectionChangedEventArgs(
+                                    NotifyCollectionChangedAction.Replace,
+                                    newItems: NewItems,
+                                    oldItems: OldItems);
+                            }
+                        }
+                        break;
+                    case NotifyCollectionChangeAction.Move:
+                        if (NewItems.Count != OldItems.Count)
+                        {
+                            MakeReset(true);
+                            return;
+                        }
+                        if (NewStartingIndex < 0 || OldStartingIndex < 0)
+                        {
+                            MakeReset(true);
+                            return;
+                        }
+                        if (NewItems.Count == 0)
+                        {
+                            MakeReset(true);
+                            return;
+                        }
+
+                        if (NewItems.Count == 1)
+                        {
+                            EventArgsBCL = new NotifyCollectionChangedEventArgs(
+                                NotifyCollectionChangedAction.Move,
+                                changedItem: NewItems[0],
+                                index: NewStartingIndex,
+                                oldIndex: OldStartingIndex);
+                        }
+                        else
+                        {
+                            EventArgsBCL = new NotifyCollectionChangedEventArgs(
+                                NotifyCollectionChangedAction.Move,
+                                changedItems: NewItems,
+                                index: NewStartingIndex,
+                                oldIndex: OldStartingIndex);
+                        }
+                        break;
+                    case NotifyCollectionChangeAction.Reset:
+                        EventArgsBCL = new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset);
+                        break;
+                }
             }
-            if (Action == NotifyCollectionChangeAction.Reset)
-            {
-            }
-            throw new NotImplementedException("ToDo");
         }
 
-        private NotifyCollectionChangedEventArgs MakeReset(bool ieException)
+
+        private NotifyCollectionChangedEventArgs EventArgsBCL = null!;
+        private void MakeReset(bool ieException)
         {
             if (ieException)
             {
                 this.ThrowHard<InvalidOperationException>(CONFIGURATION_INVALID_MESSAGE);
                 Reason |= NotifyCollectionChangeReason.Exception;
             }
-            return new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset);
+            EventArgsBCL = new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset);
         }
 
-        public NotifyCollectionChangeAction Action
-        {
-            get => _action;
-            set
-            {
-                _action = value;
-            }
-        }
-        NotifyCollectionChangeAction _action = default;
-        public NotifyCollectionChangeReason Reason { get; private set; }
-        public NotifyCollectionChangeScope Scope{ get; }
+        public NotifyCollectionChangeAction Action { get; }
+        public NotifyCollectionChangeReason Reason { get; private set; } = NotifyCollectionChangeReason.None;
+        public NotifyCollectionChangeScope Scope { get; } = NotifyCollectionChangeScope.ReadOnly;
         public bool IsBclCompatible { get; private set; } = true;
-
-        private NotifyCollectionChangedEventArgs _eBCL;
 
         public ObservablePreviewCollection<object> NewItems { get; }
 
