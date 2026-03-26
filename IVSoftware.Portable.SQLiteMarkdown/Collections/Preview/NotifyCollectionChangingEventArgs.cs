@@ -26,9 +26,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             OldStartingIndex = eBCL.OldStartingIndex;
             EventArgsBCL = eBCL;
         }
+
+        /// <summary>
+        /// Constructor designed to encourage named args.
+        /// </summary>
         public NotifyCollectionChangingEventArgs(
                 NotifyCollectionChangeAction action,
-                NotifyCollectionChangeReason reason,
+                NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None,
                 NotifyCollectionChangeScope scope = NotifyCollectionChangeScope.ReadOnly,
                 IEnumerable? newItems = null,
                 IEnumerable? oldItems = null,
@@ -36,6 +40,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 int oldStartingIndex = -1
             )
         {
+            Action = action;
+            Reason = reason;
+            Scope = scope;
+
             NewItems = MakeOPC(newItems);
             OldItems = MakeOPC(oldItems);
             NewItems.CollectionChanging += (sender, e) =>
@@ -71,6 +79,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 
         private void MakeBCL()
         {
+            switch (Action)
+            {
+                case NotifyCollectionChangeAction.Add:
+                    throw new NotImplementedException("ToDo");
+                    break;
+                case NotifyCollectionChangeAction.Remove:
+                    throw new NotImplementedException("ToDo");
+                    break;
+                case NotifyCollectionChangeAction.Replace:
+                    throw new NotImplementedException("ToDo");
+                    break;
+                case NotifyCollectionChangeAction.Move:
+                    throw new NotImplementedException("ToDo");
+                    break;
+                default:
+                case NotifyCollectionChangeAction.Reset:
+                    EventArgsBCL = new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset);
+                    break;
+            }
+#if false
             bool hasIndex;
             if (NewItems.Count > 0 && NewItems[0] is EventArgs)
             {
@@ -244,6 +272,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                         break;
                 }
             }
+#endif
         }
 
 

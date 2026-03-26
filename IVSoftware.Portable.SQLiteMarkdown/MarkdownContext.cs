@@ -1612,7 +1612,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // Avoid leaking the object itself as the awaited sender.
             nameof(MarkdownContext).OnAwaited(new AwaitedEventArgs(caller: nameof(Clear))
             {
-                { nameof(all), all },
+                { nameof(all), all }, // Key='all' 
             });
             // Fluent return;
             return FilteringState;

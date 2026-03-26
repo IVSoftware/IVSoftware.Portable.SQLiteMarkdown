@@ -1014,17 +1014,33 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
-            recordset = recordset.Cast<T>().ToList();
+            // Make a tmp copy of existing population.
+            var oldItems = CanonicalSupersetProtected.ToArray();
+            // Copy recordset, including any null values.
+            var newItems = recordset.Cast<T>().ToList();
+
+            NotifyCollectionChangingEventArgs ePre = oldItems.Diff(newItems);
+
             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Commit))
             {
                 if (Equals(Authority, CollectionChangeAuthority.Commit))
                 {
+                    // Expecting one Reset event on the ONP surface
+                    // that binds to platform-specific collection view.
                     Clear(all: true);
+                    if (newItems.Count > 0)
+                    {
+                        foreach (var newItem in newItems)
+                        {
+                            CanonicalSupersetProtected.Add(newItem);
+                        }
+                    }
                 }
                 else
                 {
                     nameof(LoadCanon).ThrowHard<InvalidOperationException>("Failed authority claim.");
                 }
+
             }
 #if false
             if (Equals(Authority, CollectionChangeAuthority.Commit))
