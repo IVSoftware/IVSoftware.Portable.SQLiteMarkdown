@@ -79,8 +79,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             public override Enum ExecState(Enum state, object? context)
             {
                 IEnumerable<object>? canon = context as IEnumerable<object>;
-                bool
-                    isEmptyProjection = canon?.Any() != true;
+                bool isEmptyProjection = canon?.Any() != true;
 #if DEBUG
                 switch (state)
                 {

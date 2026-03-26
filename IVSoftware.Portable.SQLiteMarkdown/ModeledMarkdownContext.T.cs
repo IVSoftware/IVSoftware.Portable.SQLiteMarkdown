@@ -117,50 +117,44 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnXAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
         {
-            if (Equals(AuthorityEpochProvider.Authority, CollectionChangeAuthority.Reset))
-            {   /* G T K - N O O P */
-            }
-            else
+            string id = null!;
+            if (xattr.Parent?.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
+                && xbaModel.Tag is { } model
+                && !string.IsNullOrWhiteSpace(id = model.GetId()))
             {
-                string id = null!;
-                if (xattr.Parent?.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
-                    && xbaModel.Tag is { } model
-                    && !string.IsNullOrWhiteSpace(id = model.GetId()))
+                if (ReferenceEquals(xattr, xbaModel))
                 {
-                    if (ReferenceEquals(xattr, xbaModel))
+                    OnBoundItemObjectChange(xbaModel, e.ObjectChange);
+                }
+                else
+                {
+                    if (Enum.TryParse(xattr.Name.LocalName, out StdMarkdownAttribute std))
                     {
-                        OnBoundItemObjectChange(xbaModel, e.ObjectChange);
-                    }
-                    else
-                    {
-                        if (Enum.TryParse(xattr.Name.LocalName, out StdMarkdownAttribute std))
+                        switch (xattr)
                         {
-                            switch (xattr)
-                            {
-                                case XBoundAttribute:
-                                    break;
-                                default:
-                                    switch (std)
-                                    {
-                                        case StdMarkdownAttribute.ismatch:
-                                            bool isMatch = bool.Parse(xattr.Value);
-                                            switch (e.ObjectChange)
-                                            {
-                                                case XObjectChange.Add:
-                                                case XObjectChange.Value:
-                                                    if (isMatch)
-                                                    {
-                                                        MatchContainsProto.Add(id);
-                                                    }
-                                                    break;
-                                                case XObjectChange.Remove:
-                                                    MatchContainsProto.Remove(id);
-                                                    break;
-                                            }
-                                            break;
-                                    }
-                                    break;
-                            }
+                            case XBoundAttribute:
+                                break;
+                            default:
+                                switch (std)
+                                {
+                                    case StdMarkdownAttribute.ismatch:
+                                        bool isMatch = bool.Parse(xattr.Value);
+                                        switch (e.ObjectChange)
+                                        {
+                                            case XObjectChange.Add:
+                                            case XObjectChange.Value:
+                                                if (isMatch)
+                                                {
+                                                    MatchContainsProto.Add(id);
+                                                }
+                                                break;
+                                            case XObjectChange.Remove:
+                                                MatchContainsProto.Remove(id);
+                                                break;
+                                        }
+                                        break;
+                                }
+                                break;
                         }
                     }
                 }
@@ -171,92 +165,63 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
-            if (Equals(AuthorityEpochProvider.Authority, CollectionChangeAuthority.Reset))
-            {   /* G T K - N O O P */
-            }
-            else
+            if (pxel is null)
             {
-                if (pxel is null)
+                this.ThrowFramework<NullReferenceException>(
+                    $"UNEXPECTED: The '{nameof(pxel)}' argument should be non-null by design.");
+            }
+            switch (e.ObjectChange)
+            {
+                case XObjectChange.Add:
+                case XObjectChange.Remove:
+                    var xbo =
+                        xel
+                        .Attributes()
+                        .OfType<XBoundAttribute>()
+                        .FirstOrDefault(_ => _.Tag?.GetType() == ContractType);
+                    if (xbo is not null)
+                    {
+                        OnBoundItemObjectChange(xbo, e.ObjectChange);
+                    }
+                    localAutoCount();
+                    break;
+            }
+
+            #region L o c a l F x
+            void localAutoCount()
+            {
+                XElement? modelRoot = pxel?.AncestorsAndSelf().LastOrDefault();
+                if (modelRoot is null)
                 {
                     this.ThrowFramework<NullReferenceException>(
-                        $"UNEXPECTED: The '{nameof(pxel)}' argument should be non-null by design.");
+                        $"UNEXPECTED: The '{nameof(modelRoot)}' argument should be non-null by design.");
                 }
-                switch (e.ObjectChange)
+                else
                 {
-                    case XObjectChange.Add:
-                    case XObjectChange.Remove:
-                        var xbo =
-                            xel
-                            .Attributes()
-                            .OfType<XBoundAttribute>()
-                            .FirstOrDefault(_ => _.Tag?.GetType() == ContractType);
-                        if (xbo is not null)
-                        {
-                            OnBoundItemObjectChange(xbo, e.ObjectChange);
-                        }
-                        localAutoCount();
-                        break;
-                }
-
-                #region L o c a l F x
-                void localAutoCount()
-                {
-                    XElement? modelRoot = pxel?.AncestorsAndSelf().LastOrDefault();
-                    if (modelRoot is null)
+                    var autocount = modelRoot.GetAttributeValue<int>(StdMarkdownAttribute.autocount);
+                    switch (e.ObjectChange)
                     {
-                        this.ThrowFramework<NullReferenceException>(
-                            $"UNEXPECTED: The '{nameof(modelRoot)}' argument should be non-null by design.");
-                    }
-                    else
-                    {
-                        var autocount = modelRoot.GetAttributeValue<int>(StdMarkdownAttribute.autocount);
-                        switch (e.ObjectChange)
-                        {
-                            case XObjectChange.Add:
-                                autocount++;
-                                break;
-                            case XObjectChange.Remove:
-                                if (autocount == 0)
-                                {
-                                    this.ThrowFramework<InvalidOperationException>(
-                                        $"UNEXPECTED: Illegal underflow detected '{nameof(autocount)}'. Count should be >= 0 by design.");
-                                }
-                                else
-                                {
-                                    autocount--;
-                                }
-                                break;
-                        }
-                        modelRoot.SetAttributeValue(StdMarkdownAttribute.autocount, autocount);
-                        // [Careful]
-                        // It's too racey here to try and compare counts.
-                    }
-#if false
-                switch (e.ObjectChange)
-                {
-                    case XObjectChange.Add:
-                        count++;
-                        root?.SetAttributeValue(StdMarkdownAttribute.count, count);
-                        break;
-                    case XObjectChange.Remove:
-                        if (count == 0)
-                        {
-                            this.ThrowFramework<InvalidOperationException>(
-                                $"UNEXPECTED: Illegal underflow detected '{nameof(count)}'. Count should be >= 0 by design.");
-                        }
-                        else
-                        {
-                            count--;
+                        case XObjectChange.Add:
+                            autocount++;
+                            break;
+                        case XObjectChange.Remove:
+                            if (autocount == 0)
                             {
-                                root?.SetAttributeValue(StdMarkdownAttribute.count, count);
+                                this.ThrowFramework<InvalidOperationException>(
+                                    $"UNEXPECTED: Illegal underflow detected '{nameof(autocount)}'. Count should be >= 0 by design.");
                             }
-                        }
-                        break;
+                            else
+                            {
+                                autocount--;
+                            }
+                            break;
+                    }
+                    modelRoot.SetAttributeValue(StdMarkdownAttribute.autocount, autocount);
+                    // [Careful]
+                    // It's too racey here to try and compare counts.
                 }
-#endif
-                }
-                #endregion L o c a l F x
             }
+            #endregion L o c a l F x
         }
 
 #if DEBUG
@@ -264,13 +229,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #else
         const bool SQLITE_STRICT = false;
 #endif
+        [Canonical("The globally unique authority for binding items and their INPC events.")]
         protected virtual void OnBoundItemObjectChange(XBoundAttribute xbo, XObjectChange action)
         {
             var item = xbo.Tag;
             switch (action)
             {
                 case XObjectChange.Add:
-                    localSetModelAuthority();
+                    localSetModelContainer();
                     localAddEvents();
                     _ = localTryAddToDatabase();
                     break;
@@ -282,7 +248,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             #region L o c a l F x
 
             // Associate the xml Model governing this ddx.
-            void localSetModelAuthority()
+            void localSetModelContainer()
             {
                 if (xbo.Tag is IAffinityModel modeled)
                 {
@@ -608,14 +574,12 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </summary>
         protected virtual void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection);
-            if (Authority == CollectionChangeAuthority.Projection)
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection))
             {
-                UpdateModelWithAuthority(sender, e);
-            }
-            else
-            {
-                Debug.Assert(Authority == CollectionChangeAuthority.Settle);
+                if(Equals(Authority, CollectionChangeAuthority.Projection))
+                {
+                    CanonicalSupersetProtected.Apply(e);
+                }
             }
         }
 
@@ -995,18 +959,74 @@ Inherited contexts manage their projection internally.".TrimStart());
                          : ProjectionTopology.Composition;
         }
         readonly bool _isInherited;
+
         #endregion P R O J E C T I O N
 
+        protected override void OnClear(bool all)
+        {
+            if (all)
+            {
+                // The Model runs the database.
+                Model.RemoveNodes();
+#if DEBUG
+                if(QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                {
+                    Debug.Assert(FilterQueryDatabase.Table<T>().Count() == 0);
+                }
+#endif
+                object sender;
+                switch (ProjectionTopology)
+                {
+                    default:
+                    case ProjectionTopology.None:
+                        sender = Authority;
+                        break;
+                    case ProjectionTopology.Inheritance:
+                        sender = CanonicalSuperset;
+                        break;
+                    case ProjectionTopology.Composition when ObservableNetProjection is { } onp:
+                        sender = onp;
+                        break;
+                    case ProjectionTopology.Composition:
+                        sender = CanonicalSuperset;
+                        break;
+                }
+                var ePost =
+                    new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset);
+                OnNetProjectionCollectionChanged(sender, ePost);
+            }
+            else
+            {
+                base.OnClear(all);
+            }
+        }
+
         /// <summary>
-        /// Established a new canonical model for subsequent operations.
+        /// Performs a terminal clear on the model before adding recordset if non-empty.
         /// </summary>
         /// <remarks>
-        /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
+        /// Mental Model: "Establish a baseline for filtering, prioritization, and temporal projections."
+        /// Changing Event:
+        /// - Reset where OldItems contains the canonical list before loading.
+        /// ChangedEvents:
+        /// - Reset always,
+        /// - Add if recordset is non-empty.
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
             recordset = recordset.Cast<T>().ToList();
-            using var token = BeginCollectionChangeAuthority(CollectionChangeAuthority.Commit);
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Commit))
+            {
+                if (Equals(Authority, CollectionChangeAuthority.Commit))
+                {
+                    Clear(all: true);
+                }
+                else
+                {
+                    nameof(LoadCanon).ThrowHard<InvalidOperationException>("Failed authority claim.");
+                }
+            }
+#if false
             if (Equals(Authority, CollectionChangeAuthority.Commit))
             {
                 using (var eventHost = Model.SetSelfRemovingXBoundAttribute(
@@ -1054,6 +1074,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             {
                 Debug.Fail($@"ADVISORY - First Time UNEXPECTED failed to gain authority.");
             }
+#endif
         }
 
         public virtual async Task LoadCanonAsync(IEnumerable? recordset)

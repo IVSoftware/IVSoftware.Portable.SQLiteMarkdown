@@ -1605,8 +1605,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// 2. The UI-oriented [X] demoting clear state machine.
         /// </remarks>
         [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
-
         public FilteringState Clear(bool all = false)
+        {
+            OnClear(all);
+
+            // Avoid leaking the object itself as the awaited sender.
+            nameof(MarkdownContext).OnAwaited(new AwaitedEventArgs(caller: nameof(Clear))
+            {
+                { nameof(all), all },
+            });
+            // Fluent return;
+            return FilteringState;
+        }
+        protected virtual void OnClear(bool all)
         {
             if (all)
             {
@@ -1641,7 +1652,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         case FilteringState.Active:
                             // Text is already empty and clear is invoked (clicked) again - this is a hard reset.
                             FilteringState = FilteringState.Ineligible;
-                            if(SearchEntryState > SearchEntryState.QueryEmpty)
+                            if (SearchEntryState > SearchEntryState.QueryEmpty)
                             {
                                 SearchEntryState = SearchEntryState.QueryEmpty;
                             }
@@ -1695,14 +1706,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                 }
             }
-
-            // Avoid leaking the object itself as the awaited sender.
-            nameof(MarkdownContext).OnAwaited(new AwaitedEventArgs(caller: nameof(Clear))
-            {
-                { nameof(all), all },
-            });
-            // Fluent return;
-            return FilteringState;
         }
 
         /// <summary>
