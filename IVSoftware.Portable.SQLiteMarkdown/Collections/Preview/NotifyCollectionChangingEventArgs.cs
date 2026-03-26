@@ -1,10 +1,8 @@
-﻿using System;
+﻿using IVSoftware.Portable.Common.Exceptions;
+using System;
 using System.Collections;
 using System.ComponentModel;
-using System.Collections.Specialized;
-using IVSoftware.Portable.Common.Exceptions;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Linq;
 
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
@@ -21,6 +19,36 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 int oldStartingIndex = -1
             )
         {
+            NewItems = localMakeOPC(newItems);
+            OldItems = localMakeOPC(oldItems);
+            NewItems.CollectionChanging += (sender, e) =>
+            {
+                if(Scope != NotifyCollectionChangeScope.FullControl)
+                {
+                    this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                    e.Cancel = true;
+                }
+            };
+            OldItems.CollectionChanging += (sender, e) =>
+            {
+                if (Scope != NotifyCollectionChangeScope.FullControl)
+                {
+                    this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                    e.Cancel = true;
+                }
+            };
+            ObservablePreviewCollection<object> localMakeOPC(IEnumerable? items)
+            {
+                ObservablePreviewCollection<object> opc = new();
+                if(items is not null)
+                {
+                    foreach (var item in items)
+                    {
+                        opc.Add(item);
+                    }
+                }
+                return opc;
+            }
         }
         public NotifyCollectionChangeAction Action
         {
@@ -36,49 +64,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 
         public bool IsBclCompatible { get; private set; }
 
-        public IList? NewItems 
-        {
-            get => 
-                Scope == NotifyCollectionChangeScope.FullControl 
-                ? _newItems 
-                : (IList)NewItemsReadOnly; 
-        }
-        private readonly ObservableCollection<object> _newItems;
+        public ObservablePreviewCollection<object> NewItems { get; }
 
-        public IReadOnlyList<object> NewItemsReadOnly
-        {
-            get
-            {
-                if (_newItemsReadOnly is null)
-                {
-                    _newItemsReadOnly = new ReadOnlyCollection<object>(null);
-                }
-                return _newItemsReadOnly;
-            }
-        }
-        IReadOnlyList<object>? _newItemsReadOnly = null;
-
-        public IList? OldItems
-        {
-            get =>
-                Scope == NotifyCollectionChangeScope.FullControl
-                ? _oldItems
-                : (IList)OldItemsReadOnly;
-        }
-        private readonly ObservableCollection<object> _oldItems;
-
-        public IReadOnlyList<object> OldItemsReadOnly
-        {
-            get
-            {
-                if (_oldItemsReadOnly is null)
-                {
-                    _oldItemsReadOnly = new ReadOnlyCollection<object>(null);
-                }
-                return _oldItemsReadOnly;
-            }
-        }
-        IReadOnlyList<object>? _oldItemsReadOnly = null;
+        public ObservablePreviewCollection<object> OldItems { get; }
 
         public int NewStartingIndex
         {
@@ -107,7 +95,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             {
                 if (!Equals(_oldStartingIndex, value))
                 {
-                    _oldStartingIndex = value;
+                    if (Scope == NotifyCollectionChangeScope.FullControl)
+                    {
+                        _oldStartingIndex = value;
+                    }
+                    else
+                    {
+                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                    }
                 }
             }
         }
