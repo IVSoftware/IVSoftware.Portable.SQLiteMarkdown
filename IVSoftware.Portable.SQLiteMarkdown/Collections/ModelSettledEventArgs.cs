@@ -52,6 +52,44 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         Batch = 0x8000,
     }
 
+    /// <summary>
+    /// Defines the extent to which a preview handler may interact with a pending
+    /// collection change proposal.
+    /// </summary>
+    /// <remarks>
+    /// This enumeration constrains what a handler is permitted to do during the
+    /// preview (Changing) phase. It does not describe the change itself, but rather
+    /// the allowed level of participation in shaping or rejecting it.
+    ///
+    /// Mental Model: "How much influence do I have over this proposal?"
+    ///
+    /// - ReadOnly   : Observe only. No modification or cancellation is permitted.
+    /// - CancelOnly : The proposal may be rejected but not altered.
+    /// - FullControl: The proposal may be rewritten or rejected entirely.
+    ///
+    /// These flags are enforced by the preview pipeline. Handlers opting into
+    /// higher scopes assume responsibility for producing a valid and internally
+    /// consistent change contract.
+    /// </remarks>
+    [Flags]
+    public enum NotifyCollectionChangeScope
+    {
+        /// <summary>
+        /// Observe the proposal without modifying or canceling it.
+        /// </summary>
+        ReadOnly = 0x0,
+
+        /// <summary>
+        /// Allows the proposal to be canceled but not modified.
+        /// </summary>
+        CancelOnly = 0x1,
+
+        /// <summary>
+        /// Allows full control over the proposal, including rewriting or canceling it.
+        /// </summary>
+        FullControl = 0x3,
+    }
+
     [DebuggerDisplay("{Action}  OldCount={OldItems?.Count ?? 0}  NewCount={NewItems?.Count ?? 0}  OldIndex={OldStartingIndex}  NewIndex={NewStartingIndex}")]
     public class ModelSettledEventArgs : NotifyCollectionChangedEventArgs
     {
