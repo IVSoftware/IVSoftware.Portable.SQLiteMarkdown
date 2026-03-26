@@ -600,6 +600,7 @@ Inherited contexts manage their projection internally.".TrimStart());
 
             switch (Authority)
             {
+                case CollectionChangeAuthority.Commit:
                 case CollectionChangeAuthority.Settle:
                 case CollectionChangeAuthority.Predicate:
                     OnModelChanged(e);
@@ -962,43 +963,63 @@ Inherited contexts manage their projection internally.".TrimStart());
 
         #endregion P R O J E C T I O N
 
+        /// <summary>
+        /// Overrides the BC.Clear so that the model and database can be tracked.
+        /// </summary>
         protected override void OnClear(bool all)
         {
             if (all)
             {
                 // The Model runs the database.
+                // It does not answer to authority.
                 Model.RemoveNodes();
 #if DEBUG
-                if(QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                 {
                     Debug.Assert(FilterQueryDatabase.Table<T>().Count() == 0);
                 }
 #endif
-                object sender;
-                switch (ProjectionTopology)
+                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Reset))
                 {
-                    default:
-                    case ProjectionTopology.None:
-                        sender = Authority;
-                        break;
-                    case ProjectionTopology.Inheritance:
-                        sender = CanonicalSuperset;
-                        break;
-                    case ProjectionTopology.Composition when ObservableNetProjection is { } onp:
-                        sender = onp;
-                        break;
-                    case ProjectionTopology.Composition:
-                        sender = CanonicalSuperset;
-                        break;
+                    if (Equals(Authority, CollectionChangeAuthority.Reset))
+                    {
+                        NotifyCollectionChangedEventArgs ePost = new (
+                            action: NotifyCollectionChangedAction.Reset);
+
+                        OnNetProjectionCollectionChanged(MakeSender(), ePost);
+                    }
+                    else
+                    {   /* G T K - N O O P */
+                    }
                 }
-                var ePost =
-                    new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset);
-                OnNetProjectionCollectionChanged(sender, ePost);
             }
             else
             {
                 base.OnClear(all);
             }
+        }
+
+        private object MakeSender()
+        {
+            // This method *does* have the authority to event.
+            object sender;
+            switch (ProjectionTopology)
+            {
+                default:
+                case ProjectionTopology.None:
+                    sender = Authority;
+                    break;
+                case ProjectionTopology.Inheritance:
+                    sender = CanonicalSuperset;
+                    break;
+                case ProjectionTopology.Composition when ObservableNetProjection is { } onp:
+                    sender = onp;
+                    break;
+                case ProjectionTopology.Composition:
+                    sender = CanonicalSuperset;
+                    break;
+            }
+            return sender;
         }
 
         /// <summary>
@@ -1025,9 +1046,13 @@ Inherited contexts manage their projection internally.".TrimStart());
             {
                 if (Equals(Authority, CollectionChangeAuthority.Commit))
                 {
-                    // Expecting one Reset event on the ONP surface
-                    // that binds to platform-specific collection view.
+                    // This method *does* have the authority to event.
+
                     Clear(all: true);
+                    NotifyCollectionChangedEventArgs ePost = new(
+                        action: NotifyCollectionChangedAction.Reset);
+                    OnCanonicalSupersetChanged(ePost);
+
                     if (newItems.Count > 0)
                     {
                         foreach (var newItem in newItems)
@@ -1040,7 +1065,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                 {
                     nameof(LoadCanon).ThrowHard<InvalidOperationException>("Failed authority claim.");
                 }
-
+                ExecState(StdFSMState.UpdateStatesForEpoch, recordset);
             }
 #if false
             if (Equals(Authority, CollectionChangeAuthority.Commit))

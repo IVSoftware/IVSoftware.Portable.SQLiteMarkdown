@@ -49,12 +49,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <summary>
         /// These items (old and new) represent a deferred collection change digest.
         /// </summary>
-        Batch = RemoveFilter << 1,
+        BatchZ = RemoveFilter << 1,
 
         /// <summary>
         /// Attributes a Reset action produced by an illegal configuration request.
         /// </summary>
-        Exception = Batch << 1,
+        Exception = BatchZ << 1,
     }
 
     /// <summary>

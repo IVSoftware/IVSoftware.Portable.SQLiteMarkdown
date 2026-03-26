@@ -573,7 +573,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                     result = new NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Replace,
-                        NotifyCollectionChangeReason.Batch,
                         newItems: new[] { r.NewItem },
                         oldItems: new[] { r.OldItem },
                         newStartingIndex: r.Index,
@@ -586,7 +585,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                     result = new NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Add,
-                        NotifyCollectionChangeReason.Batch,
                         newItems: items,
                         newStartingIndex: startIndex);
                 }
@@ -597,15 +595,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                     result = new NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Remove,
-                        NotifyCollectionChangeReason.Batch,
                         oldItems: items,
                         oldStartingIndex: startIndex);
                 }
                 else if (replaces.Count == 0 && adds.Count == 0 && removes.Count == 0)
                 {
                     result = new NotifyCollectionChangingEventArgs(
-                        NotifyCollectionChangeAction.Reset,
-                        NotifyCollectionChangeReason.Batch);
+                        NotifyCollectionChangeAction.Reset);
                 }
                 else
                 {
@@ -645,7 +641,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                     result = new NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Replace,
-                        NotifyCollectionChangeReason.Batch,
                         newItems: ops);
                 }
 
