@@ -73,8 +73,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (_model is null)
                 {
                     _model = 
-                        new XElement(nameof(StdMarkdownElement.model))
-                        .WithBoundAttributeValue(this, StdMarkdownAttribute.mdc, $"[MMDC]");
+                        new XElement(
+                            nameof(StdMarkdownElement.model),
+                            new XBoundAttribute(nameof(StdMarkdownAttribute.mdc), this, $"[MDC]"),
+                            new XAttribute(nameof(StdMarkdownAttribute.autocount), 0),
+                            new XAttribute(nameof(StdMarkdownAttribute.count), 0),
+                            new XAttribute(nameof(StdMarkdownAttribute.matches), 0));
                     _model.Changing += (sender, e) =>
                     {
                         if (sender is XElement xel && e.ObjectChange == XObjectChange.Remove)

@@ -74,6 +74,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
+        /// <summary>
+        /// "No surprises" clear on interface.
+        /// </summary>
+        void IList.Clear() => Clear(all: true);
+
         bool IList.Contains(object value) =>
             value is T valueT
             ? IsFiltering
@@ -132,21 +137,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
     partial class ModeledMarkdownContext<T> : IList<T>
     {
-        int IndexOfAction(CollectionChangeAction action, int index)
-        {
-            if(IsFiltering)
-            {
-                if(IsEphemeralSort)
-                {
-
-                }
-                throw new NotImplementedException("ToDo");
-            }
-            else
-            {
-                return index;
-            }
-        }
         T IList<T>.this[int index]
         {
             get => (T)((IList)Read)[index];
@@ -163,7 +153,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public void Add(T item) => CanonicalSupersetProtected.Add(item);
 
-        public void Clear() => CanonicalSupersetProtected.Clear();
+        /// <summary>
+        /// "No surprises" clear on interface.
+        /// </summary>
+        void ICollection<T>.Clear() => Clear(all: true);
 
         public bool Contains(T item) => Read.Contains(item);
 
