@@ -347,6 +347,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             void localEvaluateMatch()
             {
+                if(xbo.Parent is { } xel)
+                {
+                    var qmatch = xel.GetAttributeValue<bool>(StdMarkdownAttribute.qmatch);
+                    var pmatch = xel.GetAttributeValue<bool>(StdMarkdownAttribute.pmatch);
+                    if(qmatch && pmatch)
+                    {
+                        PredicateMatchSubsetPrivate.Add(item);
+                    }
+                    else
+                    {
+                        xel.SetAttributeValue(StdMarkdownAttribute.match, bool.FalseString);
+                    }
+                }
             }
             void localRemoveMatch()
             {
@@ -1448,6 +1461,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         IList ITopology.PredicateMatchSubset => (IList)PredicateMatchSubset;
 
         private List<T> PredicateMatchSubsetPrivate { get; } = new();
+
 
         ObservableCollection<T>? IModeledMarkdownContext<T>.ObservableNetProjection =>
             (ObservableCollection<T>?)ObservableNetProjection;
