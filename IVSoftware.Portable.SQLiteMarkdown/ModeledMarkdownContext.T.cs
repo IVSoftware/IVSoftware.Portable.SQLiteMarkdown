@@ -11,6 +11,7 @@ using IVSoftware.Portable.StateMachine;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -664,7 +665,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         {
             switch (ProjectionOption)
             {
-                case null: 
+                case NetProjectionOption.None: 
                     // N O O P
                     // There is no projection to update.
                     break;
@@ -885,7 +886,7 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.
         /// </summary>
-        public NetProjectionOption? ProjectionOption { get; protected set; }
+        public NetProjectionOption ProjectionOption { get; protected set; } = NetProjectionOption.None;
 
         public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; } = ReplaceItemsEventingOption.StructuralReplaceEvent;
 
@@ -1281,22 +1282,37 @@ Inherited contexts manage their projection internally.".TrimStart());
             ObservableCollection<T>? onp, 
             NetProjectionOption? option = null)
         {
+
             ObservableNetProjection = onp;
             if(onp is null)
             {
-                ProjectionOption = null;
-                if(option is not null)
+                option ??= NetProjectionOption.None;
+                switch (option)
                 {
-                    this.ThrowSoft<ArgumentException>(
-                        $"The value {option.ToFullKey()} is invalid when {nameof(option)} is null.");
+                    case NetProjectionOption.None:
+                    case NetProjectionOption.Inherited:
+                        ProjectionOption = (NetProjectionOption)option;
+                        break;
+                    case NetProjectionOption.ObservableOnly:
+                    case NetProjectionOption.AllowDirectChanges:
+                        this.ThrowSoft<ArgumentException>(
+                            $"The value {option.ToFullKey()} is invalid when {nameof(option)} is null.");
+                        break;
+                    default:
+                        this.ThrowHard<NotSupportedException>(
+                            $"The {((NetProjectionOption)option).ToFullKey()} case is not supported.");
+                        break;
                 }
             }
             else
             {
-                ProjectionOption = option;
+                // Set only when argument is explicit.
+                if (option is { } value)
+                {
+                    ProjectionOption = value;
+                }
             }
         }
-
 
         /// <summary>
         /// Factory-backed canonical superset used by the back-end event pipeline 
