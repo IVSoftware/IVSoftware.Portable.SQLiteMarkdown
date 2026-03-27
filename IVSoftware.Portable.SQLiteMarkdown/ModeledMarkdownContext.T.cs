@@ -117,47 +117,72 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnXAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
         {
-            string id = null!;
-            if (xattr.Parent?.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
-                && xbaModel.Tag is { } model
-                && !string.IsNullOrWhiteSpace(id = model.GetId()))
+            if (Enum.TryParse(xattr.Name.LocalName, out StdMarkdownAttribute std))
             {
-                if (ReferenceEquals(xattr, xbaModel))
+                string id = null!;
+                if (xattr.Parent is not null)
                 {
-                    OnBoundItemObjectChange(xbaModel, e.ObjectChange);
-                }
-                else
-                {
-                    if (Enum.TryParse(xattr.Name.LocalName, out StdMarkdownAttribute std))
+                    if (xattr.Parent.Parent is null)
                     {
-                        switch (xattr)
+                        localRootProcess();
+                    }
+                    else
+                    {
+                        localDefaultProcess();
+                    }
+                }
+                #region L o c a l F x
+                void localRootProcess()
+                {
+                    switch (std)
+                    {
+                        case StdMarkdownAttribute.matches:
+                            { }
+                            break;
+                    }
+                }
+                void localDefaultProcess()
+                {
+                    if (xattr.Parent.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
+                        && xbaModel.Tag is { } model
+                        && !string.IsNullOrWhiteSpace(id = model.GetId()))
+                    {
+                        if (ReferenceEquals(xattr, xbaModel))
                         {
-                            case XBoundAttribute:
-                                break;
-                            default:
-                                switch (std)
-                                {
-                                    case StdMarkdownAttribute.ismatch:
-                                        bool isMatch = bool.Parse(xattr.Value);
-                                        switch (e.ObjectChange)
-                                        {
-                                            case XObjectChange.Add:
-                                            case XObjectChange.Value:
-                                                if (isMatch)
-                                                {
-                                                    MatchContainsProto.Add(id);
-                                                }
-                                                break;
-                                            case XObjectChange.Remove:
-                                                MatchContainsProto.Remove(id);
-                                                break;
-                                        }
-                                        break;
-                                }
-                                break;
+                            OnBoundItemObjectChange(xbaModel, e.ObjectChange);
+                        }
+                        else
+                        {
+                            switch (xattr)
+                            {
+                                case XBoundAttribute:
+                                    break;
+                                default:
+                                    switch (std)
+                                    {
+                                        case StdMarkdownAttribute.ismatch:
+                                            bool isMatch = bool.Parse(xattr.Value);
+                                            switch (e.ObjectChange)
+                                            {
+                                                case XObjectChange.Add:
+                                                case XObjectChange.Value:
+                                                    if (isMatch)
+                                                    {
+                                                        MatchContainsProto.Add(id);
+                                                    }
+                                                    break;
+                                                case XObjectChange.Remove:
+                                                    MatchContainsProto.Remove(id);
+                                                    break;
+                                            }
+                                            break;
+                                    }
+                                    break;
+                            }
                         }
                     }
                 }
+                #endregion L o c a l F x
             }
         }
         [Probationary]
@@ -1414,6 +1439,7 @@ Inherited contexts manage their projection internally.".TrimStart());
 
         private List<T> PredicateMatchSubsetPrivate { get; } = new();
 
-        ObservableCollection<T>? IModeledMarkdownContext<T>.ObservableNetProjection => throw new NotImplementedException();
+        ObservableCollection<T>? IModeledMarkdownContext<T>.ObservableNetProjection =>
+            (ObservableCollection<T>?)ObservableNetProjection;
     }
 }

@@ -116,18 +116,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             $"The {action.ToFullKey()} case is not supported.");
                     break;
             }
-            switch (action)
-            {
-                case NotifyCollectionChangeAction.Add: localAddToModel(); break;
-                case NotifyCollectionChangeAction.Remove: localRemoveFromModel(); break;
-                case NotifyCollectionChangeAction.Replace: localReplaceInModel(); break;
-                case NotifyCollectionChangeAction.Move: localMoveInModel(); break;
-                case NotifyCollectionChangeAction.Reset: localResetModel(); break;
-                default:
-                    eUnk.ThrowFramework<NotSupportedException>(
-                            $"The {action.ToFullKey()} case is not supported.");
-                    break;
-            }
             model.SetAttributeValue(nameof(StdMarkdownAttribute.count), count);
             model.SetAttributeValue(nameof(StdMarkdownAttribute.matches), matches);
 
