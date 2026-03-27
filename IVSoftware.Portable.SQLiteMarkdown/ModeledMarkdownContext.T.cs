@@ -970,8 +970,8 @@ SELECT * FROM items WHERE
                                 CanonicalSupersetProtected.Add(newItem);
                             }
                         }
-                        ExecState(StdFSMState.UpdateStatesForEpoch, recordset);
                     }
+                    ExecState(StdFSMState.UpdateStatesForEpoch, recordset);
                 }
                 else
                 {

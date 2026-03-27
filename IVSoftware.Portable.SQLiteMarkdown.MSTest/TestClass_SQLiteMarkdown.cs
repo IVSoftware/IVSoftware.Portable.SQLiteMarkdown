@@ -419,14 +419,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             #region S U B T E S T S 
 
+            // A query that returns no results should *visually indicate* SearchEntryState
+            // Correct  : QueryCompleteNoResults
+            // Incorrect: Cleared
             async Task subtestExtQueryNoResult()
             {
                 COUNT = 0;  // The 'query' has returned no matches.
                 mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
-                Assert.AreEqual(COUNT, mmdc.CanonicalCount);
-                Assert.AreEqual(SearchEntryState.QueryCompleteNoResults, mmdc.SearchEntryState);
-                Assert.AreEqual(FilteringState.Ineligible, mmdc.FilteringState);
-                Assert.IsFalse(mmdc.IsFiltering);
+                actual = mmdc.StateReport();
+                actual.ToClipboardExpected();
+                { } // <- FIRST TIME ONLY: Adjust the message.
+                actual.ToClipboardAssert("Expecting result to match.");
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteNoResults, FilteringState.Ineligible]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting result to match."
+                );
             }
 
             async Task subtestExtQueryOneResult()
