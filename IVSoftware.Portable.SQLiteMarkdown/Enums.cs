@@ -242,10 +242,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         model,
 
         /// <summary>
+        /// Records the net effect of qmatch and pmatch
+        /// </summary>
+        [DefaultValue("True")]
+        match,
+
+        /// <summary>
         /// This record matches all active predicates.
         /// </summary>
         [DefaultValue("True")]
-        ismatch,
+        qmatch,
+
+        /// <summary>
+        /// This record matches all active predicates.
+        /// </summary>
+        [DefaultValue("True")]
+        pmatch,
 
         /// <summary>
         /// Canonical record order.

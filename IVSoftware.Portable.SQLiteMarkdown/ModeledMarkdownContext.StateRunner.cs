@@ -263,7 +263,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         {
                             Model.SetAttributeValue(StdMarkdownAttribute.matches, countDistinct);
                         }
-                        Model.SetAttributeValue(StdMarkdownAttribute.ismatch, null);
+                        Model.SetAttributeValue(StdMarkdownAttribute.match, null);
                     }
                 }
 

@@ -137,7 +137,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     switch (std)
                     {
                         case StdMarkdownAttribute.matches:
-                            { }
                             break;
                     }
                 }
@@ -160,7 +159,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 default:
                                     switch (std)
                                     {
-                                        case StdMarkdownAttribute.ismatch:
+                                        case StdMarkdownAttribute.match:
                                             bool isMatch = bool.Parse(xattr.Value);
                                             switch (e.ObjectChange)
                                             {
@@ -257,17 +256,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [Canonical("The globally unique authority for binding items and their INPC events.")]
         protected virtual void OnBoundItemObjectChange(XBoundAttribute xbo, XObjectChange action)
         {
-            var item = xbo.Tag;
+            var item = (T)xbo.Tag;
             switch (action)
             {
                 case XObjectChange.Add:
                     localSetModelContainer();
                     localAddEvents();
+                    localEvaluateMatch();
                     _ = localTryAddToDatabase();
                     break;
                 case XObjectChange.Remove:
                     _ = localTryRemoveFromDatabase();
                     localRemoveEvents();
+                    localRemoveMatch();
                     break;
             }
             #region L o c a l F x
@@ -296,6 +297,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     inpc.PropertyChanged += OnItemPropertyChanged;
                 }
             }
+
             void localRemoveEvents()
             {
                 if (item is INotifyPropertyChanged inpc)
@@ -303,6 +305,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     inpc.PropertyChanged -= OnItemPropertyChanged;
                 }
             }
+
             bool? localTryAddToDatabase()
             {
                 bool? isSuccess = null;
@@ -341,6 +344,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     isSuccess = null;
                 }
                 return isSuccess;
+            }
+            void localEvaluateMatch()
+            {
+            }
+            void localRemoveMatch()
+            {
+                PredicateMatchSubsetPrivate.Remove(item);
             }
             #endregion L o c a l F x
         }
@@ -389,7 +399,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     await Task.Run(async () =>
                     {
                         PredicateMatchSubsetPrivate.Clear();
-                        Model.RemoveDescendantAttributes(StdMarkdownAttribute.ismatch);
+                        Model.RemoveDescendantAttributes(StdMarkdownAttribute.match);
 
                         #region F I L T E R    Q U E R Y
                         sql = ParseSqlMarkdown();
@@ -417,7 +427,7 @@ SELECT * FROM items WHERE
                             switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
                             {
                                 case PlacerResult.Exists:
-                                    xaf.SetAttributeValue(nameof(StdMarkdownAttribute.ismatch), bool.TrueString);
+                                    xaf.SetAttributeValue(nameof(StdMarkdownAttribute.match), bool.TrueString);
                                     if (xaf.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
                                         && xbaModel.Tag is T model)
                                     {

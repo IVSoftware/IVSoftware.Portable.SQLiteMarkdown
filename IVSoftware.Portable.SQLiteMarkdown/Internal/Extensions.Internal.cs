@@ -533,7 +533,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 count++;
 
                 bool isMatch =
-                    current.Attribute(nameof(StdMarkdownAttribute.ismatch)) is { } attr
+                    current.Attribute(nameof(StdMarkdownAttribute.match)) is { } attr
                     && bool.TryParse(attr.Value, out var explicitMatch)
                         ? explicitMatch
                         : @default;
