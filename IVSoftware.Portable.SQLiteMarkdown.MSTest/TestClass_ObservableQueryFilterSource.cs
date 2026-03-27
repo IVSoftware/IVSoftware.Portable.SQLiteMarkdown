@@ -2132,8 +2132,9 @@ SELECT * FROM items WHERE
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-ProjectionTopology.Inheritance, NetProjectionTopology.Inherited, ReplaceItemsEventingOption.StructuralReplaceEvent"
+NetProjectionTopology.Routed, ReplaceItemsEventingOption.StructuralReplaceEvent"
                         ;
+
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
                         // PLEASE: Do not remove.
