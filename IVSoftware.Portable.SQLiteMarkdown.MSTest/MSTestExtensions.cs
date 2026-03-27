@@ -180,7 +180,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             return string.Join(", ", builder);
         }
 
-        public static string OptionsReport(this IModeledMarkdownContext @this)
+        public static string TopologyReport(this IModeledMarkdownContext @this)
         {
             var builder = new List<string>();
             builder.Add($"{@this.ProjectionTopology.ToFullKey()}");

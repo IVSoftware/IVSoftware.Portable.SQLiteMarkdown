@@ -320,7 +320,7 @@ public class TestClass_PredicateMarkdownContext
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting State Report to match.");
 
-            actual = pmdc.OptionsReport();
+            actual = pmdc.TopologyReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 

@@ -1352,17 +1352,17 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     results = cnx.Query<SelectableQFModelLTOQO>(sql);
 
                     // NEW 260311
-                    actual = itemsSource.OptionsReport();
+                    actual = itemsSource.TopologyReport();
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-NetProjectionTopology.Inherited, ReplaceItemsEventingOption.StructuralReplaceEvent"
+NetProjectionTopology.Routed, ReplaceItemsEventingOption.StructuralReplaceEvent"
                     ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
-                        "Expecting option settings to match."
+                        "Expecting topology disvcovery to match."
                     );
 
                     itemsSource.ReplaceItems(results);
@@ -1452,8 +1452,9 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
 
                     builder.Clear();
                     Assert.AreEqual(string.Empty, itemsSource.InputText, "Confirm before clear.");
-                    itemsSource.Clear(); // Expecting "no surprises" here.
 
+                    // Expecting "no surprises" here.
+                    itemsSource.Clear();
 
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
@@ -1585,9 +1586,9 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     items.ObservableNetProjection,
                     "Expecting raw, portable list with no ONP.");
                 Assert.AreEqual(
-                    NetProjectionTopology.None, 
+                    NetProjectionTopology.Routed, 
                     items.ProjectionTopology,
-                    "Expecting option rule-out when ONP is null.");
+                    "Expecting detection of INotifyCollectionChanged in CTor.");
 
                 string caller = string.Empty;
 
@@ -1850,14 +1851,18 @@ InputText";
                             "Expecting specific state UNCHANGED."
                         );
                         Assert.IsFalse(items.IsFiltering, "Expecting NO NEED TO AWAIT HERE.");
+
+                        actual = items.TopologyReport();
+                        actual.ToClipboardExpected();
+                        { }
+                        expected = @" 
+NetProjectionTopology.Routed, ReplaceItemsEventingOption.StructuralReplaceEvent";
+
                         Assert.AreEqual(
-                            items.ProjectionTopology,
-                            NetProjectionTopology.None,
-                            "260316" +
-                            "POSIT 1: This *is* the ONP without having to say so. " +
-                            "POSIT 2: This *will* populate itself.");
-
-
+                            expected.NormalizeResult(),
+                            actual.NormalizeResult(),
+                            "Expecting routed topology."
+                        );
 
                         #region L o c a l F x
                         void localOnRecordsetRequestA(object? sender, RecordsetRequestEventArgs e)
@@ -2114,7 +2119,7 @@ SELECT * FROM items WHERE
 
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-                        actual = items.OptionsReport();
+                        actual = items.TopologyReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 

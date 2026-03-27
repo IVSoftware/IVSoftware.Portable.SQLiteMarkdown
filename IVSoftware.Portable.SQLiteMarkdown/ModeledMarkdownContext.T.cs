@@ -38,6 +38,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             if(typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
             {
                 ProjectionTopology = NetProjectionTopology.Routed;
+                var type = GetType();
+                bool hasParameterlessClear = type.GetMethod(nameof(Clear), Type.EmptyTypes) is not null;
             }
         }
 
@@ -658,7 +660,7 @@ SELECT * FROM items WHERE
                     if (ObservableNetProjection is not IList projection)
                     {
                         this.ThrowFramework<InvalidOperationException>(
-                            $"Expecting {nameof(ObservableNetProjection)} is determined to be non-null in the ProjectionOption property getter.");
+                            $"Expecting {nameof(ObservableNetProjection)} is determined to be non-null in the ProjectionTopology property getter.");
                     }
                     else
                     {
@@ -905,10 +907,8 @@ SELECT * FROM items WHERE
                         }
                         break;
                     case CollectionChangeAuthority.Commit:
-                        // [Careful] Don't clear InputText in this case.
-                        CanonicalSupersetProtected.Clear();
-                        FilteringState = FilteringState.Ineligible;
-                        SearchEntryState = SearchEntryState.Cleared;
+                        // Moved this management to LoadCanon because
+                        // we were just suppressing the events anyway.
                         break;
                 }
 #if DEBUG
@@ -945,8 +945,8 @@ SELECT * FROM items WHERE
                 if (Equals(Authority, CollectionChangeAuthority.Commit))
                 {
                     // This method *does* have the authority to event.
-                    Clear(all: true);
-
+                    // [Careful] Don't clear InputText in this case.
+                    CanonicalSupersetProtected.Clear();
                     if (newItems.Count > 0)
                     {
                         using (BeginBatch())
@@ -956,13 +956,13 @@ SELECT * FROM items WHERE
                                 CanonicalSupersetProtected.Add(newItem);
                             }
                         }
+                        ExecState(StdFSMState.UpdateStatesForEpoch, recordset);
                     }
                 }
                 else
                 {
                     nameof(LoadCanon).ThrowHard<InvalidOperationException>("Failed authority claim.");
                 }
-                ExecState(StdFSMState.UpdateStatesForEpoch, recordset);
             }
 #if false
             if (Equals(Authority, CollectionChangeAuthority.Commit))

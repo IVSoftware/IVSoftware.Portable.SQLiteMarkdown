@@ -43,6 +43,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
         public IReadOnlyList<T> UnfilteredItems => CanonicalSuperset;
 
+        /// <summary>
+        /// "No surprises" IList Clear syntax.
+        /// </summary>
+        /// <remarks>
+        /// Recommended:
+        /// "List-like" providers of INotifyCollectionChanged should
+        /// expose the expected IList.Clear(0 syntax and force an
+        /// explicit boolean value to call into the MDC.
+        /// </remarks>
+        public void Clear() => base.Clear(true);
+        public new FilteringState Clear(bool all) => base.Clear(all);
 
         /// <summary>
         /// Removes any current items before copying the items passed.
@@ -73,7 +84,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected override void OnModelChanged(NotifyCollectionChangedEventArgs eBCL)
         {
-            if(ProjectionOption == NetProjectionTopology.AllowDirectChanges)
+            if(ProjectionTopology == NetProjectionTopology.AllowDirectChanges)
             {
                 base.OnModelChanged(eBCL);
             }
