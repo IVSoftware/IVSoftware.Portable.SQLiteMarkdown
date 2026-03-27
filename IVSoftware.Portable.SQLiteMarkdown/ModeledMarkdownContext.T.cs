@@ -1,6 +1,5 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
@@ -11,7 +10,6 @@ using IVSoftware.Portable.StateMachine;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,7 +19,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -36,27 +33,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         public ModeledMarkdownContext()
         {
-            // Self-detect the topology.
-            // - RTTI claims INotifyCollectionChange implementation.
-            // - This class, however, doesn't do that on its own.
-            // - Inheritance is the only possibility.
-            _isInherited = typeof(INotifyCollectionChanged).IsAssignableFrom(GetType());
-            if (_isInherited)
-            {
-                if (this.GetType().GetMethod(nameof(Clear), Type.EmptyTypes) is { } clearMethod)
-                {   /* B C S - N O O P */
-                }
-                else
-                {
-                    // Avoid leaking the object itself as the awaited sender.
-                    nameof(MarkdownContext).Advisory(
-                        $"Inherited MarkdownContext detected, but no parameterless Clear() was found. " +
-                        "Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. " +
-                        "If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. " +
-                        "You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit."
-                    );
-                }
-            }
             CanonicalSupersetProtected = new();
             CanonicalSupersetProtected.CollectionChanged += (sender, e) => OnCanonicalSupersetChanged(e);
         }
@@ -395,8 +371,7 @@ SELECT * FROM items WHERE
         #region P R O J E C T I O N
 
         /// <summary>
-        /// Gets or sets the observable projection representing the effective
-        /// (net visible) collection after markdown and predicate filtering.
+        /// Links or reassigns a non-canonical (presumably UI) items source to the markdown context.
         /// </summary>
         /// <remarks>
         /// Mental Model: "ItemsSource for a CollectionView with both initial query and subsequent filter refinement.
@@ -404,50 +379,38 @@ SELECT * FROM items WHERE
         /// - NET       : The items in this collection depend on the net result of the recordset and any state-dependent filters.
         /// - PROJECTION: Conveys that this 'filtering' produces a PCL collection, albeit one that is likely to be visible.
         ///
-        /// When assigned, this context subscribes to CollectionChanged as a
-        /// reconciliation sink. During refinement epochs, structural changes
-        /// made against the filtered projection are absorbed into the canonical
-        /// backing store so that the canon remains complete and relevant.
+        /// When assigned, this context subscribes to CollectionChanged as a reconciliation sink. During
+        /// refinement epochs, structural changes made against the filtered projection are absorbed into
+        /// the canonical backing store so that the canon remains complete and relevant.
         ///
         /// The projection is an interaction surface, not a storage authority.
         /// Its mutations are normalized and merged into the canonical collection
         /// according to the active authority contract.
         ///
         /// Replacing this property detaches the previous projection and attaches the new one.
-        ///
-        /// This property is infrastructure wiring and is not intended for data binding.
         /// </remarks>
         public IList? ObservableNetProjection
         {
             get => _observableProjection;
             protected set
             {
-                if (ProjectionTopology == ProjectionTopology.Inheritance)
+                if (!Equals(_observableProjection, value))
                 {
-                    ThrowHard<InvalidOperationException>(@"
-Cannot assign ObservableNetProjection when ProjectionTopology is Inheritance.
-Inherited contexts manage their projection internally.".TrimStart());
-                }
-                else
-                {
-                    if (!Equals(_observableProjection, value))
+                    // Unsubscribe INCC
+                    if (_observableProjection is INotifyCollectionChanged)
                     {
-                        // Unsubscribe INCC
-                        if (_observableProjection is INotifyCollectionChanged)
-                        {
-                            ((INotifyCollectionChanged)_observableProjection).CollectionChanged -= OnNetProjectionCollectionChanged;
-                        }
+                        ((INotifyCollectionChanged)_observableProjection).CollectionChanged -= OnNetProjectionCollectionChanged;
+                    }
 
-                        _observableProjection = value;
+                    _observableProjection = value;
 
-                        // Run the handler then subscribe to any subsequent changes.
-                        OnNetProjectionHandleChanged();
+                    // Run the handler then subscribe to any subsequent changes.
+                    OnNetProjectionHandleChanged();
 
-                        // Subscribe INCC
-                        if (_observableProjection is INotifyCollectionChanged)
-                        {
-                            ((INotifyCollectionChanged)_observableProjection).CollectionChanged += OnNetProjectionCollectionChanged;
-                        }
+                    // Subscribe INCC
+                    if (_observableProjection is INotifyCollectionChanged)
+                    {
+                        ((INotifyCollectionChanged)_observableProjection).CollectionChanged += OnNetProjectionCollectionChanged;
                     }
                 }
             }
@@ -669,7 +632,6 @@ Inherited contexts manage their projection internally.".TrimStart());
                     // N O O P
                     // There is no projection to update.
                     break;
-                case NetProjectionOption.Inherited:         // Subclass should apply policy first, then call base.
                 case NetProjectionOption.ObservableOnly:    // Maintain internal canon but do not push internal changes.
                     ModelChanged?.Invoke(this, eBCL);
                     break;
@@ -891,17 +853,45 @@ Inherited contexts manage their projection internally.".TrimStart());
         public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; } = ReplaceItemsEventingOption.StructuralReplaceEvent;
 
         /// <summary>
-        /// Reports on whether this object is inherited or composed.
+        /// Reports on topology based on the SetObservableNetProjection method.
         /// </summary>
         public ProjectionTopology ProjectionTopology
         {
-            get => _isInherited
+            get => 
+                _projectionTopology == ProjectionTopology.Self
+                ? IsInherited
                     ? ProjectionTopology.Inheritance
-                    : ObservableNetProjection is null
-                         ? ProjectionTopology.None
-                         : ProjectionTopology.Composition;
+                    : ProjectionTopology.Self
+                : _projectionTopology;
+
+            protected set
+            {
+                if (!Equals(_projectionTopology, value))
+                {
+                    _projectionTopology = value;
+                    OnPropertyChanged();
+                }
+            }
         }
-        readonly bool _isInherited;
+        ProjectionTopology _projectionTopology = ProjectionTopology.Self;
+
+        /// <summary>
+        /// Indicates that the runtime type is a subclass of MMDC.
+        /// </summary>
+        public bool IsInherited
+        {
+            get
+            {
+                if (_isInherited is null)
+                {
+                    _isInherited = GetType() != typeof(ModeledMarkdownContext<T>);
+                }
+                return (bool)_isInherited;
+            }
+        }
+        bool? _isInherited = null;
+
+
 
         #endregion P R O J E C T I O N
 
@@ -936,29 +926,6 @@ Inherited contexts manage their projection internally.".TrimStart());
                 }
 #endif
             }
-        }
-
-        private object MakeSender()
-        {
-            // This method *does* have the authority to event.
-            object sender;
-            switch (ProjectionTopology)
-            {
-                default:
-                case ProjectionTopology.None:
-                    sender = Authority;
-                    break;
-                case ProjectionTopology.Inheritance:
-                    sender = CanonicalSuperset;
-                    break;
-                case ProjectionTopology.Composition when ObservableNetProjection is { } onp:
-                    sender = onp;
-                    break;
-                case ProjectionTopology.Composition:
-                    sender = CanonicalSuperset;
-                    break;
-            }
-            return sender;
         }
 
         /// <summary>
@@ -1279,12 +1246,17 @@ Inherited contexts manage their projection internally.".TrimStart());
         }
 
         /// <summary>
-        /// Assigns or clears the observable projection and resolves a compatible projection option.
+        /// Establishes the coupled invariant between the observable projection and its projection option.
         /// </summary>
         /// <remarks>
-        /// When a projection is provided, defaults to <see cref="NetProjectionOption.AllowDirectChanges"/> 
-        /// unless explicitly specified. When null, only non-observable modes are permitted; invalid 
-        /// combinations are downgraded via advisory or rejected.
+        /// - The projection and its option must be set together.
+        /// ∴ They are not exposed via independent setters.
+        /// - When ONP is null: 
+        ///   Only non-observable modes are permitted; invalid
+        ///   combinations are downgraded via advisory or rejected.
+        /// - When ONP is not null:
+        ///   Defaults to <see cref="NetProjectionOption.AllowDirectChanges"/> 
+        ///   unless explicitly specified. 
         /// </remarks>
         public void SetObservableNetProjection(
             ObservableCollection<T>? onp, 
@@ -1293,11 +1265,27 @@ Inherited contexts manage their projection internally.".TrimStart());
             ObservableNetProjection = onp;
             if (onp is null)
             {
+                if(IsInherited)
+                {
+                    if(this is INotifyCollectionChanged)
+                    {
+                        ProjectionTopology = ProjectionTopology.Composition;
+                    }
+                    else
+                    {
+                        ProjectionTopology = ProjectionTopology.Inheritance;
+                    }
+                }
+                else 
+                {
+                    ProjectionTopology = ProjectionTopology.Self;
+                }
                 option ??= NetProjectionOption.None;
+                var type = GetType();
+
                 switch (option)
                 {
                     case NetProjectionOption.None:
-                    case NetProjectionOption.Inherited:
                         ProjectionOption = (NetProjectionOption)option;
                         break;
                     case NetProjectionOption.ObservableOnly:
@@ -1313,6 +1301,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
             else
             {
+                ProjectionTopology = ProjectionTopology.Composition;
                 ProjectionOption = option ??= NetProjectionOption.AllowDirectChanges;
             }
         }

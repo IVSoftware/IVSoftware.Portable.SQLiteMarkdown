@@ -71,7 +71,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
                 mmdc.SetObservableNetProjection(null);
                 Assert.AreEqual(
-                    ProjectionTopology.None,
+                    ProjectionTopology.Composition,
                     onpc.ProjectionTopology,
                     "Expecting NONE is the epistemic default.");
 
@@ -376,7 +376,7 @@ MarkdownContext Clear(all=True)";
                 var mdcc = onp.Model.To<ModeledMarkdownContext<SelectableQFModel>>();
                 mdcc.SetObservableNetProjection(null);
                 Assert.AreEqual(
-                    ProjectionTopology.None,
+                    ProjectionTopology.Composition,
                     onp.ProjectionTopology,
                     "Expecting NONE.");
             }

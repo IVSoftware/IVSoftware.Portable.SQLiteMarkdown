@@ -1580,7 +1580,15 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 Queue<SenderEventPair> eventQueue = new();
                 List<T> recordset;
                 var items = new ObservableQueryFilterSource<T>();
-                Assert.AreEqual(NetProjectionOption.AllowDirectChanges, items.ProjectionOption);
+
+                Assert.IsNull(
+                    items.ObservableNetProjection,
+                    "Expecting raw, portable list with no ONP.");
+                Assert.AreEqual(
+                    NetProjectionOption.None, 
+                    items.ProjectionOption,
+                    "Expecting option rule-out when ONP is null.");
+
                 string caller = string.Empty;
 
 
@@ -1844,7 +1852,7 @@ InputText";
                         Assert.IsFalse(items.IsFiltering, "Expecting NO NEED TO AWAIT HERE.");
                         Assert.AreEqual(
                             items.ProjectionOption,
-                            NetProjectionOption.Inherited,
+                            NetProjectionOption.None,
                             "260316" +
                             "POSIT 1: This *is* the ONP without having to say so. " +
                             "POSIT 2: This *will* populate itself.");

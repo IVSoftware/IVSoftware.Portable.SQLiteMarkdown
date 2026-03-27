@@ -513,60 +513,42 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public enum ProjectionTopology
     {
         /// <summary>
-        /// No ObservableNetProjection has been assigned.
+        /// Topology does not match any known pattern.
         /// </summary>
-        None,
+        Unknown,
 
         /// <summary>
-        /// *NOT* an ObservableNetProjection - Instead it inherits MarkdownContext and routes the enumerator.
+        /// Not inherited and not associated by composition. Direct actions are not allowed.
         /// </summary>
-        /// IsFiltering => 
-        /// 1. DHostSuppress.GetToken to suppress INCC.
-        /// 2. Copy 'this' to a canonical backing store and DB.
-        /// 3. Query DB for term and populate _filteredItems.
-        ///*4. Route the enumerator to _filteredItens.
-        /// 5. Relinquish DHostSuppress to raise Reset.
-        /// IsFiltering <=
-        /// 1. DHostSuppress.GetToken to suppress INCC.
-        ///*2. Route the enumerator to canonical.
-        /// 3. Relinquish DHostSuppress to raise Reset.
+        Self,
+
+        /// <summary>
+        /// Indicates a direct subclass that implements canonical IList (write) and routed ICollection (read).
+        /// </summary>
+        /// <remarks>
+        /// Synchronization per se is not required because the read enumerator can switch between a canonical and a predicated collection.
         /// </remarks>
         Inheritance,
 
         /// <summary>
-        /// The ObservableNetProjection inherits INotifyCollectionChanged - filtering employs copying not routing.
+        /// Indicates that a non-canonical ObservableCollection{T} has been submitted as the visible surface.
         /// </summary>
         /// <remarks>
-        /// IsFiltering => 
-        /// 1. DHostSuppress.GetToken to suppress INCC.
-        /// 2. Copy 'this' to a canonical backing store and DB.
-        /// 3. Query DB for term and populate _filteredItems.
-        /// 4. Copy _filteredItems to 'this'.
-        /// 5. Relinquish DHostSuppress to raise Reset.
-        /// IsFiltering <=
-        /// 1. DHostSuppress.GetToken to suppress INCC.
-        /// 2. Copy canonical backing store to 'this'
-        /// 3. Relinquish DHostSuppress to raise Reset.
+        /// IsFiltering edges are tracked, and either capture or revert the non-canonical projected surface with the internal canonical superset.
         /// </remarks>
         Composition,
     }
 
+    /// <summary>
+    /// Specifies whether 
+    /// </summary>
     [NotFlags]
     public enum NetProjectionOption
     {
         /// <summary>
-        /// No interactions are possible (e.g., when ONP is null).
+        /// Direct inheritance rules out
         /// </summary>
         None,
-
-        /// <summary>
-        /// External ObservableNetCollection is not allowed for ProjectionTopology.Inheritance.
-        /// </summary>
-        /// <remarks>
-        /// - Subclasses must enforce an internal update policy.
-        /// - External collections should not be allowed to influence this policy.
-        /// </remarks>
-        Inherited,
 
         /// <summary>
         /// Observe the projection for reconciliation but do not mutate it.
