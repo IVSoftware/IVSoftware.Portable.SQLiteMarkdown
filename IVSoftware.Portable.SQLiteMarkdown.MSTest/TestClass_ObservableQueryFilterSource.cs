@@ -3200,7 +3200,8 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
+NetProjection.Reset   NotifyCollectionChangedEventArgs           
+NetProjection.Add     NewItems=12 NewIndex= 0 NotifyCollectionChangedEventArgs           "
                 ;
 
                 Assert.AreEqual(
@@ -3212,10 +3213,9 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                 actual = items.Model.ToString();
                 actual.ToClipboardExpected();
                 { }
-
                 // [Careful("What?")] No 'preview' attribute? THAT'S BECAUSE THIS IS SelectableQFModel and *not* IAffinityModel.
                 expected = @" 
-<model autocount=""12"" count=""12"" matches=""12"">
+<model mdc=""[MMDC]"" autocount=""12"" count=""12"" matches=""12"">
   <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" sort=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" sort=""1"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" sort=""2"" />
