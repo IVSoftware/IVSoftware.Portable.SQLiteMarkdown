@@ -75,7 +75,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     _model = 
                         new XElement(
                             nameof(StdMarkdownElement.model),
-                            new XBoundAttribute(nameof(StdMarkdownAttribute.mdc), this, $"[MDC]"),
+                            new XBoundAttribute(nameof(StdMarkdownAttribute.mdc), this, $"[MMDC]"),
                             new XAttribute(nameof(StdMarkdownAttribute.autocount), 0),
                             new XAttribute(nameof(StdMarkdownAttribute.count), 0),
                             new XAttribute(nameof(StdMarkdownAttribute.matches), 0));

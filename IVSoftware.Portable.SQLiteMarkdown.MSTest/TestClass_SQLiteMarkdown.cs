@@ -618,9 +618,9 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model autocount=""2"" count=""2"" matches=""1"">
+<model mdc=""[MMDC]"" autocount=""2"" count=""2"" matches=""1"">
   <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" sort=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" sort=""1"" ismatch=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" sort=""1"" match=""True"" />
 </model>"
                 ;
 
@@ -747,7 +747,8 @@ InputText"
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting Filtering shows DISABLED.");
 
             // Clear the IME, *not* the recordset.
-            mmdc.Clear(false);
+            // [Remember] Clear on MMDC resolves to Clear(bool).
+            mmdc.Clear();
             actual = mmdc.StateReport();
             actual.ToClipboardExpected();
             { }
@@ -759,7 +760,8 @@ InputText"
             Assert.IsTrue(mmdc.RouteToFullRecordset, "ROUTE TO CANONICAL");
 
             // Empty IME + Regressive Clear = TerminalClear.
-            mmdc.Clear(false);
+            // [Remember] Clear on MMDC resolves to Clear(bool).
+            mmdc.Clear();
             actual = mmdc.StateReport();
             actual.ToClipboardExpected();
             { }
