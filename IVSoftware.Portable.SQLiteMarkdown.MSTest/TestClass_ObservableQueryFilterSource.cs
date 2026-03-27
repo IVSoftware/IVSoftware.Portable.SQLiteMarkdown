@@ -1502,6 +1502,12 @@ NetProjection.Add     NewItems=12 NewIndex= 0 NotifyCollectionChangedEventArgs  
                         "Expecting add component (first) + rest component (last)."
                     );
 
+                    ecc = (NotifyCollectionChangedEventArgs)eventQueue.Dequeue().e;
+                    Assert.AreEqual(
+                        NotifyCollectionChangedAction.Reset,
+                        ecc.Action,
+                        "ReplaceItems -> LoadCanon -> Reset + Add");
+
                     ecc = (NotifyCollectionChangedEventArgs)eventQueue.DequeueSingle().e;
                     actual = string.Join(
                         Environment.NewLine,

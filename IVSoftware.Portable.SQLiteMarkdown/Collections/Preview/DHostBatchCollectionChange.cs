@@ -24,7 +24,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         /// - Simple Reset
         /// - Single or Multiple Add Only
         /// - Single or Multiple Remove Only
-        /// - Single Relace only, or
+        /// - Single Replace only, or
         /// - IList consisting or multiple, single, indexed Replace events.
         /// The probably response when a consumer inspects NewItems and sees multiple replace events is a reset + add.
         /// </remarks>
@@ -40,6 +40,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 key => e[key]);
 
             snapshot["FinalList"] = _listFTR;
+            snapshot["IsModified"] = _isModified;
 
             var eBatch = new BatchFinalDisposeEventArgs(
                 e.ReleasedSenders,
@@ -48,6 +49,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 _listFTR);
 
             base.OnFinalDispose(eBatch);
+            _isModified = false;
         }
 
         [Canonical]
@@ -80,7 +82,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         {
             _listB4 = list.Cast<object>().ToArray();
             _listFTR = _listB4.ToList();
+            _isModified = false;
         }
+        bool _isModified = false;
 
         /// <summary>
         /// Returns true if a batch is in progress.
@@ -94,6 +98,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             else
             {
                 _listFTR.Apply(e);
+                _isModified = true;
                 return true;
             }
         }

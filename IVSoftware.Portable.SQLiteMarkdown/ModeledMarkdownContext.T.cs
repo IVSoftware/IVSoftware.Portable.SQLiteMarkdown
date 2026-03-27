@@ -517,7 +517,13 @@ SELECT * FROM items WHERE
                     {
                         if (e is BatchFinalDisposeEventArgs eFD)
                         {
-                            OnModelChanged(eFD.Digest);
+                            if (eFD["IsModified"] is bool isModified && isModified)
+                            {
+                                OnModelChanged(eFD.Digest);
+                            }
+                            else
+                            {   /* G T K - N O O P */
+                            }
                         }
                     };
                 }
@@ -928,8 +934,6 @@ SELECT * FROM items WHERE
         /// </summary>
         /// <remarks>
         /// Mental Model: "Establish a baseline for filtering, prioritization, and temporal projections."
-        /// Changing Event:
-        /// - Reset where OldItems contains the canonical list before loading.
         /// ChangedEvents:
         /// - Reset always,
         /// - Add if recordset is non-empty.
@@ -947,9 +951,10 @@ SELECT * FROM items WHERE
             {
                 if (Equals(Authority, CollectionChangeAuthority.Commit))
                 {
-                    // This method *does* have the authority to event.
-                    // [Careful] Don't clear InputText in this case.
+                    // This method *does* have the authority to raise TWO events.
+                    // First event: Reset
                     CanonicalSupersetProtected.Clear();
+                    // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
                         using (BeginBatch())
