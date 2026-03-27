@@ -5,11 +5,26 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
 
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
+    /// <summary>
+    /// Represents an opt-in mutable, pre-commit collection change proposal.
+    /// </summary>
+    /// <remarks>
+    /// ReadOnly is assumed. Consumers must explicitly opt in via <see cref="NotifyCollectionChangeScope"/>
+    /// to observe, cancel, or rewrite the proposed change. 
+    ///
+    /// The proposal is expressed through <see cref="NewItems"/>, <see cref="OldItems"/>, and index properties,
+    /// all of which enforce scope at the point of mutation.
+    ///
+    /// When materialized as a BCL event (via implicit conversion), the proposal is validated and translated
+    /// into a compliant <see cref="NotifyCollectionChangedEventArgs"/>. Invalid configurations degrade to
+    /// <c>Reset</c>, with advisory or exception signaling.
+    ///
+    /// Mental Model: "A staged change contract where mutability must be explicitly granted."
+    /// </remarks>
     internal sealed class NotifyCollectionChangingEventArgs : CancelEventArgs
     {
         NotifyCollectionChangedEventArgs? EventArgsBCL = null;
@@ -51,8 +66,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             Action = action;
             Reason = reason;
             Scope = scope;
-            NewItems = new MutationPreviewCollection(newItems, scope);
-            OldItems = new MutationPreviewCollection(oldItems, scope);
+            NewItems = new MutationPreviewCollection(newItems, scope, SCOPE_POLICY_VIOLATION_MESSAGE);
+            OldItems = new MutationPreviewCollection(oldItems, scope, SCOPE_POLICY_VIOLATION_MESSAGE);
         }
         bool _isReverting = false;
 
@@ -263,6 +278,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             }
         }
         int _oldStartingIndex = default;
+
+        bool _cancel;
+
+        public new bool Cancel
+        {
+            get => _cancel;
+            set
+            {
+                if (!Equals(_cancel, value))
+                {
+                    if (Scope.HasFlag(NotifyCollectionChangeScope.CancelOnly) ||
+                        Scope.HasFlag(NotifyCollectionChangeScope.FullControl))
+                    {
+                        _cancel = value;
+                    }
+                    else
+                    {
+                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                    }
+                }
+            }
+        }
         string SCOPE_POLICY_VIOLATION_MESSAGE =>    
             $"This operation is not permitted: {nameof(NotifyCollectionChangeScope)}={Scope.ToFullKey()}," +
             $"Always check Scope before attempting to modify the change proposal.";
@@ -289,22 +326,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         /// All mutation entry points are intercepted to enforce scope policy. Violations are
         /// routed through <c>ThrowHard</c>, allowing escalation or advisory handling.
         /// </remarks>
-        class MutationPreviewCollection : ObservableCollection<object>
+        sealed class MutationPreviewCollection : ObservableCollection<object>
         {
-            const string SCOPE_POLICY_VIOLATION_MESSAGE =
-                "Collection mutation requires FullControl scope.";
-
-            public MutationPreviewCollection(IList? items, NotifyCollectionChangeScope scope)
+            public MutationPreviewCollection(IList? items, NotifyCollectionChangeScope scope, string policyViolationMessage)
             {
-                Scope = NotifyCollectionChangeScope.FullControl;
+                SCOPE_POLICY_VIOLATION_MESSAGE = policyViolationMessage;
                 foreach (var item in items ?? Array.Empty<object>())
                 {
                     Add(item);
                 }
                 Scope = scope;
             }
+            private readonly string SCOPE_POLICY_VIOLATION_MESSAGE;
 
-            public NotifyCollectionChangeScope Scope { get; }
+            public NotifyCollectionChangeScope Scope { get; } = NotifyCollectionChangeScope.FullControl;
 
             bool EnforceMutationPolicy()
             {
