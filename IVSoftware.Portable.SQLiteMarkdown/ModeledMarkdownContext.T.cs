@@ -1278,13 +1278,20 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
         }
 
+        /// <summary>
+        /// Assigns or clears the observable projection and resolves a compatible projection option.
+        /// </summary>
+        /// <remarks>
+        /// When a projection is provided, defaults to <see cref="NetProjectionOption.AllowDirectChanges"/> 
+        /// unless explicitly specified. When null, only non-observable modes are permitted; invalid 
+        /// combinations are downgraded via advisory or rejected.
+        /// </remarks>
         public void SetObservableNetProjection(
             ObservableCollection<T>? onp, 
             NetProjectionOption? option = null)
         {
-
             ObservableNetProjection = onp;
-            if(onp is null)
+            if (onp is null)
             {
                 option ??= NetProjectionOption.None;
                 switch (option)
@@ -1306,11 +1313,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
             else
             {
-                // Set only when argument is explicit.
-                if (option is { } value)
-                {
-                    ProjectionOption = value;
-                }
+                ProjectionOption = option ??= NetProjectionOption.AllowDirectChanges;
             }
         }
 
