@@ -148,7 +148,7 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model autocount=""10"" count=""10"" matches=""10"">
+<model mdc=""[MMDC]"" autocount=""10"" count=""10"" matches=""10"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" sort=""1"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" sort=""2"" />
@@ -179,7 +179,8 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model />";
+<model mdc=""[MMDC]"" autocount=""0"" count=""0"" matches=""0"" />"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -193,7 +194,7 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model autocount=""10"" count=""10"" matches=""10"">
+<model mdc=""[MMDC]"" autocount=""10"" count=""10"" matches=""10"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" sort=""1"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" sort=""2"" />
