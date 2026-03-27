@@ -1,7 +1,11 @@
-﻿using IVSoftware.Portable.SQLiteMarkdown.Internal;
-using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.StateMachine;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using System;
 using System.Collections;
@@ -12,9 +16,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
-using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {

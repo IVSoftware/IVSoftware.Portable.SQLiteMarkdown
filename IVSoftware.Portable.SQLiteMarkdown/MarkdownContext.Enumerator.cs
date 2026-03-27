@@ -24,6 +24,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
     partial class ModeledMarkdownContext<T> : IEnumerable<T>
     {
-        public new IEnumerator<T> GetEnumerator() => (IEnumerator<T>) base.GetEnumerator();
+        public new IEnumerator<T> GetEnumerator()
+        {
+            var @base = base.GetEnumerator();
+            while (@base.MoveNext())
+            {
+                yield return (T)@base.Current;
+            }
+        }
     }
 }

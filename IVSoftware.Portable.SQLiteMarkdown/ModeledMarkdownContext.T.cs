@@ -591,26 +591,48 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// changes to the canonical superset pass through here so the routed projection,
         /// filtering state, and collection notifications remain consistent with the
         /// authoritative dataset for the current epoch.
-        ///
-        /// Mental Model: "The canonical ledger changed. Reconcile projections and notify observers."
         /// </remarks>
         protected virtual void OnCanonicalSupersetChanged(NotifyCollectionChangedEventArgs e)
         {
             Model.Apply(e);
-
             switch (Authority)
             {
+                case CollectionChangeAuthority.Reset:
                 case CollectionChangeAuthority.Commit:
                 case CollectionChangeAuthority.Settle:
                 case CollectionChangeAuthority.Predicate:
-                    OnModelChanged(e);
-                    break;
-                default:
-                    // N O O P
-                    // Break the circularity here.
+                    if(DHostBatch.IsZero())
+                    {
+                        OnModelChanged(e);
+                    }
+                    else
+                    {   /* G T K - N O O P */
+                        // Deferred
+                    }
                     break;
             }
         }
+
+        public IDisposable BeginBatch() => DHostBatch.GetToken(this);
+        DHostBatchCollectionChange DHostBatch
+        {
+            get
+            {
+                if (_dhostBatch is null)
+                {
+                    _dhostBatch = new DHostBatchCollectionChange();
+                    _dhostBatch.FinalDispose += (sender, e) =>
+                    {
+                        if (e is BatchFinalDisposeEventArgs eFD)
+                        {
+                            OnModelChanged(eFD.Digest);
+                        }
+                    };
+                }
+                return _dhostBatch;
+            }
+        }
+        DHostBatchCollectionChange? _dhostBatch = null;
 
         protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -1047,17 +1069,16 @@ Inherited contexts manage their projection internally.".TrimStart());
                 if (Equals(Authority, CollectionChangeAuthority.Commit))
                 {
                     // This method *does* have the authority to event.
-
                     Clear(all: true);
-                    NotifyCollectionChangedEventArgs ePost = new(
-                        action: NotifyCollectionChangedAction.Reset);
-                    OnCanonicalSupersetChanged(ePost);
 
                     if (newItems.Count > 0)
                     {
-                        foreach (var newItem in newItems)
+                        using (BeginBatch())
                         {
-                            CanonicalSupersetProtected.Add(newItem);
+                            foreach (var newItem in newItems)
+                            {
+                                CanonicalSupersetProtected.Add(newItem);
+                            }
                         }
                     }
                 }
