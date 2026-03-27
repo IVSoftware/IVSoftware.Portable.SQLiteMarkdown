@@ -9,7 +9,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
     {
         public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.ReadOnly)
         {
-            PreviewCollection = new RevertableObservableCollection<T>(this);
+            PreviewCollection = new RevertableObservableCollection<T>(this, eventScope);
 
             // The preview collection doesn't always change.
             // This event signals that it has done so, i.e., the action was not canceled.

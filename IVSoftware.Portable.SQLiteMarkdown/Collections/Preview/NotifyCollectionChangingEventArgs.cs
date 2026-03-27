@@ -42,6 +42,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         : this(
               action: (NotifyCollectionChangeAction)eBCL.Action,
               reason: reason,
+              scope: scope,
               newItems: eBCL.NewItems,
               oldItems: eBCL.OldItems,
               newStartingIndex: eBCL.NewStartingIndex,
