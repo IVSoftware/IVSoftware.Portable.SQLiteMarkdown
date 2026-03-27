@@ -848,6 +848,17 @@ SELECT * FROM items WHERE
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.
         /// </summary>
+        /// <remarks>
+        /// The CTor checks for:
+        /// - If runtime subclass implements INotifyCollectionChanged.
+        /// ∴ Is inherently read-write.
+        /// ∴ Cannot simultaneously host an ObservableNetProjection.
+        /// ∴ Employs routing, not copying, for the IsFiltering epoch.
+        /// - Then the NetProjectionTopology.Routed assigned, and is immutable once set.
+        /// Manual Assignment:
+        /// - If NetProjectionTopology.Routed is *not* assigned in ctor
+        ///   then it cam be set using the SetObservableNetProjection method.
+        /// </remarks>
         public NetProjectionTopology ProjectionOption { get; protected set; } = NetProjectionTopology.None;
 
         public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; } = ReplaceItemsEventingOption.StructuralReplaceEvent;
