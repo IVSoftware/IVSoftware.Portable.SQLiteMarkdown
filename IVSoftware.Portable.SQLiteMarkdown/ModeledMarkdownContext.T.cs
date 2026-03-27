@@ -43,6 +43,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 ProjectionTopology = NetProjectionTopology.Routed;
                 var type = GetType();
                 bool hasParameterlessClear = type.GetMethod(nameof(Clear), Type.EmptyTypes) is not null;
+                bool hasBooleanClear = type.GetMethod(nameof(Clear), [typeof(bool)]) is not null;
+                
+                if(!(hasParameterlessClear && hasBooleanClear))
+                {
+                    this.ThrowPolicyException(MarkdownContextPolicyViolation.ExplicitClearAdvisory);
+                }
             }
         }
 
@@ -183,7 +189,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 if (isSuccess == false)
                 {
-                    this.ThrowPolicyException(SQLiteMarkdownPolicyViolation.SQLiteOperationFailed);
+                    this.ThrowPolicyException(MarkdownContextPolicyViolation.SQLiteOperationFailed);
                 }
                 return isSuccess;
             }

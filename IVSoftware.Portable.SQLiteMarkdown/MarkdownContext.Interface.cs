@@ -55,7 +55,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                 {
-                    this.ThrowPolicyException(SQLiteMarkdownPolicyViolation.FilterEngineUnavailable);
+                    this.ThrowPolicyException(MarkdownContextPolicyViolation.FilterEngineUnavailable);
                     // NOTE:
                     // Handling the Throw creates a benign condition where a DB
                     // that might not really be necessary is instantiated regardless.
@@ -77,7 +77,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     // The user must be given the benefit of the doubt if they are explicitly
                     // injecting a connection to be used for internal filter queries. This will
                     // silently upgrade the configuration unless escalated in the Throw handler.
-                    this.ThrowPolicyException(SQLiteMarkdownPolicyViolation.ConfigurationModifiedByDatabaseAssignment);
+                    this.ThrowPolicyException(MarkdownContextPolicyViolation.ConfigurationModifiedByDatabaseAssignment);
                     QueryFilterConfig |= QueryFilterConfig.Filter;
                 }
 

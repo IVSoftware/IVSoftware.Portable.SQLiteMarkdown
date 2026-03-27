@@ -142,7 +142,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-Advisory .ctor | Inherited MarkdownContext detected, but no parameterless Clear() was found. Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit.";
+Throw MarkdownContextPolicyViolation.ExplicitClearAdvisory | ExplicitClearAdvisory Policy advisory:
+- Inherited MarkdownContext detected, but no parameterless Clear() was found.
+- Clear(bool all = false) participates in the MDC filtering state machine and may not
+  immediately empty the collection. 
+- If your callers expect IList-style behavior, consider implementing Clear() => Clear(true)
+  to provide a deterministic terminal clear. You may also expose Clear(bool all) without a 
+  default parameter to make the stateful semantics explicit."
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
