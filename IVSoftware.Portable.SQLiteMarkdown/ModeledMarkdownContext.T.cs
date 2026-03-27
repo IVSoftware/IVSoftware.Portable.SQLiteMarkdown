@@ -1252,33 +1252,53 @@ SELECT * FROM items WHERE
         /// </remarks>
         public void SetObservableNetProjection(
             ObservableCollection<T>? onp, 
-            NetProjectionTopology? option = null)
+            NetProjectionTopology? topology = null)
         {
+            if(topology == NetProjectionTopology.Routed)
+            {
+                this.ThrowHard<ArgumentException>(
+                    $"{NetProjectionTopology.Routed.ToFullKey()} is runtime-inferred and cannot be assigned explicitly.");
+                topology = null;
+            }
             ObservableNetProjection = onp;
             if (onp is null)
             {
-                option ??= NetProjectionTopology.None;
+                topology ??= NetProjectionTopology.None;
                 var type = GetType();
 
-                switch (option)
+                switch (topology)
                 {
                     case NetProjectionTopology.None:
-                        ProjectionTopology = (NetProjectionTopology)option;
+                        ProjectionTopology = (NetProjectionTopology)topology;
                         break;
                     case NetProjectionTopology.ObservableOnly:
                     case NetProjectionTopology.AllowDirectChanges:
-                        this.ThrowSoft<ArgumentException>(
-                            $"The value {option.ToFullKey()} is invalid when {nameof(option)} is null.");
+                        this.ThrowHard<ArgumentException>(
+                            $"The value {topology.ToFullKey()} is invalid when {nameof(topology)} is null.");
                         break;
                     default:
                         this.ThrowHard<NotSupportedException>(
-                            $"The {((NetProjectionTopology)option).ToFullKey()} case is not supported.");
+                            $"The {((NetProjectionTopology)topology).ToFullKey()} case is not supported.");
                         break;
                 }
             }
             else
             {
-                ProjectionTopology = option ??= NetProjectionTopology.AllowDirectChanges;
+                switch (ProjectionTopology)
+                {
+                    case NetProjectionTopology.Routed:
+                        this.ThrowHard<NotSupportedException>(
+    $"Cannot assign an observable projection when {nameof(ProjectionTopology)} is {NetProjectionTopology.Routed}");
+                        break;
+                    case NetProjectionTopology.None:
+                    case NetProjectionTopology.ObservableOnly:
+                    case NetProjectionTopology.AllowDirectChanges:
+                        ProjectionTopology = topology ??= NetProjectionTopology.AllowDirectChanges;
+                        break;
+                    default:
+                        this.ThrowHard<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
+                        break;
+                }
             }
         }
 
