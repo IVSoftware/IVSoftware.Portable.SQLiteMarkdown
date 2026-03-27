@@ -601,13 +601,14 @@ Inherited contexts manage their projection internally.".TrimStart());
                 case CollectionChangeAuthority.Commit:
                 case CollectionChangeAuthority.Settle:
                 case CollectionChangeAuthority.Predicate:
-                    if(DHostBatch.IsZero())
-                    {
-                        OnModelChanged(e);
+                    if(DHostBatch.TryApply(e))
+                    { 
+                        /* G T K - N O O P */
+                        // Deferred
                     }
                     else
-                    {   /* G T K - N O O P */
-                        // Deferred
+                    {
+                        OnModelChanged(e);
                     }
                     break;
             }
