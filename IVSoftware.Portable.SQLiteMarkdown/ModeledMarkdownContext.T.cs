@@ -628,14 +628,14 @@ SELECT * FROM items WHERE
         {
             switch (ProjectionOption)
             {
-                case NetProjectionOption.None: 
+                case NetProjectionTopology.None: 
                     // N O O P
                     // There is no projection to update.
                     break;
-                case NetProjectionOption.ObservableOnly:    // Maintain internal canon but do not push internal changes.
+                case NetProjectionTopology.ObservableOnly:    // Maintain internal canon but do not push internal changes.
                     ModelChanged?.Invoke(this, eBCL);
                     break;
-                case NetProjectionOption.AllowDirectChanges:
+                case NetProjectionTopology.AllowDirectChanges:
                     localApplyDirectChanges();
                     break;
                 default:
@@ -848,32 +848,9 @@ SELECT * FROM items WHERE
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.
         /// </summary>
-        public NetProjectionOption ProjectionOption { get; protected set; } = NetProjectionOption.None;
+        public NetProjectionTopology ProjectionOption { get; protected set; } = NetProjectionTopology.None;
 
         public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; } = ReplaceItemsEventingOption.StructuralReplaceEvent;
-
-        /// <summary>
-        /// Reports on topology based on the SetObservableNetProjection method.
-        /// </summary>
-        public ProjectionTopology ProjectionTopology
-        {
-            get => 
-                _projectionTopology == ProjectionTopology.Self
-                ? IsInherited
-                    ? ProjectionTopology.Inheritance
-                    : ProjectionTopology.Self
-                : _projectionTopology;
-
-            protected set
-            {
-                if (!Equals(_projectionTopology, value))
-                {
-                    _projectionTopology = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        ProjectionTopology _projectionTopology = ProjectionTopology.Self;
 
         /// <summary>
         /// Indicates that the runtime type is a subclass of MMDC.
@@ -1255,54 +1232,38 @@ SELECT * FROM items WHERE
         ///   Only non-observable modes are permitted; invalid
         ///   combinations are downgraded via advisory or rejected.
         /// - When ONP is not null:
-        ///   Defaults to <see cref="NetProjectionOption.AllowDirectChanges"/> 
+        ///   Defaults to <see cref="NetProjectionTopology.AllowDirectChanges"/> 
         ///   unless explicitly specified. 
         /// </remarks>
         public void SetObservableNetProjection(
             ObservableCollection<T>? onp, 
-            NetProjectionOption? option = null)
+            NetProjectionTopology? option = null)
         {
             ObservableNetProjection = onp;
             if (onp is null)
             {
-                if(IsInherited)
-                {
-                    if(this is INotifyCollectionChanged)
-                    {
-                        ProjectionTopology = ProjectionTopology.Composition;
-                    }
-                    else
-                    {
-                        ProjectionTopology = ProjectionTopology.Inheritance;
-                    }
-                }
-                else 
-                {
-                    ProjectionTopology = ProjectionTopology.Self;
-                }
-                option ??= NetProjectionOption.None;
+                option ??= NetProjectionTopology.None;
                 var type = GetType();
 
                 switch (option)
                 {
-                    case NetProjectionOption.None:
-                        ProjectionOption = (NetProjectionOption)option;
+                    case NetProjectionTopology.None:
+                        ProjectionOption = (NetProjectionTopology)option;
                         break;
-                    case NetProjectionOption.ObservableOnly:
-                    case NetProjectionOption.AllowDirectChanges:
+                    case NetProjectionTopology.ObservableOnly:
+                    case NetProjectionTopology.AllowDirectChanges:
                         this.ThrowSoft<ArgumentException>(
                             $"The value {option.ToFullKey()} is invalid when {nameof(option)} is null.");
                         break;
                     default:
                         this.ThrowHard<NotSupportedException>(
-                            $"The {((NetProjectionOption)option).ToFullKey()} case is not supported.");
+                            $"The {((NetProjectionTopology)option).ToFullKey()} case is not supported.");
                         break;
                 }
             }
             else
             {
-                ProjectionTopology = ProjectionTopology.Composition;
-                ProjectionOption = option ??= NetProjectionOption.AllowDirectChanges;
+                ProjectionOption = option ??= NetProjectionTopology.AllowDirectChanges;
             }
         }
 

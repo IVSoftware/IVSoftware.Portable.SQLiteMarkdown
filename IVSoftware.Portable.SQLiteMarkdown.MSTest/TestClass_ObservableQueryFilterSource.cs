@@ -1356,7 +1356,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-ProjectionTopology.Inheritance, NetProjectionOption.Inherited, ReplaceItemsEventingOption.StructuralReplaceEvent"
+NetProjectionTopology.Inherited, ReplaceItemsEventingOption.StructuralReplaceEvent"
                     ;
 
                     Assert.AreEqual(
@@ -1585,7 +1585,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     items.ObservableNetProjection,
                     "Expecting raw, portable list with no ONP.");
                 Assert.AreEqual(
-                    NetProjectionOption.None, 
+                    NetProjectionTopology.None, 
                     items.ProjectionOption,
                     "Expecting option rule-out when ONP is null.");
 
@@ -1852,7 +1852,7 @@ InputText";
                         Assert.IsFalse(items.IsFiltering, "Expecting NO NEED TO AWAIT HERE.");
                         Assert.AreEqual(
                             items.ProjectionOption,
-                            NetProjectionOption.None,
+                            NetProjectionTopology.None,
                             "260316" +
                             "POSIT 1: This *is* the ONP without having to say so. " +
                             "POSIT 2: This *will* populate itself.");
@@ -2118,7 +2118,7 @@ SELECT * FROM items WHERE
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-ProjectionTopology.Inheritance, NetProjectionOption.Inherited, ReplaceItemsEventingOption.StructuralReplaceEvent"
+ProjectionTopology.Inheritance, NetProjectionTopology.Inherited, ReplaceItemsEventingOption.StructuralReplaceEvent"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 

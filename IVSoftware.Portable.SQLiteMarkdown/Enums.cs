@@ -510,62 +510,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         RaiseModelSettledEvent = StdFSMState.ModelSettled,
     }
 
-    public enum ProjectionTopology
-    {
-        /// <summary>
-        /// Topology does not match any known pattern.
-        /// </summary>
-        Unknown,
-
-        /// <summary>
-        /// Not inherited and not associated by composition. Direct actions are not allowed.
-        /// </summary>
-        Self,
-
-        /// <summary>
-        /// Indicates a direct subclass that implements canonical IList (write) and routed ICollection (read).
-        /// </summary>
-        /// <remarks>
-        /// Synchronization per se is not required because the read enumerator can switch between a canonical and a predicated collection.
-        /// </remarks>
-        Inheritance,
-
-        /// <summary>
-        /// Indicates that a non-canonical ObservableCollection{T} has been submitted as the visible surface.
-        /// </summary>
-        /// <remarks>
-        /// IsFiltering edges are tracked, and either capture or revert the non-canonical projected surface with the internal canonical superset.
-        /// </remarks>
-        Composition,
-    }
-
-    /// <summary>
-    /// Specifies whether 
-    /// </summary>
     [NotFlags]
-    public enum NetProjectionOption
+    public enum NetProjectionTopology
     {
         /// <summary>
-        /// Direct inheritance rules out
+        /// No event or synchronization targets exist.
         /// </summary>
         None,
 
         /// <summary>
-        /// Observe the projection for reconciliation but do not mutate it.
+        /// The runtime type is a subclass of MarkdownContext and implements INotifyCollectionChanged.
         /// </summary>
-        /// <remarks>
-        /// MDC subscribes to INCC events in order to maintain the canonical model,
-        /// but treats the projection as externally owned by the UI.
-        /// </remarks>
+        Routed,
+
+        /// <summary>
+        /// A concrete ObservableNetProjection is available for observation only.
+        /// </summary>
         ObservableOnly,
 
         /// <summary>
-        /// Allow MDC to directly modify the projection collection.
+        /// A concrete ObservableNetProjection is available for both observation and for read-write.
         /// </summary>
         /// <remarks>
-        /// OPT-IN: Enables MDC to puppeteer the projection when maintaining canonical
-        /// state. This is a powerful opt-in that assumes MDC has safe write
-        /// authority over the observable collection.
+        /// OPT-IN: 
+        /// - Enables MDC to puppeteer the projection when maintaining canonical state.
+        /// - This is a powerful opt-in granting MDC safe write authority over 
+        ///   the observable collection.
         /// </remarks>
         AllowDirectChanges,
     }

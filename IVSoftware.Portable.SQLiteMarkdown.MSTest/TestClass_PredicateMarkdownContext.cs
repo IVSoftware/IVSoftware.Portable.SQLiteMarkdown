@@ -278,9 +278,9 @@ public class TestClass_PredicateMarkdownContext
             builder.Add(e.ToString(ReferenceEquals(sender, pmdc.ObservableNetProjection)));
             switch (pmdc.ProjectionOption)
             {
-                case NetProjectionOption.ObservableOnly:
+                case NetProjectionTopology.ObservableOnly:
                     break;
-                case NetProjectionOption.AllowDirectChanges:
+                case NetProjectionTopology.AllowDirectChanges:
                     break;
                 default:
                     this.ThrowHard<NotSupportedException>($"The {pmdc.ProjectionOption.ToFullKey()} case is not supported.");
@@ -324,7 +324,7 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
             expected = @" 
-ProjectionTopology.Composition, NetProjectionOption.AllowDirectChanges, ReplaceItemsEventingOption.StructuralReplaceEvent"
+ProjectionTopology.Composition, NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingOption.StructuralReplaceEvent"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting Options Report to match.");
 
@@ -398,9 +398,7 @@ Other.Replace NewItems= 3 OldItems=37 ModelSettledEventArgs                     
             "Expecting modeled matches."
         );
 
-        Assert.AreEqual(ProjectionTopology.Composition, pmdc.ProjectionTopology, "Because oc is INCC.");
-        
-        //Assert.AreEqual(NetProjectionOption.ObservableOnly, pmdc.ProjectionOption);
+        // Assert.AreEqual(ProjectionTopology.Composition, pmdc.ProjectionTopology, "Because oc is INCC.");
 
         actual = pmdc.StateReport();
         actual.ToClipboardExpected();

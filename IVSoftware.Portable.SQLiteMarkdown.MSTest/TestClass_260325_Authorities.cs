@@ -11,7 +11,7 @@ public class TestClass_260325_Authorities
 {
     class TestableMMDC : ModeledMarkdownContext<SelectableQFModel>
     {
-        public TestableMMDC(ObservablePreviewCollection<SelectableQFModel> onp, NetProjectionOption option)
+        public TestableMMDC(ObservablePreviewCollection<SelectableQFModel> onp, NetProjectionTopology option)
         {
             // base.SetObservableNetProjection(onp, option);
         }
@@ -34,7 +34,7 @@ public class TestClass_260325_Authorities
         #endregion I T E M    G E N
 
         var itemsSource = new ObservablePreviewCollection<SelectableQFModel>();
-        var mmdc = new TestableMMDC(onp: itemsSource, option: NetProjectionOption.AllowDirectChanges);
+        var mmdc = new TestableMMDC(onp: itemsSource, option: NetProjectionTopology.AllowDirectChanges);
         var simView = new PlatformCollectionViewSimulator<SelectableQFModel>(itemsSource);
 
         #region E V E N T S

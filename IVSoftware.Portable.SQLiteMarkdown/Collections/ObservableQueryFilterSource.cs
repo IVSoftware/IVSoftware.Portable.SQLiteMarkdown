@@ -73,7 +73,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected override void OnModelChanged(NotifyCollectionChangedEventArgs eBCL)
         {
-            if(ProjectionOption == NetProjectionOption.AllowDirectChanges)
+            if(ProjectionOption == NetProjectionTopology.AllowDirectChanges)
             {
                 base.OnModelChanged(eBCL);
             }
@@ -129,7 +129,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     }
 
                     // Raising our own event (instead of calling base to do it indirectly)
-                    // is the point of NetProjectionOption.ObservableOnly mode.
+                    // is the point of NetProjectionTopology.ObservableOnly mode.
                     OnCollectionChanged(eBCL);
 
                     #region L o c a l F x

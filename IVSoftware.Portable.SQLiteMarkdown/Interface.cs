@@ -362,23 +362,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
     public interface ITopology
     {
-        /// <summary>
-        /// Describes the wiring between the canonical XML model and the net ("seen") projection.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model: "What is 'this'?"
-        /// If 'this' *is-a* MarkdownContext,
-        /// Then canon is projected by redirecting enumeration.
-        /// If 'this' *has-a* MarkdownContext and *is-a* bound enumerable,
-        /// Then the surface is always net, and canon is projected by copying as needed.
-        /// </remarks>
-        ProjectionTopology ProjectionTopology { get; }
-
         #region C O N F I G U R A T I O N    P R O P E R T I E S
         /// <summary>
         /// OPT-IN that allows MarkdownContext to modify the ObservableNetCollection directly.
         /// </summary>
-        NetProjectionOption ProjectionOption { get; }
+        NetProjectionTopology ProjectionOption { get; }
 
         /// <summary>
         /// Determines whether filter update events are provided as structural changes
@@ -411,7 +399,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         new ObservableCollection<T>? ObservableNetProjection { get; }
         void SetObservableNetProjection(
             ObservableCollection<T>? onp, 
-            NetProjectionOption? option = null);
+            NetProjectionTopology? option = null);
 
         new IReadOnlyList<T> CanonicalSuperset { get; }
 

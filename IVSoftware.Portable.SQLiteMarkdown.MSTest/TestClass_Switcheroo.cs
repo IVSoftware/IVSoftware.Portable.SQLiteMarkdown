@@ -52,36 +52,31 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             void subtest_Inheritor()
             {
                 var mdci = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
-
-                Assert.AreEqual(
-                    ProjectionTopology.Inheritance,
-                    mdci.ProjectionTopology,
-                    "Expecting INHERITANCE is detectable from the start.");
             }
 
             void subtest_Compositor()
             {
                 var onpc = new ObservableNetProjectionWithComposition<SelectableQFModel>();
-                Assert.AreEqual(
-                    ProjectionTopology.Composition,
-                    onpc.ProjectionTopology,
-                    "Expecting COMPOSITION as assigned in CTor.");
+                //Assert.AreEqual(
+                //    ProjectionTopology.Composition,
+                //    onpc.ProjectionTopology,
+                //    "Expecting COMPOSITION as assigned in CTor.");
 
                 var mmdc = onpc.Model.To < ModeledMarkdownContext<SelectableQFModel>>();
 
                 mmdc.SetObservableNetProjection(null);
-                Assert.AreEqual(
-                    ProjectionTopology.Composition,
-                    onpc.ProjectionTopology,
-                    "Expecting NONE is the epistemic default.");
+                //Assert.AreEqual(
+                //    ProjectionTopology.Composition,
+                //    onpc.ProjectionTopology,
+                //    "Expecting NONE is the epistemic default.");
 
                 var oc = new ObservableCollection<SelectableQFModel>();
                 mmdc.SetObservableNetProjection(oc);
 
-                Assert.AreEqual(
-                    ProjectionTopology.Composition,
-                    onpc.ProjectionTopology,
-                    "Expecting promotion to COMPOSITION now that assignment has been made.");
+                //Assert.AreEqual(
+                //    ProjectionTopology.Composition,
+                //    onpc.ProjectionTopology,
+                //    "Expecting promotion to COMPOSITION now that assignment has been made.");
             }
             #endregion S U B T E S T S
         }
@@ -137,7 +132,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             var inherited = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
 
             subtest_CheckForExpectedAdvisory();
-            subtest_DetectTopology();
             subtest_PopulateAndClearEpoch();
             subtest_FilterTracking();
 
@@ -156,13 +150,7 @@ Advisory .ctor | Inherited MarkdownContext detected, but no parameterless Clear(
                     $"Expecting {nameof(ObservableNetProjectionInheritsMDC<SelectableQFModel>)} advises on missing parameterless Clear()."
                 );
             }
-            void subtest_DetectTopology()
-            {
-                Assert.AreEqual(
-                    ProjectionTopology.Inheritance,
-                    inherited.ProjectionTopology,
-                    "Expecting INHERITANCE is detectable from the start.");
-            }
+
             void subtest_PopulateAndClearEpoch()
             {
                 inherited.LoadCanon(localCanon);
@@ -369,16 +357,16 @@ MarkdownContext Clear(all=True)";
             void subtest_DetectTopology()
             {
                 onp = new ObservableNetProjectionWithComposition<SelectableQFModel>();
-                Assert.AreEqual(
-                    ProjectionTopology.Composition,
-                    onp.ProjectionTopology,
-                    "Expecting ABSENCE OF INHERITANCE is detectable from the start as 'COMPOSITION'.");
+                //Assert.AreEqual(
+                //    ProjectionTopology.Composition,
+                //    onp.ProjectionTopology,
+                //    "Expecting ABSENCE OF INHERITANCE is detectable from the start as 'COMPOSITION'.");
                 var mdcc = onp.Model.To<ModeledMarkdownContext<SelectableQFModel>>();
                 mdcc.SetObservableNetProjection(null);
-                Assert.AreEqual(
-                    ProjectionTopology.Composition,
-                    onp.ProjectionTopology,
-                    "Expecting NONE.");
+                //Assert.AreEqual(
+                //    ProjectionTopology.Composition,
+                //    onp.ProjectionTopology,
+                //    "Expecting NONE.");
             }
             #endregion S U B T E S T S
         }
@@ -408,7 +396,7 @@ MarkdownContext Clear(all=True)";
         {
             public ObservableNetProjectionWithComposition()
             {
-                _mdc.SetObservableNetProjection(this, NetProjectionOption.ObservableOnly);
+                _mdc.SetObservableNetProjection(this, NetProjectionTopology.ObservableOnly);
                 ModelChanged += (sender, e) =>
                 {
                     switch (Authority)
@@ -498,13 +486,11 @@ MarkdownContext Clear(all=True)";
             public string ParseSqlMarkdown<T1>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
                 => ((IMarkdownContext)_mdc).ParseSqlMarkdown<T1>(expr, qfMode);
 
-            public ProjectionTopology ProjectionTopology => ((IModeledMarkdownContext)_mdc).ProjectionTopology;
-
             public IList? ObservableNetProjection => _mdc.ObservableNetProjection;
 
             public int PredicateMatchCount => ((IMarkdownContext)_mdc).PredicateMatchCount;
 
-            public NetProjectionOption? ProjectionOption => ((IModeledMarkdownContext)_mdc).ProjectionOption;
+            public NetProjectionTopology? ProjectionOption => ((IModeledMarkdownContext)_mdc).ProjectionOption;
 
             public ReplaceItemsEventingOption ReplaceItemsEventingOptions
             {
