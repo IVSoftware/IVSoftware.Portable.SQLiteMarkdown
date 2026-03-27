@@ -276,14 +276,14 @@ public class TestClass_PredicateMarkdownContext
         void localOnModelUpdated(object? sender, NotifyCollectionChangedEventArgs e)
         {
             builder.Add(e.ToString(ReferenceEquals(sender, pmdc.ObservableNetProjection)));
-            switch (pmdc.ProjectionOption)
+            switch (pmdc.ProjectionTopology)
             {
                 case NetProjectionTopology.ObservableOnly:
                     break;
                 case NetProjectionTopology.AllowDirectChanges:
                     break;
                 default:
-                    this.ThrowHard<NotSupportedException>($"The {pmdc.ProjectionOption.ToFullKey()} case is not supported.");
+                    this.ThrowHard<NotSupportedException>($"The {pmdc.ProjectionTopology.ToFullKey()} case is not supported.");
                     break;
             }
         }

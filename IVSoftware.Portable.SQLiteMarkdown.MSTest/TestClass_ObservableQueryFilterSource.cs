@@ -1586,7 +1586,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     "Expecting raw, portable list with no ONP.");
                 Assert.AreEqual(
                     NetProjectionTopology.None, 
-                    items.ProjectionOption,
+                    items.ProjectionTopology,
                     "Expecting option rule-out when ONP is null.");
 
                 string caller = string.Empty;
@@ -1851,7 +1851,7 @@ InputText";
                         );
                         Assert.IsFalse(items.IsFiltering, "Expecting NO NEED TO AWAIT HERE.");
                         Assert.AreEqual(
-                            items.ProjectionOption,
+                            items.ProjectionTopology,
                             NetProjectionTopology.None,
                             "260316" +
                             "POSIT 1: This *is* the ONP without having to say so. " +

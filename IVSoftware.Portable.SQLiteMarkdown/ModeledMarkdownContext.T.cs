@@ -35,6 +35,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             CanonicalSupersetProtected = new();
             CanonicalSupersetProtected.CollectionChanged += (sender, e) => OnCanonicalSupersetChanged(e);
+            if(typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
+            {
+                ProjectionTopology = NetProjectionTopology.Routed;
+            }
         }
 
         /// <summary>
@@ -533,7 +537,7 @@ SELECT * FROM items WHERE
                     Debug.Fail($@"ADVISORY - Explicit no authority. Is this what we really want here?.");
                     return;
                 default:
-                    this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                    this.ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
                     return;
             }
             #endregion A U T H O R I T Y    G U A R D
@@ -626,7 +630,7 @@ SELECT * FROM items WHERE
         /// </remarks>
         protected virtual void OnModelChanged(NotifyCollectionChangedEventArgs eBCL)
         {
-            switch (ProjectionOption)
+            switch (ProjectionTopology)
             {
                 case NetProjectionTopology.None: 
                     // N O O P
@@ -639,7 +643,7 @@ SELECT * FROM items WHERE
                     localApplyDirectChanges();
                     break;
                 default:
-                    this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                    this.ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
                     break;
             }
             void localApplyDirectChanges()
@@ -859,7 +863,7 @@ SELECT * FROM items WHERE
         /// - If NetProjectionTopology.Routed is *not* assigned in ctor
         ///   then it cam be set using the SetObservableNetProjection method.
         /// </remarks>
-        public NetProjectionTopology ProjectionOption { get; protected set; } = NetProjectionTopology.None;
+        public NetProjectionTopology ProjectionTopology { get; protected set; } = NetProjectionTopology.None;
 
         public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; } = ReplaceItemsEventingOption.StructuralReplaceEvent;
 
@@ -1259,7 +1263,7 @@ SELECT * FROM items WHERE
                 switch (option)
                 {
                     case NetProjectionTopology.None:
-                        ProjectionOption = (NetProjectionTopology)option;
+                        ProjectionTopology = (NetProjectionTopology)option;
                         break;
                     case NetProjectionTopology.ObservableOnly:
                     case NetProjectionTopology.AllowDirectChanges:
@@ -1274,7 +1278,7 @@ SELECT * FROM items WHERE
             }
             else
             {
-                ProjectionOption = option ??= NetProjectionTopology.AllowDirectChanges;
+                ProjectionTopology = option ??= NetProjectionTopology.AllowDirectChanges;
             }
         }
 

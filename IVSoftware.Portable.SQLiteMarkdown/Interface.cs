@@ -366,7 +366,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// OPT-IN that allows MarkdownContext to modify the ObservableNetCollection directly.
         /// </summary>
-        NetProjectionTopology ProjectionOption { get; }
+        NetProjectionTopology ProjectionTopology { get; }
 
         /// <summary>
         /// Determines whether filter update events are provided as structural changes

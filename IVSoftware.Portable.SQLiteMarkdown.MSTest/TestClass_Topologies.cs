@@ -68,7 +68,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         {
             public OBQFC()
             {
-                ProjectionOption = NetProjectionTopology.AllowDirectChanges;
+                ProjectionTopology = NetProjectionTopology.AllowDirectChanges;
             }
             public virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
             {
@@ -87,7 +87,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         {
             public OBQFC()
             {
-                ProjectionOption = NetProjectionTopology.AllowDirectChanges;
+                ProjectionTopology = NetProjectionTopology.AllowDirectChanges;
             }
             public virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
             {

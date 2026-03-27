@@ -183,7 +183,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         public static string OptionsReport(this IModeledMarkdownContext @this)
         {
             var builder = new List<string>();
-            builder.Add($"{@this.ProjectionOption.ToFullKey()}");
+            builder.Add($"{@this.ProjectionTopology.ToFullKey()}");
             builder.Add($"{@this.ReplaceItemsEventingOptions.ToFullKey()}");
             return string.Join(", ", builder);
         }
