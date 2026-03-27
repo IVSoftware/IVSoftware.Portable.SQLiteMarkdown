@@ -62,7 +62,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected Throw ThrowHard<T>(string messageOrId) => nameof(MarkdownContext).ThrowHard<T>(messageOrId);
         protected Throw ThrowFramework<T>(string messageOrId) => nameof(MarkdownContext).ThrowFramework<T>(messageOrId);
 
-        public virtual XElement Model { get; } = new XElement(nameof(StdMarkdownElement.model));
+#if DEBUG
+        const bool SQLITE_STRICT = true;
+#else
+        const bool SQLITE_STRICT = false;
+#endif
+        [Canonical("The globally unique authority for binding items and their INPC events.")]
+        protected virtual void OnBoundItemObjectChange(XBoundAttribute xbo, XObjectChange action) { }
 
         /// <summary>
         /// Semantic clarity for Interval, which comes from inheriting WatchDogTimer.
