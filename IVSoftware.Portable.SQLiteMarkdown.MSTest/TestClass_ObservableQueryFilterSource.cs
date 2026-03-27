@@ -1450,10 +1450,11 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                         "Expecting StateReport shows RESUME WITH CURRENT STATE."
                     );
 
-                    builder.Clear();
                     Assert.AreEqual(string.Empty, itemsSource.InputText, "Confirm before clear.");
 
                     // Expecting "no surprises" here.
+                    builder.Clear();
+                    eventQueue.Clear();
                     itemsSource.Clear();
 
                     actual = string.Join(Environment.NewLine, builder);
@@ -1485,13 +1486,15 @@ NetProjection.Reset   ModelSettledEventArgs           "
                     builder.Clear();
                     sql = "animal".ParseSqlMarkdown<SelectableQFModelLTOQO>();
                     results = cnx.Query<SelectableQFModelLTOQO>(sql);
+
                     itemsSource.ReplaceItems(results);
 
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
+NetProjection.Reset   NotifyCollectionChangedEventArgs           
+NetProjection.Add     NewItems=12 NewIndex= 0 NotifyCollectionChangedEventArgs           "
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),

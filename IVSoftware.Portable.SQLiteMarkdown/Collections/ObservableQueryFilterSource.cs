@@ -39,6 +39,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         where T : new()
     {
         public ObservableQueryFilterSource() { }
+        protected override void OnModelChanged(NotifyCollectionChangedEventArgs eBCL)
+        {
+            base.OnModelChanged(eBCL);
+            CollectionChanged?.Invoke(this, eBCL);
+        }
 
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
         public IReadOnlyList<T> UnfilteredItems => CanonicalSuperset;
@@ -416,14 +421,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
 
         #region R O U T E D    C O N D I T I O N A L S
-        protected override void OnSearchEntryStateChanged()
-        {
-            base.OnSearchEntryStateChanged();
-            if (SearchEntryState == SearchEntryState.Cleared)
-            {
-                Clear();
-            }
-        }
 
         /// <summary>
         /// This is a router for whether to show the unfiltered set or the filtered one.

@@ -34,7 +34,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public ModeledMarkdownContext()
         {
             CanonicalSupersetProtected = new();
-            CanonicalSupersetProtected.CollectionChanged += (sender, e) => OnCanonicalSupersetChanged(e);
+            CanonicalSupersetProtected.CollectionChanged += (sender, e) =>
+            {
+                OnCanonicalSupersetChanged(e);
+            };
             if(typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
             {
                 ProjectionTopology = NetProjectionTopology.Routed;
