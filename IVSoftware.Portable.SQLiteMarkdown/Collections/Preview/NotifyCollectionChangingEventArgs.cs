@@ -42,80 +42,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 NotifyCollectionChangeAction action,
                 NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None,
                 NotifyCollectionChangeScope scope = NotifyCollectionChangeScope.ReadOnly,
-                IEnumerable? newItems = null,
-                IEnumerable? oldItems = null,
+                IList? newItems = null,
+                IList? oldItems = null,
                 int newStartingIndex = -1,
                 int oldStartingIndex = -1
             )
         {
             Action = action;
             Reason = reason;
-            if (newItems is IEnumerable @new)
-            {
-                foreach (var item in @new)
-                {
-                    NewItems.Add(item);
-                }
-            }
-            NewItemsReadOnly = NewItems.ToArray();
-
-            if (oldItems is IEnumerable old)
-            {
-                foreach (var item in old)
-                {
-                    OldItems.Add(item);
-                }
-            }
-            OldItemsReadOnly = OldItems.ToArray();
-
-            NewItems.CollectionChanged += (sender, e) =>
-            {
-                if (!_isReverting)
-                {
-                    if (Scope != NotifyCollectionChangeScope.FullControl)
-                    {
-                        try
-                        {
-                            _isReverting = true;
-                            NewItems.Clear();
-                            foreach (var item in NewItemsReadOnly)
-                            {
-                                NewItems.Add(item);
-                            }
-                        }
-                        finally
-                        {
-                            _isReverting = false;
-                        }
-                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
-                    }
-                }
-            };
-            OldItems.CollectionChanged += (sender, e) =>
-            {
-                if (!_isReverting)
-                {
-                    if (Scope != NotifyCollectionChangeScope.FullControl)
-                    {
-                        try
-                        {
-                            _isReverting = true;
-                            OldItems.Clear();
-                            foreach (var item in OldItemsReadOnly)
-                            {
-                                OldItems.Add(item);
-                            }
-                        }
-                        finally
-                        {
-                            _isReverting = false;
-                        }
-                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
-                    }
-                }
-            };
-            // This *must* be done LAST.
             Scope = scope;
+            NewItems = new MutationPreviewCollection(newItems, scope);
+            OldItems = new MutationPreviewCollection(oldItems, scope);
         }
         bool _isReverting = false;
 
@@ -280,22 +217,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 
         public NotifyCollectionChangeAction Action { get; }
         public NotifyCollectionChangeReason Reason { get; private set; } = NotifyCollectionChangeReason.None;
-
-        /// <summary>
-        /// Initialize to FullControl to allow construction of the event.
-        /// </summary>
-        /// <remarks>
-        /// The final value of Scope is set before the CTor exits.
-        /// </remarks>
-        public NotifyCollectionChangeScope Scope { get; private set; } = NotifyCollectionChangeScope.FullControl;
+        public NotifyCollectionChangeScope Scope { get; }
         public bool IsBclCompatible { get; private set; } = true;
 
-        public ObservableCollection<object?> NewItems { get; } = new();
+        public IList NewItems { get; }
 
-        private object?[] NewItemsReadOnly { get; } = [];
-
-        public ObservableCollection<object?> OldItems { get; } = new();
-        public object?[] OldItemsReadOnly { get; } = [];
+        public IList OldItems { get; }
 
         public int NewStartingIndex
         {
@@ -342,5 +269,94 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 
         string CONFIGURATION_INVALID_MESSAGE =>
             $"This configuration is not permitted as specified: Check related properties and ensure the combination is valid.";
+
+        /// <summary>
+        /// Provides a scope-enforced preview surface for collection mutation proposals.
+        /// </summary>
+        /// <remarks>
+        /// This collection is used exclusively within <see cref="NotifyCollectionChangingEventArgs"/>
+        /// to expose <c>NewItems</c> and <c>OldItems</c> as mutable lists prior to BCL emission.
+        ///
+        /// Construction occurs under temporary <c>FullControl</c> in order to materialize a complete
+        /// snapshot of the proposed items. Once populated, the declared <see cref="NotifyCollectionChangeScope"/>
+        /// is restored and enforced for all subsequent mutations.
+        ///
+        /// Consumers may observe, cancel, or rewrite the proposal depending on scope:
+        /// - <c>ReadOnly</c>: No mutation permitted.
+        /// - <c>CancelOnly</c>: Mutation blocked, but proposal may be canceled.
+        /// - <c>FullControl</c>: Full mutation permitted.
+        ///
+        /// All mutation entry points are intercepted to enforce scope policy. Violations are
+        /// routed through <c>ThrowHard</c>, allowing escalation or advisory handling.
+        /// </remarks>
+        class MutationPreviewCollection : ObservableCollection<object>
+        {
+            const string SCOPE_POLICY_VIOLATION_MESSAGE =
+                "Collection mutation requires FullControl scope.";
+
+            public MutationPreviewCollection(IList? items, NotifyCollectionChangeScope scope)
+            {
+                Scope = NotifyCollectionChangeScope.FullControl;
+                foreach (var item in items ?? Array.Empty<object>())
+                {
+                    Add(item);
+                }
+                Scope = scope;
+            }
+
+            public NotifyCollectionChangeScope Scope { get; }
+
+            bool EnforceMutationPolicy()
+            {
+                if (Scope.HasFlag(NotifyCollectionChangeScope.FullControl))
+                {
+                    return true;
+                }
+                else
+                {
+                    this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                    return false;
+                }
+            }
+
+            protected override void ClearItems()
+            {
+                if (EnforceMutationPolicy())
+                {
+                    base.ClearItems();
+                }
+            }
+
+            protected override void InsertItem(int index, object item)
+            {
+                if (EnforceMutationPolicy())
+                {
+                    base.InsertItem(index, item);
+                }
+            }
+            protected override void SetItem(int index, object item)
+            {
+                if (EnforceMutationPolicy())
+                {
+                    base.SetItem(index, item);
+                }
+            }
+
+            protected override void RemoveItem(int index)
+            {
+                if (EnforceMutationPolicy())
+                {
+                    base.RemoveItem(index);
+                }
+            }
+
+            protected override void MoveItem(int oldIndex, int newIndex)
+            {
+                if (EnforceMutationPolicy())
+                {
+                    base.MoveItem(oldIndex, newIndex);
+                }
+            }
+        }
     }
 }
