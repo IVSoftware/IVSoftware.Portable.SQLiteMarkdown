@@ -421,6 +421,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
     [PublishedContract("2.0.0-alpha28", typeof(IPredicateMarkdownContext))]
+    [Careful("This interface is not allowed to implement INotifyCollectionChanged.")]
     public interface IPredicateMarkdownContext : IMarkdownContext
     {
         /// <summary>

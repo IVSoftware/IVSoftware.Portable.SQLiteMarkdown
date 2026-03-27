@@ -248,6 +248,19 @@ public class TestClass_PredicateMarkdownContext
             QueryFilterConfig = QueryFilterConfig.Filter,
         };
 
+
+        actual = pmdc.TopologyReport();
+        actual.ToClipboardExpected();
+        { }
+        expected = @" 
+NetProjectionTopology.None, ReplaceItemsEventingOption.StructuralReplaceEvent";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting initial."
+        );
+
         pmdc.SetObservableNetProjection(opc);
 
         Assert.IsTrue(pmdc.IsFiltering);
@@ -324,7 +337,7 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
             expected = @" 
-ProjectionTopology.Composition, NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingOption.StructuralReplaceEvent"
+NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingOption.StructuralReplaceEvent"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting Options Report to match.");
 
