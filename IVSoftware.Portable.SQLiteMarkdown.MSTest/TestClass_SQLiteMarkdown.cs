@@ -675,8 +675,8 @@ InputText"
             const int COUNT = 2;
             var extQueryHandle = default(List<SelectableQFModel>);
 
-            var mdc = new ModeledMarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
-            actual = mdc.StateReport();
+            var mmdc = new ModeledMarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
+            actual = mmdc.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -684,8 +684,8 @@ InputText"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-            mdc.InputText = "a";
-            actual = mdc.StateReport();
+            mmdc.InputText = "a";
+            actual = mmdc.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -694,18 +694,18 @@ InputText"
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
             // Backspace
-            mdc.InputText = string.Empty;
-            actual = mdc.StateReport();
+            mmdc.InputText = string.Empty;
+            actual = mmdc.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
 [IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
-            Assert.AreEqual(SearchEntryState.Cleared, mdc.SearchEntryState);
+            Assert.AreEqual(SearchEntryState.Cleared, mmdc.SearchEntryState);
 
-            mdc.InputText = "a";
-            actual = mdc.StateReport();
+            mmdc.InputText = "a";
+            actual = mmdc.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -713,8 +713,8 @@ InputText"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-            mdc.InputText = "an";
-            actual = mdc.StateReport();
+            mmdc.InputText = "an";
+            actual = mmdc.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -722,8 +722,8 @@ InputText"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-            mdc.InputText = "ani";
-            actual = mdc.StateReport();
+            mmdc.InputText = "ani";
+            actual = mmdc.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -733,8 +733,8 @@ InputText"
 
             // Commit and load the new recordset.
             // [Remember] IsFilter is DISABLED.
-            mdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
-            actual = mdc.StateReport();
+            mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
+            actual = mmdc.StateReport();
             actual.ToClipboardExpected();
             { }
             // [Remember]
@@ -747,8 +747,8 @@ InputText"
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting Filtering shows DISABLED.");
 
             // Clear the IME, *not* the recordset.
-            mdc.Clear();
-            actual = mdc.StateReport();
+            mmdc.Clear(false);
+            actual = mmdc.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -756,11 +756,11 @@ InputText"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-            Assert.IsTrue(mdc.RouteToFullRecordset, "ROUTE TO CANONICAL");
+            Assert.IsTrue(mmdc.RouteToFullRecordset, "ROUTE TO CANONICAL");
 
-            // Terminal clear.
-            mdc.Clear();
-            actual = mdc.StateReport();
+            // Empty IME + Regressive Clear = TerminalClear.
+            mmdc.Clear(false);
+            actual = mmdc.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 

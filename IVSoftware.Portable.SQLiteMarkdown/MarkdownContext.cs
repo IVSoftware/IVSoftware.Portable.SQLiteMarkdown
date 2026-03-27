@@ -1607,6 +1607,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
         public FilteringState Clear(bool all = false)
         {
+            // Fastrack condition for all.
+            // Goes here, before the virtual method call.
+            if (FilteringState == FilteringState.Ineligible
+                && string.IsNullOrWhiteSpace(InputText))
+            {
+                all = true;
+            }
             OnClear(all);
 
             // Avoid leaking the object itself as the awaited sender.
@@ -1621,6 +1628,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if (all)
             {
+                // - Model does not answer to authority 
+                // ∴ Database will update.
+                Model.RemoveNodes();
                 InputText = string.Empty;
                 FilteringState = FilteringState.Ineligible;
                 SearchEntryState = SearchEntryState.Cleared;

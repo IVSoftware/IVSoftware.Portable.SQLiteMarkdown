@@ -1039,34 +1039,31 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </summary>
         protected override void OnClear(bool all)
         {
-            if (all)
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Reset))
             {
-                // The Model runs the database.
-                // It does not answer to authority.
-                Model.RemoveNodes();
+                switch (Authority)
+                {
+                    default:
+                    case CollectionChangeAuthority.Reset:
+                        base.OnClear(all);
+                        if (all)
+                        {
+                            CanonicalSupersetProtected.Clear();
+                        }
+                        break;
+                    case CollectionChangeAuthority.Commit:
+                        // [Careful] Don't clear InputText in this case.
+                        CanonicalSupersetProtected.Clear();
+                        FilteringState = FilteringState.Ineligible;
+                        SearchEntryState = SearchEntryState.Cleared;
+                        break;
+                }
 #if DEBUG
-                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                if (all && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                 {
                     Debug.Assert(FilterQueryDatabase.Table<T>().Count() == 0);
                 }
 #endif
-                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Reset))
-                {
-                    if (Equals(Authority, CollectionChangeAuthority.Reset))
-                    {
-                        NotifyCollectionChangedEventArgs ePost = new (
-                            action: NotifyCollectionChangedAction.Reset);
-
-                        OnNetProjectionCollectionChanged(MakeSender(), ePost);
-                    }
-                    else
-                    {   /* G T K - N O O P */
-                    }
-                }
-            }
-            else
-            {
-                base.OnClear(all);
             }
         }
 
@@ -1460,7 +1457,22 @@ Inherited contexts manage their projection internally.".TrimStart());
             => PredicateMatchSubsetPrivate;
         IList ITopology.PredicateMatchSubset => (IList)PredicateMatchSubset;
 
-        private List<T> PredicateMatchSubsetPrivate { get; } = new();
+        public ObservableCollection<T> PredicateMatchSubsetPrivate
+        {
+            get
+            {
+                if (_predicateMatchSubsetPrivate is null)
+                {
+                    _predicateMatchSubsetPrivate = new ObservableCollection<T>();
+                    _predicateMatchSubsetPrivate.CollectionChanged += (sender, e) =>
+                    {
+                        Model.SetAttributeValue(StdMarkdownAttribute.matches, _predicateMatchSubsetPrivate.Count);
+                    };
+                }
+                return _predicateMatchSubsetPrivate;
+            }
+        }
+        ObservableCollection<T>? _predicateMatchSubsetPrivate = null;
 
 
         ObservableCollection<T>? IModeledMarkdownContext<T>.ObservableNetProjection =>
