@@ -326,7 +326,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         /// All mutation entry points are intercepted to enforce scope policy. Violations are
         /// routed through <c>ThrowHard</c>, allowing escalation or advisory handling.
         /// </remarks>
-        sealed class MutationPreviewCollection : ObservableCollection<object>
+        sealed class MutationPreviewCollection 
+            : ObservableCollection<object>
+            , IList
         {
             public MutationPreviewCollection(IList? items, NotifyCollectionChangeScope scope, string policyViolationMessage)
             {
@@ -339,7 +341,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             }
             private readonly string SCOPE_POLICY_VIOLATION_MESSAGE;
 
+            /// <summary>
+            /// Allows full control in CTor; the requested scope is set afterward.
+            /// </summary>
             public NotifyCollectionChangeScope Scope { get; } = NotifyCollectionChangeScope.FullControl;
+            bool IList.IsReadOnly => Scope != NotifyCollectionChangeScope.FullControl;
 
             bool EnforceMutationPolicy()
             {

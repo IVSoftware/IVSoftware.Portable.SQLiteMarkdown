@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using System;
 using System.Collections.ObjectModel;
@@ -10,14 +11,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
     sealed class RevertableObservableCollection<T> : ObservableCollection<T>
     {
-        public RevertableObservableCollection(ObservableCollection<T> previewCollection, bool useMutablePreviewEvents = false)
+        public RevertableObservableCollection(ObservableCollection<T> previewCollection)
         {
-            UseMutablePreviewEventsPolicy = useMutablePreviewEvents;
             PreviewCollection = previewCollection;
         }
-
-        public bool UseMutablePreviewEventsPolicy { get; }
-
         ObservableCollection<T> PreviewCollection;
         public new void ClearItems() => base.ClearItems();
 
