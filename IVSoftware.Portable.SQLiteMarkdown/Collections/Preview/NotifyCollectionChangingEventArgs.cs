@@ -23,7 +23,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
     /// into a compliant <see cref="NotifyCollectionChangedEventArgs"/>. Invalid configurations degrade to
     /// <c>Reset</c>, with advisory or exception signaling.
     ///
-    /// Mental Model: "A staged change contract where mutability must be explicitly granted."
+    /// Mental Model: "A staged rewritable change ledger where mutability must be explicitly granted."
+    /// 
+    /// - Reset semantics are asymmetric by design:
+    /// - Any item-level lifecycle concerns (e.g., disposal, detachment) must be handled
+    ///   during the Changing phase. When translated to BCL, Reset intentionally discards
+    ///   payload and represents only a structural invalidation.
     /// </remarks>
     internal sealed class NotifyCollectionChangingEventArgs : CancelEventArgs
     {
@@ -212,6 +217,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                             break;
                         }
 
+                    // Reset semantics:
+                    // - Payload (NewItems/OldItems) is intentionally ignored during BCL emission.
+                    // - Any lifecycle or disposal logic must be handled during the Changing phase.
+                    // - Apply/consumers must treat Reset as authoritative invalidation, not replayable delta.
                     case NotifyCollectionChangeAction.Reset:
                         makeReset = true;
                         break;

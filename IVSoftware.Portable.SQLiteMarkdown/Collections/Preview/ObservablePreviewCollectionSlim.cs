@@ -41,12 +41,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             if (DHostApply.IsZero())
             {
                 OnCollectionChanging(e);
-                if (!e.Cancel)
+
+                if (e.Cancel) return;
+
+                if (e.IsModified)
                 {
                     using (DHostApply.GetToken())
                     {
                         this.Apply(e);
                     }
+                }
+                else
+                {
+                    base.InsertItem(index, item);
                 }
             }
             else
@@ -70,12 +77,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             if (DHostApply.IsZero())
             {
                 OnCollectionChanging(e);
-                if (!e.Cancel)
+
+                if (e.Cancel) return;
+
+                if (e.IsModified)
                 {
                     using (DHostApply.GetToken())
                     {
                         this.Apply(e);
                     }
+                }
+                else
+                {
+                    base.SetItem(index, item);
                 }
             }
             else
@@ -83,6 +97,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 base.SetItem(index, item);
             }
         }
+
 
         protected override void RemoveItem(int index)
         {
@@ -132,12 +147,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             if (DHostApply.IsZero())
             {
                 OnCollectionChanging(e);
-                if (!e.Cancel)
+
+                if (e.Cancel) return;
+
+                if (e.IsModified)
                 {
                     using (DHostApply.GetToken())
                     {
                         this.Apply(e);
                     }
+                }
+                else
+                {
+                    base.MoveItem(oldIndex, newIndex);
                 }
             }
             else
@@ -159,12 +181,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             if (DHostApply.IsZero())
             {
                 OnCollectionChanging(e);
-                if (!e.Cancel)
+
+                if (e.Cancel) return;
+
+                if (e.IsModified)
                 {
                     using (DHostApply.GetToken())
                     {
                         this.Apply(e);
                     }
+                }
+                else
+                {
+                    base.ClearItems();
                 }
             }
             else
