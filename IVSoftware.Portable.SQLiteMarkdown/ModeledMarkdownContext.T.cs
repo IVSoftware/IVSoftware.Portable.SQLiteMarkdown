@@ -286,7 +286,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     await Task.Run(async () =>
                     {
                         PredicateMatchSubsetPrivate.Clear();
-                        Model.RemoveDescendantAttributes(StdMarkdownAttribute.match);
+                        Model.RemoveDescendantAttributes(
+                            [
+                                StdMarkdownAttribute.match,
+                                StdMarkdownAttribute.pmatch,
+                                StdMarkdownAttribute.qmatch,
+                            ]);
 
                         #region F I L T E R    Q U E R Y
                         sql = ParseSqlMarkdown();
