@@ -99,9 +99,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 OnCollectionChanging(e);
                 if (!e.Cancel)
                 {
-                    using (DHostApply.GetToken())
+                    if (e.IsModified)
                     {
-                        this.Apply(e);
+                        using (DHostApply.GetToken())
+                        {
+                            this.Apply(e);
+                        }
+                    }
+                    else 
+                    {
+                        base.RemoveItem(index);
                     }
                 }
             }

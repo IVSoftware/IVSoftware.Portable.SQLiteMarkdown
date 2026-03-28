@@ -67,8 +67,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             Action = action;
             Reason = reason;
             Scope = scope;
+
             NewItems = new MutationPreviewCollection(newItems, scope, SCOPE_POLICY_VIOLATION_MESSAGE);
             OldItems = new MutationPreviewCollection(oldItems, scope, SCOPE_POLICY_VIOLATION_MESSAGE);
+
+            ((MutationPreviewCollection)NewItems).Modified += (sender, e) => IsModified = true;
+            ((MutationPreviewCollection)OldItems).Modified += (sender, e) => IsModified = true;
         }
         bool _isReverting = false;
 
@@ -301,6 +305,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 }
             }
         }
+        public bool IsModified { get; private set; }
         string SCOPE_POLICY_VIOLATION_MESSAGE =>    
             $"This operation is not permitted: {nameof(NotifyCollectionChangeScope)}={Scope.ToFullKey()}," +
             $"Always check Scope before attempting to modify the change proposal.";
@@ -352,6 +357,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             {
                 if (Scope.HasFlag(NotifyCollectionChangeScope.FullControl))
                 {
+                    Modified?.Invoke(this, EventArgs.Empty);
                     return true;
                 }
                 else
@@ -399,6 +405,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     base.MoveItem(oldIndex, newIndex);
                 }
             }
+            public event EventHandler? Modified;
         }
     }
 }
