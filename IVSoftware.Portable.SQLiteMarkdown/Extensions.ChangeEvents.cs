@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
@@ -75,6 +76,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - Consumes normalized payload (items, indices) without reinterpreting EventArgs.
         /// - Intended as the authoritative model mutation entry point.
         /// </remarks>
+        [Canonical("Authoritative tracking of CanonicalSuperset (always listening).")]
         public static void Apply(this XElement model, EventArgs eUnk)
         {
             if (!eUnk.TryNormalizeTargets(

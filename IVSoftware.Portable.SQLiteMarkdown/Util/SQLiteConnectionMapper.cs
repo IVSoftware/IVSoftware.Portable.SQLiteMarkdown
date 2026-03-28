@@ -184,7 +184,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         /// Returns an empty string when no path information can be inferred.
         /// </remarks>
         public static string GetId(this object? @this)
-            => ReadOnlyFullPathAffinity.Create(@this)?.Id ?? string.Empty;
+            => ReadOnlyFullPathAffinity.Create(@this)?.FullPath ?? string.Empty;
 
         /// <summary>
         /// Provides the shared SQLite mapper connection used for metadata inspection.

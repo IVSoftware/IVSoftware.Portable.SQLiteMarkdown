@@ -128,7 +128,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB
                     default:
                         break;
                 }
-                if (pi.Name == nameof(Id)) continue;
+                if (pi.Name == nameof(FullPath)) continue;
 
                 var value = pi.GetValue(this);
                 builder.Add($@"{pi.Name,-15}=""{value}""");

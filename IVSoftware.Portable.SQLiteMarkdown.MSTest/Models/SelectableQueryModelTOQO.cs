@@ -14,7 +14,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     public class SelectableQFModelLTOQO : SelfIndexed, ISelectable
     {
         [PrimaryKey]
-        public override string Id { get; set; } = Guid.NewGuid().WithTestability().ToString();
+        public override string FullPath { get; set; } = Guid.NewGuid().WithTestability().ToString();
 
         [SelfIndexed]
         public string Description
@@ -124,13 +124,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
 
                 switch (pi.Name)
                 {
-                    case nameof(Id):
+                    case nameof(FullPath):
                     case nameof(PrimaryKey):
                         continue;
                     default:
                         break;
                 }
-                if (pi.Name == nameof(Id)) continue;
+                if (pi.Name == nameof(FullPath)) continue;
 
                 var value = pi.GetValue(this);
                 builder.Add($@"{pi.Name,-15}=""{value}""");
@@ -145,7 +145,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     public class SelectableQueryModelOR : SelfIndexedOR, ISelectable
     {
         [PrimaryKey]
-        public override string Id { get; set; } = Guid.NewGuid().ToString();
+        public override string FullPath { get; set; } = Guid.NewGuid().ToString();
 
         [SelfIndexed]
         public string Description
@@ -254,13 +254,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
 
                 switch (pi.Name)
                 {
-                    case nameof(Id):
+                    case nameof(FullPath):
                     case nameof(PrimaryKey):
                         continue;
                     default:
                         break;
                 }
-                if (pi.Name == nameof(Id)) continue;
+                if (pi.Name == nameof(FullPath)) continue;
 
                 var value = pi.GetValue(this);
                 builder.Add($@"{pi.Name,-15}=""{value}""");

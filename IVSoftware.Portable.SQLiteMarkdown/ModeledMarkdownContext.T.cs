@@ -211,15 +211,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if(xbo.Parent is { } xel)
                 {
-                    var qmatch = xel.GetAttributeValue<bool>(StdMarkdownAttribute.qmatch);
-                    var pmatch = xel.GetAttributeValue<bool>(StdMarkdownAttribute.pmatch);
-                    if(qmatch && pmatch)
+                    // Make no attempt to capture these attrs.
+                    if (xel.Attribute(StdMarkdownAttribute.qmatch) is null
+                        && xel.Attribute(StdMarkdownAttribute.pmatch) is null)
                     {
-                        PredicateMatchSubsetPrivate.Add(item);
+                        xel.SetAttributeValue(StdMarkdownAttribute.match, null);
                     }
                     else
                     {
-                        xel.SetAttributeValue(StdMarkdownAttribute.match, bool.FalseString);
+                        // Slightly redundant, but provides a semantic layer in this form.
+                        var qmatch = xel.GetAttributeValue<bool>(StdMarkdownAttribute.qmatch);
+                        var pmatch = xel.GetAttributeValue<bool>(StdMarkdownAttribute.pmatch);
+                        if (qmatch && pmatch)
+                        {
+                            xel.SetAttributeValue(StdMarkdownAttribute.match, bool.TrueString);
+                            PredicateMatchSubsetPrivate.Add(item);
+                        }
+                        else
+                        {
+                            xel.SetAttributeValue(StdMarkdownAttribute.match, null);
+                        }
                     }
                 }
             }
@@ -274,7 +285,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     await Task.Run(async () =>
                     {
                         PredicateMatchSubsetPrivate.Clear();
-                        Model.RemoveDescendantAttributes(StdMarkdownAttribute.match);
+                        Model.RemoveDescendantAttributes(StdMarkdownAttribute.qmatch);
 
                         #region F I L T E R    Q U E R Y
                         sql = ParseSqlMarkdown();
@@ -302,7 +313,7 @@ SELECT * FROM items WHERE
                             switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
                             {
                                 case PlacerResult.Exists:
-                                    xaf.SetAttributeValue(nameof(StdMarkdownAttribute.match), bool.TrueString);
+                                    xaf.SetAttributeValue(nameof(StdMarkdownAttribute.qmatch), bool.TrueString);
                                     if (xaf.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
                                         && xbaModel.Tag is T model)
                                     {

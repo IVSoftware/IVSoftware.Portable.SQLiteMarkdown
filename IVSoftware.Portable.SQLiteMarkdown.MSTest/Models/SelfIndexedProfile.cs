@@ -15,7 +15,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     {
 
         [PrimaryKey]
-        public override string Id { get; set; } = "38CFE38E-0D90-4C9F-A4E5-845089CB2BB0";
+        public override string FullPath { get; set; } = "38CFE38E-0D90-4C9F-A4E5-845089CB2BB0";
 
         [SelfIndexed(IndexingMode.QueryOrFilter)]
         public string FirstName
@@ -71,7 +71,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     class SelfIndexedProfileOR : SelfIndexedOR, ISelfIndexedMarkdown
     {
         [PrimaryKey]
-        public override string Id { get; set; } = "38CFE38E-0D90-4C9F-A4E5-845089CB2BB0";
+        public override string FullPath { get; set; } = "38CFE38E-0D90-4C9F-A4E5-845089CB2BB0";
 
         [SelfIndexed(IndexingMode.QueryOrFilter)]
         public string FirstName

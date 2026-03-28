@@ -203,13 +203,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         WM_CONTEXTMENU = 0x007B,
     }
 
-    internal enum StdMarkdownElement
+    public enum StdMarkdownElement
     {
         model,
         xitem,
     }
 
-    internal enum StdMarkdownAttribute
+    public enum StdMarkdownAttribute
     {
         /// <summary>
         /// Path segment name. 

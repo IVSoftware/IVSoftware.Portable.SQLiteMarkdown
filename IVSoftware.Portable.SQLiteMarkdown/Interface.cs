@@ -815,9 +815,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// materialized-path coordinates (<see cref="ParentPath"/>), enabling deterministic
     /// construction of <see cref="FullPath"/> as the canonical hierarchical address.
     /// 
-    /// <see cref="Id"/> typically corresponds to the model primary key. <see cref="FullPath"/>
+    /// <see cref="FullPath"/> typically corresponds to the model primary key. <see cref="FullPath"/>
     /// is ephemeral and represents the linted concatenation of <see cref="ParentPath"/> and
-    /// <see cref="Id"/>, allowing stable placement and ordering within tree projections.
+    /// <see cref="FullPath"/>, allowing stable placement and ordering within tree projections.
     /// </remarks>
     public interface IFullPathAffinity
     {

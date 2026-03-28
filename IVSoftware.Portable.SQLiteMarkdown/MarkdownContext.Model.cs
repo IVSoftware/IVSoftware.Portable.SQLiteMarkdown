@@ -71,6 +71,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if (Enum.TryParse(xattr.Name.LocalName, out StdMarkdownAttribute std))
             {
+
                 string id = null!;
                 if (xattr.Parent is not null)
                 {
@@ -111,21 +112,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 default:
                                     switch (std)
                                     {
+                                        case StdMarkdownAttribute.qmatch:
+                                        case StdMarkdownAttribute.pmatch:
                                         case StdMarkdownAttribute.match:
-                                            bool isMatch = bool.Parse(xattr.Value);
-                                            switch (e.ObjectChange)
-                                            {
-                                                case XObjectChange.Add:
-                                                case XObjectChange.Value:
-                                                    if (isMatch)
-                                                    {
-                                                        MatchContainsProto.Add(id);
-                                                    }
-                                                    break;
-                                                case XObjectChange.Remove:
-                                                    MatchContainsProto.Remove(id);
-                                                    break;
-                                            }
+                                            EvaluateMatch(xattr, e.ObjectChange, std, id);
                                             break;
                                     }
                                     break;
@@ -136,6 +126,40 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 #endregion L o c a l F x
             }
         }
+
+        protected StdAttributeHistogrammer Histo { get; } = new(ZeroCountOption.Remove);
+
+        private void EvaluateMatch(
+            XAttribute xattr,
+            XObjectChange action, 
+            StdMarkdownAttribute std,
+            string id)
+        {
+            switch (std)
+            {
+                case StdMarkdownAttribute.match:
+                    bool isMatch = bool.Parse(xattr.Value);
+                    switch (action)
+                    {
+                        case XObjectChange.Add:
+                        case XObjectChange.Value:
+                            if (isMatch)
+                            {
+                                MatchContainsProto.Add(id);
+                            }
+                            break;
+                        case XObjectChange.Remove:
+                            MatchContainsProto.Remove(id);
+                            break;
+                    }
+                    break;
+                case StdMarkdownAttribute.qmatch:
+                    break;
+                case StdMarkdownAttribute.pmatch:
+                    break;
+            }
+        }
+
         [Probationary]
         public HashSet<string> MatchContainsProto = new();
         protected virtual void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)

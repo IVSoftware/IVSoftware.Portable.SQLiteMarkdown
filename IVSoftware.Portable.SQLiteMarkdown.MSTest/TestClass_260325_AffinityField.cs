@@ -25,7 +25,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
             Assert.AreEqual(
                 AffinityTestableEpoch.GuidReset.ToString(), 
-                item.Id,
+                item.FullPath,
                 "Expecting id initialized to first.");
 
             Assert.AreEqual(

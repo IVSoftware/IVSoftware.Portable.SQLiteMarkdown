@@ -731,6 +731,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return @this;
         }
 
+        /// <summary>
+        /// Removes the specified attribute from all descendant elements,
+        /// optionally including the current element.
+        /// </summary>
+        public static XElement RemoveDescendantAttributes(this XElement @this, Enum[] stdEnums, bool includeSelf = false)
+        {
+            var names = stdEnums.Select(e => e.ToString()).ToArray();
+
+            var query = (includeSelf
+                ? @this.DescendantsAndSelf()
+                : @this.Descendants())
+                .SelectMany(x => names.SelectMany(name => x.Attributes(name)))
+                .ToArray();
+
+            foreach (var attr in query)
+            {
+                if (attr.Parent is null)
+                {   /* G T K */
+                }
+                else
+                {
+                    attr.Remove();
+                }
+            }
+            return @this;
+        }
+
         public static string[] GetTableNames(this SQLiteConnection @this)
         {
             var query = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%';";

@@ -1145,7 +1145,7 @@ Properties     =""{
             /// </summary>
             void subtest_JsonQuoteRendering()
             {
-                testLiteralQuotes.Id = "0"; // Make random Id deterministic
+                testLiteralQuotes.FullPath = "0"; // Make random Id deterministic
                 actual = JsonConvert.SerializeObject(testLiteralQuotes, Formatting.Indented);
                 expected = @" 
 {
@@ -1179,7 +1179,7 @@ Properties     =""{
             /// </summary>
             void subtest_EscapedQuery()
             {
-                testLiteralQuery.Id = "1"; // Make random Id deterministic
+                testLiteralQuery.FullPath = "1"; // Make random Id deterministic
                 actual = JsonConvert.SerializeObject(testLiteralQuery, Formatting.Indented);
                 expected = @" 
 {
