@@ -57,6 +57,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
   default parameter to make the stateful semantics explicit.")]
         [PolicyEnforcement(ThrowOrAdvise.ThrowSoft)]
         ExplicitClearAdvisory,
+
+        [Description($"{nameof(ConfigurationModifiedByDatabaseAssignment)} Policy violation: It is illegal to toggle between boolean and non boolean values for the same XAttribute.")]
+        [PolicyEnforcement(ThrowOrAdvise.ThrowHard)]
+        XAttributeBooleanToggle,
     }
 
     public class SQLiteMarkdownException : Exception

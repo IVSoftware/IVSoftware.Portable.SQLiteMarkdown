@@ -49,6 +49,7 @@ public class TestClass_260328_Model
                 throw new InvalidOperationException();
             }
         };
+
         model.Changed += (sender, e) =>
         {
             if (sender is XObject xob)
@@ -59,6 +60,38 @@ public class TestClass_260328_Model
                     case XObjectChange.Remove:
                         pxel = parentsOfRemoved[xob];
                         parentsOfRemoved.Remove(xob);
+                        break;
+                    case XObjectChange.Value when xob is XAttribute xattr:
+                        var oldValue = oldValues.TryGetValue(xattr, out var validOld) ? validOld : null;
+                        bool? newValue = bool.TryParse(xattr.Value, out var validNew) ? validNew : null;
+                        oldValues.Remove(xattr);
+                        if (newValue is null ^ oldValue is null)
+                        {
+                            this.ThrowPolicyException(MarkdownContextPolicyViolation.XAttributeBooleanToggle);
+                            if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
+                            {
+                                if (oldValue == true)
+                                {
+                                    histo -= std;
+                                }
+                                else if (newValue == true)
+                                {
+                                    histo += std;
+                                }
+                            }
+                            return;
+                        }
+                        else
+                        {
+                            if (newValue == oldValue)
+                            {
+                                return;
+                            }
+                            else
+                            {   /* G T K */
+                                // Toggle detected.
+                            }
+                        }
                         break;
                 }
                 switch (sender)
@@ -94,6 +127,7 @@ public class TestClass_260328_Model
 
         void OnXAttributeChanged(XAttribute xattr, XElement pxel, XObjectChangeEventArgs e)
         {
+            changeCount++;
             if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
             {
                 bool? newValue = bool.TryParse(xattr.Value, out var valid) ? valid : null;
@@ -114,22 +148,13 @@ public class TestClass_260328_Model
                         localUpdateAutocount();
                         break;
                     case XObjectChange.Value:
-                        var oldValue = oldValues[xattr];
-                        oldValues.Remove(xattr);
                         switch (newValue)
                         {
-                            case true:
-                                if (oldValue != true)
-                                {
-                                    histo += std;
-                                }
-                                break;
                             case null:
-                                this.ThrowSoft<InvalidOperationException>();
-                                if (oldValue == false)
-                                {
-                                    histo -= std;
-                                }
+                                /* N O O P */
+                                break;
+                            case true:
+                                histo += std;
                                 break;
                             case false:
                                 histo -= std;
@@ -150,7 +175,6 @@ public class TestClass_260328_Model
                     }
                 }
             }
-            changeCount++;
         }
         #endregion L o c a l F x
 

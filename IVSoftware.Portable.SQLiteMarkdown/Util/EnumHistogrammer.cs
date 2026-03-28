@@ -82,5 +82,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                 _histo.ToDictionary(
                 kvp => kvp.Key.ToString(),
                 kvp => kvp.Value), formatting);
+
     }
 }
