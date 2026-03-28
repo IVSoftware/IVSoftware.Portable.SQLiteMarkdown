@@ -1,8 +1,11 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {
@@ -11,14 +14,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         Remove,
         Preserve,
     }
-    sealed class StdAttributeHistogrammer : IEnumerable<StdMarkdownAttribute>
+
+    enum HistogrammerToStringOption
     {
-        public StdAttributeHistogrammer(ZeroCountOption zeroCountOption) => ZeroCountOption = zeroCountOption;
+        Normal,
+        Json,
+    }
+
+    sealed class EnumHistogrammer<T> : IEnumerable<T> where T : Enum
+    {
+        public EnumHistogrammer(ZeroCountOption zeroCountOption) => ZeroCountOption = zeroCountOption;
         public ZeroCountOption ZeroCountOption { get; }
-        private readonly Dictionary<StdMarkdownAttribute, int> _histo = new();
+        private readonly Dictionary<T, int> _histo = new();
 
         [Indexer]
-        public int this[StdMarkdownAttribute key]
+        public int this[T key]
         {
             get => _histo.TryGetValue(key, out var count) ? count : 0;
             private set
@@ -50,28 +60,45 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
             }
         }
 
-        public static StdAttributeHistogrammer operator +(
-            StdAttributeHistogrammer h,
-            StdMarkdownAttribute key)
+        public static EnumHistogrammer<T> operator +(
+            EnumHistogrammer<T> h,
+            T key)
         {
             h[key] = h[key] + 1;
             return h;
         }
 
-        public static StdAttributeHistogrammer operator -(
-            StdAttributeHistogrammer h,
-            StdMarkdownAttribute key)
+        public static EnumHistogrammer<T> operator -(
+            EnumHistogrammer<T> h,
+            T key)
         {
             h[key] = h[key] - 1;
             return h;
         }
 
-        public IEnumerator<StdMarkdownAttribute> GetEnumerator()
+        public IEnumerator<T> GetEnumerator()
             => _histo.Keys.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        public string ToString(HistogrammerToStringOption option = HistogrammerToStringOption.Normal)
+        {
+            switch (option)
+            {
+                case HistogrammerToStringOption.Normal:
+                    return base.ToString();
+                case HistogrammerToStringOption.Json:
+                    return JsonConvert.SerializeObject(
+                        _histo.ToDictionary(
+                        kvp => kvp.Key.ToString(),
+                        kvp => kvp.Value));
+                default:
+                    this.ThrowHard<NotSupportedException>($"The {option.ToFullKey()} case is not supported.");
+                    return base.ToString();
+            }
         }
     }
 }
