@@ -50,6 +50,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     this.ThrowPolicyException(MarkdownContextPolicyViolation.ExplicitClearAdvisory);
                 }
             }
+            _predicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetPrivate);
         }
 
         /// <summary>
@@ -62,51 +63,62 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             get
             {
-                if (_model is null)
+                if(base.Model.Attribute(StdMarkdownAttribute.count) is null)
                 {
-                    _model = 
-                        new XElement(
-                            nameof(StdMarkdownElement.model),
-                            new XBoundAttribute(nameof(StdMarkdownAttribute.mdc), this, $"[MMDC]"),
-                            new XAttribute(nameof(StdMarkdownAttribute.autocount), 0),
-                            new XAttribute(nameof(StdMarkdownAttribute.count), 0),
-                            new XAttribute(nameof(StdMarkdownAttribute.matches), 0));
-                    _model.Changing += (sender, e) =>
-                    {
-                        if (sender is XElement xel && e.ObjectChange == XObjectChange.Remove)
-                        {
-                            _parentsOfRemoved[xel] = xel.Parent;
-                        }
-                    };
-                    _model.Changed += (sender, e) =>
-                    {
-                        switch (sender)
-                        {
-                            case XElement xel:
-                                XElement pxel;
-                                if (e.ObjectChange == XObjectChange.Remove)
-                                {
-                                    if (!_parentsOfRemoved.TryGetValue(xel, out pxel))
-                                    {
-                                        _parentsOfRemoved.ThrowSoft<NullReferenceException>(
-                                            $"Expecting parent for removed XElement was cached prior." +
-                                            $"Unless this throw is escalated, flow will continue with null parent.");
-                                    }
-                                    _parentsOfRemoved.Remove(xel);
-                                }
-                                else
-                                {
-                                    pxel = xel.Parent;
-                                }
-                                OnXElementChanged(xel, pxel, e);
-                                break;
-                            case XAttribute xattr:
-                                OnXAttributeChanged(xattr, e);
-                                break;
-                        }
-                    };
+                    base.Model.SetStdAttributeValue(StdMarkdownAttribute.count, "0");
                 }
-                return _model;
+                if(base.Model.Attribute(StdMarkdownAttribute.matches) is null)
+                {
+                    base.Model.SetStdAttributeValue(StdMarkdownAttribute.matches, "0");
+                }
+                return base.Model;
+            }
+        }
+        protected override void OnXAttributeChanged(XAttribute xattr, XElement pxel, XObjectChangeEventArgs e)
+        {
+            T item = pxel.To<T>();
+            bool? value;
+            base.OnXAttributeChanged(xattr, pxel, e);
+            if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
+            {
+                switch (std)
+                {
+                    case StdMarkdownAttribute.match:
+                        value = bool.TryParse(xattr.Value, out var valid) ? valid : null;
+                        switch (e.ObjectChange)
+                        {
+                            case XObjectChange.Add:
+                                if (value == true)
+                                {
+                                    PredicateMatchSubsetPrivate.Add(item);
+                                }
+                                break;
+                            case XObjectChange.Remove:
+                                break;
+                            case XObjectChange.Value:
+                                switch (value)
+                                {
+                                    // The value isn't null, but isn't parseable to bool either.
+                                    case null:
+                                        /* G T K - N O O P */
+                                        break;
+                                    case true:
+                                        PredicateMatchSubsetPrivate.Add(item);
+                                        break;
+                                    case false:
+                                        PredicateMatchSubsetPrivate.Remove(item);
+                                        break;
+                                }
+                                break;
+                        }
+                        break;
+                    case StdMarkdownAttribute.qmatch:
+                        { }
+                        break;
+                    case StdMarkdownAttribute.pmatch:
+                        { }
+                        break;
+                }
             }
         }
 
@@ -968,6 +980,7 @@ SELECT * FROM items WHERE
                         }
                     }
                     UpdateStatesForEpoch();
+                    Model.SetStdAttributeValue(StdMarkdownAttribute.matches, PredicateMatchCount);
                 }
                 else
                 {
@@ -1269,7 +1282,20 @@ SELECT * FROM items WHERE
         /// through this view.
         /// </remarks>
         public IReadOnlyList<T> PredicateMatchSubset
-            => PredicateMatchSubsetPrivate;
+        {
+            get
+            {
+                if (0 == Model.GetAttributeValue<int>(StdMarkdownAttribute.matches, @default: 0))
+                {
+                    return CanonicalSuperset;
+                }
+                else
+                {
+                    return _predicateMatchSubset;
+                }
+            }
+        }
+        private IReadOnlyList<T> _predicateMatchSubset;
         IList ITopology.PredicateMatchSubset => (IList)PredicateMatchSubset;
 
         public ObservableCollection<T> PredicateMatchSubsetPrivate
