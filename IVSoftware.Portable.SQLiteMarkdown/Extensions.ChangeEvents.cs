@@ -353,19 +353,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return;
             }
 
-            switch (action)
+            if (newItems?.Count > 0 && newItems[0] is EventArgs)
             {
-                case NotifyCollectionChangeAction.Add: localAddToList(); break;
-                case NotifyCollectionChangeAction.Remove: localRemoveFromList(); break;
-                case NotifyCollectionChangeAction.Replace: localReplaceInList(); break;
-                case NotifyCollectionChangeAction.Move: localMoveInList(); break;
-                case NotifyCollectionChangeAction.Reset: localResetList(); break;
-                default:
-                    nameof(Extensions)
-                        .ThrowFramework<NotSupportedException>(
-                        $"The {eUnk.GetType().Name} case is not supported.");
-                    break;
+                throw new NotSupportedException("Batch Event playlists are not supported (yet)");
             }
+            else
+            {
+                // Apply using standard BCL semantics.
+                switch (action)
+                {
+                    case NotifyCollectionChangeAction.Add: localAddToList(); break;
+                    case NotifyCollectionChangeAction.Remove: localRemoveFromList(); break;
+                    case NotifyCollectionChangeAction.Replace: localReplaceInList(); break;
+                    case NotifyCollectionChangeAction.Move: localMoveInList(); break;
+                    case NotifyCollectionChangeAction.Reset: localResetList(); break;
+                    default:
+                        nameof(Extensions)
+                            .ThrowFramework<NotSupportedException>(
+                            $"The {eUnk.GetType().Name} case is not supported.");
+                        break;
+                }
+            }
+
+            #region L o c a l F x
             void localAddToList()
             {
                 if (newItems is null || newStartingIndex < 0)
@@ -377,9 +387,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 else
                 {
                     var index = newStartingIndex;
-                    foreach (var item in newItems)
+                    if(index == list.Count)
                     {
-                        list.Insert(index++, item);
+                        // Minor optimization avoids shifting cost.
+                        foreach (var item in newItems)
+                        {
+                            list.Add(item);
+                        }
+                    }
+                    else
+                    {
+                        foreach (var item in newItems)
+                        {
+                            list.Insert(index++, item);
+                        }
                     }
                 }
             }
@@ -430,7 +451,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             void localReplaceInList()
             {
-                if (newItems is null || oldItems is null || newStartingIndex < 0)
+                if (newItems is null
+                    || oldItems is null
+                    || newStartingIndex < 0
+                    || oldStartingIndex < 0
+                    || newStartingIndex != oldStartingIndex
+                    || newItems.Count != oldItems.Count
+                    || newStartingIndex + newItems.Count > list.Count)
                 {
                     nameof(Extensions)
                         .ThrowFramework<NotSupportedException>(
@@ -450,6 +477,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 list.Clear();
             }
+            #endregion L o c a l F x
         }
 
         /// <summary>

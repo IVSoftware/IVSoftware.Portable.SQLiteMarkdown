@@ -1,6 +1,9 @@
-﻿using System;
+﻿using IVSoftware.Portable.Disposable;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using IVSoftware.Portable.SQLiteMarkdown;
+using System.Collections;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
@@ -8,7 +11,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         : ObservableCollection<T>
         , INotifyCollectionChanging
     {
-
         /// <summary>
         /// Defines the extent to which a preview handler may interact with a pending
         /// collection change proposal.
@@ -35,8 +37,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 scope: EventScope,
                 newItems: new[] { item },
                 newStartingIndex: index);
-            OnCollectionChanging(e);
-            if (!e.Cancel)
+
+            if (DHostApply.IsZero())
+            {
+                OnCollectionChanging(e);
+                if (!e.Cancel)
+                {
+                    using (DHostApply.GetToken())
+                    {
+                        this.Apply(e);
+                    }
+                }
+            }
+            else
             {
                 base.InsertItem(index, item);
             }
@@ -44,15 +57,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 
         protected override void SetItem(int index, T item)
         {
+            var oldItem = this[index];
+
             var e = new NotifyCollectionChangingEventArgs(
                 action: NotifyCollectionChangeAction.Replace,
                 scope: EventScope,
                 newItems: new[] { item },
-                oldItems: new[] { this[index] },
+                oldItems: new[] { oldItem },
                 newStartingIndex: index,
                 oldStartingIndex: index);
-            OnCollectionChanging(e);
-            if (!e.Cancel)
+
+            if (DHostApply.IsZero())
+            {
+                OnCollectionChanging(e);
+                if (!e.Cancel)
+                {
+                    using (DHostApply.GetToken())
+                    {
+                        this.Apply(e);
+                    }
+                }
+            }
+            else
             {
                 base.SetItem(index, item);
             }
@@ -68,14 +94,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 oldItems: new[] { item },
                 oldStartingIndex: index);
 
-            OnCollectionChanging(e);
-
-            if (!e.Cancel)
+            if(DHostApply.IsZero())
+            {
+                OnCollectionChanging(e);
+                if (!e.Cancel)
+                {
+                    using (DHostApply.GetToken())
+                    {
+                        this.Apply(e);
+                    }
+                }
+            }
+            else
             {
                 base.RemoveItem(index);
             }
         }
-
         protected override void MoveItem(int oldIndex, int newIndex)
         {
             var item = this[oldIndex];
@@ -88,9 +122,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 newStartingIndex: newIndex,
                 oldStartingIndex: oldIndex);
 
-            OnCollectionChanging(e);
-
-            if (!e.Cancel)
+            if (DHostApply.IsZero())
+            {
+                OnCollectionChanging(e);
+                if (!e.Cancel)
+                {
+                    using (DHostApply.GetToken())
+                    {
+                        this.Apply(e);
+                    }
+                }
+            }
+            else
             {
                 base.MoveItem(oldIndex, newIndex);
             }
@@ -98,15 +141,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 
         protected override void ClearItems()
         {
+            var snapshot = this.ToArray();
+
             var e = new NotifyCollectionChangingEventArgs(
                 action: NotifyCollectionChangeAction.Reset,
                 scope: EventScope,
-                oldItems: this.ToArray(),
+                oldItems: snapshot,
                 oldStartingIndex: -1);
 
-            OnCollectionChanging(e);
-
-            if (!e.Cancel)
+            if (DHostApply.IsZero())
+            {
+                OnCollectionChanging(e);
+                if (!e.Cancel)
+                {
+                    using (DHostApply.GetToken())
+                    {
+                        this.Apply(e);
+                    }
+                }
+            }
+            else
             {
                 base.ClearItems();
             }
@@ -117,5 +171,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             CollectionChanging?.Invoke(this, e);
         }
         public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
+
+        DisposableHost DHostApply { get; } = new();
     }
 }
