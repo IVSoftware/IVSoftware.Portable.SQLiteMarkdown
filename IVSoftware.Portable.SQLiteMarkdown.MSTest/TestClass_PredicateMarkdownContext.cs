@@ -60,7 +60,7 @@ public class TestClass_PredicateMarkdownContext
             recordset = cnx.Query<TemporalAffinityQFModel>(sql);
 
 
-            actual = JsonConvert.SerializeObject(recordset, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(recordset, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 

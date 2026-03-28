@@ -1146,7 +1146,7 @@ Properties     =""{
             void subtest_JsonQuoteRendering()
             {
                 testLiteralQuotes.Id = "0"; // Make random Id deterministic
-                actual = JsonConvert.SerializeObject(testLiteralQuotes, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(testLiteralQuotes, Newtonsoft.Json.Formatting.Indented);
                 expected = @" 
 {
   ""Id"": ""0"",
@@ -1180,7 +1180,7 @@ Properties     =""{
             void subtest_EscapedQuery()
             {
                 testLiteralQuery.Id = "1"; // Make random Id deterministic
-                actual = JsonConvert.SerializeObject(testLiteralQuery, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(testLiteralQuery, Newtonsoft.Json.Formatting.Indented);
                 expected = @" 
 {
   ""Id"": ""1"",

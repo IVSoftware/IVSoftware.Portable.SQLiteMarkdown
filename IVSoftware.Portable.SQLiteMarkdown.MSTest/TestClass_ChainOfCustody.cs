@@ -17,7 +17,7 @@ public class TestClass_ChainOfCustody
 
         var cocToken = new ChainOfCustodyToken();
 
-        actual = JsonConvert.SerializeObject(cocToken, Formatting.Indented);
+        actual = JsonConvert.SerializeObject(cocToken, Newtonsoft.Json.Formatting.Indented);
         actual.ToClipboardExpected();
         { }
         expected = @" 
@@ -45,7 +45,7 @@ public class TestClass_ChainOfCustody
 
         coc = new ChainOfCustody();
 
-        actual = JsonConvert.SerializeObject(coc, Formatting.Indented);
+        actual = JsonConvert.SerializeObject(coc, Newtonsoft.Json.Formatting.Indented);
 
 
         actual.ToClipboardExpected();
@@ -66,7 +66,7 @@ public class TestClass_ChainOfCustody
         // Test empty loopback.
         cocLoopback = JsonConvert.DeserializeObject<ChainOfCustody>(actual)!;
 
-        actual = JsonConvert.SerializeObject(cocLoopback, Formatting.Indented);
+        actual = JsonConvert.SerializeObject(cocLoopback, Newtonsoft.Json.Formatting.Indented);
 
         Assert.AreEqual(
             expected.NormalizeResult(),
@@ -77,7 +77,7 @@ public class TestClass_ChainOfCustody
         // Now check out an edit token.
         await coc.CommitLocalEdit(localId);
 
-        actual = JsonConvert.SerializeObject(coc, Formatting.Indented);
+        actual = JsonConvert.SerializeObject(coc, Newtonsoft.Json.Formatting.Indented);
         actual.ToClipboardExpected();
         { }
         expected = @" 

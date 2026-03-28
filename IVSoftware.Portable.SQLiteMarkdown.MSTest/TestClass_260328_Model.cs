@@ -1,6 +1,9 @@
 using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using System.Xml.Linq;
@@ -15,61 +18,94 @@ public class TestClass_260328_Model
     {
         string actual, expected;
 
-        Dictionary<XElement, XElement> parentsOfRemoved = new();
+        Dictionary<XObject, XElement> parentsOfRemoved = new();
         EnumHistogrammer<StdMarkdownAttribute> histo = new(ZeroCountOption.Remove);
+        var model = new XElement(
+            nameof(StdMarkdownElement.model),
+            new XBoundAttribute(nameof(StdMarkdownAttribute.mdc), new MarkdownContext<SelectableQFModel>(), "[MDC]"),
+            new XAttribute(nameof(StdMarkdownAttribute.autocount), 0));
 
-        var model = new XElement(nameof(StdMarkdownElement.model));
         model.Changing += (sender, e) =>
         {
-            if (sender is XElement xel && e.ObjectChange == XObjectChange.Remove)
+            if (sender is not XObject xob)
             {
-                parentsOfRemoved[xel] = xel.Parent ?? throw new NullReferenceException();
+                throw new InvalidOperationException();
+            }
+            else
+            {
+                if (e.ObjectChange == XObjectChange.Remove)
+                {
+                    parentsOfRemoved[xob] = xob.Parent ?? throw new NullReferenceException();
+                }
             }
         };
         model.Changed += (sender, e) =>
         {
-            switch (sender)
+            XElement pxel;
+            if (sender is not XObject xob)
             {
-                case XElement xel:
-                    XElement? pxel =
-                        e.ObjectChange == XObjectChange.Remove
-                        ? parentsOfRemoved[xel]
-                        : xel.Parent;
-                    if (pxel is null)
-                    {
-                        throw new NullReferenceException();
-                    }
-                    else
-                    {
+                throw new InvalidOperationException();
+            }
+            else
+            {
+                if (e.ObjectChange == XObjectChange.Remove)
+                {
+                    pxel = parentsOfRemoved[xob];
+                    parentsOfRemoved.Remove(xob);
+                }
+                else pxel = xob.Parent ?? throw new NullReferenceException();
+                switch (sender)
+                {
+                    case XElement xel:
                         OnXElementChanged(xel, pxel, e);
-                    }
-                    break;
-                case XAttribute xattr:
-                    OnXAttributeChanged(xattr, e);
-                    break;
+                        break;
+                    case XAttribute xattr:
+                        OnXAttributeChanged(xattr, pxel, e);
+                        break;
+                }
             }
         };
         #region L o c a l F x
         void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
-            foreach (var attr in xel.Attributes())
+            switch (e.ObjectChange)
             {
-                OnXAttributeChanged(attr, e);
+                case XObjectChange.Add:
+                case XObjectChange.Remove:
+                    foreach (var attr in xel.Attributes())
+                    {
+                        OnXAttributeChanged(attr, pxel, e);
+                    }
+                    break;
             }
         }
 
-        void OnXAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
+        void OnXAttributeChanged(XAttribute xattr, XElement pxel, XObjectChangeEventArgs e)
         {
-            if(Enum.TryParse(xattr.Name.LocalName, out StdMarkdownAttribute std))
+            if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
             {
                 switch (e.ObjectChange)
                 {
                     case XObjectChange.Add:
                         histo += std;
+                        localUpdateAutocount();
                         break;
                     case XObjectChange.Remove:
                         histo -= std;
+                        localUpdateAutocount();
                         break;
+                }
+                void localUpdateAutocount()
+                {
+                    // Count the actual model XBO objects
+                    if (std == StdMarkdownAttribute.model)
+                    {
+                        var root = pxel.AncestorsAndSelf().Last();
+                        if (root.Has<IMarkdownContext>())
+                        {
+                            root.SetStdAttributeValue(StdMarkdownAttribute.autocount, histo[StdMarkdownAttribute.model]);
+                        }
+                    }
                 }
             }
         }
@@ -84,9 +120,9 @@ public class TestClass_260328_Model
         void subtest_TrackLateral()
         {
             // Add
-            model.SetAttributeValue(StdMarkdownAttribute.qmatch, true);
+            model.SetStdAttributeValue(StdMarkdownAttribute.qmatch, true);
 
-            actual = histo.ToString(HistogrammerToStringOption.Json);
+            actual = histo.ToString(Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -97,9 +133,9 @@ public class TestClass_260328_Model
                 actual.NormalizeResult(),
                 "Expecting histogram to match."
             );
-            model.SetAttributeValue(StdMarkdownAttribute.qmatch, true);
+            model.SetStdAttributeValue(StdMarkdownAttribute.qmatch, true);
 
-            actual = histo.ToString(HistogrammerToStringOption.Json);
+            actual = histo.ToString(Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -113,7 +149,7 @@ public class TestClass_260328_Model
 
             // Remove
             model.RemoveDescendantAttributes(StdMarkdownAttribute.qmatch, includeSelf: true);
-            actual = histo.ToString(HistogrammerToStringOption.Json);
+            actual = histo.ToString(Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -133,9 +169,9 @@ public class TestClass_260328_Model
             model.Add(xel);
 
             // Add
-            xel.SetAttributeValue(StdMarkdownAttribute.qmatch, true);
+            xel.SetStdAttributeValue(StdMarkdownAttribute.qmatch, true);
 
-            actual = histo.ToString(HistogrammerToStringOption.Json);
+            actual = histo.ToString(Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -148,9 +184,9 @@ public class TestClass_260328_Model
             );
 
             // Causes no change
-            xel.SetAttributeValue(StdMarkdownAttribute.qmatch, true);
+            xel.SetStdAttributeValue(StdMarkdownAttribute.qmatch, true);
 
-            actual = histo.ToString(HistogrammerToStringOption.Json);
+            actual = histo.ToString(Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -164,7 +200,7 @@ public class TestClass_260328_Model
 
             // Remove from Model
             model.RemoveDescendantAttributes(StdMarkdownAttribute.qmatch);
-            actual = histo.ToString(HistogrammerToStringOption.Json);
+            actual = histo.ToString(Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -187,7 +223,7 @@ public class TestClass_260328_Model
             // Add
             model.Add(xel);
 
-            actual = histo.ToString(HistogrammerToStringOption.Json);
+            actual = histo.ToString(Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -201,7 +237,7 @@ public class TestClass_260328_Model
 
             // Remove
             xel.Remove();
-            actual = histo.ToString(HistogrammerToStringOption.Json);
+            actual = histo.ToString(Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -212,6 +248,38 @@ public class TestClass_260328_Model
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting empty histogram."
+            );
+        }
+
+        subtest_TrackModel();
+        void subtest_TrackModel()
+        {
+            #region I T E M    G E N
+            IList<SelectableQFModel>? eph = null;
+            // CREATE (no side effects)
+            var i1 = eph.AddDynamic("Item01");
+            var i2 = eph.AddDynamic("Item02");
+            var i3 = eph.AddDynamic("Item03");
+            #endregion I T E M    G E N
+
+            var xel = new XElement(
+                nameof(StdMarkdownElement.xitem),
+                new XBoundAttribute(nameof(StdMarkdownAttribute.model), i1),
+                new XAttribute(nameof(StdMarkdownAttribute.qmatch), true));
+
+            model.Add(xel);
+
+            actual = histo.ToString(Formatting.Indented);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+{""model"":1,""qmatch"":1}"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting histogram to match."
             );
         }
         #endregion S U B T E S T S

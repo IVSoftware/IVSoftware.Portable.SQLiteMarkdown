@@ -191,7 +191,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             }
                             break;
                     }
-                    modelRoot.SetAttributeValue(StdMarkdownAttribute.autocount, autocount);
+                    modelRoot.SetStdAttributeValue(StdMarkdownAttribute.autocount, autocount);
                     // [Careful]
                     // It's too racey here to try and compare counts.
                 }

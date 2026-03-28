@@ -219,7 +219,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                     else
                     {
-                        xel.SetAttributeValue(StdMarkdownAttribute.match, bool.FalseString);
+                        xel.SetStdAttributeValue(StdMarkdownAttribute.match, bool.FalseString);
                     }
                 }
             }
@@ -295,7 +295,7 @@ SELECT * FROM items WHERE
                         matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
                         #endregion F I L T E R    Q U E R Y
 
-                        Model.SetAttributeValue(StdMarkdownAttribute.matches, (matchPaths = localGetPaths()).Length);
+                        Model.SetStdAttributeValue(StdMarkdownAttribute.matches, (matchPaths = localGetPaths()).Length);
 
                         foreach (var path in matchPaths)
                         {
@@ -1281,7 +1281,7 @@ SELECT * FROM items WHERE
                     _predicateMatchSubsetPrivate = new ObservableCollection<T>();
                     _predicateMatchSubsetPrivate.CollectionChanged += (sender, e) =>
                     {
-                        Model.SetAttributeValue(StdMarkdownAttribute.matches, _predicateMatchSubsetPrivate.Count);
+                        Model.SetStdAttributeValue(StdMarkdownAttribute.matches, _predicateMatchSubsetPrivate.Count);
                     };
                 }
                 return _predicateMatchSubsetPrivate;

@@ -63,7 +63,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs  
             );
 
 
-            actual = JsonConvert.SerializeObject(opc, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(opc, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -128,7 +128,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs  
                 "Expecting a single INCC."
             );
 
-            actual = JsonConvert.SerializeObject(opc[0], Formatting.Indented);
+            actual = JsonConvert.SerializeObject(opc[0], Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -171,7 +171,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs  
             #region L o c a l F x
             void localOnCollectionChanging(object? sender, Collections.Preview.NotifyCollectionChangingEventArgs e)
             {
-                actual = JsonConvert.SerializeObject(e.NewItems, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(e.NewItems, Newtonsoft.Json.Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -198,7 +198,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs  
                     actual.NormalizeResult(),
                     "Expecting IList to match limit."
                 );
-                actual = JsonConvert.SerializeObject(e.OldItems, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(e.OldItems, Newtonsoft.Json.Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -228,7 +228,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs  
             }
             void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
             {
-                actual = JsonConvert.SerializeObject(e.NewItems, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(e.NewItems, Newtonsoft.Json.Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -255,7 +255,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs  
                     actual.NormalizeResult(),
                     "Expecting IList to match limit."
                 );
-                actual = JsonConvert.SerializeObject(e.OldItems, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(e.OldItems, Newtonsoft.Json.Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -315,7 +315,7 @@ NetProjection.Replace NewItems= 1 OldItems= 1 NewIndex= 0 OldIndex= 0 NotifyColl
                 "Expecting a single INCC."
             );
 
-            actual = JsonConvert.SerializeObject(opc[0], Formatting.Indented);
+            actual = JsonConvert.SerializeObject(opc[0], Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -375,7 +375,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             var item2 = opc.AddDynamic("Beta", "", false, new());
 
 
-            actual = JsonConvert.SerializeObject(opc, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(opc, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -448,7 +448,7 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewIndex= 1 OldIndex= 0 NotifyColl
                 "Expecting a single INCC."
             );
 
-            actual = JsonConvert.SerializeObject(opc, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(opc, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 

@@ -46,7 +46,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             opc.AddDynamic("Brown Dog", "[canine][color]", false, new() { "loyal", "friend", "furry" });
             { }
 
-            actual = JsonConvert.SerializeObject(opc, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(opc, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 

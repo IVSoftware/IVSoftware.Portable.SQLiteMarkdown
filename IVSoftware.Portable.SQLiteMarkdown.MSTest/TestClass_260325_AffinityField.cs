@@ -33,7 +33,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 item.Created,
                 "Expecting epoch initialized to first.");
 
-            actual = JsonConvert.SerializeObject(item, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(item, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
 
@@ -85,7 +85,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             );
 
             // Test idempotence by serializing again.
-            actual = JsonConvert.SerializeObject(item, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(item, Newtonsoft.Json.Formatting.Indented);
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),

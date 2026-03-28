@@ -15,12 +15,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         Preserve,
     }
 
-    enum HistogrammerToStringOption
-    {
-        Normal,
-        Json,
-    }
-
     sealed class EnumHistogrammer<T> : IEnumerable<T> where T : Enum
     {
         public EnumHistogrammer(ZeroCountOption zeroCountOption) => ZeroCountOption = zeroCountOption;
@@ -83,22 +77,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         {
             return GetEnumerator();
         }
-
-        public string ToString(HistogrammerToStringOption option = HistogrammerToStringOption.Normal)
-        {
-            switch (option)
-            {
-                case HistogrammerToStringOption.Normal:
-                    return base.ToString();
-                case HistogrammerToStringOption.Json:
-                    return JsonConvert.SerializeObject(
-                        _histo.ToDictionary(
-                        kvp => kvp.Key.ToString(),
-                        kvp => kvp.Value));
-                default:
-                    this.ThrowHard<NotSupportedException>($"The {option.ToFullKey()} case is not supported.");
-                    return base.ToString();
-            }
-        }
+        public string ToString(Newtonsoft.Json.Formatting formatting)=>
+            JsonConvert.SerializeObject(
+                _histo.ToDictionary(
+                kvp => kvp.Key.ToString(),
+                kvp => kvp.Value), formatting);
     }
 }
