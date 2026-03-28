@@ -30,6 +30,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         [PolicyEnforcement(ThrowOrAdvise.ThrowSoft)]
         ConfigurationModifiedByDatabaseAssignment,
 
+        /// <summary>
+        /// Enforces dual Clear semantics when MDC is exposed as an INCC list surface.
+        /// </summary>
+        /// <remarks>
+        /// MarkdownContext (MDC) defines Clear as a stateful regression: it participates
+        /// in the input-driven state machine, potentially reverting filtering, restoring
+        /// prior visibility, or stepping back through query/filter phases rather than
+        /// immediately destroying the canonical dataset.
+        ///
+        /// This behavior is correct for a context whose primary role is to model intent
+        /// over time. However, when a derived type implements INotifyCollectionChanged,
+        /// it is treated as a routed projection surface and must also satisfy standard
+        /// BCL expectations.
+        ///
+        /// In that role, both Clear() and Clear(bool) must be explicitly implemented:
+        /// the parameterless Clear() provides terminal, first-cause semantics, while
+        /// Clear(bool) preserves access to the underlying stateful regression model.
+        /// </remarks>
         [Description($@"{nameof(ExplicitClearAdvisory)} Policy advisory:
 - Inherited MarkdownContext detected, but no parameterless Clear() was found.
 - Clear(bool all = false) participates in the MDC filtering state machine and may not
