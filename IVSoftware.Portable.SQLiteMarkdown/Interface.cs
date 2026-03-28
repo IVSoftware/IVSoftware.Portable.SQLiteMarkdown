@@ -7,6 +7,7 @@ using SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -161,7 +162,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     [Probationary("Maintain as Internal until stable.")]
     [Careful("Must *never* implement INotifyCollectionChanged - this is reserved to detect inheritance..")]
     [PublishedContract("2.0.0-alpha28", typeof(IMarkdownContext))]
-    public interface IMarkdownContext
+    public interface IMarkdownContext : INotifyPropertyChanged
     {
         #region P A R S E
         /// <summary>
@@ -292,37 +293,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         string[] GetTableNames();
     }
 
-    public interface IModeledMarkdownContext : IMarkdownContext
+    public interface IModeledMarkdownContext
+        : IMarkdownContext
+        , ITopology
     {
-        /// <summary>
-        /// Describes the wiring between the canonical XML model and the net ("seen") projection.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model: "What is 'this'?"
-        /// If 'this' *is-a* MarkdownContext,
-        /// Then canon is projected by redirecting enumeration.
-        /// If 'this' *has-a* MarkdownContext and *is-a* bound enumerable,
-        /// Then the surface is always net, and canon is projected by copying as needed.
-        /// </remarks>
-        ProjectionTopology ProjectionTopology { get; }
-
-        #region C O N F I G U R A T I O N    P R O P E R T I E S
-
-        /// <summary>
-        /// OPT-IN that allows MarkdownContext to modify the ObservableNetCollection directly.
-        /// </summary>
-        NetProjectionOption ProjectionOption { get; set; }
-
-        /// <summary>
-        /// Determines whether filter update events are provided as structural changes
-        /// with old-new item semantics, alternatively as a bulk reset, or both.
-        /// </summary>
-        /// <remarks>
-        /// Some UI platforms respond more efficiently to a raw reset.
-        /// </remarks>
-        ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; }
-        #endregion C O N F I G U R A T I O N    P R O P E R T I E S
-
         #region M O D E L
         /// <summary>
         /// Maintains the canonical recordset as a hierarchy.
@@ -347,14 +321,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///
         /// Mental Model: "Filtering model has been reconfigured. Ask the host to raise INCC."
         /// </remarks>
-        event NotifyCollectionChangedEventHandler ModelSettled;
+        event NotifyCollectionChangedEventHandler ModelChanged;
         #endregion M O D E L
 
         #region P R O J E C T I O N
-        /// <summary>
-        /// Represents a bindable and observable collection representing 'net visible' filtered items.
-        /// </summary>
-        INotifyCollectionChanged? ObservableNetProjection { get; set; }
 
         /// <summary>
         /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
@@ -390,6 +360,51 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         #endregion D I S P O S A B L E
     }
+    public interface ITopology
+    {
+        #region C O N F I G U R A T I O N    P R O P E R T I E S
+        /// <summary>
+        /// OPT-IN that allows MarkdownContext to modify the ObservableNetCollection directly.
+        /// </summary>
+        NetProjectionTopology ProjectionTopology { get; }
+
+        /// <summary>
+        /// Determines whether filter update events are provided as structural changes
+        /// with old-new item semantics, alternatively as a bulk reset, or both.
+        /// </summary>
+        /// <remarks>
+        /// Some UI platforms respond more efficiently to a raw reset.
+        /// </remarks>
+        ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; }
+        #endregion C O N F I G U R A T I O N    P R O P E R T I E S
+
+        #region P R O J E C T I O N
+        /// <summary>
+        /// Represents a bindable and observable collection representing 'net visible' filtered items.
+        /// </summary>
+        IList? ObservableNetProjection { get; }
+
+        public IList CanonicalSuperset { get; }
+
+        public IList PredicateMatchSubset { get; }
+        #endregion  P R O J E C T I O N
+
+        public int Count { get; }
+    }
+    public interface IModeledMarkdownContext<T> : IModeledMarkdownContext
+    {
+        /// <summary>
+        /// Represents a bindable and observable collection representing 'net visible' filtered items.
+        /// </summary>
+        new ObservableCollection<T>? ObservableNetProjection { get; }
+        void SetObservableNetProjection(
+            ObservableCollection<T>? onp, 
+            NetProjectionTopology? option = null);
+
+        new IReadOnlyList<T> CanonicalSuperset { get; }
+
+        new IReadOnlyList<T> PredicateMatchSubset { get; }
+    }
 
     /// <summary>
     /// Extends MarkdownContext with a predicate AND clause that is property-based.
@@ -406,6 +421,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
     [PublishedContract("2.0.0-alpha28", typeof(IPredicateMarkdownContext))]
+    [Careful("This interface is not allowed to implement INotifyCollectionChanged.")]
     public interface IPredicateMarkdownContext : IMarkdownContext
     {
         /// <summary>
@@ -1093,17 +1109,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Enum AffinityFsmState { get; }
     }
     internal enum ReservedAffinityStateMachine
-    { 
-        Idle = -1, 
-    }
-
-    internal enum ReservedFSMState
     {
-        None        = 0,
-        FastTrack   = None -1,
-        Next        = FastTrack - 1,
-        Canceled    = Next - 1,
-        MaxOOB      = Canceled - 1,
+        Idle = -1,
     }
 
     internal enum AffinityFsm

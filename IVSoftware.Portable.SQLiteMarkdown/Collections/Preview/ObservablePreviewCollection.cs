@@ -1,24 +1,23 @@
-﻿using IVSoftware.Portable.Collections;
-using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
+﻿using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
-    class ObservablePreviewCollection<T> : ObservableCollection<T>
+    internal class ObservablePreviewCollection<T> : ObservableCollection<T>
     {
-        public ObservablePreviewCollection(bool useMutablePreviewEvents = false)
+        public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.ReadOnly)
         {
-            PreviewCollection = new RevertableObservableCollection<T>(this, useMutablePreviewEvents);
+            PreviewCollection = new RevertableObservableCollection<T>(this, eventScope);
 
             // The preview collection doesn't always change.
             // This event signals that it has done so, i.e., the action was not canceled.
-            PreviewCollection.CollectionChanged += (sender, e) =>
-                OnCollectionChanged(e);
+            PreviewCollection.CollectionChanging += (sender, ePre) =>
+                OnCollectionChanging(ePre);
+
+            PreviewCollection.CollectionChanged += (sender, ePro) =>
+                OnCollectionChanged(ePro);
         }
         protected override void ClearItems() => PreviewCollection.ClearItems(); protected override void InsertItem(int index, T item)
             => PreviewCollection.InsertItem(index, item);
@@ -31,7 +30,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         protected override void RemoveItem(int index)
             => PreviewCollection.RemoveItem(index);
 
+        public IDisposable BeginBatch() => DHostBatch.GetToken(this);
+        DHostBatchCollectionChange DHostBatch
+        {
+            get
+            {
+                if (_dhostBatch is null)
+                {
+                    _dhostBatch = new DHostBatchCollectionChange();
+                    _dhostBatch.FinalDispose += (sender, e) =>
+                    {
+                        if (e is BatchFinalDisposeEventArgs eFD)
+                        {
+                            OnCollectionChanged(eFD.Digest);
+                        }
+                    };
+                }
+                return _dhostBatch;
+            }
+        }
+        DHostBatchCollectionChange? _dhostBatch = null;
+
         bool _isUpdatingBase = false;
+        protected virtual void OnCollectionChanging(NotifyCollectionChangingEventArgs e)
+        {
+            CollectionChanging?.Invoke(this, e);
+        }
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
             if (!_isUpdatingBase)
@@ -85,7 +109,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                             base.ClearItems();
                             break;
                     }
-                    base.OnCollectionChanged(e);
+
+                    if (DHostBatch.TryApply(e))
+                    {   /* G T K - N O O P */
+                        // Batch is in progress.
+                    }
+                    else
+                    {
+                        base.OnCollectionChanged(e);
+                    }
                 }
                 finally
                 {
@@ -99,10 +131,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         }
         RevertableObservableCollection<T> PreviewCollection { get; }
 
-        public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging
-        {
-            add => PreviewCollection.CollectionChanging += value;
-            remove => PreviewCollection.CollectionChanging -= value;
-        }
+        /// <summary>
+        /// CollectionChanging event that strictly belongs to this 
+        /// class and is distinct, and not merely a `new` or `forwarded` 
+        /// version of the same event in the Revertable class.
+        /// </summary>
+        public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
     }
 }

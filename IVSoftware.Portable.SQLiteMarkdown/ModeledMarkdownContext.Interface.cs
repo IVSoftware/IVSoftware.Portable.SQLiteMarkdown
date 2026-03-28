@@ -1,26 +1,23 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
-using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
+using System.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
     partial class ModeledMarkdownContext<T> : IList
     {
         [Indexer]
-        object IList.this[int index]
+        public T this[int index]
         {
-            get => ((IList)Topology.Read)[index];
+            get => Read[index];
             set
             {
                 if (value is T valueT)
                 {
-                    ((IList)Topology.Write)[index] = valueT;
+                    CanonicalSupersetProtected[index] = valueT;
                 }
                 else
                 {
@@ -30,20 +27,43 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+        [Indexer]
+        object? IList.this[int index]
+        {
+            get => this[index];
+            set
+            {
+                if (value is T valueT)
+                {
+                    this[index] = valueT;
+                }
+                else
+                {
+                    ThrowHard<InvalidCastException>(
+                        $"{nameof(IList.Add)} requires value assignable to {typeof(T).Name}."
+                    );
+                }
+            }
+        }
 
-        bool IList.IsFixedSize => Topology.IsFixedSize;
-        bool IList.IsReadOnly => Topology.IsReadOnly;
+        IList<T> Read =>
+            IsFiltering
+            ? PredicateMatchSubsetPrivate
+            : CanonicalSupersetProtected;
 
-        int ICollection.Count => Topology.Count;
-        bool ICollection.IsSynchronized => Topology.IsSynchronized;
-        object ICollection.SyncRoot => Topology.SyncRoot;
+        bool IList.IsFixedSize => false;
+        bool IList.IsReadOnly => false;
+        int ICollection.Count => Read.Count;
+        bool ICollection.IsSynchronized => ((IList)CanonicalSupersetProtected).IsSynchronized;
+        object ICollection.SyncRoot => ((IList)CanonicalSupersetProtected).SyncRoot;
 
         int IList.Add(object value)
         {
             if (value is T valueT)
             {
-                Topology.Write.Add(valueT);
-                return Topology.Count - 1;
+                var index = ((IList)this).Count;
+                CanonicalSupersetProtected.Insert(index, valueT);
+                return index;
             }
             else
             {
@@ -54,16 +74,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        void IList.Clear()
-            => Topology.Write.Clear();
+        /// <summary>
+        /// "No surprises" clear on interface.
+        /// </summary>
+        void IList.Clear() => Clear(all: true);
 
-        bool IList.Contains(object value)
-            => value is T valueT && Topology.Contains(valueT);
+        bool IList.Contains(object value) =>
+            value is T valueT
+            ? IsFiltering
+                ? PredicateMatchSubset.Contains(valueT)
+                : CanonicalSuperset.Contains(valueT)
+            : false;
+
         void ICollection.CopyTo(Array array, int index)
         {
             if (array is T[] typed)
             {
-                Topology.CopyTo(typed, index);
+                if (IsFiltering)
+                {
+                    PredicateMatchSubsetPrivate.CopyTo(typed, index);
+                }
+                else
+                {
+                    CanonicalSupersetProtected.CopyTo(typed, index);
+                }
             }
             else 
             { 
@@ -73,14 +107,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        int IList.IndexOf(object value)
-            => value is T valueT ? Topology.IndexOf(valueT) : -1;
+        int IList.IndexOf(object value) =>
+            IsFiltering
+            ? ((IList)PredicateMatchSubsetPrivate).IndexOf(value)
+            : ((IList)CanonicalSupersetProtected).IndexOf(value);
 
         void IList.Insert(int index, object value)
         {
             if (value is T valueT)
             {
-                Topology.Write.Insert(index, valueT);
+                CanonicalSupersetProtected.Insert(index, valueT);
             }
             else
             {
@@ -94,14 +130,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if (value is T valueT)
             {
-                Topology.Write.Remove(valueT);
+                CanonicalSupersetProtected.Remove(valueT);
             }
-        }
-
-        void IList.RemoveAt(int index)
-        {
-            var item = Topology.Read[index];
-            Topology.Write.Remove(item);
         }
     }
 
@@ -109,42 +139,49 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         T IList<T>.this[int index]
         {
-            get => (T)((IList)Topology.Read)[index];
-            set => Topology.Write[index] = value!;
+            get => (T)((IList)Read)[index];
+            set => CanonicalSupersetProtected[index] = value!;
         }
+        public override int CanonicalCount => CanonicalSuperset.Count;
+        public override int PredicateMatchCount => PredicateMatchSubset.Count;
+        public int Count =>
+            IsFiltering
+            ? PredicateMatchCount
+            : CanonicalCount;
 
-        int ICollection<T>.Count => Topology.Count;
-        bool ICollection<T>.IsReadOnly => Topology.IsReadOnly;
+        public bool IsReadOnly => ((IList)this).IsReadOnly;
 
-        void ICollection<T>.Add(T item)
-            => Topology.Write.Add(item!);
+        public void Add(T item) => CanonicalSupersetProtected.Add(item);
 
-        void ICollection<T>.Clear()
-            => Topology.Write.Clear();
+        /// <summary>
+        /// "No surprises" clear on interface.
+        /// </summary>
+        void ICollection<T>.Clear() => Clear(all: true);
 
-        bool ICollection<T>.Contains(T item)
-            => Topology.Contains(item!);
+        public bool Contains(T item) => Read.Contains(item);
 
-        void ICollection<T>.CopyTo(T[] array, int arrayIndex)
-            => Topology.CopyTo(array, arrayIndex);
-
-        int IList<T>.IndexOf(T item)
-            => Topology.IndexOf(item!);
-
-        void IList<T>.Insert(int index, T item)
-            => Topology.Write.Insert(index, item!);
-
-        bool ICollection<T>.Remove(T item)
+        public void CopyTo(T[] array, int arrayIndex)
         {
-            bool exists = Topology.Contains(item);
-            Topology.Write.Remove(item!);
-            return exists;
+            throw new NotImplementedException();
         }
 
-        void IList<T>.RemoveAt(int index)
+        public int IndexOf(T item) => Read.IndexOf(item);
+
+        public void Insert(int index, T item) => CanonicalSupersetProtected.Insert(index, item);
+
+        public bool Remove(T item)
         {
-            var item = Topology.Read[index];
-            Topology.Write.Remove(item);
+            if (((IList<T>)this).Contains(item))
+            {
+                CanonicalSupersetProtected.Remove(item);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
+
+        public void RemoveAt(int index) => Read.RemoveAt(index);
     }
 }

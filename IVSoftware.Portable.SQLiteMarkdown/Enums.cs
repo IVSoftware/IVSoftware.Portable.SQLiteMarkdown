@@ -242,10 +242,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         model,
 
         /// <summary>
+        /// Records the net effect of qmatch and pmatch
+        /// </summary>
+        [DefaultValue("True")]
+        match,
+
+        /// <summary>
         /// This record matches all active predicates.
         /// </summary>
         [DefaultValue("True")]
-        ismatch,
+        qmatch,
+
+        /// <summary>
+        /// This record matches all active predicates.
+        /// </summary>
+        [DefaultValue("True")]
+        pmatch,
 
         /// <summary>
         /// Canonical record order.
@@ -441,20 +453,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Executes on rising edge of IsFiltering.
     /// </summary>
-    internal enum LoadIsFilteringEpochFSM
-    {
-        DetectFastTrack = StdFSMState.DetectFastTrack,
-
-        ResetOrCanonizeFQBDForEpoch = StdFSMState.ResetOrCanonizeFQBDForEpoch,
-
-        ResetOrCanonizeModelForEpoch = StdFSMState.ResetOrCanonizeModelForEpoch,
-
-        UpdateStatesForEpoch = StdFSMState.UpdateStatesForEpoch,
-    }
-
-    /// <summary>
-    /// Executes on rising edge of IsFiltering.
-    /// </summary>
     internal enum TrackUserAddItem
     {
         AddItemToModel = StdFSMState.AddItemToModel,
@@ -512,75 +510,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         RaiseModelSettledEvent = StdFSMState.ModelSettled,
     }
 
-    public enum ProjectionTopology
+    [NotFlags]
+    public enum NetProjectionTopology
     {
         /// <summary>
-        /// No ObservableNetProjection has been assigned.
+        /// No event or synchronization targets exist.
         /// </summary>
         None,
 
         /// <summary>
-        /// *NOT* an ObservableNetProjection - Instead it inherits MarkdownContext and routes the enumerator.
+        /// The runtime type is a subclass of MarkdownContext and implements INotifyCollectionChanged.
         /// </summary>
-        /// IsFiltering => 
-        /// 1. DHostSuppress.GetToken to suppress INCC.
-        /// 2. Copy 'this' to a canonical backing store and DB.
-        /// 3. Query DB for term and populate _filteredItems.
-        ///*4. Route the enumerator to _filteredItens.
-        /// 5. Relinquish DHostSuppress to raise Reset.
-        /// IsFiltering <=
-        /// 1. DHostSuppress.GetToken to suppress INCC.
-        ///*2. Route the enumerator to canonical.
-        /// 3. Relinquish DHostSuppress to raise Reset.
-        /// </remarks>
-        Inheritance,
+        Routed,
 
         /// <summary>
-        /// The ObservableNetProjection inherits INotifyCollectionChanged - filtering employs copying not routing.
+        /// A concrete ObservableNetProjection is available for observation only.
         /// </summary>
-        /// <remarks>
-        /// IsFiltering => 
-        /// 1. DHostSuppress.GetToken to suppress INCC.
-        /// 2. Copy 'this' to a canonical backing store and DB.
-        /// 3. Query DB for term and populate _filteredItems.
-        /// 4. Copy _filteredItems to 'this'.
-        /// 5. Relinquish DHostSuppress to raise Reset.
-        /// IsFiltering <=
-        /// 1. DHostSuppress.GetToken to suppress INCC.
-        /// 2. Copy canonical backing store to 'this'
-        /// 3. Relinquish DHostSuppress to raise Reset.
-        /// </remarks>
-        Composition,
-    }
-
-    [NotFlags]
-    public enum NetProjectionOption
-    {
-        /// <summary>
-        /// External ObservableNetCollection is not allowed for ProjectionTopology.Inheritance.
-        /// </summary>
-        /// <remarks>
-        /// - Subclasses must enforce an internal update policy.
-        /// - External collections should not be allowed to influence this policy.
-        /// </remarks>
-        Inherited,
-
-        /// <summary>
-        /// Observe the projection for reconciliation but do not mutate it.
-        /// </summary>
-        /// <remarks>
-        /// MDC subscribes to INCC events in order to maintain the canonical model,
-        /// but treats the projection as externally owned by the UI.
-        /// </remarks>
         ObservableOnly,
 
         /// <summary>
-        /// Allow MDC to directly modify the projection collection.
+        /// A concrete ObservableNetProjection is available for both observation and for read-write.
         /// </summary>
         /// <remarks>
-        /// OPT-IN: Enables MDC to puppeteer the projection when maintaining canonical
-        /// state. This is a powerful opt-in that assumes MDC has safe write
-        /// authority over the observable collection.
+        /// OPT-IN: 
+        /// - Enables MDC to puppeteer the projection when maintaining canonical state.
+        /// - This is a powerful opt-in granting MDC safe write authority over 
+        ///   the observable collection.
         /// </remarks>
         AllowDirectChanges,
     }

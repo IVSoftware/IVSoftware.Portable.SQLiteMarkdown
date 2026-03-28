@@ -1,11 +1,12 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.StateMachine;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
@@ -25,36 +26,31 @@ using static IVSoftware.Portable.SQLiteMarkdown.Internal.Extensions;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public partial class ModeledMarkdownContext<T> 
+    public partial class ModeledMarkdownContext<T>
         : MarkdownContext<T>
-        , IModeledMarkdownContext
+        , IModeledMarkdownContext<T>
         where T : new()
     {
         public ModeledMarkdownContext()
         {
-            // Self-detect the topology.
-            // - RTTI claims INotifyCollectionChange implementation.
-            // - This class, however, doesn't do that on its own.
-            // - Inheritance is the only possibility.
-            _isInherited = typeof(INotifyCollectionChanged).IsAssignableFrom(GetType());
-            if (_isInherited)
+            CanonicalSupersetProtected = new();
+            CanonicalSupersetProtected.CollectionChanged += (sender, e) =>
             {
-                if (this.GetType().GetMethod(nameof(Clear), Type.EmptyTypes) is { } clearMethod)
-                {   /* B C S - N O O P */
-                }
-                else
+                OnCanonicalSupersetChanged(e);
+            };
+            if(typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
+            {
+                ProjectionTopology = NetProjectionTopology.Routed;
+                var type = GetType();
+                bool hasParameterlessClear = type.GetMethod(nameof(Clear), Type.EmptyTypes) is not null;
+                bool hasBooleanClear = type.GetMethod(nameof(Clear), [typeof(bool)]) is not null;
+                
+                if(!(hasParameterlessClear && hasBooleanClear))
                 {
-                    // Avoid leaking the object itself as the awaited sender.
-                    nameof(MarkdownContext).Advisory(
-                        $"Inherited MarkdownContext detected, but no parameterless Clear() was found. " +
-                        "Clear(bool all = false) participates in the MDC filtering state machine and may not immediately empty the collection. " +
-                        "If your callers expect IList-style behavior, consider implementing Clear() => Clear(true) to provide a deterministic terminal clear. " +
-                        "You may also expose Clear(bool all) without a default parameter to make the stateful semantics explicit."
-                    );
+                    this.ThrowPolicyException(MarkdownContextPolicyViolation.ExplicitClearAdvisory);
                 }
             }
         }
-        Topology<T> Topology { get; }
 
         /// <summary>
         /// Returns the singleton, non-replaceable root XElement, created on demand.
@@ -68,7 +64,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (_model is null)
                 {
-                    _model = new XElement(nameof(StdMarkdownElement.model));
+                    _model = 
+                        new XElement(
+                            nameof(StdMarkdownElement.model),
+                            new XBoundAttribute(nameof(StdMarkdownAttribute.mdc), this, $"[MMDC]"),
+                            new XAttribute(nameof(StdMarkdownAttribute.autocount), 0),
+                            new XAttribute(nameof(StdMarkdownAttribute.count), 0),
+                            new XAttribute(nameof(StdMarkdownAttribute.matches), 0));
                     _model.Changing += (sender, e) =>
                     {
                         if (sender is XElement xel && e.ObjectChange == XObjectChange.Remove)
@@ -107,178 +109,34 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return _model;
             }
         }
-        XElement? _model = null;
-
-        Dictionary<XElement, XElement> _parentsOfRemoved = new();
-
-        protected virtual void OnXAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
-        {
-            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Reset)
-            {   /* G T K - N O O P */
-            }
-            else
-            {
-                string id = null!;
-                if (xattr.Parent?.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
-                    && xbaModel.Tag is { } model
-                    && !string.IsNullOrWhiteSpace(id = model.GetId()))
-                {
-                    if (ReferenceEquals(xattr, xbaModel))
-                    {
-                        OnBoundItemObjectChange(xbaModel, e.ObjectChange);
-                    }
-                    else
-                    {
-                        if (Enum.TryParse(xattr.Name.LocalName, out StdMarkdownAttribute std))
-                        {
-                            switch (xattr)
-                            {
-                                case XBoundAttribute:
-                                    break;
-                                default:
-                                    switch (std)
-                                    {
-                                        case StdMarkdownAttribute.ismatch:
-                                            bool isMatch = bool.Parse(xattr.Value);
-                                            switch (e.ObjectChange)
-                                            {
-                                                case XObjectChange.Add:
-                                                case XObjectChange.Value:
-                                                    if (isMatch)
-                                                    {
-                                                        MatchContainsProto.Add(id);
-                                                    }
-                                                    break;
-                                                case XObjectChange.Remove:
-                                                    MatchContainsProto.Remove(id);
-                                                    break;
-                                            }
-                                            break;
-                                    }
-                                    break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        [Probationary]
-        public HashSet<string> MatchContainsProto = new();
-
-        protected virtual void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
-        {
-            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Reset)
-            {   /* G T K - N O O P */
-            }
-            else
-            {
-                if (pxel is null)
-                {
-                    this.ThrowFramework<NullReferenceException>(
-                        $"UNEXPECTED: The '{nameof(pxel)}' argument should be non-null by design.");
-                }
-                switch (e.ObjectChange)
-                {
-                    case XObjectChange.Add:
-                    case XObjectChange.Remove:
-                        var xbo =
-                            xel
-                            .Attributes()
-                            .OfType<XBoundAttribute>()
-                            .FirstOrDefault(_ => _.Tag?.GetType() == ContractType);
-                        if (xbo is not null)
-                        {
-                            OnBoundItemObjectChange(xbo, e.ObjectChange);
-                        }
-                        localAutoCount();
-                        break;
-                }
-
-                #region L o c a l F x
-                void localAutoCount()
-                {
-                    XElement? modelRoot = pxel?.AncestorsAndSelf().LastOrDefault();
-                    if (modelRoot is null)
-                    {
-                        this.ThrowFramework<NullReferenceException>(
-                            $"UNEXPECTED: The '{nameof(modelRoot)}' argument should be non-null by design.");
-                    }
-                    else
-                    {
-                        var autocount = modelRoot.GetAttributeValue<int>(StdMarkdownAttribute.autocount);
-                        switch (e.ObjectChange)
-                        {
-                            case XObjectChange.Add:
-                                autocount++;
-                                break;
-                            case XObjectChange.Remove:
-                                if (autocount == 0)
-                                {
-                                    this.ThrowFramework<InvalidOperationException>(
-                                        $"UNEXPECTED: Illegal underflow detected '{nameof(autocount)}'. Count should be >= 0 by design.");
-                                }
-                                else
-                                {
-                                    autocount--;
-                                }
-                                break;
-                        }
-                        modelRoot.SetAttributeValue(StdMarkdownAttribute.autocount, autocount);
-                        // [Careful]
-                        // It's too racey here to try and compare counts.
-                    }
-#if false
-                switch (e.ObjectChange)
-                {
-                    case XObjectChange.Add:
-                        count++;
-                        root?.SetAttributeValue(StdMarkdownAttribute.count, count);
-                        break;
-                    case XObjectChange.Remove:
-                        if (count == 0)
-                        {
-                            this.ThrowFramework<InvalidOperationException>(
-                                $"UNEXPECTED: Illegal underflow detected '{nameof(count)}'. Count should be >= 0 by design.");
-                        }
-                        else
-                        {
-                            count--;
-                            {
-                                root?.SetAttributeValue(StdMarkdownAttribute.count, count);
-                            }
-                        }
-                        break;
-                }
-#endif
-                }
-                #endregion L o c a l F x
-            }
-        }
 
 #if DEBUG
         const bool SQLITE_STRICT = true;
 #else
         const bool SQLITE_STRICT = false;
 #endif
-        protected virtual void OnBoundItemObjectChange(XBoundAttribute xbo, XObjectChange action)
+        [Canonical("The globally unique authority for binding items and their INPC events.")]
+        protected override void OnBoundItemObjectChange(XBoundAttribute xbo, XObjectChange action)
         {
-            var item = xbo.Tag;
+            var item = (T)xbo.Tag;
             switch (action)
             {
                 case XObjectChange.Add:
-                    localSetModelAuthority();
+                    localSetModelContainer();
                     localAddEvents();
+                    localEvaluateMatch();
                     _ = localTryAddToDatabase();
                     break;
                 case XObjectChange.Remove:
                     _ = localTryRemoveFromDatabase();
                     localRemoveEvents();
+                    localRemoveMatch();
                     break;
             }
             #region L o c a l F x
 
             // Associate the xml Model governing this ddx.
-            void localSetModelAuthority()
+            void localSetModelContainer()
             {
                 if (xbo.Tag is IAffinityModel modeled)
                 {
@@ -301,6 +159,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     inpc.PropertyChanged += OnItemPropertyChanged;
                 }
             }
+
             void localRemoveEvents()
             {
                 if (item is INotifyPropertyChanged inpc)
@@ -308,6 +167,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     inpc.PropertyChanged -= OnItemPropertyChanged;
                 }
             }
+
             bool? localTryAddToDatabase()
             {
                 bool? isSuccess = null;
@@ -329,7 +189,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 if (isSuccess == false)
                 {
-                    this.ThrowPolicyException(SQLiteMarkdownPolicyViolation.SQLiteOperationFailed);
+                    this.ThrowPolicyException(MarkdownContextPolicyViolation.SQLiteOperationFailed);
                 }
                 return isSuccess;
             }
@@ -346,6 +206,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     isSuccess = null;
                 }
                 return isSuccess;
+            }
+            void localEvaluateMatch()
+            {
+                if(xbo.Parent is { } xel)
+                {
+                    var qmatch = xel.GetAttributeValue<bool>(StdMarkdownAttribute.qmatch);
+                    var pmatch = xel.GetAttributeValue<bool>(StdMarkdownAttribute.pmatch);
+                    if(qmatch && pmatch)
+                    {
+                        PredicateMatchSubsetPrivate.Add(item);
+                    }
+                    else
+                    {
+                        xel.SetAttributeValue(StdMarkdownAttribute.match, bool.FalseString);
+                    }
+                }
+            }
+            void localRemoveMatch()
+            {
+                PredicateMatchSubsetPrivate.Remove(item);
             }
             #endregion L o c a l F x
         }
@@ -394,7 +274,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     await Task.Run(async () =>
                     {
                         PredicateMatchSubsetPrivate.Clear();
-                        Model.RemoveDescendantAttributes(StdMarkdownAttribute.ismatch);
+                        Model.RemoveDescendantAttributes(StdMarkdownAttribute.match);
 
                         #region F I L T E R    Q U E R Y
                         sql = ParseSqlMarkdown();
@@ -422,7 +302,7 @@ SELECT * FROM items WHERE
                             switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
                             {
                                 case PlacerResult.Exists:
-                                    xaf.SetAttributeValue(nameof(StdMarkdownAttribute.ismatch), bool.TrueString);
+                                    xaf.SetAttributeValue(nameof(StdMarkdownAttribute.match), bool.TrueString);
                                     if (xaf.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
                                         && xbaModel.Tag is T model)
                                     {
@@ -442,17 +322,17 @@ SELECT * FROM items WHERE
                         }
                     });
 
-                    var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangedReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
+                    var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
 
                     if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
                     {
-                        OnModelSettled(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
-                            reason: NotifyCollectionChangedReason.ApplyFilter,
+                        OnModelChanged(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
+                            reason: NotifyCollectionChangeReason.ApplyFilter,
                             e: eStructural));
                     }
                     if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
                     {
-                        OnModelSettled(eReset);
+                        OnModelChanged(eReset);
                     }
 
 #if ABSTRACT
@@ -506,8 +386,7 @@ SELECT * FROM items WHERE
         #region P R O J E C T I O N
 
         /// <summary>
-        /// Gets or sets the observable projection representing the effective
-        /// (net visible) collection after markdown and predicate filtering.
+        /// Links or reassigns a non-canonical (presumably UI) items source to the markdown context.
         /// </summary>
         /// <remarks>
         /// Mental Model: "ItemsSource for a CollectionView with both initial query and subsequent filter refinement.
@@ -515,55 +394,43 @@ SELECT * FROM items WHERE
         /// - NET       : The items in this collection depend on the net result of the recordset and any state-dependent filters.
         /// - PROJECTION: Conveys that this 'filtering' produces a PCL collection, albeit one that is likely to be visible.
         ///
-        /// When assigned, this context subscribes to CollectionChanged as a
-        /// reconciliation sink. During refinement epochs, structural changes
-        /// made against the filtered projection are absorbed into the canonical
-        /// backing store so that the canon remains complete and relevant.
+        /// When assigned, this context subscribes to CollectionChanged as a reconciliation sink. During
+        /// refinement epochs, structural changes made against the filtered projection are absorbed into
+        /// the canonical backing store so that the canon remains complete and relevant.
         ///
         /// The projection is an interaction surface, not a storage authority.
         /// Its mutations are normalized and merged into the canonical collection
         /// according to the active authority contract.
         ///
         /// Replacing this property detaches the previous projection and attaches the new one.
-        ///
-        /// This property is infrastructure wiring and is not intended for data binding.
         /// </remarks>
-        public INotifyCollectionChanged? ObservableNetProjection
+        public IList? ObservableNetProjection
         {
             get => _observableProjection;
-            set
+            protected set
             {
-                if (ProjectionTopology == ProjectionTopology.Inheritance)
+                if (!Equals(_observableProjection, value))
                 {
-                    ThrowHard<InvalidOperationException>(@"
-Cannot assign ObservableNetProjection when ProjectionTopology is Inheritance.
-Inherited contexts manage their projection internally.".TrimStart());
-                }
-                else
-                {
-                    if (!Equals(_observableProjection, value))
+                    // Unsubscribe INCC
+                    if (_observableProjection is INotifyCollectionChanged)
                     {
-                        // Unsubscribe INCC
-                        if (_observableProjection is not null)
-                        {
-                            _observableProjection.CollectionChanged -= OnNetProjectionCollectionChanged;
-                        }
+                        ((INotifyCollectionChanged)_observableProjection).CollectionChanged -= OnNetProjectionCollectionChanged;
+                    }
 
-                        _observableProjection = value;
+                    _observableProjection = value;
 
-                        // Run the handler then subscribe to any subsequent changes.
-                        OnNetProjectionHandleChanged();
+                    // Run the handler then subscribe to any subsequent changes.
+                    OnNetProjectionHandleChanged();
 
-                        // Subscribe INCC
-                        if (_observableProjection is not null)
-                        {
-                            _observableProjection.CollectionChanged += OnNetProjectionCollectionChanged;
-                        }
+                    // Subscribe INCC
+                    if (_observableProjection is INotifyCollectionChanged)
+                    {
+                        ((INotifyCollectionChanged)_observableProjection).CollectionChanged += OnNetProjectionCollectionChanged;
                     }
                 }
             }
         }
-        INotifyCollectionChanged? _observableProjection = null;
+        IList? _observableProjection = null;
 
 
         /// <summary>
@@ -588,19 +455,28 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
         }
 
+        public CollectionChangeAuthority Authority =>
+            (CollectionChangeAuthority)StateRunner.AuthorityProvider.Authority;
+
+        protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
+        {
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
+            {
+                await base.OnEpochFinalizingAsync(e);
+            }
+        }
+
         /// <summary>
         /// Receives projection change notifications required to maintain the canonical ledger.
         /// </summary>
         protected virtual void OnNetProjectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection);
-            if (Authority == CollectionChangeAuthority.Projection)
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Projection))
             {
-                UpdateModelWithAuthority(sender, e);
-            }
-            else
-            {
-                Debug.Assert(Authority == CollectionChangeAuthority.Settle);
+                if(Equals(Authority, CollectionChangeAuthority.Projection))
+                {
+                    CanonicalSupersetProtected.Apply(e);
+                }
             }
         }
 
@@ -612,28 +488,55 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// changes to the canonical superset pass through here so the routed projection,
         /// filtering state, and collection notifications remain consistent with the
         /// authoritative dataset for the current epoch.
-        ///
-        /// Mental Model: "The canonical ledger changed. Reconcile projections and notify observers."
         /// </remarks>
-        protected virtual void OnCanonicalSupersetChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected virtual void OnCanonicalSupersetChanged(NotifyCollectionChangedEventArgs e)
         {
-            Debug.Assert(
-                ProjectionTopology == ProjectionTopology.Inheritance,
-                "Expecting this.GetType() is *not* IList and that it *does* inherit MDC");
-            Debug.Assert(
-                ObservableNetProjection is null,
-                "Expecting CanonicalSuperset *is* the source of all model changes.");
-
-            using var authority = BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle);
-            if (Authority == CollectionChangeAuthority.Settle)
+            Model.Apply(e);
+            switch (Authority)
             {
-                UpdateModelWithAuthority(sender, e);
-            }
-            else 
-            {
-                Debug.Fail($@"ADVISORY - First Time.");
+                case CollectionChangeAuthority.Reset:
+                case CollectionChangeAuthority.Commit:
+                case CollectionChangeAuthority.Settle:
+                case CollectionChangeAuthority.Predicate:
+                    if(DHostBatch.TryApply(e))
+                    { 
+                        /* G T K - N O O P */
+                        // Deferred
+                    }
+                    else
+                    {
+                        OnModelChanged(e);
+                    }
+                    break;
             }
         }
+
+        public IDisposable BeginBatch() => DHostBatch.GetToken(this);
+        DHostBatchCollectionChange DHostBatch
+        {
+            get
+            {
+                if (_dhostBatch is null)
+                {
+                    _dhostBatch = new DHostBatchCollectionChange();
+                    _dhostBatch.FinalDispose += (sender, e) =>
+                    {
+                        if (e is BatchFinalDisposeEventArgs eFD)
+                        {
+                            if (eFD["IsModified"] is bool isModified && isModified)
+                            {
+                                OnModelChanged(eFD.Digest);
+                            }
+                            else
+                            {   /* G T K - N O O P */
+                            }
+                        }
+                    };
+                }
+                return _dhostBatch;
+            }
+        }
+        DHostBatchCollectionChange? _dhostBatch = null;
 
         protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -651,7 +554,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                     Debug.Fail($@"ADVISORY - Explicit no authority. Is this what we really want here?.");
                     return;
                 default:
-                    this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                    this.ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
                     return;
             }
             #endregion A U T H O R I T Y    G U A R D
@@ -742,19 +645,22 @@ Inherited contexts manage their projection internally.".TrimStart());
         ///
         /// Mental Model: "Input text has settled; the model has reconciled."
         /// </remarks>
-        protected virtual void OnModelSettled(NotifyCollectionChangedEventArgs eBCL)
+        protected virtual void OnModelChanged(NotifyCollectionChangedEventArgs eBCL)
         {
-            switch (ProjectionOption)
+            switch (ProjectionTopology)
             {
-                case NetProjectionOption.Inherited:         // Subclass should apply policy first, then call base.
-                case NetProjectionOption.ObservableOnly:    // Maintain internal canon but do not push internal changes.
-                    ModelSettled?.Invoke(this, eBCL);
+                case NetProjectionTopology.None: 
+                    // N O O P
+                    // There is no projection to update.
                     break;
-                case NetProjectionOption.AllowDirectChanges:
+                case NetProjectionTopology.ObservableOnly:    // Maintain internal canon but do not push internal changes.
+                    ModelChanged?.Invoke(this, eBCL);
+                    break;
+                case NetProjectionTopology.AllowDirectChanges:
                     localApplyDirectChanges();
                     break;
                 default:
-                    this.ThrowFramework<NotSupportedException>($"The {ProjectionOption.ToFullKey()} case is not supported.");
+                    this.ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
                     break;
             }
             void localApplyDirectChanges()
@@ -769,7 +675,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                     if (ObservableNetProjection is not IList projection)
                     {
                         this.ThrowFramework<InvalidOperationException>(
-                            $"Expecting {nameof(ObservableNetProjection)} is determined to be non-null in the ProjectionOption property getter.");
+                            $"Expecting {nameof(ObservableNetProjection)} is determined to be non-null in the ProjectionTopology property getter.");
                     }
                     else
                     {
@@ -789,7 +695,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                         // way in in which to determine authority because *that* collection
                         // raises *those* events, i.e., is the sender of them.
                         Debug.Assert(
-                            DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Settle,
+                            Equals(AuthorityEpochProvider.Authority, CollectionChangeAuthority.Settle),
                             "Expecting this operation takes place under Model authority."
                         );
                         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -806,7 +712,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                                 break;
                         }
                     }
-                    ModelSettled?.Invoke(this, eBCL);
+                    ModelChanged?.Invoke(this, eBCL);
 
                     #region L o c a l F x
 
@@ -840,7 +746,7 @@ Inherited contexts manage their projection internally.".TrimStart());
                             if (eBCL.NewItems.Count != 1)
                             {
                                 ThrowHard<NotSupportedException>(
-                                    $"In {nameof(OnModelSettled)} Multi item moves are not supported. Override this method for full control.");
+                                    $"In {nameof(OnModelChanged)} Multi item moves are not supported. Override this method for full control.");
                                 return;
                             }
                             int oldIndex = eBCL.OldStartingIndex;
@@ -899,9 +805,9 @@ Inherited contexts manage their projection internally.".TrimStart());
                     {
                         switch (eModel.Reason)
                         {
-                            case NotifyCollectionChangedReason.QueryResult:
-                            case NotifyCollectionChangedReason.ApplyFilter:
-                            case NotifyCollectionChangedReason.RemoveFilter:
+                            case NotifyCollectionChangeReason.QueryResult:
+                            case NotifyCollectionChangeReason.ApplyFilter:
+                            case NotifyCollectionChangeReason.RemoveFilter:
                                 // Avoid Clear() here. Some observers treat Clear as a semantic reset
                                 // (e.g., selection or virtualization state) rather than a sequence of
                                 // removes. Replaying the individual Remove/Add operations preserves
@@ -958,89 +864,155 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
         }
 
-        public event NotifyCollectionChangedEventHandler? ModelSettled;
+        public event NotifyCollectionChangedEventHandler? ModelChanged;
 
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.
         /// </summary>
-        public NetProjectionOption ProjectionOption
-        {
-            get =>
-                ProjectionTopology == ProjectionTopology.Inheritance
-                ? NetProjectionOption.Inherited
-                // Guards against attempting to write when the projection is null.
-                : ObservableNetProjection is null
-                    ? NetProjectionOption.ObservableOnly
-                    : _projectionOption;
-            set
-            {
-                if (!Equals(_projectionOption, value))
-                {
-                    _projectionOption = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        NetProjectionOption _projectionOption = 0;
+        /// <remarks>
+        /// The CTor checks for:
+        /// - If runtime subclass implements INotifyCollectionChanged.
+        /// ∴ Is inherently read-write.
+        /// ∴ Cannot simultaneously host an ObservableNetProjection.
+        /// ∴ Employs routing, not copying, for the IsFiltering epoch.
+        /// - Then the NetProjectionTopology.Routed assigned, and is immutable once set.
+        /// Manual Assignment:
+        /// - If NetProjectionTopology.Routed is *not* assigned in ctor
+        ///   then it cam be set using the SetObservableNetProjection method.
+        /// </remarks>
+        public NetProjectionTopology ProjectionTopology { get; protected set; } = NetProjectionTopology.None;
 
         public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; } = ReplaceItemsEventingOption.StructuralReplaceEvent;
 
         /// <summary>
-        /// Reports on whether this object is inherited or composed.
+        /// Indicates that the runtime type is a subclass of MMDC.
         /// </summary>
-        public ProjectionTopology ProjectionTopology
+        public bool IsInherited
         {
-            get => _isInherited
-                    ? ProjectionTopology.Inheritance
-                    : ObservableNetProjection is null
-                         ? ProjectionTopology.None
-                         : ProjectionTopology.Composition;
+            get
+            {
+                if (_isInherited is null)
+                {
+                    _isInherited = GetType() != typeof(ModeledMarkdownContext<T>);
+                }
+                return (bool)_isInherited;
+            }
         }
-        readonly bool _isInherited;
+        bool? _isInherited = null;
+
+
+
         #endregion P R O J E C T I O N
 
+        /// <summary>
+        /// Overrides the BC.Clear so that the model and database can be tracked.
+        /// </summary>
+        protected override void OnClear(bool all)
+        {
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Reset))
+            {
+                switch (Authority)
+                {
+                    default:
+                    case CollectionChangeAuthority.Reset:
+                        base.OnClear(all);
+                        if (all)
+                        {
+                            CanonicalSupersetProtected.Clear();
+                        }
+                        break;
+                    case CollectionChangeAuthority.Commit:
+                        // Moved this management to LoadCanon because
+                        // we were just suppressing the events anyway.
+                        break;
+                }
+#if DEBUG
+                if (all && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                {
+                    Debug.Assert(FilterQueryDatabase.Table<T>().Count() == 0);
+                }
+#endif
+            }
+        }
 
         /// <summary>
-        /// Creates a new filter epoch by establishing the provided recordset as the canonical source for subsequent operations.
+        /// Performs a terminal clear on the model before adding recordset if non-empty.
         /// </summary>
         /// <remarks>
-        /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
-        /// </remarks>
-        public virtual async Task LoadCanonAsync(IEnumerable? recordset)
-            => await RunFSMAsync<LoadIsFilteringEpochFSM>(recordset);
-
-        /// <summary>
-        /// Established a new canonical model for subsequent operations.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model: "This is the baseline for filtering, prioritization, and temporal projections."
+        /// Mental Model: "Establish a baseline for filtering, prioritization, and temporal projections."
+        /// ChangedEvents:
+        /// - Reset always,
+        /// - Add if recordset is non-empty.
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
-            if (DHostAuthorityEpoch.Authority == CollectionChangeAuthority.Settle)
-            {   /* G T K - N O O P */
+            // Make a tmp copy of existing population.
+            var oldItems = CanonicalSupersetProtected.ToArray();
+            // Copy recordset, including any null values.
+            var newItems = recordset.Cast<T>().ToList();
+
+            NotifyCollectionChangingEventArgs ePre = oldItems.Diff(newItems);
+
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Commit))
+            {
+                if (Equals(Authority, CollectionChangeAuthority.Commit))
+                {
+                    // This method *does* have the authority to raise TWO events.
+                    // First event: Reset
+                    CanonicalSupersetProtected.Clear();
+                    // SecondEvent: Add (digest) on Final batch dispose.
+                    if (newItems.Count > 0)
+                    {
+                        using (BeginBatch())
+                        {
+                            foreach (var newItem in newItems)
+                            {
+                                CanonicalSupersetProtected.Add(newItem);
+                            }
+                        }
+                    }
+                    ExecState(StdFSMState.UpdateStatesForEpoch, recordset);
+                }
+                else
+                {
+                    nameof(LoadCanon).ThrowHard<InvalidOperationException>("Failed authority claim.");
+                }
             }
-            else
+#if false
+            if (Equals(Authority, CollectionChangeAuthority.Commit))
             {
                 using (var eventHost = Model.SetSelfRemovingXBoundAttribute(
                     StdMarkdownAttribute.triage,
-                    Model.GetReplacementTriageEvents(NotifyCollectionChangedReason.QueryResult, recordset, ReplaceItemsEventingOptions)))
+                    Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.QueryResult, recordset, ReplaceItemsEventingOptions)))
                 {
-                    RunFSM<LoadIsFilteringEpochFSM>(recordset);
+#if false && CHECK_FAST_TRACK
+                    if(Equals(FsmReservedState.FastTrack, ExecState(StdFSMState.DetectFastTrack, recordset)))
+                    {
+                        Debug.Fail($@"ADVISORY - First Time.");
+                    }
+#endif
+                    ExecState(StdFSMState.ResetOrCanonizeFQBDForEpoch, (IList)recordset);
+                    var diff = CanonicalSupersetProtected.Diff(recordset.Cast<T>().ToList());
+                    CanonicalSupersetProtected.Apply(diff);
+                    // ExecState(StdFSMState.ResetOrCanonizeModelForEpoch, recordset);
+
+                    ExecState(StdFSMState.UpdateStatesForEpoch, recordset);
+
+
                     if (eventHost.Tag is ReplaceItemsEventingContext context)
                     {
                         if (context.Structural is NotifyCollectionChangedEventArgs eStructural)
                         {
                             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
                             {
-                                OnModelSettled(eStructural);
+                                OnModelChanged(eStructural);
                             }
                         }
                         if (context.Reset is NotifyCollectionChangedEventArgs eReset)
                         {
                             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
                             {
-                                OnModelSettled(eReset);
+                                OnModelChanged(eReset);
                             }
                         }
                     }
@@ -1050,8 +1022,62 @@ Inherited contexts manage their projection internally.".TrimStart());
                     }
                 }
             }
+            else
+            {
+                Debug.Fail($@"ADVISORY - First Time UNEXPECTED failed to gain authority.");
+            }
+#endif
         }
 
+        public virtual async Task LoadCanonAsync(IEnumerable? recordset)
+        {
+            using var token = BeginCollectionChangeAuthority(CollectionChangeAuthority.Commit);
+            if (Equals(Authority, CollectionChangeAuthority.Commit))
+            {
+                using (var eventHost = Model.SetSelfRemovingXBoundAttribute(
+                    StdMarkdownAttribute.triage,
+                    Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.QueryResult, recordset, ReplaceItemsEventingOptions)))
+                {
+#if false && CHECK_FAST_TRACK
+                    if (Equals(FsmReservedState.FastTrack, await ExecStateAsync(StdFSMState.DetectFastTrack, recordset)))
+                    {
+                        Debug.Fail($@"ADVISORY - First Time.");
+                    }
+#endif
+                    await ExecStateAsync(StdFSMState.ResetOrCanonizeFQBDForEpoch, recordset);
+                    await ExecStateAsync(StdFSMState.ResetOrCanonizeModelForEpoch, recordset);
+                    await ExecStateAsync(StdFSMState.UpdateStatesForEpoch, recordset);
+
+                    if (eventHost.Tag is ReplaceItemsEventingContext context)
+                    {
+                        if (context.Structural is NotifyCollectionChangedEventArgs eStructural)
+                        {
+                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
+                            {
+                                OnModelChanged(eStructural);
+                            }
+                        }
+                        if (context.Reset is NotifyCollectionChangedEventArgs eReset)
+                        {
+                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
+                            {
+                                OnModelChanged(eReset);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        this.ThrowFramework<NullReferenceException>($"Expecting {nameof(ReplaceItemsEventingContext)}");
+                    }
+                }
+            }
+            else
+            {
+                Debug.Fail($@"ADVISORY - First Time UNEXPECTED failed to gain authority.");
+            }
+        }
+
+#if false && LEGACY_RUN_FSM
         /// <summary>
         /// Executes a declared FSM sequentially while temporarily asserting any collection-change authority required by the FSM type.
         /// </summary>
@@ -1082,7 +1108,7 @@ Inherited contexts manage their projection internally.".TrimStart());
             }
             using (new TokenDisposer(authorityToken))
             {
-                Enum result = ReservedFSMState.None;
+                Enum result = FsmReservedState.None;
                 // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
                 // * Reuse an incoming value that is already an object[] to avoid an unnecessary allocation.
                 if (context is IEnumerable collection)
@@ -1099,11 +1125,11 @@ Inherited contexts manage their projection internally.".TrimStart());
 
                     switch (result)
                     {
-                        case ReservedFSMState.Canceled:
-                        case ReservedFSMState.FastTrack:
-                        case ReservedFSMState.None:
+                        case FsmReservedState.Canceled:
+                        case FsmReservedState.FastTrack:
+                        case FsmReservedState.None:
                             return result;
-                        case ReservedFSMState.Next:
+                        case FsmReservedState.Next:
                             break;
                         default:
                             return await localRunOOB(state, context);
@@ -1124,360 +1150,22 @@ Inherited contexts manage their projection internally.".TrimStart());
 
                     switch (outOfBand)
                     {
-                        case ReservedFSMState.Canceled:
-                        case ReservedFSMState.FastTrack:
-                        case ReservedFSMState.None:
+                        case FsmReservedState.Canceled:
+                        case FsmReservedState.FastTrack:
+                        case FsmReservedState.None:
                             return outOfBand;
-                        case ReservedFSMState.Next:
+                        case FsmReservedState.Next:
                             break;
                     }
                 }
-                return ReservedFSMState.MaxOOB;
+                return FsmReservedState.MaxOOB;
             }
             #endregion L o c a l F x
         }
-
-        /// <summary>
-        /// Executes a declared FSM sequentially while temporarily asserting any collection-change authority required by the FSM type.
-        /// </summary>
-        /// <remarks>
-        /// If the FSM enum <typeparamref name="TFsm"/> is decorated with
-        /// <c>CollectionChangeAuthorityAttribute</c>, an authority token is claimed for the
-        /// duration of the FSM execution window. This enables controlled mutation of the
-        /// canonical/projection collections during state execution without leaking that
-        /// authority outside the run scope.
-        ///
-        /// The FSM is executed deterministically by iterating the declared enum values
-        /// in order and invoking <c>ExecState</c> for each state. The final state
-        /// result is returned to the caller.
-        ///
-        /// This mechanism allows authority to behave as a dynamic capability rather than
-        /// a static property of the context, constraining mutation rights to the precise
-        /// interval in which the FSM is running.
-        /// </remarks>
-        protected Enum RunFSM<TFsm>(object? context = null) where TFsm : struct, Enum
-        {
-            IDisposable? authorityToken = null;
-
-            if (typeof(TFsm).GetCustomAttribute<CollectionChangeAuthorityAttribute>()?.Authority is CollectionChangeAuthority authority)
-            {
-                authorityToken = BeginCollectionChangeAuthority(authority);
-            }
-            using (new TokenDisposer(authorityToken))
-            {
-                Enum result = ReservedFSMState.None;
-                // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
-                // * Reuse an incoming value that is already an object[] to avoid an unnecessary allocation.
-                if (context is IEnumerable collection)
-                {
-                    context = collection is object[] array
-                        ? array
-                        : collection.Cast<object>().ToArray();
-                }
-
-                foreach (Enum state in GetDeclaredValues<TFsm>())
-                {
-                    // Expecting 'Next' for linear flow.
-                    result = ExecState(state, context);
-
-                    switch (result)
-                    {
-                        case ReservedFSMState.Canceled:
-                        case ReservedFSMState.FastTrack:
-                        case ReservedFSMState.None:
-                            return result;
-                        case ReservedFSMState.Next:
-                            break;
-                        default:
-                            return localRunOOB(state, context);
-                    }
-                }
-                return result;
-            }
-
-            #region L o c a l F x
-            Enum localRunOOB(Enum outOfBand, object? context)
-            {
-                Debug.Fail($@"ADVISORY - First Time.");
-                int oobCurrent = 0;
-                const int OOB_MAX = 100;
-                while (++oobCurrent <= OOB_MAX)
-                {
-                    outOfBand = ExecState(outOfBand, context);
-
-                    switch (outOfBand)
-                    {
-                        case ReservedFSMState.Canceled:
-                        case ReservedFSMState.FastTrack:
-                        case ReservedFSMState.None:
-                            return outOfBand;
-                        case ReservedFSMState.Next:
-                            break;
-                    }
-                }
-                return ReservedFSMState.MaxOOB;
-            }
-            #endregion L o c a l F x
-        }
+#endif
         protected virtual async Task<Enum> ExecStateAsync(Enum state, object? context = null)
         {
-            return ReservedFSMState.Canceled;
-        }
-
-        protected Enum ExecState(Enum state, object? context = null)
-        {
-            IEnumerable<object>? canon = context as IEnumerable<object>;
-            bool
-                isEmptyProjection = canon?.Any() != true;
-#if DEBUG
-            switch (state)
-            {
-                case NativeClearFSM:
-                    break;
-                case LoadIsFilteringEpochFSM:
-                    break;
-            }
-#endif
-            switch ((StdFSMState)state)
-            {
-                case StdFSMState.DetectFastTrack:
-                    if (Equals(localDetectFastTrack(), ReservedFSMState.FastTrack))
-                    {
-                        return ReservedFSMState.FastTrack;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                case StdFSMState.ResetOrCanonizeFQBDForEpoch:
-                    localResetOrCanonizeFQDBForEpoch();
-                    break;
-                case StdFSMState.ResetOrCanonizeModelForEpoch:
-                    localResetOrCanonizeModelForEpoch();
-                    break;
-                case StdFSMState.UpdateStatesForEpoch:
-                    localInitStatesForEpoch();
-                    break;
-                case StdFSMState.AddItemToModel:
-                    AddItemToModel(context);
-                    break;
-                case StdFSMState.RemoveItemFromModel:
-                    RemoveItemFromModel(context);
-                    break;
-                case StdFSMState.ModelSettled:
-                    localRaiseModelSettled();
-                    break;
-                default:
-                    Debug.Fail($@"ADVISORY - Unrecognized action.");
-                    break;
-            }
-            return ReservedFSMState.Next;
-
-            #region L o c a l F x
-            Enum localDetectFastTrack()
-            {
-                bool isEmptyProjection =
-                    !(ObservableNetProjection is IEnumerable projection && projection.Cast<object>().Any());
-                switch (state)
-                {
-                    case NativeClearFSM:
-                        // If ALL are true.
-                        if (SearchEntryState == SearchEntryState.Cleared
-                            && !Model.HasElements
-                            && isEmptyProjection)
-                        {
-                            return ReservedFSMState.FastTrack;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                }
-                return ReservedFSMState.Next;
-            }
-
-            Enum localResetOrCanonizeFQDBForEpoch()
-            {
-                // Check to see whether we should have a FQDB in the first place.
-                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
-                {
-                    try
-                    {
-                        FilterQueryDatabase.RunInTransaction(() =>
-                        {
-                            // Ensure table exists.
-                            FilterQueryDatabase.CreateTable(ContractType);
-                            // Clear any entries from a pre-existing table.
-                            FilterQueryDatabase.DeleteAll(ContractType.GetSQLiteMapping());
-                            // [Remember]
-                            // - Canonization happens via XML changes as they arrive.
-                            // - N O O P
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        this.RethrowHard(ex);
-                        return ReservedFSMState.Canceled;
-                    }
-                }
-                else
-                {   /* G T K - N O O P */
-                    // There is no FQDB to maintain in Query-Only mode.
-                }
-                return ReservedFSMState.Next;
-            }
-
-            void localResetOrCanonizeModelForEpoch()
-            {
-                if (canon is not IEnumerable)
-                {
-                    Model.RemoveNodes(StdMarkdownAttribute.autocount, StdMarkdownAttribute.count, StdMarkdownAttribute.matches);
-                    return;
-                }
-                else
-                {
-#if DEBUG
-                    int nRemoved = 0;
-#endif
-                    Model.SetAttributeValue(StdMarkdownAttribute.count, null);
-                    Model.SetAttributeValue(StdMarkdownAttribute.matches, null);
-
-                    PropertyInfo? pk = ContractType.GetSQLiteMapping().PK?.PropertyInfo;
-#if RELEASE
-                Model.RemoveNodes();
-#else
-                    // DEBUG:
-                    // Provides clarity on how the XML Changed events work on a bulk RemoveNodes.
-                    #region L o c a l F x
-                    void localOnXObjectChanged(object? sender, XObjectChangeEventArgs e)
-                    {
-                        Debug.WriteLine($@"260306.A: Removed {++nRemoved}");
-                    }
-                    #endregion L o c a l F x
-                    using (Model.WithOnDispose(
-                        onInit: (sender, e) =>
-                        {
-                            Model.Changed += localOnXObjectChanged;
-                        },
-                        onDispose: (sender, e) =>
-                        {
-                            Model.Changed -= localOnXObjectChanged;
-                        }))
-                    {
-                        if (Model.HasElements)
-                        {
-                            Model.RemoveNodes();
-                        }
-                    }
-#endif
-                    int
-                        countDistinct = 0,
-                        countDuplicate = 0;
-
-                    if (pk is null)
-                    {
-                        throw new NotSupportedException($"Type '{ContractType.Name}' has no PK and such types are not (yet) supported.");
-                    }
-                    foreach (var item in canon)
-                    {
-                        // ToDo: Test with item.GetFullPath() extension.
-                        var placerResult = Model.Place(path: localGetFullPath(pk, item), out var xel);
-
-                        switch (placerResult)
-                        {
-                            case PlacerResult.Exists:
-                                countDuplicate++;
-                                break;
-                            case PlacerResult.Created:
-                                xel.Name = nameof(StdMarkdownElement.xitem);
-                                xel.SetBoundAttributeValue(
-                                    tag: item,
-                                    name: nameof(StdMarkdownAttribute.model));
-                                xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), countDistinct);
-                                countDistinct++;
-                                break;
-                            default:
-                                this.ThrowFramework<NotSupportedException>(
-                                    $"Unexpected result: `{placerResult.ToFullKey()}`. Expected options are {PlacerResult.Created} or {PlacerResult.Exists}");
-                                break;
-                        }
-                    }
-
-                    Model.SetAttributeValue(StdMarkdownAttribute.count, countDistinct);
-                    if (Model.GetAttributeValue<IList?>(StdMarkdownAttribute.predicates) is { } predicates)
-                    {
-                        Debug.Fail($@"ADVISORY - First Time.");
-                        Model.SetAttributeValue(StdMarkdownAttribute.matches, countDistinct); // This will change.
-                    }
-                    else
-                    {
-                        Model.SetAttributeValue(StdMarkdownAttribute.matches, countDistinct);
-                    }
-                    Model.SetAttributeValue(StdMarkdownAttribute.ismatch, null);
-                }
-            }
-
-            string localGetFullPath(PropertyInfo pk, object unk)
-            {
-                if (pk.GetValue(unk)?.ToString() is { } id && !string.IsNullOrWhiteSpace(id))
-                {
-                    return id;
-                }
-                else
-                {
-                    ThrowHard<NullReferenceException>(
-                        $"Expecting a non-empty value for PrimaryKey '{pk.Name}'.");
-                    return null!;
-                }
-            }
-
-            void localInitStatesForEpoch()
-            {
-                switch (state)
-                {
-                    case NativeClearFSM:
-                        SearchEntryState = SearchEntryState.Cleared;
-                        FilteringState = FilteringState.Ineligible;
-                        return;
-                    default:
-                        break;
-                }
-                switch (CanonicalCount)
-                {
-                    case 0:
-                        SearchEntryState = SearchEntryState.QueryCompleteNoResults;
-                        FilteringState = FilteringState.Ineligible;
-                        break;
-                    case 1:
-                        SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                        FilteringState = FilteringState.Ineligible;
-                        break;
-                    default:
-                        SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                        switch (QueryFilterConfig)
-                        {
-                            case QueryFilterConfig.Query:
-                            case QueryFilterConfig.Filter:
-                            default:
-                                FilteringState = FilteringState.Ineligible;
-                                break;
-                            case QueryFilterConfig.QueryAndFilter:
-                                FilteringState = FilteringState.Armed;
-                                break;
-                        }
-                        break;
-                }
-            }
-
-            void localRaiseModelSettled()
-            {
-                var e = context as ModelSettledEventArgs
-                    ?? new ModelSettledEventArgs(
-                        reason: NotifyCollectionChangedReason.None,
-                        action: NotifyCollectionChangedAction.Reset);
-                OnModelSettled(e);
-            }
-            #endregion L o c a l F x
+            return FsmReservedState.Canceled;
         }
 
 
@@ -1557,12 +1245,76 @@ Inherited contexts manage their projection internally.".TrimStart());
             base.OnSearchEntryStateChanged();
             if (SearchEntryState == SearchEntryState.Cleared)
             {
-                if (Equals(ReservedFSMState.FastTrack, RunFSM<NativeClearFSM>()))
+                if (Equals(FsmReservedState.FastTrack, RunFSM<NativeClearFSM>()))
                 {   /* G T K */
                 }
             }
         }
 
+        /// <summary>
+        /// Establishes the coupled invariant between the observable projection and its projection option.
+        /// </summary>
+        /// <remarks>
+        /// - The projection and its option must be set together.
+        /// ∴ They are not exposed via independent setters.
+        /// - When ONP is null: 
+        ///   Only non-observable modes are permitted; invalid
+        ///   combinations are downgraded via advisory or rejected.
+        /// - When ONP is not null:
+        ///   Defaults to <see cref="NetProjectionTopology.AllowDirectChanges"/> 
+        ///   unless explicitly specified. 
+        /// </remarks>
+        public void SetObservableNetProjection(
+            ObservableCollection<T>? onp, 
+            NetProjectionTopology? topology = null)
+        {
+            if(topology == NetProjectionTopology.Routed)
+            {
+                this.ThrowHard<ArgumentException>(
+                    $"{NetProjectionTopology.Routed.ToFullKey()} is runtime-inferred and cannot be assigned explicitly.");
+                topology = null;
+            }
+            ObservableNetProjection = onp;
+            if (onp is null)
+            {
+                topology ??= NetProjectionTopology.None;
+                var type = GetType();
+
+                switch (topology)
+                {
+                    case NetProjectionTopology.None:
+                        ProjectionTopology = (NetProjectionTopology)topology;
+                        break;
+                    case NetProjectionTopology.ObservableOnly:
+                    case NetProjectionTopology.AllowDirectChanges:
+                        this.ThrowHard<ArgumentException>(
+                            $"The value {topology.ToFullKey()} is invalid when {nameof(topology)} is null.");
+                        break;
+                    default:
+                        this.ThrowHard<NotSupportedException>(
+                            $"The {((NetProjectionTopology)topology).ToFullKey()} case is not supported.");
+                        break;
+                }
+            }
+            else
+            {
+                switch (ProjectionTopology)
+                {
+                    case NetProjectionTopology.Routed:
+                        this.ThrowHard<NotSupportedException>(
+    $"Cannot assign an observable projection when {nameof(ProjectionTopology)} is {NetProjectionTopology.Routed}");
+                        break;
+                    case NetProjectionTopology.None:
+                    case NetProjectionTopology.ObservableOnly:
+                    case NetProjectionTopology.AllowDirectChanges:
+                        ProjectionTopology = topology ??= NetProjectionTopology.AllowDirectChanges;
+                        break;
+                    default:
+                        this.ThrowHard<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
+                        break;
+                }
+            }
+        }
 
         /// <summary>
         /// Factory-backed canonical superset used by the back-end event pipeline 
@@ -1575,20 +1327,9 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// this canonical superset.
         /// </remarks>
         public IReadOnlyList<T> CanonicalSuperset => CanonicalSupersetProtected;
+        IList ITopology.CanonicalSuperset => (IList)CanonicalSuperset;
 
-        public ObservableCollection<T> CanonicalSupersetProtected
-        {
-            get
-            {
-                if (_canonicalSupersetProtected is null)
-                {
-                    _canonicalSupersetProtected = new AuthoritativeObservableCollection<T>(this);
-                    _canonicalSupersetProtected.CollectionChanged += OnCanonicalSupersetChanged;
-                }
-                return _canonicalSupersetProtected;
-            }
-        }
-        AuthoritativeObservableCollection<T>? _canonicalSupersetProtected = null;
+        protected ObservableCollection<T> CanonicalSupersetProtected { get; }
 
         /// <summary>
         /// Provides a typed, read-only view of the predicate-match subset.
@@ -1602,7 +1343,27 @@ Inherited contexts manage their projection internally.".TrimStart());
         /// </remarks>
         public IReadOnlyList<T> PredicateMatchSubset
             => PredicateMatchSubsetPrivate;
+        IList ITopology.PredicateMatchSubset => (IList)PredicateMatchSubset;
 
-        private List<T> PredicateMatchSubsetPrivate { get; } = new();
+        public ObservableCollection<T> PredicateMatchSubsetPrivate
+        {
+            get
+            {
+                if (_predicateMatchSubsetPrivate is null)
+                {
+                    _predicateMatchSubsetPrivate = new ObservableCollection<T>();
+                    _predicateMatchSubsetPrivate.CollectionChanged += (sender, e) =>
+                    {
+                        Model.SetAttributeValue(StdMarkdownAttribute.matches, _predicateMatchSubsetPrivate.Count);
+                    };
+                }
+                return _predicateMatchSubsetPrivate;
+            }
+        }
+        ObservableCollection<T>? _predicateMatchSubsetPrivate = null;
+
+
+        ObservableCollection<T>? IModeledMarkdownContext<T>.ObservableNetProjection =>
+            (ObservableCollection<T>?)ObservableNetProjection;
     }
 }

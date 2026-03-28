@@ -40,19 +40,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
-        /// Enumerates the values of the enum type <typeparamref name="TFsm"/> in their
-        /// declaration order rather than their underlying numeric order. This is used
-        /// by the FSM runner to evaluate states exactly in the sequence authored in
-        /// the enum definition.
-        /// </summary>
-        protected IEnumerable<TFsm> GetDeclaredValues<TFsm>() where TFsm : Enum
-        {
-            return typeof(TFsm)
-                .GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
-                .Select(field => (TFsm)field.GetValue(null)!);
-        }
-
-        /// <summary>
         /// The ephemeral backing store for this collection's contract filtering.
         /// </summary>
         /// <remarks>
@@ -68,7 +55,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                 {
-                    this.ThrowPolicyException(SQLiteMarkdownPolicyViolation.FilterEngineUnavailable);
+                    this.ThrowPolicyException(MarkdownContextPolicyViolation.FilterEngineUnavailable);
                     // NOTE:
                     // Handling the Throw creates a benign condition where a DB
                     // that might not really be necessary is instantiated regardless.
@@ -90,7 +77,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     // The user must be given the benefit of the doubt if they are explicitly
                     // injecting a connection to be used for internal filter queries. This will
                     // silently upgrade the configuration unless escalated in the Throw handler.
-                    this.ThrowPolicyException(SQLiteMarkdownPolicyViolation.ConfigurationModifiedByDatabaseAssignment);
+                    this.ThrowPolicyException(MarkdownContextPolicyViolation.ConfigurationModifiedByDatabaseAssignment);
                     QueryFilterConfig |= QueryFilterConfig.Filter;
                 }
 
@@ -147,21 +134,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             protected set => Model.SetAttributeValue(StdMarkdownAttribute.count, value);
         }
 
-        public int CanonicalCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.count);
+        public virtual int CanonicalCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.count);
 
-        public int PredicateMatchCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
+        public virtual int PredicateMatchCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
 
-        public CollectionChangeAuthority Authority => DHostAuthorityEpoch.Authority;
-
+        /// <summary>
+        /// Responsible for raising the InputTextSettled event.
+        /// </summary>
+        /// <remarks>
+        /// The override in ModeledMarkdownContest adds 
+        /// authority, but should still make the call to base.
+        /// </remarks>
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {
-            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
+            await base.OnEpochFinalizingAsync(e);
+            if (!e.Cancel)
             {
-                await base.OnEpochFinalizingAsync(e);
-                if (!e.Cancel)
-                {
-                    await OnInputTextSettled(new CancelEventArgs());
-                }
+                await OnInputTextSettled(new CancelEventArgs());
             }
         }
 

@@ -21,8 +21,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
     /// mutually exclusive states rather than combinable capabilities.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Enum)]
-    internal class NotFlagsAttribute : Attribute
-    {
+    internal class NotFlagsAttribute : Attribute { }
 
+    /// <summary>
+    /// Attribute for README documentation linking.
+    /// </summary>
+    internal class ClaimAttribute : Attribute
+    {
+        public ClaimAttribute(string guid)
+        {
+            GUID = guid;
+        }
+        public string GUID { get; }
     }
 }

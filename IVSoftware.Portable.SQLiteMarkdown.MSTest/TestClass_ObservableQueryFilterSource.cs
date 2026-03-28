@@ -9,32 +9,18 @@ using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.QFTemplates;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
-using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
-using Microsoft.VisualBasic.Logging;
-using Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client;
 using Newtonsoft.Json;
 using SQLite;
 using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
-using System.Dynamic;
-using System.Net.Http.Headers;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml.Linq;
-using static IVSoftware.Portable.Threading.Extensions;
-using static SQLite.SQLite3;
-using static System.Net.Mime.MediaTypeNames;
-using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
@@ -1366,17 +1352,17 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     results = cnx.Query<SelectableQFModelLTOQO>(sql);
 
                     // NEW 260311
-                    actual = itemsSource.OptionsReport();
+                    actual = itemsSource.TopologyReport();
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-ProjectionTopology.Inheritance, NetProjectionOption.Inherited, ReplaceItemsEventingOption.StructuralReplaceEvent"
+NetProjectionTopology.Routed, ReplaceItemsEventingOption.StructuralReplaceEvent"
                     ;
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
-                        "Expecting option settings to match."
+                        "Expecting topology disvcovery to match."
                     );
 
                     itemsSource.ReplaceItems(results);
@@ -1464,10 +1450,12 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                         "Expecting StateReport shows RESUME WITH CURRENT STATE."
                     );
 
-                    builder.Clear();
                     Assert.AreEqual(string.Empty, itemsSource.InputText, "Confirm before clear.");
-                    itemsSource.Clear(); // Expecting "no surprises" here.
 
+                    // Expecting "no surprises" here.
+                    builder.Clear();
+                    eventQueue.Clear();
+                    itemsSource.Clear();
 
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
@@ -1498,19 +1486,27 @@ NetProjection.Reset   ModelSettledEventArgs           "
                     builder.Clear();
                     sql = "animal".ParseSqlMarkdown<SelectableQFModelLTOQO>();
                     results = cnx.Query<SelectableQFModelLTOQO>(sql);
+
                     itemsSource.ReplaceItems(results);
 
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
+NetProjection.Reset   NotifyCollectionChangedEventArgs           
+NetProjection.Add     NewItems=12 NewIndex= 0 NotifyCollectionChangedEventArgs           "
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
                         "Expecting add component (first) + rest component (last)."
                     );
+
+                    ecc = (NotifyCollectionChangedEventArgs)eventQueue.Dequeue().e;
+                    Assert.AreEqual(
+                        NotifyCollectionChangedAction.Reset,
+                        ecc.Action,
+                        "ReplaceItems -> LoadCanon -> Reset + Add");
 
                     ecc = (NotifyCollectionChangedEventArgs)eventQueue.DequeueSingle().e;
                     actual = string.Join(
@@ -1593,10 +1589,16 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 @"\& \| \! \( \) \[ \] \' \"" \\".ParseSqlMarkdown<PetProfileN>();
                 Queue<SenderEventPair> eventQueue = new();
                 List<T> recordset;
-                var items = new ObservableQueryFilterSource<T>
-                {
-                    ProjectionOption = NetProjectionOption.AllowDirectChanges,
-                };
+                var items = new ObservableQueryFilterSource<T>();
+
+                Assert.IsNull(
+                    items.ObservableNetProjection,
+                    "Expecting raw, portable list with no ONP.");
+                Assert.AreEqual(
+                    NetProjectionTopology.Routed, 
+                    items.ProjectionTopology,
+                    "Expecting detection of INotifyCollectionChanged in CTor.");
+
                 string caller = string.Empty;
 
 
@@ -1858,14 +1860,18 @@ InputText";
                             "Expecting specific state UNCHANGED."
                         );
                         Assert.IsFalse(items.IsFiltering, "Expecting NO NEED TO AWAIT HERE.");
+
+                        actual = items.TopologyReport();
+                        actual.ToClipboardExpected();
+                        { }
+                        expected = @" 
+NetProjectionTopology.Routed, ReplaceItemsEventingOption.StructuralReplaceEvent";
+
                         Assert.AreEqual(
-                            items.ProjectionOption,
-                            NetProjectionOption.Inherited,
-                            "260316" +
-                            "POSIT 1: This *is* the ONP without having to say so. " +
-                            "POSIT 2: This *will* populate itself.");
-
-
+                            expected.NormalizeResult(),
+                            actual.NormalizeResult(),
+                            "Expecting routed topology."
+                        );
 
                         #region L o c a l F x
                         void localOnRecordsetRequestA(object? sender, RecordsetRequestEventArgs e)
@@ -2122,12 +2128,13 @@ SELECT * FROM items WHERE
 
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-                        actual = items.OptionsReport();
+                        actual = items.TopologyReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-ProjectionTopology.Inheritance, NetProjectionOption.Inherited, ReplaceItemsEventingOption.StructuralReplaceEvent"
+NetProjectionTopology.Routed, ReplaceItemsEventingOption.StructuralReplaceEvent"
                         ;
+
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
                         // PLEASE: Do not remove.
@@ -3193,7 +3200,8 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
+NetProjection.Reset   NotifyCollectionChangedEventArgs           
+NetProjection.Add     NewItems=12 NewIndex= 0 NotifyCollectionChangedEventArgs           "
                 ;
 
                 Assert.AreEqual(
@@ -3205,10 +3213,9 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                 actual = items.Model.ToString();
                 actual.ToClipboardExpected();
                 { }
-
                 // [Careful("What?")] No 'preview' attribute? THAT'S BECAUSE THIS IS SelectableQFModel and *not* IAffinityModel.
                 expected = @" 
-<model autocount=""12"" count=""12"" matches=""12"">
+<model mdc=""[MMDC]"" autocount=""12"" count=""12"" matches=""12"">
   <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" sort=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" sort=""1"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" sort=""2"" />

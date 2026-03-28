@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using System;
 using System.Collections.ObjectModel;
@@ -10,15 +11,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
     sealed class RevertableObservableCollection<T> : ObservableCollection<T>
     {
-        public RevertableObservableCollection(ObservableCollection<T> previewCollection, bool useMutablePreviewEvents = false)
+        public RevertableObservableCollection(ObservableCollection<T> previewCollection, NotifyCollectionChangeScope eventScope)
         {
-            UseMutablePreviewEventsPolicy = useMutablePreviewEvents;
+            EventScope = eventScope;
             PreviewCollection = previewCollection;
         }
-
-        public bool UseMutablePreviewEventsPolicy { get; }
-
         ObservableCollection<T> PreviewCollection;
+        public NotifyCollectionChangeScope EventScope { get; }
+
+        #region E X P O S E    P U B L I C
         public new void ClearItems() => base.ClearItems();
 
         public new void InsertItem(int index, T item)
@@ -32,13 +33,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 
         public new void MoveItem(int oldIndex, int newIndex)
             => base.MoveItem(oldIndex, newIndex);
+        #endregion E X P O S E    P U B L I C
 
         bool _isReverting = false;
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
             if (!_isReverting)
             {
-                NotifyCollectionChangingEventArgs ePre = e;
+                NotifyCollectionChangingEventArgs ePre = new NotifyCollectionChangingEventArgs(e, scope: EventScope);
                 CollectionChanging?.Invoke(this, ePre);
                 if (ePre.Cancel)
                 {

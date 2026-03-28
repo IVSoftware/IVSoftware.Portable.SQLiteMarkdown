@@ -50,12 +50,13 @@ public class TestClass_INPC
 
         items.AddDynamic("Brown Dog", "[canine][color]", false, new() { "loyal", "friend", "furry" });
 
+        Assert.IsFalse(items.IsFiltering);
         Assert.AreEqual(1, items.Count);
         actual = items.Model.ToString();
         actual.ToClipboardExpected();
         { }
         expected = @" 
-<model autocount=""1"" count=""1"" matches=""1"">
+<model mdc=""[MMDC]"" autocount=""1"" count=""1"" matches=""1"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
 </model>"
         ;

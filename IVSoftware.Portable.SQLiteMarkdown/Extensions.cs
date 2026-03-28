@@ -369,7 +369,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return word;
         }
 
-
         /// <summary>
         /// Forms a fuzzy query expression by checking and replacing terms enclosed in '%' characters 
         /// within the provided SQL string with their singular forms. If no terms can be singularized, 
@@ -499,7 +498,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Gets the first custom attribute of the specified type applied to an enum value.
         /// </summary>
-        public static TAttribute? GetCustomAttribute<TAttribute>(
+        internal static TAttribute? GetCustomAttribute<TAttribute>(
             this Enum value)
             where TAttribute : Attribute
             => GetDeclaredEnumField(value)?
@@ -510,7 +509,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Gets all custom attributes of the specified type applied to an enum value.
         /// </summary>
-        public static IEnumerable<TAttribute> GetCustomAttributes<TAttribute>(
+        internal static IEnumerable<TAttribute> GetCustomAttributes<TAttribute>(
             this Enum value)
             where TAttribute : Attribute
             => GetDeclaredEnumField(value)?

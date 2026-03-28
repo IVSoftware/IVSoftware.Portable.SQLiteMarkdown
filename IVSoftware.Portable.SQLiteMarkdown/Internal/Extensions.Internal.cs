@@ -1,6 +1,8 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
@@ -410,7 +412,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         }
         public static ReplaceItemsEventingContext GetReplacementTriageEvents(
             this XElement model,
-            NotifyCollectionChangedReason reason,
+            NotifyCollectionChangeReason reason,
             IEnumerable? canon,
             ReplaceItemsEventingOption options)
         => new ReplaceItemsEventingContext(model, reason, canon, options);
@@ -422,7 +424,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         {
             public ReplaceItemsEventingContext(
                 XElement model,
-                NotifyCollectionChangedReason reason,
+                NotifyCollectionChangeReason reason,
                 IEnumerable? canon,
                 ReplaceItemsEventingOption options)
             {
@@ -531,7 +533,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 count++;
 
                 bool isMatch =
-                    current.Attribute(nameof(StdMarkdownAttribute.ismatch)) is { } attr
+                    current.Attribute(nameof(StdMarkdownAttribute.match)) is { } attr
                     && bool.TryParse(attr.Value, out var explicitMatch)
                         ? explicitMatch
                         : @default;
@@ -556,9 +558,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         }
 
         [Obsolete("Action and Reason are entirely separate concerns in v2.0")]
-        public static NotifyCollectionChangedReason ToNotifyCollectionChangedReason(this Enum @this)
+        public static NotifyCollectionChangeReason ToNotifyCollectionChangedReason(this Enum @this)
         {
-            var preview = (NotifyCollectionChangedReason) Enum.ToObject(typeof(NotifyCollectionChangedReason), Convert.ToInt32(@this) & ~0x07);
+            var preview = (NotifyCollectionChangeReason) Enum.ToObject(typeof(NotifyCollectionChangeReason), Convert.ToInt32(@this) & ~0x07);
             Debug.Assert(Equals(@this, preview), "Expecting values are no longer OR'ed");
             return preview;
         }

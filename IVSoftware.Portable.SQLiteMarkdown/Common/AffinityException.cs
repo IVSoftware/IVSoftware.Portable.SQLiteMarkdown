@@ -2,8 +2,6 @@
 using IVSoftware.Portable.Common.Exceptions;
 using System;
 using System.ComponentModel;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {

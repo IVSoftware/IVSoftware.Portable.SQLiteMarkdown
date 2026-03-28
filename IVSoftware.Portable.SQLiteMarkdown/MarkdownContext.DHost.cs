@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
+using IVSoftware.Portable.StateMachine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -47,15 +48,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public DisposableHost DHostSelfIndexing { get; } = new();
 
-
-        /// <summary>
-        /// Identifies provenance of INCC.
-        /// </summary>
-        /// <remarks>
-        /// Acts as an authority monitor and circularity guard for DDX between collections.
-        /// </remarks>
-        public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority) => DHostAuthorityEpoch.GetToken(authority);
-
+#if false
         protected DHostAuthorityEpochProvider DHostAuthorityEpoch { get; } = new();
 
         [DebuggerDisplay("Count={ReferenceCount} Authority={Authority}")]
@@ -104,5 +97,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             public CollectionChangeAuthority Authority { get; private set; } = 0;
         }
+#endif
     }
 }

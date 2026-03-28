@@ -30,12 +30,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             @this.InsertAll(list);
         }
 
-        public static TItem AddDynamic<TItem>(this IList<TItem> @this, string description, string tags, bool isChecked, List<string>? keywords = null)
+        public static TItem AddDynamic<TItem>(this IList<TItem>? @this, string description, string tags = "[]", bool isChecked = false, List<string>? keywords = null)
             where TItem : class, new()
-            => ((IList)@this).AddDynamic<TItem>(description, tags, isChecked, keywords);
+            => ((IList?)@this).AddDynamic<TItem>(description, tags, isChecked, keywords);
 
         [Canonical]
-        public static TItem AddDynamic<TItem>(this IList @this, string description, string tags, bool isChecked, List<string>? keywords = null)
+        public static TItem AddDynamic<TItem>(this IList? @this, string description, string tags = "[]", bool isChecked = false, List<string>? keywords = null)
             where TItem : class, new()
         {
             var itemT = new TItem();
@@ -47,7 +47,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 var json = JsonConvert.SerializeObject(keywords);
                 typeof(TItem).GetProperty("Keywords")?.SetValue(itemT, json);
             }
-            @this.Add(itemT);
+            @this?.Add(itemT);
             return itemT;
         }
 
@@ -180,11 +180,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             return string.Join(", ", builder);
         }
 
-        public static string OptionsReport(this IModeledMarkdownContext @this)
+        public static string TopologyReport(this IModeledMarkdownContext @this)
         {
             var builder = new List<string>();
             builder.Add($"{@this.ProjectionTopology.ToFullKey()}");
-            builder.Add($"{@this.ProjectionOption.ToFullKey()}");
             builder.Add($"{@this.ReplaceItemsEventingOptions.ToFullKey()}");
             return string.Join(", ", builder);
         }

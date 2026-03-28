@@ -62,7 +62,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected Throw ThrowHard<T>(string messageOrId) => nameof(MarkdownContext).ThrowHard<T>(messageOrId);
         protected Throw ThrowFramework<T>(string messageOrId) => nameof(MarkdownContext).ThrowFramework<T>(messageOrId);
 
-        public virtual XElement Model { get; } = new XElement(nameof(StdMarkdownElement.model));
+#if DEBUG
+        const bool SQLITE_STRICT = true;
+#else
+        const bool SQLITE_STRICT = false;
+#endif
+        [Canonical("The globally unique authority for binding items and their INPC events.")]
+        protected virtual void OnBoundItemObjectChange(XBoundAttribute xbo, XObjectChange action) { }
 
         /// <summary>
         /// Semantic clarity for Interval, which comes from inheriting WatchDogTimer.
@@ -139,7 +145,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if (IsFiltering && expr.IsSemanticallyEmpty())
             {
-                this.ThrowPolicyException(SQLiteMarkdownPolicyViolation.EmptyFilterString);
+                this.ThrowPolicyException(MarkdownContextPolicyViolation.EmptyFilterString);
                 xast = null!; // We warned you.
                 return string.Empty;
             }
@@ -1151,7 +1157,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 var builder = new List<string> { Preamble };
                 if (!string.IsNullOrWhiteSpace(WherePredicate))
                 {
-                    builder.Add(WherePredicate);
+                    builder.Add(WherePredicate!);
                 }
                 if (CanExecutePrimaryKeyClause())
                 {
@@ -1565,6 +1571,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         // Different! Protected because it's in play inside OnFilteringStateChanged.
         protected bool _isFiltering = false;
 
+        public void Sort(IComparer? comparer)
+        {
+            if(comparer is null)
+            {
+                throw new NotImplementedException("ToDo");
+            }
+            else
+            {
+                throw new NotImplementedException("ToDo");
+            }
+        }
+        protected bool IsEphemeralSort
+        {
+            get => _isEphemeralSort;
+            set
+            {
+                if (!Equals(_isEphemeralSort, value))
+                {
+                    _isEphemeralSort = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        bool _isEphemeralSort = false;
+
+
         /// <summary>
         /// Catch and release heuristic for canonical ObservableNetProjection entering and leaving IsFiltered state.
         /// </summary>
@@ -1579,11 +1611,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// 2. The UI-oriented [X] demoting clear state machine.
         /// </remarks>
         [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
-
         public FilteringState Clear(bool all = false)
+        {
+            // Fastrack condition for all.
+            // Goes here, before the virtual method call.
+            if (FilteringState == FilteringState.Ineligible
+                && string.IsNullOrWhiteSpace(InputText))
+            {
+                all = true;
+            }
+            OnClear(all);
+
+            // Avoid leaking the object itself as the awaited sender.
+            nameof(MarkdownContext).OnAwaited(new AwaitedEventArgs(caller: nameof(Clear))
+            {
+                { nameof(all), all }, // Key='all' 
+            });
+            // Fluent return;
+            return FilteringState;
+        }
+        protected virtual void OnClear(bool all)
         {
             if (all)
             {
+                // - Model does not answer to authority 
+                // ∴ Database will update.
+                Model.RemoveNodes();
                 InputText = string.Empty;
                 FilteringState = FilteringState.Ineligible;
                 SearchEntryState = SearchEntryState.Cleared;
@@ -1615,7 +1668,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         case FilteringState.Active:
                             // Text is already empty and clear is invoked (clicked) again - this is a hard reset.
                             FilteringState = FilteringState.Ineligible;
-                            if(SearchEntryState > SearchEntryState.QueryEmpty)
+                            if (SearchEntryState > SearchEntryState.QueryEmpty)
                             {
                                 SearchEntryState = SearchEntryState.QueryEmpty;
                             }
@@ -1669,14 +1722,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                 }
             }
-
-            // Avoid leaking the object itself as the awaited sender.
-            nameof(MarkdownContext).OnAwaited(new AwaitedEventArgs(caller: nameof(Clear))
-            {
-                { nameof(all), all },
-            });
-            // Fluent return;
-            return FilteringState;
         }
 
         /// <summary>

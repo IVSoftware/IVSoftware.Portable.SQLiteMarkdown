@@ -125,9 +125,8 @@ public class TestClass_PredicateMarkdownContext
 
         string actual, expected;
         List<string> builder = new();
-        IList<SelectableQFModel> opc = 
-            new ObservableCollection<SelectableQFModel>()
-            .PopulateForDemo(10);
+        ObservableCollection<SelectableQFModel> opc = new();
+        opc.PopulateForDemo(10);
 
         subtest_TriggerBy_ProjectionBeforeState();
         subtest_TriggerBy_StateBeforeProjection();
@@ -137,10 +136,8 @@ public class TestClass_PredicateMarkdownContext
         #region S U B T E S T S
         void subtest_TriggerBy_ProjectionBeforeState()
         {
-            var mdc = new ModeledMarkdownContext<SelectableQFModel>
-            {
-                ObservableNetProjection = (INotifyCollectionChanged)opc,
-            };
+            var mdc = new ModeledMarkdownContext<SelectableQFModel>();
+            mdc.SetObservableNetProjection(opc);
 
             // In this test, the items are already populated
             // before switching into filter mode.
@@ -151,7 +148,7 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model autocount=""10"" count=""10"" matches=""10"">
+<model mdc=""[MMDC]"" autocount=""10"" count=""10"" matches=""10"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" sort=""1"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" sort=""2"" />
@@ -182,7 +179,8 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model />";
+<model mdc=""[MMDC]"" autocount=""0"" count=""0"" matches=""0"" />"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -190,13 +188,13 @@ public class TestClass_PredicateMarkdownContext
                 "Expecting EMPTY because ONP is not assigned yet."
             );
 
-            mdc.ObservableNetProjection = (INotifyCollectionChanged)opc;
+            mdc.SetObservableNetProjection(opc);
 
             actual = mdc.Model.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model autocount=""10"" count=""10"" matches=""10"">
+<model mdc=""[MMDC]"" autocount=""10"" count=""10"" matches=""10"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" sort=""1"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" sort=""2"" />
@@ -248,9 +246,22 @@ public class TestClass_PredicateMarkdownContext
         var pmdc = new PredicateMarkdownContext<TemporalAffinityQFModel>
         {
             QueryFilterConfig = QueryFilterConfig.Filter,
-            ObservableNetProjection = opc,
-            ProjectionOption = NetProjectionOption.AllowDirectChanges,
         };
+
+
+        actual = pmdc.TopologyReport();
+        actual.ToClipboardExpected();
+        { }
+        expected = @" 
+NetProjectionTopology.None, ReplaceItemsEventingOption.StructuralReplaceEvent";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting initial."
+        );
+
+        pmdc.SetObservableNetProjection(opc);
 
         Assert.IsTrue(pmdc.IsFiltering);
         Assert.AreEqual(
@@ -278,14 +289,14 @@ public class TestClass_PredicateMarkdownContext
         void localOnModelUpdated(object? sender, NotifyCollectionChangedEventArgs e)
         {
             builder.Add(e.ToString(ReferenceEquals(sender, pmdc.ObservableNetProjection)));
-            switch (pmdc.ProjectionOption)
+            switch (pmdc.ProjectionTopology)
             {
-                case NetProjectionOption.ObservableOnly:
+                case NetProjectionTopology.ObservableOnly:
                     break;
-                case NetProjectionOption.AllowDirectChanges:
+                case NetProjectionTopology.AllowDirectChanges:
                     break;
                 default:
-                    this.ThrowHard<NotSupportedException>($"The {pmdc.ProjectionOption.ToFullKey()} case is not supported.");
+                    this.ThrowHard<NotSupportedException>($"The {pmdc.ProjectionTopology.ToFullKey()} case is not supported.");
                     break;
             }
         }
@@ -305,12 +316,12 @@ public class TestClass_PredicateMarkdownContext
         using (pmdc.WithOnDispose(
             onInit: (sender, e) =>
             {
-                pmdc.ModelSettled += localOnModelUpdated;
+                pmdc.ModelChanged += localOnModelUpdated;
                 pmdc.PropertyChanged += localOnPropertyChanged;
             },
             onDispose: (sender, e) =>
             {
-                pmdc.ModelSettled -= localOnModelUpdated;
+                pmdc.ModelChanged -= localOnModelUpdated;
                 pmdc.PropertyChanged -= localOnPropertyChanged;
             }))
         {
@@ -322,11 +333,11 @@ public class TestClass_PredicateMarkdownContext
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting State Report to match.");
 
-            actual = pmdc.OptionsReport();
+            actual = pmdc.TopologyReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-ProjectionTopology.Composition, NetProjectionOption.AllowDirectChanges, ReplaceItemsEventingOption.StructuralReplaceEvent"
+NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingOption.StructuralReplaceEvent"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting Options Report to match.");
 
@@ -353,9 +364,9 @@ Other.Replace NewItems= 3 OldItems=37 ModelSettledEventArgs                     
         actual.ToClipboardExpected();
         { }
         expected = @" 
-<model autocount=""37"" count=""37"" matches=""3"">
+<model mdc=""[MMDC]"" autocount=""37"" count=""37"" matches=""3"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[TemporalAffinityQFModel]"" preview=""Brown Dog "" sort=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[TemporalAffinityQFModel]"" preview=""Green Appl"" sort=""1"" ismatch=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[TemporalAffinityQFModel]"" preview=""Green Appl"" sort=""1"" match=""True"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[TemporalAffinityQFModel]"" preview=""Yellow Ban"" sort=""2"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[TemporalAffinityQFModel]"" preview=""Blue Bird "" sort=""3"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[TemporalAffinityQFModel]"" preview=""Red Cherry"" sort=""4"" />
@@ -367,7 +378,7 @@ Other.Replace NewItems= 3 OldItems=37 ModelSettledEventArgs                     
   <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[TemporalAffinityQFModel]"" preview=""Pink Flami"" sort=""10"" />
   <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[TemporalAffinityQFModel]"" preview=""Golden Lio"" sort=""11"" />
   <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[TemporalAffinityQFModel]"" preview=""Brown Bear"" sort=""12"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000d"" model=""[TemporalAffinityQFModel]"" preview=""Green Pear"" sort=""13"" ismatch=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000d"" model=""[TemporalAffinityQFModel]"" preview=""Green Pear"" sort=""13"" match=""True"" />
   <xitem text=""312d1c21-0000-0000-0000-00000000000e"" model=""[TemporalAffinityQFModel]"" preview=""Red Strawb"" sort=""14"" />
   <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[TemporalAffinityQFModel]"" preview=""Black Pant"" sort=""15"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000010"" model=""[TemporalAffinityQFModel]"" preview=""Yellow Lem"" sort=""16"" />
@@ -386,7 +397,7 @@ Other.Replace NewItems= 3 OldItems=37 ModelSettledEventArgs                     
   <xitem text=""312d1c21-0000-0000-0000-00000000001d"" model=""[TemporalAffinityQFModel]"" preview=""Mango     "" sort=""29"" />
   <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[TemporalAffinityQFModel]"" preview=""Should NOT"" sort=""30"" />
   <xitem text=""312d1c21-0000-0000-0000-00000000001f"" model=""[TemporalAffinityQFModel]"" preview=""Appetizer "" sort=""31"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000020"" model=""[TemporalAffinityQFModel]"" preview=""Errata    "" sort=""32"" ismatch=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000020"" model=""[TemporalAffinityQFModel]"" preview=""Errata    "" sort=""32"" match=""True"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000021"" model=""[TemporalAffinityQFModel]"" preview=""Happy Camp"" sort=""33"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000022"" model=""[TemporalAffinityQFModel]"" preview=""Great exam"" sort=""34"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000023"" model=""[TemporalAffinityQFModel]"" preview=""Applicatio"" sort=""35"" />
@@ -400,9 +411,7 @@ Other.Replace NewItems= 3 OldItems=37 ModelSettledEventArgs                     
             "Expecting modeled matches."
         );
 
-        Assert.AreEqual(ProjectionTopology.Composition, pmdc.ProjectionTopology, "Because oc is INCC.");
-        
-        //Assert.AreEqual(NetProjectionOption.ObservableOnly, pmdc.ProjectionOption);
+        // Assert.AreEqual(ProjectionTopology.Composition, pmdc.ProjectionTopology, "Because oc is INCC.");
 
         actual = pmdc.StateReport();
         actual.ToClipboardExpected();

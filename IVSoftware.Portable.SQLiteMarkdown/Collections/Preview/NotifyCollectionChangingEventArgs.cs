@@ -1,75 +1,404 @@
-﻿using System;
+﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using System;
 using System.Collections;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 
 
-namespace IVSoftware.Portable.Collections
+namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
-    public enum NotifyCollectionChangingAction
+    /// <summary>
+    /// Represents an opt-in mutable, pre-commit collection change proposal.
+    /// </summary>
+    /// <remarks>
+    /// ReadOnly is assumed. Consumers must explicitly opt in via <see cref="NotifyCollectionChangeScope"/>
+    /// to observe, cancel, or rewrite the proposed change. 
+    ///
+    /// The proposal is expressed through <see cref="NewItems"/>, <see cref="OldItems"/>, and index properties,
+    /// all of which enforce scope at the point of mutation.
+    ///
+    /// When materialized as a BCL event (via implicit conversion), the proposal is validated and translated
+    /// into a compliant <see cref="NotifyCollectionChangedEventArgs"/>. Invalid configurations degrade to
+    /// <c>Reset</c>, with advisory or exception signaling.
+    ///
+    /// Mental Model: "A staged change contract where mutability must be explicitly granted."
+    /// </remarks>
+    internal sealed class NotifyCollectionChangingEventArgs : CancelEventArgs
     {
-        Add = NotifyCollectionChangedAction.Add,
-        Remove = NotifyCollectionChangedAction.Remove,
-        Replace = NotifyCollectionChangedAction.Replace,
-        Move = NotifyCollectionChangedAction.Move,
-        Reset = NotifyCollectionChangedAction.Reset
-    }
-    public class NotifyCollectionChangingEventArgs : CancelEventArgs
-    {
-        private readonly NotifyCollectionChangedEventArgs @base;
+        NotifyCollectionChangedEventArgs? EventArgsBCL = null;
 
-        protected NotifyCollectionChangingEventArgs(NotifyCollectionChangedEventArgs eBCL) => @base = eBCL;
-        public NotifyCollectionChangingEventArgs(NotifyCollectionChangedAction action)
-            => @base = new NotifyCollectionChangedEventArgs(action);
+        public static implicit operator NotifyCollectionChangedEventArgs(NotifyCollectionChangingEventArgs @this)
+            => @this.EventArgsBCL ?? @this.MakeBCL();
 
-        public NotifyCollectionChangingEventArgs(NotifyCollectionChangedAction action, IList changedItems)
-            => @base = new NotifyCollectionChangedEventArgs(action, changedItems);
+        public static implicit operator NotifyCollectionChangingEventArgs(NotifyCollectionChangedEventArgs @this)
+            => new NotifyCollectionChangingEventArgs(@this);
 
-        public NotifyCollectionChangingEventArgs(NotifyCollectionChangedAction action, object changedItem)
-            => @base = new NotifyCollectionChangedEventArgs(action, changedItem);
+        public NotifyCollectionChangingEventArgs(
+            NotifyCollectionChangedEventArgs eBCL,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None,
+            NotifyCollectionChangeScope scope = NotifyCollectionChangeScope.ReadOnly)
+        : this(
+              action: (NotifyCollectionChangeAction)eBCL.Action,
+              reason: reason,
+              scope: scope,
+              newItems: eBCL.NewItems,
+              oldItems: eBCL.OldItems,
+              newStartingIndex: eBCL.NewStartingIndex,
+              oldStartingIndex: eBCL.OldStartingIndex)
+        {
+            EventArgsBCL = eBCL;
+        }
 
-        public NotifyCollectionChangingEventArgs(NotifyCollectionChangedAction action, IList newItems, IList oldItems)
-            => @base = new NotifyCollectionChangedEventArgs(action, newItems, oldItems);
+        /// <summary>
+        /// Constructor designed to encourage named args.
+        /// </summary>
+        public NotifyCollectionChangingEventArgs(
+                NotifyCollectionChangeAction action,
+                NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None,
+                NotifyCollectionChangeScope scope = NotifyCollectionChangeScope.ReadOnly,
+                IList? newItems = null,
+                IList? oldItems = null,
+                int newStartingIndex = -1,
+                int oldStartingIndex = -1
+            )
+        {
+            Action = action;
+            Reason = reason;
+            Scope = scope;
+            NewItems = new MutationPreviewCollection(newItems, scope, SCOPE_POLICY_VIOLATION_MESSAGE);
+            OldItems = new MutationPreviewCollection(oldItems, scope, SCOPE_POLICY_VIOLATION_MESSAGE);
+        }
+        bool _isReverting = false;
 
-        public NotifyCollectionChangingEventArgs(NotifyCollectionChangedAction action, IList changedItems, int startingIndex)
-            => @base = new NotifyCollectionChangedEventArgs(action, changedItems, startingIndex);
+        private NotifyCollectionChangedEventArgs MakeBCL()
+        {
+            NotifyCollectionChangedEventArgs eBcl =
+                new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset); // sentinel
 
-        public NotifyCollectionChangingEventArgs(NotifyCollectionChangedAction action, object changedItem, int index)
-            => @base = new NotifyCollectionChangedEventArgs(action, changedItem, index);
+            bool makeReset = false;
+            bool ieException = false;
 
-        public NotifyCollectionChangingEventArgs(NotifyCollectionChangedAction action, object newItem, object oldItem)
-            => @base = new NotifyCollectionChangedEventArgs(action, newItem, oldItem);
+            if (NewItems.Count > 0 && NewItems[0] is EventArgs)
+            {
+                IsBclCompatible = false;
+                makeReset = true;
+            }
+            else
+            {
+                switch (Action)
+                {
+                    case NotifyCollectionChangeAction.Add:
+                        {
+                            if (NewStartingIndex < -1 || NewItems.Count == 0)
+                            {
+                                makeReset = true;
+                                ieException = true;
+                            }
+                            else
+                            {
+                                bool hasIndex = NewStartingIndex >= 0;
 
-        public NotifyCollectionChangingEventArgs(NotifyCollectionChangedAction action, IList newItems, IList oldItems, int startingIndex)
-            => @base = new NotifyCollectionChangedEventArgs(action, newItems, oldItems, startingIndex);
+                                eBcl = NewItems.Count == 1
+                                    ? hasIndex
+                                        ? new NotifyCollectionChangedEventArgs(
+                                            NotifyCollectionChangedAction.Add,
+                                            NewItems[0],
+                                            NewStartingIndex)
+                                        : new NotifyCollectionChangedEventArgs(
+                                            NotifyCollectionChangedAction.Add,
+                                            NewItems[0])
+                                    : new NotifyCollectionChangedEventArgs(
+                                        NotifyCollectionChangedAction.Add,
+                                        NewItems,
+                                        hasIndex ? NewStartingIndex : -1);
+                            }
+                            break;
+                        }
 
-        public NotifyCollectionChangingEventArgs(NotifyCollectionChangedAction action, IList changedItems, int index, int oldIndex)
-            => @base = new NotifyCollectionChangedEventArgs(action, changedItems, index, oldIndex);
+                    case NotifyCollectionChangeAction.Remove:
+                        {
+                            if (OldStartingIndex < -1 || OldItems.Count == 0)
+                            {
+                                makeReset = true;
+                                ieException = true;
+                            }
+                            else
+                            {
+                                bool hasIndex = OldStartingIndex >= 0;
 
-        public NotifyCollectionChangingEventArgs(NotifyCollectionChangedAction action, object changedItem, int index, int oldIndex)
-            => @base = new NotifyCollectionChangedEventArgs(action, changedItem, index, oldIndex);
+                                eBcl = OldItems.Count == 1
+                                    ? hasIndex
+                                        ? new NotifyCollectionChangedEventArgs(
+                                            NotifyCollectionChangedAction.Remove,
+                                            OldItems[0],
+                                            OldStartingIndex)
+                                        : new NotifyCollectionChangedEventArgs(
+                                            NotifyCollectionChangedAction.Remove,
+                                            OldItems[0])
+                                    : new NotifyCollectionChangedEventArgs(
+                                        NotifyCollectionChangedAction.Remove,
+                                        OldItems,
+                                        hasIndex ? OldStartingIndex : -1);
+                            }
+                            break;
+                        }
 
-        public NotifyCollectionChangingEventArgs(NotifyCollectionChangedAction action, object newItem, object oldItem, int index)
-            => @base = new NotifyCollectionChangedEventArgs(action, newItem, oldItem, index);
+                    case NotifyCollectionChangeAction.Replace:
+                        {
+                            if (NewItems.Count != OldItems.Count)
+                            {
+                                makeReset = true;
+                                ieException = true;
+                            }
+                            else
+                            {
+                                bool hasIndex = NewStartingIndex >= 0 && OldStartingIndex >= 0;
 
-        // ----------------------------------------
-        // Projected contract
-        // ----------------------------------------
+                                eBcl = NewItems.Count == 1
+                                    ? hasIndex
+                                        ? new NotifyCollectionChangedEventArgs(
+                                            NotifyCollectionChangedAction.Replace,
+                                            NewItems[0],
+                                            OldItems[0],
+                                            NewStartingIndex)
+                                        : new NotifyCollectionChangedEventArgs(
+                                            NotifyCollectionChangedAction.Replace,
+                                            NewItems[0],
+                                            OldItems[0])
+                                    : hasIndex
+                                        ? new NotifyCollectionChangedEventArgs(
+                                            NotifyCollectionChangedAction.Replace,
+                                            NewItems,
+                                            OldItems,
+                                            NewStartingIndex)
+                                        : new NotifyCollectionChangedEventArgs(
+                                            NotifyCollectionChangedAction.Replace,
+                                            NewItems,
+                                            OldItems);
+                            }
+                            break;
+                        }
 
-        public NotifyCollectionChangedAction Action => @base.Action;
+                    case NotifyCollectionChangeAction.Move:
+                        {
+                            if (NewItems.Count != OldItems.Count ||
+                                NewStartingIndex < 0 ||
+                                OldStartingIndex < 0 ||
+                                NewItems.Count == 0)
+                            {
+                                makeReset = true;
+                                ieException = true;
+                            }
+                            else
+                            {
+                                eBcl = NewItems.Count == 1
+                                    ? new NotifyCollectionChangedEventArgs(
+                                        NotifyCollectionChangedAction.Move,
+                                        NewItems[0],
+                                        NewStartingIndex,
+                                        OldStartingIndex)
+                                    : new NotifyCollectionChangedEventArgs(
+                                        NotifyCollectionChangedAction.Move,
+                                        NewItems,
+                                        NewStartingIndex,
+                                        OldStartingIndex);
+                            }
+                            break;
+                        }
 
-        public IList? NewItems => @base.NewItems;
+                    case NotifyCollectionChangeAction.Reset:
+                        makeReset = true;
+                        break;
+                }
+            }
 
-        public IList? OldItems => @base.OldItems;
+            if (makeReset)
+            {
+                if (ieException)
+                {
+                    this.ThrowHard<InvalidOperationException>(CONFIGURATION_INVALID_MESSAGE);
+                    Reason |= NotifyCollectionChangeReason.Exception;
+                }
 
-        public int NewStartingIndex => @base.NewStartingIndex;
+                return new NotifyCollectionChangedEventArgs(
+                    NotifyCollectionChangedAction.Reset);
+            }
+            else 
+            {
+                return eBcl;
+            }
+        }
 
-        public int OldStartingIndex => @base.OldStartingIndex;
+        public NotifyCollectionChangeAction Action { get; }
+        public NotifyCollectionChangeReason Reason { get; private set; } = NotifyCollectionChangeReason.None;
+        public NotifyCollectionChangeScope Scope { get; }
+        public bool IsBclCompatible { get; private set; } = true;
 
-        public static implicit operator NotifyCollectionChangingEventArgs(NotifyCollectionChangedEventArgs eBCL)
-            => new NotifyCollectionChangingEventArgs(eBCL);
+        public IList NewItems { get; }
 
-        public static implicit operator NotifyCollectionChangedEventArgs(NotifyCollectionChangingEventArgs ePre)
-            => ePre.@base;
+        public IList OldItems { get; }
+
+        public int NewStartingIndex
+        {
+            get => _newStartingIndex;
+            set
+            {
+                if (!Equals(_newStartingIndex, value))
+                {
+                    if (Scope == NotifyCollectionChangeScope.FullControl)
+                    {
+                        _newStartingIndex = value;
+                    }
+                    else
+                    {
+                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                    }
+                }
+            }
+        }
+        int _newStartingIndex = default;
+
+        public int OldStartingIndex
+        {
+            get => _oldStartingIndex;
+            set
+            {
+                if (!Equals(_oldStartingIndex, value))
+                {
+                    if (Scope == NotifyCollectionChangeScope.FullControl)
+                    {
+                        _oldStartingIndex = value;
+                    }
+                    else
+                    {
+                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                    }
+                }
+            }
+        }
+        int _oldStartingIndex = default;
+
+        bool _cancel;
+
+        public new bool Cancel
+        {
+            get => _cancel;
+            set
+            {
+                if (!Equals(_cancel, value))
+                {
+                    if (Scope.HasFlag(NotifyCollectionChangeScope.CancelOnly) ||
+                        Scope.HasFlag(NotifyCollectionChangeScope.FullControl))
+                    {
+                        _cancel = value;
+                    }
+                    else
+                    {
+                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                    }
+                }
+            }
+        }
+        string SCOPE_POLICY_VIOLATION_MESSAGE =>    
+            $"This operation is not permitted: {nameof(NotifyCollectionChangeScope)}={Scope.ToFullKey()}," +
+            $"Always check Scope before attempting to modify the change proposal.";
+
+        string CONFIGURATION_INVALID_MESSAGE =>
+            $"This configuration is not permitted as specified: Check related properties and ensure the combination is valid.";
+
+        /// <summary>
+        /// Provides a scope-enforced preview surface for collection mutation proposals.
+        /// </summary>
+        /// <remarks>
+        /// This collection is used exclusively within <see cref="NotifyCollectionChangingEventArgs"/>
+        /// to expose <c>NewItems</c> and <c>OldItems</c> as mutable lists prior to BCL emission.
+        ///
+        /// Construction occurs under temporary <c>FullControl</c> in order to materialize a complete
+        /// snapshot of the proposed items. Once populated, the declared <see cref="NotifyCollectionChangeScope"/>
+        /// is restored and enforced for all subsequent mutations.
+        ///
+        /// Consumers may observe, cancel, or rewrite the proposal depending on scope:
+        /// - <c>ReadOnly</c>: No mutation permitted.
+        /// - <c>CancelOnly</c>: Mutation blocked, but proposal may be canceled.
+        /// - <c>FullControl</c>: Full mutation permitted.
+        ///
+        /// All mutation entry points are intercepted to enforce scope policy. Violations are
+        /// routed through <c>ThrowHard</c>, allowing escalation or advisory handling.
+        /// </remarks>
+        sealed class MutationPreviewCollection 
+            : ObservableCollection<object>
+            , IList
+        {
+            public MutationPreviewCollection(IList? items, NotifyCollectionChangeScope scope, string policyViolationMessage)
+            {
+                SCOPE_POLICY_VIOLATION_MESSAGE = policyViolationMessage;
+                foreach (var item in items ?? Array.Empty<object>())
+                {
+                    Add(item);
+                }
+                Scope = scope;
+            }
+            private readonly string SCOPE_POLICY_VIOLATION_MESSAGE;
+
+            /// <summary>
+            /// Allows full control in CTor; the requested scope is set afterward.
+            /// </summary>
+            public NotifyCollectionChangeScope Scope { get; } = NotifyCollectionChangeScope.FullControl;
+            bool IList.IsReadOnly => Scope != NotifyCollectionChangeScope.FullControl;
+
+            bool EnforceMutationPolicy()
+            {
+                if (Scope.HasFlag(NotifyCollectionChangeScope.FullControl))
+                {
+                    return true;
+                }
+                else
+                {
+                    this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                    return false;
+                }
+            }
+
+            protected override void ClearItems()
+            {
+                if (EnforceMutationPolicy())
+                {
+                    base.ClearItems();
+                }
+            }
+
+            protected override void InsertItem(int index, object item)
+            {
+                if (EnforceMutationPolicy())
+                {
+                    base.InsertItem(index, item);
+                }
+            }
+            protected override void SetItem(int index, object item)
+            {
+                if (EnforceMutationPolicy())
+                {
+                    base.SetItem(index, item);
+                }
+            }
+
+            protected override void RemoveItem(int index)
+            {
+                if (EnforceMutationPolicy())
+                {
+                    base.RemoveItem(index);
+                }
+            }
+
+            protected override void MoveItem(int oldIndex, int newIndex)
+            {
+                if (EnforceMutationPolicy())
+                {
+                    base.MoveItem(oldIndex, newIndex);
+                }
+            }
+        }
     }
 }
