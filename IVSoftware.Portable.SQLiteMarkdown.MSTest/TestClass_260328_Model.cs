@@ -17,8 +17,12 @@ public class TestClass_260328_Model
     public void Test_Histogrammer()
     {
         string actual, expected;
+        int 
+            changeCount = 0,
+            changeCountB4;
 
         Dictionary<XObject, XElement> parentsOfRemoved = new();
+        Dictionary<XAttribute, bool?> oldValues = new();
         EnumHistogrammer<StdMarkdownAttribute> histo = new(ZeroCountOption.Remove);
         var model = new XElement(
             nameof(StdMarkdownElement.model),
@@ -27,42 +31,53 @@ public class TestClass_260328_Model
 
         model.Changing += (sender, e) =>
         {
-            if (sender is not XObject xob)
+            if (sender is XObject xob)
             {
-                throw new InvalidOperationException();
+                switch (e.ObjectChange)
+                {
+                    case XObjectChange.Remove:
+                        parentsOfRemoved[xob] = xob.Parent ?? throw new NullReferenceException();
+                        break;
+                    case XObjectChange.Value when xob is XAttribute xattr:
+                        oldValues[xattr] = bool.TryParse(xattr.Value, out var valid) ? valid : null;
+                        break;
+                }
             }
             else
             {
-                if (e.ObjectChange == XObjectChange.Remove)
-                {
-                    parentsOfRemoved[xob] = xob.Parent ?? throw new NullReferenceException();
-                }
+                throw new InvalidOperationException();
             }
         };
         model.Changed += (sender, e) =>
         {
-            XElement pxel;
-            if (sender is not XObject xob)
+            changeCount++;
+            if (sender is XObject xob)
             {
-                throw new InvalidOperationException();
-            }
-            else
-            {
-                if (e.ObjectChange == XObjectChange.Remove)
+                bool? oldValue = null;
+                XElement? pxel = xob.Parent;
+                switch (e.ObjectChange)
                 {
-                    pxel = parentsOfRemoved[xob];
-                    parentsOfRemoved.Remove(xob);
+                    case XObjectChange.Remove:
+                        pxel = parentsOfRemoved[xob];
+                        parentsOfRemoved.Remove(xob);
+                        break;
+                    case XObjectChange.Value when xob is XAttribute xattr:
+                        oldValue = oldValues.TryGetValue(xattr, out var valid) ? valid : null;
+                        break;
                 }
-                else pxel = xob.Parent ?? throw new NullReferenceException();
                 switch (sender)
                 {
                     case XElement xel:
-                        OnXElementChanged(xel, pxel, e);
+                        OnXElementChanged(xel, pxel ?? throw new NullReferenceException(), e);
                         break;
                     case XAttribute xattr:
-                        OnXAttributeChanged(xattr, pxel, e);
+                        OnXAttributeChanged(xattr, pxel ?? throw new NullReferenceException(), e);
                         break;
                 }
+            }
+            else
+            {
+                throw new InvalidOperationException();
             }
         };
         #region L o c a l F x
@@ -84,15 +99,40 @@ public class TestClass_260328_Model
         {
             if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
             {
+                bool? @bool = null;
+                if(bool.TryParse(xattr.Value, out var @explicit))
+                {
+                    @bool = @explicit;
+                }
                 switch (e.ObjectChange)
                 {
                     case XObjectChange.Add:
-                        histo += std;
+                        if(@bool != false)
+                        { 
+                            histo += std;
+                        }
                         localUpdateAutocount();
                         break;
                     case XObjectChange.Remove:
-                        histo -= std;
+                        if (@bool != false)
+                        {
+                            histo -= std;
+                        }
                         localUpdateAutocount();
+                        break;
+                    case XObjectChange.Value:
+                        switch (@bool)
+                        {
+                            case null:
+                                /* N O O P */
+                                break;
+                            case true:
+                                histo += std;
+                                break;
+                            case false:
+                                histo -= std;
+                                break;
+                        }
                         break;
                 }
                 void localUpdateAutocount()
@@ -126,20 +166,30 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-{""qmatch"":1}";
+{
+  ""qmatch"": 1
+}"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting histogram to match."
             );
+
+            // Idempotent set
+            changeCountB4 = changeCount;
             model.SetStdAttributeValue(StdMarkdownAttribute.qmatch, true);
+            Assert.AreEqual(changeCountB4 + 1, changeCount);
 
             actual = histo.ToString(Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-{""qmatch"":1}";
+{
+  ""qmatch"": 1
+}"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -175,7 +225,10 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-{""qmatch"":1}";
+{
+  ""qmatch"": 1
+}"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -188,9 +241,11 @@ public class TestClass_260328_Model
 
             actual = histo.ToString(Formatting.Indented);
             actual.ToClipboardExpected();
-            { }
             expected = @" 
-{""qmatch"":1}";
+{
+  ""qmatch"": 1
+}"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -227,7 +282,10 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-{""qmatch"":1}";
+{
+  ""qmatch"": 1
+}"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -273,7 +331,10 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-{""model"":1,""qmatch"":1}"
+{
+  ""model"": 1,
+  ""qmatch"": 1
+}"
             ;
 
             Assert.AreEqual(
