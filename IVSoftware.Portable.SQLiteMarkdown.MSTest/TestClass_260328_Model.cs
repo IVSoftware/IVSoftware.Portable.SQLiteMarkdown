@@ -52,6 +52,10 @@ public class TestClass_260328_Model
         #region L o c a l F x
         void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
+            foreach (var attr in xel.Attributes())
+            {
+                OnXAttributeChanged(attr, e);
+            }
         }
 
         void OnXAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
@@ -142,6 +146,8 @@ public class TestClass_260328_Model
                 actual.NormalizeResult(),
                 "Expecting histogram to match."
             );
+
+            // Causes no change
             xel.SetAttributeValue(StdMarkdownAttribute.qmatch, true);
 
             actual = histo.ToString(HistogrammerToStringOption.Json);
@@ -177,8 +183,36 @@ public class TestClass_260328_Model
             var xel = new XElement(
                 nameof(StdMarkdownElement.xitem),
                 new XAttribute(nameof(StdMarkdownAttribute.qmatch), true));
+
+            // Add
             model.Add(xel);
+
+            actual = histo.ToString(HistogrammerToStringOption.Json);
+            actual.ToClipboardExpected();
             { }
+            expected = @" 
+{""qmatch"":1}";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting histogram to match."
+            );
+
+            // Remove
+            xel.Remove();
+            actual = histo.ToString(HistogrammerToStringOption.Json);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+{}"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting empty histogram."
+            );
         }
         #endregion S U B T E S T S
     }
