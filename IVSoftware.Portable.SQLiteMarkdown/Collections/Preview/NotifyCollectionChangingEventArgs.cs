@@ -263,6 +263,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     if (Scope == NotifyCollectionChangeScope.FullControl)
                     {
                         _newStartingIndex = value;
+                        IsModified = true;
                     }
                     else
                     {
@@ -283,6 +284,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     if (Scope == NotifyCollectionChangeScope.FullControl)
                     {
                         _oldStartingIndex = value;
+                        IsModified = true;
                     }
                     else
                     {
