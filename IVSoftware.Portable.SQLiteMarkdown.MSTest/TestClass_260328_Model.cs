@@ -68,6 +68,10 @@ public class TestClass_260328_Model
                             {
                                 return;
                             }
+                            else
+                            {   /* G T K */
+                                // Toggle detected.
+                            }
                         }
                         break;
                 }
@@ -317,6 +321,40 @@ public class TestClass_260328_Model
                 actual.NormalizeResult(),
                 "Expecting empty histogram."
             );
+
+            // Add it back in again
+            model.Add(xel);
+
+            actual = histo.ToString(Formatting.Indented);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+{
+  ""qmatch"": 1
+}"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting histogram to match."
+            );
+
+            xel.SetStdAttributeValue(StdMarkdownAttribute.qmatch, false);
+
+            actual = histo.ToString(Formatting.Indented);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+{}"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting empty histogram."
+            );
+
         }
 
         subtest_TrackModel();
