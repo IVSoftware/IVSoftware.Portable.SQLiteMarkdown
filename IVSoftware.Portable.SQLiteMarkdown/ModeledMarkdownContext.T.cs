@@ -63,6 +63,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             get
             {
+                if(base.Model.Attribute(StdMarkdownAttribute.mdc) is XBoundAttribute xba)
+                {
+                    if(xba.Value != "[MMDC]")
+                    {
+                        xba.Value = "[MMDC]";
+                    }
+                }
                 if(base.Model.Attribute(StdMarkdownAttribute.count) is null)
                 {
                     base.Model.SetStdAttributeValue(StdMarkdownAttribute.count, "0");
