@@ -28,12 +28,11 @@ public class TestClass_260325_Authorities
 
         var itemsSource = new ObservablePreviewCollection<SelectableQFModel>();
         var mmdc = new TMMDC(onp: itemsSource, option: NetProjectionTopology.AllowDirectChanges);
-        var simView = new PlatformCollectionViewSimulator<SelectableQFModel>(itemsSource);
 
         #region E V E N T S
         // Differentiate between the itemsSource being driven by
         // the simView and the simView being driven by itemsSource.
-        simView.CollectionChanged += (sender, e) =>
+        itemsSource.CollectionChanged += (sender, e) =>
         {
             var isProjection = ReferenceEquals(sender, itemsSource);
             if (isProjection)

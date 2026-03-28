@@ -1,5 +1,4 @@
-﻿using IVSoftware.Portable.Collections;
-using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
@@ -53,17 +52,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     oldStartingIndex = e.OldStartingIndex;
                     return true;
 
-                case NotifyCollectionChangingEventArgs e:
+                case Collections.Preview.NotifyCollectionChangingEventArgs e:
                     action = e.Action;
                     reason = e.Reason;
-                    newItems = e.NewItems;
-                    oldItems = e.OldItems;
-                    newStartingIndex = e.NewStartingIndex;
-                    oldStartingIndex = e.OldStartingIndex;
-                    return true;
-
-                case MutableNotifyCollectionChangingEventArgs e:
-                    action = e.Action;
                     newItems = e.NewItems;
                     oldItems = e.OldItems;
                     newStartingIndex = e.NewStartingIndex;
@@ -481,7 +472,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
-        /// Heuristically derives a batch <see cref="NotifyCollectionChangingEventArgs"/> describing
+        /// Heuristically derives a batch <see cref="Collections.Preview.NotifyCollectionChangingEventArgs"/> describing
         /// the transition from <paramref name="listBefore"/> to <paramref name="listAfter"/>.
         /// </summary>
         /// <remarks>
@@ -491,7 +482,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - <b>Remove</b>: One or more items removed, no additions.
         /// - <b>Replace (single)</b>: Exactly one item replaced with index fidelity.
         /// - <b>Replace (batch)</b>: Mixed add/remove operations encoded as a sequence of
-        ///   micro-operations carried in <see cref="NotifyCollectionChangingEventArgs.NewItems"/>.
+        ///   micro-operations carried in <see cref="Collections.Preview.NotifyCollectionChangingEventArgs.NewItems"/>.
         ///
         /// For batch replace:
         /// - Each element is an anonymous payload describing an atomic operation
@@ -507,7 +498,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///
         /// All emitted events carry <see cref="NotifyCollectionChangeReason.Batch"/>.
         /// </remarks>
-        internal static NotifyCollectionChangingEventArgs Diff(
+        internal static Collections.Preview.NotifyCollectionChangingEventArgs Diff(
             this IList listBefore,
             IList listAfter,
             NotifyCollectionChangeScope scope = NotifyCollectionChangeScope.ReadOnly)
@@ -517,13 +508,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 countB4 = listBefore.Count,
                 countAfter = listAfter.Count;
 
-            NotifyCollectionChangingEventArgs? result = null;
+            Collections.Preview.NotifyCollectionChangingEventArgs? result = null;
 
             if (countAfter == 0)
             {
                 if (countB4 == 0)
                 {
-                    result = new NotifyCollectionChangingEventArgs(
+                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Reset,
                         scope: scope);                        
                 }
@@ -540,7 +531,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         });
                     }
 
-                    result = new NotifyCollectionChangingEventArgs(
+                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Replace,
                         scope: scope,
                         newItems: ops);
@@ -587,7 +578,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     var r = replaces[0];
 
-                    result = new NotifyCollectionChangingEventArgs(
+                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Replace,
                         newItems: new[] { r.NewItem },
                         oldItems: new[] { r.OldItem },
@@ -599,7 +590,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     var items = adds.Select(a => a.Item).ToList();
                     var startIndex = adds[0].Index;
 
-                    result = new NotifyCollectionChangingEventArgs(
+                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Add,
                         newItems: items,
                         newStartingIndex: startIndex);
@@ -609,14 +600,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     var items = removes.Select(r => r.Item).ToList();
                     var startIndex = removes[0].Index;
 
-                    result = new NotifyCollectionChangingEventArgs(
+                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Remove,
                         oldItems: items,
                         oldStartingIndex: startIndex);
                 }
                 else if (replaces.Count == 0 && adds.Count == 0 && removes.Count == 0)
                 {
-                    result = new NotifyCollectionChangingEventArgs(
+                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Reset);
                 }
                 else
@@ -655,7 +646,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         });
                     }
 
-                    result = new NotifyCollectionChangingEventArgs(
+                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Replace,
                         newItems: ops);
                 }

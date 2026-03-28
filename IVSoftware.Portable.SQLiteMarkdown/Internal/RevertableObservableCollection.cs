@@ -1,4 +1,4 @@
-﻿using IVSoftware.Portable.Collections;
+﻿#if false && SAVE
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
@@ -73,3 +73,4 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
     }
 }
+#endif

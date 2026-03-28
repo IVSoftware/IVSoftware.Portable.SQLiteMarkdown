@@ -1,15 +1,30 @@
-﻿using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+﻿#if false && SAVE
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.StateMachine;
 using System.Collections;
 using System.Collections.Specialized;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Util
 {
+    enum SimAuthority
+    {
+        ItemsSource,
+    }
     class PlatformCollectionViewSimulator<T> : ObservablePreviewCollection<T>
     {
         public PlatformCollectionViewSimulator(IList itemsSource)
         {
             ItemsSource = itemsSource;
+            if(itemsSource is INotifyCollectionChanged incc)
+            {
+                incc.CollectionChanged += (sender, e) =>
+                {
+                    using (SimAuthorityProvider.GetToken(SimAuthority.ItemsSource))
+                    {
+                        OnCollectionChanged(e);
+                    }
+                };
+            }
         }
         public IList ItemsSource { get; }
 
@@ -18,7 +33,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Util
         /// </summary>
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            switch (ViewAuthority.Authority)
+            switch (SimAuthorityProvider.Authority)
             {
                 case CollectionChangeAuthority.Settle:
                 case CollectionChangeAuthority.Predicate:
@@ -29,6 +44,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Util
                     break;
             }
         }
-        AuthorityEpochProvider ViewAuthority { get; } = new ();
+        AuthorityEpochProvider SimAuthorityProvider { get; } = new ();
     }
 }
+#endif
