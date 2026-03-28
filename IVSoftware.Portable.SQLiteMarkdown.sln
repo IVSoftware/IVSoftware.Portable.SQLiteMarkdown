@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.SQLiteM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.SQLiteMarkdown.MSTest.V1", "IVSoftware.Portable.SQLiteMarkdown.MSTest.V1\IVSoftware.Portable.SQLiteMarkdown.MSTest.V1.csproj", "{848C0330-86D9-43CF-9F79-9E4FCE89809F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.StateMachine", "..\IVSoftware.Portable.StateMachine\IVSoftware.Portable.StateMachine\IVSoftware.Portable.StateMachine.csproj", "{3D65BC9F-41E2-0F98-4FD3-2D9CDC40296F}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,10 +33,6 @@ Global
 		{848C0330-86D9-43CF-9F79-9E4FCE89809F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{848C0330-86D9-43CF-9F79-9E4FCE89809F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{848C0330-86D9-43CF-9F79-9E4FCE89809F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3D65BC9F-41E2-0F98-4FD3-2D9CDC40296F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3D65BC9F-41E2-0F98-4FD3-2D9CDC40296F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3D65BC9F-41E2-0F98-4FD3-2D9CDC40296F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3D65BC9F-41E2-0F98-4FD3-2D9CDC40296F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

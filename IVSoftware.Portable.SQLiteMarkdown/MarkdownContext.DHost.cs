@@ -2,7 +2,6 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
-using IVSoftware.Portable.StateMachine;
 using System;
 using System.Collections;
 using System.Collections.Generic;

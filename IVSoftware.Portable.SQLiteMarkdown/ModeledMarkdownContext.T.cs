@@ -5,8 +5,8 @@ using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
+using IVSoftware.Portable.SQLiteMarkdown.StateRunner.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
-using IVSoftware.Portable.StateMachine;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
@@ -455,8 +455,6 @@ SELECT * FROM items WHERE
             }
         }
 
-        public CollectionChangeAuthority Authority =>
-            (CollectionChangeAuthority)StateRunner.AuthorityProvider.Authority;
 
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {
@@ -695,7 +693,7 @@ SELECT * FROM items WHERE
                         // way in in which to determine authority because *that* collection
                         // raises *those* events, i.e., is the sender of them.
                         Debug.Assert(
-                            Equals(AuthorityEpochProvider.Authority, CollectionChangeAuthority.Settle),
+                            Equals(Authority, CollectionChangeAuthority.Settle),
                             "Expecting this operation takes place under Model authority."
                         );
                         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -940,9 +938,7 @@ SELECT * FROM items WHERE
         /// </summary>
         /// <remarks>
         /// Mental Model: "Establish a baseline for filtering, prioritization, and temporal projections."
-        /// ChangedEvents:
-        /// - Reset always,
-        /// - Add if recordset is non-empty.
+        /// ChangedEvents: 1. 'Reset' always 2. 'Add' if recordset is non-empty.
         /// </remarks>
         public virtual void LoadCanon(IEnumerable? recordset)
         {
@@ -971,7 +967,7 @@ SELECT * FROM items WHERE
                             }
                         }
                     }
-                    ExecState(StdFSMState.UpdateStatesForEpoch, recordset);
+                    UpdateStatesForEpoch();
                 }
                 else
                 {
@@ -1028,146 +1024,78 @@ SELECT * FROM items WHERE
             }
 #endif
         }
-
         public virtual async Task LoadCanonAsync(IEnumerable? recordset)
         {
-            using var token = BeginCollectionChangeAuthority(CollectionChangeAuthority.Commit);
-            if (Equals(Authority, CollectionChangeAuthority.Commit))
+            IList oldItems = null!, newItems = null!;
+            await Task.Run(() =>
             {
-                using (var eventHost = Model.SetSelfRemovingXBoundAttribute(
-                    StdMarkdownAttribute.triage,
-                    Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.QueryResult, recordset, ReplaceItemsEventingOptions)))
-                {
-#if false && CHECK_FAST_TRACK
-                    if (Equals(FsmReservedState.FastTrack, await ExecStateAsync(StdFSMState.DetectFastTrack, recordset)))
-                    {
-                        Debug.Fail($@"ADVISORY - First Time.");
-                    }
-#endif
-                    await ExecStateAsync(StdFSMState.ResetOrCanonizeFQBDForEpoch, recordset);
-                    await ExecStateAsync(StdFSMState.ResetOrCanonizeModelForEpoch, recordset);
-                    await ExecStateAsync(StdFSMState.UpdateStatesForEpoch, recordset);
+                // Make a tmp copy of existing population.
+                oldItems = CanonicalSupersetProtected.ToArray();
+                // Copy recordset, including any null values.
+                newItems = recordset.Cast<T>().ToList();
 
-                    if (eventHost.Tag is ReplaceItemsEventingContext context)
-                    {
-                        if (context.Structural is NotifyCollectionChangedEventArgs eStructural)
-                        {
-                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
-                            {
-                                OnModelChanged(eStructural);
-                            }
-                        }
-                        if (context.Reset is NotifyCollectionChangedEventArgs eReset)
-                        {
-                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
-                            {
-                                OnModelChanged(eReset);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        this.ThrowFramework<NullReferenceException>($"Expecting {nameof(ReplaceItemsEventingContext)}");
-                    }
-                }
-            }
-            else
+                NotifyCollectionChangingEventArgs ePre = oldItems.Diff(newItems);
+            });
+
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Commit))
             {
-                Debug.Fail($@"ADVISORY - First Time UNEXPECTED failed to gain authority.");
+                if (Equals(Authority, CollectionChangeAuthority.Commit))
+                {
+                    // This method *does* have the authority to raise TWO events.
+                    // First event: Reset
+                    CanonicalSupersetProtected.Clear();
+
+                    // SecondEvent: Add (digest) on Final batch dispose.
+                    if (newItems.Count > 0)
+                    {
+                        using (BeginBatch())
+                        {
+                            await Task.Run(() =>
+                            {
+                                foreach (var newItem in newItems)
+                                {
+                                    CanonicalSupersetProtected.Add((T)newItem);
+                                }
+                            });
+                        }
+                    }
+                    UpdateStatesForEpoch();
+                }
+                else
+                {
+                    nameof(LoadCanon).ThrowHard<InvalidOperationException>("Failed authority claim.");
+                }
             }
         }
 
-#if false && LEGACY_RUN_FSM
-        /// <summary>
-        /// Executes a declared FSM sequentially while temporarily asserting any collection-change authority required by the FSM type.
-        /// </summary>
-        /// <remarks>
-        /// If the FSM enum <typeparamref name="TFsm"/> is decorated with
-        /// <c>CollectionChangeAuthorityAttribute</c>, an authority token is claimed for the
-        /// duration of the FSM execution window. This enables controlled mutation of the
-        /// canonical/projection collections during state execution without leaking that
-        /// authority outside the run scope.
-        ///
-        /// The FSM is executed deterministically by iterating the declared enum values
-        /// in order and invoking <c>ExecStateAsync</c> for each state. The final state
-        /// result is returned to the caller.
-        ///
-        /// This mechanism allows authority to behave as a dynamic capability rather than
-        /// a static property of the context, constraining mutation rights to the precise
-        /// interval in which the FSM is running.
-        /// </remarks>
-        [Probationary("This is a draft implementation that hasn't been thoroughly tested.")]
-        protected async Task<Enum> RunFSMAsync<TFsm>(object? context = null) where TFsm : struct, Enum
+        void UpdateStatesForEpoch()
         {
-            Debug.Fail($@"ADVISORY - [Probationary].");
-            IDisposable? authorityToken = null;
-
-            if (typeof(TFsm).GetCustomAttribute<CollectionChangeAuthorityAttribute>()?.Authority is CollectionChangeAuthority authority)
+            switch (CanonicalCount)
             {
-                authorityToken = BeginCollectionChangeAuthority(authority);
-            }
-            using (new TokenDisposer(authorityToken))
-            {
-                Enum result = FsmReservedState.None;
-                // Materialize enumerable context to a stable snapshot so FSM states cannot observe multiple enumerations or deferred side effects.
-                // * Reuse an incoming value that is already an object[] to avoid an unnecessary allocation.
-                if (context is IEnumerable collection)
-                {
-                    context = collection is object[] array
-                        ? array
-                        : collection.Cast<object>().ToArray();
-                }
-
-                foreach (Enum state in GetDeclaredValues<TFsm>())
-                {
-                    // Expecting 'Next' for linear flow.
-                    result = await ExecStateAsync(state, context);
-
-                    switch (result)
+                case 0:
+                    SearchEntryState = SearchEntryState.QueryCompleteNoResults;
+                    FilteringState = FilteringState.Ineligible;
+                    break;
+                case 1:
+                    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                    FilteringState = FilteringState.Ineligible;
+                    break;
+                default:
+                    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                    switch (QueryFilterConfig)
                     {
-                        case FsmReservedState.Canceled:
-                        case FsmReservedState.FastTrack:
-                        case FsmReservedState.None:
-                            return result;
-                        case FsmReservedState.Next:
-                            break;
+                        case QueryFilterConfig.Query:
+                        case QueryFilterConfig.Filter:
                         default:
-                            return await localRunOOB(state, context);
-                    }
-                }
-                return result;
-            }
-
-            #region L o c a l F x
-            async Task<Enum> localRunOOB(Enum outOfBand, object? context)
-            {
-                Debug.Fail($@"ADVISORY - First Time.");
-                int oobCurrent = 0;
-                const int OOB_MAX = 100;
-                while (++oobCurrent <= OOB_MAX)
-                {
-                    outOfBand = ExecState(outOfBand, context);
-
-                    switch (outOfBand)
-                    {
-                        case FsmReservedState.Canceled:
-                        case FsmReservedState.FastTrack:
-                        case FsmReservedState.None:
-                            return outOfBand;
-                        case FsmReservedState.Next:
+                            FilteringState = FilteringState.Ineligible;
+                            break;
+                        case QueryFilterConfig.QueryAndFilter:
+                            FilteringState = FilteringState.Armed;
                             break;
                     }
-                }
-                return FsmReservedState.MaxOOB;
+                    break;
             }
-            #endregion L o c a l F x
         }
-#endif
-        protected virtual async Task<Enum> ExecStateAsync(Enum state, object? context = null)
-        {
-            return FsmReservedState.Canceled;
-        }
-
 
         void AddItemToModel(object? item)
         {            
@@ -1240,17 +1168,6 @@ SELECT * FROM items WHERE
             }
         }
 
-        protected override void OnSearchEntryStateChanged()
-        {
-            base.OnSearchEntryStateChanged();
-            if (SearchEntryState == SearchEntryState.Cleared)
-            {
-                if (Equals(FsmReservedState.FastTrack, RunFSM<NativeClearFSM>()))
-                {   /* G T K */
-                }
-            }
-        }
-
         /// <summary>
         /// Establishes the coupled invariant between the observable projection and its projection option.
         /// </summary>
@@ -1315,6 +1232,16 @@ SELECT * FROM items WHERE
                 }
             }
         }
+
+        #region A U T H O R I T Y
+        public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority)
+            => CollectionChangeAuthorityProvider.BeginAuthority(authority);
+
+        public CollectionChangeAuthority Authority =>
+            (CollectionChangeAuthority)CollectionChangeAuthorityProvider.Authority;
+
+        AuthorityEpochProvider CollectionChangeAuthorityProvider { get; } = new();
+        #endregion A U T H O R I T Y
 
         /// <summary>
         /// Factory-backed canonical superset used by the back-end event pipeline 

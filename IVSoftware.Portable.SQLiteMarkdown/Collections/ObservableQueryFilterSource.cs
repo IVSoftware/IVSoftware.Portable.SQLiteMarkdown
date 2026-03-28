@@ -323,7 +323,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs eBCL)
         {
-            switch (AuthorityEpochProvider.Authority)
+            switch (Authority)
             {
                 case CollectionChangeAuthority.Reset:
                     // Events are being supressed by this authority epoch.
