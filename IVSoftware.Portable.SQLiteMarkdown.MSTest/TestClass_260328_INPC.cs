@@ -6,14 +6,87 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using System.Collections;
 using Newtonsoft.Json;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using IVSoftware.Portable.SQLiteMarkdown.MSTest.Util;
+using System.Collections.ObjectModel;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
 [TestClass]
-public class TestClass_INPC
+public class TestClass_260328_INPC
 {
+
     [TestMethod, DoNotParallelize]
-    public void Test_QueryModeINPC()
+    [Claim("00000000-0000-0000-0000-000000000000")]
+    public void Test_SimView_101()
+    {
+        string actual, expected;
+        var builder = new List<string>();
+        using var te = this.TestableEpoch();
+
+        #region I T E M    G E N
+        IList<SelectableQFModel>? eph = null;
+        // CREATE (no side effects)
+        var i1 = eph.AddDynamic("Item01");
+        var i2 = eph.AddDynamic("Item02");
+        var i3 = eph.AddDynamic("Item03");
+        #endregion I T E M    G E N
+
+        var itemsSource = new ObservableCollection<SelectableQFModel>();
+        var mmdc = new TMMDC(onp: itemsSource);
+        var simView = new PlatformCollectionViewSimulator<SelectableQFModel>(itemsSource);
+
+        actual = mmdc.TopologyReport();
+        actual.ToClipboardExpected();
+        { }
+        expected = @" 
+NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingOption.StructuralReplaceEvent";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting initial topology to match."
+        );
+
+        #region E V E N T S
+        // Differentiate between the itemsSource being driven by
+        // the simView and the simView being driven by itemsSource.
+        simView.CollectionChanged += (sender, e) =>
+        {
+            var isProjection = ReferenceEquals(sender, itemsSource);
+            if (isProjection)
+            {
+                builder.Add(e.ToString(true));
+            }
+            else
+            {
+                builder.Add(e.ToString(false).Replace(
+                    "Other        ",
+                    "SimView      "));
+            }
+        };
+        #endregion E V E N T S
+
+        // When UIU adds items, the SimView should register an INCC event.
+        subtest_SimViewAddItemINCC();
+
+        #region S U B T E S T S
+        void subtest_SimViewAddItemINCC()
+        {
+            simView.Add(i1);
+            { }
+        }
+        #endregion S U B T E S T S
+    }
+
+    /// <summary>
+    /// POC that OBQFS exposes INPC of its items as ItemPropertyChangedEventArgs.
+    /// </summary>
+    /// <remarks>
+    /// Features two serializable builders, one each for INCC and INPC.
+    /// </remarks>
+    [TestMethod, DoNotParallelize]
+    public void Test_INPC_OBQFS_QueryMode()
     {
         using var te = this.TestableEpoch();
 
@@ -22,14 +95,17 @@ public class TestClass_INPC
             builderINPC = new (),
             builderINCC = new ();
 
+        // OBQFS exposes INPC of its items as ItemPropertyChangedEventArgs
         var items = new ObservableQueryFilterSource<SelectableQFModel>
         {
             QueryFilterConfig = QueryFilterConfig.Query
         };
+
         items.CollectionChanged += (sender, e) =>
         {
             builderINCC.Add(e.ToString(true));
         };
+
         items.PropertyChanged += (sender, e) =>
         {
             switch (e)
@@ -71,6 +147,7 @@ public class TestClass_INPC
         Assert.IsInstanceOfType<SelectableQFModel>(inpcItem);
         { }
 
+        // Toggle the item in the backend.
         inpcItem.IsChecked = true;
 
         actual = string.Join(Environment.NewLine, builderINPC);

@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
     [TestClass]
-    public class TestClass_AffinityField
+    public class TestClass_260325_AffinityField
     {
 
         [TestMethod, DoNotParallelize]
