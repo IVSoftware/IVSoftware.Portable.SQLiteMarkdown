@@ -165,6 +165,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         }
                         break;
                 }
+                if(xattr is XBoundAttribute xba)
+                {
+                    OnBoundItemObjectChange(xba, e.ObjectChange);
+                }
 
                 #region L o c a l F x
                 void localUpdateAutocount()
