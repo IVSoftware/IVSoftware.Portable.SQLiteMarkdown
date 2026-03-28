@@ -628,11 +628,11 @@ InputText"
 
                 actual = mmdc.Model.ToString();
                 actual.ToClipboardExpected();
-                { }
+
                 expected = @" 
 <model mdc=""[MMDC]"" autocount=""2"" count=""2"" matches=""1"">
   <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" sort=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" sort=""1"" match=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" sort=""1"" qmatch=""True"" />
 </model>"
                 ;
 

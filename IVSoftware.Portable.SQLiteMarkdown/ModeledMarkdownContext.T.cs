@@ -319,7 +319,7 @@ SELECT * FROM items WHERE
                             switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
                             {
                                 case PlacerResult.Exists:
-                                    xaf.SetAttributeValue(nameof(StdMarkdownAttribute.match), bool.TrueString);
+                                    xaf.SetAttributeValue(nameof(StdMarkdownAttribute.qmatch), bool.TrueString);
                                     if (xaf.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
                                         && xbaModel.Tag is T model)
                                     {
