@@ -50,10 +50,8 @@ public class TestClass_260328_Model
         };
         model.Changed += (sender, e) =>
         {
-            changeCount++;
             if (sender is XObject xob)
             {
-                bool? oldValue = null;
                 XElement? pxel = xob.Parent;
                 switch (e.ObjectChange)
                 {
@@ -62,7 +60,15 @@ public class TestClass_260328_Model
                         parentsOfRemoved.Remove(xob);
                         break;
                     case XObjectChange.Value when xob is XAttribute xattr:
-                        oldValue = oldValues.TryGetValue(xattr, out var valid) ? valid : null;
+                        if(bool.TryParse(xattr.Value, out var newValue))
+                        {
+                            var oldValue = oldValues[xattr];
+                            oldValues.Remove(xattr);
+                            if(newValue == oldValue)
+                            {
+                                return;
+                            }
+                        }
                         break;
                 }
                 switch (sender)
@@ -83,6 +89,7 @@ public class TestClass_260328_Model
         #region L o c a l F x
         void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
+            changeCount++;
             switch (e.ObjectChange)
             {
                 case XObjectChange.Add:
@@ -97,31 +104,28 @@ public class TestClass_260328_Model
 
         void OnXAttributeChanged(XAttribute xattr, XElement pxel, XObjectChangeEventArgs e)
         {
+            changeCount++;
             if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
             {
-                bool? @bool = null;
-                if(bool.TryParse(xattr.Value, out var @explicit))
-                {
-                    @bool = @explicit;
-                }
+                bool? newValue = bool.TryParse(xattr.Value, out var valid) ? valid : null;
                 switch (e.ObjectChange)
                 {
                     case XObjectChange.Add:
-                        if(@bool != false)
+                        if(newValue != false)
                         { 
                             histo += std;
                         }
                         localUpdateAutocount();
                         break;
                     case XObjectChange.Remove:
-                        if (@bool != false)
+                        if (newValue != false)
                         {
                             histo -= std;
                         }
                         localUpdateAutocount();
                         break;
                     case XObjectChange.Value:
-                        switch (@bool)
+                        switch (newValue)
                         {
                             case null:
                                 /* N O O P */
@@ -177,10 +181,12 @@ public class TestClass_260328_Model
                 "Expecting histogram to match."
             );
 
-            // Idempotent set
+            // CONFIRMED:
+            // - Setting to same value *does* raise raw XObject.Change events.
+            // - However these are intercepted prior to OnXAttributeChanged.
             changeCountB4 = changeCount;
             model.SetStdAttributeValue(StdMarkdownAttribute.qmatch, true);
-            Assert.AreEqual(changeCountB4 + 1, changeCount);
+            Assert.AreEqual(changeCountB4, changeCount);
 
             actual = histo.ToString(Formatting.Indented);
             actual.ToClipboardExpected();
@@ -236,8 +242,12 @@ public class TestClass_260328_Model
                 "Expecting histogram to match."
             );
 
-            // Causes no change
+            // CONFIRMED:
+            // - Setting to same value *does* raise raw XObject.Change events.
+            // - However these are intercepted prior to OnXAttributeChanged.
+            changeCountB4 = changeCount;
             xel.SetStdAttributeValue(StdMarkdownAttribute.qmatch, true);
+            Assert.AreEqual(changeCountB4, changeCount);
 
             actual = histo.ToString(Formatting.Indented);
             actual.ToClipboardExpected();
