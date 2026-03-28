@@ -1,4 +1,5 @@
 using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
@@ -59,21 +60,6 @@ public class TestClass_260328_Model
                         pxel = parentsOfRemoved[xob];
                         parentsOfRemoved.Remove(xob);
                         break;
-                    case XObjectChange.Value when xob is XAttribute xattr:
-                        if(bool.TryParse(xattr.Value, out var newValue))
-                        {
-                            var oldValue = oldValues[xattr];
-                            oldValues.Remove(xattr);
-                            if(newValue == oldValue)
-                            {
-                                return;
-                            }
-                            else
-                            {   /* G T K */
-                                // Toggle detected.
-                            }
-                        }
-                        break;
                 }
                 switch (sender)
                 {
@@ -108,7 +94,6 @@ public class TestClass_260328_Model
 
         void OnXAttributeChanged(XAttribute xattr, XElement pxel, XObjectChangeEventArgs e)
         {
-            changeCount++;
             if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
             {
                 bool? newValue = bool.TryParse(xattr.Value, out var valid) ? valid : null;
@@ -129,13 +114,22 @@ public class TestClass_260328_Model
                         localUpdateAutocount();
                         break;
                     case XObjectChange.Value:
+                        var oldValue = oldValues[xattr];
+                        oldValues.Remove(xattr);
                         switch (newValue)
                         {
-                            case null:
-                                /* N O O P */
-                                break;
                             case true:
-                                histo += std;
+                                if (oldValue != true)
+                                {
+                                    histo += std;
+                                }
+                                break;
+                            case null:
+                                this.ThrowSoft<InvalidOperationException>();
+                                if (oldValue == false)
+                                {
+                                    histo -= std;
+                                }
                                 break;
                             case false:
                                 histo -= std;
@@ -156,6 +150,7 @@ public class TestClass_260328_Model
                     }
                 }
             }
+            changeCount++;
         }
         #endregion L o c a l F x
 
