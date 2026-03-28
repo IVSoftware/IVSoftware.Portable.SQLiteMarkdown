@@ -498,7 +498,7 @@ SELECT * FROM items WHERE
                 case CollectionChangeAuthority.Commit:
                 case CollectionChangeAuthority.Settle:
                 case CollectionChangeAuthority.Predicate:
-                    if(DHostBatch.TryApply(e))
+                    if(DHostBatch.TryAppend(e))
                     { 
                         /* G T K - N O O P */
                         // Deferred
