@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Xml.Linq;
+using System.Xml.Schema;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -125,10 +126,50 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             switch (e.ObjectChange)
             {
                 case XObjectChange.Add:
-                case XObjectChange.Remove:
-                    foreach (var attr in xel.Attributes())
+                    foreach (var xattr in xel.Attributes())
                     {
-                        OnXAttributeChanged(attr, pxel, e);
+                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
+                        {
+                            if (bool.TryParse(xattr.Value, out bool valid) && valid == false)
+                            {   /* G T K - N O O P */
+                                // POLICY: Explicit false values cannot modify the histogram.
+                            }
+                            else
+                            {
+                                // Increment *all* first.
+                                Histo.Increment(std, xattr);
+                            }
+                        }
+                    }
+                    foreach (var xattr in xel.Attributes())
+                    {
+                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std)
+                            && std.GetCustomAttribute<IFTTTAttribute>() is not null)
+                        {
+                            switch (std)
+                            {
+                                case StdMarkdownAttribute.qmatch:
+                                case StdMarkdownAttribute.pmatch:
+                                    SetMatchAttributeValue(xel);
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+                case XObjectChange.Remove:
+                    foreach (var xattr in xel.Attributes())
+                    {
+                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
+                        {
+                            if (bool.TryParse(xattr.Value, out bool valid) && valid == false)
+                            {   /* G T K - N O O P */
+                                // POLICY: Explicit false values cannot modify the histogram.
+                            }
+                            else
+                            {
+                                Histo.Decrement(std);
+                            }
+                        }
                     }
                     break;
             }
@@ -170,15 +211,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         }
                         break;
                 }
-                if(xattr is XBoundAttribute xba)
+                if (xattr is XBoundAttribute xba)
                 {
                     OnBoundItemObjectChange(xba, e.ObjectChange);
                 }
-
+                else
+                {
+                    switch (std)
+                    {
+                        case StdMarkdownAttribute.qmatch:
+                        case StdMarkdownAttribute.pmatch:
+                            SetMatchAttributeValue(pxel);
+                            break;
+                    }
+                }
                 #region L o c a l F x
                 void localUpdateHisto()
                 {
-                    if(Model.Attribute(StdMarkdownAttribute.histo) is XBoundAttribute xba)
+                    if (Model.Attribute(StdMarkdownAttribute.histo) is XBoundAttribute xba)
                     {
                         xba.Value = Histo.ToString(HistogrammerFormat.Default);
                     }
@@ -186,6 +236,46 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 #endregion L o c a l F x
             }
         }
+
+        /// <summary>
+        /// Sets the 'match' attribute based on any explicit positive match signal.
+        /// </summary>
+        /// <remarks>
+        /// - The 'qmatch' and 'pmatch' values are normalized to nullable signals
+        ///   using histogram participation.
+        /// - Mental Model:
+        ///   "If no descendants explicitly match, all descendants are considered matches (no filter)."
+        /// - The 'match' attribute is set explicity true if either 'qmatch' or 'pmatch'
+        ///   are explictly true, otherwise null.
+        /// EXAMPLE:
+        /// 1. IME text is cleared -> all 'qmatch' attributes are removed -> show all items.
+        /// 2. User enters text -> some items are marked 'qmatch' -> show only matching items.
+        /// </remarks>
+        void SetMatchAttributeValue(XElement @this)
+        {
+            bool valid; // Captures an explicit value, if parseable.
+
+            // If none of the xitems have a qmatch then *all* of them implicily have a qmatch.
+            bool? qmatch =
+                Histo[StdMarkdownAttribute.qmatch] == 0
+                ? null
+                : bool.TryParse(@this.Attribute(StdMarkdownAttribute.qmatch)?.Value, out valid) ? valid : null;
+
+            // If none of the xitems have a pmatch then *all* of them implicily have a pmatch.
+            bool? pmatch =
+                Histo[StdMarkdownAttribute.pmatch] == 0
+                ? null
+                : bool.TryParse(@this.Attribute(StdMarkdownAttribute.pmatch)?.Value, out valid) ? valid : null;
+            if (qmatch == true || pmatch == true)
+            {
+                @this.SetStdAttributeValue(StdMarkdownAttribute.match, bool.TrueString);
+            }
+            else
+            {
+                @this.SetStdAttributeValue(StdMarkdownAttribute.match, null);
+            }
+        }
+
         protected EnumHistogrammer<StdMarkdownAttribute> Histo { get; } = new(ZeroCountOption.Remove);
         public string ToString(HistogrammerFormat format) => Histo.ToString(format);
 

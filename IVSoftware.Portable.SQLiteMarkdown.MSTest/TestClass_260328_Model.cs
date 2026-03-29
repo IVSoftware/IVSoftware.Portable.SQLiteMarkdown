@@ -26,7 +26,6 @@ public class TestClass_260328_Model
         var model = mdc.Model;
         var histo = model.To<EnumHistogrammer<StdMarkdownAttribute>>();
 
-
         subtest_TrackLateral();
         subtest_TrackCurrentChild();
         subtest_TrackAddRemoveChild();
@@ -190,7 +189,7 @@ public class TestClass_260328_Model
         {
             var xel = new XElement(
                 nameof(StdMarkdownElement.xitem),
-                new XAttribute(nameof(StdMarkdownAttribute.qmatch), true));
+                new XAttribute(nameof(StdMarkdownAttribute.qmatch), bool.TrueString));
 
             // Add offline - before this node is parented.
             model.Add(xel);

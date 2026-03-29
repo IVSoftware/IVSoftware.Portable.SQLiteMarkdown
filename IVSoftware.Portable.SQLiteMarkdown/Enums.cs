@@ -260,12 +260,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// This record matches all active predicates.
         /// </summary>
+        [IFTTT("-> match")]
         [DefaultValue("True")]
         qmatch,
 
         /// <summary>
         /// This record matches all active predicates.
         /// </summary>
+        [IFTTT("-> match")]
         [DefaultValue("True")]
         pmatch,
 
