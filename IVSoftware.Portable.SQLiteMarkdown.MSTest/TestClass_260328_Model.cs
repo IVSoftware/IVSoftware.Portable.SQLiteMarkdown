@@ -244,7 +244,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-{}"
+[model:0 match:0 qmatch:0 pmatch:0]"
             ;
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -275,10 +275,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-{
-  ""model"": 1,
-  ""qmatch"": 1
-}"
+[model:1 match:1 qmatch:1 pmatch:0]"
             ;
 
             Assert.AreEqual(
