@@ -77,11 +77,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         {
             return GetEnumerator();
         }
-        public string ToString(Newtonsoft.Json.Formatting formatting)=>
+        public string ToString(Formatting formatting) =>
             JsonConvert.SerializeObject(
                 _histo.ToDictionary(
                 kvp => kvp.Key.ToString(),
                 kvp => kvp.Value), formatting);
 
+        public string ToString(Enum formatting)
+        {
+            var keys = 
+                formatting
+                .GetCustomAttribute<HistogrammerFormatAttribute>()
+                ?.Keys.OfType<T>() ?? [];
+
+            var builder = new List<string>();
+
+            foreach (var kvp in _histo)
+            {
+                // NOW we have a direct read... TODO!
+            }
+
+            return string.Join(" ", builder);
+        }
     }
 }

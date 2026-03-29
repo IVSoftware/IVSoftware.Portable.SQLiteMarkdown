@@ -209,7 +209,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         xitem,
     }
 
-    internal enum StdMarkdownAttribute
+    public enum StdMarkdownAttribute
     {
         /// <summary>
         /// Path segment name. 

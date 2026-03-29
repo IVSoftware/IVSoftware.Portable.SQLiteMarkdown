@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
@@ -279,5 +280,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Authority = authority;
         }
         public CollectionChangeAuthority Authority { get; } = 0;
+    }
+
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
+    public class HistogrammerFormatAttribute : Attribute
+    {
+        public HistogrammerFormatAttribute(
+            StdMarkdownAttribute key, 
+            params StdMarkdownAttribute[] moreKeys)
+        {
+            moreKeys ??= [];
+            Keys = new StdMarkdownAttribute[1 + moreKeys.Length];
+            Keys[0] = key;
+            Array.Copy(moreKeys, 0, Keys, 1, moreKeys.Length);
+        }
+        public StdMarkdownAttribute[] Keys { get; }
     }
 }

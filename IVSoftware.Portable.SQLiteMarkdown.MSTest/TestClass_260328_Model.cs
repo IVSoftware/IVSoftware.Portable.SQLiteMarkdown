@@ -412,4 +412,50 @@ public class TestClass_260328_Model
         }
         #endregion S U B T E S T S
     }
+
+    [TestMethod]
+    public void Test_HisogrammerMDC()
+    {
+        string actual, expected;
+        ModeledMarkdownContext<SelectableQFModel> mmdc = new(){ QueryFilterConfig = QueryFilterConfig.Query };
+        XElement model = mmdc.Model;
+
+        mmdc.LoadCanon(new List<SelectableQFModel>().PopulateForDemo(10));
+
+        actual = model.ToString();
+
+        actual.ToClipboardExpected();
+        { } // <- FIRST TIME ONLY: Adjust the message.
+        actual.ToClipboardAssert("Expecting result to match.");
+        { }
+
+        expected = @" 
+<model mdc=""[MMDC]"" autocount=""10"" count=""10"" matches=""10"">
+  <xitem text=""88827ddb-e438-444a-b554-2767063d5a16"" model=""[SelectableQFModel]"" sort=""0"" />
+  <xitem text=""ce02062f-45f8-4069-ab41-155c843f3264"" model=""[SelectableQFModel]"" sort=""1"" />
+  <xitem text=""3d7860d8-fdb1-471a-8d14-d7d445bc2fa4"" model=""[SelectableQFModel]"" sort=""2"" />
+  <xitem text=""772b4648-fc88-47ce-8157-76dce27b0ed9"" model=""[SelectableQFModel]"" sort=""3"" />
+  <xitem text=""563f68f3-893d-4888-aa77-2f45a4dcea2f"" model=""[SelectableQFModel]"" sort=""4"" />
+  <xitem text=""bbf6ad4f-f15a-403e-913b-81535656ec87"" model=""[SelectableQFModel]"" sort=""5"" />
+  <xitem text=""09b79f51-e06b-43f3-85ff-68e47ae0ebd2"" model=""[SelectableQFModel]"" sort=""6"" />
+  <xitem text=""18f818b3-f4bf-411a-86e6-77f639275d22"" model=""[SelectableQFModel]"" sort=""7"" />
+  <xitem text=""171c8d82-8c43-490b-bf0d-959bdb5221a0"" model=""[SelectableQFModel]"" sort=""8"" />
+  <xitem text=""e8de5c18-c28d-453d-a9c6-81de8a831db6"" model=""[SelectableQFModel]"" sort=""9"" />
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting result to match."
+        );
+
+
+        subtest_Name();
+
+        #region S U B T E S T S
+        void subtest_Name()
+        {
+        }
+        #endregion S U B T E S T S
+    }
 }
