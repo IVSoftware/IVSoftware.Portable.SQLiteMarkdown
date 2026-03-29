@@ -38,11 +38,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (_model is null)
                 {
-                    _model =
-                        new XElement(
-                            nameof(StdMarkdownElement.model),
-                            new XBoundAttribute(nameof(StdMarkdownAttribute.mdc), this, $"[MDC]"),
-                            new XAttribute(nameof(StdMarkdownAttribute.histo), 0));
+                    _model = new
+                        XElement(nameof(StdMarkdownElement.model))
+                        .WithBoundAttributeValue(this, StdMarkdownAttribute.mdc, "[MDC]")
+                        .WithBoundAttributeValue(Histo, StdMarkdownAttribute.histoZ, "[Histo]");
 
                     _model.Changing += (sender, e) =>
                     {
@@ -186,14 +185,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 #region L o c a l F x
                 void localUpdateHisto()
                 {
-                    // Count the actual model XBO objects
-                    if (std == StdMarkdownAttribute.model)
+                    if(Model.Attribute(StdMarkdownAttribute.histoZ) is XBoundAttribute xba)
                     {
-                        var root = pxel.AncestorsAndSelf().Last();
-                        if (root.Has<IMarkdownContext>())
-                        {
-                            root.SetStdAttributeValue(StdMarkdownAttribute.histo, Histo[StdMarkdownAttribute.model]);
-                        }
+                        xba.Value = Histo.ToString(HistogrammerFormat.Default);
                     }
                 }
                 #endregion L o c a l F x

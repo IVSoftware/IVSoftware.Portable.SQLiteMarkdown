@@ -89,11 +89,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         $"The {eUnk.GetType().Name} case is not supported.");
                 return;
             }
-
-            int
-                indexForAdd = model.GetAttributeValue<int>(StdMarkdownAttribute.histo),
-                count = model.GetAttributeValue<int>(StdMarkdownAttribute.count, 0),
-                matches = model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
+            var mdc = model.To<IMarkdownContext>(@throw: true);
+            var histo = model.To<EnumHistogrammer<StdMarkdownAttribute>>(@throw: true);
+            int itemCount = histo[StdMarkdownAttribute.model];
 
             switch (action)
             {
@@ -107,8 +105,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             $"The {action.ToFullKey()} case is not supported.");
                     break;
             }
-            model.SetAttributeValue(nameof(StdMarkdownAttribute.count), count);
-            model.SetAttributeValue(nameof(StdMarkdownAttribute.matches), matches);
 
             #region L o c a l F x
             void localAddToModel()
@@ -135,9 +131,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                         tag: item,
                                         name: nameof(StdMarkdownAttribute.model));
 
-                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), indexForAdd++);
-                                    count++;
-                                    matches++;
+                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), itemCount++);
+                                    if (mdc.IsFiltering)
+                                    {
+                                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 29).Date, "Don't forget disabled");
+                                        // Make sure we mark canonical match until next filter op.
+                                        // matches++;
+                                    }
                                     break;
                                 default:
                                     eUnk.ThrowFramework<NotSupportedException>(
@@ -247,7 +247,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                         tag: item,
                                         name: nameof(StdMarkdownAttribute.model));
 
-                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), indexForAdd++);
+                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), itemCount++);
                                     count++;
                                     matches++;
                                     break;

@@ -212,6 +212,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public enum StdMarkdownAttribute
     {
         /// <summary>
+        /// Histogrammer bins based on XElement.Changed.
+        /// </summary>
+        histoZ,
+
+        /// <summary>
         /// Path segment name. 
         /// </summary>
         /// <remarks>
@@ -282,12 +287,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         [DefaultValue(0)]
         count,
-
-        /// <summary>
-        /// The total running count, based on XElement.Changed.
-        /// </summary>
-        [DefaultValue(0)]
-        histo,
 
         /// <summary>
         /// In filter mode, the number of items matching all the predicates.
