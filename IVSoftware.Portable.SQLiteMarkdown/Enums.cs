@@ -214,7 +214,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// XBound histogrammer with bins based on XElement.Changed.
         /// </summary>
-        histoZ,
+        histo,
 
         /// <summary>
         /// XBound active filters dictionary,

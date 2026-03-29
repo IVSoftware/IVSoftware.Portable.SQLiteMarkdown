@@ -32,7 +32,7 @@ public class TestClass_260328_Model
                 .WithBoundAttributeValue(this, StdMarkdownAttribute.mdc, "[MDC]")
                 .WithBoundAttributeValue(
                     histo, 
-                    StdMarkdownAttribute.histoZ, "[Histo]")
+                    StdMarkdownAttribute.histo, "[Histo]")
                 .WithBoundAttributeValue(new Dictionary<string, Enum>(), StdMarkdownAttribute.filters, "[ActiveFilters]");
 
         model.Changing += (sender, e) =>
@@ -170,7 +170,7 @@ public class TestClass_260328_Model
                 #region L o c a l F x
                 void localUpdateHisto()
                 {
-                    if (model.Attribute(StdMarkdownAttribute.histoZ) is XBoundAttribute xba)
+                    if (model.Attribute(StdMarkdownAttribute.histo) is XBoundAttribute xba)
                     {
                         xba.Value = histo.ToString(HistogrammerFormat.Default);
                     }

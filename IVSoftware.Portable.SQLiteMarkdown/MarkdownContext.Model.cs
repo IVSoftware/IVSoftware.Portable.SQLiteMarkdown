@@ -43,7 +43,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     _model = new
                         XElement(nameof(StdMarkdownElement.model))
                         .WithBoundAttributeValue(this, StdMarkdownAttribute.mdc, "[MDC]")
-                        .WithBoundAttributeValue(Histo, StdMarkdownAttribute.histoZ, "[Histo]")
+                        .WithBoundAttributeValue(Histo, StdMarkdownAttribute.histo, "[Histo]")
                         .WithBoundAttributeValue(ActiveFilters, StdMarkdownAttribute.filters, "[ActiveFilters]");
 
                     _model.Changing += (sender, e) =>
@@ -188,7 +188,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 #region L o c a l F x
                 void localUpdateHisto()
                 {
-                    if(Model.Attribute(StdMarkdownAttribute.histoZ) is XBoundAttribute xba)
+                    if(Model.Attribute(StdMarkdownAttribute.histo) is XBoundAttribute xba)
                     {
                         xba.Value = Histo.ToString(HistogrammerFormat.Default);
                     }
