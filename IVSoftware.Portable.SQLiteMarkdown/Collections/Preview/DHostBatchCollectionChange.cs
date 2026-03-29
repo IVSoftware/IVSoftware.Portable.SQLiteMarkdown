@@ -47,7 +47,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 snapshot,
                 digest,
                 _listFTR);
-
             base.OnFinalDispose(eBatch);
             _isModified = false;
         }
@@ -89,7 +88,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         /// <summary>
         /// Returns true if a batch is in progress.
         /// </summary>
-        public bool TryApply(NotifyCollectionChangedEventArgs e)
+        public bool TryAppend(NotifyCollectionChangedEventArgs e)
         {
             if(IsZero())
             {

@@ -131,7 +131,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public int UnfilteredCount 
         {
             get => CanonicalCount;
-            protected set => Model.SetAttributeValue(StdMarkdownAttribute.count, value);
+            protected set => Model.SetStdAttributeValue(StdMarkdownAttribute.count, value);
         }
 
         public virtual int CanonicalCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.count);

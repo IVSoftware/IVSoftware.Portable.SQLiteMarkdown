@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.Threading;
@@ -322,7 +323,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs eBCL)
         {
-            switch (AuthorityEpochProvider.Authority)
+            switch (Authority)
             {
                 case CollectionChangeAuthority.Reset:
                     // Events are being supressed by this authority epoch.

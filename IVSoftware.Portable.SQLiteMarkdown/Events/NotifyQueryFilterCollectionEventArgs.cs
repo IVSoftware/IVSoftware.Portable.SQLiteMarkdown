@@ -1,13 +1,13 @@
 ﻿using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Events
 {
     [Flags]
+    [Obsolete("Backward compatibility only. Use MarkdownContext.ModelSettledEventArgs for full capability.")]
     public enum NotifyQueryFilterCollectionChangedAction
     {
         Add = NotifyCollectionChangedAction.Add,

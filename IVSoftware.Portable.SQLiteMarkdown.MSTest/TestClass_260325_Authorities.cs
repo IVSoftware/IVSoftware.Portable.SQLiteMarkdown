@@ -1,3 +1,4 @@
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
@@ -9,15 +10,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 [TestClass]
 public class TestClass_260325_Authorities
 {
-    class TestableMMDC : ModeledMarkdownContext<SelectableQFModel>
-    {
-        public TestableMMDC(ObservablePreviewCollection<SelectableQFModel> onp, NetProjectionTopology option)
-        {
-            // base.SetObservableNetProjection(onp, option);
-        }
-    }
-
-    [TestMethod, DoNotParallelize]
+    [TestMethod, DoNotParallelize, Ignore, Probationary("Scaffold only.")]
     [Claim("00000000-0000-0000-0000-000000000000")]
     public void Test_CSStoModel()
     {
@@ -34,13 +27,12 @@ public class TestClass_260325_Authorities
         #endregion I T E M    G E N
 
         var itemsSource = new ObservablePreviewCollection<SelectableQFModel>();
-        var mmdc = new TestableMMDC(onp: itemsSource, option: NetProjectionTopology.AllowDirectChanges);
-        var simView = new PlatformCollectionViewSimulator<SelectableQFModel>(itemsSource);
+        var mmdc = new TMMDC(onp: itemsSource, option: NetProjectionTopology.AllowDirectChanges);
 
         #region E V E N T S
         // Differentiate between the itemsSource being driven by
         // the simView and the simView being driven by itemsSource.
-        simView.CollectionChanged += (sender, e) =>
+        itemsSource.CollectionChanged += (sender, e) =>
         {
             var isProjection = ReferenceEquals(sender, itemsSource);
             if (isProjection)

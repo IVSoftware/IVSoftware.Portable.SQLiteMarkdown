@@ -23,9 +23,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
     /// into a compliant <see cref="NotifyCollectionChangedEventArgs"/>. Invalid configurations degrade to
     /// <c>Reset</c>, with advisory or exception signaling.
     ///
-    /// Mental Model: "A staged change contract where mutability must be explicitly granted."
+    /// Mental Model: "A staged rewritable change ledger where mutability must be explicitly granted."
+    /// 
+    /// - Reset semantics are asymmetric by design:
+    /// - Any item-level lifecycle concerns (e.g., disposal, detachment) must be handled
+    ///   during the Changing phase. When translated to BCL, Reset intentionally discards
+    ///   payload and represents only a structural invalidation.
     /// </remarks>
-    internal sealed class NotifyCollectionChangingEventArgs : CancelEventArgs
+    internal class NotifyCollectionChangingEventArgs : CancelEventArgs
     {
         NotifyCollectionChangedEventArgs? EventArgsBCL = null;
 
@@ -67,8 +72,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             Action = action;
             Reason = reason;
             Scope = scope;
+
             NewItems = new MutationPreviewCollection(newItems, scope, SCOPE_POLICY_VIOLATION_MESSAGE);
             OldItems = new MutationPreviewCollection(oldItems, scope, SCOPE_POLICY_VIOLATION_MESSAGE);
+
+            ((MutationPreviewCollection)NewItems).Modified += (sender, e) => IsModified = true;
+            ((MutationPreviewCollection)OldItems).Modified += (sender, e) => IsModified = true;
         }
         bool _isReverting = false;
 
@@ -208,6 +217,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                             break;
                         }
 
+                    // Reset semantics:
+                    // - Payload (NewItems/OldItems) is intentionally ignored during BCL emission.
+                    // - Any lifecycle or disposal logic must be handled during the Changing phase.
+                    // - Apply/consumers must treat Reset as authoritative invalidation, not replayable delta.
                     case NotifyCollectionChangeAction.Reset:
                         makeReset = true;
                         break;
@@ -250,6 +263,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     if (Scope == NotifyCollectionChangeScope.FullControl)
                     {
                         _newStartingIndex = value;
+                        IsModified = true;
                     }
                     else
                     {
@@ -270,6 +284,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     if (Scope == NotifyCollectionChangeScope.FullControl)
                     {
                         _oldStartingIndex = value;
+                        IsModified = true;
                     }
                     else
                     {
@@ -301,6 +316,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 }
             }
         }
+        public bool IsModified { get; private set; }
         string SCOPE_POLICY_VIOLATION_MESSAGE =>    
             $"This operation is not permitted: {nameof(NotifyCollectionChangeScope)}={Scope.ToFullKey()}," +
             $"Always check Scope before attempting to modify the change proposal.";
@@ -352,6 +368,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             {
                 if (Scope.HasFlag(NotifyCollectionChangeScope.FullControl))
                 {
+                    Modified?.Invoke(this, EventArgs.Empty);
                     return true;
                 }
                 else
@@ -399,6 +416,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     base.MoveItem(oldIndex, newIndex);
                 }
             }
+            public event EventHandler? Modified;
         }
     }
 }

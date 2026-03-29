@@ -632,7 +632,7 @@ InputText"
                 expected = @" 
 <model mdc=""[MMDC]"" autocount=""2"" count=""2"" matches=""1"">
   <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" sort=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" sort=""1"" match=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" sort=""1"" qmatch=""True"" />
 </model>"
                 ;
 
@@ -929,7 +929,7 @@ InputText"
             // This is a candidate for an updated version of the
             // default JSON and can be pasted into the C# code.
             $@"@"" 
-{JsonConvert.SerializeObject(ExpressionTable, Formatting.Indented).Replace(@"""", @"""""")}"" 
+{JsonConvert.SerializeObject(ExpressionTable, Newtonsoft.Json.Formatting.Indented).Replace(@"""", @"""""")}"" 
 ".ToClipboard();
             { }
         }
@@ -954,7 +954,7 @@ InputText"
                 };
                 actual =
                     JsonConvert
-                    .SerializeObject(items, Formatting.Indented)
+                    .SerializeObject(items, Newtonsoft.Json.Formatting.Indented)
                     .Replace(@"\r\n", string.Empty);
                 actual.ToClipboard();
                 actual.ToClipboardExpected();
@@ -1007,11 +1007,11 @@ InputText"
                 // SETTLE
                 // There is also a settling time to take into account.
                 retrievedItems = cnx.Table<SelfIndexedProfile>().ToArray();
-                actual = JsonConvert.SerializeObject(retrievedItems, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(retrievedItems, Newtonsoft.Json.Formatting.Indented);
                 actual.ToClipboard();
                 actual.ToClipboardAssert();
 
-                actual = JsonConvert.SerializeObject(retrievedItems, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(retrievedItems, Newtonsoft.Json.Formatting.Indented);
                 actual.ToClipboard();
 
                 actual.ToClipboardExpected();
@@ -1067,7 +1067,7 @@ InputText"
                 );
 
                 retrievedItems = cnx.Query<SelfIndexedProfile>(query).ToArray();
-                actual = JsonConvert.SerializeObject(retrievedItems, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(retrievedItems, Newtonsoft.Json.Formatting.Indented);
 
                 actual.ToClipboardExpected();
                 { }
@@ -1214,7 +1214,7 @@ FilterTerm";
                 Tags = "animal color" 
             };
 
-            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(model, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -1248,7 +1248,7 @@ FilterTerm";
                 Tags = "animal,color"
             };
 
-            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(model, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected(); // For viewing only
 
             Assert.AreEqual(
@@ -1265,7 +1265,7 @@ FilterTerm";
                 Tags = "animal;color"
             };
 
-            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(model, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected(); // For viewing only
 
             Assert.AreEqual(
@@ -1282,7 +1282,7 @@ FilterTerm";
                 Tags = "animal~color"
             };
 
-            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(model, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected(); // For viewing only
 
             Assert.AreEqual(
@@ -1299,7 +1299,7 @@ FilterTerm";
                 Tags = "[animal][color]"
             };
 
-            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(model, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected(); // For viewing only
 
             Assert.AreEqual(
@@ -1316,7 +1316,7 @@ FilterTerm";
                 Tags = "[animal][color]"
             };
 
-            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(model, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected(); // For viewing only
 
             Assert.AreEqual(
@@ -1333,7 +1333,7 @@ FilterTerm";
                 Tags = "[animal,big]    [color]"
             };
 
-            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(model, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -1383,7 +1383,7 @@ FilterTerm";
                 Tags = "animal color" 
             };
 
-            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(model, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -1417,7 +1417,7 @@ FilterTerm";
                 Tags = "animal,color"
             };
 
-            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(model, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected(); // For viewing only
 
             Assert.AreEqual(
@@ -1434,7 +1434,7 @@ FilterTerm";
                 Tags = "animal;color"
             };
 
-            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(model, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected(); // For viewing only
 
             Assert.AreEqual(
@@ -1451,7 +1451,7 @@ FilterTerm";
                 Tags = "animal~color"
             };
 
-            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(model, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected(); // For viewing only
 
             Assert.AreEqual(
@@ -1468,7 +1468,7 @@ FilterTerm";
                 Tags = "[animal][color]"
             };
 
-            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(model, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected(); // For viewing only
 
             Assert.AreEqual(
@@ -1485,7 +1485,7 @@ FilterTerm";
                 Tags = "[animal,big]    [color]"
             };
 
-            actual = JsonConvert.SerializeObject(model, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(model, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -1582,7 +1582,7 @@ FilterTerm";
                     cnx.CreateTable<SelectableQFModelSubclassG>();
                     tableNames = cnx.GetTableNames();
 
-                    actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
+                    actual = JsonConvert.SerializeObject(tableNames, Newtonsoft.Json.Formatting.Indented);
                     expected = @" 
 [
   ""SelectableQFModelSubclassG""
@@ -1617,7 +1617,7 @@ SELECT * FROM items WHERE
                 tableNames = mdc.GetTableNames();
                 "hello".ParseSqlMarkdown<SelectableQFModel>();
 
-                actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(tableNames, Newtonsoft.Json.Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -1641,7 +1641,7 @@ SELECT * FROM items WHERE
                 tableNames = mdc.GetTableNames();
                 "hello".ParseSqlMarkdown<SelectableQFModel>();
 
-                actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(tableNames, Newtonsoft.Json.Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }
                 // Even though [Table("items"]) exists in BC.
@@ -1664,7 +1664,7 @@ SELECT * FROM items WHERE
                 tableNames = mdc.GetTableNames();
                 "hello".ParseSqlMarkdown<SelectableQFModel>();
 
-                actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(tableNames, Newtonsoft.Json.Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -1688,7 +1688,7 @@ SELECT * FROM items WHERE
                 tableNames = mdc.GetTableNames();
                 "hello".ParseSqlMarkdown<SelectableQFModel>();
 
-                actual = JsonConvert.SerializeObject(tableNames, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(tableNames, Newtonsoft.Json.Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 

@@ -162,7 +162,7 @@ Throw MarkdownContextPolicyViolation.ExplicitClearAdvisory | ExplicitClearAdviso
             {
                 inherited.LoadCanon(localCanon);
 
-                actual = JsonConvert.SerializeObject(inherited, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(inherited, Newtonsoft.Json.Formatting.Indented);
 
                 actual.ToClipboardExpected();
                 { }

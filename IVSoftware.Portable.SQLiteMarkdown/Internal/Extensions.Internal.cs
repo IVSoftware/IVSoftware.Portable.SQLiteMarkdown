@@ -2,7 +2,6 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
@@ -12,8 +11,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
@@ -290,9 +287,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         ///   and the configured throw policy is invoked.
         /// - When <paramref name="padToMaxLength"/> is <c>true</c>, the value is right-padded to the specified length.
         /// </remarks>
-        internal static void SetAttributeValue(
+        internal static void SetStdAttributeValue(
             this XElement @this,
-            StdMarkdownAttribute stdEnum,
+            StdMarkdownAttribute std,
             object? value,
             byte maxLength = byte.MaxValue,
             bool padToMaxLength = false,
@@ -300,7 +297,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         {
             if (value is null)
             {
-                @this.SetAttributeValue(stdEnum.ToString(), null);
+                @this.SetAttributeValue(std.ToString(), null);
                 return;
             }
 
@@ -309,7 +306,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             {
                 @string = @string.Substring(0, maxLength);
 
-                var msg = $"Value for {stdEnum.ToFullKey()} exceeded {maxLength} characters and has been truncated.";
+                var msg = $"Value for {std.ToFullKey()} exceeded {maxLength} characters and has been truncated.";
                 switch (@throw)
                 {
                     case ThrowOrAdvise.ThrowHard:
@@ -333,7 +330,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             {
                 @string = @string.PadRight(maxLength);
             }
-            @this.SetAttributeValue(stdEnum.ToString(), @string);
+            @this.SetAttributeValue(std.ToString(), @string);
         }
 
         internal static string PadToMaxLength(

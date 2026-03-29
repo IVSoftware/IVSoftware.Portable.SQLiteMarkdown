@@ -60,7 +60,7 @@ public class TestClass_PredicateMarkdownContext
             recordset = cnx.Query<TemporalAffinityQFModel>(sql);
 
 
-            actual = JsonConvert.SerializeObject(recordset, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(recordset, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -366,7 +366,7 @@ Other.Replace NewItems= 3 OldItems=37 ModelSettledEventArgs                     
         expected = @" 
 <model mdc=""[MMDC]"" autocount=""37"" count=""37"" matches=""3"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[TemporalAffinityQFModel]"" preview=""Brown Dog "" sort=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[TemporalAffinityQFModel]"" preview=""Green Appl"" sort=""1"" match=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[TemporalAffinityQFModel]"" preview=""Green Appl"" sort=""1"" qmatch=""True"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[TemporalAffinityQFModel]"" preview=""Yellow Ban"" sort=""2"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[TemporalAffinityQFModel]"" preview=""Blue Bird "" sort=""3"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[TemporalAffinityQFModel]"" preview=""Red Cherry"" sort=""4"" />
@@ -378,7 +378,7 @@ Other.Replace NewItems= 3 OldItems=37 ModelSettledEventArgs                     
   <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[TemporalAffinityQFModel]"" preview=""Pink Flami"" sort=""10"" />
   <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[TemporalAffinityQFModel]"" preview=""Golden Lio"" sort=""11"" />
   <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[TemporalAffinityQFModel]"" preview=""Brown Bear"" sort=""12"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000d"" model=""[TemporalAffinityQFModel]"" preview=""Green Pear"" sort=""13"" match=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000d"" model=""[TemporalAffinityQFModel]"" preview=""Green Pear"" sort=""13"" qmatch=""True"" />
   <xitem text=""312d1c21-0000-0000-0000-00000000000e"" model=""[TemporalAffinityQFModel]"" preview=""Red Strawb"" sort=""14"" />
   <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[TemporalAffinityQFModel]"" preview=""Black Pant"" sort=""15"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000010"" model=""[TemporalAffinityQFModel]"" preview=""Yellow Lem"" sort=""16"" />
@@ -397,7 +397,7 @@ Other.Replace NewItems= 3 OldItems=37 ModelSettledEventArgs                     
   <xitem text=""312d1c21-0000-0000-0000-00000000001d"" model=""[TemporalAffinityQFModel]"" preview=""Mango     "" sort=""29"" />
   <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[TemporalAffinityQFModel]"" preview=""Should NOT"" sort=""30"" />
   <xitem text=""312d1c21-0000-0000-0000-00000000001f"" model=""[TemporalAffinityQFModel]"" preview=""Appetizer "" sort=""31"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000020"" model=""[TemporalAffinityQFModel]"" preview=""Errata    "" sort=""32"" match=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000020"" model=""[TemporalAffinityQFModel]"" preview=""Errata    "" sort=""32"" qmatch=""True"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000021"" model=""[TemporalAffinityQFModel]"" preview=""Happy Camp"" sort=""33"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000022"" model=""[TemporalAffinityQFModel]"" preview=""Great exam"" sort=""34"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000023"" model=""[TemporalAffinityQFModel]"" preview=""Applicatio"" sort=""35"" />

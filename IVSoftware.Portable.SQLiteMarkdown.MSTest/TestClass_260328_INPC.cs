@@ -6,14 +6,23 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using System.Collections;
 using Newtonsoft.Json;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using IVSoftware.Portable.SQLiteMarkdown.MSTest.Util;
+using System.Collections.ObjectModel;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
 [TestClass]
-public class TestClass_INPC
+public class TestClass_260328_INPC
 {
+    /// <summary>
+    /// POC that OBQFS exposes INPC of its items as ItemPropertyChangedEventArgs.
+    /// </summary>
+    /// <remarks>
+    /// Features two serializable builders, one each for INCC and INPC.
+    /// </remarks>
     [TestMethod, DoNotParallelize]
-    public void Test_QueryModeINPC()
+    public void Test_INPC_OBQFS_QueryMode()
     {
         using var te = this.TestableEpoch();
 
@@ -22,14 +31,17 @@ public class TestClass_INPC
             builderINPC = new (),
             builderINCC = new ();
 
+        // OBQFS exposes INPC of its items as ItemPropertyChangedEventArgs
         var items = new ObservableQueryFilterSource<SelectableQFModel>
         {
             QueryFilterConfig = QueryFilterConfig.Query
         };
+
         items.CollectionChanged += (sender, e) =>
         {
             builderINCC.Add(e.ToString(true));
         };
+
         items.PropertyChanged += (sender, e) =>
         {
             switch (e)
@@ -71,6 +83,7 @@ public class TestClass_INPC
         Assert.IsInstanceOfType<SelectableQFModel>(inpcItem);
         { }
 
+        // Toggle the item in the backend.
         inpcItem.IsChecked = true;
 
         actual = string.Join(Environment.NewLine, builderINPC);
@@ -118,7 +131,7 @@ IsChecked: Brown Dog "
         ((IList)items).AddDynamic<SelectableQFModel>(description: "Bird~Feathered", tags: "[]", isChecked: false);
         ((IList)items).AddDynamic<SelectableQFModel>(description: "Bird Feathered", tags: "[]", isChecked: false);
 
-        actual = JsonConvert.SerializeObject(items, Formatting.Indented);
+        actual = JsonConvert.SerializeObject(items, Newtonsoft.Json.Formatting.Indented);
         actual.ToClipboardExpected();
         { }
         expected = @" 

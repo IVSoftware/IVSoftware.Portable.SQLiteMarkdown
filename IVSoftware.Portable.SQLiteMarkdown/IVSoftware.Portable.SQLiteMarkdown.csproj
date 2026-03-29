@@ -123,8 +123,4 @@
 	  <Folder Include="README\img\" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\..\IVSoftware.Portable.StateMachine\IVSoftware.Portable.StateMachine\IVSoftware.Portable.StateMachine.csproj" />
-	</ItemGroup>
-
 </Project>

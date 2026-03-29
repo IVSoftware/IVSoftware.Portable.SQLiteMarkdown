@@ -1,4 +1,3 @@
-using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
@@ -22,13 +21,13 @@ public class TestClass_PreviewCollection
         SelectableQFModel? currentItem;
 
         var builder = new List<string>();
-        var opc = new ObservablePreviewCollection<SelectableQFModel>(eventScope: Collections.NotifyCollectionChangeScope.CancelOnly);
+        var opc = new ObservablePreviewCollection<SelectableQFModel>(eventScope: NotifyCollectionChangeScope.CancelOnly);
         DisposableHost dhostCancel = new();
         opc.CollectionChanging += (sender, e) =>
         {
             e.Cancel = !dhostCancel.IsZero();
 
-            Assert.IsInstanceOfType<NotifyCollectionChangingEventArgs>(e);
+            Assert.IsInstanceOfType<Collections.Preview.NotifyCollectionChangingEventArgs>(e);
             if(e.OldItems is IList list)
             {
                 Assert.IsTrue(list.IsReadOnly);
@@ -43,11 +42,11 @@ public class TestClass_PreviewCollection
         subtest_BasicAddRemoveWithCancellation();
         subtest_ReplaceWithCancellationAndRevert();
         subtest_MoveWithCancellationAndRevert();
+        subtest_BatchOps();
 
         #region S U B T E S T S
         void subtest_BasicAddRemoveWithCancellation()
         {
-
             currentItem = opc.AddDynamic("Brown Dog", "[canine][color]", false, new() { "loyal", "friend", "furry" });
 
             actual = string.Join(Environment.NewLine, builder);
@@ -64,7 +63,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs  
             );
 
 
-            actual = JsonConvert.SerializeObject(opc, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(opc, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -129,7 +128,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs  
                 "Expecting a single INCC."
             );
 
-            actual = JsonConvert.SerializeObject(opc[0], Formatting.Indented);
+            actual = JsonConvert.SerializeObject(opc[0], Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -170,9 +169,9 @@ NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs  
 
 
             #region L o c a l F x
-            void localOnCollectionChanging(object? sender, NotifyCollectionChangingEventArgs e)
+            void localOnCollectionChanging(object? sender, Collections.Preview.NotifyCollectionChangingEventArgs e)
             {
-                actual = JsonConvert.SerializeObject(e.NewItems, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(e.NewItems, Newtonsoft.Json.Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -199,7 +198,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs  
                     actual.NormalizeResult(),
                     "Expecting IList to match limit."
                 );
-                actual = JsonConvert.SerializeObject(e.OldItems, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(e.OldItems, Newtonsoft.Json.Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -229,7 +228,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs  
             }
             void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
             {
-                actual = JsonConvert.SerializeObject(e.NewItems, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(e.NewItems, Newtonsoft.Json.Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -256,7 +255,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs  
                     actual.NormalizeResult(),
                     "Expecting IList to match limit."
                 );
-                actual = JsonConvert.SerializeObject(e.OldItems, Formatting.Indented);
+                actual = JsonConvert.SerializeObject(e.OldItems, Newtonsoft.Json.Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -316,7 +315,7 @@ NetProjection.Replace NewItems= 1 OldItems= 1 NewIndex= 0 OldIndex= 0 NotifyColl
                 "Expecting a single INCC."
             );
 
-            actual = JsonConvert.SerializeObject(opc[0], Formatting.Indented);
+            actual = JsonConvert.SerializeObject(opc[0], Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -376,7 +375,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             var item2 = opc.AddDynamic("Beta", "", false, new());
 
 
-            actual = JsonConvert.SerializeObject(opc, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(opc, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -449,7 +448,7 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewIndex= 1 OldIndex= 0 NotifyColl
                 "Expecting a single INCC."
             );
 
-            actual = JsonConvert.SerializeObject(opc, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(opc, Newtonsoft.Json.Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -492,6 +491,51 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewIndex= 1 OldIndex= 0 NotifyColl
                 actual.NormalizeResult(),
                 "Expecting two items in moved order."
             );
+        }
+
+        void subtest_BatchOps()
+        {
+            var opc = new ObservablePreviewCollection<SelectableQFModel>();
+            var builder = new List<string>();
+
+            #region L o c a l F x				
+            using var local = opc.WithOnDispose(
+                onInit: (sender, e) =>
+                {
+                    opc.CollectionChanged += localOnCollectionChanged;
+                },
+                onDispose: (sender, e) =>
+                {
+                    opc.CollectionChanged -= localOnCollectionChanged;
+                });
+            void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+            {
+                builder.Add(e.ToString(true));
+            }
+            #endregion L o c a l F x
+
+            using(opc.BeginBatch())
+            {
+                foreach (var item in new List<SelectableQFModel>().PopulateForDemo(10))
+                {
+                    opc.Add(item);
+                }
+            }
+
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+NetProjection.Add     NewItems=10 NewIndex= 0 NotifyCollectionChangedEventArgs           "
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting one digest event for batch."
+            );
+
+            Assert.AreEqual(10, opc.Count, "Expecting batch apply.");
         }
         #endregion S U B T E S T S
     }
