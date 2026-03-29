@@ -22,163 +22,9 @@ public class TestClass_260328_Model
         int 
             changeCount = 0,
             changeCountB4;
-
-        Dictionary<XObject, XElement> parentsOfRemoved = new();
-        Dictionary<XAttribute, bool?> oldValues = new();
-        EnumHistogrammer<StdMarkdownAttribute> histo = new(ZeroCountOption.Remove);
-
-        var model = new
-                XElement(nameof(StdMarkdownElement.model))
-                .WithBoundAttributeValue(this, StdMarkdownAttribute.mdc, "[MDC]")
-                .WithBoundAttributeValue(
-                    histo, 
-                    StdMarkdownAttribute.histo, "[Histo]")
-                .WithBoundAttributeValue(new Dictionary<string, Enum>(), StdMarkdownAttribute.filters, "[ActiveFilters]");
-
-        model.Changing += (sender, e) =>
-        {
-            if (sender is XObject xob)
-            {
-                switch (e.ObjectChange)
-                {
-                    case XObjectChange.Remove:
-                        parentsOfRemoved[xob] = xob.Parent ?? throw new NullReferenceException();
-                        break;
-                    case XObjectChange.Value when xob is XAttribute xattr:
-                        oldValues[xattr] = bool.TryParse(xattr.Value, out var valid) ? valid : null;
-                        break;
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
-        };
-
-        model.Changed += (sender, e) =>
-        {
-            if (sender is XObject xob)
-            {
-                XElement? pxel = xob.Parent;
-                switch (e.ObjectChange)
-                {
-                    case XObjectChange.Remove:
-                        pxel = parentsOfRemoved[xob];
-                        parentsOfRemoved.Remove(xob);
-                        break;
-                    case XObjectChange.Value when xob is XAttribute xattr:
-                        var oldValue = oldValues.TryGetValue(xattr, out var validOld) ? validOld : null;
-                        bool? newValue = bool.TryParse(xattr.Value, out var validNew) ? validNew : null;
-                        oldValues.Remove(xattr);
-                        if (newValue is null ^ oldValue is null)
-                        {
-                            this.ThrowPolicyException(MarkdownContextPolicyViolation.XAttributeBooleanToggle);
-                            if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
-                            {
-                                if (oldValue == true)
-                                {
-                                    histo.Decrement(std);
-                                }
-                                else if (newValue == true)
-                                {
-                                    histo.Increment(std);
-                                }
-                            }
-                            return;
-                        }
-                        else
-                        {
-                            if (newValue == oldValue)
-                            {
-                                return;
-                            }
-                            else
-                            {   /* G T K */
-                                // Toggle detected.
-                            }
-                        }
-                        break;
-                }
-                switch (sender)
-                {
-                    case XElement xel:
-                        OnXElementChanged(xel, pxel ?? throw new NullReferenceException(), e);
-                        break;
-                    case XAttribute xattr:
-                        OnXAttributeChanged(xattr, pxel ?? throw new NullReferenceException(), e);
-                        break;
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
-        };
-        #region L o c a l F x
-        void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
-        {
-            changeCount++;
-            switch (e.ObjectChange)
-            {
-                case XObjectChange.Add:
-                case XObjectChange.Remove:
-                    foreach (var attr in xel.Attributes())
-                    {
-                        OnXAttributeChanged(attr, pxel, e);
-                    }
-                    break;
-            }
-        }
-
-        void OnXAttributeChanged(XAttribute xattr, XElement pxel, XObjectChangeEventArgs e)
-        {
-            changeCount++;
-            if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
-            {
-                bool? newValue = bool.TryParse(xattr.Value, out var valid) ? valid : null;
-                switch (e.ObjectChange)
-                {
-                    case XObjectChange.Add:
-                        if(newValue != false)
-                        {
-                            histo.Increment(std);
-                        }
-                        localUpdateHisto();
-                        break;
-                    case XObjectChange.Remove:
-                        if (newValue != false)
-                        {
-                            histo.Decrement(std);
-                        }
-                        localUpdateHisto();
-                        break;
-                    case XObjectChange.Value:
-                        switch (newValue)
-                        {
-                            case null:
-                                /* N O O P */
-                                break;
-                            case true:
-                                histo.Increment(std);
-                                break;
-                            case false:
-                                histo.Decrement(std);
-                                break;
-                        }
-                        break;
-                }
-                #region L o c a l F x
-                void localUpdateHisto()
-                {
-                    if (model.Attribute(StdMarkdownAttribute.histo) is XBoundAttribute xba)
-                    {
-                        xba.Value = histo.ToString(HistogrammerFormat.Default);
-                    }
-                }
-                #endregion L o c a l F x
-            }
-        }
-        #endregion L o c a l F x
+        var mdc = new ModeledMarkdownContext<SelectableQFModel>();
+        var model = mdc.Model;
+        var histo = model.To<EnumHistogrammer<StdMarkdownAttribute>>();
 
 
         subtest_TrackLateral();
@@ -191,13 +37,11 @@ public class TestClass_260328_Model
             // Add
             model.SetStdAttributeValue(StdMarkdownAttribute.qmatch, true);
 
-            actual = histo.ToString(Formatting.Indented);
+            actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-{
-  ""qmatch"": 1
-}"
+[model:0 match:0 qmatch:1 pmatch:0]"
             ;
 
             Assert.AreEqual(

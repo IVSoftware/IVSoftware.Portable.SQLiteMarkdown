@@ -7,6 +7,7 @@ using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
@@ -29,7 +30,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected EnumHistogrammer<StdMarkdownAttribute> Histo { get; } = new(ZeroCountOption.Remove);
         public string ToString(HistogrammerFormat format) => Histo.ToString(format);
 
-        public IReadOnlyDictionary<string, Enum> ActiveFilters { get; } = null;
+        public IReadOnlyDictionary<string, Enum> ActiveFilters
+        {
+            get
+            {
+                if (_activeFilters is null)
+                {
+                    _activeFilters = new ReadOnlyDictionary<string, Enum>(ActiveFiltersProtected);
+                }
+                return _activeFilters;
+            }
+        }
+        IReadOnlyDictionary<string, Enum>? _activeFilters = null;
+
+        protected Dictionary<string, Enum> ActiveFiltersProtected { get; } = new();
+
 
         Dictionary <XObject, XElement> _parentsOfRemoved = new();
         Dictionary<XAttribute, bool?> _oldValues = new();
