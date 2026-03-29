@@ -105,23 +105,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             bool
                 valid;
-            bool qmatch =
+            bool? qmatch =
                 Histo[StdMarkdownAttribute.qmatch] == 0
-                ? true
-                : bool.TryParse(@this.Attribute(StdMarkdownAttribute.qmatch)?.Value, out valid) && valid;
-            bool pmatch =
+                ? null
+                : bool.TryParse(@this.Attribute(StdMarkdownAttribute.qmatch)?.Value, out valid) ? valid : null;
+            bool? pmatch =
                 Histo[StdMarkdownAttribute.pmatch] == 0
                 ? true
-                : bool.TryParse(@this.Attribute(StdMarkdownAttribute.pmatch)?.Value, out valid) && valid;
+                : bool.TryParse(@this.Attribute(StdMarkdownAttribute.pmatch)?.Value, out valid) ? valid : null;
 
-            //if (qmatch && pmatch)
-            //{
-            //    @this.SetStdAttributeValue(StdMarkdownAttribute.match, bool.TrueString);
-            //}
-            //else
-            //{
-            //    @this.SetStdAttributeValue(StdMarkdownAttribute.match, null);
-            //}
+            if (qmatch == true && pmatch == true)
+            {
+                @this.SetStdAttributeValue(StdMarkdownAttribute.match, bool.TrueString);
+            }
+            else
+            {
+                @this.SetStdAttributeValue(StdMarkdownAttribute.match, null);
+            }
         }
 
 #if DEBUG
