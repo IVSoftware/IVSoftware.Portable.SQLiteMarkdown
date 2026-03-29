@@ -91,7 +91,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
 
             int
-                indexForAdd = model.GetAttributeValue<int>(StdMarkdownAttribute.autocount),
+                indexForAdd = model.GetAttributeValue<int>(StdMarkdownAttribute.histo),
                 count = model.GetAttributeValue<int>(StdMarkdownAttribute.count, 0),
                 matches = model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
 

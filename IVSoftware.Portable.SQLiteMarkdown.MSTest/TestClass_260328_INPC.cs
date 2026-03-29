@@ -68,7 +68,7 @@ public class TestClass_260328_INPC
         actual.ToClipboardExpected();
         { }
         expected = @" 
-<model mdc=""[MMDC]"" autocount=""1"" count=""1"" matches=""1"">
+<model mdc=""[MMDC]"" histo=""1"" count=""1"" matches=""1"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
 </model>"
         ;

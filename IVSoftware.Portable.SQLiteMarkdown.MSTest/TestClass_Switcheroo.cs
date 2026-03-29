@@ -210,7 +210,7 @@ Throw MarkdownContextPolicyViolation.ExplicitClearAdvisory | ExplicitClearAdviso
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MMDC]"" autocount=""2"" count=""2"" matches=""2"">
+<model mdc=""[MMDC]"" histo=""2"" count=""2"" matches=""2"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" sort=""1"" />
 </model>"

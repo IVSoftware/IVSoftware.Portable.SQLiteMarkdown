@@ -268,9 +268,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     return true;
                 }
                 int
-                    autocount = Model.GetAttributeValue<int>(StdMarkdownAttribute.autocount, 0),
+                    histo = Model.GetAttributeValue<int>(StdMarkdownAttribute.histo, 0),
                     matches = Model.GetAttributeValue<int>(StdMarkdownAttribute.matches, 0);
-                return autocount == matches;
+                return histo == matches;
             }
         }
 
@@ -360,7 +360,7 @@ SELECT * FROM items WHERE
                     }
 
 #if ABSTRACT
-            // EXAMPLE<model autocount="3" count="3" matches="1">
+            // EXAMPLE<model histo="3" count="3" matches="1">
               <xitem text="312d1c21-0000-0000-0000-000000000001" model="[SelectableQFModelLTOQO]" sort="0" />
               <xitem text="312d1c21-0000-0000-0000-00000000002c" model="[SelectableQFModelLTOQO]" sort="1" />
               <xitem text="312d1c21-0000-0000-0000-00000000002e" model="[SelectableQFModelLTOQO]" sort="2" ismatch="True" />
@@ -1127,7 +1127,7 @@ SELECT * FROM items WHERE
             if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
             {
                 int
-                    indexForAdd = Model.GetAttributeValue<int>(StdMarkdownAttribute.autocount),
+                    indexForAdd = Model.GetAttributeValue<int>(StdMarkdownAttribute.histo),
                     countB4 = Model.GetAttributeValue<int>(StdMarkdownAttribute.count, 0),
                     matchesB4 = Model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
 

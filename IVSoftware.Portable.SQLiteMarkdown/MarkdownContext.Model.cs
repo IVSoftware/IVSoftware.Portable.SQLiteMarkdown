@@ -42,7 +42,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         new XElement(
                             nameof(StdMarkdownElement.model),
                             new XBoundAttribute(nameof(StdMarkdownAttribute.mdc), this, $"[MDC]"),
-                            new XAttribute(nameof(StdMarkdownAttribute.autocount), 0));
+                            new XAttribute(nameof(StdMarkdownAttribute.histo), 0));
 
                     _model.Changing += (sender, e) =>
                     {
@@ -154,14 +154,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         {
                             _histo += std;
                         }
-                        localUpdateAutocount();
+                        localUpdateHisto();
                         break;
                     case XObjectChange.Remove:
                         if (newValue != false)
                         {
                             _histo -= std;
                         }
-                        localUpdateAutocount();
+                        localUpdateHisto();
                         break;
                     case XObjectChange.Value:
                         switch (newValue)
@@ -184,7 +184,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
 
                 #region L o c a l F x
-                void localUpdateAutocount()
+                void localUpdateHisto()
                 {
                     // Count the actual model XBO objects
                     if (std == StdMarkdownAttribute.model)
@@ -192,7 +192,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         var root = pxel.AncestorsAndSelf().Last();
                         if (root.Has<IMarkdownContext>())
                         {
-                            root.SetStdAttributeValue(StdMarkdownAttribute.autocount, _histo[StdMarkdownAttribute.model]);
+                            root.SetStdAttributeValue(StdMarkdownAttribute.histo, _histo[StdMarkdownAttribute.model]);
                         }
                     }
                 }

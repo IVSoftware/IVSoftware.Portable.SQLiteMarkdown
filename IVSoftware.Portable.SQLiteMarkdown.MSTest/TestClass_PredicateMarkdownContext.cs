@@ -148,7 +148,7 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MMDC]"" autocount=""10"" count=""10"" matches=""10"">
+<model mdc=""[MMDC]"" histo=""10"" count=""10"" matches=""10"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" sort=""1"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" sort=""2"" />
@@ -179,7 +179,7 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MMDC]"" autocount=""0"" count=""0"" matches=""0"" />"
+<model mdc=""[MMDC]"" histo=""0"" count=""0"" matches=""0"" />"
             ;
 
             Assert.AreEqual(
@@ -194,7 +194,7 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MMDC]"" autocount=""10"" count=""10"" matches=""10"">
+<model mdc=""[MMDC]"" histo=""10"" count=""10"" matches=""10"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" sort=""1"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" sort=""2"" />
@@ -364,7 +364,7 @@ Other.Replace NewItems= 3 OldItems=37 ModelSettledEventArgs                     
         actual.ToClipboardExpected();
         { }
         expected = @" 
-<model mdc=""[MMDC]"" autocount=""37"" count=""37"" matches=""3"">
+<model mdc=""[MMDC]"" histo=""37"" count=""37"" matches=""3"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[TemporalAffinityQFModel]"" preview=""Brown Dog "" sort=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[TemporalAffinityQFModel]"" preview=""Green Appl"" sort=""1"" qmatch=""True"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[TemporalAffinityQFModel]"" preview=""Yellow Ban"" sort=""2"" />
