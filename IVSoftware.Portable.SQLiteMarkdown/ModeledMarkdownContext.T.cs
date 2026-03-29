@@ -105,10 +105,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             bool
                 valid;
+
+            // If none of the xitems have a qmatch then *all* of them implicily have a qmatch.
             bool? qmatch =
                 Histo[StdMarkdownAttribute.qmatch] == 0
                 ? null
                 : bool.TryParse(@this.Attribute(StdMarkdownAttribute.qmatch)?.Value, out valid) ? valid : null;
+
+            // If none of the xitems have a pmatch then *all* of them implicily have a pmatch.
             bool? pmatch =
                 Histo[StdMarkdownAttribute.pmatch] == 0
                 ? null
@@ -116,23 +120,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             if (qmatch == null ^ pmatch == null)
             {
+                // Only one of them has an explicit value...
                 if (qmatch == true || pmatch == true)
                 {
+                    // ... and if that explicit value is true then the node is explicitly true.
                     @this.SetStdAttributeValue(StdMarkdownAttribute.match, bool.TrueString);
                 }
                 else
                 {
+                    // ... otherwise this node defers.
                     @this.SetStdAttributeValue(StdMarkdownAttribute.match, null);
                 }
             }
             else
             {
-                if (qmatch == true) // Then they both are.
+                if (qmatch == true)
                 {
+                    // Both are explicitly true. This node is explicitly true.
                     @this.SetStdAttributeValue(StdMarkdownAttribute.match, bool.TrueString);
                 }
                 else
                 {
+                    // Both are explicitly false (unexpected but benign). This node defers.  
                     @this.SetStdAttributeValue(StdMarkdownAttribute.match, null);
                 }
             }
