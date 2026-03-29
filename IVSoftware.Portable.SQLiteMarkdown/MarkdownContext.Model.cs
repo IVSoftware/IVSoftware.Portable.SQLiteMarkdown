@@ -26,8 +26,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
     partial class MarkdownContext
     {
-        EnumHistogrammer<StdMarkdownAttribute> _histo = new(ZeroCountOption.Remove);
-        public string ToString(HistogrammerFormat format) => _histo.ToString(format);
+        protected EnumHistogrammer<StdMarkdownAttribute> Histo { get; } = new(ZeroCountOption.Remove);
+        public string ToString(HistogrammerFormat format) => Histo.ToString(format);
 
         Dictionary<XObject, XElement> _parentsOfRemoved = new();
         Dictionary<XAttribute, bool?> _oldValues = new();
@@ -86,11 +86,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                         {
                                             if (oldValue == true)
                                             {
-                                                _histo -= std;
+                                                Histo.Decrement(std);
                                             }
                                             else if (newValue == true)
                                             {
-                                                _histo += std;
+                                                Histo.Increment(std);
                                             }
                                         }
                                         return;
@@ -152,14 +152,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     case XObjectChange.Add:
                         if (newValue != false)
                         {
-                            _histo += std;
+                            Histo.Increment(std);
                         }
                         localUpdateHisto();
                         break;
                     case XObjectChange.Remove:
                         if (newValue != false)
                         {
-                            _histo -= std;
+                            Histo.Decrement(std);
                         }
                         localUpdateHisto();
                         break;
@@ -170,10 +170,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 /* N O O P */
                                 break;
                             case true:
-                                _histo += std;
+                                Histo.Increment(std);
                                 break;
                             case false:
-                                _histo -= std;
+                                Histo.Decrement(std);
                                 break;
                         }
                         break;
@@ -192,7 +192,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         var root = pxel.AncestorsAndSelf().Last();
                         if (root.Has<IMarkdownContext>())
                         {
-                            root.SetStdAttributeValue(StdMarkdownAttribute.histo, _histo[StdMarkdownAttribute.model]);
+                            root.SetStdAttributeValue(StdMarkdownAttribute.histo, Histo[StdMarkdownAttribute.model]);
                         }
                     }
                 }

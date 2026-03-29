@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,67 +11,72 @@ using System.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {
-    enum ZeroCountOption
+    public enum ZeroCountOption
     {
         Remove,
         Preserve,
     }
 
-    sealed class EnumHistogrammer<T> : IEnumerable<T> where T : Enum
+    public sealed class EnumHistogrammer<T> : IEnumerable<T> where T : Enum
     {
         public EnumHistogrammer(ZeroCountOption zeroCountOption) => ZeroCountOption = zeroCountOption;
         public ZeroCountOption ZeroCountOption { get; }
         private readonly Dictionary<T, int> _histo = new();
 
         [Indexer]
-        public int this[T key]
-        {
-            get => _histo.TryGetValue(key, out var count) ? count : 0;
-            private set
-            {
-                if (value < 0)
-                {
-                    // Negative values are advisory unless escalated.
-                    this.ThrowSoft<IndexOutOfRangeException>();
-                    // Normalize to zero and apply ZeroCountOption.
-                    value = 0;
-                }
-                if (value == 0)
-                {
-                    switch (ZeroCountOption)
-                    {
-                        case ZeroCountOption.Remove:
-                            _histo.Remove(key);
-                            break;
+        public int this[T key] => _histo.TryGetValue(key, out var count) ? count : 0;
 
-                        case ZeroCountOption.Preserve:
-                            _histo[key] = 0;
-                            break;
-                    }
-                }
-                else
+        /// <summary>
+        /// Retrieves the null-tolerant value of key and increments it.
+        /// </summary>
+        /// <remarks>
+        /// The key is guaranteed to exist after this call, even if it did not previously.
+        /// </remarks>
+        public int Increment(T key)
+        {
+            var incremented = this[key] + 1;
+            _histo[key] = incremented;
+            return incremented;
+        }
+
+        /// <summary>
+        /// Retrieves the null-tolerant value of key and decrements it.
+        /// </summary>
+        /// <remarks>
+        /// If the resulting value is zero, <see cref="ZeroCountOption"/> determines whether the key
+        /// is removed or retained with a zero value. Negative results are normalized to zero and
+        /// reported via advisory.
+        /// </remarks>
+        public int Decrement(T key)
+        {
+            var decremented = this[key] - 1;
+
+            if (decremented < 0)
+            {
+                // Negative values are advisory unless escalated.
+                this.ThrowSoft<IndexOutOfRangeException>();
+                // Normalize to zero and apply ZeroCountOption.
+                decremented = 0;
+            }
+            if (decremented == 0)
+            {
+                switch (ZeroCountOption)
                 {
-                    _histo[key] = value;
+                    case ZeroCountOption.Remove:
+                        _histo.Remove(key);
+                        break;
+
+                    case ZeroCountOption.Preserve:
+                        _histo[key] = 0;
+                        break;
                 }
             }
+            else
+            {
+                _histo[key] = decremented;
+            }
+            return decremented;
         }
-
-        public static EnumHistogrammer<T> operator +(
-            EnumHistogrammer<T> h,
-            T key)
-        {
-            h[key] = h[key] + 1;
-            return h;
-        }
-
-        public static EnumHistogrammer<T> operator -(
-            EnumHistogrammer<T> h,
-            T key)
-        {
-            h[key] = h[key] - 1;
-            return h;
-        }
-
         public IEnumerator<T> GetEnumerator()
             => _histo.Keys.GetEnumerator();
 

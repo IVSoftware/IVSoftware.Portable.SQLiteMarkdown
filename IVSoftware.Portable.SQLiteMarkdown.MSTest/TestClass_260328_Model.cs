@@ -72,11 +72,11 @@ public class TestClass_260328_Model
                             {
                                 if (oldValue == true)
                                 {
-                                    histo -= std;
+                                    histo.Decrement(std);
                                 }
                                 else if (newValue == true)
                                 {
-                                    histo += std;
+                                    histo.Increment(std);
                                 }
                             }
                             return;
@@ -135,15 +135,15 @@ public class TestClass_260328_Model
                 {
                     case XObjectChange.Add:
                         if(newValue != false)
-                        { 
-                            histo += std;
+                        {
+                            histo.Increment(std);
                         }
                         localUpdateHisto();
                         break;
                     case XObjectChange.Remove:
                         if (newValue != false)
                         {
-                            histo -= std;
+                            histo.Decrement(std);
                         }
                         localUpdateHisto();
                         break;
@@ -154,10 +154,10 @@ public class TestClass_260328_Model
                                 /* N O O P */
                                 break;
                             case true:
-                                histo += std;
+                                histo.Increment(std);
                                 break;
                             case false:
-                                histo -= std;
+                                histo.Decrement(std);
                                 break;
                         }
                         break;
