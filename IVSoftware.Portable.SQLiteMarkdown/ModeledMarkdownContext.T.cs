@@ -101,6 +101,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
+        /// <summary>
+        /// Sets the 'match' attribute based on any explicit positive match signal.
+        /// </summary>
+        /// <remarks>
+        /// - The 'qmatch' and 'pmatch' values are normalized to nullable signals
+        ///   using histogram participation.
+        /// - Mental Model:
+        ///   "If no descendants explicitly match, all descendants are considered matches (no filter)."
+        /// - The 'match' attribute is set explicity true if either 'qmatch' or 'pmatch'
+        ///   are explictly true, otherwise null.
+        /// EXAMPLE:
+        /// 1. IME text is cleared -> all 'qmatch' attributes are removed -> show all items.
+        /// 2. User enters text -> some items are marked 'qmatch' -> show only matching items.
+        /// </remarks>
         public void SetMatchAttributeValue(XElement @this)
         {
             bool
@@ -117,33 +131,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 Histo[StdMarkdownAttribute.pmatch] == 0
                 ? null
                 : bool.TryParse(@this.Attribute(StdMarkdownAttribute.pmatch)?.Value, out valid) ? valid : null;
-
-            if (qmatch == null ^ pmatch == null)
+            if(qmatch == true || pmatch == true)
             {
-                // Only one of them has an explicit value...
-                if (qmatch == true || pmatch == true)
-                {
-                    // ... and if that explicit value is true then the node is explicitly true.
-                    @this.SetStdAttributeValue(StdMarkdownAttribute.match, bool.TrueString);
-                }
-                else
-                {
-                    // ... otherwise this node defers.
-                    @this.SetStdAttributeValue(StdMarkdownAttribute.match, null);
-                }
+                @this.SetStdAttributeValue(StdMarkdownAttribute.match, bool.TrueString);
             }
             else
             {
-                if (qmatch == true)
-                {
-                    // Both are explicitly true. This node is explicitly true.
-                    @this.SetStdAttributeValue(StdMarkdownAttribute.match, bool.TrueString);
-                }
-                else
-                {
-                    // Both are explicitly false (unexpected but benign). This node defers.  
-                    @this.SetStdAttributeValue(StdMarkdownAttribute.match, null);
-                }
+                @this.SetStdAttributeValue(StdMarkdownAttribute.match, null);
             }
         }
 

@@ -41,9 +41,8 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[model:0 match:0 qmatch:1 pmatch:0]"
+[model:0 match:1 qmatch:1 pmatch:0]"
             ;
-
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
@@ -57,13 +56,11 @@ public class TestClass_260328_Model
             model.SetStdAttributeValue(StdMarkdownAttribute.qmatch, true);
             Assert.AreEqual(changeCountB4, changeCount);
 
-            actual = histo.ToString(Formatting.Indented);
+            actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-{
-  ""qmatch"": 1
-}"
+[model:0 match:1 qmatch:1 pmatch:0]"
             ;
 
             Assert.AreEqual(
@@ -74,11 +71,11 @@ public class TestClass_260328_Model
 
             // Remove
             model.RemoveDescendantAttributes(StdMarkdownAttribute.qmatch, includeSelf: true);
-            actual = histo.ToString(Formatting.Indented);
+            actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-{}"
+[model:0 match:0 qmatch:0 pmatch:0]"
             ;
 
             Assert.AreEqual(
@@ -96,19 +93,31 @@ public class TestClass_260328_Model
             // Add
             xel.SetStdAttributeValue(StdMarkdownAttribute.qmatch, true);
 
-            actual = histo.ToString(Formatting.Indented);
+            actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-{
-  ""qmatch"": 1
-}"
+[model:0 match:1 qmatch:1 pmatch:0]"
             ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting histogram to match."
+            );
+
+            actual = model.ToString();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0]"" filters=""[ActiveFilters]"">
+  <xitem qmatch=""True"" match=""True"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
             );
 
             // CONFIRMED:
@@ -118,13 +127,27 @@ public class TestClass_260328_Model
             xel.SetStdAttributeValue(StdMarkdownAttribute.qmatch, true);
             Assert.AreEqual(changeCountB4, changeCount);
 
-            actual = histo.ToString(Formatting.Indented);
+
+            actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
+            { }
             expected = @" 
-{
-  ""qmatch"": 1
-}"
+[model:0 match:1 qmatch:1 pmatch:0]"
             ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting NO CHANGE."
+            );
+
+            actual = model.ToString();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0]"" filters=""[ActiveFilters]"">
+  <xitem qmatch=""True"" match=""True"" />
+</model>";
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -134,17 +157,32 @@ public class TestClass_260328_Model
 
             // Remove from Model
             model.RemoveDescendantAttributes(StdMarkdownAttribute.qmatch);
-            actual = histo.ToString(Formatting.Indented);
+            actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-{}"
+[model:0 match:0 qmatch:0 pmatch:0]"
             ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting empty histogram."
+            );
+
+            actual = model.ToString();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model mdc=""[MDC]"" histo=""[model:0 match:0 qmatch:0 pmatch:0]"" filters=""[ActiveFilters]"">
+  <xitem />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting implicit false attributes are now removed."
             );
         }
 
@@ -154,31 +192,29 @@ public class TestClass_260328_Model
                 nameof(StdMarkdownElement.xitem),
                 new XAttribute(nameof(StdMarkdownAttribute.qmatch), true));
 
-            // Add
+            // Add offline - before this node is parented.
             model.Add(xel);
 
-            actual = histo.ToString(Formatting.Indented);
+            actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-{
-  ""qmatch"": 1
-}"
+[model:0 match:1 qmatch:1 pmatch:0]"
             ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting histogram to match."
+                "Expecting offline qmatch to 'join' the histogram when attached to a parent."
             );
 
             // Remove
             xel.Remove();
-            actual = histo.ToString(Formatting.Indented);
+            actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-{}"
+[model:0 match:0 qmatch:0 pmatch:0]"
             ;
 
             Assert.AreEqual(
@@ -190,36 +226,32 @@ public class TestClass_260328_Model
             // Add it back in again
             model.Add(xel);
 
-            actual = histo.ToString(Formatting.Indented);
+            actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-{
-  ""qmatch"": 1
-}"
+[model:0 match:1 qmatch:1 pmatch:0]"
             ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting histogram to match."
+                "Expecting histogram to increment."
             );
 
             xel.SetStdAttributeValue(StdMarkdownAttribute.qmatch, false);
 
-            actual = histo.ToString(Formatting.Indented);
+            actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
 {}"
             ;
-
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting empty histogram."
             );
-
         }
 
         subtest_TrackModel();
@@ -240,7 +272,7 @@ public class TestClass_260328_Model
 
             model.Add(xel);
 
-            actual = histo.ToString(Formatting.Indented);
+            actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
