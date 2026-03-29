@@ -115,5 +115,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
             }
             return $"[{string.Join(" ", builder)}]";
         }
+
+        public void Clear() => _histo.Clear();
     }
 }

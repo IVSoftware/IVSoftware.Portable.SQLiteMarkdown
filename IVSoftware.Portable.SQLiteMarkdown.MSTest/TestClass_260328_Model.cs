@@ -7,6 +7,7 @@ using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
+using System.Reflection;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
@@ -25,10 +26,14 @@ public class TestClass_260328_Model
         Dictionary<XObject, XElement> parentsOfRemoved = new();
         Dictionary<XAttribute, bool?> oldValues = new();
         EnumHistogrammer<StdMarkdownAttribute> histo = new(ZeroCountOption.Remove);
-        var model = new XElement(
-            nameof(StdMarkdownElement.model),
-            new XBoundAttribute(nameof(StdMarkdownAttribute.mdc), new MarkdownContext<SelectableQFModel>(), "[MDC]"),
-            new XAttribute(nameof(StdMarkdownAttribute.histo), 0));
+
+        var model = new
+                XElement(nameof(StdMarkdownElement.model))
+                .WithBoundAttributeValue(this, StdMarkdownAttribute.mdc, "[MDC]")
+                .WithBoundAttributeValue(
+                    histo, 
+                    StdMarkdownAttribute.histoZ, "[Histo]")
+                .WithBoundAttributeValue(new Dictionary<string, Enum>(), StdMarkdownAttribute.filters, "[ActiveFilters]");
 
         model.Changing += (sender, e) =>
         {
@@ -162,18 +167,15 @@ public class TestClass_260328_Model
                         }
                         break;
                 }
+                #region L o c a l F x
                 void localUpdateHisto()
                 {
-                    // Count the actual model XBO objects
-                    if (std == StdMarkdownAttribute.model)
+                    if (model.Attribute(StdMarkdownAttribute.histoZ) is XBoundAttribute xba)
                     {
-                        var root = pxel.AncestorsAndSelf().Last();
-                        if (root.Has<IMarkdownContext>())
-                        {
-                            root.SetStdAttributeValue(StdMarkdownAttribute.histo, histo[StdMarkdownAttribute.model]);
-                        }
+                        xba.Value = histo.ToString(HistogrammerFormat.Default);
                     }
                 }
+                #endregion L o c a l F x
             }
         }
         #endregion L o c a l F x

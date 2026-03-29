@@ -267,10 +267,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     return true;
                 }
-                int
-                    histo = Model.GetAttributeValue<int>(StdMarkdownAttribute.histo, 0),
-                    matches = Model.GetAttributeValue<int>(StdMarkdownAttribute.matches, 0);
-                return histo == matches;
+                var matches = Histo[StdMarkdownAttribute.matches];
+                if(matches == 0)
+                {
+
+                }
+                return Histo[StdMarkdownAttribute.model] == matches;
             }
         }
 
@@ -1127,7 +1129,7 @@ SELECT * FROM items WHERE
             if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
             {
                 int
-                    indexForAdd = Model.GetAttributeValue<int>(StdMarkdownAttribute.histo),
+                    indexForAdd = Histo[StdMarkdownAttribute.model],
                     countB4 = Model.GetAttributeValue<int>(StdMarkdownAttribute.count, 0),
                     matchesB4 = Model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
 

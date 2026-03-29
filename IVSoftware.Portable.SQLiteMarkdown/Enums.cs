@@ -212,9 +212,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public enum StdMarkdownAttribute
     {
         /// <summary>
-        /// Histogrammer bins based on XElement.Changed.
+        /// XBound histogrammer with bins based on XElement.Changed.
         /// </summary>
         histoZ,
+
+        /// <summary>
+        /// XBound active filters dictionary,
+        /// </summary>
+        filters,
 
         /// <summary>
         /// Path segment name. 

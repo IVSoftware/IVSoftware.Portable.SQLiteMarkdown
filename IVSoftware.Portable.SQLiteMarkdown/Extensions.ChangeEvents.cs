@@ -174,8 +174,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     if (xel.Parent is not null)
                                     {
                                         xel.Remove();
-                                        count = Math.Max(0, count - 1);
-                                        matches = Math.Max(0, matches - 1);
                                     }
                                     break;
                                 default:
@@ -214,8 +212,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     if (xel.Parent is not null)
                                     {
                                         xel.Remove();
-                                        count = Math.Max(0, count - 1);
-                                        matches = Math.Max(0, matches - 1);
                                     }
                                     break;
                                 default:
@@ -248,8 +244,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                         name: nameof(StdMarkdownAttribute.model));
 
                                     xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), itemCount++);
-                                    count++;
-                                    matches++;
                                     break;
 
                                 default:
@@ -308,14 +302,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (reason == NotifyCollectionChangeReason.None)
                 {
                     model.RemoveNodes();
+                    histo.Clear();
                 }
                 else
                 {
                     Debug.Fail($@"ADVISORY - TODO distinguish ReplaceItemsEventingOption.");
                     model.RemoveNodes();
                 }
-                count = 0;
-                matches = 0;
             }
             #endregion L o c a l F x
         }

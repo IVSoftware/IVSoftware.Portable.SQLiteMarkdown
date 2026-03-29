@@ -29,7 +29,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected EnumHistogrammer<StdMarkdownAttribute> Histo { get; } = new(ZeroCountOption.Remove);
         public string ToString(HistogrammerFormat format) => Histo.ToString(format);
 
-        Dictionary<XObject, XElement> _parentsOfRemoved = new();
+        public IReadOnlyDictionary<string, Enum> ActiveFilters { get; } = null;
+
+        Dictionary <XObject, XElement> _parentsOfRemoved = new();
         Dictionary<XAttribute, bool?> _oldValues = new();
 
         public virtual XElement Model
@@ -41,7 +43,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     _model = new
                         XElement(nameof(StdMarkdownElement.model))
                         .WithBoundAttributeValue(this, StdMarkdownAttribute.mdc, "[MDC]")
-                        .WithBoundAttributeValue(Histo, StdMarkdownAttribute.histoZ, "[Histo]");
+                        .WithBoundAttributeValue(Histo, StdMarkdownAttribute.histoZ, "[Histo]")
+                        .WithBoundAttributeValue(ActiveFilters, StdMarkdownAttribute.filters, "[ActiveFilters]");
 
                     _model.Changing += (sender, e) =>
                     {

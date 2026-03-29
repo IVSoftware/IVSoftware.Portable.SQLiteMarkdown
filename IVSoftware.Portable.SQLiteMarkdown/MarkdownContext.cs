@@ -58,6 +58,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             ContractType = type;
         }
 
+        public MarkdownContextSettings Settings { get; } = new();
+
         // Avoids exposing the MDC itself on the static Throw event.
         protected Throw ThrowHard<T>(string messageOrId) => nameof(MarkdownContext).ThrowHard<T>(messageOrId);
         protected Throw ThrowFramework<T>(string messageOrId) => nameof(MarkdownContext).ThrowFramework<T>(messageOrId);
