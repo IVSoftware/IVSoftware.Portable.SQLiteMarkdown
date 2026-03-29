@@ -50,37 +50,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     this.ThrowPolicyException(MarkdownContextPolicyViolation.ExplicitClearAdvisory);
                 }
             }
-            _predicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetPrivate);
         }
 
         /// <summary>
-        /// Returns the singleton, non-replaceable root XElement, created on demand.
+        /// Central model authority for IFTTT.
         /// </summary>
-        /// <remarks>
-        /// This represents the canonical ledger.
-        /// </remarks>
-        public override XElement Model
-        {
-            get
-            {
-                if(base.Model.Attribute(StdMarkdownAttribute.mdc) is XBoundAttribute xba)
-                {
-                    if(xba.Value != "[MMDC]")
-                    {
-                        xba.Value = "[MMDC]";
-                    }
-                }
-                if(base.Model.Attribute(StdMarkdownAttribute.count) is null)
-                {
-                    base.Model.SetStdAttributeValue(StdMarkdownAttribute.count, "0");
-                }
-                if(base.Model.Attribute(StdMarkdownAttribute.matches) is null)
-                {
-                    base.Model.SetStdAttributeValue(StdMarkdownAttribute.matches, "0");
-                }
-                return base.Model;
-            }
-        }
         protected override void OnXAttributeChanged(XAttribute xattr, XElement pxel, XObjectChangeEventArgs e)
         {
             T item = pxel.To<T>();
@@ -97,7 +71,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             case XObjectChange.Add:
                                 if (value == true)
                                 {
-                                    PredicateMatchSubsetPrivate.Add(item);
+                                    PredicateMatchSubsetProtected.Add(item);
                                 }
                                 break;
                             case XObjectChange.Remove:
@@ -110,23 +84,44 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                         /* G T K - N O O P */
                                         break;
                                     case true:
-                                        PredicateMatchSubsetPrivate.Add(item);
+                                        PredicateMatchSubsetProtected.Add(item);
                                         break;
                                     case false:
-                                        PredicateMatchSubsetPrivate.Remove(item);
+                                        PredicateMatchSubsetProtected.Remove(item);
                                         break;
                                 }
                                 break;
                         }
                         break;
                     case StdMarkdownAttribute.qmatch:
-                        { }
-                        break;
                     case StdMarkdownAttribute.pmatch:
-                        { }
+                        SetMatchAttributeValue(pxel);
                         break;
                 }
             }
+        }
+
+        public void SetMatchAttributeValue(XElement @this)
+        {
+            bool
+                valid;
+            bool qmatch =
+                Histo[StdMarkdownAttribute.qmatch] == 0
+                ? true
+                : bool.TryParse(@this.Attribute(StdMarkdownAttribute.qmatch)?.Value, out valid) && valid;
+            bool pmatch =
+                Histo[StdMarkdownAttribute.pmatch] == 0
+                ? true
+                : bool.TryParse(@this.Attribute(StdMarkdownAttribute.pmatch)?.Value, out valid) && valid;
+
+            //if (qmatch && pmatch)
+            //{
+            //    @this.SetStdAttributeValue(StdMarkdownAttribute.match, bool.TrueString);
+            //}
+            //else
+            //{
+            //    @this.SetStdAttributeValue(StdMarkdownAttribute.match, null);
+            //}
         }
 
 #if DEBUG
@@ -234,7 +229,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     var pmatch = xel.GetAttributeValue<bool>(StdMarkdownAttribute.pmatch);
                     if(qmatch && pmatch)
                     {
-                        PredicateMatchSubsetPrivate.Add(item);
+                        PredicateMatchSubsetProtected.Add(item);
                     }
                     else
                     {
@@ -244,7 +239,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             void localRemoveMatch()
             {
-                PredicateMatchSubsetPrivate.Remove(item);
+                PredicateMatchSubsetProtected.Remove(item);
             }
             #endregion L o c a l F x
         }
@@ -267,12 +262,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     return true;
                 }
-                var matches = Histo[StdMarkdownAttribute.matches];
+                var matches = Histo[StdMarkdownAttribute.match];
                 if(matches == 0)
                 {
-
+                    return Equals(Settings[StdMarkdownContextSetting.UseAdaptiveShowAll], true);
                 }
-                return Histo[StdMarkdownAttribute.model] == matches;
+                else
+                {
+                    return CanonicalCount == PredicateMatchCount;
+                }
             }
         }
 
@@ -294,7 +292,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                     await Task.Run(async () =>
                     {
-                        PredicateMatchSubsetPrivate.Clear();
+                        PredicateMatchSubsetProtected.Clear();
                         Model.RemoveDescendantAttributes(
                             [
                                 StdMarkdownAttribute.match,
@@ -321,7 +319,7 @@ SELECT * FROM items WHERE
                         matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
                         #endregion F I L T E R    Q U E R Y
 
-                        Model.SetStdAttributeValue(StdMarkdownAttribute.matches, (matchPaths = localGetPaths()).Length);
+                        matchPaths = localGetPaths();
 
                         foreach (var path in matchPaths)
                         {
@@ -332,7 +330,7 @@ SELECT * FROM items WHERE
                                     if (xaf.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
                                         && xbaModel.Tag is T model)
                                     {
-                                        PredicateMatchSubsetPrivate.Add(model);
+                                        PredicateMatchSubsetProtected.Add(model);
                                     }
                                     break;
                                 case PlacerResult.Created:
@@ -994,7 +992,6 @@ SELECT * FROM items WHERE
                         }
                     }
                     UpdateStatesForEpoch();
-                    Model.SetStdAttributeValue(StdMarkdownAttribute.matches, PredicateMatchCount);
                 }
                 else
                 {
@@ -1128,10 +1125,7 @@ SELECT * FROM items WHERE
         {            
             if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
             {
-                int
-                    indexForAdd = Histo[StdMarkdownAttribute.model],
-                    countB4 = Model.GetAttributeValue<int>(StdMarkdownAttribute.count, 0),
-                    matchesB4 = Model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
+                int indexForAdd = Histo[StdMarkdownAttribute.model];
 
                 var placerResult = Model.Place(full, out var xel);
                 switch (placerResult)
@@ -1143,10 +1137,7 @@ SELECT * FROM items WHERE
                         xel.SetBoundAttributeValue(
                             tag: item,
                             name: nameof(StdMarkdownAttribute.model));
-
-                        xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), indexForAdd);
-                        Model.SetAttributeValue(nameof(StdMarkdownAttribute.count), ++countB4);
-                        Model.SetAttributeValue(nameof(StdMarkdownAttribute.matches), ++matchesB4);
+                        xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), indexForAdd);
                         break;
                     default:
                         this.ThrowFramework<NotSupportedException>(
@@ -1299,36 +1290,17 @@ SELECT * FROM items WHERE
         {
             get
             {
-                if (0 == Model.GetAttributeValue<int>(StdMarkdownAttribute.matches, @default: 0))
+                if(_predicateMatchSubset is null)
                 {
-                    return CanonicalSuperset;
+                    _predicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetProtected);
                 }
-                else
-                {
-                    return _predicateMatchSubset;
-                }
+                return _predicateMatchSubset;
             }
         }
         private IReadOnlyList<T> _predicateMatchSubset;
         IList ITopology.PredicateMatchSubset => (IList)PredicateMatchSubset;
 
-        public ObservableCollection<T> PredicateMatchSubsetPrivate
-        {
-            get
-            {
-                if (_predicateMatchSubsetPrivate is null)
-                {
-                    _predicateMatchSubsetPrivate = new ObservableCollection<T>();
-                    _predicateMatchSubsetPrivate.CollectionChanged += (sender, e) =>
-                    {
-                        Model.SetStdAttributeValue(StdMarkdownAttribute.matches, _predicateMatchSubsetPrivate.Count);
-                    };
-                }
-                return _predicateMatchSubsetPrivate;
-            }
-        }
-        ObservableCollection<T>? _predicateMatchSubsetPrivate = null;
-
+        protected List<T> PredicateMatchSubsetProtected { get; } = new();
 
         ObservableCollection<T>? IModeledMarkdownContext<T>.ObservableNetProjection =>
             (ObservableCollection<T>?)ObservableNetProjection;

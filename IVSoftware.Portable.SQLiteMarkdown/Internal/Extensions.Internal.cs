@@ -509,42 +509,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             ModelSettledEventArgs? _reset = default;
         }
 
-        /// <summary>
-        /// Materializes descendant object whose effective <c>ismatch</c> state is true.
-        /// </summary>
-        /// <remarks>
-        /// <paramref name="allMatch"/> reports whether every descendant satisfied the match rule.
-        /// Elements without an explicit <c>ismatch</c> attribute assume <paramref name="default"/>.
-        /// </remarks>
-        public static object[] Matches(this XElement @this, bool @default = true)
-            => @this.Matches(out _, @default);
-
-        [Probationary, Canonical]
-        public static object[] Matches(this XElement @this, out bool allMatch, bool @default = true)
-        {
-            List<object> matched = new();
-            int count = 0;
-
-            foreach (var current in @this.Descendants())
-            {
-                count++;
-
-                bool isMatch =
-                    current.Attribute(nameof(StdMarkdownAttribute.match)) is { } attr
-                    && bool.TryParse(attr.Value, out var explicitMatch)
-                        ? explicitMatch
-                        : @default;
-
-                if (isMatch && current.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xba && xba is { } item)
-                {
-                    matched.Add(item);
-                }
-            }
-
-            allMatch = matched.Count == count;
-            return matched.ToArray();
-        }
-
         #region A C T I O N    M A S K S
         [Obsolete("Action and Reason are entirely separate concerns in v2.0")]
         public static NotifyCollectionChangedAction ToNotifyCollectionChangedAction(this Enum @this)

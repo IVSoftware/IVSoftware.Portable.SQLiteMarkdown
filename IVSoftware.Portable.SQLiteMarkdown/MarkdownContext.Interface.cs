@@ -126,17 +126,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
 
 
+
         [Obsolete("Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount.")]
         [PublishedContract("1.0")] // Required for backward compatibility. Do not remove this property.
-        public int UnfilteredCount 
+        public int UnfilteredCount
         {
             get => CanonicalCount;
-            protected set => Model.SetStdAttributeValue(StdMarkdownAttribute.count, value);
+            protected set => this.ThrowHard<InvalidOperationException>(
+                @"[Obsolete(""Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount."")]");
         }
+        public virtual int CanonicalCount => Histo[StdMarkdownAttribute.model];
 
-        public virtual int CanonicalCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.count);
-
-        public virtual int PredicateMatchCount => Model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
+        public virtual int PredicateMatchCount => Histo[StdMarkdownAttribute.match];
 
         /// <summary>
         /// Responsible for raising the InputTextSettled event.

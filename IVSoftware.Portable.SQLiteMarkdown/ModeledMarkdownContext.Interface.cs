@@ -48,7 +48,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         IList<T> Read =>
             IsFiltering
-            ? PredicateMatchSubsetPrivate
+            ? PredicateMatchSubsetProtected
             : CanonicalSupersetProtected;
 
         bool IList.IsFixedSize => false;
@@ -92,7 +92,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (IsFiltering)
                 {
-                    PredicateMatchSubsetPrivate.CopyTo(typed, index);
+                    PredicateMatchSubsetProtected.CopyTo(typed, index);
                 }
                 else
                 {
@@ -109,7 +109,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         int IList.IndexOf(object value) =>
             IsFiltering
-            ? ((IList)PredicateMatchSubsetPrivate).IndexOf(value)
+            ? ((IList)PredicateMatchSubsetProtected).IndexOf(value)
             : ((IList)CanonicalSupersetProtected).IndexOf(value);
 
         void IList.Insert(int index, object value)

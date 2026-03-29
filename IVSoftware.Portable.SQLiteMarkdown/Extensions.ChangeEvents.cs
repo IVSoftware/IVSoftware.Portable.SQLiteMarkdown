@@ -131,7 +131,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                         tag: item,
                                         name: nameof(StdMarkdownAttribute.model));
 
-                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), itemCount++);
+                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), itemCount++);
                                     if (mdc.IsFiltering)
                                     {
                                         Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 29).Date, "Don't forget disabled");
@@ -243,7 +243,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                         tag: item,
                                         name: nameof(StdMarkdownAttribute.model));
 
-                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), itemCount++);
+                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), itemCount++);
                                     break;
 
                                 default:
@@ -280,7 +280,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             switch (placerResult)
                             {
                                 case PlacerResult.Exists:
-                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), targetIndex++);
+                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), targetIndex++);
                                     break;
 
                                 default:

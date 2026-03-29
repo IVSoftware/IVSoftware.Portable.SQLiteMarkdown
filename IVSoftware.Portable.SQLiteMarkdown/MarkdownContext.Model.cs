@@ -1,5 +1,4 @@
-﻿using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
@@ -8,8 +7,6 @@ using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reflection;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
@@ -27,28 +24,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
     partial class MarkdownContext
     {
-        protected EnumHistogrammer<StdMarkdownAttribute> Histo { get; } = new(ZeroCountOption.Remove);
-        public string ToString(HistogrammerFormat format) => Histo.ToString(format);
-
-        public IReadOnlyDictionary<string, Enum> ActiveFilters
-        {
-            get
-            {
-                if (_activeFilters is null)
-                {
-                    _activeFilters = new ReadOnlyDictionary<string, Enum>(ActiveFiltersProtected);
-                }
-                return _activeFilters;
-            }
-        }
-        IReadOnlyDictionary<string, Enum>? _activeFilters = null;
-
-        protected Dictionary<string, Enum> ActiveFiltersProtected { get; } = new();
-
-
-        Dictionary <XObject, XElement> _parentsOfRemoved = new();
-        Dictionary<XAttribute, bool?> _oldValues = new();
-
         public virtual XElement Model
         {
             get
@@ -107,7 +82,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                             }
                                             else if (newValue == true)
                                             {
-                                                Histo.Increment(std);
+                                                Histo.Increment(std, xattr);
                                             }
                                         }
                                         return;
@@ -169,7 +144,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     case XObjectChange.Add:
                         if (newValue != false)
                         {
-                            Histo.Increment(std);
+                            Histo.Increment(std, xattr);
                         }
                         localUpdateHisto();
                         break;
@@ -187,7 +162,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 /* N O O P */
                                 break;
                             case true:
-                                Histo.Increment(std);
+                                Histo.Increment(std, xattr);
                                 break;
                             case false:
                                 Histo.Decrement(std);
@@ -211,5 +186,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 #endregion L o c a l F x
             }
         }
+        protected EnumHistogrammer<StdMarkdownAttribute> Histo { get; } = new(ZeroCountOption.Remove);
+        public string ToString(HistogrammerFormat format) => Histo.ToString(format);
+
+        public IReadOnlyDictionary<string, Enum> ActiveFilters
+        {
+            get
+            {
+                if (_activeFilters is null)
+                {
+                    _activeFilters = new ReadOnlyDictionary<string, Enum>(ActiveFiltersProtected);
+                }
+                return _activeFilters;
+            }
+        }
+        IReadOnlyDictionary<string, Enum>? _activeFilters = null;
+        protected Dictionary<string, Enum> ActiveFiltersProtected { get; } = new();
+
+
+        Dictionary<XObject, XElement> _parentsOfRemoved = new();
+        Dictionary<XAttribute, bool?> _oldValues = new();
     }
 }
