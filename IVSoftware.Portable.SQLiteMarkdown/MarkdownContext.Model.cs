@@ -15,14 +15,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 {
     public enum HistogrammerFormat
     {
-        Default,
+        All,
 
         [HistogrammerFormat(
             StdMarkdownAttribute.model, 
             StdMarkdownAttribute.match,
             StdMarkdownAttribute.qmatch,
             StdMarkdownAttribute.pmatch)]
-        Custom,
+        Default,
     }
     partial class MarkdownContext
     {

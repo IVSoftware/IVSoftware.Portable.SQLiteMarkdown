@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Util
@@ -87,17 +88,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         {
             var keys = 
                 formatting
-                .GetCustomAttribute<HistogrammerFormatAttribute>()
-                ?.Keys.OfType<T>() ?? [];
-
+                .GetCustomAttribute<HistogrammerFormatAttribute>()?
+                .Keys.OfType<T>()
+                .ToArray() ?? []; 
             var builder = new List<string>();
 
-            foreach (var kvp in _histo)
+            if(keys.Length == 0)
             {
-                // NOW we have a direct read... TODO!
+                foreach (var key in _histo.Keys)
+                {
+                    builder.Add($"{key}:{this[key]}");
+                }
             }
-
-            return string.Join(" ", builder);
+            else
+            {
+                foreach (var key in keys)
+                {
+                    builder.Add($"{key}:{this[key]}");
+                }
+            }
+            return $"[{string.Join(" ", builder)}]";
         }
     }
 }

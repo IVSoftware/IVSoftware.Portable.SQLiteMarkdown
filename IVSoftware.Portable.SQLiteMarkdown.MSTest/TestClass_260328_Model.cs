@@ -442,11 +442,23 @@ public class TestClass_260328_Model
 </model>"
         ;
 
-        subtest_Name();
+        subtest_ToStringHistoDefault();
 
         #region S U B T E S T S
-        void subtest_Name()
+        void subtest_ToStringHistoDefault()
         {
+            actual = mmdc.ToString(HistogrammerFormat.Default);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[model:10 match:0 qmatch:0 pmatch:0]"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
         }
         #endregion S U B T E S T S
     }
