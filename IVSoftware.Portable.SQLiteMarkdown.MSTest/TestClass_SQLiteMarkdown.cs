@@ -638,7 +638,7 @@ InputText"
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                 Assert.IsTrue(mmdc.CanonicalCount == 2);
 
-                // This is the terminal state and will clear the projection.
+                // This is (organically, i.e. still 'false') the terminal state and will clear the projection.
                 mmdc.Clear(false);
 
                 actual = mmdc.StateReport();

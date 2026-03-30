@@ -141,6 +141,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             }
                         }
                     }
+                    // Now: IFTTT on the stable histogram population.
                     foreach (var xattr in xel.Attributes())
                     {
                         if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std)
@@ -168,6 +169,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             else
                             {
                                 Histo.Decrement(std);
+                            }
+                        }
+                    }
+
+                    // Now: IFTTT on the stable histogram population.
+                    foreach (var xattr in xel.Attributes())
+                    {
+                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std)
+                            && std.GetCustomAttribute<IFTTTAttribute>() is not null)
+                        {
+                            switch (std)
+                            {
+                                case StdMarkdownAttribute.qmatch:
+                                case StdMarkdownAttribute.pmatch:
+                                    SetMatchAttributeValue(xel);
+                                    break;
+                                case StdMarkdownAttribute.model when xattr is XBoundAttribute xba:
+                                    OnBoundItemObjectChange(xba, e.ObjectChange);
+                                    break;
                             }
                         }
                     }

@@ -249,6 +249,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Not to be confused with the XElement Model property.
         /// </remarks>
+        [IFTTT("-> FilterQueryDatabase")]
         model,
 
         /// <summary>
