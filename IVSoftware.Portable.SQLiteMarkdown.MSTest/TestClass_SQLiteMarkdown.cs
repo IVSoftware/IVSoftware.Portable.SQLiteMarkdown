@@ -3,6 +3,7 @@ using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using SQLite;
@@ -399,6 +400,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             int COUNT;
 
             var mmdc = new ModeledMarkdownContext<PrioritizedAffinityQFModel>();
+            var histo = mmdc.Model.To<EnumHistogrammer<StdMarkdownAttribute>>();
 
             actual = mmdc.StateReport();
             actual.ToClipboardExpected();
@@ -460,6 +462,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     $"Expecting model shows {COUNT} item."
                 );
 
+                actual = histo.ToString(HistogrammerFormat.Default);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[model:1 match:0 qmatch:0 pmatch:0]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting load canon pattern."
+                );
 
                 actual = mmdc.StateReport();
                 actual.ToClipboardExpected();
@@ -467,13 +480,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 expected = @" 
 [IME Len: 0, IsFiltering: False], [Net: null, CC: 1, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
                 ;
-                expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 1, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]";
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting result to match."
+                    "Expecting DOES NOT FILTER. There is only one item so FilteringState is Ineligible"
                 );
 
                 Assert.AreEqual(COUNT, mmdc.CanonicalCount);
