@@ -117,7 +117,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case XObjectChange.Remove:
                     _ = localTryRemoveFromDatabase();
                     localRemoveEvents();
-                    localRemoveMatch();
                     break;
             }
             #region L o c a l F x
