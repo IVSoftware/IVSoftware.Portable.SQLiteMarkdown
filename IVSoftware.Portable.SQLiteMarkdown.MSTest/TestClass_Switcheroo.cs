@@ -210,9 +210,9 @@ Throw MarkdownContextPolicyViolation.ExplicitClearAdvisory | ExplicitClearAdviso
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MMDC]"" histo=""2"" count=""2"" matches=""2"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" sort=""1"" />
+<model mdc=""[MDC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" />
 </model>"
                 ;
 
@@ -226,7 +226,7 @@ Throw MarkdownContextPolicyViolation.ExplicitClearAdvisory | ExplicitClearAdviso
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -267,9 +267,9 @@ Throw MarkdownContextPolicyViolation.ExplicitClearAdvisory | ExplicitClearAdviso
                         Threading.Extensions.Awaited -= localOnAwaited;
                     }))
                 {
-                    // This is supposed to be an IList "no surprises" clear.
+                    // Pathologically, this appears to be an IList "no surprises" clear but IS NOT.
                     // We're listening for Awaited event is raised in the BC clear (with an 'all" key).
-                    // This is because we intentionally left out a parameterless Clear() in the subclass.
+                    // This is because we INTERNTIONALLY LEFT OUT a parameterless Clear() in the subclass.
                     inherited.Clear();
 
                     actual = string.Join(Environment.NewLine, builder);
@@ -294,7 +294,7 @@ MarkdownContext Clear(all=False)";
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
                     ;
                     Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting non-terminal clear.");
 
@@ -306,7 +306,7 @@ MarkdownContext Clear(all=False)";
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                     ;
                     Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting QUERY COMPLETE WITH RESULTS.");
                     { }
