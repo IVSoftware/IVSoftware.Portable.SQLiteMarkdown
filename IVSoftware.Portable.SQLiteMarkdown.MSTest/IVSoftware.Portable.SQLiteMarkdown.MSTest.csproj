@@ -33,7 +33,7 @@
 	
 	<!-- Release mode -->
 	<ItemGroup Condition="'$(Configuration)' == 'Release'">
-		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="2.0.0-alpha28" />
+		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="2.0.0-alpha30" />
 	</ItemGroup>
 
 	<!--

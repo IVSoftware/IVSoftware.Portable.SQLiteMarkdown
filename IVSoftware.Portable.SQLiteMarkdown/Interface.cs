@@ -161,7 +161,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
     [Careful("Must *never* implement INotifyCollectionChanged - this is reserved to detect inheritance..")]
-    [PublishedContract("2.0.0-alpha28", typeof(IMarkdownContext))]
+    [PublishedContract("2.0.0-alpha30", typeof(IMarkdownContext))]
     public interface IMarkdownContext : INotifyPropertyChanged
     {
         #region P A R S E
@@ -420,7 +420,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </c>
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
-    [PublishedContract("2.0.0-alpha28", typeof(IPredicateMarkdownContext))]
+    [PublishedContract("2.0.0-alpha30", typeof(IPredicateMarkdownContext))]
     [Careful("This interface is not allowed to implement INotifyCollectionChanged.")]
     public interface IPredicateMarkdownContext : IMarkdownContext
     {
