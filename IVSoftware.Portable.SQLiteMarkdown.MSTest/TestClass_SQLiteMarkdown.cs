@@ -590,7 +590,7 @@ InputText"
                 // ROUTING - We should be projecting the filtered dataset.
                 Assert.IsFalse(
                     mmdc.RouteToFullRecordset,
-                    "This should 'probably' be following FilteringState.Armed"
+                    "Expecting FILTERED SUBSET."
                 );
 
                 actual = mmdc.StateReport();
@@ -605,17 +605,26 @@ InputText"
                     actual.NormalizeResult(),
                     "Routed to one filtered item");
 
-                // This will clear the IME.
+                // This will clear the IME ONLY.
                 // IsFiltering=TRUE. Don't dip below SearchEntryState.QueryCompleteWithResults.
                 mmdc.Clear(false);
                 actual = mmdc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
 
-                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "IME CLEAR ONLY");
+                Assert.AreEqual(
+                    expected.NormalizeResult(), 
+                    actual.NormalizeResult(),
+                    "Expecting IME CLEAR ONLY ∴ FilteringState.Active -> FilteringState.Armed");
+
+                // ROUTING - We should be projecting the full dataset.
+                Assert.IsTrue(
+                    mmdc.RouteToFullRecordset,
+                    "Expecting FULL RECORDSET."
+                );
 
                 // This will exit filter mode leaving list intact.
                 mmdc.Clear(false);
@@ -624,7 +633,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                 Assert.IsTrue(mmdc.CanonicalCount == 2);
