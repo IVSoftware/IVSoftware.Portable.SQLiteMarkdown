@@ -75,8 +75,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 }
                                 break;
                             case XObjectChange.Remove:
+                                PredicateMatchSubsetProtected.Remove(item);
                                 break;
                             case XObjectChange.Value:
+                                Debug.Fail($@"ADVISORY 260330 - Proposed validation attribute for Histo should make this unreachable.");
                                 switch (value)
                                 {
                                     // The value isn't null, but isn't parseable to bool either.
@@ -110,7 +112,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case XObjectChange.Add:
                     localSetModelContainer();
                     localAddEvents();
-                    localEvaluateMatch();
                     _ = localTryAddToDatabase();
                     break;
                 case XObjectChange.Remove:
@@ -192,32 +193,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     isSuccess = null;
                 }
                 return isSuccess;
-            }
-            void localEvaluateMatch()
-            {
-                if(xbo.Parent is { } xel)
-                {
-                    if(xel.Attribute(StdMarkdownAttribute.match) is { } xattr)
-                    {
-                        if(bool.TryParse(xattr.Value, out bool valid) && valid)
-                        {
-                            PredicateMatchSubsetProtected.Add(item);
-                        }
-                        else
-                        {
-                            Debug.Fail($@"ADVISORY - Benign but illegal.");
-                            xattr.Remove();
-                        }
-                    }
-                    else
-                    {
-                        PredicateMatchSubsetProtected.Remove(item);
-                    }
-                }
-            }
-            void localRemoveMatch()
-            {
-                PredicateMatchSubsetProtected.Remove(item);
             }
             #endregion L o c a l F x
         }
@@ -1294,6 +1269,7 @@ SELECT * FROM items WHERE
                     var opc = new ObservablePreviewCollection<T>(eventScope: NotifyCollectionChangeScope.CancelOnly);
                     opc.CollectionChanging += (sender, e) =>
                     {
+                        Debug.WriteLine($"260330.A {nameof(PredicateMatchSubsetProtected)}.{e.Action} Count={PredicateMatchSubsetProtected.Count}");
                         switch (e.Action)
                         {
                             case NotifyCollectionChangeAction.Add:
@@ -1305,6 +1281,8 @@ SELECT * FROM items WHERE
                                 break;
                         }
                     };
+                    opc.CollectionChanged += (sender, e) =>
+                    { };
                     _predicateMatchSubsetProtected = opc;
                 }
                 return _predicateMatchSubsetProtected;

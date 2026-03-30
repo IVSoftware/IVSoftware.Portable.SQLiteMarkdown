@@ -562,11 +562,13 @@ InputText"
                     actual.NormalizeResult(), 
                     "PMC is 0 and THIS IS CORRECT because Filtering state is armed not active.");
 
+                // ROUTING - We should be projecting the full dataset.
                 Assert.IsTrue(
                     mmdc.RouteToFullRecordset,
                     "This should 'probably' be following FilteringState.Armed"
                 );
 
+                // SIMULATE - Now filter to one match.
                 mmdc.InputText = "Item01";
                 await mmdc;
 
@@ -579,12 +581,29 @@ InputText"
   <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" />
 </model>"
                 ;
-
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     $"Expecting model shows {COUNT} item."
                 );
+
+                // ROUTING - We should be projecting the filtered dataset.
+                Assert.IsFalse(
+                    mmdc.RouteToFullRecordset,
+                    "This should 'probably' be following FilteringState.Armed"
+                );
+
+                actual = mmdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 6, IsFiltering: True], [Net: null, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(), 
+                    actual.NormalizeResult(),
+                    "Routed to one filtered item");
 
                 // This will clear the IME.
                 // IsFiltering=TRUE. Don't dip below SearchEntryState.QueryCompleteWithResults.
