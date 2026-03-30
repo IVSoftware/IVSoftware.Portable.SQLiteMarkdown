@@ -1584,7 +1584,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         bool _isEphemeralSort = false;
 
-
         /// <summary>
         /// Catch and release heuristic for canonical ObservableNetProjection entering and leaving IsFiltered state.
         /// </summary>

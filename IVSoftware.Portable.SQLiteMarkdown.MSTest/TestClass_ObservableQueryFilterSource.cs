@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Transactions;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
@@ -3185,10 +3186,18 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
             };
 
             await subtestQueryInitial();
-            await subtestAppendAndRequery();
-
+            await subtest_Animals();
+            await subtestAppendDatabaseAndRequery();
 
             #region S U B T E S T S
+            /// <summary>
+            /// Verifies Commit phase for a routed topology.
+            /// </summary>
+            /// <remarks>
+            /// Confirms that Commit() executes synchronously against the memory database, routes through LoadCanon,
+            /// emits a structural Reset followed by Add, and yields a canonical superset and projection that are
+            /// consistent in count, order, and payload.
+            /// </remarks>
             async Task subtestQueryInitial()
             {
                 actual = items.StateReport();
@@ -3279,16 +3288,26 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 { }
             }
 
-            async Task subtestAppendAndRequery()
+            /// <summary>
+            /// Verifies that appending new records and requerying transitions into filtering mode.
+            /// </summary>
+            /// <remarks>
+            /// - Clearing and repopulating the dataset establishes a new canonical 
+            ///   baseline and enters Armed filtering state with correct results.
+            /// - Confirms that attempting Commit while IsFiltering is true produces a
+            ///   soft advisory without mutating state. 
+            /// - After awaiting stabilization, the filtered projection reflects the expected narrowed resultset.
+            /// </remarks>
+            async Task subtestAppendDatabaseAndRequery()
             {
                 items.Clear(all: true);
                 // Live-demo specific.
-                Add("Appetizer Plate", "[dish]", false, new() { "starter", "appealing", "snack" });
-                Add("Errata", "[notes]", false, new() { "crunchy", "green", "appended" });
-                Add("Happy Camper", "[phrase]", false, new() { "joyful", "camp", "approach-west" });
-                Add("Great example - Markdown Demo", "[app] [portable]", false, new() { "digital", "mobile", "software" });
-                Add("Application Form", "[document]", false, new() { "paperwork", "apply" });
-                Add("App Store", "[app]", false, new() { "digital", "mobile", "software" });
+                localAddToDatabase("Appetizer Plate", "[dish]", false, new() { "starter", "appealing", "snack" });
+                localAddToDatabase("Errata", "[notes]", false, new() { "crunchy", "green", "appended" });
+                localAddToDatabase("Happy Camper", "[phrase]", false, new() { "joyful", "camp", "approach-west" });
+                localAddToDatabase("Great example - Markdown Demo", "[app] [portable]", false, new() { "digital", "mobile", "software" });
+                localAddToDatabase("Application Form", "[document]", false, new() { "paperwork", "apply" });
+                localAddToDatabase("App Store", "[app]", false, new() { "digital", "mobile", "software" });
 
                 nsb.InputText = "app gre";
                 items.Commit();
@@ -3364,11 +3383,66 @@ Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portabl
                     "Expecting items to match"
                 );
             }
+
+            async Task subtest_Animals()
+            {
+                Assert.AreNotEqual(0, items.CanonicalCount, "Expecting carry-over from previous subtest.");
+                // No surprises.
+                items.Clear();
+
+                actual = items.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting NO SURPRISES CLEAR."
+                );
+
+                Assert.AreEqual(
+                    false,
+                    items.Settings[StdMarkdownContextSetting.AllowPluralize], 
+                    "Expecting object? that is a bool set to false.");
+
+                items.InputText = "animals";
+                items.Commit();
+
+                actual = items.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 7, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteNoResults, FilteringState.Ineligible]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting empty due to plural."
+                );
+
+                items.Settings[StdMarkdownContextSetting.AllowPluralize] = true;
+                items.Commit();
+
+                actual = items.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 7, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting CC: 12 due to fuzzy query enabled by setting."
+                );
+            }
             #endregion S U B T E S T S
 
             #region L o c a l F x
-
-            void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
+            void localAddToDatabase(string description, string tags, bool isChecked, List<string>? keywords = null)
             {
                 var instance = new SelectableQFModelLTOQO();
                 var type = typeof(SelectableQFModelLTOQO);

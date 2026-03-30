@@ -1183,28 +1183,45 @@ SELECT * FROM items WHERE
             base.OnCommit(e);
             if (!e.Handled)
             {
-                if (e.CanonicalSuperset is null)
-                {
-                    if (MemoryDatabase is not null)
-                    {
-                        var canon = MemoryDatabase.Query(ContractType.GetSQLiteMapping(), e.SQL);
-                        LoadCanon(canon);
+                IList? canon;
+                localQuery(false);
 
-#if DEBUG
-                        var loopbackCount = FilterQueryDatabase.Table<T>().Count();
-                        Debug.Assert(canon.Count == loopbackCount);
-#endif
+                if (canon is { Count: 0 })
+                {
+                    if (Equals(Settings[StdMarkdownContextSetting.AllowPluralize], true))
+                    {
+                        localQuery(true);
+                    }
+                    else
+                    {   /* G T K - N O O P */
                     }
                 }
-                else
-                {
-                    LoadCanon(e.CanonicalSuperset);
+
+                // Unconditional: Might be null, None or Some.
+                LoadCanon(canon);
+
 #if DEBUG
-                    var cssCount = CanonicalSuperset.Count;
-                    var count = this.Count;
-                    var enumerator = this.GetEnumerator();
+                int loopbackCount = FilterQueryDatabase.Table<T>().Count();
+                Debug.Assert(canon?.Count == loopbackCount);
+
+                var count = this.Count;
+                var enumerator = this.GetEnumerator();
+                var cssCount = CanonicalSuperset.Count;
 #endif
+                #region L o c a l F x
+                void localQuery(bool fuzzy)
+                {
+                    var sql = fuzzy ? e.SQL.ToFuzzyQuery() : e.SQL;
+                    if (e.CanonicalSuperset is null && MemoryDatabase is not null)
+                    {
+                        canon = MemoryDatabase.Query(ContractType.GetSQLiteMapping(), sql);
+                    }
+                    else
+                    {
+                        canon = e.CanonicalSuperset;
+                    }
                 }
+                #endregion L o c a l F x
             }
         }
 
