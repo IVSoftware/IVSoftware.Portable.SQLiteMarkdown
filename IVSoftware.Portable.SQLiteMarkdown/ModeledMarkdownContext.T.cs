@@ -75,13 +75,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             switch (std)
                             {
                                 case StdMarkdownAttribute.model when xattr is XBoundAttribute xba && xba.Tag is T itemT:
-                                    if(PredicateMatchSubsetProtected.Contains(itemT))
-                                    { 
-                                        Debug.Fail($@"ADVISORY - First Time and UNEXPECTED.");
+                                    if (PredicateMatchSubsetProtected.Contains(itemT))
+                                    {   /* G T K - N O O P */
                                     }
                                     else
                                     {
-                                        Debug.Fail($@"ADVISORY - First Time GOOD just confirm that this is right.");
+                                        Debug.Fail($@"ADVISORY - First Time UNEXPECTED just confirm.");
                                         PredicateMatchSubsetProtected.Add(itemT);
                                     }
                                     break;
