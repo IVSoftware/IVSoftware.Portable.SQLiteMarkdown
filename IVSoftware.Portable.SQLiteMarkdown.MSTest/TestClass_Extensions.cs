@@ -50,7 +50,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     }))
                 {
                     // No error for int?
-                    _ = model.GetAttributeValue<int?>(StdMarkdownAttribute.count);
+                    _ = model.GetAttributeValue<int?>(StdMarkdownAttribute.order);
                     Assert.AreEqual(0, builderThrow.Count);
 
                     // Error expected for int (non-nullable)
@@ -93,19 +93,23 @@ The string provided 'banana' is not numeric.";
 
             void subtest_ObjectUnconstrained()
             {
-                object? @object = model.GetAttributeValue<object?>(StdMarkdownAttribute.count);
+                object? @object;
+                @object = model.GetAttributeValue<object?>(StdMarkdownAttribute.order);
+                Assert.IsNull(@object);
+
+                @object = model.GetAttributeValue<object?>(StdMarkdownAttribute.order, @default: 0);
                 Assert.AreEqual(0, @object);
             }
 
             void subtest_IntFromDefaultAttribute()
             {
-                @int = model.GetAttributeValue<int>(StdMarkdownAttribute.count);
-                Assert.AreEqual(0, @int);
+                @int = model.GetAttributeValue<int>(DefaultValuesForTest.Two);
+                Assert.AreEqual(2, @int);
             }
 
             void subtest_IntFromDefaultArg()
             {
-                @int = model.GetAttributeValue<int>(StdMarkdownAttribute.count, 7);
+                @int = model.GetAttributeValue<int>(StdMarkdownAttribute.order, 7);
                 Assert.AreEqual(7, @int);
             }
 
@@ -129,8 +133,8 @@ The string provided 'banana' is not numeric.";
 
             void subtest_AttributeSimplyPresent()
             {
-                model.SetAttributeValue(nameof(StdMarkdownAttribute.count), "42");
-                int value = model.GetAttributeValue<int>(StdMarkdownAttribute.count);
+                model.SetAttributeValue(nameof(StdMarkdownAttribute.order), "42");
+                int value = model.GetAttributeValue<int>(StdMarkdownAttribute.order);
                 Assert.AreEqual(42, value);
             }
             #endregion S U B T E S T S

@@ -1379,18 +1379,19 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
-                        "Expecting StateReport shows INITIAL QUERY RECORDSET N=12."
+                        "Expecting REPLACE ITEMS semantics:" +
+                        "StateReport shows INITIAL QUERY RECORDSET N=12 and PMC: 0 until filter activity takes place."
                     );
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
-                        "Expecting REPLACE ITEMS semantics."
+                        "."
                     );
 
                     actual = string.Join(Environment.NewLine, itemsSource.Select(_ => _.ToString()));
@@ -1442,7 +1443,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1578,11 +1579,11 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
             NotifyCollectionChangedEventArgs ecc;
             PropertyChangedEventArgs epc;
 
-            // Test for early adopter (beta) migration support.
-            await localTest<SelectableQueryModelOR>();
-
             // Test for current version scheme
             await localTest<SelectableQFModelLTOQO>();
+
+            // Test for early adopter (beta) migration support.
+            await localTest<SelectableQueryModelOR>();
 
             async Task localTest<T>() where T : new()
             {
@@ -1873,6 +1874,9 @@ NetProjectionTopology.Routed, ReplaceItemsEventingOption.StructuralReplaceEvent"
                             "Expecting routed topology."
                         );
 
+                        #region C O M M I T
+                        // This section wraps the RECORDSET REQUEST EVENT as a
+                        // sim then calls the Commit method;
                         #region L o c a l F x
                         void localOnRecordsetRequestA(object? sender, RecordsetRequestEventArgs e)
                         {
@@ -1901,8 +1905,12 @@ SELECT * FROM items WHERE
                                 items.RecordsetRequest -= localOnRecordsetRequestA;
                             }))
                         {
+                            // ☆☆☆☆☆
+                            // C O M M I T
                             ((MarkdownContext)items).Commit();
+                            // ☆☆☆☆☆
                         }
+                        #endregion C O M M I T
 
                         actual =
                             string
@@ -1936,7 +1944,7 @@ Busy"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 6, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 6, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
                         Assert.AreEqual(
                             expected.NormalizeResult(), 
@@ -1986,13 +1994,15 @@ SearchEntryState";
                         Assert.AreEqual(string.Empty, items.InputText, "[Remember] - We did a terminal clear.");
                         sql = "animal".ParseSqlMarkdown<T>();
                         recordset = cnx.Query<T>(sql);
+
+                        // DIFFERENT - Async version
                         await items.ReplaceItemsAsync(recordset);
 
                         actual = items.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
                         Assert.AreEqual(
                             expected.NormalizeResult(),
@@ -2123,7 +2133,7 @@ SELECT * FROM items WHERE
                         { }
 
                         expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
 
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
@@ -3215,19 +3225,19 @@ NetProjection.Add     NewItems=12 NewIndex= 0 NotifyCollectionChangedEventArgs  
                 { }
                 // [Careful("What?")] No 'preview' attribute? THAT'S BECAUSE THIS IS SelectableQFModel and *not* IAffinityModel.
                 expected = @" 
-<model mdc=""[MMDC]"" autocount=""12"" count=""12"" matches=""12"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" sort=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" sort=""1"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" sort=""2"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" sort=""3"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" sort=""4"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" sort=""5"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" sort=""6"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" sort=""7"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" sort=""8"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" sort=""9"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" sort=""10"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" sort=""11"" />
+<model mdc=""[MDC]"" histo=""[model:12 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" />
 </model>"
                 ;
 

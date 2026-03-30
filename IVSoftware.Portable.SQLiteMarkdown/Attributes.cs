@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
@@ -123,7 +124,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         All = 0x7,
     }
-    
+
 
     public enum WherePredicate
     {
@@ -252,7 +253,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// but are part of a published contract. Basically, DON'T DO IT!
     /// </summary>
     [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
-    internal class PublishedContractAttribute : Attribute 
+    internal class PublishedContractAttribute : Attribute
     {
         // Do Not Change signature, return type, or argument names.
         // Do Not Obsolete (if you can help it).
@@ -279,5 +280,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Authority = authority;
         }
         public CollectionChangeAuthority Authority { get; } = 0;
+    }
+
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
+    public class HistogrammerFormatAttribute : Attribute
+    {
+        public HistogrammerFormatAttribute(
+            StdMarkdownAttribute key,
+            params StdMarkdownAttribute[] moreKeys)
+        {
+            moreKeys ??= [];
+            Keys = new StdMarkdownAttribute[1 + moreKeys.Length];
+            Keys[0] = key;
+            Array.Copy(moreKeys, 0, Keys, 1, moreKeys.Length);
+        }
+        public StdMarkdownAttribute[] Keys { get; }
+    }
+
+    /// <summary>
+    /// Marks an attribute that requires prioritized onboarding when an XElement joins the model.
+    /// </summary>
+    /// <remarks>
+    /// - Applies to attributes whose effects must be established before normal change processing.
+    /// - Attribute change iteration order is not reliable during onboarding.
+    /// - Consumers should detect and process these attributes explicitly and in a controlled order.
+    /// </remarks>
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
+    public class IFTTTAttribute : Attribute
+    {
+        public IFTTTAttribute(string? description = null)
+        {
+            Description = description ?? string.Empty;
+        }
+        public string Description { get; }
     }
 }

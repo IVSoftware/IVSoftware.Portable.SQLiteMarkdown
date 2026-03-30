@@ -3,6 +3,7 @@ using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using SQLite;
@@ -399,6 +400,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             int COUNT;
 
             var mmdc = new ModeledMarkdownContext<PrioritizedAffinityQFModel>();
+            var histo = mmdc.Model.To<EnumHistogrammer<StdMarkdownAttribute>>();
 
             actual = mmdc.StateReport();
             actual.ToClipboardExpected();
@@ -428,8 +430,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
                 actual = mmdc.StateReport();
                 actual.ToClipboardExpected();
-                { } // <- FIRST TIME ONLY: Adjust the message.
-                actual.ToClipboardAssert("Expecting result to match.");
                 { }
                 expected = @" 
 [IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteNoResults, FilteringState.Ineligible]";
@@ -445,11 +445,54 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             {
                 COUNT = 1;
                 mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
+
+                actual = mmdc.Model.ToString();
+                actual.ToClipboardExpected();
+                { } // <- FIRST TIME ONLY: Adjust the message.
+                actual.ToClipboardAssert($"Expecting model shows {COUNT} item.");
+                { }
+                expected = @" 
+<model mdc=""[MDC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
+</model>";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    $"Expecting model shows {COUNT} item."
+                );
+
+                actual = histo.ToString(HistogrammerFormat.Default);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[model:1 match:0 qmatch:0 pmatch:0]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting load canon pattern."
+                );
+
+                actual = mmdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 1, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting DOES NOT FILTER. There is only one item so FilteringState is Ineligible"
+                );
+
                 Assert.AreEqual(COUNT, mmdc.CanonicalCount);
                 Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mmdc.SearchEntryState);
                 Assert.AreEqual(FilteringState.Ineligible, mmdc.FilteringState);
                 Assert.IsFalse(mmdc.IsFiltering);
             }
+
             async Task subtestExtQueryTwoResults()
             {
                 void localMDC_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -492,25 +535,96 @@ InputText"
 
                 // SIMULATE - Now perform the external QUERY.
                 mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
+
+                actual = mmdc.Model.ToString();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model mdc=""[MDC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" />
+</model>";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    $"Expecting model shows {COUNT} item."
+                );
+
                 actual = mmdc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 62, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 62, IsFiltering: True], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
-                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "NEW RECORDSET 2 ITEMS");
+                Assert.AreEqual(
+                    expected.NormalizeResult(), 
+                    actual.NormalizeResult(), 
+                    "PMC is 0 and THIS IS CORRECT because Filtering state is armed not active.");
 
-                // This will clear the IME.
+                // ROUTING - We should be projecting the full dataset.
+                Assert.IsTrue(
+                    mmdc.RouteToFullRecordset,
+                    "This should 'probably' be following FilteringState.Armed"
+                );
+
+                // SIMULATE - Now filter to one match.
+                mmdc.InputText = "Item01";
+                await mmdc;
+
+                actual = mmdc.Model.ToString();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model mdc=""[MDC]"" histo=""[model:2 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" qmatch=""True"" match=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" />
+</model>"
+                ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    $"Expecting model shows {COUNT} item."
+                );
+
+                // ROUTING - We should be projecting the filtered dataset.
+                Assert.IsFalse(
+                    mmdc.RouteToFullRecordset,
+                    "Expecting FILTERED SUBSET."
+                );
+
+                actual = mmdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 6, IsFiltering: True], [Net: null, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(), 
+                    actual.NormalizeResult(),
+                    "Routed to one filtered item");
+
+                // This will clear the IME ONLY.
                 // IsFiltering=TRUE. Don't dip below SearchEntryState.QueryCompleteWithResults.
                 mmdc.Clear(false);
                 actual = mmdc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
 
-                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "IME CLEAR ONLY");
+                Assert.AreEqual(
+                    expected.NormalizeResult(), 
+                    actual.NormalizeResult(),
+                    "Expecting IME CLEAR ONLY ∴ FilteringState.Active -> FilteringState.Armed");
+
+                // ROUTING - We should be projecting the full dataset.
+                Assert.IsTrue(
+                    mmdc.RouteToFullRecordset,
+                    "Expecting FULL RECORDSET."
+                );
 
                 // This will exit filter mode leaving list intact.
                 mmdc.Clear(false);
@@ -519,12 +633,12 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                 Assert.IsTrue(mmdc.CanonicalCount == 2);
 
-                // This is the terminal state and will clear the projection.
+                // This is (organically, i.e. still 'false') the terminal state and will clear the projection.
                 mmdc.Clear(false);
 
                 actual = mmdc.StateReport();
@@ -553,6 +667,17 @@ InputText"
                 // Query occurs.
                 mmdc.LoadCanon(extQueryHandle.PopulateForDemo(2));
 
+                actual = mmdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 11, IsFiltering: True], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+                ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(), 
+                    actual.NormalizeResult(), 
+                    "Expecting PMC is empty until some filtering activity takes place..");
+
                 Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mmdc.SearchEntryState, "Expecting initial state.");
                 Assert.AreEqual(FilteringState.Armed, mmdc.FilteringState, "Expecting initial state.");
 
@@ -564,8 +689,9 @@ InputText"
 
                 actual = mmdc.StateReport();
                 actual.ToClipboardExpected();
+                { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -576,7 +702,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -618,7 +744,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 11, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 11, IsFiltering: True], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -630,9 +756,9 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MMDC]"" autocount=""2"" count=""2"" matches=""1"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" sort=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" sort=""1"" qmatch=""True"" />
+<model mdc=""[MDC]"" histo=""[model:2 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" qmatch=""True"" match=""True"" />
 </model>"
                 ;
 
@@ -754,7 +880,7 @@ InputText"
             // each and every node a perceived match.
 
             expected = @" 
-[IME Len: 3, IsFiltering: False], [Net: null, CC: 2, PMC: 2], [Query: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
+[IME Len: 3, IsFiltering: False], [Net: null, CC: 2, PMC: 0], [Query: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting Filtering shows DISABLED.");
 
@@ -765,7 +891,7 @@ InputText"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 2], [Query: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 0], [Query: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 

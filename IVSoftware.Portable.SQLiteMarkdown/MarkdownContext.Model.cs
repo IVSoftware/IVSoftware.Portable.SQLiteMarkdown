@@ -1,5 +1,4 @@
-﻿using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
@@ -7,29 +6,36 @@ using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using System.Collections.ObjectModel;
 using System.Xml.Linq;
+using System.Xml.Schema;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
+    public enum HistogrammerFormat
+    {
+        All,
+
+        [HistogrammerFormat(
+            StdMarkdownAttribute.model, 
+            StdMarkdownAttribute.match,
+            StdMarkdownAttribute.qmatch,
+            StdMarkdownAttribute.pmatch)]
+        Default,
+    }
     partial class MarkdownContext
     {
-#if true
-        Dictionary<XObject, XElement> _parentsOfRemoved = new();
-        Dictionary<XAttribute, bool?> _oldValues = new();
-        EnumHistogrammer<StdMarkdownAttribute> _histo = new(ZeroCountOption.Remove);
         public virtual XElement Model
         {
             get
             {
                 if (_model is null)
                 {
-                    _model =
-                        new XElement(
-                            nameof(StdMarkdownElement.model),
-                            new XBoundAttribute(nameof(StdMarkdownAttribute.mdc), this, $"[MDC]"),
-                            new XAttribute(nameof(StdMarkdownAttribute.autocount), 0));
+                    _model = new
+                        XElement(nameof(StdMarkdownElement.model))
+                        .WithBoundAttributeValue(this, StdMarkdownAttribute.mdc, "[MDC]")
+                        .WithBoundAttributeValue(Histo, StdMarkdownAttribute.histo, "[Histo]")
+                        .WithBoundAttributeValue(ActiveFilters, StdMarkdownAttribute.filters, "[No Active Filters]");
 
                     _model.Changing += (sender, e) =>
                     {
@@ -73,11 +79,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                         {
                                             if (oldValue == true)
                                             {
-                                                _histo -= std;
+                                                Histo.Decrement(std);
                                             }
                                             else if (newValue == true)
                                             {
-                                                _histo += std;
+                                                Histo.Increment(std, xattr);
                                             }
                                         }
                                         return;
@@ -120,10 +126,52 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             switch (e.ObjectChange)
             {
                 case XObjectChange.Add:
-                case XObjectChange.Remove:
-                    foreach (var attr in xel.Attributes())
+                    foreach (var xattr in xel.Attributes())
                     {
-                        OnXAttributeChanged(attr, pxel, e);
+                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
+                        {
+                            if (bool.TryParse(xattr.Value, out bool valid) && valid == false)
+                            {   /* G T K - N O O P */
+                                // POLICY: Explicit false values cannot modify the histogram.
+                            }
+                            else
+                            {
+                                // Increment *all* first.
+                                Histo.Increment(std, xattr);
+                            }
+                        }
+                    }
+                    // Now: IFTTT on the stable histogram population.
+                    foreach (var xattr in xel.Attributes())
+                    {
+                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std)
+                            && std.GetCustomAttribute<IFTTTAttribute>() is not null)
+                        {
+                            switch (std)
+                            {
+                                case StdMarkdownAttribute.qmatch:
+                                case StdMarkdownAttribute.pmatch:
+                                    // The IFTTT for 'match' wired and ready. 
+                                    SetMatchAttributeValue(xel);
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+                case XObjectChange.Remove:
+                    foreach (var xattr in xel.Attributes())
+                    {
+                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
+                        {
+                            if (bool.TryParse(xattr.Value, out bool valid) && valid == false)
+                            {   /* G T K - N O O P */
+                                // POLICY: Explicit false values cannot modify the histogram.
+                            }
+                            else
+                            {
+                                Histo.Decrement(std);
+                            }
+                        }
                     }
                     break;
             }
@@ -139,16 +187,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     case XObjectChange.Add:
                         if (newValue != false)
                         {
-                            _histo += std;
+                            Histo.Increment(std, xattr);
                         }
-                        localUpdateAutocount();
+                        localUpdateHisto();
                         break;
                     case XObjectChange.Remove:
                         if (newValue != false)
                         {
-                            _histo -= std;
+                            Histo.Decrement(std);
                         }
-                        localUpdateAutocount();
+                        localUpdateHisto();
                         break;
                     case XObjectChange.Value:
                         switch (newValue)
@@ -157,222 +205,98 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 /* N O O P */
                                 break;
                             case true:
-                                _histo += std;
+                                Histo.Increment(std, xattr);
                                 break;
                             case false:
-                                _histo -= std;
+                                Histo.Decrement(std);
                                 break;
                         }
                         break;
                 }
-                if(xattr is XBoundAttribute xba)
+                if (xattr is XBoundAttribute xba)
                 {
                     OnBoundItemObjectChange(xba, e.ObjectChange);
                 }
-
-                #region L o c a l F x
-                void localUpdateAutocount()
-                {
-                    // Count the actual model XBO objects
-                    if (std == StdMarkdownAttribute.model)
-                    {
-                        var root = pxel.AncestorsAndSelf().Last();
-                        if (root.Has<IMarkdownContext>())
-                        {
-                            root.SetStdAttributeValue(StdMarkdownAttribute.autocount, _histo[StdMarkdownAttribute.model]);
-                        }
-                    }
-                }
-                #endregion L o c a l F x
-            }
-        }
-#else
-        public virtual XElement Model
-        {
-            get
-            {
-                if (_model is null)
-                {
-                    _model =
-                        new XElement(
-                            nameof(StdMarkdownElement.model),
-                            new XBoundAttribute(nameof(StdMarkdownAttribute.mdc), this, $"[MDC]"),
-                            new XAttribute(nameof(StdMarkdownAttribute.autocount), 0));
-                    _model.Changing += (sender, e) =>
-                    {
-                        if (sender is XElement xel && e.ObjectChange == XObjectChange.Remove)
-                        {
-                            _parentsOfRemoved[xel] = xel.Parent;
-                        }
-                    };
-                    _model.Changed += (sender, e) =>
-                    {
-                        switch (sender)
-                        {
-                            case XElement xel:
-                                XElement pxel;
-                                if (e.ObjectChange == XObjectChange.Remove)
-                                {
-                                    if (!_parentsOfRemoved.TryGetValue(xel, out pxel))
-                                    {
-                                        _parentsOfRemoved.ThrowSoft<NullReferenceException>(
-                                            $"Expecting parent for removed XElement was cached prior." +
-                                            $"Unless this throw is escalated, flow will continue with null parent.");
-                                    }
-                                    _parentsOfRemoved.Remove(xel);
-                                }
-                                else
-                                {
-                                    pxel = xel.Parent;
-                                }
-                                OnXElementChanged(xel, pxel, e);
-                                break;
-                            case XAttribute xattr:
-                                OnXAttributeChanged(xattr, e);
-                                break;
-                        }
-                    };
-                }
-                return _model;
-            }
-        }
-        protected XElement? _model = null;
-
-        protected Dictionary<XElement, XElement> _parentsOfRemoved = new();
-
-        protected virtual void OnXAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
-        {
-            if (Enum.TryParse(xattr.Name.LocalName, out StdMarkdownAttribute std))
-            {
-                string id = null!;
-                if (xattr.Parent is not null)
-                {
-                    if (xattr.Parent.Parent is null)
-                    {
-                        localRootProcess();
-                    }
-                    else
-                    {
-                        localDefaultProcess();
-                    }
-                }
-                #region L o c a l F x
-                void localRootProcess()
+                else
                 {
                     switch (std)
                     {
-                        case StdMarkdownAttribute.matches:
+                        case StdMarkdownAttribute.qmatch:
+                        case StdMarkdownAttribute.pmatch:
+                            SetMatchAttributeValue(pxel);
                             break;
                     }
                 }
-                void localDefaultProcess()
+                #region L o c a l F x
+                void localUpdateHisto()
                 {
-                    if (xattr.Parent.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
-                        && xbaModel.Tag is { } model
-                        && !string.IsNullOrWhiteSpace(id = model.GetId()))
+                    if (Model.Attribute(StdMarkdownAttribute.histo) is XBoundAttribute xba)
                     {
-                        if (ReferenceEquals(xattr, xbaModel))
-                        {
-                            OnBoundItemObjectChange(xbaModel, e.ObjectChange);
-                        }
-                        else
-                        {
-                            switch (xattr)
-                            {
-                                case XBoundAttribute:
-                                    break;
-                                default:
-                                    switch (std)
-                                    {
-                                        case StdMarkdownAttribute.match:
-                                            bool isMatch = bool.Parse(xattr.Value);
-                                            switch (e.ObjectChange)
-                                            {
-                                                case XObjectChange.Add:
-                                                case XObjectChange.Value:
-                                                    if (isMatch)
-                                                    {
-                                                        MatchContainsProto.Add(id);
-                                                    }
-                                                    break;
-                                                case XObjectChange.Remove:
-                                                    MatchContainsProto.Remove(id);
-                                                    break;
-                                            }
-                                            break;
-                                    }
-                                    break;
-                            }
-                        }
+                        xba.Value = Histo.ToString(HistogrammerFormat.Default);
                     }
                 }
                 #endregion L o c a l F x
             }
         }
 
-
-        [Probationary]
-        public HashSet<string> MatchContainsProto = new();
-        protected virtual void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
+        /// <summary>
+        /// Sets the 'match' attribute based on any explicit positive match signal.
+        /// </summary>
+        /// <remarks>
+        /// - The 'qmatch' and 'pmatch' values are normalized to nullable signals
+        ///   using histogram participation.
+        /// - Mental Model:
+        ///   "If no descendants explicitly match, all descendants are considered matches (no filter)."
+        /// - The 'match' attribute is set explicity true if either 'qmatch' or 'pmatch'
+        ///   are explictly true, otherwise null.
+        /// EXAMPLE:
+        /// 1. IME text is cleared -> all 'qmatch' attributes are removed -> show all items.
+        /// 2. User enters text -> some items are marked 'qmatch' -> show only matching items.
+        /// </remarks>
+        void SetMatchAttributeValue(XElement @this)
         {
-            if (pxel is null)
-            {
-                this.ThrowFramework<NullReferenceException>(
-                    $"UNEXPECTED: The '{nameof(pxel)}' argument should be non-null by design.");
-            }
-            switch (e.ObjectChange)
-            {
-                case XObjectChange.Add:
-                case XObjectChange.Remove:
-                    var xbo =
-                        xel
-                        .Attributes()
-                        .OfType<XBoundAttribute>()
-                        .FirstOrDefault(_ => _.Tag?.GetType() == ContractType);
-                    if (xbo is not null)
-                    {
-                        OnBoundItemObjectChange(xbo, e.ObjectChange);
-                    }
-                    localAutoCount();
-                    break;
-            }
+            bool valid; // Captures an explicit value, if parseable.
 
-            #region L o c a l F x
-            void localAutoCount()
+            // If none of the xitems have a qmatch then *all* of them implicily have a qmatch.
+            bool? qmatch =
+                Histo[StdMarkdownAttribute.qmatch] == 0
+                ? null
+                : bool.TryParse(@this.Attribute(StdMarkdownAttribute.qmatch)?.Value, out valid) ? valid : null;
+
+            // If none of the xitems have a pmatch then *all* of them implicily have a pmatch.
+            bool? pmatch =
+                Histo[StdMarkdownAttribute.pmatch] == 0
+                ? null
+                : bool.TryParse(@this.Attribute(StdMarkdownAttribute.pmatch)?.Value, out valid) ? valid : null;
+            if (qmatch == true || pmatch == true)
             {
-                XElement? modelRoot = pxel?.AncestorsAndSelf().LastOrDefault();
-                if (modelRoot is null)
-                {
-                    this.ThrowFramework<NullReferenceException>(
-                        $"UNEXPECTED: The '{nameof(modelRoot)}' argument should be non-null by design.");
-                }
-                else
-                {
-                    var autocount = modelRoot.GetAttributeValue<int>(StdMarkdownAttribute.autocount);
-                    switch (e.ObjectChange)
-                    {
-                        case XObjectChange.Add:
-                            autocount++;
-                            break;
-                        case XObjectChange.Remove:
-                            if (autocount == 0)
-                            {
-                                this.ThrowFramework<InvalidOperationException>(
-                                    $"UNEXPECTED: Illegal underflow detected '{nameof(autocount)}'. Count should be >= 0 by design.");
-                            }
-                            else
-                            {
-                                autocount--;
-                            }
-                            break;
-                    }
-                    modelRoot.SetStdAttributeValue(StdMarkdownAttribute.autocount, autocount);
-                    // [Careful]
-                    // It's too racey here to try and compare counts.
-                }
+                @this.SetStdAttributeValue(StdMarkdownAttribute.match, bool.TrueString);
             }
-            #endregion L o c a l F x
+            else
+            {
+                @this.SetStdAttributeValue(StdMarkdownAttribute.match, null);
+            }
         }
-#endif
+
+        protected EnumHistogrammer<StdMarkdownAttribute> Histo { get; } = new(ZeroCountOption.Remove);
+        public string ToString(HistogrammerFormat format) => Histo.ToString(format);
+
+        public IReadOnlyDictionary<string, Enum> ActiveFilters
+        {
+            get
+            {
+                if (_activeFilters is null)
+                {
+                    _activeFilters = new ReadOnlyDictionary<string, Enum>(ActiveFiltersProtected);
+                }
+                return _activeFilters;
+            }
+        }
+        IReadOnlyDictionary<string, Enum>? _activeFilters = null;
+        protected Dictionary<string, Enum> ActiveFiltersProtected { get; } = new();
+
+
+        Dictionary<XObject, XElement> _parentsOfRemoved = new();
+        Dictionary<XAttribute, bool?> _oldValues = new();
     }
 }

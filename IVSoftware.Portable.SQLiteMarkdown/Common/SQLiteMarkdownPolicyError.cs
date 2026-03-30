@@ -7,7 +7,7 @@ using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
-    [Policy(typeof(SQLiteMarkdownException))]
+    [Policy(typeof(MarkdownContextException))]
     public enum MarkdownContextPolicyViolation
     {
         [Description($"{nameof(SQLiteOperationFailed)} Policy violation: The SQLite operation is expected to succeed.")]
@@ -63,8 +63,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         XAttributeBooleanToggle,
     }
 
-    public class SQLiteMarkdownException : Exception
+    public class MarkdownContextException : Exception
     {
-        public SQLiteMarkdownException(string message) : base(message) { }
+        public MarkdownContextException(string message) : base(message) { }
     }
 }

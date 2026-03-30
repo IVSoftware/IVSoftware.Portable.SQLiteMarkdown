@@ -220,12 +220,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         [Ephemeral]
         public long? PriorityOverride
         {
-            get => Model.GetAttributeValue<long?>(StdMarkdownAttribute.sort);
+            get => Model.GetAttributeValue<long?>(StdMarkdownAttribute.order);
             set
             {
                 if (!Equals(PriorityOverride, value))
                 {
-                    Model.SetStdAttributeValue(StdMarkdownAttribute.sort, value);
+                    Model.SetStdAttributeValue(StdMarkdownAttribute.order, value);
                     OnPropertyChanged();
                 }
             }

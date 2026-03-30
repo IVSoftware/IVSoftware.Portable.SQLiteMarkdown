@@ -58,6 +58,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             ContractType = type;
         }
 
+        public MarkdownContextSettings Settings { get; } = new()
+        {
+            {StdMarkdownContextSetting.AllowPluralize, false },
+            {StdMarkdownContextSetting.UseAdaptiveShowAll, true },
+        };
+
         // Avoids exposing the MDC itself on the static Throw event.
         protected Throw ThrowHard<T>(string messageOrId) => nameof(MarkdownContext).ThrowHard<T>(messageOrId);
         protected Throw ThrowFramework<T>(string messageOrId) => nameof(MarkdownContext).ThrowFramework<T>(messageOrId);
@@ -1497,6 +1503,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     _filteringState = value;
 
                     // This needs to be sequenced in a certain way.
+                    // {5B1BD636-9189-493C-83B6-F77EB0321925}
                     bool isFilteringB4 = _isFiltering;
                     OnFilteringStateChanged();
                     OnPropertyChanged();
@@ -1544,31 +1551,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Mental Model: "Choose placeholder text (and the icon, too) - 'Search' or 'Filter'"
         /// </remarks>
-        public bool IsFiltering
-        {
-            get => _isFiltering;
-#if false
-            protected set
-            {
-                if (!Equals(_isFiltering, value))
-                {
-                    if (QueryFilterConfig == QueryFilterConfig.Filter)
-                    {
-                        if (!value)
-                        {
-                            this.ThrowSoft<InvalidOperationException>(
-    $"{nameof(IsFiltering)} = false will be ignored because {nameof(QueryFilterConfig)} is {QueryFilterConfig.Filter}.");
-                        }
-                    }
-                    _isFiltering = value;
-                    OnIsFilteringChanged();
-                    OnPropertyChanged();
-                }
-            }
-#endif
-        }
+        public bool IsFiltering => _isFiltering;
 
-        // Different! Protected because it's in play inside OnFilteringStateChanged.
+        // Different!
+        // Protected because it's in play inside OnFilteringStateChanged.
+        // This needs to be sequenced in a certain way.
+        // {5B1BD636-9189-493C-83B6-F77EB0321925}
         protected bool _isFiltering = false;
 
         public void Sort(IComparer? comparer)
@@ -1725,7 +1713,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
-        /// Apply hysteresis to the sFiltering, but only in QueryFilterConfig.QueryAndFilter mode.
+        /// Apply hysteresis to the Filtering, but only in QueryFilterConfig.QueryAndFilter mode.
         /// </summary>
         /// <remarks>
         /// This is the only place that _isFiltering is allowed to change. 
@@ -1743,40 +1731,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     break;
                 case QueryFilterConfig.QueryAndFilter:
                     _isFiltering = FilteringState != FilteringState.Ineligible;
-
-#if false
-                    if(FilteringState == FilteringState.Ineligible)
-                    {
-                        // Apply hysteresis to SearchEntryState; obtain direction from prev state.
-                        switch (FilteringStatePrev)
-                        {
-                            case FilteringState.Ineligible:
-                                break;
-                            case FilteringState.Armed:
-                            case FilteringState.Active:
-                                Debug.Assert(InputText.Length == 0, "Otherwise, we've got a problem.");
-
-                                // IME downgrade FSM.
-                                switch (SearchEntryState)
-                                {
-                                    case SearchEntryState.QueryCompleteWithResults:
-                                        // Leave the projected items for now, while we enable a new Search.
-                                        SearchEntryState = SearchEntryState.QueryEmpty;
-                                        break;
-                                    case SearchEntryState.QueryCompleteNoResults:
-                                        // There aren't any projected items; No intermediate step is needed.
-                                        SearchEntryState = SearchEntryState.Cleared;
-                                        break;
-                                    case SearchEntryState.QueryEmpty:
-                                        SearchEntryState = SearchEntryState.Cleared;
-                                        break;
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-#endif
                     break;
                 default:
                     break;

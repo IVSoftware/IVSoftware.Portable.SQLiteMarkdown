@@ -89,11 +89,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         $"The {eUnk.GetType().Name} case is not supported.");
                 return;
             }
-
-            int
-                indexForAdd = model.GetAttributeValue<int>(StdMarkdownAttribute.autocount),
-                count = model.GetAttributeValue<int>(StdMarkdownAttribute.count, 0),
-                matches = model.GetAttributeValue<int>(StdMarkdownAttribute.matches);
+            var mdc = model.To<IMarkdownContext>(@throw: true);
+            var histo = model.To<EnumHistogrammer<StdMarkdownAttribute>>(@throw: true);
+            int itemCount = histo[StdMarkdownAttribute.model];
 
             switch (action)
             {
@@ -107,8 +105,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             $"The {action.ToFullKey()} case is not supported.");
                     break;
             }
-            model.SetAttributeValue(nameof(StdMarkdownAttribute.count), count);
-            model.SetAttributeValue(nameof(StdMarkdownAttribute.matches), matches);
 
             #region L o c a l F x
             void localAddToModel()
@@ -135,9 +131,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                         tag: item,
                                         name: nameof(StdMarkdownAttribute.model));
 
-                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), indexForAdd++);
-                                    count++;
-                                    matches++;
+                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), itemCount++);
+                                    if (mdc.IsFiltering)
+                                    {
+                                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 30).Date, "Don't forget disabled");
+                                        // Make sure we mark canonical match until next filter op.
+                                        // matches++;
+                                    }
                                     break;
                                 default:
                                     eUnk.ThrowFramework<NotSupportedException>(
@@ -174,8 +174,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     if (xel.Parent is not null)
                                     {
                                         xel.Remove();
-                                        count = Math.Max(0, count - 1);
-                                        matches = Math.Max(0, matches - 1);
                                     }
                                     break;
                                 default:
@@ -214,8 +212,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     if (xel.Parent is not null)
                                     {
                                         xel.Remove();
-                                        count = Math.Max(0, count - 1);
-                                        matches = Math.Max(0, matches - 1);
                                     }
                                     break;
                                 default:
@@ -247,9 +243,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                         tag: item,
                                         name: nameof(StdMarkdownAttribute.model));
 
-                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), indexForAdd++);
-                                    count++;
-                                    matches++;
+                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), itemCount++);
                                     break;
 
                                 default:
@@ -286,7 +280,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             switch (placerResult)
                             {
                                 case PlacerResult.Exists:
-                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.sort), targetIndex++);
+                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), targetIndex++);
                                     break;
 
                                 default:
@@ -308,14 +302,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (reason == NotifyCollectionChangeReason.None)
                 {
                     model.RemoveNodes();
+                    histo.Clear();
                 }
                 else
                 {
                     Debug.Fail($@"ADVISORY - TODO distinguish ReplaceItemsEventingOption.");
                     model.RemoveNodes();
                 }
-                count = 0;
-                matches = 0;
             }
             #endregion L o c a l F x
         }

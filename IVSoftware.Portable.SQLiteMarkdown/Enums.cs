@@ -209,8 +209,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         xitem,
     }
 
-    internal enum StdMarkdownAttribute
+    public enum StdMarkdownAttribute
     {
+        /// <summary>
+        /// XBound histogrammer with bins based on XElement.Changed.
+        /// </summary>
+        histo,
+
+        /// <summary>
+        /// XBound active filters dictionary,
+        /// </summary>
+        filters,
+
         /// <summary>
         /// Path segment name. 
         /// </summary>
@@ -239,23 +249,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Not to be confused with the XElement Model property.
         /// </remarks>
+        [IFTTT("-> FilterQueryDatabase")]
         model,
 
         /// <summary>
         /// Records the net effect of qmatch and pmatch
         /// </summary>
         [DefaultValue("True")]
+        [IFTTT("-> PredicateMatchSubset")]
         match,
 
         /// <summary>
         /// This record matches all active predicates.
         /// </summary>
+        [IFTTT("-> match")]
         [DefaultValue("True")]
         qmatch,
 
         /// <summary>
         /// This record matches all active predicates.
         /// </summary>
+        [IFTTT("-> match")]
         [DefaultValue("True")]
         pmatch,
 
@@ -276,24 +290,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Mental Model: "The user clicked the column header and this is the temporary sort."
         /// </remarks>
         sort,
-
-        /// <summary>
-        /// The total running count.
-        /// </summary>
-        [DefaultValue(0)]
-        count,
-
-        /// <summary>
-        /// The total running count, based on XElement.Changed.
-        /// </summary>
-        [DefaultValue(0)]
-        autocount,
-
-        /// <summary>
-        /// In filter mode, the number of items matching all the predicates.
-        /// </summary>
-        [DefaultValue(0)]
-        matches,
 
         #region P R E D I C A T E S
         /// <summary>
