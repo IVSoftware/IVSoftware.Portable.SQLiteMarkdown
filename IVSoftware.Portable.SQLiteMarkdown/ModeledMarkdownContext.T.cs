@@ -284,12 +284,8 @@ SELECT * FROM items WHERE
                             switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
                             {
                                 case PlacerResult.Exists:
+                                    // IFTTT - the XObject.Change will add this to PMSS.
                                     xaf.SetAttributeValue(nameof(StdMarkdownAttribute.qmatch), bool.TrueString);
-                                    if (xaf.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xbaModel
-                                        && xbaModel.Tag is T model)
-                                    {
-                                        PredicateMatchSubsetProtected.Add(model);
-                                    }
                                     break;
                                 case PlacerResult.Created:
                                     this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
