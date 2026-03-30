@@ -51,6 +51,63 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+        protected override void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
+        {
+            // Update histogram first.
+            base.OnXElementChanged(xel, pxel, e);
+
+            // Now: IFTTT on the stable histogram population.
+            switch (e.ObjectChange)
+            {
+                case XObjectChange.Add:
+                    // 260230 AFAIK
+                    // - An XElement coming online with attributes already
+                    //   populated is a test-only phenomenon.
+                    // - It needs to be robust regardless.
+                    // - Ordinarily, however, the IFTTT happens when attributes come
+                    //   and go on an XElement that's already wired for the events.
+                    foreach (var xattr in xel.Attributes())
+                    {
+                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std)
+                            && std.GetCustomAttribute<IFTTTAttribute>() is not null)
+                        {
+                            switch (std)
+                            {
+                                case StdMarkdownAttribute.model when xattr is XBoundAttribute xba && xba.Tag is T itemT:
+                                    if(PredicateMatchSubsetProtected.Contains(itemT))
+                                    { 
+                                        Debug.Fail($@"ADVISORY - First Time and UNEXPECTED.");
+                                    }
+                                    else
+                                    {
+                                        Debug.Fail($@"ADVISORY - First Time GOOD just confirm that this is right.");
+                                        PredicateMatchSubsetProtected.Add(itemT);
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+                case XObjectChange.Remove:
+                    // [Remember] The node has been removed so no XObject changes. We need to call the actions manually.
+                    foreach (var xattr in xel.Attributes())
+                    {
+                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std)
+                            && std.GetCustomAttribute<IFTTTAttribute>() is not null)
+                        {
+                            switch (std)
+                            {
+                                case StdMarkdownAttribute.model when xattr is XBoundAttribute xba && xba.Tag is T itemT:
+                                    PredicateMatchSubsetProtected.Remove(itemT);
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+                case XObjectChange.Value:
+                    break;
+            }
+        }
 
         /// <summary>
         /// Central model authority for IFTTT.
@@ -112,10 +169,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case XObjectChange.Add:
                     localSetModelContainer();
                     localAddEvents();
-                    _ = localTryAddToDatabase();
+                    _ = TryAddToDatabase(item);
                     break;
                 case XObjectChange.Remove:
-                    _ = localTryRemoveFromDatabase();
+                    _ = TryRemoveFromDatabase(item);
                     localRemoveEvents();
                     break;
             }
@@ -153,47 +210,47 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     inpc.PropertyChanged -= OnItemPropertyChanged;
                 }
             }
-
-            bool? localTryAddToDatabase()
-            {
-                bool? isSuccess = null;
-                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
-                {
-                    if (SQLITE_STRICT)
-                    {
-                        isSuccess = 1 == FilterQueryDatabase.Insert(item);
-                    }
-                    else
-                    {
-                        isSuccess = 1 == FilterQueryDatabase.InsertOrReplace(item);
-                    }
-                }
-                else
-                {   /* G T K - N O O P */
-                    // There is no filter database to maintain.
-                    isSuccess = null;
-                }
-                if (isSuccess == false)
-                {
-                    this.ThrowPolicyException(MarkdownContextPolicyViolation.SQLiteOperationFailed);
-                }
-                return isSuccess;
-            }
-
-            bool? localTryRemoveFromDatabase()
-            {
-                bool? isSuccess = null;
-                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
-                {
-                    isSuccess = 1 == FilterQueryDatabase.Delete(item);
-                }
-                else
-                {
-                    isSuccess = null;
-                }
-                return isSuccess;
-            }
             #endregion L o c a l F x
+        }
+
+        bool? TryAddToDatabase(T item)
+        {
+            bool? isSuccess = null;
+            if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+            {
+                if (SQLITE_STRICT)
+                {
+                    isSuccess = 1 == FilterQueryDatabase.Insert(item);
+                }
+                else
+                {
+                    isSuccess = 1 == FilterQueryDatabase.InsertOrReplace(item);
+                }
+            }
+            else
+            {   /* G T K - N O O P */
+                // There is no filter database to maintain.
+                isSuccess = null;
+            }
+            if (isSuccess == false)
+            {
+                this.ThrowPolicyException(MarkdownContextPolicyViolation.SQLiteOperationFailed);
+            }
+            return isSuccess;
+        }
+
+        bool? TryRemoveFromDatabase(T item)
+        {
+            bool? isSuccess = null;
+            if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+            {
+                isSuccess = 1 == FilterQueryDatabase.Delete(item);
+            }
+            else
+            {
+                isSuccess = null;
+            }
+            return isSuccess;
         }
 
         /// <summary>

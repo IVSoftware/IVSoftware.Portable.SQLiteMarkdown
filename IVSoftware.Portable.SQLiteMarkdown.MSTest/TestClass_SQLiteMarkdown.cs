@@ -643,7 +643,6 @@ InputText"
 
                 actual = mmdc.StateReport();
                 actual.ToClipboardExpected();
-                { }
                 expected = @" 
 [IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                 ;

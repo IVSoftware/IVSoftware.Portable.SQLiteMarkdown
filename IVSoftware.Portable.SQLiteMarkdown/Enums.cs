@@ -256,6 +256,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Records the net effect of qmatch and pmatch
         /// </summary>
         [DefaultValue("True")]
+        [IFTTT("-> PredicateMatchSubset")]
         match,
 
         /// <summary>
