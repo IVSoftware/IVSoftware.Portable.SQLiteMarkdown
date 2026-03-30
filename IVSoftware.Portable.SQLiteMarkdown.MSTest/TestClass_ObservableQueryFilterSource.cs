@@ -3548,7 +3548,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-NetProjection.Add     NewItems=11 NewIndex= 0 NotifyCollectionChangedEventArgs           "
+NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 ;
 
                 Assert.AreEqual(

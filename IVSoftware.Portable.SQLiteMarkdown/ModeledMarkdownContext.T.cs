@@ -458,19 +458,6 @@ SELECT * FROM items WHERE
                                 ((IList)PredicateMatchSubset)
                                 .Diff((IList)CanonicalSuperset,
                                 reason: NotifyCollectionChangeReason.RemoveFilter);
-
-#if DEBUG
-                            if(ePost.Reason !=  NotifyCollectionChangeReason.RemoveFilter)
-                            {
-                                // Redux for debug stepping.
-                                ePost =
-                                ((IList)PredicateMatchSubset)
-                                .Diff((IList)CanonicalSuperset,
-                                reason: NotifyCollectionChangeReason.RemoveFilter);
-                                Debug.Fail("Failed to assign reason.");
-                            }
-#endif
-
                             OnModelChanged(ePost);
                         }
                         if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))

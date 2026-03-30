@@ -566,7 +566,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 action: NotifyCollectionChangeAction.Replace,
                                 reason: reason,
                                 scope: scope,
+                                newStartingIndex: (int)newStartingIndex!,
                                 oldStartingIndex: (int)oldStartingIndex!,
+                                newItems: changes
+                                    .Where(_ => _.NewItems is not null)
+                                    .SelectMany(_ => _.NewItems!.Cast<object>())
+                                    .ToList(),
                                 oldItems: changes
                                     .Where(_ => _.OldItems is not null)
                                     .SelectMany(_ => _.OldItems!.Cast<object>())
@@ -581,11 +586,31 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                     break;
                 default:
-                    throw new NotImplementedException("ToDo");
+                    // - Produces a non-bcl compatible event with custom Batch
+                    //   semantics that can be played back against the old
+                    //   list to produce the new.
+                    // - The confident expectation is that most clients will
+                    //   listen to Reason and opt for Clear + Add instead.
+                    result = new NotifyCollectionChangingEventArgs(
+                        action: NotifyCollectionChangeAction.Add,
+                        reason: reason | NotifyCollectionChangeReason.Batch,
+                        scope: scope,
+                        newStartingIndex: (int)newStartingIndex!,
+                        newItems: changes.ToList());
+                    break;
             }
 
-            // Make sure this got assigned.
-            if (result.Reason != reason)
+            // Validate that incoming reason intent is
+            // being accurately portrayed.
+            if(reason == NotifyCollectionChangeReason.Batch)
+            {
+                // Do not combine these clauses please.
+                if (result.Reason != NotifyCollectionChangeReason.Batch)
+                {
+                    nameof(Diff).ThrowFramework<NotSupportedException>("Failed to assign reason.");
+                }
+            }
+            else if ((result.Reason & ~NotifyCollectionChangeReason.Batch) != reason)
             {
                 nameof(Diff).ThrowFramework<NotSupportedException>("Failed to assign reason.");
             }
