@@ -747,8 +747,11 @@ SELECT * FROM items WHERE
                 case NetProjectionTopology.AllowDirectChanges:
                     localApplyDirectChanges();
                     break;
+                case NetProjectionTopology.Routed:
+                    ModelChanged?.Invoke(this, eBCL);
+                    break;
                 default:
-                    this.ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
+                    ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
                     break;
             }
             void localApplyDirectChanges()
