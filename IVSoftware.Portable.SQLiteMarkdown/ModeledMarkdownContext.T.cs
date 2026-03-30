@@ -434,27 +434,44 @@ SELECT * FROM items WHERE
 
         protected override void OnInputTextChanged()
         {
+            switch (Authority)
+            {
+                case CollectionChangeAuthority.Reset:
+                    /* G T K - N O O P */
+                    return;
+                default:
+                    break;
+            }
             base.OnInputTextChanged();
             switch (FilteringState)
             {
                 case FilteringState.Armed:
-                    // Basically, this is when a backspace in Filter mode results in an
-                    // empty entry text field. We want to stay in filtering mode though,
-                    // but the UI visuals might change e.g. icon glyph and/or color.
+                    // One of:
+                    // - IME [X] clear
+                    // - A backspace in Filter mode results in an empty entry text field.
+                    // Stay in filtering mode but the UI visuals might change e.g. icon glyph and/or color.
                     if (FilteringStatePrev == FilteringState.Active)
                     {
                         if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
                         {
-                            var ePost = ((IList)PredicateMatchSubset).Diff((IList)CanonicalSuperset);
+                            var ePost = 
+                                ((IList)PredicateMatchSubset)
+                                .Diff((IList)CanonicalSuperset,
+                                reason: NotifyCollectionChangeReason.RemoveFilter);
 
-                            OnModelChanged(
-                                new ModelSettledEventArgs(
-                                    reason: NotifyCollectionChangeReason.RemoveFilter,
-                                    action: NotifyCollectionChangedAction.Replace,
-                                    oldItems: (IList)PredicateMatchSubset,
-                                    newItems: (IList)CanonicalSuperset
-                                )
-                            );
+#if DEBUG
+                            if(ePost.Reason !=  NotifyCollectionChangeReason.RemoveFilter)
+                            {
+                                // Redux for debug stepping.
+                                ePost =
+                                ((IList)PredicateMatchSubset)
+                                .Diff((IList)CanonicalSuperset,
+                                reason: NotifyCollectionChangeReason.RemoveFilter);
+                                Debug.Fail("Failed to assign reason.");
+                            }
+#endif
+
+                            OnModelChanged(ePost);
                         }
                         if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
                         {
@@ -993,29 +1010,35 @@ SELECT * FROM items WHERE
         /// </summary>
         protected override void OnClear(bool all)
         {
-            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Reset))
+            if (all)
             {
-                switch (Authority)
+                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Reset))
                 {
-                    default:
-                    case CollectionChangeAuthority.Reset:
-                        base.OnClear(all);
-                        if (all)
-                        {
+                    switch (Authority)
+                    {
+                        default:
+                        case CollectionChangeAuthority.Reset:
+                            // Call the base *with* reset authority.
+                            base.OnClear(all);
                             CanonicalSupersetProtected.Clear();
-                        }
-                        break;
-                    case CollectionChangeAuthority.Commit:
-                        // Moved this management to LoadCanon because
-                        // we were just suppressing the events anyway.
-                        break;
-                }
+                            break;
+                        case CollectionChangeAuthority.Commit:
+                            // Moved this management to LoadCanon because
+                            // we were just suppressing the events anyway.
+                            break;
+                    }
 #if DEBUG
-                if (all && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
-                {
-                    Debug.Assert(FilterQueryDatabase.Table<T>().Count() == 0);
-                }
+                    if (all && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                    {
+                        Debug.Assert(FilterQueryDatabase.Table<T>().Count() == 0);
+                    }
 #endif
+                }
+            }
+            else
+            {
+                // Call the base *without* reset authority.
+                base.OnClear(all);
             }
         }
 

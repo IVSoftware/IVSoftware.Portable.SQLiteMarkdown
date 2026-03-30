@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using SQLite;
 using System;
@@ -678,11 +679,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             switch (e)
             {
                 case ModelSettledEventArgs ems:
+                    sb.Append(nameof(ModelSettledEventArgs).PadRight(43));
                     if(ems.Reason != Collections.Preview.NotifyCollectionChangeReason.None)
                     {
-
+                        sb.Append(ems.Reason.ToFullKey().PadRight(43));
                     }
-                    sb.Append(nameof(ModelSettledEventArgs).PadRight(43));
                     break;
                 default:
                     sb.Append(e.GetType().Name.PadRight(43));

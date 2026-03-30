@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml.Linq;
 
@@ -52,7 +53,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     oldStartingIndex = e.OldStartingIndex;
                     return true;
 
-                case Collections.Preview.NotifyCollectionChangingEventArgs e:
+                case NotifyCollectionChangingEventArgs e:
                     action = e.Action;
                     reason = e.Reason;
                     newItems = e.NewItems;
@@ -465,7 +466,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
-        /// Heuristically derives a batch <see cref="Collections.Preview.NotifyCollectionChangingEventArgs"/> describing
+        /// Heuristically derives a batch <see cref="NotifyCollectionChangingEventArgs"/> describing
         /// the transition from <paramref name="listBefore"/> to <paramref name="listAfter"/>.
         /// </summary>
         /// <remarks>
@@ -475,7 +476,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - <b>Remove</b>: One or more items removed, no additions.
         /// - <b>Replace (single)</b>: Exactly one item replaced with index fidelity.
         /// - <b>Replace (batch)</b>: Mixed add/remove operations encoded as a sequence of
-        ///   micro-operations carried in <see cref="Collections.Preview.NotifyCollectionChangingEventArgs.NewItems"/>.
+        ///   micro-operations carried in <see cref="NotifyCollectionChangingEventArgs.NewItems"/>.
         ///
         /// For batch replace:
         /// - Each element is an anonymous payload describing an atomic operation
@@ -491,24 +492,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///
         /// All emitted events carry <see cref="NotifyCollectionChangeReason.Batch"/>.
         /// </remarks>
-        internal static Collections.Preview.NotifyCollectionChangingEventArgs Diff(
+        internal static NotifyCollectionChangingEventArgs Diff(
             this IList listBefore,
             IList listAfter,
-            NotifyCollectionChangeScope scope = NotifyCollectionChangeScope.ReadOnly)
+            NotifyCollectionChangeScope scope = NotifyCollectionChangeScope.ReadOnly,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
         {
             int
                 current = 0,
                 countB4 = listBefore.Count,
                 countAfter = listAfter.Count;
 
-            Collections.Preview.NotifyCollectionChangingEventArgs? result = null;
+            NotifyCollectionChangingEventArgs? result = null;
 
             if (countAfter == 0)
             {
                 if (countB4 == 0)
                 {
-                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
+                    result = new NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Reset,
+                        reason: reason,
                         scope: scope);                        
                 }
                 else
@@ -524,9 +527,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         });
                     }
 
-                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
+                    result = new NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Replace,
                         scope: scope,
+                        reason: reason,
                         newItems: ops);
                 }
             }
@@ -571,8 +575,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     var r = replaces[0];
 
-                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
+                    result = new NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Replace,
+                        scope: scope,
+                        reason: reason,
                         newItems: new[] { r.NewItem },
                         oldItems: new[] { r.OldItem },
                         newStartingIndex: r.Index,
@@ -583,8 +589,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     var items = adds.Select(a => a.Item).ToList();
                     var startIndex = adds[0].Index;
 
-                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
+                    result = new NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Add,
+                        scope: scope,
+                        reason: reason,
                         newItems: items,
                         newStartingIndex: startIndex);
                 }
@@ -593,15 +601,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     var items = removes.Select(r => r.Item).ToList();
                     var startIndex = removes[0].Index;
 
-                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
+                    result = new NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Remove,
+                        scope: scope,
+                        reason: reason,
                         oldItems: items,
                         oldStartingIndex: startIndex);
                 }
                 else if (replaces.Count == 0 && adds.Count == 0 && removes.Count == 0)
                 {
-                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
-                        NotifyCollectionChangeAction.Reset);
+                    result = new NotifyCollectionChangingEventArgs(
+                        NotifyCollectionChangeAction.Reset,
+                        scope: scope,
+                        reason: reason);
                 }
                 else
                 {
@@ -639,14 +651,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         });
                     }
 
-                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
+                    result = new NotifyCollectionChangingEventArgs(
                         NotifyCollectionChangeAction.Replace,
+                        scope: scope,
+                        reason: reason,
                         newItems: ops);
                 }
 
+
                 if (result is null)
                 {
-                    throw new NotImplementedException("ToDo");
+                    nameof(Diff).ThrowFramework<NotSupportedException>("Could not detect a valid layout configuration.");
+                }
+                else if(result.Reason != reason)
+                {
+                    nameof(Diff).ThrowFramework<NotSupportedException>("Failed to assign reason.");
                 }
 
                 static bool localTryGetFullPath(object? item, out string path)

@@ -3395,7 +3395,6 @@ Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portabl
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-NetProjection.Replace NewItems=12 OldItems= 0 ModelSettledEventArgs                      
 NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 ;
 
@@ -3528,14 +3527,15 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 builder.Clear();
                 items.Clear(false);
 
-                Assert.IsTrue(items.RouteToFullRecordset);
-                Assert.AreEqual(12, items.Count, "Expecting routing to trach via the internal Read property.");
                 actual = items.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
 [IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
+
+                Assert.IsTrue(items.RouteToFullRecordset);
+                Assert.AreEqual(12, items.Count, "Expecting routing to trach via the internal Read property.");
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -3548,8 +3548,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-NetProjection.Replace NewItems=12 OldItems= 0 ModelSettledEventArgs                      
-NetProjection.Reset   NotifyCollectionChangedEventArgs           "
+NetProjection.Add     NewItems=11 NewIndex= 0 NotifyCollectionChangedEventArgs           "
                 ;
 
                 Assert.AreEqual(
