@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using SQLite;
 using System;
@@ -674,8 +675,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 sb.Append($"OldIndex={e.OldStartingIndex.ToString().PadLeft(2)} ");
             }
 
-            sb.Append(e.GetType().Name.PadRight(43));
+            switch (e)
+            {
+                case ModelSettledEventArgs ems:
+                    if(ems.Reason != Collections.Preview.NotifyCollectionChangeReason.None)
+                    {
 
+                    }
+                    sb.Append(nameof(ModelSettledEventArgs).PadRight(43));
+                    break;
+                default:
+                    sb.Append(e.GetType().Name.PadRight(43));
+                    break;
+            }
             return sb.ToString();
         }
 

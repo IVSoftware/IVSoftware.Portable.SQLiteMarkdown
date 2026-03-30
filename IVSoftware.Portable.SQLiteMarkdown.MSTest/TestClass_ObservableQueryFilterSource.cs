@@ -3395,7 +3395,9 @@ Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portabl
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
+NetProjection.Replace NewItems=12 OldItems= 0 ModelSettledEventArgs                      
+NetProjection.Reset   NotifyCollectionChangedEventArgs           "
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -3546,7 +3548,9 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
+NetProjection.Replace NewItems=12 OldItems= 0 ModelSettledEventArgs                      
+NetProjection.Reset   NotifyCollectionChangedEventArgs           "
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
