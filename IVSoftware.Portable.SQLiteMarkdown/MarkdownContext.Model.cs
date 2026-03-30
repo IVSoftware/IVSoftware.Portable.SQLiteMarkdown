@@ -5,6 +5,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Xml.Linq;
@@ -22,6 +23,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             StdMarkdownAttribute.qmatch,
             StdMarkdownAttribute.pmatch)]
         Default,
+    }
+    public enum ReportFormat
+    {
+        StateReport,
+        //OptionsReport,
+        //SettingsReport,
     }
     partial class MarkdownContext
     {
@@ -280,6 +287,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected EnumHistogrammer<StdMarkdownAttribute> Histo { get; } = new(ZeroCountOption.Remove);
         public string ToString(HistogrammerFormat format) => Histo.ToString(format);
+        public string ToString(ReportFormat format)
+        {
+            var builder = new List<string>();
+            switch (format)
+            {
+                case ReportFormat.StateReport:
+                    builder.Add($"[IME Len: {InputText.Length}");
+                    builder.Add($"IsFiltering: {IsFiltering}]");
+                    if (this is IModeledMarkdownContext mmdc)
+                    {
+                        builder.Add($"[Net: {(mmdc.ObservableNetProjection is IList list ? list.Count : "null")}");
+                    }
+                    builder.Add($"CC: {CanonicalCount}");
+                    builder.Add($"PMC: {PredicateMatchCount}]");
+                    builder.Add($"[{QueryFilterConfig}: {SearchEntryState.ToFullKey()}");
+                    builder.Add($"{FilteringState.ToFullKey()}]");
+                    break;
+                //case ReportFormat.OptionsReport:
+                //    builder.Add($"{ProjectionTopology.ToFullKey()}");
+                //    builder.Add($"{ReplaceItemsEventingOption.ToFullKey()}");
+                //    return string.Join(", ", builder);
+                default:
+                    this.ThrowHard<NotSupportedException>($"The {format.ToFullKey()} case is not supported.");
+                    break;
+            }
+            return string.Join(", ", builder);
+        }
 
         public IReadOnlyDictionary<string, Enum> ActiveFilters
         {

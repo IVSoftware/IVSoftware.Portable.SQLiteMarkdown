@@ -16,6 +16,8 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Ephemeral = SQLite.IgnoreAttribute;
 
+[assembly: InternalsVisibleTo("IVSoftware.Portable.Collections, PublicKey=0024000004800000940000000602000000240000525341310004000001000100695db9bd80b2ad68555b025183f517a808771ddbb0d7c730a5187aa8ef76f2152d6d0449bfda81b600a18686208d7ec04a60d7356ec4d119cce75d8cc9fe5ecc580bfaa5a2bdc96a1143ef494e07cb5dbb778422df151adf79d6ce157f25152fa9c304fe11ad3e193d056456b5f818ee61150bc8745e68890194f8c24353a697")]
+
 [assembly: InternalsVisibleTo("IVSoftware.Portable.SQLiteMarkdown.MSTest, PublicKey=0024000004800000940000000602000000240000525341310004000001000100e1f164d857333dfcf4553776c3113969fc04991b6e0d72a969cd4c2d53341fd200e8c850935fd1e11adf7eac3fd9d50de3198aebbe2b6486c72ca205603fd12dc794bbd315e404e3d1f2e1256895a5e9739006d1f69b45de219c738f0c70cd0d6de5cff93f31e361907c09a653c584a51b9ff5201cde3c7ae681c16caa4579ce")]
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -160,8 +162,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     ///   is modified by UI interaction, the canonical unfiltered items must track.
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
-    [Careful("Must *never* implement INotifyCollectionChanged - this is reserved to detect inheritance..")]
-    [PublishedContract("2.0.0-alpha30", typeof(IMarkdownContext))]
+    [Careful("Must *never* implement INotifyCollectionChanged - this is reserved to detect inheritance.")]
+    [PublishedContract("2.0.0-alpha31", typeof(IMarkdownContext))]
     public interface IMarkdownContext : INotifyPropertyChanged
     {
         #region P A R S E
@@ -420,7 +422,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </c>
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
-    [PublishedContract("2.0.0-alpha30", typeof(IPredicateMarkdownContext))]
+    [PublishedContract("2.0.0-alpha31", typeof(IPredicateMarkdownContext))]
     [Careful("This interface is not allowed to implement INotifyCollectionChanged.")]
     public interface IPredicateMarkdownContext : IMarkdownContext
     {
