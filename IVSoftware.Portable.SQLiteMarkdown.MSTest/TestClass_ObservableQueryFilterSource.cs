@@ -1379,18 +1379,19 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
-                        "Expecting StateReport shows INITIAL QUERY RECORDSET N=12."
+                        "Expecting REPLACE ITEMS semantics:" +
+                        "StateReport shows INITIAL QUERY RECORDSET N=12 and PMC: 0 until filter activity takes place."
                     );
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
-                        "Expecting REPLACE ITEMS semantics."
+                        "."
                     );
 
                     actual = string.Join(Environment.NewLine, itemsSource.Select(_ => _.ToString()));
@@ -1442,7 +1443,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
