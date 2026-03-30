@@ -492,6 +492,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 Assert.AreEqual(FilteringState.Ineligible, mmdc.FilteringState);
                 Assert.IsFalse(mmdc.IsFiltering);
             }
+
             async Task subtestExtQueryTwoResults()
             {
                 void localMDC_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -534,13 +535,56 @@ InputText"
 
                 // SIMULATE - Now perform the external QUERY.
                 mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
+
+                actual = mmdc.Model.ToString();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model mdc=""[MDC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" />
+</model>";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    $"Expecting model shows {COUNT} item."
+                );
+
                 actual = mmdc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 62, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 62, IsFiltering: True], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
-                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "NEW RECORDSET 2 ITEMS");
+                Assert.AreEqual(
+                    expected.NormalizeResult(), 
+                    actual.NormalizeResult(), 
+                    "PMC is 0 and THIS IS CORRECT because Filtering state is armed not active.");
+
+                Assert.IsTrue(
+                    mmdc.RouteToFullRecordset,
+                    "This should 'probably' be following FilteringState.Armed"
+                );
+
+                mmdc.InputText = "Item01";
+                await mmdc;
+
+                actual = mmdc.Model.ToString();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model mdc=""[MDC]"" histo=""[model:2 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" qmatch=""True"" match=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" />
+</model>"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    $"Expecting model shows {COUNT} item."
+                );
 
                 // This will clear the IME.
                 // IsFiltering=TRUE. Don't dip below SearchEntryState.QueryCompleteWithResults.

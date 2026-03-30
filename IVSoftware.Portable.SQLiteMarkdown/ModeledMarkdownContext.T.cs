@@ -236,18 +236,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             get
             {
-                if (InputText.Trim().Length == 0)
+                switch (FilteringState)
                 {
-                    return true;
-                }
-                var matches = Histo[StdMarkdownAttribute.match];
-                if(matches == 0)
-                {
-                    return Equals(Settings[StdMarkdownContextSetting.UseAdaptiveShowAll], true);
-                }
-                else
-                {
-                    return CanonicalCount == PredicateMatchCount;
+                    case FilteringState.Ineligible:
+                    case FilteringState.Armed:
+                        return true;
+                    case FilteringState.Active:
+                        if (0 == Histo[StdMarkdownAttribute.match])
+                        {
+                            // The collection is eligible for filtering (has at least two items).
+                            // All items have been filtered out.
+                            // ∴ The list will be ambiguously empty UNLESS
+                            // -  UseAdaptiveShowAll will display *all* items instead of *no* items.
+                            return Equals(Settings[StdMarkdownContextSetting.UseAdaptiveShowAll], true);
+                        }
+                        else return false;
+                    default:
+                        this.ThrowFramework<NotSupportedException>($"The {FilteringState.ToFullKey()} case is not supported.");
+                        return true;
                 }
             }
         }
