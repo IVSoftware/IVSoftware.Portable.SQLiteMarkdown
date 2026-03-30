@@ -9,6 +9,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 {
     partial class ModeledMarkdownContext<T> : IList
     {
+        #region R O U T I N G
+        public int Count =>
+            FilteringState == FilteringState.Active
+            ? PredicateMatchCount
+            : CanonicalCount;
+
+        IList<T> Read =>
+            FilteringState == FilteringState.Active
+            ? PredicateMatchSubsetProtected
+            : CanonicalSupersetProtected;
+        #endregion R O U T I N G
+
         [Indexer]
         public T this[int index]
         {
@@ -45,12 +57,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-
-        IList<T> Read =>
-            IsFiltering
-            ? PredicateMatchSubsetProtected
-            : CanonicalSupersetProtected;
-
         bool IList.IsFixedSize => false;
         bool IList.IsReadOnly => false;
         int ICollection.Count => Read.Count;
@@ -144,10 +150,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         public override int CanonicalCount => CanonicalSuperset.Count;
         public override int PredicateMatchCount => PredicateMatchSubset.Count;
-        public int Count =>
-            IsFiltering
-            ? PredicateMatchCount
-            : CanonicalCount;
 
         public bool IsReadOnly => ((IList)this).IsReadOnly;
 

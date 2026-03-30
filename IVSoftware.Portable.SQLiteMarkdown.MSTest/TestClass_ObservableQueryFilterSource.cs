@@ -1579,11 +1579,11 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
             NotifyCollectionChangedEventArgs ecc;
             PropertyChangedEventArgs epc;
 
-            // Test for early adopter (beta) migration support.
-            await localTest<SelectableQueryModelOR>();
-
             // Test for current version scheme
             await localTest<SelectableQFModelLTOQO>();
+
+            // Test for early adopter (beta) migration support.
+            await localTest<SelectableQueryModelOR>();
 
             async Task localTest<T>() where T : new()
             {
@@ -1874,6 +1874,9 @@ NetProjectionTopology.Routed, ReplaceItemsEventingOption.StructuralReplaceEvent"
                             "Expecting routed topology."
                         );
 
+                        #region C O M M I T
+                        // This section wraps the RECORDSET REQUEST EVENT as a
+                        // sim then calls the Commit method;
                         #region L o c a l F x
                         void localOnRecordsetRequestA(object? sender, RecordsetRequestEventArgs e)
                         {
@@ -1902,8 +1905,12 @@ SELECT * FROM items WHERE
                                 items.RecordsetRequest -= localOnRecordsetRequestA;
                             }))
                         {
+                            // ☆☆☆☆☆
+                            // C O M M I T
                             ((MarkdownContext)items).Commit();
+                            // ☆☆☆☆☆
                         }
+                        #endregion C O M M I T
 
                         actual =
                             string
@@ -2126,7 +2133,7 @@ SELECT * FROM items WHERE
                         { }
 
                         expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
 
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");

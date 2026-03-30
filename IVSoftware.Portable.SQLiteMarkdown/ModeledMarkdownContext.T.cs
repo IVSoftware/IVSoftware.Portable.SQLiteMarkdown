@@ -1199,6 +1199,11 @@ SELECT * FROM items WHERE
                 else
                 {
                     LoadCanon(e.CanonicalSuperset);
+#if DEBUG
+                    var cssCount = CanonicalSuperset.Count;
+                    var count = this.Count;
+                    var enumerator = this.GetEnumerator();
+#endif
                 }
             }
         }
