@@ -100,6 +100,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
             {
                 if(option.HasFlag(IncrementFalseOption.Remove))
                 {
+                    Debug.Fail(
+                        $"ADVISORY First Time - " +
+                        $"This 'false' value shouldn't be causing any reentrant XObject.Change events but make sure.");
                     context.Remove();
                 }
                 string msg = @"Explicit ""False"" is not allowed because prior state is unknown making the transition indeterminate.";
