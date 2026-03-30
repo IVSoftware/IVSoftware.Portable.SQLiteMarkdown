@@ -428,8 +428,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
                 actual = mmdc.StateReport();
                 actual.ToClipboardExpected();
-                { } // <- FIRST TIME ONLY: Adjust the message.
-                actual.ToClipboardAssert("Expecting result to match.");
                 { }
                 expected = @" 
 [IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteNoResults, FilteringState.Ineligible]";
@@ -445,6 +443,39 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             {
                 COUNT = 1;
                 mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
+
+                actual = mmdc.Model.ToString();
+                actual.ToClipboardExpected();
+                { } // <- FIRST TIME ONLY: Adjust the message.
+                actual.ToClipboardAssert($"Expecting model shows {COUNT} item.");
+                { }
+                expected = @" 
+<model mdc=""[MDC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
+</model>";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    $"Expecting model shows {COUNT} item."
+                );
+
+
+                actual = mmdc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 1, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
+                ;
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 1, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting result to match."
+                );
+
                 Assert.AreEqual(COUNT, mmdc.CanonicalCount);
                 Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mmdc.SearchEntryState);
                 Assert.AreEqual(FilteringState.Ineligible, mmdc.FilteringState);

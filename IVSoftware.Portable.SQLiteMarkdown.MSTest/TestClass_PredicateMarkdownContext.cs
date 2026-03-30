@@ -148,7 +148,7 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MDC]"" histo=""[model:10 match:0 qmatch:0 pmatch:0]"" filters=""[ActiveFilters]"">
+<model mdc=""[MDC]"" histo=""[model:10 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" />
@@ -179,7 +179,7 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MDC]"" histo=""[Histo]"" filters=""[ActiveFilters]"" />"
+<model mdc=""[MDC]"" histo=""[Histo]"" filters=""[No Active Filters]"" />"
             ;
 
             Assert.AreEqual(
@@ -194,7 +194,7 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MDC]"" histo=""[model:10 match:0 qmatch:0 pmatch:0]"" filters=""[ActiveFilters]"">
+<model mdc=""[MDC]"" histo=""[model:10 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" />
@@ -364,7 +364,7 @@ Other.Replace NewItems= 3 OldItems=37 ModelSettledEventArgs                     
         actual.ToClipboardExpected();
         { }
         expected = @" 
-<model mdc=""[MDC]"" histo=""[model:37 match:3 qmatch:3 pmatch:0]"" filters=""[ActiveFilters]"">
+<model mdc=""[MDC]"" histo=""[model:37 match:3 qmatch:3 pmatch:0]"" filters=""[No Active Filters]"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[TemporalAffinityQFModel]"" preview=""Brown Dog "" order=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[TemporalAffinityQFModel]"" preview=""Green Appl"" order=""1"" qmatch=""True"" match=""True"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[TemporalAffinityQFModel]"" preview=""Yellow Ban"" order=""2"" />

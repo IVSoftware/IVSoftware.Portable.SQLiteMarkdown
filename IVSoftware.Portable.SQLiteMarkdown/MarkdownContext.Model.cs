@@ -35,7 +35,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         XElement(nameof(StdMarkdownElement.model))
                         .WithBoundAttributeValue(this, StdMarkdownAttribute.mdc, "[MDC]")
                         .WithBoundAttributeValue(Histo, StdMarkdownAttribute.histo, "[Histo]")
-                        .WithBoundAttributeValue(ActiveFilters, StdMarkdownAttribute.filters, "[ActiveFilters]");
+                        .WithBoundAttributeValue(ActiveFilters, StdMarkdownAttribute.filters, "[No Active Filters]");
 
                     _model.Changing += (sender, e) =>
                     {

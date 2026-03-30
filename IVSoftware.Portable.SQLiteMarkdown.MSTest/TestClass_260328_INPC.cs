@@ -72,7 +72,7 @@ public class TestClass_260328_INPC
         // FSOL: This pattern [model:1 match:0 qmatch:0 pmatch:0] is 'one' indication to show all items.
         // ☆☆☆☆☆
         expected = @" 
-<model mdc=""[MDC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0]"" filters=""[ActiveFilters]"">
+<model mdc=""[MDC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
 </model>"
         ;

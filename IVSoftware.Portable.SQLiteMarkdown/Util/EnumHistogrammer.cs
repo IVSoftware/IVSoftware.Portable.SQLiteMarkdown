@@ -129,7 +129,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         /// </remarks>
         public int Decrement(T key)
         {
-
             var decremented = this[key] - 1;
 
             if (decremented < 0)
