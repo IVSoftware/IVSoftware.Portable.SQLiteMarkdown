@@ -338,6 +338,12 @@ SELECT * FROM items WHERE
                         // projection; instead their paths are resolved back to the original model
                         // objects bound in the AST.
                         matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
+
+                        if(matches.Count == 0 && Equals(Settings[StdMarkdownContextSetting.AllowPluralize], true))
+                        {
+                            sql = sql.ToFuzzyQuery();
+                            matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
+                        }
                         #endregion F I L T E R    Q U E R Y
 
                         matchPaths = localGetPaths();
@@ -425,6 +431,45 @@ SELECT * FROM items WHERE
 
 
         #region P R O J E C T I O N
+
+        protected override void OnInputTextChanged()
+        {
+            base.OnInputTextChanged();
+            switch (FilteringState)
+            {
+                case FilteringState.Armed:
+                    // Basically, this is when a backspace in Filter mode results in an
+                    // empty entry text field. We want to stay in filtering mode though,
+                    // but the UI visuals might change e.g. icon glyph and/or color.
+                    if (FilteringStatePrev == FilteringState.Active)
+                    {
+                        if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
+                        {
+                            var ePost = ((IList)PredicateMatchSubset).Diff((IList)CanonicalSuperset);
+
+                            OnModelChanged(
+                                new ModelSettledEventArgs(
+                                    reason: NotifyCollectionChangeReason.RemoveFilter,
+                                    action: NotifyCollectionChangedAction.Replace,
+                                    oldItems: (IList)PredicateMatchSubset,
+                                    newItems: (IList)CanonicalSuperset
+                                )
+                            );
+                        }
+                        if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
+                        {
+                            OnModelChanged(
+                                new ModelSettledEventArgs
+                                (
+                                    reason: NotifyCollectionChangeReason.RemoveFilter,
+                                    action: NotifyCollectionChangedAction.Reset
+                                )
+                            );
+                        }
+                    }
+                    break;
+            }
+        }
 
         /// <summary>
         /// Links or reassigns a non-canonical (presumably UI) items source to the markdown context.

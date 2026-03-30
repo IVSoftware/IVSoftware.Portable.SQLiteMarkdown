@@ -363,42 +363,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public string SQL => Query;
 
-        protected override void OnInputTextChanged()
-        {
-            base.OnInputTextChanged();
-            switch (FilteringState)
-            {
-                case FilteringState.Armed:
-                    // Basically, this is when a backspace in Filter mode results in an
-                    // empty entry text field. We want to stay in filtering mode though,
-                    // but the UI visuals might change e.g. icon glyph and/or color.
-                    if (FilteringStatePrev == FilteringState.Active)
-                    {
-                        if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
-                        {
-                            OnCollectionChanged(
-                                new ModelSettledEventArgs(
-                                    reason: NotifyCollectionChangeReason.RemoveFilter,
-                                    action: NotifyCollectionChangedAction.Replace,
-                                    oldItems: (IList)PredicateMatchSubset,
-                                    newItems: (IList)CanonicalSuperset
-                                )
-                            );
-                        }
-                        if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
-                        {
-                            OnCollectionChanged(
-                                new ModelSettledEventArgs
-                                (
-                                    reason: NotifyCollectionChangeReason.RemoveFilter,
-                                    action: NotifyCollectionChangedAction.Reset
-                                )
-                            );
-                        }
-                    }
-                    break;
-            }
-        }
         public event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
         private INotifyPropertyChanged[] _unsubscribeItems = new INotifyPropertyChanged[] { };
 

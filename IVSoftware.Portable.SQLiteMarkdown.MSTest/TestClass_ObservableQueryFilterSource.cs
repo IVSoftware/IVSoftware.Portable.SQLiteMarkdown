@@ -3388,7 +3388,20 @@ Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portabl
             {
                 Assert.AreNotEqual(0, items.CanonicalCount, "Expecting carry-over from previous subtest.");
                 // No surprises.
+                builder.Clear();
                 items.Clear();
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting RESET event."
+                );
 
                 actual = items.StateReport();
                 actual.ToClipboardExpected();
@@ -3437,6 +3450,108 @@ Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portabl
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Expecting CC: 12 due to fuzzy query enabled by setting."
+                );
+
+                items.InputText += " ";
+                await items;
+
+                actual = items.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 8, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting -> FilteringState.ACTIVE after APPEND SPACE CHARACTER."
+                );
+
+                items.InputText += "c";
+                await items;
+
+                actual = items.Model.ToString();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model mdc=""[MDC]"" histo=""[model:12 match:9 qmatch:9 pmatch:0]"" filters=""[No Active Filters]"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" qmatch=""True"" match=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" qmatch=""True"" match=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" qmatch=""True"" match=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" qmatch=""True"" match=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" qmatch=""True"" match=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" qmatch=""True"" match=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" qmatch=""True"" match=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" qmatch=""True"" match=""True"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" qmatch=""True"" match=""True"" />
+</model>"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting that APPLY FILTER will have identified matches."
+                );
+
+                actual = items.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 9, IsFiltering: True], [Net: null, CC: 12, PMC: 9], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting NINE matches. This only works if using FUZZY QUERY because of the 'animals' term -> 'animal'."
+                );
+
+                // Input text = animals ca
+                items.InputText += "a";
+                await items;
+
+                actual = items.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 9, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+                ;
+
+                // And now, a BUGIRL.
+                // This is supposed to show all the items once again.
+                builder.Clear();
+                items.Clear(false);
+
+                Assert.IsTrue(items.RouteToFullRecordset);
+                Assert.AreEqual(12, items.Count, "Expecting routing to trach via the internal Read property.");
+                actual = items.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting full list shown after IME CLEAR but still PMC: 1 because there's no new apply filter."
+                );
+
+                // The BUGIRL is that this reset event was missing.
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting RESET event."
                 );
             }
             #endregion S U B T E S T S
