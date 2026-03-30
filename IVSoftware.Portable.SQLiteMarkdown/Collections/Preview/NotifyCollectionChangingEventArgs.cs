@@ -99,123 +99,116 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 switch (Action)
                 {
                     case NotifyCollectionChangeAction.Add:
+                        if (NewStartingIndex < -1 || NewItems.Count == 0)
                         {
-                            if (NewStartingIndex < -1 || NewItems.Count == 0)
-                            {
-                                makeReset = true;
-                                ieException = true;
-                            }
-                            else
-                            {
-                                bool hasIndex = NewStartingIndex >= 0;
+                            makeReset = true;
+                            ieException = true;
+                        }
+                        else
+                        {
+                            bool hasIndex = NewStartingIndex >= 0;
 
-                                eBcl = NewItems.Count == 1
-                                    ? hasIndex
-                                        ? new NotifyCollectionChangedEventArgs(
-                                            NotifyCollectionChangedAction.Add,
-                                            NewItems[0],
-                                            NewStartingIndex)
-                                        : new NotifyCollectionChangedEventArgs(
-                                            NotifyCollectionChangedAction.Add,
-                                            NewItems[0])
+                            eBcl = NewItems.Count == 1
+                                ? hasIndex
+                                    ? new NotifyCollectionChangedEventArgs(
+                                        NotifyCollectionChangedAction.Add,
+                                        NewItems[0],
+                                        NewStartingIndex)
                                     : new NotifyCollectionChangedEventArgs(
                                         NotifyCollectionChangedAction.Add,
-                                        NewItems,
-                                        hasIndex ? NewStartingIndex : -1);
-                            }
-                            break;
+                                        NewItems[0])
+                                : new NotifyCollectionChangedEventArgs(
+                                    NotifyCollectionChangedAction.Add,
+                                    NewItems,
+                                    hasIndex ? NewStartingIndex : -1);
                         }
+                        break;
 
                     case NotifyCollectionChangeAction.Remove:
+                        if (OldStartingIndex < -1 || OldItems.Count == 0)
                         {
-                            if (OldStartingIndex < -1 || OldItems.Count == 0)
-                            {
-                                makeReset = true;
-                                ieException = true;
-                            }
-                            else
-                            {
-                                bool hasIndex = OldStartingIndex >= 0;
-
-                                eBcl = OldItems.Count == 1
-                                    ? hasIndex
-                                        ? new NotifyCollectionChangedEventArgs(
-                                            NotifyCollectionChangedAction.Remove,
-                                            OldItems[0],
-                                            OldStartingIndex)
-                                        : new NotifyCollectionChangedEventArgs(
-                                            NotifyCollectionChangedAction.Remove,
-                                            OldItems[0])
-                                    : new NotifyCollectionChangedEventArgs(
-                                        NotifyCollectionChangedAction.Remove,
-                                        OldItems,
-                                        hasIndex ? OldStartingIndex : -1);
-                            }
-                            break;
+                            makeReset = true;
+                            ieException = true;
                         }
-
-                    case NotifyCollectionChangeAction.Replace:
+                        else
                         {
-                            if (NewItems.Count != OldItems.Count)
-                            {
-                                makeReset = true;
-                                ieException = true;
-                            }
-                            else
-                            {
-                                bool hasIndex = NewStartingIndex >= 0 && OldStartingIndex >= 0;
+                            bool hasIndex = OldStartingIndex >= 0;
 
-                                eBcl = NewItems.Count == 1
-                                    ? hasIndex
-                                        ? new NotifyCollectionChangedEventArgs(
-                                            NotifyCollectionChangedAction.Replace,
-                                            NewItems[0],
-                                            OldItems[0],
-                                            NewStartingIndex)
-                                        : new NotifyCollectionChangedEventArgs(
-                                            NotifyCollectionChangedAction.Replace,
-                                            NewItems[0],
-                                            OldItems[0])
-                                    : hasIndex
-                                        ? new NotifyCollectionChangedEventArgs(
-                                            NotifyCollectionChangedAction.Replace,
-                                            NewItems,
-                                            OldItems,
-                                            NewStartingIndex)
-                                        : new NotifyCollectionChangedEventArgs(
-                                            NotifyCollectionChangedAction.Replace,
-                                            NewItems,
-                                            OldItems);
-                            }
-                            break;
-                        }
-
-                    case NotifyCollectionChangeAction.Move:
-                        {
-                            if (NewItems.Count != OldItems.Count ||
-                                NewStartingIndex < 0 ||
-                                OldStartingIndex < 0 ||
-                                NewItems.Count == 0)
-                            {
-                                makeReset = true;
-                                ieException = true;
-                            }
-                            else
-                            {
-                                eBcl = NewItems.Count == 1
+                            eBcl = OldItems.Count == 1
+                                ? hasIndex
                                     ? new NotifyCollectionChangedEventArgs(
-                                        NotifyCollectionChangedAction.Move,
-                                        NewItems[0],
-                                        NewStartingIndex,
+                                        NotifyCollectionChangedAction.Remove,
+                                        OldItems[0],
                                         OldStartingIndex)
                                     : new NotifyCollectionChangedEventArgs(
-                                        NotifyCollectionChangedAction.Move,
-                                        NewItems,
-                                        NewStartingIndex,
-                                        OldStartingIndex);
-                            }
-                            break;
+                                        NotifyCollectionChangedAction.Remove,
+                                        OldItems[0])
+                                : new NotifyCollectionChangedEventArgs(
+                                    NotifyCollectionChangedAction.Remove,
+                                    OldItems,
+                                    hasIndex ? OldStartingIndex : -1);
                         }
+                        break;
+
+                    case NotifyCollectionChangeAction.Replace:
+                        if (Reason == NotifyCollectionChangeReason.None 
+                            && NewItems.Count != OldItems.Count)
+                        {
+                            makeReset = true;
+                            ieException = true;
+                        }
+                        else
+                        {
+                            bool hasIndex = NewStartingIndex >= 0 && OldStartingIndex >= 0;
+
+                            eBcl = NewItems.Count == 1
+                                ? hasIndex
+                                    ? new NotifyCollectionChangedEventArgs(
+                                        NotifyCollectionChangedAction.Replace,
+                                        NewItems[0],
+                                        OldItems[0],
+                                        NewStartingIndex)
+                                    : new NotifyCollectionChangedEventArgs(
+                                        NotifyCollectionChangedAction.Replace,
+                                        NewItems[0],
+                                        OldItems[0])
+                                : hasIndex
+                                    ? new NotifyCollectionChangedEventArgs(
+                                        NotifyCollectionChangedAction.Replace,
+                                        NewItems,
+                                        OldItems,
+                                        NewStartingIndex)
+                                    : new NotifyCollectionChangedEventArgs(
+                                        NotifyCollectionChangedAction.Replace,
+                                        NewItems,
+                                        OldItems);
+                        }
+                        break;
+
+                    case NotifyCollectionChangeAction.Move:
+                        if (NewItems.Count != OldItems.Count ||
+                            NewStartingIndex < 0 ||
+                            OldStartingIndex < 0 ||
+                            NewItems.Count == 0)
+                        {
+                            makeReset = true;
+                            ieException = true;
+                        }
+                        else
+                        {
+                            eBcl = NewItems.Count == 1
+                                ? new NotifyCollectionChangedEventArgs(
+                                    NotifyCollectionChangedAction.Move,
+                                    NewItems[0],
+                                    NewStartingIndex,
+                                    OldStartingIndex)
+                                : new NotifyCollectionChangedEventArgs(
+                                    NotifyCollectionChangedAction.Move,
+                                    NewItems,
+                                    NewStartingIndex,
+                                    OldStartingIndex);
+                        }
+                        break;
 
                     // Reset semantics:
                     // - Payload (NewItems/OldItems) is intentionally ignored during BCL emission.

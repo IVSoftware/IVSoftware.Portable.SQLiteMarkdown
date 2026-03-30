@@ -66,7 +66,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         // Avoids exposing the MDC itself on the static Throw event.
         protected Throw ThrowHard<T>(string messageOrId) => nameof(MarkdownContext).ThrowHard<T>(messageOrId);
-        protected Throw ThrowFramework<T>(string messageOrId) => nameof(MarkdownContext).ThrowFramework<T>(messageOrId);
+        protected Throw ThrowFramework<T>(string messageOrId)
+        {
+            Debug.Fail($@"ADVISORY - @throw polarity is wrong in Common 1.0.1-beta.");
+            return nameof(MarkdownContext).ThrowFramework<T>(messageOrId);
+        }
 
 #if DEBUG
         const bool SQLITE_STRICT = true;
@@ -1583,7 +1587,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         bool _isEphemeralSort = false;
-
 
         /// <summary>
         /// Catch and release heuristic for canonical ObservableNetProjection entering and leaving IsFiltered state.

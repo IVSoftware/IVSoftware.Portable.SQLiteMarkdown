@@ -33,7 +33,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             var before = (IList)_listB4;
             var after = _listFTR;
 
-            var digest = before.Diff(after);
+            var digest = before.Diff(after, reason: NotifyCollectionChangeReason.Batch);
 
             var snapshot = e.Keys.ToDictionary(
                 key => key,

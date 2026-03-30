@@ -11,8 +11,10 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml.Linq;
+using static System.Collections.Specialized.BitVector32;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -52,7 +54,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     oldStartingIndex = e.OldStartingIndex;
                     return true;
 
-                case Collections.Preview.NotifyCollectionChangingEventArgs e:
+                case NotifyCollectionChangingEventArgs e:
                     action = e.Action;
                     reason = e.Reason;
                     newItems = e.NewItems;
@@ -465,207 +467,154 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
-        /// Heuristically derives a batch <see cref="Collections.Preview.NotifyCollectionChangingEventArgs"/> describing
-        /// the transition from <paramref name="listBefore"/> to <paramref name="listAfter"/>.
+        /// Produces a reconciliation playlist for listBefore -> listAfter.
         /// </summary>
-        /// <remarks>
-        /// This method classifies the change into one of the following shapes:
-        /// - <b>Reset</b>: No detectable delta.
-        /// - <b>Add</b>: One or more items added, no removals.
-        /// - <b>Remove</b>: One or more items removed, no additions.
-        /// - <b>Replace (single)</b>: Exactly one item replaced with index fidelity.
-        /// - <b>Replace (batch)</b>: Mixed add/remove operations encoded as a sequence of
-        ///   micro-operations carried in <see cref="Collections.Preview.NotifyCollectionChangingEventArgs.NewItems"/>.
-        ///
-        /// For batch replace:
-        /// - Each element is an anonymous payload describing an atomic operation
-        ///   (Add, Remove, or Replace) with associated index information.
-        /// - Positional intent is preserved where possible via <c>OldIndex</c> and <c>NewIndex</c>.
-        ///
-        /// This is a heuristic diff:
-        /// - Uses set-based comparison (<c>Except</c>) and therefore does not account for duplicates
-        ///   or stable ordering beyond index lookup.
-        /// - Complex rearrangements may degrade to a batch replace envelope.
-        /// - Consumers are expected to interpret batch payloads or fall back to reset semantics,
-        ///   optionally using an externally supplied final state.
-        ///
-        /// All emitted events carry <see cref="NotifyCollectionChangeReason.Batch"/>.
-        /// </remarks>
-        internal static Collections.Preview.NotifyCollectionChangingEventArgs Diff(
+        internal static NotifyCollectionChangingEventArgs Diff(
             this IList listBefore,
             IList listAfter,
-            NotifyCollectionChangeScope scope = NotifyCollectionChangeScope.ReadOnly)
+            NotifyCollectionChangeScope scope = NotifyCollectionChangeScope.ReadOnly,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
         {
-            int
-                current = 0,
-                countB4 = listBefore.Count,
-                countAfter = listAfter.Count;
+            int current = 0;
+            EnumHistogrammer<NotifyCollectionChangeAction> histo = new(ZeroCountOption.IncrementOnly);
+            List<NotifyCollectionChangingEventArgs> changes = new();
 
-            Collections.Preview.NotifyCollectionChangingEventArgs? result = null;
+            object? replace, replaceWith;
+            int? newStartingIndex = null, oldStartingIndex = null;
 
-            if (countAfter == 0)
+            while(current < listBefore.Count && current < listAfter.Count )
             {
-                if (countB4 == 0)
-                {
-                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
-                        NotifyCollectionChangeAction.Reset,
-                        scope: scope);                        
-                }
-                else
-                {
-                    var ops = new List<object>();
-                    for (int i = 0; i < countB4; i++)
-                    {
-                        ops.Add(new
-                        {
-                            Action = NotifyCollectionChangeAction.Remove,
-                            Item = listBefore[i],
-                            OldIndex = i
-                        });
-                    }
+                newStartingIndex ??= current;
+                oldStartingIndex ??= current;
 
-                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
-                        NotifyCollectionChangeAction.Replace,
+                replace = listBefore[current];
+                replaceWith = listAfter[current];
+
+                changes.Add(new(
+                    action: NotifyCollectionChangeAction.Replace,
+                    newItems: new[] { listAfter[current] },
+                    newStartingIndex: current,
+                    oldItems: new[] { listBefore[current] },
+                    oldStartingIndex: current));
+                histo.Increment(NotifyCollectionChangeAction.Replace);
+                current++;
+            }
+
+            // Block of contiguous adds.
+            while (current < listAfter.Count)
+            {
+                newStartingIndex ??= current;
+                changes.Add(new (
+                    action: NotifyCollectionChangeAction.Add,
+                    newItems: new []{listAfter[current] },
+                    newStartingIndex: current));
+                histo.Increment(NotifyCollectionChangeAction.Add);
+                current++;
+            }
+
+            // Block of contiguous removes.
+            while(current < listBefore.Count)
+            {
+                oldStartingIndex ??= current;
+                changes.Add(new(
+                    action: NotifyCollectionChangeAction.Remove,
+                    oldItems: new[] { listBefore[current] },
+                    oldStartingIndex: current));
+                histo.Increment(NotifyCollectionChangeAction.Remove);
+                current++;
+            }
+#if DEBUG
+            var cMe = histo.ToString(HistogrammerFormat.All);
+            { }
+#endif
+            NotifyCollectionChangingEventArgs result;
+            switch (histo.Count())
+            {
+                case 0:
+                    result = new NotifyCollectionChangingEventArgs(
+                        action: NotifyCollectionChangeAction.Reset,
                         scope: scope,
-                        newItems: ops);
-                }
+                        reason: reason);
+                    break;
+                case 1:
+                    switch (histo.First())
+                    {
+                        case NotifyCollectionChangeAction.Add:
+                            result = new NotifyCollectionChangingEventArgs(
+                                action: NotifyCollectionChangeAction.Add,
+                                reason: reason,
+                                scope: scope,
+                                newStartingIndex: (int)newStartingIndex!,
+                                newItems: changes
+                                    .Where(_ => _.NewItems is not null)
+                                    .SelectMany(_ => _.NewItems!.Cast<object>())
+                                    .ToList());
+                            break;
+                        case NotifyCollectionChangeAction.Remove:
+                            result = new NotifyCollectionChangingEventArgs(
+                                action: NotifyCollectionChangeAction.Remove,
+                                reason: reason,
+                                scope: scope,
+                                oldStartingIndex: (int)oldStartingIndex!,
+                                oldItems: changes
+                                    .Where(_ => _.OldItems is not null)
+                                    .SelectMany(_ => _.OldItems!.Cast<object>())
+                                    .ToList());
+                            break;
+                        case NotifyCollectionChangeAction.Replace:
+                            result = new NotifyCollectionChangingEventArgs(
+                                action: NotifyCollectionChangeAction.Replace,
+                                reason: reason,
+                                scope: scope,
+                                newStartingIndex: (int)newStartingIndex!,
+                                oldStartingIndex: (int)oldStartingIndex!,
+                                newItems: changes
+                                    .Where(_ => _.NewItems is not null)
+                                    .SelectMany(_ => _.NewItems!.Cast<object>())
+                                    .ToList(),
+                                oldItems: changes
+                                    .Where(_ => _.OldItems is not null)
+                                    .SelectMany(_ => _.OldItems!.Cast<object>())
+                                    .ToList());
+                            break;
+                        default:
+                            result = new NotifyCollectionChangingEventArgs(
+                                action: NotifyCollectionChangeAction.Reset,
+                                scope: scope,
+                                reason: reason | NotifyCollectionChangeReason.Exception);
+                            break;
+                    }
+                    break;
+                default:
+                    // - Produces a non-bcl compatible event with custom Batch
+                    //   semantics that can be played back against the old
+                    //   list to produce the new.
+                    // - The confident expectation is that most clients will
+                    //   listen to Reason and opt for Clear + Add instead.
+                    result = new NotifyCollectionChangingEventArgs(
+                        action: NotifyCollectionChangeAction.Add,
+                        reason: reason | NotifyCollectionChangeReason.Batch,
+                        scope: scope,
+                        newStartingIndex: (int)newStartingIndex!,
+                        newItems: changes.ToList());
+                    break;
             }
-            else
+
+            // Validate that incoming reason intent is
+            // being accurately portrayed.
+            if(reason == NotifyCollectionChangeReason.Batch)
             {
-                string path1, path2;
-
-                var replaces = new List<(object OldItem, object NewItem, int Index)>();
-                var adds = new List<(object Item, int Index)>();
-                var removes = new List<(object Item, int Index)>();
-
-                while (current < countB4 && current < countAfter)
+                // Do not combine these clauses please.
+                if (result.Reason != NotifyCollectionChangeReason.Batch)
                 {
-                    var itemB4 = listBefore[current];
-                    var itemAfter = listAfter[current];
-
-                    if (localTryGetFullPath(itemB4, out path1) &&
-                        localTryGetFullPath(itemAfter, out path2))
-                    {
-                        if (!string.Equals(path1, path2, StringComparison.Ordinal))
-                        {
-                            replaces.Add((itemB4, itemAfter, current));
-                        }
-                    }
-
-                    current++;
-                }
-
-                while (current < countB4)
-                {
-                    removes.Add((listBefore[current], current));
-                    current++;
-                }
-
-                while (current < countAfter)
-                {
-                    adds.Add((listAfter[current], current));
-                    current++;
-                }
-
-                if (replaces.Count == 1 && adds.Count == 0 && removes.Count == 0)
-                {
-                    var r = replaces[0];
-
-                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
-                        NotifyCollectionChangeAction.Replace,
-                        newItems: new[] { r.NewItem },
-                        oldItems: new[] { r.OldItem },
-                        newStartingIndex: r.Index,
-                        oldStartingIndex: r.Index);
-                }
-                else if (replaces.Count == 0 && adds.Count > 0 && removes.Count == 0)
-                {
-                    var items = adds.Select(a => a.Item).ToList();
-                    var startIndex = adds[0].Index;
-
-                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
-                        NotifyCollectionChangeAction.Add,
-                        newItems: items,
-                        newStartingIndex: startIndex);
-                }
-                else if (replaces.Count == 0 && removes.Count > 0 && adds.Count == 0)
-                {
-                    var items = removes.Select(r => r.Item).ToList();
-                    var startIndex = removes[0].Index;
-
-                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
-                        NotifyCollectionChangeAction.Remove,
-                        oldItems: items,
-                        oldStartingIndex: startIndex);
-                }
-                else if (replaces.Count == 0 && adds.Count == 0 && removes.Count == 0)
-                {
-                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
-                        NotifyCollectionChangeAction.Reset);
-                }
-                else
-                {
-                    var ops = new List<object>();
-
-                    foreach (var r in replaces)
-                    {
-                        ops.Add(new
-                        {
-                            Action = NotifyCollectionChangeAction.Replace,
-                            OldItem = r.OldItem,
-                            NewItem = r.NewItem,
-                            OldIndex = r.Index,
-                            NewIndex = r.Index
-                        });
-                    }
-
-                    foreach (var r in removes)
-                    {
-                        ops.Add(new
-                        {
-                            Action = NotifyCollectionChangeAction.Remove,
-                            Item = r.Item,
-                            OldIndex = r.Index
-                        });
-                    }
-
-                    foreach (var a in adds)
-                    {
-                        ops.Add(new
-                        {
-                            Action = NotifyCollectionChangeAction.Add,
-                            Item = a.Item,
-                            NewIndex = a.Index
-                        });
-                    }
-
-                    result = new Collections.Preview.NotifyCollectionChangingEventArgs(
-                        NotifyCollectionChangeAction.Replace,
-                        newItems: ops);
-                }
-
-                if (result is null)
-                {
-                    throw new NotImplementedException("ToDo");
-                }
-
-                static bool localTryGetFullPath(object? item, out string path)
-                {
-                    if (item is not null && item.GetFullPath() is { } aspirant && !string.IsNullOrWhiteSpace(aspirant))
-                    {
-                        path = aspirant;
-                        return true;
-                    }
-                    else
-                    {
-                        item.ThrowHard<InvalidOperationException>("GetFullPath() failed for item.");
-                        path = null!;
-                        return false;
-                    }
+                    nameof(Diff).ThrowFramework<NotSupportedException>("Failed to assign reason.");
                 }
             }
-
-            return result!;
+            else if ((result.Reason & ~NotifyCollectionChangeReason.Batch) != reason)
+            {
+                nameof(Diff).ThrowFramework<NotSupportedException>("Failed to assign reason.");
+            }
+            return result;
         }
     }
 }

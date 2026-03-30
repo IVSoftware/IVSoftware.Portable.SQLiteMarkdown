@@ -338,6 +338,12 @@ SELECT * FROM items WHERE
                         // projection; instead their paths are resolved back to the original model
                         // objects bound in the AST.
                         matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
+
+                        if(matches.Count == 0 && Equals(Settings[StdMarkdownContextSetting.AllowPluralize], true))
+                        {
+                            sql = sql.ToFuzzyQuery();
+                            matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
+                        }
                         #endregion F I L T E R    Q U E R Y
 
                         matchPaths = localGetPaths();
@@ -425,6 +431,49 @@ SELECT * FROM items WHERE
 
 
         #region P R O J E C T I O N
+
+        protected override void OnInputTextChanged()
+        {
+            switch (Authority)
+            {
+                case CollectionChangeAuthority.Reset:
+                    /* G T K - N O O P */
+                    return;
+                default:
+                    break;
+            }
+            base.OnInputTextChanged();
+            switch (FilteringState)
+            {
+                case FilteringState.Armed:
+                    // One of:
+                    // - IME [X] clear
+                    // - A backspace in Filter mode results in an empty entry text field.
+                    // Stay in filtering mode but the UI visuals might change e.g. icon glyph and/or color.
+                    if (FilteringStatePrev == FilteringState.Active)
+                    {
+                        if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
+                        {
+                            var ePost = 
+                                ((IList)PredicateMatchSubset)
+                                .Diff((IList)CanonicalSuperset,
+                                reason: NotifyCollectionChangeReason.RemoveFilter);
+                            OnModelChanged(ePost);
+                        }
+                        if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
+                        {
+                            OnModelChanged(
+                                new ModelSettledEventArgs
+                                (
+                                    reason: NotifyCollectionChangeReason.RemoveFilter,
+                                    action: NotifyCollectionChangedAction.Reset
+                                )
+                            );
+                        }
+                    }
+                    break;
+            }
+        }
 
         /// <summary>
         /// Links or reassigns a non-canonical (presumably UI) items source to the markdown context.
@@ -698,8 +747,11 @@ SELECT * FROM items WHERE
                 case NetProjectionTopology.AllowDirectChanges:
                     localApplyDirectChanges();
                     break;
+                case NetProjectionTopology.Routed:
+                    ModelChanged?.Invoke(this, eBCL);
+                    break;
                 default:
-                    this.ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
+                    ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
                     break;
             }
             void localApplyDirectChanges()
@@ -948,29 +1000,35 @@ SELECT * FROM items WHERE
         /// </summary>
         protected override void OnClear(bool all)
         {
-            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Reset))
+            if (all)
             {
-                switch (Authority)
+                using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Reset))
                 {
-                    default:
-                    case CollectionChangeAuthority.Reset:
-                        base.OnClear(all);
-                        if (all)
-                        {
+                    switch (Authority)
+                    {
+                        default:
+                        case CollectionChangeAuthority.Reset:
+                            // Call the base *with* reset authority.
+                            base.OnClear(all);
                             CanonicalSupersetProtected.Clear();
-                        }
-                        break;
-                    case CollectionChangeAuthority.Commit:
-                        // Moved this management to LoadCanon because
-                        // we were just suppressing the events anyway.
-                        break;
-                }
+                            break;
+                        case CollectionChangeAuthority.Commit:
+                            // Moved this management to LoadCanon because
+                            // we were just suppressing the events anyway.
+                            break;
+                    }
 #if DEBUG
-                if (all && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
-                {
-                    Debug.Assert(FilterQueryDatabase.Table<T>().Count() == 0);
-                }
+                    if (all && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                    {
+                        Debug.Assert(FilterQueryDatabase.Table<T>().Count() == 0);
+                    }
 #endif
+                }
+            }
+            else
+            {
+                // Call the base *without* reset authority.
+                base.OnClear(all);
             }
         }
 
@@ -1183,28 +1241,45 @@ SELECT * FROM items WHERE
             base.OnCommit(e);
             if (!e.Handled)
             {
-                if (e.CanonicalSuperset is null)
-                {
-                    if (MemoryDatabase is not null)
-                    {
-                        var canon = MemoryDatabase.Query(ContractType.GetSQLiteMapping(), e.SQL);
-                        LoadCanon(canon);
+                IList? canon;
+                localQuery(false);
 
-#if DEBUG
-                        var loopbackCount = FilterQueryDatabase.Table<T>().Count();
-                        Debug.Assert(canon.Count == loopbackCount);
-#endif
+                if (canon is { Count: 0 })
+                {
+                    if (Equals(Settings[StdMarkdownContextSetting.AllowPluralize], true))
+                    {
+                        localQuery(true);
+                    }
+                    else
+                    {   /* G T K - N O O P */
                     }
                 }
-                else
-                {
-                    LoadCanon(e.CanonicalSuperset);
+
+                // Unconditional: Might be null, None or Some.
+                LoadCanon(canon);
+
 #if DEBUG
-                    var cssCount = CanonicalSuperset.Count;
-                    var count = this.Count;
-                    var enumerator = this.GetEnumerator();
+                int loopbackCount = FilterQueryDatabase.Table<T>().Count();
+                Debug.Assert(canon?.Count == loopbackCount);
+
+                var count = this.Count;
+                var enumerator = this.GetEnumerator();
+                var cssCount = CanonicalSuperset.Count;
 #endif
+                #region L o c a l F x
+                void localQuery(bool fuzzy)
+                {
+                    var sql = fuzzy ? e.SQL.ToFuzzyQuery() : e.SQL;
+                    if (e.CanonicalSuperset is null && MemoryDatabase is not null)
+                    {
+                        canon = MemoryDatabase.Query(ContractType.GetSQLiteMapping(), sql);
+                    }
+                    else
+                    {
+                        canon = e.CanonicalSuperset;
+                    }
                 }
+                #endregion L o c a l F x
             }
         }
 
