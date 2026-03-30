@@ -93,14 +93,18 @@ The string provided 'banana' is not numeric.";
 
             void subtest_ObjectUnconstrained()
             {
-                object? @object = model.GetAttributeValue<object?>(StdMarkdownAttribute.order);
+                object? @object;
+                @object = model.GetAttributeValue<object?>(StdMarkdownAttribute.order);
+                Assert.IsNull(@object);
+
+                @object = model.GetAttributeValue<object?>(StdMarkdownAttribute.order, @default: 0);
                 Assert.AreEqual(0, @object);
             }
 
             void subtest_IntFromDefaultAttribute()
             {
-                @int = model.GetAttributeValue<int>(StdMarkdownAttribute.order);
-                Assert.AreEqual(0, @int);
+                @int = model.GetAttributeValue<int>(DefaultValuesForTest.Two);
+                Assert.AreEqual(2, @int);
             }
 
             void subtest_IntFromDefaultArg()
