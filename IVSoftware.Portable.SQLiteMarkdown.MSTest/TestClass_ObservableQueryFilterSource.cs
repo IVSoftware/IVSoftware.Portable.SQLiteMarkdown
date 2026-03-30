@@ -1937,7 +1937,7 @@ Busy"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 6, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 6, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
                         Assert.AreEqual(
                             expected.NormalizeResult(), 
@@ -1987,13 +1987,15 @@ SearchEntryState";
                         Assert.AreEqual(string.Empty, items.InputText, "[Remember] - We did a terminal clear.");
                         sql = "animal".ParseSqlMarkdown<T>();
                         recordset = cnx.Query<T>(sql);
+
+                        // DIFFERENT - Async version
                         await items.ReplaceItemsAsync(recordset);
 
                         actual = items.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
                         Assert.AreEqual(
                             expected.NormalizeResult(),

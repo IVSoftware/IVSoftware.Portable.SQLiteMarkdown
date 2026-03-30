@@ -270,11 +270,6 @@ NetProjectionTopology.None, ReplaceItemsEventingOption.StructuralReplaceEvent";
             "Expecting CANONICAL COUNT is correct meaning canon is initialized.");
 
         Assert.AreEqual(
-            COUNT, 
-            pmdc.PredicateMatchCount, 
-            "Expecting PREDICATE MATCH COUNT is correct meaning canon is initialized.");
-
-        Assert.AreEqual(
             SearchEntryState.QueryCompleteWithResults,
             pmdc.SearchEntryState,
             "Expecting state reflects recordset.");
@@ -283,6 +278,11 @@ NetProjectionTopology.None, ReplaceItemsEventingOption.StructuralReplaceEvent";
             FilteringState.Armed,
             pmdc.FilteringState);
         { }
+
+        Assert.AreEqual(
+            0, 
+            pmdc.PredicateMatchCount, 
+            "Expecting PREDICATE MATCH COUNT is 0 until filtering activity takes place.");
 
 
         #region L o c a l F x
@@ -329,7 +329,7 @@ NetProjectionTopology.None, ReplaceItemsEventingOption.StructuralReplaceEvent";
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 37, CC: 37, PMC: 37], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 37, CC: 37, PMC: 0], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting State Report to match.");
 
