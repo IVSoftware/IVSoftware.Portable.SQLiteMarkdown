@@ -23,6 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static IVSoftware.Portable.SQLiteMarkdown.Internal.Extensions;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -98,7 +99,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             switch (std)
                             {
                                 case StdMarkdownAttribute.model when xattr is XBoundAttribute xba && xba.Tag is T itemT:
-                                    PredicateMatchSubsetProtected.Remove(itemT);
+                                    OnBoundItemObjectChange(xba: xba, e.ObjectChange);
                                     break;
                             }
                         }
@@ -161,18 +162,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         const bool SQLITE_STRICT = false;
 #endif
         [Canonical("The globally unique authority for binding items and their INPC events.")]
-        protected override void OnBoundItemObjectChange(XBoundAttribute xbo, XObjectChange action)
+        protected override void OnBoundItemObjectChange(XBoundAttribute xba, XObjectChange action)
         {
-            var item = (T)xbo.Tag;
+            var itemT = (T)xba.Tag;
             switch (action)
             {
                 case XObjectChange.Add:
                     localSetModelContainer();
                     localAddEvents();
-                    _ = TryAddToDatabase(item);
+                    if(localTryAddToDatabase() == true)
+                    {
+                        // Do we need to add to PMSS manually here?
+                    }
                     break;
                 case XObjectChange.Remove:
-                    _ = TryRemoveFromDatabase(item);
+                    if(localTryRemoveFromDatabase() == true)
+                    {
+                        PredicateMatchSubsetProtected.Remove(itemT);
+                    }
                     localRemoveEvents();
                     break;
             }
@@ -181,23 +188,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // Associate the xml Model governing this ddx.
             void localSetModelContainer()
             {
-                if (xbo.Tag is IAffinityModel modeled)
+                if (xba.Tag is IAffinityModel modeled)
                 {
-                    if (xbo.Parent is null)
+                    if (xba.Parent is null)
                     {
                         this.ThrowFramework<NullReferenceException>(
                             "UNEXPECTED: An attribute that is added should have a parent. What was it added *to*?");
                     }
                     else
                     {
-                        modeled.Model = xbo.Parent;
+                        modeled.Model = xba.Parent;
                     }
                 }
             }
 
             void localAddEvents()
             {
-                if (item is INotifyPropertyChanged inpc)
+                if (itemT is INotifyPropertyChanged inpc)
                 {
                     inpc.PropertyChanged += OnItemPropertyChanged;
                 }
@@ -205,52 +212,52 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             void localRemoveEvents()
             {
-                if (item is INotifyPropertyChanged inpc)
+                if (itemT is INotifyPropertyChanged inpc)
                 {
                     inpc.PropertyChanged -= OnItemPropertyChanged;
                 }
             }
-            #endregion L o c a l F x
-        }
 
-        bool? TryAddToDatabase(T item)
-        {
-            bool? isSuccess = null;
-            if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+            bool? localTryAddToDatabase()
             {
-                if (SQLITE_STRICT)
+                bool? isSuccess = null;
+                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                 {
-                    isSuccess = 1 == FilterQueryDatabase.Insert(item);
+                    if (SQLITE_STRICT)
+                    {
+                        isSuccess = 1 == FilterQueryDatabase.Insert(itemT);
+                    }
+                    else
+                    {
+                        isSuccess = 1 == FilterQueryDatabase.InsertOrReplace(itemT);
+                    }
+                }
+                else
+                {   /* G T K - N O O P */
+                    // There is no filter database to maintain.
+                    isSuccess = null;
+                }
+                if (isSuccess == false)
+                {
+                    this.ThrowPolicyException(MarkdownContextPolicyViolation.SQLiteOperationFailed);
+                }
+                return isSuccess;
+            }
+
+            bool? localTryRemoveFromDatabase()
+            {
+                bool? isSuccess = null;
+                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                {
+                    isSuccess = 1 == FilterQueryDatabase.Delete(itemT);
                 }
                 else
                 {
-                    isSuccess = 1 == FilterQueryDatabase.InsertOrReplace(item);
+                    isSuccess = null;
                 }
+                return isSuccess;
             }
-            else
-            {   /* G T K - N O O P */
-                // There is no filter database to maintain.
-                isSuccess = null;
-            }
-            if (isSuccess == false)
-            {
-                this.ThrowPolicyException(MarkdownContextPolicyViolation.SQLiteOperationFailed);
-            }
-            return isSuccess;
-        }
-
-        bool? TryRemoveFromDatabase(T item)
-        {
-            bool? isSuccess = null;
-            if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
-            {
-                isSuccess = 1 == FilterQueryDatabase.Delete(item);
-            }
-            else
-            {
-                isSuccess = null;
-            }
-            return isSuccess;
+            #endregion L o c a l F x
         }
 
         /// <summary>
