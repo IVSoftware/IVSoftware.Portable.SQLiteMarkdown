@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
@@ -16,8 +17,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {
     public enum ZeroCountOption
     {
+        /// <summary>
+        /// When a bin is decremented to zero, remove
+        /// its key from underlying dictionary.
+        /// </summary>
         Remove,
+
+        /// <summary>
+        /// When a bin is decremented to zero, do not
+        /// remove its key from underlying dictionary.
+        /// </summary>
         Preserve,
+
+        /// <summary>
+        /// Do  not allow binds to be decremented.
+        /// </summary>
+        IncrementOnly,
     }
 
     /// <summary>
@@ -132,34 +147,42 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         /// </remarks>
         public int Decrement(T key)
         {
-            var decremented = this[key] - 1;
-
-            if (decremented < 0)
+            if (ZeroCountOption == ZeroCountOption.IncrementOnly)
             {
-                // Negative values are advisory unless escalated.
-                this.ThrowSoft<IndexOutOfRangeException>();
-                // Normalize to zero and apply ZeroCountOption.
-                decremented = 0;
-            }
-            if (decremented == 0)
-            {
-                switch (ZeroCountOption)
-                {
-                    case ZeroCountOption.Remove:
-                        _histo.Remove(key);
-                        break;
-
-                    case ZeroCountOption.Preserve:
-                        _histo[key] = 0;
-                        break;
-                }
+                this.ThrowHard<InvalidOperationException>($"{nameof(Decrement)} is not allowed when {ZeroCountOption.ToFullKey()}");
+                return this[key];
             }
             else
             {
-                _histo[key] = decremented;
-                log(key);
+                var decremented = this[key] - 1;
+
+                if (decremented < 0)
+                {
+                    // Negative values are advisory unless escalated.
+                    this.ThrowSoft<IndexOutOfRangeException>();
+                    // Normalize to zero and apply ZeroCountOption.
+                    decremented = 0;
+                }
+                if (decremented == 0)
+                {
+                    switch (ZeroCountOption)
+                    {
+                        case ZeroCountOption.Remove:
+                            _histo.Remove(key);
+                            break;
+
+                        case ZeroCountOption.Preserve:
+                            _histo[key] = 0;
+                            break;
+                    }
+                }
+                else
+                {
+                    _histo[key] = decremented;
+                    log(key);
+                }
+                return decremented;
             }
-            return decremented;
         }
         public IEnumerator<T> GetEnumerator()
             => _histo.Keys.GetEnumerator();

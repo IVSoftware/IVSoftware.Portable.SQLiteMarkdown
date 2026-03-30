@@ -14,6 +14,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml.Linq;
+using static System.Collections.Specialized.BitVector32;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -466,6 +467,132 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
+        /// Produces a reconciliation playlist for listBefore -> listAfter.
+        /// </summary>
+        internal static NotifyCollectionChangingEventArgs Diff(
+            this IList listBefore,
+            IList listAfter,
+            NotifyCollectionChangeScope scope = NotifyCollectionChangeScope.ReadOnly,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
+        {
+            int current = 0;
+            EnumHistogrammer<NotifyCollectionChangeAction> histo = new(ZeroCountOption.IncrementOnly);
+            List<NotifyCollectionChangingEventArgs> changes = new();
+
+            object? replace, replaceWith;
+            int? newStartingIndex = null, oldStartingIndex = null;
+
+            while(current < listBefore.Count && current < listAfter.Count )
+            {
+                newStartingIndex ??= current;
+                oldStartingIndex ??= current;
+
+                replace = listBefore[current];
+                replaceWith = listAfter[current];
+
+                changes.Add(new(
+                    action: NotifyCollectionChangeAction.Replace,
+                    newItems: new[] { listAfter[current] },
+                    newStartingIndex: current,
+                    oldItems: new[] { listBefore[current] },
+                    oldStartingIndex: current));
+                histo.Increment(NotifyCollectionChangeAction.Replace);
+                current++;
+            }
+
+            // Block of contiguous adds.
+            while (current < listAfter.Count)
+            {
+                newStartingIndex ??= current;
+                changes.Add(new (
+                    action: NotifyCollectionChangeAction.Add,
+                    newItems: new []{listAfter[current] },
+                    newStartingIndex: current));
+                histo.Increment(NotifyCollectionChangeAction.Add);
+                current++;
+            }
+
+            // Block of contiguous removes.
+            while(current < listBefore.Count)
+            {
+                oldStartingIndex ??= current;
+                changes.Add(new(
+                    action: NotifyCollectionChangeAction.Remove,
+                    oldItems: new[] { listBefore[current] },
+                    oldStartingIndex: current));
+                histo.Increment(NotifyCollectionChangeAction.Remove);
+                current++;
+            }
+#if DEBUG
+            var cMe = histo.ToString(HistogrammerFormat.All);
+            { }
+#endif
+            NotifyCollectionChangingEventArgs result;
+            switch (histo.Count())
+            {
+                case 0:
+                    result = new NotifyCollectionChangingEventArgs(
+                        action: NotifyCollectionChangeAction.Reset,
+                        scope: scope,
+                        reason: reason);
+                    break;
+                case 1:
+                    switch (histo.First())
+                    {
+                        case NotifyCollectionChangeAction.Add:
+                            result = new NotifyCollectionChangingEventArgs(
+                                action: NotifyCollectionChangeAction.Add,
+                                reason: reason,
+                                scope: scope,
+                                newStartingIndex: (int)newStartingIndex!,
+                                newItems: changes
+                                    .Where(_ => _.NewItems is not null)
+                                    .SelectMany(_ => _.NewItems!.Cast<object>())
+                                    .ToList());
+                            break;
+                        case NotifyCollectionChangeAction.Remove:
+                            result = new NotifyCollectionChangingEventArgs(
+                                action: NotifyCollectionChangeAction.Remove,
+                                reason: reason,
+                                scope: scope,
+                                oldStartingIndex: (int)oldStartingIndex!,
+                                oldItems: changes
+                                    .Where(_ => _.OldItems is not null)
+                                    .SelectMany(_ => _.OldItems!.Cast<object>())
+                                    .ToList());
+                            break;
+                        case NotifyCollectionChangeAction.Replace:
+                            result = new NotifyCollectionChangingEventArgs(
+                                action: NotifyCollectionChangeAction.Replace,
+                                reason: reason,
+                                scope: scope,
+                                oldStartingIndex: (int)oldStartingIndex!,
+                                oldItems: changes
+                                    .Where(_ => _.OldItems is not null)
+                                    .SelectMany(_ => _.OldItems!.Cast<object>())
+                                    .ToList());
+                            break;
+                        default:
+                            result = new NotifyCollectionChangingEventArgs(
+                                action: NotifyCollectionChangeAction.Reset,
+                                scope: scope,
+                                reason: reason | NotifyCollectionChangeReason.Exception);
+                            break;
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException("ToDo");
+            }
+
+            // Make sure this got assigned.
+            if (result.Reason != reason)
+            {
+                nameof(Diff).ThrowFramework<NotSupportedException>("Failed to assign reason.");
+            }
+            return result;
+        }
+
+        /// <summary>
         /// Heuristically derives a batch <see cref="NotifyCollectionChangingEventArgs"/> describing
         /// the transition from <paramref name="listBefore"/> to <paramref name="listAfter"/>.
         /// </summary>
@@ -492,7 +619,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///
         /// All emitted events carry <see cref="NotifyCollectionChangeReason.Batch"/>.
         /// </remarks>
-        internal static NotifyCollectionChangingEventArgs Diff(
+        internal static NotifyCollectionChangingEventArgs DiffOR(
             this IList listBefore,
             IList listAfter,
             NotifyCollectionChangeScope scope = NotifyCollectionChangeScope.ReadOnly,
