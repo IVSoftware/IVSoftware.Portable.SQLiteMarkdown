@@ -197,15 +197,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if(xbo.Parent is { } xel)
                 {
-                    var qmatch = xel.GetAttributeValue<bool>(StdMarkdownAttribute.qmatch);
-                    var pmatch = xel.GetAttributeValue<bool>(StdMarkdownAttribute.pmatch);
-                    if(qmatch && pmatch)
+                    if(xel.Attribute(StdMarkdownAttribute.match) is { } xattr)
                     {
-                        PredicateMatchSubsetProtected.Add(item);
+                        if(bool.TryParse(xattr.Value, out bool valid) && valid)
+                        {
+                            PredicateMatchSubsetProtected.Add(item);
+                        }
+                        else
+                        {
+                            Debug.Fail($@"ADVISORY - Benign but illegal.");
+                            xattr.Remove();
+                        }
                     }
                     else
                     {
-                        xel.SetStdAttributeValue(StdMarkdownAttribute.match, bool.FalseString);
+                        PredicateMatchSubsetProtected.Remove(item);
                     }
                 }
             }
@@ -1272,7 +1278,33 @@ SELECT * FROM items WHERE
         private IReadOnlyList<T> _predicateMatchSubset = null!;
         IList ITopology.PredicateMatchSubset => (IList)PredicateMatchSubset;
 
-        protected List<T> PredicateMatchSubsetProtected { get; } = new();
+        public IList<T> PredicateMatchSubsetProtected
+        {
+            get
+            {
+                if (_predicateMatchSubsetProtected is null)
+                {
+                    // 260329 - Observable for debug convenience only at this time.
+                    var opc = new ObservablePreviewCollection<T>(eventScope: NotifyCollectionChangeScope.CancelOnly);
+                    opc.CollectionChanging += (sender, e) =>
+                    {
+                        switch (e.Action)
+                        {
+                            case NotifyCollectionChangeAction.Add:
+                                e.Cancel = !QueryFilterConfig.HasFlag(QueryFilterConfig.Filter);
+                                break;
+                            case NotifyCollectionChangeAction.Remove:
+                                break;
+                            case NotifyCollectionChangeAction.Reset:
+                                break;
+                        }
+                    };
+                    _predicateMatchSubsetProtected = opc;
+                }
+                return _predicateMatchSubsetProtected;
+            }
+        }
+        IList<T>? _predicateMatchSubsetProtected = null;
 
         ObservableCollection<T>? IModeledMarkdownContext<T>.ObservableNetProjection =>
             (ObservableCollection<T>?)ObservableNetProjection;

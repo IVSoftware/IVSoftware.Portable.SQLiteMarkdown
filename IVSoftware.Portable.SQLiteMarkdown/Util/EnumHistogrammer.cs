@@ -1,16 +1,16 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Xml;
 using System.Xml.Linq;
-using System.Xml.Schema;
+using Formatting = Newtonsoft.Json.Formatting;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {
@@ -62,6 +62,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         All = Remove | ThrowHard,
     }
 
+    [DebuggerDisplay("{DebuggerDisplay}")]
     public sealed class EnumHistogrammer<T> : IEnumerable<T> where T : Enum
     {
         public EnumHistogrammer(ZeroCountOption zeroCountOption) => ZeroCountOption = zeroCountOption;
@@ -79,6 +80,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         {
             var incremented = this[key] + 1;
             _histo[key] = incremented;
+            log(key);
             return incremented;
         }
 
@@ -127,6 +129,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         /// </remarks>
         public int Decrement(T key)
         {
+
             var decremented = this[key] - 1;
 
             if (decremented < 0)
@@ -152,6 +155,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
             else
             {
                 _histo[key] = decremented;
+                log(key);
             }
             return decremented;
         }
@@ -192,6 +196,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                 }
             }
             return $"[{string.Join(" ", builder)}]";
+        }
+        enum DebuggerReserved { Debugger }
+        private string DebuggerDisplay => ToString(DebuggerReserved.Debugger);
+
+        private void log(Enum key, [CallerMemberName]string? caller = null)
+        {
+            Debug.WriteLine($"260329.A - {caller} {key} {DebuggerDisplay}");
         }
 
         public void Clear() => _histo.Clear();
