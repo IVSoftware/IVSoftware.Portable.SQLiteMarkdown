@@ -51,7 +51,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         /// <summary>
         /// Attributes a Reset action produced by an illegal configuration request.
         /// </summary>
-        Exception = Batch << 1,
+        Cancel = Batch << 1,
+
+        /// <summary>
+        /// Attributes a Reset action produced by an illegal configuration request.
+        /// </summary>
+        Exception = Cancel << 1,
     }
 
     /// <summary>

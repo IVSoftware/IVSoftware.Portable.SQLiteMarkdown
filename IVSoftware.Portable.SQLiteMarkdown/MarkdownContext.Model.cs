@@ -37,6 +37,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         //OptionsReport,
         //SettingsReport,
     }
+
+    public delegate string GetFullPathDelegate<T>(T item);
+    public delegate string ModelPreviewDelegate(object? item);
     partial class MarkdownContext
     {
         public virtual XElement Model

@@ -7,6 +7,7 @@ using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Specialized;
+using System.Threading.Channels;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
@@ -14,6 +15,67 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 [TestClass]
 public class TestClass_ObservablePreviewCollection
 {
+    [TestMethod]
+    public void Test_GapDetector()
+    {
+        string actual, expected;
+
+        string
+            before = "ABCD",
+            after = "AXCY";
+
+        int current = 0;
+        int? lastReplaceIndex = null;
+        char replace, replaceWith;
+        bool isContiguous = true;
+
+        List <(int index, char a, char b)> changes = new();
+
+        // Block of replace actions where some may be idempotent.
+        while (current < before.Length && current < after.Length)
+        {
+            replace = before[current];
+            replaceWith = after[current];
+            if (!replace.Equals(replaceWith))
+            {
+                changes.Add((current, replace, replaceWith));
+                if(lastReplaceIndex is { } prev)
+                {
+                    if(lastReplaceIndex != current - 1)
+                    {
+                        isContiguous = false;
+                    }
+                }
+                lastReplaceIndex = current;
+            }
+            current++;
+        }
+
+        actual = JsonConvert.SerializeObject(changes, Formatting.Indented);
+        actual.ToClipboardExpected();
+        { }
+        expected = @" 
+[
+  {
+    ""Item1"": 1,
+    ""Item2"": ""B"",
+    ""Item3"": ""X""
+  },
+  {
+    ""Item1"": 3,
+    ""Item2"": ""D"",
+    ""Item3"": ""Y""
+  }
+]";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting result to match."
+        );
+        Assert.IsFalse(isContiguous);
+    }
+
     [TestMethod, DoNotParallelize]
     public void Test_BasicIList()
     {
@@ -542,12 +604,19 @@ NetProjection.Add     NewItems=10 NewStartingIndex= 0 NotifyCollectionChangedEve
         #endregion S U B T E S T S
     }
 
+    static ModelPreviewDelegate ModelPreviewDlgt { get; } = (item) => 
+        ((SelectableQFModel?)item)?.Description?.PadRight(10).Substring(0, 10) ?? "Not Found";
+
     [TestMethod]
     public void Test_BasicIRangeable()
     {
         string actual, expected;
         using var te = this.TestableEpoch();
         var builder = new List<string>();
+
+        #region I T E M    G E N
+        IList<SelectableQFModel>? eph = null;
+        #endregion I T E M    G E N
 
         var opc = new ObservablePreviewCollection<SelectableQFModel>();
         var range = (List <SelectableQFModel>)new List<SelectableQFModel>().PopulateForDemo(5);
@@ -560,22 +629,23 @@ NetProjection.Add     NewItems=10 NewStartingIndex= 0 NotifyCollectionChangedEve
         #endregion E V E N T S
 
         subtest_AddRange();
+        subtest_AddRangeDistinct();
 
         #region S U B T E S T S
         void subtest_AddRange()
         {
             opc.AddRange(range);
 
-            actual = opc.ToString(ReportFormat.Model);
+            actual = opc.ToString(ModelPreviewDlgt);
             actual.ToClipboardExpected();
             { }
             expected = @" 
 <model modelingcapability=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
 </model>"
             ;
 
@@ -597,6 +667,44 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
                 actual.NormalizeResult(),
                 "Expecting a single aggregate collection change."
             );
+        }
+        void subtest_AddRangeDistinct()
+        {
+            actual = opc.ToString(ModelPreviewDlgt);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model modelingcapability=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Verify carry over from previous subtest."
+            );
+
+            var mixedRange = new SelectableQFModel[]
+            {
+                range[0],
+                eph.AddDynamic("Distinct01"),
+                range[0],
+                range[2],
+                eph.AddDynamic("Distinct02"),
+                range[4],
+            };
+
+            opc.AddRangeDistinct(mixedRange);
+
+            actual = opc.ToString(ModelPreviewDlgt);
+            actual.ToClipboardExpected();
+            { } // <- FIRST TIME ONLY: Adjust the message.
+            actual.ToClipboardAssert("Expecting result to match.");
+            { }
         }
         #endregion S U B T E S T S
     }

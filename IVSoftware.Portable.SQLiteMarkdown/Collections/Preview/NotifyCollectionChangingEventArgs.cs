@@ -313,11 +313,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             }
         }
         public bool IsModified { get; private set; }
-        string SCOPE_POLICY_VIOLATION_MESSAGE =>    
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        private string SCOPE_POLICY_VIOLATION_MESSAGE =>    
             $"This operation is not permitted: {nameof(NotifyCollectionChangeScope)}={Scope.ToFullKey()}," +
             $"Always check Scope before attempting to modify the change proposal.";
 
-        string CONFIGURATION_INVALID_MESSAGE =>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        private string CONFIGURATION_INVALID_MESSAGE =>
             $"This configuration is not permitted as specified: Check related properties and ensure the combination is valid.";
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
@@ -273,9 +274,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             {
                 foreach (var item in @this)
                 {
-                    if (@this.GetFullPath?.Invoke(item) is { } fullPath
-                        && !string.IsNullOrWhiteSpace(fullPath))
+                    if (@this.GetFullPathDlgt?.Invoke(item) is { } fullPath)
                     {
+                        if (string.IsNullOrWhiteSpace(fullPath))
+                        {
+                            "ObservablePreviewCollection".ThrowHard<ArgumentException>($"The '{nameof(fullPath)}' argument cannot be empty.");
+                            continue;
+                        }
                         var placerResult = model.Place(fullPath, out var xel);
                         switch (placerResult)
                         {
@@ -357,7 +362,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         ModelingCapability? _modelingCapability = null;
         PropertyInfo? _fullPathPI = null;
 
-        public Func<T, string>? GetFullPath
+        public GetFullPathDelegate<T>? GetFullPathDlgt
         {
             get
             {
@@ -378,25 +383,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                             : Expression.Call(property, nameof(object.ToString), Type.EmptyTypes);
 
 #if DEBUG
-                        Debug.WriteLine($"260331.A {Expression.Lambda<Func<T, string>>(body, instance)}");
+                        Debug.WriteLine($"260331.A {Expression.Lambda<GetFullPathDelegate<T>>(body, instance)}");
                         { }
 #endif
 
                         _getFullPath =
-                            Expression.Lambda<Func<T, string>>(body, instance)
+                            Expression.Lambda<GetFullPathDelegate<T>>(body, instance)
                             .Compile();
                     }
                     return _getFullPath;
                 }
             }
         }
-        Func<T, string>? _getFullPath;
-
+        GetFullPathDelegate<T>? _getFullPath;
 
         #region D H O S T
         IDisposable BeginApply() => DHostApply.GetToken(this);
         DisposableHost DHostApply { get; } = new();
         public IDisposable BeginBatch() => DHostBatch.GetToken(this);
+        public void CancelBatch() => DHostBatch.CancelBatch();
 
         public virtual string ToString(ReportFormat formatting)
         {
@@ -407,6 +412,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 default:
                     throw new NotSupportedException($"{formatting.ToFullKey()} is not supported by this object.");
             }
+        }
+
+        public virtual string ToString(ModelPreviewDelegate preview)
+        {
+            var model = ((XElement)this);
+
+            int index = 0;
+            foreach (var xel in model.Descendants())
+            {
+                var item = this[index++];
+                xel.SetStdAttributeValue(StdMarkdownAttribute.preview, preview(item));
+            }
+            return model.ToString();
         }
 
         DHostBatchCollectionChange DHostBatch
@@ -471,9 +489,39 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 
         public int AddRangeDistinct(IEnumerable items)
         {
+            XElement model = this;
             using (BeginBatch())
             {
+                int newStartingIndex = Count;
+                foreach (var item in items)
+                {
+                    if (item is T itemT && GetFullPathDlgt?.Invoke(itemT) is string fullPath)
+                    {
+                        if (string.IsNullOrWhiteSpace(fullPath))
+                        {
+                            "ObservablePreviewCollection".ThrowHard<ArgumentException>($"The '{nameof(fullPath)}' argument cannot be empty.");
+                            CancelBatch();
+                            return 0;
+                        }
 
+                        switch (model.Place(fullPath))
+                        {
+                            case PlacerResult.Created:
+                                InsertItem(newStartingIndex++, itemT);
+                                break;
+                            default:
+                                /* G T K - N O O P */
+                                // Skipping this item as non-distinct.
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        item.ThrowHard<InvalidCastException>($"All range items must be {typeof(T).Name}");
+                        CancelBatch();
+                        return 0;
+                    }
+                }
             }
             return 0;
         }

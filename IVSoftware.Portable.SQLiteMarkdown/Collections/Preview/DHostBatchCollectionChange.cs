@@ -16,6 +16,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         object[] _listB4 = [];
         IList _listFTR = null!;
 
+        protected override void OnBeginUsing(BeginUsingEventArgs e)
+        {
+            _cancel = false;
+            base.OnBeginUsing(e);
+        }
+
         /// <summary>
         /// Heuristically determines the simplest approach to reaching ListFTR from ListB4.
         /// </summary>
@@ -33,7 +39,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             var before = (IList)_listB4;
             var after = _listFTR;
 
-            var digest = before.Diff(after, reason: NotifyCollectionChangeReason.Batch);
+            var digest = 
+                _cancel
+                ? new NotifyCollectionChangingEventArgs(
+                    action: NotifyCollectionChangeAction.Reset,
+                    reason: NotifyCollectionChangeReason.Batch | NotifyCollectionChangeReason.Cancel)
+                : before.Diff(
+                    after,
+                    reason: NotifyCollectionChangeReason.Batch);
 
             var snapshot = e.Keys.ToDictionary(
                 key => key,
@@ -49,7 +62,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 _listFTR);
             base.OnFinalDispose(eBatch);
             _isModified = false;
+            _cancel = false;
         }
+
+        public void CancelBatch() => _cancel = true;
+        private bool _cancel;
 
         [Canonical]
         public new IDisposable GetToken(object? sender = null, Dictionary<string, object>? properties = null)
@@ -83,7 +100,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             _listFTR = _listB4.ToList();
             _isModified = false;
         }
-        bool _isModified = false;
 
         /// <summary>
         /// Returns true if a batch is in progress.
@@ -101,6 +117,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 return true;
             }
         }
+        bool _isModified = false;
     }
 
     internal class BatchFinalDisposeEventArgs : FinalDisposeEventArgs
@@ -117,7 +134,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         }
 
         public NotifyCollectionChangingEventArgs Digest { get; }
-
         public IList FinalList { get; }
     }
 }

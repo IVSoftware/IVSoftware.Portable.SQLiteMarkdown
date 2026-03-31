@@ -341,7 +341,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             if (newItems?.Count > 0 && newItems[0] is EventArgs)
             {
-                throw new NotSupportedException("Batch Event playlists are not supported (yet)");
+                foreach(var step in newItems.OfType<EventArgs>())
+                {
+                    list.Apply(step);
+                }
             }
             else
             {
@@ -473,32 +476,41 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             this IList listBefore,
             IList listAfter,
             NotifyCollectionChangeScope scope = NotifyCollectionChangeScope.ReadOnly,
-            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None)
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None,
+            Func<object?, object?, bool>? compare = null)
         {
-            int current = 0;
+            compare ??= (a, b) => ReferenceEquals(a, b);
+
+            int current = 0, prev = -1;
+            bool isContiguous = true;
             EnumHistogrammer<NotifyCollectionChangeAction> histo = new(ZeroCountOption.IncrementOnly);
             List<NotifyCollectionChangingEventArgs> changes = new();
 
             object? replace, replaceWith;
             int? newStartingIndex = null, oldStartingIndex = null;
 
-            while(current < listBefore.Count && current < listAfter.Count )
+            // Block of replace actions where some may be idempotent.
+            while (current < listBefore.Count && current < listAfter.Count)
             {
                 newStartingIndex ??= current;
                 oldStartingIndex ??= current;
 
                 replace = listBefore[current];
                 replaceWith = listAfter[current];
-
-                changes.Add(new(
-                    action: NotifyCollectionChangeAction.Replace,
-                    newItems: new[] { listAfter[current] },
-                    newStartingIndex: current,
-                    oldItems: new[] { listBefore[current] },
-                    oldStartingIndex: current));
-                histo.Increment(NotifyCollectionChangeAction.Replace);
+                if (!compare(replace, replaceWith))
+                {
+                    changes.Add(new(
+                        action: NotifyCollectionChangeAction.Replace,
+                        newItems: new[] { listAfter[current] },
+                        newStartingIndex: current,
+                        oldItems: new[] { listBefore[current] },
+                        oldStartingIndex: current));
+                    histo.Increment(NotifyCollectionChangeAction.Replace);
+                    prev = current;
+                }
                 current++;
             }
+            isContiguous = current == prev + 1;
 
             // Block of contiguous adds.
             while (current < listAfter.Count)
@@ -536,7 +548,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         scope: scope,
                         reason: reason);
                     break;
-                case 1:
+                case 1 when isContiguous:
                     switch (histo.First())
                     {
                         case NotifyCollectionChangeAction.Add:
