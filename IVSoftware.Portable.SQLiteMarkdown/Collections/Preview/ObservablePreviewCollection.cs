@@ -17,36 +17,6 @@ using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
-    /// <summary>
-    /// Listed in order of preference.
-    /// </summary>
-    internal enum ModelingCapability
-    {
-        /// <summary>
-        /// Detected a string property named FullPath.
-        /// </summary>
-        FullPath,
-
-        /// <summary>
-        /// A [PrimaryKey] property or a string property named Id.
-        /// </summary>
-        Id,
-
-        /// <summary>
-        /// A [PrimaryKey] property or a string property named Description.
-        /// </summary>
-        Description,
-
-        /// <summary>
-        /// A [PrimaryKey] property or a string property named Text.
-        /// </summary>
-        Text,
-
-        /// <summary>
-        /// Failed to find a suitable modeling property.
-        /// </summary>
-        Unavailable,
-    }
     internal partial class ObservablePreviewCollection<T>
         : ObservableCollection<T>
         , INotifyCollectionChanging

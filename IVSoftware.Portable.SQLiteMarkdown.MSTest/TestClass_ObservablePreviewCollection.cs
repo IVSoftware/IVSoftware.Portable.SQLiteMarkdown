@@ -610,9 +610,6 @@ NetProjection.Add     NewItems=10 NewStartingIndex= 0 NotifyCollectionChangedEve
         #endregion S U B T E S T S
     }
 
-    static ModelPreviewDelegate ModelPreviewDlgt { get; } = (item) => 
-        ((SelectableQFModel?)item)?.Description?.PadRight(10).Substring(0, 10) ?? "Not Found";
-
     [TestMethod]
     public void Test_BasicIRangeable()
     {
@@ -642,7 +639,7 @@ NetProjection.Add     NewItems=10 NewStartingIndex= 0 NotifyCollectionChangedEve
         {
             opc.AddRange(range);
 
-            actual = opc.ToString(ModelPreviewDlgt);
+            actual = opc.ToString(this.GetModelPreviewDlgt<SelectableQFModel>());
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -676,7 +673,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
         }
         void subtest_AddRangeDistinct()
         {
-            actual = opc.ToString(ModelPreviewDlgt);
+            actual = opc.ToString(this.GetModelPreviewDlgt<SelectableQFModel>());
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -706,7 +703,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
 
             opc.AddRangeDistinct(mixedRange);
 
-            actual = opc.ToString(ModelPreviewDlgt);
+            actual = opc.ToString(this.GetModelPreviewDlgt<SelectableQFModel>());
             actual.ToClipboardExpected();
             { } // <- FIRST TIME ONLY: Adjust the message.
             actual.ToClipboardAssert("Expecting result to match.");

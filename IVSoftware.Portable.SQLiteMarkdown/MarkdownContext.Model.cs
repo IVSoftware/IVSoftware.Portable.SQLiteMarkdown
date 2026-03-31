@@ -297,6 +297,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected EnumHistogrammer<StdMarkdownAttribute> Histo { get; } = new(ZeroCountOption.Remove);
         public string ToString(HistogrammerFormat formatting) => Histo.ToString(formatting);
+        public string ToString(ModelPreviewDelegate preview, bool keepPreviews = false)
+        {
+            foreach (var xel in Model.Descendants())
+            {
+                if(xel.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xba && xba.Tag is not null)
+                {
+                    xel.SetStdAttributeValue(StdMarkdownAttribute.preview, preview(xba.Tag));
+                }
+            }
+            var @string = Model.ToString();
+            if(!keepPreviews)
+            {
+                Model.RemoveDescendantAttributes(StdMarkdownAttribute.preview);
+            }
+            return @string;
+        }
         public string ToString(ReportFormat formattime)
         {
             var builder = new List<string>();
