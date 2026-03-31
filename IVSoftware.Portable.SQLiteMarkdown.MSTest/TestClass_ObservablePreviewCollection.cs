@@ -542,6 +542,26 @@ NetProjection.Add     NewItems=10 NewIndex= 0 NotifyCollectionChangedEventArgs  
         #endregion S U B T E S T S
     }
 
+
+    [TestMethod]
+    public void Test_BasicIRangeable()
+    {
+        string actual, expected;
+        using var te = this.TestableEpoch();
+        var builder = new List<string>();
+        var opc = new ObservablePreviewCollection<SelectableQFModel>();
+
+        var range = (List <SelectableQFModel>)new List<SelectableQFModel>().PopulateForDemo(5);
+        { }
+
+        #region E V E N T S
+        opc.CollectionChanged += (sender, e) =>
+            builder.Add(e.ToString(ReferenceEquals(sender, opc)));
+        #endregion E V E N T S
+        opc.AddRange(range);
+    }
+
+
     [TestMethod, DoNotParallelize]
     public void Test_BasicMOPC()
     {
@@ -631,7 +651,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 4 NotifyCollectionChangedEventArgs  
             te.ResetEpoch();
             builder.Clear();
 
-            mopc.PopulateForDemo(5);
+            mopc.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
 
             actual = mopc.Model.ToString();
             actual.ToClipboardExpected();
@@ -656,11 +676,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 4 NotifyCollectionChangedEventArgs  
             { }
             expected = @" 
 NetProjection.Reset   NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewIndex= 1 NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewIndex= 2 NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewIndex= 3 NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewIndex= 4 NotifyCollectionChangedEventArgs           ";
+NetProjection.Add     NewItems= 5 NewIndex= 0 NotifyCollectionChangedEventArgs           ";
 
             Assert.AreEqual(
                 expected.NormalizeResult(),

@@ -1,16 +1,10 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.SQLiteMarkdown.Collections;
-using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
 using SQLite;
 using System.Collections;
-using System.Collections.Specialized;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
-using static System.Windows.Forms.Design.AxImporter;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
@@ -18,6 +12,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     public enum PopulateOptions
     {
         RandomChecks = 0x1,
+        DetectIRangeable = 0x2,
     }
     public static partial class SQLiteMarkdownTestExtensions
     {
@@ -130,17 +125,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             else
             {
                 @this.Clear();
-            }
+            };
 
-            for (int i = 1; i <= count; i++)
+            if (options?.HasFlag(PopulateOptions.DetectIRangeable) is true && @this is IRangeable rangeable)
             {
-                Add(
-                    description: $"Item{i:d2}", 
-                    tags: string.Empty,
-                    isChecked: options?.HasFlag(PopulateOptions.RandomChecks) == true && rando.Next(2) == 1);
+                List<TItem> stagedForTest = new();
+            }
+            else
+            {
+                localAddLoop(@this);
             }
 
-            void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
+            void Add(IList<TItem> target, string description, string tags, bool isChecked, List<string>? keywords = null)
             {
                 var instance = new TItem();
                 typeof(TItem).GetProperty("Description")?.SetValue(instance, description);
@@ -151,9 +147,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     var json = JsonConvert.SerializeObject(keywords);
                     typeof(TItem).GetProperty("Keywords")?.SetValue(instance, json);
                 }
-                @this.Add(instance);
+                target.Add(instance);
             }
             return @this;
+
+            #region L o c a l F x
+            void localAddLoop(IList<TItem> target)
+            {
+                for (int i = 1; i <= count; i++)
+                {
+                    Add(
+                        target,
+                        description: $"Item{i:d2}",
+                        tags: string.Empty,
+                        isChecked: options?.HasFlag(PopulateOptions.RandomChecks) == true && rando.Next(2) == 1);
+                }
+            }
+            #endregion L o c a l F x
         }
 
         public static T DequeueSingle<T>(this Queue<T> queue)

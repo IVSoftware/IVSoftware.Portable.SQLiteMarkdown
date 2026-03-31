@@ -1,12 +1,14 @@
-﻿using IVSoftware.Portable.Disposable;
+﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Disposable;
 using System;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
-    internal class ObservablePreviewCollection<T>
+    internal partial class ObservablePreviewCollection<T>
         : ObservableCollection<T>
         , INotifyCollectionChanging
     {
@@ -260,5 +262,61 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 
         DHostBatchCollectionChange? _dhostBatch = null;
         #endregion D H O S T
+    }
+
+    internal partial class ObservablePreviewCollection<T> : IRangeable
+    {
+        public void AddRange(IEnumerable items)
+        {
+            using (BeginBatch())
+            {
+                foreach (var item in items)
+                {
+                    if(item is T itemT)
+                    {
+                        Add(itemT);
+                    }
+                    else
+                    {
+                        item.ThrowHard<InvalidCastException>($"All rannge items must be {typeof(T).Name}");
+                        return;
+                    }
+                }
+            }
+        }
+
+        public int AddRangeDistinct(IEnumerable items)
+        {
+            using (BeginBatch())
+            {
+
+            }
+            return 0;
+        }
+
+        public void InsertRange(int startingIndex, IEnumerable items)
+        {
+            using (BeginBatch())
+            {
+
+            }
+        }
+
+        public int RemoveMultiple(IEnumerable items)
+        {
+            using (BeginBatch())
+            {
+
+            }
+            return 0;
+        }
+
+        public void RemoveRange(int startingIndex, int endingIndex)
+        {
+            using (BeginBatch())
+            {
+
+            }
+        }
     }
 }

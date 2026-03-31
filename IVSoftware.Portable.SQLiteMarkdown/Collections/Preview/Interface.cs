@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
@@ -109,5 +111,34 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         NotifyCollectionChangeScope EventScope { get; }
 
         event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
+    }
+
+    internal interface IRangeable
+    {
+        void AddRange(IEnumerable items);
+        int AddRangeDistinct(IEnumerable items);
+        void InsertRange(int startingIndex, IEnumerable items);
+        void RemoveRange(int startingIndex, int endingIndex);
+        int RemoveMultiple(IEnumerable items);
+        IDisposable BeginBatch();
+    }
+    internal interface IRangeable<T> : IRangeable
+    {
+        void AddRange(IEnumerable<T> items);
+
+        /// <summary>
+        /// Addin multiple items that are individually validated as distinct..
+        /// </summary>
+        int AddRangeDistinct(IEnumerable<T> items);
+
+        /// <summary>
+        /// Removal of a multiple contiguous items.
+        /// </summary>
+        void InsertRange(int startingIndex, IEnumerable<T> newItems);
+
+        /// <summary>
+        /// Removal of a multiple items that aren't necessarily contiguous.
+        /// </summary>
+        int RemoveMultiple(IEnumerable<T> items);
     }
 }
