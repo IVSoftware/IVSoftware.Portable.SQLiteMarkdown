@@ -21,13 +21,14 @@ public class TestClass_ObservablePreviewCollection
         string actual, expected;
 
         string
-            before = "ABCD",
-            after = "AXCY";
+            before = "ABCDE",
+            after  = "AbcDe----";
 
-        int current = 0;
-        int? lastReplaceIndex = null;
+        int 
+            current = 0,
+            lastReplaceIndex = current;
         char replace, replaceWith;
-        bool isContiguous = true;
+        bool? isContiguous = null;
 
         List <(int index, char a, char b)> changes = new();
 
@@ -39,14 +40,19 @@ public class TestClass_ObservablePreviewCollection
             if (!replace.Equals(replaceWith))
             {
                 changes.Add((current, replace, replaceWith));
-                if(lastReplaceIndex is { } prev)
+                switch (isContiguous)
                 {
-                    if(lastReplaceIndex != current - 1)
-                    {
-                        isContiguous = false;
-                    }
+                    case null:
+                        isContiguous = true;
+                        break;
+                    case true:
+                        if(lastReplaceIndex != current - 1)
+                        {
+                            isContiguous = false;
+                        }
+                        break;
                 }
-                lastReplaceIndex = current;
+                lastReplaceIndex++;
             }
             current++;
         }
@@ -59,14 +65,20 @@ public class TestClass_ObservablePreviewCollection
   {
     ""Item1"": 1,
     ""Item2"": ""B"",
-    ""Item3"": ""X""
+    ""Item3"": ""b""
   },
   {
-    ""Item1"": 3,
-    ""Item2"": ""D"",
-    ""Item3"": ""Y""
+    ""Item1"": 2,
+    ""Item2"": ""C"",
+    ""Item3"": ""c""
+  },
+  {
+    ""Item1"": 4,
+    ""Item2"": ""E"",
+    ""Item3"": ""e""
   }
-]";
+]"
+        ;
 
         Assert.AreEqual(
             expected.NormalizeResult(),
