@@ -273,10 +273,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             {
                 foreach (var item in @this)
                 {
-                    if (@this.GetFullPath?.Invoke(item) is { } full
-                        && !string.IsNullOrWhiteSpace(full))
+                    if (@this.GetFullPath?.Invoke(item) is { } fullPath
+                        && !string.IsNullOrWhiteSpace(fullPath))
                     {
-                        var placerResult = model.Place(full, out var xel);
+                        var placerResult = model.Place(fullPath, out var xel);
                         switch (placerResult)
                         {
                             case PlacerResult.Exists:
