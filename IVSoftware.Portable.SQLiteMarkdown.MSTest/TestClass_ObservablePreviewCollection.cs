@@ -2,18 +2,20 @@ using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Specialized;
+using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
 [TestClass]
-public class TestClass_PreviewCollection
+public class TestClass_ObservablePreviewCollection
 {
     [TestMethod, DoNotParallelize]
-    public void Test_IListBasics()
+    public void Test_BasicIList()
     {
         List<SelectableQFModel> Ephemeral() => new List<SelectableQFModel>();
         string actual, expected;
@@ -539,4 +541,113 @@ NetProjection.Add     NewItems=10 NewIndex= 0 NotifyCollectionChangedEventArgs  
         }
         #endregion S U B T E S T S
     }
+
+    [TestMethod, DoNotParallelize]
+    public void Test_BasicMOPC()
+    {
+        string actual, expected;
+        using var te = this.TestableEpoch();
+        var builder = new List<string>();
+        ModeledOPC mopc = new ();
+
+        #region E V E N T S
+        // Differentiate between the itemsSource being driven by
+        // the simView and the simView being driven by itemsSource.
+        mopc.CollectionChanged += (sender, e) =>
+        {
+            var isProjection = ReferenceEquals(sender, mopc);
+            if (isProjection)
+            {
+                builder.Add(e.ToString(true));
+            }
+            else
+            {
+                builder.Add(e.ToString(false).Replace(
+                    "Other        ",
+                    "SimView      "));
+            }
+
+        };
+        #endregion E V E N T S
+
+        subtest_PopulateWithDiscreteEvents();
+
+        #region S U B T E S T S
+        void subtest_PopulateWithDiscreteEvents()
+        {
+            mopc.PopulateForDemo(5);
+
+            actual = mopc.Model.ToString();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model mdc=""[MDC]"" histo=""[model:5 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting model has tracked."
+            );
+
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+NetProjection.Reset   NotifyCollectionChangedEventArgs           
+NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs           
+NetProjection.Add     NewItems= 1 NewIndex= 1 NotifyCollectionChangedEventArgs           
+NetProjection.Add     NewItems= 1 NewIndex= 2 NotifyCollectionChangedEventArgs           
+NetProjection.Add     NewItems= 1 NewIndex= 3 NotifyCollectionChangedEventArgs           
+NetProjection.Add     NewItems= 1 NewIndex= 4 NotifyCollectionChangedEventArgs           ";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting model has emitted discrete events."
+            );
+
+            actual = mopc.ToString(ReportFormat.StateReport);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: 5, CC: 5, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting quiescent initial state."
+            );
+        }
+        #endregion S U B T E S T S
+    }
+    #region L o c a l C l a s s e s
+    private class MMDC : ModeledMarkdownContext<SelectableQFModel>
+    {
+        public new FilteringState FilteringState
+        {
+            get => FilteringState;
+            set
+            {
+                FilteringState = value;
+            }
+        }
+    }
+    private class ModeledOPC : ObservablePreviewCollection<SelectableQFModel>
+    {
+        public ModeledOPC()
+        {
+            MMDC = new();
+            MMDC.SetObservableNetProjection(this);
+        }
+        private MMDC MMDC { get; }
+        public XElement Model => MMDC.Model;
+        public string ToString(ReportFormat formatting) => MMDC.ToString(formatting);
+    }
+    #endregion L o c a l C l a s s e s
 }

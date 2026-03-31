@@ -286,11 +286,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         protected EnumHistogrammer<StdMarkdownAttribute> Histo { get; } = new(ZeroCountOption.Remove);
-        public string ToString(HistogrammerFormat format) => Histo.ToString(format);
-        public string ToString(ReportFormat format)
+        public string ToString(HistogrammerFormat formatting) => Histo.ToString(formatting);
+        public string ToString(ReportFormat formattime)
         {
             var builder = new List<string>();
-            switch (format)
+            switch (formattime)
             {
                 case ReportFormat.StateReport:
                     builder.Add($"[IME Len: {InputText.Length}");
@@ -309,7 +309,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 //    builder.Add($"{ReplaceItemsEventingOption.ToFullKey()}");
                 //    return string.Join(", ", builder);
                 default:
-                    this.ThrowHard<NotSupportedException>($"The {format.ToFullKey()} case is not supported.");
+                    this.ThrowHard<NotSupportedException>($"The {formattime.ToFullKey()} case is not supported.");
                     break;
             }
             return string.Join(", ", builder);
