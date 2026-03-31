@@ -26,9 +26,9 @@ public class TestClass_ObservablePreviewCollection
 
         int 
             current = 0,
-            lastReplaceIndex = current;
+            lastReplaceIndex = int.MinValue;
         char replace, replaceWith;
-        bool? isContiguous = null;
+        bool isContiguous = true;
 
         List <(int index, char a, char b)> changes = new();
 
@@ -40,19 +40,13 @@ public class TestClass_ObservablePreviewCollection
             if (!replace.Equals(replaceWith))
             {
                 changes.Add((current, replace, replaceWith));
-                switch (isContiguous)
+                if (isContiguous 
+                    && lastReplaceIndex != int.MinValue
+                    && lastReplaceIndex != current - 1)
                 {
-                    case null:
-                        isContiguous = true;
-                        break;
-                    case true:
-                        if(lastReplaceIndex != current - 1)
-                        {
-                            isContiguous = false;
-                        }
-                        break;
+                    isContiguous = false;
                 }
-                lastReplaceIndex++;
+                lastReplaceIndex = current;
             }
             current++;
         }
