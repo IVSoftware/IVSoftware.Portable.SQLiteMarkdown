@@ -78,6 +78,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 
             ((MutationPreviewCollection)NewItems).Modified += (sender, e) => IsModified = true;
             ((MutationPreviewCollection)OldItems).Modified += (sender, e) => IsModified = true;
+
+            NewStartingIndex = newStartingIndex;
+            OldStartingIndex = oldStartingIndex;
         }
         bool _isReverting = false;
 
@@ -265,7 +268,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 }
             }
         }
-        int _newStartingIndex = default;
+        int _newStartingIndex = -1;
 
         public int OldStartingIndex
         {
@@ -286,7 +289,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 }
             }
         }
-        int _oldStartingIndex = default;
+        int _oldStartingIndex = -1;
 
         bool _cancel;
 

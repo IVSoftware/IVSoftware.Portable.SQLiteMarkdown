@@ -120,7 +120,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         void InsertRange(int startingIndex, IEnumerable items);
         void RemoveRange(int startingIndex, int endingIndex);
         int RemoveMultiple(IEnumerable items);
-        IDisposable BeginBatch();
     }
     internal interface IRangeable<T> : IRangeable
     {

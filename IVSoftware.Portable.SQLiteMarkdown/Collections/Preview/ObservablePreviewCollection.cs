@@ -270,15 +270,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         {
             using (BeginBatch())
             {
+                int newStartingIndex = Count;
                 foreach (var item in items)
                 {
                     if(item is T itemT)
                     {
-                        Add(itemT);
+                        // [Careful]
+                        // Use Insert.
+                        // We can't use Add because the collection
+                        // doesn't actually change until the end.
+                        InsertItem(newStartingIndex++, itemT);
                     }
                     else
                     {
-                        item.ThrowHard<InvalidCastException>($"All rannge items must be {typeof(T).Name}");
+                        item.ThrowHard<InvalidCastException>($"All range items must be {typeof(T).Name}");
                         return;
                     }
                 }

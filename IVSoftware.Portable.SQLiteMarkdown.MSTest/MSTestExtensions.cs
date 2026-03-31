@@ -1,6 +1,5 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
-using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
 using SQLite;
@@ -125,45 +124,43 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             else
             {
                 @this.Clear();
-            };
+            }
 
             if (options?.HasFlag(PopulateOptions.DetectIRangeable) is true && @this is IRangeable rangeable)
             {
-                List<TItem> stagedForTest = new();
+                // Safe (not circular) because this object is not IRangeable.
+                IList<TItem> stagedForTest = new List<TItem>().PopulateForDemo(count);
+#if DEBUG
+                var cMe = JsonConvert.SerializeObject(stagedForTest, Formatting.Indented);
+#endif
+
+                rangeable.AddRange(stagedForTest);
             }
             else
-            {
-                localAddLoop(@this);
-            }
-
-            void Add(IList<TItem> target, string description, string tags, bool isChecked, List<string>? keywords = null)
-            {
-                var instance = new TItem();
-                typeof(TItem).GetProperty("Description")?.SetValue(instance, description);
-                typeof(TItem).GetProperty("Tags")?.SetValue(instance, tags);
-                typeof(TItem).GetProperty("IsChecked")?.SetValue(instance, isChecked);
-                if (keywords != null)
-                {
-                    var json = JsonConvert.SerializeObject(keywords);
-                    typeof(TItem).GetProperty("Keywords")?.SetValue(instance, json);
-                }
-                target.Add(instance);
-            }
-            return @this;
-
-            #region L o c a l F x
-            void localAddLoop(IList<TItem> target)
             {
                 for (int i = 1; i <= count; i++)
                 {
                     Add(
-                        target,
                         description: $"Item{i:d2}",
                         tags: string.Empty,
                         isChecked: options?.HasFlag(PopulateOptions.RandomChecks) == true && rando.Next(2) == 1);
                 }
+
+                void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
+                {
+                    var instance = new TItem();
+                    typeof(TItem).GetProperty("Description")?.SetValue(instance, description);
+                    typeof(TItem).GetProperty("Tags")?.SetValue(instance, tags);
+                    typeof(TItem).GetProperty("IsChecked")?.SetValue(instance, isChecked);
+                    if (keywords != null)
+                    {
+                        var json = JsonConvert.SerializeObject(keywords);
+                        typeof(TItem).GetProperty("Keywords")?.SetValue(instance, json);
+                    }
+                    @this.Add(instance);
+                }
             }
-            #endregion L o c a l F x
+            return @this;
         }
 
         public static T DequeueSingle<T>(this Queue<T> queue)
