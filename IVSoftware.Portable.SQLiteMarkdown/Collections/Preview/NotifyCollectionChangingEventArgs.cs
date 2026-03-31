@@ -79,8 +79,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             ((MutationPreviewCollection)NewItems).Modified += (sender, e) => IsModified = true;
             ((MutationPreviewCollection)OldItems).Modified += (sender, e) => IsModified = true;
 
-            NewStartingIndex = newStartingIndex;
-            OldStartingIndex = oldStartingIndex;
+            _newStartingIndex = newStartingIndex;
+            _oldStartingIndex = oldStartingIndex;
         }
         bool _isReverting = false;
 
