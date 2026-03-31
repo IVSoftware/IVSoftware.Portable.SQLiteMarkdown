@@ -584,6 +584,19 @@ NetProjection.Add     NewItems=10 NewStartingIndex= 0 NotifyCollectionChangedEve
                 actual.NormalizeResult(),
                 "Expecting implicit model to match."
             );
+
+
+            actual = string.Join(Environment.NewLine, builder);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           ";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting a single aggregate collection change."
+            );
         }
         #endregion S U B T E S T S
     }
