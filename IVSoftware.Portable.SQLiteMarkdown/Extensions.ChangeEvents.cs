@@ -481,7 +481,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             compare ??= (a, b) => ReferenceEquals(a, b);
 
-            int current = 0, prev = -1;
+            int
+                current = 0,
+                lastReplaceIndex = int.MinValue;
             bool isContiguous = true;
             EnumHistogrammer<NotifyCollectionChangeAction> histo = new(ZeroCountOption.IncrementOnly);
             List<NotifyCollectionChangingEventArgs> changes = new();
@@ -506,11 +508,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         oldItems: new[] { listBefore[current] },
                         oldStartingIndex: current));
                     histo.Increment(NotifyCollectionChangeAction.Replace);
-                    prev = current;
+                    if (isContiguous
+                        && lastReplaceIndex != int.MinValue
+                        && lastReplaceIndex != current - 1)
+                    {
+                        isContiguous = false;
+                    }
+                    lastReplaceIndex = current;
                 }
                 current++;
             }
-            isContiguous = current == prev + 1;
 
             // Block of contiguous adds.
             while (current < listAfter.Count)
