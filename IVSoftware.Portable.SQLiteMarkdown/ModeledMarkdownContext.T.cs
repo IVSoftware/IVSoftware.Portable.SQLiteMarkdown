@@ -458,17 +458,19 @@ SELECT * FROM items WHERE
                                 ((IList)PredicateMatchSubset)
                                 .Diff((IList)CanonicalSuperset,
                                 reason: NotifyCollectionChangeReason.RemoveFilter);
-                            OnModelChanged(ePost);
+                            OnModelChanging(ePost, out bool cancel);
+                            if(!cancel) OnModelChanged(ePost);
                         }
                         if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
                         {
-                            OnModelChanged(
-                                new ModelSettledEventArgs
+                            var ePost = new ModelSettledEventArgs
                                 (
                                     reason: NotifyCollectionChangeReason.RemoveFilter,
                                     action: NotifyCollectionChangedAction.Reset
-                                )
-                            );
+                                );
+                            
+                            OnModelChanging(ePost, out bool cancel);
+                            if(!cancel) OnModelChanged(ePost);
                         }
                     }
                     break;
@@ -722,6 +724,16 @@ SELECT * FROM items WHERE
         }
 
         /// <summary>
+        /// Raise an event as unknown. Subclass is allowed to upgrade it.
+        /// </summary>
+        protected virtual void OnModelChanging(EventArgs eUnk, out bool cancel)
+        {
+            ModelChanging?.Invoke(this, eUnk);
+            cancel = (eUnk as CancelEventArgs)?.Cancel ?? false;
+        }
+
+
+        /// <summary>
         /// Signals that the markdown model has reached a stable state following an input-driven reconciliation.
         /// </summary>
         /// <remarks>
@@ -955,6 +967,7 @@ SELECT * FROM items WHERE
             }
         }
 
+        public event EventHandler? ModelChanging;
         public event NotifyCollectionChangedEventHandler? ModelChanged;
 
         /// <summary>

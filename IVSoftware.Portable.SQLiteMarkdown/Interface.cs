@@ -312,6 +312,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         XElement Model { get; }
 
         /// <summary>
+        /// Raises an immutable NotifyCollectionChangedEventArgs.
+        /// </summary>
+        /// <remarks>
+        /// The consumer can optionally upgrade to a derivative of CancelEventArgs.
+        /// </remarks>
+        event EventHandler ModelChanging;
+
+        /// <summary>
         /// Requests that an external host raise a collection change notification.
         /// </summary>
         /// <remarks>

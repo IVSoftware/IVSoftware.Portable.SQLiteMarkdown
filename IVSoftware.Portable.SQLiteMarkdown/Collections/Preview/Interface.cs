@@ -114,8 +114,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         /// consistent change contract.
         /// </remarks>
         NotifyCollectionChangeScope EventScope { get; }
-
-        event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
+        public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
     }
 
     internal interface IRangeable
