@@ -27,6 +27,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public enum ReportFormat
     {
         StateReport,
+
+        /// <summary>
+        /// For objects with a native Model property, or that have 
+        /// an implicit cast to XElement, return model.ToString().
+        /// </summary>
+        Model,
+
         //OptionsReport,
         //SettingsReport,
     }

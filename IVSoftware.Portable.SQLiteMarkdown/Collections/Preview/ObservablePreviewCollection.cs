@@ -1,13 +1,51 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
+    /// <summary>
+    /// Listed in order of preference.
+    /// </summary>
+    internal enum ModelingCapability
+    {
+        /// <summary>
+        /// Detected a string property named FullPath.
+        /// </summary>
+        FullPath,
+
+        /// <summary>
+        /// A [PrimaryKey] property or a string property named Id.
+        /// </summary>
+        Id,
+
+        /// <summary>
+        /// A [PrimaryKey] property or a string property named Description.
+        /// </summary>
+        Description,
+
+        /// <summary>
+        /// A [PrimaryKey] property or a string property named Text.
+        /// </summary>
+        Text,
+
+        /// <summary>
+        /// Failed to find a suitable modeling property.
+        /// </summary>
+        Unavailable,
+    }
     internal partial class ObservablePreviewCollection<T>
         : ObservableCollection<T>
         , INotifyCollectionChanging
@@ -226,10 +264,151 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             }
         }
 
+        public static implicit operator XElement(ObservablePreviewCollection<T> @this)
+        {
+            XElement model = new XElement(nameof(StdMarkdownElement.model));
+            model.SetAttributeValue(@this.ModelingCapability);
+            int itemCount = 0;
+            if (@this.ModelingCapability != ModelingCapability.Unavailable)
+            {
+                foreach (var item in @this)
+                {
+                    if (@this.GetFullPath?.Invoke(item) is { } full
+                        && !string.IsNullOrWhiteSpace(full))
+                    {
+                        var placerResult = model.Place(full, out var xel);
+                        switch (placerResult)
+                        {
+                            case PlacerResult.Exists:
+                                break;
+                            case PlacerResult.Created:
+                                xel.Name = nameof(StdMarkdownElement.xitem);
+                                xel.SetBoundAttributeValue(
+                                    tag: item,
+                                    name: nameof(StdMarkdownAttribute.model));
+
+                                xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), itemCount++);
+                                break;
+                            default:
+                                "ObservablePreviewCollection".ThrowFramework<NotSupportedException>(
+                                    $"Unexpected result: `{placerResult.ToFullKey()}`. Expected options are {PlacerResult.Created} or {PlacerResult.Exists}");
+                                break;
+                        }
+                    }
+                }
+            }
+            return model;
+        }
+
+        /// <summary>
+        /// Determine the highest fidelity full path for T.
+        /// </summary>
+        public ModelingCapability ModelingCapability
+        {
+            get
+            {                
+                if (_modelingCapability is null)
+                {
+                    var type = typeof(T);
+                    foreach (ModelingCapability capability in Enum.GetValues(typeof(ModelingCapability)))
+                    {
+                        _modelingCapability = capability;
+                        switch (capability)
+                        {
+                            case ModelingCapability.Id:
+                                _fullPathPI = type.GetSQLiteMapping()?.PK?.PropertyInfo;
+                                if (_fullPathPI is null)
+                                {
+                                    _fullPathPI = type.GetProperty(capability.ToString());
+                                }
+                                if (_fullPathPI is null) // Still...
+                                {
+                                    break;
+                                }
+                                else
+                                {
+                                    goto breakFromInner;
+                                }
+                            case ModelingCapability.FullPath:
+                            case ModelingCapability.Description:
+                            case ModelingCapability.Text:
+                            case ModelingCapability.Unavailable:
+                                _fullPathPI = type.GetProperty(capability.ToString());
+                                if (_fullPathPI is null)
+                                {
+                                    break;
+                                }
+                                else
+                                {
+                                    goto breakFromInner;
+                                }
+                            default:
+                                this.ThrowHard<NotSupportedException>($"The {capability.ToFullKey()} case is not supported.");
+                                _modelingCapability = ModelingCapability.Unavailable;
+                                // If handled, allow loop to continue;
+                                break;
+                        }
+                    }
+                }
+                breakFromInner:
+                return (ModelingCapability)_modelingCapability!;
+            }
+        }
+        ModelingCapability? _modelingCapability = null;
+        PropertyInfo? _fullPathPI = null;
+
+        public Func<T, string>? GetFullPath
+        {
+            get
+            {
+                if (ModelingCapability == ModelingCapability.Unavailable)
+                {
+                    return null;
+                }
+                else
+                {
+                    if (_getFullPath is null)
+                    {
+                        var instance = Expression.Parameter(typeof(T), "item");
+                        var property = Expression.Property(instance, _fullPathPI);
+
+                        Expression body =
+                            property.Type == typeof(string)
+                            ? property
+                            : Expression.Call(property, nameof(object.ToString), Type.EmptyTypes);
+
+#if DEBUG
+                        Debug.WriteLine($"260331.A {Expression.Lambda<Func<T, string>>(body, instance)}");
+                        { }
+#endif
+
+                        _getFullPath =
+                            Expression.Lambda<Func<T, string>>(body, instance)
+                            .Compile();
+                    }
+                    return _getFullPath;
+                }
+            }
+        }
+        Func<T, string>? _getFullPath;
+
+
         #region D H O S T
         IDisposable BeginApply() => DHostApply.GetToken(this);
         DisposableHost DHostApply { get; } = new();
         public IDisposable BeginBatch() => DHostBatch.GetToken(this);
+
+        public virtual string ToString(ReportFormat formatting)
+        {
+            switch (formatting)
+            {
+                case ReportFormat.Model:
+                    return ((XElement)this).ToString();
+                default:
+                    throw new NotSupportedException($"{formatting.ToFullKey()} is not supported by this object.");
+            }
+        }
+
         DHostBatchCollectionChange DHostBatch
         {
             get

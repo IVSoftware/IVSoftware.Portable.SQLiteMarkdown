@@ -542,25 +542,51 @@ NetProjection.Add     NewItems=10 NewStartingIndex= 0 NotifyCollectionChangedEve
         #endregion S U B T E S T S
     }
 
-
     [TestMethod]
     public void Test_BasicIRangeable()
     {
         string actual, expected;
         using var te = this.TestableEpoch();
         var builder = new List<string>();
-        var opc = new ObservablePreviewCollection<SelectableQFModel>();
 
+        var opc = new ObservablePreviewCollection<SelectableQFModel>();
         var range = (List <SelectableQFModel>)new List<SelectableQFModel>().PopulateForDemo(5);
-        { }
 
         #region E V E N T S
         opc.CollectionChanged += (sender, e) =>
+        {
             builder.Add(e.ToString(ReferenceEquals(sender, opc)));
+        };
         #endregion E V E N T S
-        opc.AddRange(range);
-    }
 
+        subtest_AddRange();
+
+        #region S U B T E S T S
+        void subtest_AddRange()
+        {
+            opc.AddRange(range);
+
+            actual = opc.ToString(ReportFormat.Model);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model modelingcapability=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting implicit model to match."
+            );
+        }
+        #endregion S U B T E S T S
+    }
 
     [TestMethod, DoNotParallelize]
     public void Test_BasicMOPC()
