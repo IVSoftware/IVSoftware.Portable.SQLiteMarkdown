@@ -136,7 +136,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), itemCount++);
                                     if (mdc.IsFiltering)
                                     {
-                                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 30).Date, "Don't forget disabled");
+                                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 3, 31).Date, "Don't forget disabled");
                                         // Make sure we mark canonical match until next filter op.
                                         // matches++;
                                     }

@@ -1496,7 +1496,7 @@ NetProjection.Reset   ModelSettledEventArgs           "
                     { }
                     expected = @" 
 NetProjection.Reset   NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems=12 NewIndex= 0 NotifyCollectionChangedEventArgs           "
+NetProjection.Add     NewItems=12 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -3220,7 +3220,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 { }
                 expected = @" 
 NetProjection.Reset   NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems=12 NewIndex= 0 NotifyCollectionChangedEventArgs           "
+NetProjection.Add     NewItems=12 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
                 ;
 
                 Assert.AreEqual(

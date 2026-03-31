@@ -668,12 +668,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             if (e.NewStartingIndex != -1)
             {
-                sb.Append($"NewIndex={e.NewStartingIndex.ToString().PadLeft(2)} ");
+                sb.Append($"NewStartingIndex={e.NewStartingIndex.ToString().PadLeft(2)} ");
             }
 
             if (e.OldStartingIndex != -1)
             {
-                sb.Append($"OldIndex={e.OldStartingIndex.ToString().PadLeft(2)} ");
+                sb.Append($"OldStartingIndex={e.OldStartingIndex.ToString().PadLeft(2)} ");
             }
 
             switch (e)

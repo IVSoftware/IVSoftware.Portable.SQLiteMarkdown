@@ -55,7 +55,7 @@ public class TestClass_ObservablePreviewCollection
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs           "
+NetProjection.Add     NewItems= 1 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
             ;
 
             Assert.AreEqual(
@@ -121,7 +121,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs  
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs           "
+NetProjection.Add     NewItems= 1 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
             ;
 
             Assert.AreEqual(
@@ -308,7 +308,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs  
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Replace NewItems= 1 OldItems= 1 NewIndex= 0 OldIndex= 0 NotifyCollectionChangedEventArgs           "
+NetProjection.Replace NewItems= 1 OldItems= 1 NewStartingIndex= 0 OldStartingIndex= 0 NotifyCollectionChangedEventArgs           "
             ;
 
             Assert.AreEqual(
@@ -441,7 +441,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Move    NewItems= 1 OldItems= 1 NewIndex= 1 OldIndex= 0 NotifyCollectionChangedEventArgs           "
+NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingIndex= 0 NotifyCollectionChangedEventArgs           "
             ;
 
             Assert.AreEqual(
@@ -528,7 +528,7 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewIndex= 1 OldIndex= 0 NotifyColl
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Add     NewItems=10 NewIndex= 0 NotifyCollectionChangedEventArgs           "
+NetProjection.Add     NewItems=10 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
             ;
 
             Assert.AreEqual(
@@ -575,18 +575,7 @@ NetProjection.Add     NewItems=10 NewIndex= 0 NotifyCollectionChangedEventArgs  
         // the simView and the simView being driven by itemsSource.
         mopc.CollectionChanged += (sender, e) =>
         {
-            var isProjection = ReferenceEquals(sender, mopc);
-            if (isProjection)
-            {
-                builder.Add(e.ToString(true));
-            }
-            else
-            {
-                builder.Add(e.ToString(false).Replace(
-                    "Other        ",
-                    "SimView      "));
-            }
-
+            builder.Add(e.ToString(ReferenceEquals(sender, mopc)));
         };
         #endregion E V E N T S
 
@@ -621,11 +610,11 @@ NetProjection.Add     NewItems=10 NewIndex= 0 NotifyCollectionChangedEventArgs  
             { }
             expected = @" 
 NetProjection.Reset   NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewIndex= 0 NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewIndex= 1 NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewIndex= 2 NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewIndex= 3 NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewIndex= 4 NotifyCollectionChangedEventArgs           ";
+NetProjection.Add     NewItems= 1 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           
+NetProjection.Add     NewItems= 1 NewStartingIndex= 1 NotifyCollectionChangedEventArgs           
+NetProjection.Add     NewItems= 1 NewStartingIndex= 2 NotifyCollectionChangedEventArgs           
+NetProjection.Add     NewItems= 1 NewStartingIndex= 3 NotifyCollectionChangedEventArgs           
+NetProjection.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEventArgs           ";
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -659,16 +648,6 @@ NetProjection.Add     NewItems= 1 NewIndex= 4 NotifyCollectionChangedEventArgs  
 
             expected = @" 
 <model mdc=""[MDC]"" histo=""[model:5 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""1"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""3"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""4"" />
-</model>"
-            ;
-
-            expected = @" 
-<model mdc=""[MDC]"" histo=""[model:5 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" />
   <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" />
@@ -687,7 +666,7 @@ NetProjection.Add     NewItems= 1 NewIndex= 4 NotifyCollectionChangedEventArgs  
             { }
             expected = @" 
 NetProjection.Reset   NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 5 NewIndex= 0 NotifyCollectionChangedEventArgs           ";
+NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           ";
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
