@@ -908,7 +908,6 @@ SELECT * FROM items WHERE
                     {
                         switch (eModel.Reason)
                         {
-                            case NotifyCollectionChangeReason.QueryResult:
                             case NotifyCollectionChangeReason.ApplyFilter:
                             case NotifyCollectionChangeReason.RemoveFilter:
                                 // Avoid Clear() here. Some observers treat Clear as a semantic reset

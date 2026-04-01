@@ -19,7 +19,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
         /// <summary>
         /// These items (old and new) represent a new canonical recordset.
         /// </summary>
-        QueryResult = NotifyCollectionChangeReason.QueryResult,
+        QueryResult = 0x1000,
 
         /// <summary>
         /// These items (old and new) represent a narrower subset.

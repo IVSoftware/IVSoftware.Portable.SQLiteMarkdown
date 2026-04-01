@@ -28,6 +28,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         /// </summary>
         None = 0x0000,
 
+#if false && RESERVED
         /// <summary>
         /// These items (old and new) represent a new canonical recordset.
         /// </summary>
@@ -37,6 +38,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         /// These items (old and new) represent a narrower subset.
         /// </summary>
         ApplyFilter = QueryResult << 1,
+#else
+        /// <summary>
+        /// These items (old and new) represent a narrower subset.
+        /// </summary>
+        ApplyFilter = 0x2000,
+#endif
 
         /// <summary>
         /// These items (old and new) represent a wider subset.
