@@ -295,7 +295,7 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 0 OldStartingInd
 
     [Canonical("Snippet: ocsuppress")]
     private class SuppressibleObservableCollection<T>
-        : ObservableCoalescableCollection<T>
+        : ObservableSuppressibleCollection<T>
         , INotifyCollectionChangedSuppress
     {
         public SuppressibleObservableCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly) 

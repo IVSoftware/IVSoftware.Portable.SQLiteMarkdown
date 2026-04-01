@@ -7,9 +7,9 @@ using System.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
-    internal class ObservableCoalescableCollection<T> : ObservableCollection<T>
+    internal class ObservableSuppressibleCollection<T> : ObservableCollection<T>
     {
-        public ObservableCoalescableCollection(NotifyCollectionChangeScope eventScope)
+        public ObservableSuppressibleCollection(NotifyCollectionChangeScope eventScope)
         {
             EventScope = eventScope;
         }

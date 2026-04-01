@@ -21,7 +21,7 @@ using System.Xml.Linq;
 namespace IVSoftware.Portable.Collections.Preview
 {
     internal partial class ObservablePreviewCollection<T>
-        : ObservableCoalescableCollection<T>
+        : ObservableSuppressibleCollection<T>
         , INotifyCollectionChanging
     {
         public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
