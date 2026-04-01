@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,22 +11,15 @@ using System.Linq;
 namespace IVSoftware.Portable.Collections.Preview
 {
     internal sealed class DHostSuppress : DisposableHost
-    {
-        object[] _listB4 = [];
+    {        
+        public object[] Snapshot { get; private set; } = [];
+
         IList _listFTR = null!;
 
         protected override void OnBeginUsing(BeginUsingEventArgs e)
         {
             _cancel = false;
-            if (e.AutoDisposableContext.Sender is SuppressionPhase phase)
-            {
-                Phase = phase;
-            }
-            else
-            {
-                this.ThrowFramework<InvalidOperationException>(
-                    $"{nameof(Phase)} must be specified as token sender that is {nameof(SuppressionPhase)}.");
-            }
+            Phase = SuppressionPhase.Preview;
             base.OnBeginUsing(e);
         }
 
@@ -41,20 +35,19 @@ namespace IVSoftware.Portable.Collections.Preview
         /// - IList consisting or multiple, single, indexed Replace events.
         /// The probably response when a consumer inspects NewItems and sees multiple replace events is a reset + add.
         /// </remarks>
-        [Careful("Maintain authority while disposing")]
         protected override void OnFinalDispose(FinalDisposeEventArgs e)
         {
-            var before = (IList)_listB4;
+            var before = (IList)Snapshot;
             var after = _listFTR;
 
             var digest = 
                 _cancel
                 ? new NotifyCollectionChangingEventArgs(
                     action: NotifyCollectionChangeAction.Reset,
-                    reason: NotifyCollectionChangeReason.Batch | NotifyCollectionChangeReason.Cancel)
+                    reason: NotifyCollectionChangeReason.Coalesce | NotifyCollectionChangeReason.Cancel)
                 : before.Diff(
                     after,
-                    reason: NotifyCollectionChangeReason.Batch);
+                    reason: NotifyCollectionChangeReason.Coalesce);
 
             var snapshot = e.Keys.ToDictionary(
                 key => key,
@@ -68,14 +61,13 @@ namespace IVSoftware.Portable.Collections.Preview
                 snapshot,
                 digest,
                 _listFTR);
-            IsDisposing = true;
             try
             {
+                Phase = SuppressionPhase.Commit;
                 base.OnFinalDispose(eBatch);
             }
             finally
             {
-                IsDisposing = false;
                 Phase = SuppressionPhase.None;
             }
             _isModified = false;
@@ -87,22 +79,20 @@ namespace IVSoftware.Portable.Collections.Preview
 
         [Canonical]
         public IDisposable GetToken(
-            SuppressionPhase phase,
             IList list,
             Dictionary<string, object>? properties = null)
         {
             InitializeToken(list);
-            return base.GetToken(sender: phase, properties: properties);
+            return base.GetToken(sender: list, properties: properties);
         }
 
         public IDisposable GetToken(
-            SuppressionPhase phase,
             IList list,
             string key,
             object value)
         {
             InitializeToken(list);
-            return base.GetToken(sender: phase, key, value);
+            return base.GetToken(sender: list, key, value);
         }
 
         // Hard block all ambiguous entry points
@@ -117,37 +107,11 @@ namespace IVSoftware.Portable.Collections.Preview
 
         private void InitializeToken(IList list)
         {
-            _listB4 = list.Cast<object>().ToArray();
-            _listFTR = _listB4.ToList();
+            Snapshot = list.Cast<object>().ToArray();
+            _listFTR = Snapshot.ToList();
             _isModified = false;
         }
-
-        /// <summary>
-        /// Returns true if a batch is in progress.
-        /// </summary>
-        public SuppressionPhase TryAppend(Func<NotifyCollectionChangingEventArgs> dlgt)
-        {
-            if(IsZero())
-            {
-                return SuppressionPhase.None;
-            }
-            else
-            {
-                if(IsDisposing)
-                {
-                    return SuppressionPhase.Commit;
-                }
-                else
-                {
-                    _listFTR.Apply(dlgt());
-                    _isModified = true;
-                    return SuppressionPhase.Preview;
-                }
-            }
-        }
         bool _isModified = false;
-
-        public bool IsDisposing { get; private set; }
         public SuppressionPhase Phase { get; private set; } = SuppressionPhase.None;
     }
 

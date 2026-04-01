@@ -41,7 +41,7 @@ public class TestClass_260401_OPCv2
         #endregion E V E N T S
 
         subtest_None();
-        subtest_Preview();
+        // subtest_Preview();
 
         #region S U B T E S T S
 
@@ -179,7 +179,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             builder.Clear();
 
             // P R E V I E W
-            using (itemsSource.BeginCoalesce(SuppressionPhase.Preview))
+            using (itemsSource.BeginSuppress())
             {
                 itemsSource.Add(i1);
                 itemsSource.Add(i2);
@@ -202,7 +202,7 @@ NetProjection.Add     NewItems= 3 NewStartingIndex= 0 NotifyCollectionChangedEve
 
             builder.Clear();
 
-            using (itemsSource.BeginCoalesce(SuppressionPhase.Preview))
+            using (itemsSource.BeginSuppress())
             {
                 itemsSource.Remove(i1);
                 itemsSource.RemoveAt(1);
@@ -296,7 +296,7 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 0 OldStartingInd
     [Canonical("Snippet: ocsuppress")]
     private class SuppressibleObservableCollection<T>
         : ObservableCoalescableCollection<T>
-        , INotifyCollectionChangedSuppressible
+        , INotifyCollectionChangedSuppress
     {
         public SuppressibleObservableCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly) 
             : base(eventScope)

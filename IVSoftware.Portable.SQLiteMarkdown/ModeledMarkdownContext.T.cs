@@ -601,7 +601,7 @@ SELECT * FROM items WHERE
             }
         }
 
-        public IDisposable BeginCoalesce(SuppressionPhase phase) => DHostCoalesce.GetToken(phase, this);
+        public IDisposable BeginCoalesce() => DHostCoalesce.GetToken(this);
         DHostSuppress DHostCoalesce
         {
             get
@@ -1070,7 +1070,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginCoalesce(SuppressionPhase.Preview))
+                        using (BeginCoalesce())
                         {
                             foreach (var newItem in newItems)
                             {
@@ -1159,7 +1159,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginCoalesce(SuppressionPhase.Preview))
+                        using (BeginCoalesce())
                         {
                             await Task.Run(() =>
                             {

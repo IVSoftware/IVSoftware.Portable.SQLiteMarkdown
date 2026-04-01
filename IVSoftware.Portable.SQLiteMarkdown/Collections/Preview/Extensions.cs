@@ -608,7 +608,7 @@ namespace IVSoftware.Portable.Collections.Preview
                     //   listen to Reason and opt for Clear + Add instead.
                     result = new NotifyCollectionChangingEventArgs(
                         action: NotifyCollectionChangeAction.Add,
-                        reason: reason | NotifyCollectionChangeReason.Batch,
+                        reason: reason | NotifyCollectionChangeReason.Coalesce,
                         scope: scope,
                         newStartingIndex: (int)newStartingIndex!,
                         newItems: changes.ToList());
@@ -617,15 +617,15 @@ namespace IVSoftware.Portable.Collections.Preview
 
             // Validate that incoming reason intent is
             // being accurately portrayed.
-            if (reason == NotifyCollectionChangeReason.Batch)
+            if (reason == NotifyCollectionChangeReason.Coalesce)
             {
                 // Do not combine these clauses please.
-                if (result.Reason != NotifyCollectionChangeReason.Batch)
+                if (result.Reason != NotifyCollectionChangeReason.Coalesce)
                 {
                     nameof(Diff).ThrowFramework<NotSupportedException>("Failed to assign reason.");
                 }
             }
-            else if ((result.Reason & ~NotifyCollectionChangeReason.Batch) != reason)
+            else if ((result.Reason & ~NotifyCollectionChangeReason.Coalesce) != reason)
             {
                 nameof(Diff).ThrowFramework<NotSupportedException>("Failed to assign reason.");
             }

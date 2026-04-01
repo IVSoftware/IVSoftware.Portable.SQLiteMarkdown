@@ -56,12 +56,12 @@ namespace IVSoftware.Portable.Collections.Preview
         /// <summary>
         /// These items (old and new) represent a deferred collection change digest.
         /// </summary>
-        Batch = RemoveFilter << 1,
+        Coalesce = RemoveFilter << 1,
 
         /// <summary>
         /// Indicates that a batch was canceled while it was building.
         /// </summary>
-        Cancel = Batch << 1,
+        Cancel = Coalesce << 1,
 
         /// <summary>
         /// Attributes a Reset action produced by an illegal configuration request.
@@ -173,7 +173,7 @@ namespace IVSoftware.Portable.Collections.Preview
     /// Defines a scoped model for temporarily suppressing collection change notifications
     /// during coordinated or batched updates with the goal of reducing or eliminating churn.
     /// </remarks>
-    internal interface INotifyCollectionChangedSuppressible
+    internal interface INotifyCollectionChangedSuppress
     {
         /// <summary>
         /// Increments the ref count for the suppression epoch.
@@ -182,7 +182,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// When the ref count returns to zero, disposal raises a final event
         /// with a coalesced <see cref="NotifyCollectionChangingEventArgs"/> instance.
         /// </remarks>
-        IDisposable BeginCoalesce(SuppressionPhase phase);
+        IDisposable BeginSuppress();
 
         /// <summary>
         /// Sets an internal flag indicating that the final emission for the current
@@ -191,10 +191,10 @@ namespace IVSoftware.Portable.Collections.Preview
         /// <remarks>
         /// This method does not terminate the suppression scope or affect the reference
         /// count. Disposal proceeds normally via the <see cref="IDisposable"/> tokens
-        /// returned by <see cref="BeginCoalesce"/>. Instead, it alters the semantics
+        /// returned by <see cref="BeginSuppress"/>. Instead, it alters the semantics
         /// of the final emission, signaling that the coalesced result should be disregarded.
         /// </remarks>
-        void CancelCoalesce();
+        void CancelSuppress();
 
         /// <summary>
         /// Gets the current phase of the suppression epoch.

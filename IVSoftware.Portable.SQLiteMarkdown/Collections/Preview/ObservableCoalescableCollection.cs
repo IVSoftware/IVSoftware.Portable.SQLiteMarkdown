@@ -14,6 +14,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             EventScope = eventScope;
         }
         public NotifyCollectionChangeScope EventScope { get; }
+
+        protected override void ClearItems()
+        {
+            base.ClearItems();
+        }
+#if false
         protected override void InsertItem(int index, T item)
         {
             Func<NotifyCollectionChangingEventArgs> action = () =>
@@ -23,10 +29,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                         newItems: new[] { item },
                         newStartingIndex: index);
 
+           base.InsertItem(index, item);
+
             switch (DHostCoalesce.TryAppend(action))
             {
                 case SuppressionPhase.None:
-                    base.InsertItem(index, item);
                     break;
                 case SuppressionPhase.Preview:
                     break;
@@ -140,10 +147,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     break;
             }
         }
+#endif
 
-        public IDisposable BeginCoalesce(SuppressionPhase phase) => DHostCoalesce.GetToken(phase, this);
+        public IDisposable BeginSuppress() => DHostCoalesce.GetToken(this);
 
-        public void CancelCoalesce() => DHostCoalesce.CancelSuppressNotify();
+        public void CancelSuppress() => DHostCoalesce.CancelSuppressNotify();
         public SuppressionPhase Phase => DHostCoalesce.Phase;
 
         public DHostSuppress DHostCoalesce
