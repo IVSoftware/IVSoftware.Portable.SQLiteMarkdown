@@ -1,7 +1,7 @@
-﻿using IVSoftware.Portable.Common.Attributes;
+﻿using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
-using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
@@ -23,7 +23,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static IVSoftware.Portable.SQLiteMarkdown.Internal.Extensions;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -52,6 +51,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+
         protected override void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
             // Update histogram first.

@@ -14,9 +14,7 @@ namespace IVSoftware.Portable.Collections.Preview
     internal sealed class DHostSuppress<T> : DisposableHost
     {
         public ReadOnlyCollection<T> Snapshot { get; private set; } = null!;
-
-        IList _listB4 => Snapshot;
-        IList _listFTR = null!;
+        IList<T> _listFTR = null!;
 
         protected override void OnBeginUsing(BeginUsingEventArgs e)
         {
@@ -39,7 +37,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// </remarks>
         protected override void OnFinalDispose(FinalDisposeEventArgs e)
         {
-            var before = _listB4;
+            var before = Snapshot;
             var after = _listFTR;
 
             var digest = 
@@ -110,7 +108,7 @@ namespace IVSoftware.Portable.Collections.Preview
         private void InitializeToken(IList<T> list)
         {
             Snapshot = new ReadOnlyCollection<T>(list.ToArray());
-            _listFTR = Snapshot.ToList();
+            _listFTR = list;
             _isModified = false;
         }
         bool _isModified = false;
