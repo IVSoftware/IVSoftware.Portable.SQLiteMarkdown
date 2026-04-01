@@ -49,7 +49,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         Batch = RemoveFilter << 1,
 
         /// <summary>
-        /// Attributes a Reset action produced by an illegal configuration request.
+        /// Indicates that a batch was canceled while it was building.
         /// </summary>
         Cancel = Batch << 1,
 
