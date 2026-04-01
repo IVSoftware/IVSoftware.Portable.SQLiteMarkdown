@@ -196,18 +196,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             builder.Add($"{@this.ReplaceItemsEventingOptions.ToFullKey()}");
             return string.Join(", ", builder);
         }
-
-        public static ModelPreviewDelegate GetModelPreviewDlgt<T>(this object? _)
-        {
-            var type = typeof(T);
-            if(typeof(SelectableQFModel).IsAssignableFrom(type))
-            {
-                return (item)=>((SelectableQFModel?)item)?.Description?.PadRight(10).Substring(0, 10) ?? "Not Found";
-            }
-            else
-            {
-                throw new NotSupportedException($"No delegat is registered for {type.Name}");
-            }
-        }        
     }
 }

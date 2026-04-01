@@ -41,6 +41,8 @@ public class TestClass_260401_OPCv2
         #endregion E V E N T S
 
         subtest_None();
+        subtest_Freeze();
+
         // subtest_Preview();
 
         #region S U B T E S T S
@@ -174,6 +176,30 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             );
         }
 
+        void subtest_Freeze()
+        {
+            itemsSource.PopulateForDemo(5);
+            { }
+
+            actual = itemsSource.ToString(this.GetModelPreviewDlgt<SelectableQFModel>());
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model>
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
+        }
         void subtest_Preview()
         {
             builder.Clear();

@@ -178,18 +178,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             OnCollectionChanged((e.Coalesced));
         }
 
-        public new IEnumerator<T> GetEnumerator()
-        {
-            if(DHostSuppress.IsZero())
-            {
-                return base.GetEnumerator();
-            }
-            else
-            {
-                return DHostSuppress.Snapshot.GetEnumerator();
-            }
-        }
-
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public new IEnumerator<T> GetEnumerator()
+            => DHostSuppress.IsZero()
+            ? base.GetEnumerator()
+            : DHostSuppress.Snapshot.GetEnumerator();
+        public new int Count
+            => DHostSuppress.IsZero()
+            ? base.Count
+            : DHostSuppress.Snapshot.Count;
     }
 }
