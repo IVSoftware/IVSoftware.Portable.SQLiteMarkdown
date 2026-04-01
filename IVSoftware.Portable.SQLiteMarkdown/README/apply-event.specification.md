@@ -45,20 +45,20 @@ Range events can produce the same kind of churn.
 
 Collections that support `IRangeable` often produce `IsBclCompatible` for actions like `AddRange`, but can also feature multi moves or removes that may be jagged or discontiguouous and are therefore escalated to a non-compatible event and Batch semantics.
 
-There is, however, a major distinction to be made. When range methods are exposed, the mental model is, "Yhis will minimize churn or eliminate it altogether". 
+There is, however, a major distinction to be made. When range methods are exposed, the mental model is, "This will minimize churn or eliminate it altogether". 
 
 ___
 
-_MENTAL MODEL - Reducing churn for a collection that implements filtering capabilities is a **mandate**._
+_MENTAL MODEL - Reducing churn for a collection that implements range capabilities is a **mandate**._
 
 ___
 
-### Applying a Batch Event
+### The `Apply` Method Extension for `IList`
 
+Once the `Diff` method has been run to obtain the delta between two collections, it can be passed to the `Apply()` extension:
 
+```
+myList.Apply(ePre);
+```
 
-
-
-
-
-
+The `Diff` method will mark as `action: Reset` any configuration that is now `IsBclCompatible`.
