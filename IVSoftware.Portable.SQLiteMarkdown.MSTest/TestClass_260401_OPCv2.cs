@@ -179,7 +179,6 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
         void subtest_Freeze()
         {
             itemsSource.PopulateForDemo(5);
-            { }
 
             actual = itemsSource.ToString(this.GetModelPreviewDlgt<SelectableQFModel>());
             actual.ToClipboardExpected();
@@ -199,6 +198,92 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.NormalizeResult(),
                 "Expecting result to match."
             );
+
+            using (itemsSource.BeginSuppress())
+            {
+                itemsSource.RemoveAt(1);
+                Assert.AreEqual(5, itemsSource.Count);
+                itemsSource.RemoveAt(2);
+                Assert.AreEqual(5, itemsSource.Count);
+                itemsSource.RemoveAt(1);
+                Assert.AreEqual(5, itemsSource.Count);
+            }
+
+            actual = itemsSource.ToString(this.GetModelPreviewDlgt<SelectableQFModel>());
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model>
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""1"" preview=""Item05    "" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
+
+            itemsSource.PopulateForDemo(5);
+
+            using (itemsSource.BeginSuppress())
+            {
+                itemsSource.RemoveAt(1);
+                Assert.AreEqual(5, itemsSource.Count);
+                itemsSource.RemoveAt(2);
+                Assert.AreEqual(5, itemsSource.Count);
+            }
+
+            actual = itemsSource.ToString(this.GetModelPreviewDlgt<SelectableQFModel>());
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model>
+  <xitem text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""1"" preview=""Item03    "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""2"" preview=""Item05    "" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
+
+
+            itemsSource.PopulateForDemo(5);
+
+            int liveCount = itemsSource.Count;
+            using (itemsSource.BeginSuppress())
+            {
+                itemsSource.RemoveAt(1);                        // middle
+                liveCount--;
+                Assert.AreEqual(5, itemsSource.Count);
+                itemsSource.RemoveAt(0);                        // front
+                liveCount--;
+                Assert.AreEqual(5, itemsSource.Count);
+                itemsSource.RemoveAt(liveCount - 1);              // tail
+                Assert.AreEqual(5, itemsSource.Count);
+            }
+
+            actual = itemsSource.ToString(this.GetModelPreviewDlgt<SelectableQFModel>());
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model>
+  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""0"" preview=""Item03    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000010"" model=""[SelectableQFModel]"" order=""1"" preview=""Item04    "" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
+
         }
         void subtest_Preview()
         {

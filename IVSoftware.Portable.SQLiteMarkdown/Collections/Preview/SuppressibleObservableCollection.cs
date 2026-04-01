@@ -11,8 +11,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
     internal class SuppressibleObservableCollection<T> 
         : ObservableCollection<T>
-        , IEnumerable
-        , IList
+        , INotifyCollectionChangedSuppress<T>
     {        
         public SuppressibleObservableCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
         {
