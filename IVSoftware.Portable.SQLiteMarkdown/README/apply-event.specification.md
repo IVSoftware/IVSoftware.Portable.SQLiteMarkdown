@@ -2,8 +2,7 @@
 
 ## `NotifyCollectionChangingEventArgs`
 
-This class is an event change ledger.
-
+This class is an event change ledger with semantics for applying it to an `IList`.
 
 ### `IsBclCompatible`
 
@@ -59,6 +58,13 @@ Once the `Diff` method has been run to obtain the delta between two collections,
 
 ```
 myList.Apply(ePre);
+
 ```
 
-The `Diff` method will mark as `action: Reset` any configuration that is now `IsBclCompatible`.
+The `Diff` method has provided a value for `IsBclCompatible`.
+
+_TRUE_
+- The event is converted to a single call is made to the corresponding front-end method.
+- No attempt is made to suppress the resulting `CollectionChanged` event.
+
+Any event that is not `IsBclCompatible` be designated an `action: Reset`.
