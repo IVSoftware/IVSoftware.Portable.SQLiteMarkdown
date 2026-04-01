@@ -6,17 +6,17 @@ This class is an event change ledger with semantics for applying it to an `IList
 
 ### `IsBclCompatible`
 
+When true, this event is isomorphic - translatable to a standard `INotifyCollectionChanged` notification without loss, reinterpretation, or structural expansion.
 ___
 
 ## `Diff` Extension
 
-This method creates an `NotifyCollectionChangingEventArgs` by comparing two lists. Idiomatically, in code, this event is typically represented as `ePre`.
-
+The `ilistBefore.Diff(ilistAfter)` method creates an `NotifyCollectionChangingEventArgs` by comparing the argument to the receiver. Idiomatically, in code, the returned event is typically referred to `ePre`, whereas any BCL `NotifyCollectionChangedEventArgs` produced in the flow are referred to as `ePost` to avoid ambiguity.
 ___
 
-## Apply
+### The `Apply()` Method Extension for `IList`
 
-This method applies a `NotifyCollectionChangingEventArgs` to an `IList`. 
+Once the `Diff` method has been run to obtain the delta between two collections, it can be passed to the `Apply()` extension:
 
 ### Minimal Example
 
@@ -52,7 +52,7 @@ _MENTAL MODEL - Reducing churn for a collection that implements range capabiliti
 
 ___
 
-### The `Apply()` Method Extension for `IList`
+### Internal Flow for the `Apply()` Method Extension for `IList`
 
 Once the `Diff` method has been run to obtain the delta between two collections, it can be passed to the `Apply()` extension:
 
@@ -92,7 +92,21 @@ A canonical implementation will cast `ePre` to a BCL `NotifyCollectionChangedEve
 
 Another indication that `ePre` is an (incompatible) batch is that the `NewItems` property is populated with an `IList<EventArgs>`.
 
+___
+
 ## Preview Semantics
+
+Collections may also implement `INotifyCollectionChanging` as a separate concern.
+
+### Canonical Implementation
+
+
+### Minimal Example
+
+When changes are occurring, the typical consumer of `INotifyCollectionChanging` wants a list of items being changed _before_ they're changed, and this is especially true of a `Clear()` resulting in an `action: Reset`. The classic example is when a collection opts in to `INotifyPropertyChanged` messages on the items it contains, where the normal reset event args instance doesn't carry the infomation needed to unsubscribe.
+
+
+
 
 
 
