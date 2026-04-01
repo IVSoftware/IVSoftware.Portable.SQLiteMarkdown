@@ -5,15 +5,17 @@ using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 
 namespace IVSoftware.Portable.Collections.Preview
 {
-    internal sealed class DHostSuppress : DisposableHost
-    {        
-        public object[] Snapshot { get; private set; } = [];
+    internal sealed class DHostSuppress<T> : DisposableHost
+    {
+        public ReadOnlyCollection<T> Snapshot { get; private set; } = null!;
 
+        IList _listB4 => Snapshot;
         IList _listFTR = null!;
 
         protected override void OnBeginUsing(BeginUsingEventArgs e)
@@ -37,7 +39,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// </remarks>
         protected override void OnFinalDispose(FinalDisposeEventArgs e)
         {
-            var before = (IList)Snapshot;
+            var before = _listB4;
             var after = _listFTR;
 
             var digest = 
@@ -79,7 +81,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         [Canonical]
         public IDisposable GetToken(
-            IList list,
+            IList<T> list,
             Dictionary<string, object>? properties = null)
         {
             InitializeToken(list);
@@ -87,7 +89,7 @@ namespace IVSoftware.Portable.Collections.Preview
         }
 
         public IDisposable GetToken(
-            IList list,
+            IList<T> list,
             string key,
             object value)
         {
@@ -105,9 +107,9 @@ namespace IVSoftware.Portable.Collections.Preview
         public new IDisposable GetToken(string key, object value)
             => throw new NotSupportedException();
 
-        private void InitializeToken(IList list)
+        private void InitializeToken(IList<T> list)
         {
-            Snapshot = list.Cast<object>().ToArray();
+            Snapshot = new ReadOnlyCollection<T>(list.ToArray());
             _listFTR = Snapshot.ToList();
             _isModified = false;
         }

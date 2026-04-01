@@ -2,13 +2,17 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
-    internal class ObservableSuppressibleCollection<T> : ObservableCollection<T>
-    {
+    internal class ObservableSuppressibleCollection<T> 
+        : ObservableCollection<T>
+        , IEnumerable
+    {        
         public ObservableSuppressibleCollection(NotifyCollectionChangeScope eventScope)
         {
             EventScope = eventScope;
@@ -149,28 +153,42 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         }
 #endif
 
-        public IDisposable BeginSuppress() => DHostCoalesce.GetToken(this);
+        public IDisposable BeginSuppress() => DHostSuppress.GetToken(this);
 
-        public void CancelSuppress() => DHostCoalesce.CancelSuppressNotify();
-        public SuppressionPhase Phase => DHostCoalesce.Phase;
+        public void CancelSuppress() => DHostSuppress.CancelSuppressNotify();
+        public SuppressionPhase Phase => DHostSuppress.Phase;
 
-        public DHostSuppress DHostCoalesce
+        public DHostSuppress<T> DHostSuppress
         {
             get
             {
-                if (_dhostCoalesce is null)
+                if (_dhostSuppress is null)
                 {
-                    _dhostCoalesce = new DHostSuppress();
-                    _dhostCoalesce.FinalDispose += (sender, e) => OnFinalCoalesce((CoalescingFinalDisposeEventArgs)e);
+                    _dhostSuppress = new DHostSuppress<T>();
+                    _dhostSuppress.FinalDispose += (sender, e) => OnFinalCoalesce((CoalescingFinalDisposeEventArgs)e);
                 }
-                return _dhostCoalesce;
+                return _dhostSuppress;
             }
         }
-        DHostSuppress? _dhostCoalesce = null;
+        DHostSuppress<T>? _dhostSuppress = null;
 
         private void OnFinalCoalesce(CoalescingFinalDisposeEventArgs e)
         {
             OnCollectionChanged((e.Coalesced));
         }
+
+        public new IEnumerator<T> GetEnumerator()
+        {
+            if(DHostSuppress.IsZero())
+            {
+                return base.GetEnumerator();
+            }
+            else
+            {
+                return DHostSuppress.Snapshot.GetEnumerator();
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

@@ -602,13 +602,13 @@ SELECT * FROM items WHERE
         }
 
         public IDisposable BeginCoalesce() => DHostCoalesce.GetToken(this);
-        DHostSuppress DHostCoalesce
+        DHostSuppress<T> DHostCoalesce
         {
             get
             {
                 if (_dhostBatch is null)
                 {
-                    _dhostBatch = new DHostSuppress();
+                    _dhostBatch = new DHostSuppress<T>();
                     _dhostBatch.FinalDispose += (sender, e) =>
                     {
                         if (e is CoalescingFinalDisposeEventArgs eFD)
@@ -626,7 +626,7 @@ SELECT * FROM items WHERE
                 return _dhostBatch;
             }
         }
-        DHostSuppress? _dhostBatch = null;
+        DHostSuppress<T>? _dhostBatch = null;
 
         protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
         {
