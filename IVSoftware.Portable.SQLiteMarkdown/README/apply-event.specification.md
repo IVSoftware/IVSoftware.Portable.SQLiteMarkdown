@@ -62,5 +62,41 @@ myList.Apply(ePre);
 
 The `Diff` method has provided a value for `ePre.IsBclCompatible`, indicating whether the event is isomorphic - that is, translatable to a standard `INotifyCollectionChanged` notification without loss, reinterpretation, or structural expansion. Even when this property is `true` it comes with a shading in terms of the `Apply()` method because (for example) a multi-term `Add` needs to be replayed one item at a time. Given that a filtered list _prefers_ to avoid this churn, and a ranged collection _demands_ it, the internal strategy is to attempt a cast to `INotifyCollectionChangedSuppressable` which is available in this library.
 
+```
+internal interface INotifyCollectionChangedSuppressible
+{
+    /// <summary>
+    /// Increments the ref count for the suppression epoch.
+    /// </summary>
+    /// <remarks>
+    /// When the ref count returns to zero, disposal raises a final event
+    /// with a coalesced <see cref="NotifyCollectionChangingEventArgs"/> instance.
+    /// </remarks>
+    IDisposable BeginSuppressNotify();
+
+    /// <summary>
+    /// Sets an internal flag indicating that the final emission for the current
+    /// suppression epoch should include a void marker.
+    /// </summary>
+    /// <remarks>
+    /// This method does not terminate the suppression scope or affect the reference
+    /// count. Disposal proceeds normally via the <see cref="IDisposable"/> tokens
+    /// returned by <see cref="BeginSuppressNotify"/>. Instead, it alters the semantics
+    /// of the final emission, signaling that the coalesced result should be disregarded.
+    /// </remarks>
+    void CancelSuppressNotify();
+}
+```
+
+A canonical implementation will cast `ePre` to a BCL `NotifyCollectionChangedEventArgs` instance and raise it as `OnCollectionChanged(ePost)`, and an `ePre` where `IsBclCompatible` == `false` will simply cast to `action: Reset`. Most UI controls bound to this collection will repopulate the projection surface, effectively syncing to the new reality of the collection (even - or especially - if this new reality comes from replaying a Batch event list).
+
+Another indication that `ePre` is an (incompatible) batch is that the `NewItems` property is populated with an `IList<EventArgs>`.
+
+## Preview Semantics
+
+
+
+
+
 
 
