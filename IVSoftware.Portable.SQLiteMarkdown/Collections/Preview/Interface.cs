@@ -137,7 +137,7 @@ namespace IVSoftware.Portable.Collections.Preview
     /// invoked, this value indicates under what authority that is taking place.
     /// </remarks>
     [NotFlags]
-    internal enum SuppressionPhase
+    public enum SuppressionPhase
     {
         /// <summary>
         /// Suppression has not been requested; collection change notifications propagate normally.

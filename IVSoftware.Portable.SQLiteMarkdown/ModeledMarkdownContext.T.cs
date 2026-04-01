@@ -601,7 +601,7 @@ SELECT * FROM items WHERE
             }
         }
 
-        public IDisposable BeginBatch() => DHostBatch.GetToken(this);
+        public IDisposable BeginBatch(SuppressionPhase phase) => DHostBatch.GetToken(phase, this);
         DHostCoalescingCollectionChange DHostBatch
         {
             get
@@ -1070,7 +1070,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginBatch())
+                        using (BeginBatch(SuppressionPhase.Preview))
                         {
                             foreach (var newItem in newItems)
                             {
@@ -1159,7 +1159,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginBatch())
+                        using (BeginBatch(SuppressionPhase.Preview))
                         {
                             await Task.Run(() =>
                             {
