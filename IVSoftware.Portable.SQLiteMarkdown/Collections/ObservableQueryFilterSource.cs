@@ -422,8 +422,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             ? CanonicalSuperset 
             : PredicateMatchSubset;
 
-        public NotifyCollectionChangeScope EventScope => throw new NotImplementedException();
-
         public new IEnumerator<T> GetEnumerator() => RoutedRecordset.Cast<T>().GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
         #endregion R O U T E D    C O N D I T I O N A L S

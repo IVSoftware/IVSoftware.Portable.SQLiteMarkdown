@@ -8,7 +8,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
     /// <summary>
     /// Specifies an action associated with either a Changed or Changing event.
     /// </summary>
-    public enum NotifyCollectionChangeAction
+    enum NotifyCollectionChangeAction
     {
         Add = NotifyCollectionChangedAction.Add,
         Remove = NotifyCollectionChangedAction.Remove,
@@ -21,7 +21,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
     /// Reason for Changed or Changing extended actions.
     /// </summary>
     [Flags]
-    public enum NotifyCollectionChangeReason
+    enum NotifyCollectionChangeReason
     {
         /// <summary>
         /// This is a pass-though BCL event structure.
@@ -84,7 +84,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
     /// consistent change contract.
     /// </remarks>
     [Flags]
-    public enum NotifyCollectionChangeScope
+    enum NotifyCollectionChangeScope
     {
         /// <summary>
         /// Observe the proposal without modifying or canceling it.

@@ -10,7 +10,7 @@ using System.Text;
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
     [DebuggerDisplay("{Action}  OldCount={OldItems?.Count ?? 0}  NewCount={NewItems?.Count ?? 0}  OldIndex={OldStartingIndex}  NewIndex={NewStartingIndex}")]
-    public class ModelSettledEventArgs : NotifyCollectionChangedEventArgs
+    class ModelSettledEventArgs : NotifyCollectionChangedEventArgs
     {
         public static ModelSettledEventArgs FromNotifyCollectionChangedEventArgs(
             NotifyCollectionChangeReason reason,

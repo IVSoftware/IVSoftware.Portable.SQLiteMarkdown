@@ -28,7 +28,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - Outputs canonical action, items, and indices for downstream application.
         /// - Returns false only after throwing for unsupported inputs.
         /// </remarks>
-        public static bool TryNormalizeTargets(
+        internal static bool TryNormalizeTargets(
             this EventArgs eUnk,
             out NotifyCollectionChangeAction action,
             out NotifyCollectionChangeReason reason,
