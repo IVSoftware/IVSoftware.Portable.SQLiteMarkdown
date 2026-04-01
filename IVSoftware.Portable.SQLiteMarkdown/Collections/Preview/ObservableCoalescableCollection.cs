@@ -99,8 +99,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     oldItems: new[] { item },
                     newStartingIndex: newIndex,
                     oldStartingIndex: oldIndex);
-            base.MoveItem(oldIndex, newIndex);
-
 
             switch (DHostCoalesce.TryAppend(action))
             {
