@@ -125,17 +125,24 @@ namespace IVSoftware.Portable.Collections.Preview
         /// <summary>
         /// Returns true if a batch is in progress.
         /// </summary>
-        public bool TryAppend(NotifyCollectionChangedEventArgs e)
+        public SuppressionPhase TryAppend(Func<NotifyCollectionChangingEventArgs> dlgt)
         {
             if(IsZero())
             {
-                return false;
+                return SuppressionPhase.None;
             }
             else
             {
-                _listFTR.Apply(e);
-                _isModified = true;
-                return true;
+                if(IsDisposing)
+                {
+                    return SuppressionPhase.Commit;
+                }
+                else
+                {
+                    _listFTR.Apply(dlgt());
+                    _isModified = true;
+                    return SuppressionPhase.Preview;
+                }
             }
         }
         bool _isModified = false;

@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -12,6 +13,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Numerics;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Xml.Linq;
@@ -19,13 +21,12 @@ using System.Xml.Linq;
 namespace IVSoftware.Portable.Collections.Preview
 {
     internal partial class ObservablePreviewCollection<T>
-        : ObservableCollection<T>
+        : ObservableCoalescableCollection<T>
         , INotifyCollectionChanging
     {
         public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
-        {
-            EventScope = eventScope;
-        }
+            : base(eventScope) { }
+
         /// <summary>
         /// Defines the extent to which a preview handler may interact with a pending
         /// collection change proposal.
@@ -43,178 +44,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// higher scopes assume responsibility for producing a valid and internally
         /// consistent change contract.
         /// </remarks>
-        public NotifyCollectionChangeScope EventScope { get; }
 
-        protected override void InsertItem(int index, T item)
-        {
-            var e = new NotifyCollectionChangingEventArgs(
-                action: NotifyCollectionChangeAction.Add,
-                scope: EventScope,
-                newItems: new[] { item },
-                newStartingIndex: index);
-
-            if (DHostApply.IsZero())
-            {
-                OnCollectionChanging(e);
-
-                if (e.Cancel) return;
-
-                if (!DHostSuppressNotify.TryAppend(e))
-                {
-                    if (e.IsModified)
-                    {
-                        ApplyChanges(e);
-                    }
-                    else
-                    {
-                        base.InsertItem(index, item);
-                    }
-                }
-            }
-            else
-            {
-                base.InsertItem(index, item);
-            }
-        }
-
-        protected override void SetItem(int index, T item)
-        {
-            var oldItem = this[index];
-
-            var e = new NotifyCollectionChangingEventArgs(
-                action: NotifyCollectionChangeAction.Replace,
-                scope: EventScope,
-                newItems: new[] { item },
-                oldItems: new[] { oldItem },
-                newStartingIndex: index,
-                oldStartingIndex: index);
-
-            if (DHostApply.IsZero())
-            {
-                OnCollectionChanging(e);
-
-                if (e.Cancel) return;
-
-                if (!DHostSuppressNotify.TryAppend(e))
-                {
-                    if (e.IsModified)
-                    {
-                        ApplyChanges(e);
-                    }
-                    else
-                    {
-                        base.SetItem(index, item);
-                    }
-                }
-            }
-            else
-            {
-                base.SetItem(index, item);
-            }
-        }
-
-        protected override void RemoveItem(int index)
-        {
-            var item = this[index];
-
-            var e = new NotifyCollectionChangingEventArgs(
-                action: NotifyCollectionChangeAction.Remove,
-                scope: EventScope,
-                oldItems: new[] { item },
-                oldStartingIndex: index);
-
-            if(DHostApply.IsZero())
-            {
-                OnCollectionChanging(e);
-                if (!e.Cancel)
-                {
-                    if (!DHostSuppressNotify.TryAppend(e))
-                    {
-                        if (e.IsModified)
-                        {
-                            ApplyChanges(e);
-                        }
-                        else
-                        {
-                            base.RemoveItem(index);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                base.RemoveItem(index);
-            }
-        }
-        protected override void MoveItem(int oldIndex, int newIndex)
-        {
-            var item = this[oldIndex];
-
-            var e = new NotifyCollectionChangingEventArgs(
-                action: NotifyCollectionChangeAction.Move,
-                scope: EventScope,
-                newItems: new[] { item },
-                oldItems: new[] { item },
-                newStartingIndex: newIndex,
-                oldStartingIndex: oldIndex);
-
-            if (DHostApply.IsZero())
-            {
-                OnCollectionChanging(e);
-
-                if (e.Cancel) return;
-
-                if (!DHostSuppressNotify.TryAppend(e))
-                {
-                    if (e.IsModified)
-                    {
-                        ApplyChanges(e);
-                    }
-                    else
-                    {
-                        base.MoveItem(oldIndex, newIndex);
-                    }
-                }
-            }
-            else
-            {
-                base.MoveItem(oldIndex, newIndex);
-            }
-        }
-
-        protected override void ClearItems()
-        {
-            var snapshot = this.ToArray();
-
-            var e = new NotifyCollectionChangingEventArgs(
-                action: NotifyCollectionChangeAction.Reset,
-                scope: EventScope,
-                oldItems: snapshot,
-                oldStartingIndex: -1);
-
-            if (DHostApply.IsZero())
-            {
-                OnCollectionChanging(e);
-
-                if (e.Cancel) return;
-
-                if (!DHostSuppressNotify.TryAppend(e))
-                {
-                    if (e.IsModified)
-                    {
-                        ApplyChanges(e);
-                    }
-                    else
-                    {
-                        base.ClearItems();
-                    }
-                }
-            }
-            else
-            {
-                base.ClearItems();
-            }
-        }
         protected virtual void OnCollectionChanging(NotifyCollectionChangingEventArgs e)
         {
             CollectionChanging?.Invoke(this, e);

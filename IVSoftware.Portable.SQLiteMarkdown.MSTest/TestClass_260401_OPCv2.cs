@@ -1,4 +1,5 @@
 using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
@@ -174,6 +175,8 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
         void subtest_Preview()
         {
             builder.Clear();
+
+            // P R E V I E W
             using (itemsSource.BeginCoalesce(SuppressionPhase.Preview))
             {
                 itemsSource.Add(i1);
@@ -185,17 +188,23 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           "
+NetProjection.Add     NewItems= 3 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
             ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting 3x Add events."
+                "Expecting 1x Add Coalesce events."
             );
 
+
             builder.Clear();
-            itemsSource.RemoveAt(2);
+
+            using (itemsSource.BeginCoalesce(SuppressionPhase.Preview))
+            {
+                itemsSource.Remove(i1);
+                itemsSource.RemoveAt(1);
+            }
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
@@ -282,6 +291,7 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 0 OldStartingInd
         #endregion S U B T E S T S
     }
 
+    [Canonical("Snippet: ocsuppress")]
     private class SuppressibleObservableCollection<T>
         : ObservableCollection<T>
         , INotifyCollectionChangedSuppressible
@@ -289,22 +299,21 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 0 OldStartingInd
         public NotifyCollectionChangeScope EventScope { get; }
         protected override void InsertItem(int index, T item)
         {
-            switch (Phase)
-            {
-                case SuppressionPhase.None:
-                case SuppressionPhase.Commit:
-                    base.InsertItem(index, item);
-                    break;
-                case SuppressionPhase.Preview:
-                    var ePre = new NotifyCollectionChangingEventArgs(
+            Func<NotifyCollectionChangingEventArgs> action = () =>
+                new NotifyCollectionChangingEventArgs(
                         action: NotifyCollectionChangeAction.Add,
                         scope: EventScope,
                         newItems: new[] { item },
                         newStartingIndex: index);
-                    if(!DHostCoalesce.TryAppend(ePre))
-                    {
-                        base.InsertItem(index, item);
-                    }
+
+            switch (DHostCoalesce.TryAppend(action))
+            {
+                case SuppressionPhase.None:
+                    base.InsertItem(index, item);
+                    break;
+                case SuppressionPhase.Preview:
+                    break;
+                case SuppressionPhase.Commit:
                     break;
                 default:
                     this.ThrowFramework<NotSupportedException>($"The {Phase.ToFullKey()} case is not supported.");
@@ -313,24 +322,23 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 0 OldStartingInd
         }
         protected override void SetItem(int index, T item)
         {
-            switch (Phase)
-            {
-                case SuppressionPhase.None:
-                case SuppressionPhase.Commit:
-                    base.SetItem(index, item);
-                    break;
-                case SuppressionPhase.Preview:
-                    var ePre = new NotifyCollectionChangingEventArgs(
+            Func<NotifyCollectionChangingEventArgs> action = () =>
+                new NotifyCollectionChangingEventArgs(
                         action: NotifyCollectionChangeAction.Replace,
                         scope: EventScope,
                         newItems: new[] { item },
                         oldItems: new[] { this[index] },
                         newStartingIndex: index,
                         oldStartingIndex: index);
-                    if (!DHostCoalesce.TryAppend(ePre))
-                    {
-                        throw new NotImplementedException("ToDo");
-                    }
+
+            switch (DHostCoalesce.TryAppend(action))
+            {
+                case SuppressionPhase.None:
+                    base.SetItem(index, item);
+                    break;
+                case SuppressionPhase.Preview:
+                    break;
+                case SuppressionPhase.Commit:
                     break;
                 default:
                     this.ThrowFramework<NotSupportedException>($"The {Phase.ToFullKey()} case is not supported.");
@@ -339,24 +347,23 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 0 OldStartingInd
         }
         protected override void RemoveItem(int index)
         {
-            switch (Phase)
-            {
-                case SuppressionPhase.None:
-                case SuppressionPhase.Commit:
-                    base.RemoveItem(index);
-                    break;
-                case SuppressionPhase.Preview:
-                    var item = this[index];
-
-                    var ePre = new NotifyCollectionChangingEventArgs(
+            var item = this[index];
+            Func<NotifyCollectionChangingEventArgs> action = () =>
+                new NotifyCollectionChangingEventArgs(
                         action: NotifyCollectionChangeAction.Remove,
                         scope: EventScope,
                         oldItems: new[] { item },
                         oldStartingIndex: index);
-                    if (!DHostCoalesce.TryAppend(ePre))
-                    {
-                        throw new NotImplementedException("ToDo");
-                    }
+
+
+            switch (DHostCoalesce.TryAppend(action))
+            {
+                case SuppressionPhase.None:
+                    base.RemoveItem(index);
+                    break;
+                case SuppressionPhase.Preview:
+                    break;
+                case SuppressionPhase.Commit:
                     break;
                 default:
                     this.ThrowFramework<NotSupportedException>($"The {Phase.ToFullKey()} case is not supported.");
@@ -365,26 +372,27 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 0 OldStartingInd
         }
         protected override void MoveItem(int oldIndex, int newIndex)
         {
-            switch (Phase)
+            var item = this[oldIndex];
+
+            Func<NotifyCollectionChangingEventArgs> action = () =>
+                new NotifyCollectionChangingEventArgs(
+                    action: NotifyCollectionChangeAction.Move,
+                    scope: EventScope,
+                    newItems: new[] { item },
+                    oldItems: new[] { item },
+                    newStartingIndex: newIndex,
+                    oldStartingIndex: oldIndex);
+            base.MoveItem(oldIndex, newIndex);
+
+
+            switch (DHostCoalesce.TryAppend(action))
             {
                 case SuppressionPhase.None:
-                case SuppressionPhase.Commit:
                     base.MoveItem(oldIndex, newIndex);
                     break;
                 case SuppressionPhase.Preview:
-                    var item = this[oldIndex];
-
-                    var ePre = new NotifyCollectionChangingEventArgs(
-                        action: NotifyCollectionChangeAction.Move,
-                        scope: EventScope,
-                        newItems: new[] { item },
-                        oldItems: new[] { item },
-                        newStartingIndex: newIndex,
-                        oldStartingIndex: oldIndex);
-                    if (!DHostCoalesce.TryAppend(ePre))
-                    {
-                        throw new NotImplementedException("ToDo");
-                    }
+                    break;
+                case SuppressionPhase.Commit:
                     break;
                 default:
                     this.ThrowFramework<NotSupportedException>($"The {Phase.ToFullKey()} case is not supported.");
@@ -393,24 +401,24 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 0 OldStartingInd
         }
         protected override void ClearItems()
         {
-            switch (Phase)
-            {
-                case SuppressionPhase.None:
-                case SuppressionPhase.Commit:
-                    base.ClearItems();
-                    break;
-                case SuppressionPhase.Preview:
-                    var snapshot = this.ToArray();
+            var snapshot = this.ToArray();
 
-                    var ePre = new NotifyCollectionChangingEventArgs(
+            Func<NotifyCollectionChangingEventArgs> action = () =>
+                new NotifyCollectionChangingEventArgs(
                         action: NotifyCollectionChangeAction.Reset,
                         scope: EventScope,
                         oldItems: snapshot,
                         oldStartingIndex: -1);
-                    if (!DHostCoalesce.TryAppend(ePre))
-                    {
-                        throw new NotImplementedException("ToDo");
-                    }
+
+
+            switch (DHostCoalesce.TryAppend(action))
+            {
+                case SuppressionPhase.None:
+                    base.ClearItems();
+                    break;
+                case SuppressionPhase.Preview:
+                    break;
+                case SuppressionPhase.Commit:
                     break;
                 default:
                     this.ThrowFramework<NotSupportedException>($"The {Phase.ToFullKey()} case is not supported.");
