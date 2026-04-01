@@ -8,7 +8,7 @@ namespace IVSoftware.Portable.Collections.Preview
     /// <summary>
     /// Specifies an action associated with either a Changed or Changing event.
     /// </summary>
-    enum NotifyCollectionChangeAction
+    internal enum NotifyCollectionChangeAction
     {
         Add = NotifyCollectionChangedAction.Add,
         Remove = NotifyCollectionChangedAction.Remove,
@@ -21,7 +21,7 @@ namespace IVSoftware.Portable.Collections.Preview
     /// Reason for Changed or Changing extended actions.
     /// </summary>
     [Flags]
-    enum NotifyCollectionChangeReason
+    internal enum NotifyCollectionChangeReason
     {
         /// <summary>
         /// This is a pass-though BCL event structure.
@@ -84,7 +84,7 @@ namespace IVSoftware.Portable.Collections.Preview
     /// consistent change contract.
     /// </remarks>
     [Flags]
-    enum NotifyCollectionChangeScope
+    internal enum NotifyCollectionChangeScope
     {
         /// <summary>
         /// Observe the proposal without modifying or canceling it.
@@ -122,6 +122,37 @@ namespace IVSoftware.Portable.Collections.Preview
         /// </remarks>
         NotifyCollectionChangeScope EventScope { get; }
         public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
+    }
+
+    /// <summary>
+    /// Provides a suppression mechanism for <see cref="INotifyCollectionChanged"/> notifications.
+    /// </summary>
+    /// <remarks>
+    /// Defines a scoped model for temporarily suppressing collection change notifications
+    /// during coordinated or batched updates with the goal of reducing or eliminating churn.
+    /// </remarks>
+    internal interface INotifyCollectionChangedSuppressible
+    {
+        /// <summary>
+        /// Increments the ref count for the suppression epoch.
+        /// </summary>
+        /// <remarks>
+        /// When the ref count returns to zero, disposal raises a final event
+        /// with a coalesced <see cref="NotifyCollectionChangingEventArgs"/> instance.
+        /// </remarks>
+        IDisposable BeginSuppressNotify();
+
+        /// <summary>
+        /// Sets an internal flag indicating that the final emission for the current
+        /// suppression epoch should include a void marker.
+        /// </summary>
+        /// <remarks>
+        /// This method does not terminate the suppression scope or affect the reference
+        /// count. Disposal proceeds normally via the <see cref="IDisposable"/> tokens
+        /// returned by <see cref="BeginSuppressNotify"/>. Instead, it alters the semantics
+        /// of the final emission, signaling that the coalesced result should be disregarded.
+        /// </remarks>
+        void CancelSuppressNotify();
     }
 
     internal interface IRangeable

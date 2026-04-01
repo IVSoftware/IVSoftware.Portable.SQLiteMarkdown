@@ -66,7 +66,7 @@ namespace IVSoftware.Portable.Collections.Preview
             _cancel = false;
         }
 
-        public void CancelBatch() => _cancel = true;
+        public void CancelSuppressNotify() => _cancel = true;
         private bool _cancel;
 
         [Canonical]

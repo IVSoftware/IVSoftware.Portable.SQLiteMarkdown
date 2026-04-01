@@ -59,7 +59,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
                 if (e.Cancel) return;
 
-                if (!DHostBatch.TryAppend(e))
+                if (!DHostSuppressNotify.TryAppend(e))
                 {
                     if (e.IsModified)
                     {
@@ -95,7 +95,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
                 if (e.Cancel) return;
 
-                if (!DHostBatch.TryAppend(e))
+                if (!DHostSuppressNotify.TryAppend(e))
                 {
                     if (e.IsModified)
                     {
@@ -128,7 +128,7 @@ namespace IVSoftware.Portable.Collections.Preview
                 OnCollectionChanging(e);
                 if (!e.Cancel)
                 {
-                    if (!DHostBatch.TryAppend(e))
+                    if (!DHostSuppressNotify.TryAppend(e))
                     {
                         if (e.IsModified)
                         {
@@ -164,7 +164,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
                 if (e.Cancel) return;
 
-                if (!DHostBatch.TryAppend(e))
+                if (!DHostSuppressNotify.TryAppend(e))
                 {
                     if (e.IsModified)
                     {
@@ -198,7 +198,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
                 if (e.Cancel) return;
 
-                if (!DHostBatch.TryAppend(e))
+                if (!DHostSuppressNotify.TryAppend(e))
                 {
                     if (e.IsModified)
                     {
@@ -223,7 +223,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            if (DHostBatch.IsZero() && ! BatchDisposing)
+            if (DHostSuppressNotify.IsZero() && ! BatchDisposing)
             {
                 base.OnCollectionChanged(e);
             }
@@ -371,8 +371,8 @@ namespace IVSoftware.Portable.Collections.Preview
         #region D H O S T
         IDisposable BeginApply() => DHostApply.GetToken(this);
         DisposableHost DHostApply { get; } = new();
-        public IDisposable BeginBatch() => DHostBatch.GetToken(this);
-        public void CancelBatch() => DHostBatch.CancelBatch();
+        public IDisposable BeginSuppressNotify() => DHostSuppressNotify.GetToken(this);
+        public void CancelSuppressNotify() => DHostSuppressNotify.CancelSuppressNotify();
 
         public virtual string ToString(ReportFormat formatting)
         {
@@ -398,7 +398,7 @@ namespace IVSoftware.Portable.Collections.Preview
             return model.ToString();
         }
 
-        DHostBatchCollectionChange DHostBatch
+        DHostBatchCollectionChange DHostSuppressNotify
         {
             get
             {
@@ -436,7 +436,7 @@ namespace IVSoftware.Portable.Collections.Preview
     {
         public void AddRange(IEnumerable items)
         {
-            using (BeginBatch())
+            using (BeginSuppressNotify())
             {
                 int newStartingIndex = Count;
                 foreach (var item in items)
@@ -461,7 +461,7 @@ namespace IVSoftware.Portable.Collections.Preview
         public int AddRangeDistinct(IEnumerable items)
         {
             XElement model = this;
-            using (BeginBatch())
+            using (BeginSuppressNotify())
             {
                 int newStartingIndex = Count;
                 foreach (var item in items)
@@ -471,7 +471,7 @@ namespace IVSoftware.Portable.Collections.Preview
                         if (string.IsNullOrWhiteSpace(fullPath))
                         {
                             "ObservablePreviewCollection".ThrowHard<ArgumentException>($"The '{nameof(fullPath)}' argument cannot be empty.");
-                            CancelBatch();
+                            CancelSuppressNotify();
                             return 0;
                         }
 
@@ -489,7 +489,7 @@ namespace IVSoftware.Portable.Collections.Preview
                     else
                     {
                         item.ThrowHard<InvalidCastException>($"All range items must be {typeof(T).Name}");
-                        CancelBatch();
+                        CancelSuppressNotify();
                         return 0;
                     }
                 }
@@ -499,7 +499,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public void InsertRange(int startingIndex, IEnumerable items)
         {
-            using (BeginBatch())
+            using (BeginSuppressNotify())
             {
 
             }
@@ -507,7 +507,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public int RemoveMultiple(IEnumerable items)
         {
-            using (BeginBatch())
+            using (BeginSuppressNotify())
             {
 
             }
@@ -516,7 +516,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public void RemoveRange(int startingIndex, int endingIndex)
         {
-            using (BeginBatch())
+            using (BeginSuppressNotify())
             {
 
             }
