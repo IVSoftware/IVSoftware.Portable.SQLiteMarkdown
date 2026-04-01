@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
@@ -14,7 +15,7 @@ namespace IVSoftware.Portable.Collections.Preview
     internal sealed class DHostSuppress<T> : DisposableHost
     {
         public ReadOnlyCollection<T> Snapshot { get; private set; } = null!;
-        IList<T> _listFTR = null!;
+        INotifyCollectionChangedSuppress<T> _listFTR = null!;
 
         protected override void OnBeginUsing(BeginUsingEventArgs e)
         {
@@ -79,7 +80,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         [Canonical]
         public IDisposable GetToken(
-            IList<T> list,
+            INotifyCollectionChangedSuppress<T> list,
             Dictionary<string, object>? properties = null)
         {
             InitializeToken(list);
@@ -87,7 +88,7 @@ namespace IVSoftware.Portable.Collections.Preview
         }
 
         public IDisposable GetToken(
-            IList<T> list,
+            INotifyCollectionChangedSuppress<T> list,
             string key,
             object value)
         {
@@ -105,9 +106,9 @@ namespace IVSoftware.Portable.Collections.Preview
         public new IDisposable GetToken(string key, object value)
             => throw new NotSupportedException();
 
-        private void InitializeToken(IList<T> list)
+        private void InitializeToken(INotifyCollectionChangedSuppress<T> list)
         {
-            Snapshot = new ReadOnlyCollection<T>(list.ToArray());
+            Snapshot = new ReadOnlyCollection<T>(list.ToArray<T>());
             _listFTR = list;
             _isModified = false;
         }

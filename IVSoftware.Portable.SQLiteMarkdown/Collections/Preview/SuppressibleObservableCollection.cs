@@ -9,11 +9,12 @@ using System.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
-    internal class ObservableSuppressibleCollection<T> 
+    internal class SuppressibleObservableCollection<T> 
         : ObservableCollection<T>
         , IEnumerable
+        , IList
     {        
-        public ObservableSuppressibleCollection(NotifyCollectionChangeScope eventScope)
+        public SuppressibleObservableCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
         {
             EventScope = eventScope;
         }

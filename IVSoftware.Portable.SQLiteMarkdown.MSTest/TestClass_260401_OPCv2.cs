@@ -292,15 +292,4 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 0 OldStartingInd
         }
         #endregion S U B T E S T S
     }
-
-    [Canonical("Snippet: ocsuppress")]
-    private class SuppressibleObservableCollection<T>
-        : ObservableSuppressibleCollection<T>
-        , INotifyCollectionChangedSuppress
-    {
-        public SuppressibleObservableCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly) 
-            : base(eventScope)
-        {
-        }
-    }
 }

@@ -173,7 +173,7 @@ namespace IVSoftware.Portable.Collections.Preview
     /// Defines a scoped model for temporarily suppressing collection change notifications
     /// during coordinated or batched updates with the goal of reducing or eliminating churn.
     /// </remarks>
-    internal interface INotifyCollectionChangedSuppress
+    internal interface INotifyCollectionChangedSuppress : IList
     {
         /// <summary>
         /// Increments the ref count for the suppression epoch.
@@ -224,6 +224,10 @@ namespace IVSoftware.Portable.Collections.Preview
         /// </remarks>
         NotifyCollectionChangeScope EventScope { get; }
     }
+
+    internal interface INotifyCollectionChangedSuppress<T> 
+        : IList<T>
+        , INotifyCollectionChangedSuppress { } 
 
     internal interface IRangeable
     {
