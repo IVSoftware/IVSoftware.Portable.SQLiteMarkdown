@@ -1,5 +1,5 @@
 using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
@@ -97,7 +97,7 @@ public class TestClass_ObservablePreviewCollection
         {
             e.Cancel = !dhostCancel.IsZero();
 
-            Assert.IsInstanceOfType<Collections.Preview.NotifyCollectionChangingEventArgs>(e);
+            Assert.IsInstanceOfType<NotifyCollectionChangingEventArgs>(e);
             if(e.OldItems is IList list)
             {
                 Assert.IsTrue(list.IsReadOnly);
@@ -239,7 +239,7 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 0 NotifyCollectionChangedEve
 
 
             #region L o c a l F x
-            void localOnCollectionChanging(object? sender, Collections.Preview.NotifyCollectionChangingEventArgs e)
+            void localOnCollectionChanging(object? sender, NotifyCollectionChangingEventArgs e)
             {
                 actual = JsonConvert.SerializeObject(e.NewItems, Newtonsoft.Json.Formatting.Indented);
                 actual.ToClipboardExpected();

@@ -7,7 +7,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 
 
-namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
+namespace IVSoftware.Portable.Collections.Preview
 {
     /// <summary>
     /// Represents an opt-in mutable, pre-commit collection change proposal.

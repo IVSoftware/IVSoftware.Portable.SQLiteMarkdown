@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Common.Attributes;
+﻿using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -680,7 +681,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 case ModelSettledEventArgs ems:
                     sb.Append(nameof(ModelSettledEventArgs).PadRight(43));
-                    if(ems.Reason != Collections.Preview.NotifyCollectionChangeReason.None)
+                    if(ems.Reason != NotifyCollectionChangeReason.None)
                     {
                         sb.Append(ems.Reason.ToFullKey().PadRight(43));
                     }

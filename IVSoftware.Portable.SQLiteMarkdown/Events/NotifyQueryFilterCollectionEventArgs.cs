@@ -1,5 +1,5 @@
 ﻿using IVSoftware.Portable.SQLiteMarkdown.Collections;
-using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using IVSoftware.Portable.Collections.Preview;
 using System;
 using System.Collections;
 using System.Collections.Specialized;

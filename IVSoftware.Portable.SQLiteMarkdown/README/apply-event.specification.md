@@ -52,19 +52,15 @@ _MENTAL MODEL - Reducing churn for a collection that implements range capabiliti
 
 ___
 
-### The `Apply` Method Extension for `IList`
+### The `Apply()` Method Extension for `IList`
 
 Once the `Diff` method has been run to obtain the delta between two collections, it can be passed to the `Apply()` extension:
 
 ```
 myList.Apply(ePre);
-
 ```
 
-The `Diff` method has provided a value for `IsBclCompatible`.
+The `Diff` method has provided a value for `ePre.IsBclCompatible`, indicating whether the event is isomorphic - that is, translatable to a standard `INotifyCollectionChanged` notification without loss, reinterpretation, or structural expansion. Even when this property is `true` it comes with a shading in terms of the `Apply()` method because (for example) a multi-term `Add` needs to be replayed one item at a time. Given that a filtered list _prefers_ to avoid this churn, and a ranged collection _demands_ it, the internal strategy is to attempt a cast to `INotifyCollectionChangedSuppressable` which is available in this library.
 
-_TRUE_
-- The event is converted to a single call is made to the corresponding front-end method.
-- No attempt is made to suppress the resulting `CollectionChanged` event.
 
-Any event that is not `IsBclCompatible` be designated an `action: Reset`.
+

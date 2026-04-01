@@ -1,7 +1,7 @@
 ﻿#if false && SAVE
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
-using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using IVSoftware.Portable.Collections.Preview;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;

@@ -6,7 +6,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using System.Collections;
 using Newtonsoft.Json;
-using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Util;
 using System.Collections.ObjectModel;
 

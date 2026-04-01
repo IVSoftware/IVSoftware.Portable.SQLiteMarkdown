@@ -1,11 +1,5 @@
-﻿using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
-using IVSoftware.Portable.SQLiteMarkdown.Common;
-using System;
-using System.Collections.Generic;
+﻿using IVSoftware.Portable.SQLiteMarkdown.Common;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Util
 {
