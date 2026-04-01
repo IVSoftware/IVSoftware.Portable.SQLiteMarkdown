@@ -1,4 +1,6 @@
-﻿using System;
+﻿using IVSoftware.Portable.SQLiteMarkdown;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -127,6 +129,43 @@ namespace IVSoftware.Portable.Collections.Preview
     }
 
     /// <summary>
+    /// Represents the current phase of a suppression epoch for collection change notifications.
+    /// </summary>
+    /// <remarks>
+    /// Given that the core overridable surface of ObservableCollection{T} is being
+    /// invoked, this value indicates under what authority that is taking place.
+    /// </remarks>
+    [NotFlags]
+    internal enum SuppressionPhase
+    {
+        /// <summary>
+        /// Suppression has not been requested; collection change notifications propagate normally.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// Suppression has been requested; and a preview event is under construction.
+        /// </summary>
+        /// <remarks>
+        /// Typical Response: 
+        /// - On detecting that an epoch has been released under Preview authority, the
+        ///   consumer generally forwards a coalesced ledger so that can be variously
+        ///   read, canceled and/or mutated <see cref="NotifyCollectionChangeScope"/>.
+        /// </remarks>
+        Preview,
+
+        /// <summary>
+        /// Suppression has been requested; and a preview event is being applied.
+        /// </summary>
+        /// <remarks>
+        /// Typical Response: 
+        /// - On detecting that an epoch has been released under Commit authority, the
+        ///   consumer generally forwards a monolithic multi-change or Reset (BCL) event.
+        /// </remarks>
+        Commit,
+    }
+
+    /// <summary>
     /// Provides a suppression mechanism for <see cref="INotifyCollectionChanged"/> notifications.
     /// </summary>
     /// <remarks>
@@ -155,6 +194,15 @@ namespace IVSoftware.Portable.Collections.Preview
         /// of the final emission, signaling that the coalesced result should be disregarded.
         /// </remarks>
         void CancelSuppressNotify();
+
+        /// <summary>
+        /// Gets the current phase of the suppression epoch.
+        /// </summary>
+        /// <remarks>
+        /// Indicates whether changes are being staged under suppression or the final
+        /// coalesced result is being emitted.
+        /// </remarks>
+        SuppressionPhase SuppressionPhase { get; }
     }
 
     internal interface IRangeable

@@ -157,7 +157,7 @@ ___
 
 Suppose a minimal collection holds {1A, 2B, 3A, 4B, 5A } and then is filtered for "A" to produce {1A, 3A, 5A }. The Canonical->Filtered transition requires two `action: Remove` events and is a valid BCL event for a multiple remove.
 
-Now, consider the inverse playlist.
+Now, consider the inverse playlist for Filtered->Canonical.
 
 Index 0: Idempotent
 Index 1: Replace 3A with 2B
