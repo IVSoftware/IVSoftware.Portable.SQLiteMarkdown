@@ -584,7 +584,7 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingInd
             }
             #endregion L o c a l F x
 
-            using(opc.BeginSuppressNotify())
+            using(opc.BeginSuppressNotify(SuppressionPhase.Preview))
             {
                 foreach (var item in new List<SelectableQFModel>().PopulateForDemo(10))
                 {

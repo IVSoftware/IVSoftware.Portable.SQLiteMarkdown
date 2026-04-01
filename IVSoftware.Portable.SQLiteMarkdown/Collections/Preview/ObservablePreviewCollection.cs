@@ -371,7 +371,7 @@ namespace IVSoftware.Portable.Collections.Preview
         #region D H O S T
         IDisposable BeginApply() => DHostApply.GetToken(this);
         DisposableHost DHostApply { get; } = new();
-        public IDisposable BeginSuppressNotify() => DHostSuppressNotify.GetToken(this);
+        public IDisposable BeginSuppressNotify(SuppressionPhase phase) => DHostSuppressNotify.GetToken(phase, this);
         public void CancelSuppressNotify() => DHostSuppressNotify.CancelSuppressNotify();
 
         public virtual string ToString(ReportFormat formatting)
@@ -436,7 +436,7 @@ namespace IVSoftware.Portable.Collections.Preview
     {
         public void AddRange(IEnumerable items)
         {
-            using (BeginSuppressNotify())
+            using (BeginSuppressNotify(SuppressionPhase.Preview))
             {
                 int newStartingIndex = Count;
                 foreach (var item in items)
@@ -461,7 +461,7 @@ namespace IVSoftware.Portable.Collections.Preview
         public int AddRangeDistinct(IEnumerable items)
         {
             XElement model = this;
-            using (BeginSuppressNotify())
+            using (BeginSuppressNotify(SuppressionPhase.Preview))
             {
                 int newStartingIndex = Count;
                 foreach (var item in items)
@@ -499,7 +499,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public void InsertRange(int startingIndex, IEnumerable items)
         {
-            using (BeginSuppressNotify())
+            using (BeginSuppressNotify(SuppressionPhase.Preview))
             {
 
             }
@@ -507,7 +507,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public int RemoveMultiple(IEnumerable items)
         {
-            using (BeginSuppressNotify())
+            using (BeginSuppressNotify(SuppressionPhase.Preview))
             {
 
             }
@@ -516,7 +516,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public void RemoveRange(int startingIndex, int endingIndex)
         {
-            using (BeginSuppressNotify())
+            using (BeginSuppressNotify(SuppressionPhase.Preview))
             {
 
             }
