@@ -101,8 +101,11 @@ namespace IVSoftware.Portable.Collections.Preview
         /// </summary>
         FullControl = 0x3,
     }
+
     internal interface INotifyCollectionChanging
     {
+        public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
+
         /// <summary>
         /// Defines the extent to which a preview handler may interact with a pending
         /// collection change proposal.
@@ -121,7 +124,6 @@ namespace IVSoftware.Portable.Collections.Preview
         /// consistent change contract.
         /// </remarks>
         NotifyCollectionChangeScope EventScope { get; }
-        public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
     }
 
     /// <summary>

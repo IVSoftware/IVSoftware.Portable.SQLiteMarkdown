@@ -602,20 +602,20 @@ SELECT * FROM items WHERE
         }
 
         public IDisposable BeginBatch() => DHostBatch.GetToken(this);
-        DHostBatchCollectionChange DHostBatch
+        DHostCoalescingCollectionChange DHostBatch
         {
             get
             {
                 if (_dhostBatch is null)
                 {
-                    _dhostBatch = new DHostBatchCollectionChange();
+                    _dhostBatch = new DHostCoalescingCollectionChange();
                     _dhostBatch.FinalDispose += (sender, e) =>
                     {
-                        if (e is BatchFinalDisposeEventArgs eFD)
+                        if (e is CoalescingFinalDisposeEventArgs eFD)
                         {
                             if (eFD["IsModified"] is bool isModified && isModified)
                             {
-                                OnModelChanged(eFD.Digest);
+                                OnModelChanged(eFD.Coalesced);
                             }
                             else
                             {   /* G T K - N O O P */
@@ -626,7 +626,7 @@ SELECT * FROM items WHERE
                 return _dhostBatch;
             }
         }
-        DHostBatchCollectionChange? _dhostBatch = null;
+        DHostCoalescingCollectionChange? _dhostBatch = null;
 
         protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
         {

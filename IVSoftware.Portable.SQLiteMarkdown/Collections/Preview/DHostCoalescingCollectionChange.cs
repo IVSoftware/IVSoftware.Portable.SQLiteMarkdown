@@ -1,18 +1,14 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace IVSoftware.Portable.Collections.Preview
 {
-    internal class DHostBatchCollectionChange : DisposableHost
+    internal class DHostCoalescingCollectionChange : DisposableHost
     {
         object[] _listB4 = [];
         IList _listFTR = null!;
@@ -56,7 +52,7 @@ namespace IVSoftware.Portable.Collections.Preview
             snapshot["FinalList"] = _listFTR;
             snapshot["IsModified"] = _isModified;
 
-            var eBatch = new BatchFinalDisposeEventArgs(
+            var eBatch = new CoalescingFinalDisposeEventArgs(
                 e.ReleasedSenders,
                 snapshot,
                 digest,
@@ -121,20 +117,20 @@ namespace IVSoftware.Portable.Collections.Preview
         bool _isModified = false;
     }
 
-    internal class BatchFinalDisposeEventArgs : FinalDisposeEventArgs
+    internal class CoalescingFinalDisposeEventArgs : FinalDisposeEventArgs
     {
-        public BatchFinalDisposeEventArgs(
+        public CoalescingFinalDisposeEventArgs(
             IReadOnlyCollection<object> releasedSenders,
             IReadOnlyDictionary<string, object> snapshot,
             NotifyCollectionChangingEventArgs batchEventArgs,
             IList finalList)
             : base(releasedSenders, snapshot)
         {
-            Digest = batchEventArgs;
+            Coalesced = batchEventArgs;
             FinalList = finalList;
         }
 
-        public NotifyCollectionChangingEventArgs Digest { get; }
+        public NotifyCollectionChangingEventArgs Coalesced { get; }
         public IList FinalList { get; }
     }
 }

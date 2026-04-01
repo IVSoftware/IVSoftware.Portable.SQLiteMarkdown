@@ -398,26 +398,26 @@ namespace IVSoftware.Portable.Collections.Preview
             return model.ToString();
         }
 
-        DHostBatchCollectionChange DHostSuppressNotify
+        DHostCoalescingCollectionChange DHostSuppressNotify
         {
             get
             {
                 if (_dhostBatch is null)
                 {
-                    _dhostBatch = new DHostBatchCollectionChange();
+                    _dhostBatch = new DHostCoalescingCollectionChange();
                     _dhostBatch.FinalDispose += (sender, e) =>
                     {
-                        if (e is BatchFinalDisposeEventArgs eFD)
+                        if (e is CoalescingFinalDisposeEventArgs eFD)
                         {
                             try
                             {
                                 BatchDisposing = true;
-                                ApplyChanges(eFD.Digest);
+                                ApplyChanges(eFD.Coalesced);
                             }
                             finally
                             {
                                 BatchDisposing = false;
-                                OnCollectionChanged(eFD.Digest);
+                                OnCollectionChanged(eFD.Coalesced);
                             }
                         }
                     };
@@ -428,7 +428,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public bool BatchDisposing { get; private set; }
 
-        DHostBatchCollectionChange? _dhostBatch = null;
+        DHostCoalescingCollectionChange? _dhostBatch = null;
         #endregion D H O S T
     }
 
