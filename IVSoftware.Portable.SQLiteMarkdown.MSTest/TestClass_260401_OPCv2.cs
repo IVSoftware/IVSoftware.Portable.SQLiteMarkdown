@@ -63,19 +63,11 @@ public class TestClass_260401_OPCv2
             base.ClearItems();
         }
 
-        public IDisposable BeginSuppressNotify()
-        {
-            throw new NotImplementedException();
-        }
+        public IDisposable BeginSuppressNotify(SuppressionPhase phase) => DHostCoalesce.GetToken(phase);
 
-        public void CancelSuppressNotify()
-        {
-            throw new NotImplementedException();
-        }
-        public SuppressionPhase SuppressionPhase => (SuppressionPhase)AuthorityProvider.Authority;
+        public void CancelSuppressNotify() => DHostCoalesce.CancelSuppressNotify();
+        public SuppressionPhase Phase => DHostCoalesce.Phase;
 
         protected DHostCoalescingCollectionChange DHostCoalesce { get; } = new();
-
-        protected AuthorityEpochProvider AuthorityProvider { get; } = new();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.SQLiteMarkdown;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
+using IVSoftware.Portable.SQLiteMarkdown.StateRunner.Preview;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -141,7 +142,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// <summary>
         /// Suppression has not been requested; collection change notifications propagate normally.
         /// </summary>
-        None,
+        None = FsmReserved.NoAuthority,
 
         /// <summary>
         /// Suppression has been requested; and a preview event is under construction.
@@ -181,7 +182,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// When the ref count returns to zero, disposal raises a final event
         /// with a coalesced <see cref="NotifyCollectionChangingEventArgs"/> instance.
         /// </remarks>
-        IDisposable BeginSuppressNotify();
+        IDisposable BeginSuppressNotify(SuppressionPhase phase);
 
         /// <summary>
         /// Sets an internal flag indicating that the final emission for the current
@@ -202,7 +203,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// Indicates whether changes are being staged under suppression or the final
         /// coalesced result is being emitted.
         /// </remarks>
-        SuppressionPhase SuppressionPhase { get; }
+        SuppressionPhase Phase { get; }
     }
 
     internal interface IRangeable

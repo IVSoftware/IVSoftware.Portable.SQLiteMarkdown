@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using System;
 using System.Collections;
@@ -8,7 +9,7 @@ using System.Linq;
 
 namespace IVSoftware.Portable.Collections.Preview
 {
-    internal class DHostCoalescingCollectionChange : DisposableHost
+    internal sealed class DHostCoalescingCollectionChange : DisposableHost
     {
         object[] _listB4 = [];
         IList _listFTR = null!;
@@ -16,6 +17,15 @@ namespace IVSoftware.Portable.Collections.Preview
         protected override void OnBeginUsing(BeginUsingEventArgs e)
         {
             _cancel = false;
+            if (e.AutoDisposableContext.Sender is SuppressionPhase phase)
+            {
+                Phase = phase;
+            }
+            else
+            {
+                this.ThrowFramework<InvalidOperationException>(
+                    $"{nameof(Phase)} must be specified as token sender that is {nameof(SuppressionPhase)}.");
+            }
             base.OnBeginUsing(e);
         }
 
@@ -31,6 +41,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// - IList consisting or multiple, single, indexed Replace events.
         /// The probably response when a consumer inspects NewItems and sees multiple replace events is a reset + add.
         /// </remarks>
+        [Careful("Maintain authority while disposing")]
         protected override void OnFinalDispose(FinalDisposeEventArgs e)
         {
             var before = (IList)_listB4;
@@ -57,7 +68,16 @@ namespace IVSoftware.Portable.Collections.Preview
                 snapshot,
                 digest,
                 _listFTR);
-            base.OnFinalDispose(eBatch);
+            IsDisposing = true;
+            try
+            {
+                base.OnFinalDispose(eBatch);
+            }
+            finally
+            {
+                IsDisposing = false;
+                Phase = SuppressionPhase.None;
+            }
             _isModified = false;
             _cancel = false;
         }
@@ -66,30 +86,34 @@ namespace IVSoftware.Portable.Collections.Preview
         private bool _cancel;
 
         [Canonical]
-        public new IDisposable GetToken(object? sender = null, Dictionary<string, object>? properties = null)
+        public IDisposable GetToken(
+            SuppressionPhase phase,
+            IList list,
+            Dictionary<string, object>? properties = null)
         {
-            if (sender is IList list)
-            {
-                InitializeToken(list);
-                return base.GetToken(list, properties);
-            }
-            throw new ArgumentException($"Expecting {nameof(sender)} is {nameof(INotifyCollectionChanged)}.");
+            InitializeToken(list);
+            return base.GetToken(sender: phase, properties: properties);
         }
+
+        public IDisposable GetToken(
+            SuppressionPhase phase,
+            IList list,
+            string key,
+            object value)
+        {
+            InitializeToken(list);
+            return base.GetToken(sender: phase, key, value);
+        }
+
+        // Hard block all ambiguous entry points
+        public new IDisposable GetToken(object? sender = null, Dictionary<string, object>? properties = null)
+            => throw new NotSupportedException($"Use {nameof(GetToken)}({nameof(SuppressionPhase)}, IList, ...)");
 
         public new IDisposable GetToken(object sender, string key, object value)
-        {
-            if (sender is IList list)
-            {
-                InitializeToken(list);
-                return base.GetToken(list, key, value);
-            }
-            throw new ArgumentException($"Expecting {nameof(sender)} is {nameof(INotifyCollectionChanged)}.");
-        }
+            => throw new NotSupportedException($"Use {nameof(GetToken)}({nameof(SuppressionPhase)}, IList, ...)");
 
         public new IDisposable GetToken(string key, object value)
-        {
-            throw new NotSupportedException();
-        }
+            => throw new NotSupportedException();
 
         private void InitializeToken(IList list)
         {
@@ -115,6 +139,9 @@ namespace IVSoftware.Portable.Collections.Preview
             }
         }
         bool _isModified = false;
+
+        public bool IsDisposing { get; private set; }
+        public SuppressionPhase Phase { get; private set; }
     }
 
     internal class CoalescingFinalDisposeEventArgs : FinalDisposeEventArgs
