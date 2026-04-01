@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace IVSoftware.Portable.Collections.Preview
 {
-    internal sealed class DHostCoalescingCollectionChange : DisposableHost
+    internal sealed class DHostSuppress : DisposableHost
     {
         object[] _listB4 = [];
         IList _listFTR = null!;
@@ -141,7 +141,7 @@ namespace IVSoftware.Portable.Collections.Preview
         bool _isModified = false;
 
         public bool IsDisposing { get; private set; }
-        public SuppressionPhase Phase { get; private set; }
+        public SuppressionPhase Phase { get; private set; } = SuppressionPhase.None;
     }
 
     internal class CoalescingFinalDisposeEventArgs : FinalDisposeEventArgs

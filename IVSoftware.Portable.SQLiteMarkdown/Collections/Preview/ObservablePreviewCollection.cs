@@ -398,13 +398,13 @@ namespace IVSoftware.Portable.Collections.Preview
             return model.ToString();
         }
 
-        DHostCoalescingCollectionChange DHostSuppressNotify
+        DHostSuppress DHostSuppressNotify
         {
             get
             {
                 if (_dhostBatch is null)
                 {
-                    _dhostBatch = new DHostCoalescingCollectionChange();
+                    _dhostBatch = new DHostSuppress();
                     _dhostBatch.FinalDispose += (sender, e) =>
                     {
                         if (e is CoalescingFinalDisposeEventArgs eFD)
@@ -428,7 +428,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public bool BatchDisposing { get; private set; }
 
-        DHostCoalescingCollectionChange? _dhostBatch = null;
+        DHostSuppress? _dhostBatch = null;
         #endregion D H O S T
     }
 

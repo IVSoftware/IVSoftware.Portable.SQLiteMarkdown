@@ -588,7 +588,7 @@ SELECT * FROM items WHERE
                 case CollectionChangeAuthority.Commit:
                 case CollectionChangeAuthority.Settle:
                 case CollectionChangeAuthority.Predicate:
-                    if(DHostBatch.TryAppend(e))
+                    if(DHostCoalesce.TryAppend(e))
                     { 
                         /* G T K - N O O P */
                         // Deferred
@@ -601,14 +601,14 @@ SELECT * FROM items WHERE
             }
         }
 
-        public IDisposable BeginBatch(SuppressionPhase phase) => DHostBatch.GetToken(phase, this);
-        DHostCoalescingCollectionChange DHostBatch
+        public IDisposable BeginCoalesce(SuppressionPhase phase) => DHostCoalesce.GetToken(phase, this);
+        DHostSuppress DHostCoalesce
         {
             get
             {
                 if (_dhostBatch is null)
                 {
-                    _dhostBatch = new DHostCoalescingCollectionChange();
+                    _dhostBatch = new DHostSuppress();
                     _dhostBatch.FinalDispose += (sender, e) =>
                     {
                         if (e is CoalescingFinalDisposeEventArgs eFD)
@@ -626,7 +626,7 @@ SELECT * FROM items WHERE
                 return _dhostBatch;
             }
         }
-        DHostCoalescingCollectionChange? _dhostBatch = null;
+        DHostSuppress? _dhostBatch = null;
 
         protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -1070,7 +1070,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginBatch(SuppressionPhase.Preview))
+                        using (BeginCoalesce(SuppressionPhase.Preview))
                         {
                             foreach (var newItem in newItems)
                             {
@@ -1159,7 +1159,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginBatch(SuppressionPhase.Preview))
+                        using (BeginCoalesce(SuppressionPhase.Preview))
                         {
                             await Task.Run(() =>
                             {

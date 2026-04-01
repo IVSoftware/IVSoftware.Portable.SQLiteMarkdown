@@ -142,7 +142,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// <summary>
         /// Suppression has not been requested; collection change notifications propagate normally.
         /// </summary>
-        None = FsmReserved.NoAuthority,
+        None, 
 
         /// <summary>
         /// Suppression has been requested; and a preview event is under construction.
@@ -182,7 +182,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// When the ref count returns to zero, disposal raises a final event
         /// with a coalesced <see cref="NotifyCollectionChangingEventArgs"/> instance.
         /// </remarks>
-        IDisposable BeginSuppressNotify(SuppressionPhase phase);
+        IDisposable BeginCoalesce(SuppressionPhase phase);
 
         /// <summary>
         /// Sets an internal flag indicating that the final emission for the current
@@ -191,10 +191,10 @@ namespace IVSoftware.Portable.Collections.Preview
         /// <remarks>
         /// This method does not terminate the suppression scope or affect the reference
         /// count. Disposal proceeds normally via the <see cref="IDisposable"/> tokens
-        /// returned by <see cref="BeginSuppressNotify"/>. Instead, it alters the semantics
+        /// returned by <see cref="BeginCoalesce"/>. Instead, it alters the semantics
         /// of the final emission, signaling that the coalesced result should be disregarded.
         /// </remarks>
-        void CancelSuppressNotify();
+        void CancelCoalesce();
 
         /// <summary>
         /// Gets the current phase of the suppression epoch.
@@ -204,6 +204,25 @@ namespace IVSoftware.Portable.Collections.Preview
         /// coalesced result is being emitted.
         /// </remarks>
         SuppressionPhase Phase { get; }
+
+        /// <summary>
+        /// Defines the extent to which a preview handler may interact with a pending
+        /// collection change proposal.
+        /// </summary>
+        /// <remarks>
+        /// This enumeration constrains what a handler is permitted to do during the
+        /// preview (Changing) phase. It does not describe the change itself, but rather
+        /// the allowed level of participation in shaping or rejecting it.
+        ///
+        /// - ReadOnly   : Observe only. No modification or cancellation is permitted.
+        /// - CancelOnly : The proposal may be rejected but not altered.
+        /// - FullControl: The proposal may be rewritten or rejected entirely.
+        ///
+        /// These flags are enforced by the preview pipeline. Handlers opting into
+        /// higher scopes assume responsibility for producing a valid and internally
+        /// consistent change contract.
+        /// </remarks>
+        NotifyCollectionChangeScope EventScope { get; }
     }
 
     internal interface IRangeable
