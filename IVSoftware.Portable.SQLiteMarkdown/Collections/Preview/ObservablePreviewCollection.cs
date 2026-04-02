@@ -62,19 +62,6 @@ namespace IVSoftware.Portable.Collections.Preview
             }
         }
 
-        ModelPreviewDelegate PreviewDlgt
-        {
-            get
-            {
-                if (_PreviewDlgt is null)
-                {
-                    _PreviewDlgt = this.GetModelPreviewDlgt<T>();
-                }
-                return _PreviewDlgt;
-            }
-        }
-        ModelPreviewDelegate? _PreviewDlgt = null;
-
         public static implicit operator XElement(ObservablePreviewCollection<T> @this)
         {
             @this.ToString(@this.PreviewDlgt, out XElement model);
@@ -138,6 +125,19 @@ namespace IVSoftware.Portable.Collections.Preview
         }
         ModelingCapability? _modelingCapability = null;
         PropertyInfo? _fullPathPI = null;
+
+        ModelPreviewDelegate PreviewDlgt
+        {
+            get
+            {
+                if (_PreviewDlgt is null)
+                {
+                    _PreviewDlgt = this.GetModelPreviewDlgt<T>();
+                }
+                return _PreviewDlgt;
+            }
+        }
+        ModelPreviewDelegate? _PreviewDlgt = null;
 
         public GetFullPathDelegate<T>? GetFullPathDlgt
         {

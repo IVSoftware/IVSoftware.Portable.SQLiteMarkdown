@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xml.Linq;
@@ -635,6 +637,8 @@ namespace IVSoftware.Portable.Collections.Preview
             return result;
         }
 
+        private static readonly Dictionary<Type, ModelingCapability> _mccache = new();
+
         public static ModelPreviewDelegate GetModelPreviewDlgt<T>(this object? _)
         {
             var type = typeof(T);
@@ -647,10 +651,69 @@ namespace IVSoftware.Portable.Collections.Preview
                 throw new NotSupportedException($"No delegate is registered for {type.Name}");
             }
         }
+        public static ModelingCapability GetModelingCapability<T>(this IList @this)
+            => @this.GetModelingCapability(typeof(T));
+        public static ModelingCapability GetModelingCapability(this IList @this, Type type)
+        {
+            if (_mccache.TryGetValue(type, out var modelingCapability))
+            {
+                return modelingCapability;
+            }
+            else
+            {
+                PropertyInfo? fullPathPI;
+                foreach (ModelingCapability capability in Enum.GetValues(typeof(ModelingCapability)))
+                {
+                    modelingCapability = capability;
+                    switch (capability)
+                    {
+                        case ModelingCapability.Id:
+                            fullPathPI = type.GetSQLiteMapping()?.PK?.PropertyInfo;
+                            if (fullPathPI is null)
+                            {
+                                fullPathPI = type.GetProperty(capability.ToString());
+                            }
+                            if (fullPathPI is null) // Still...
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                goto breakFromInner;
+                            }
+                        case ModelingCapability.FullPath:
+                        case ModelingCapability.Description:
+                        case ModelingCapability.Text:
+                        case ModelingCapability.Unavailable:
+                            fullPathPI = type.GetProperty(capability.ToString());
+                            if (fullPathPI is null)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                goto breakFromInner;
+                            }
+                        default:
+                            type.ThrowHard<NotSupportedException>($"The {capability.ToFullKey()} case is not supported.");
+                            modelingCapability = ModelingCapability.Unavailable;
+                            // If handled, allow loop to continue;
+                            break;
+                    }
+                }
+            }
+            breakFromInner:
+            return modelingCapability!;
+        }
 
         public static string ToString(this IList @this, ModelPreviewDelegate preview)
         {
-            var model = new XElement(nameof(StdMarkdownElement.model));
+            @this.ToString(preview, out XElement model);
+            return model.ToString();
+        }
+        public static string ToString(this IList @this, ModelPreviewDelegate preview, out XElement model)
+        {
+            model = new XElement(nameof(StdMarkdownElement.model));
             var itemCount = 0;
             foreach (var item in @this)
             {
@@ -682,17 +745,17 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             return model.ToString();
         }
-        public static string ToString(this IList @this, ModelPreviewDelegate preview, out XElement model)
+        public static Type? GetItemType(this IList @this)
         {
-            model = new XElement(nameof(StdMarkdownElement.model));
+            Type listType = @this.GetType();
 
-            int index = 0;
-            foreach (var xel in model.Descendants())
+            if (listType.IsGenericType
+                && listType.GetGenericArguments().Length == 1
+                && listType.GetGenericArguments()[0] is { } itemType)
             {
-                var item = @this[index++];
-                xel.SetStdAttributeValue(StdMarkdownAttribute.preview, preview(item));
+                return itemType;
             }
-            return model.ToString();
+            else return null;
         }
     }
 }
