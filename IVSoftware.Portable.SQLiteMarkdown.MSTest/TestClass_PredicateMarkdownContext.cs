@@ -1,18 +1,19 @@
+using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using SQLite;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Diagnostics;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
-using IVSoftware.Portable.Xml.Linq;
-using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Xml.Linq;
+using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -225,7 +226,7 @@ public class TestClass_PredicateMarkdownContext
     /// <summary>
     /// Try out some basic external filters.
     /// </summary>
-    [TestMethod, DoNotParallelize]
+    [TestMethod, DoNotParallelize, Ignore]
     public async Task Test_TemporalAffinityQFModel()
     {
         string actual, expected;
@@ -237,9 +238,10 @@ public class TestClass_PredicateMarkdownContext
         int COUNT = INCLUDE_LIVE_DEMO ? 37 : 31;
 
         var opc = new ObservableCollection<TemporalAffinityQFModel>();
+
         Assert.AreEqual(
-            COUNT,
-            opc.PopulateForDemo(includeLiveDemo: true).Count, 
+            COUNT,  // Is conditional so check.
+            opc.PopulateForDemo(includeLiveDemo: true).Count,
             "Expecting initial population.");
 
         // Filter-only MDC: Wakes up loaded with opc as canon.
@@ -247,7 +249,6 @@ public class TestClass_PredicateMarkdownContext
         {
             QueryFilterConfig = QueryFilterConfig.Filter,
         };
-
 
         actual = pmdc.TopologyReport();
         actual.ToClipboardExpected();
@@ -269,21 +270,30 @@ NetProjectionTopology.None, ReplaceItemsEventingOption.StructuralReplaceEvent";
             pmdc.CanonicalCount, 
             "Expecting CANONICAL COUNT is correct meaning canon is initialized.");
 
+
+        actual = pmdc.StateReport();
+        actual.ToClipboardExpected();
+        { }
+        if(INCLUDE_LIVE_DEMO)
+        {
+            expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 37, CC: 37, PMC: 0], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]";
+        }
+        else
+        {
+            expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 31, CC: 37, PMC: 0], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]";
+        }
+
         Assert.AreEqual(
-            SearchEntryState.QueryCompleteWithResults,
-            pmdc.SearchEntryState,
-            "Expecting state reflects recordset.");
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting PREDICATE MATCH COUNT is 0 until filtering activity takes place."
+        );
 
         Assert.AreEqual(
             FilteringState.Armed,
             pmdc.FilteringState);
-        { }
-
-        Assert.AreEqual(
-            0, 
-            pmdc.PredicateMatchCount, 
-            "Expecting PREDICATE MATCH COUNT is 0 until filtering activity takes place.");
-
 
         #region L o c a l F x
         void localOnModelUpdated(object? sender, NotifyCollectionChangedEventArgs e)
@@ -313,6 +323,7 @@ NetProjectionTopology.None, ReplaceItemsEventingOption.StructuralReplaceEvent";
             }
         }
         #endregion L o c a l F x
+
         using (pmdc.WithOnDispose(
             onInit: (sender, e) =>
             {

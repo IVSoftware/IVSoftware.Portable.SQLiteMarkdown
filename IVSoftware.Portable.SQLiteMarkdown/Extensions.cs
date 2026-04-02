@@ -504,46 +504,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         internal static TAttribute? GetCustomAttribute<TAttribute>(
             this Enum value)
             where TAttribute : Attribute
-            => GetDeclaredEnumField(value)?
-                .GetCustomAttributes(typeof(TAttribute), false)
-                .OfType<TAttribute>()
-                .FirstOrDefault();
-
-        /// <summary>
-        /// Gets all custom attributes of the specified type applied to an enum value.
-        /// </summary>
-        internal static IEnumerable<TAttribute> GetCustomAttributes<TAttribute>(
-            this Enum value)
-            where TAttribute : Attribute
-            => GetDeclaredEnumField(value)?
-               .GetCustomAttributes(typeof(TAttribute), false)
-                .OfType<TAttribute>()
-                ?? Enumerable.Empty<TAttribute>();
-
-        /// <summary>
-        /// Returns the declared FieldInfo corresponding to a defined enum value.
-        /// </summary>
-        /// <remarks>
-        /// Ensures that the supplied enum value maps to a named constant declared on its type.
-        /// If the value represents an undefined numeric backing (e.g., casted integral or invalid flag),
-        /// an InvalidOperationException is thrown via ThrowHard.
-        /// This method does not support composite flag values unless explicitly declared.
-        /// </remarks>
-        private static FieldInfo GetDeclaredEnumField(Enum value)
         {
             var type = value.GetType();
+            var name = value.ToString();
 
-            if (Enum.IsDefined(type, value))
-            {
-                return type.GetField(value.ToString())!;
-            }
-            else
+            var field = type.GetField(name);
+            if (field is null)
             {
                 var numeric = Convert.ToInt64(value);
                 value.ThrowHard<InvalidOperationException>(
-                    $"Enum value '{value}' (underlying {numeric}) does not correspond to a declared field on '{type.FullName}'.");
-                return null!; // We warned you.
+                    $"Enum value '{name}' (underlying {numeric}) does not correspond to a declared field on '{type.FullName}'.");
+                return null!; // Only reached if ThrowHard is suppressed.
             }
+
+            return field
+                .GetCustomAttributes(typeof(TAttribute), inherit: false)
+                .OfType<TAttribute>()
+                .FirstOrDefault();
         }
 
         /// <summary>

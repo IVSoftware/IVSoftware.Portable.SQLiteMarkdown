@@ -605,7 +605,7 @@ SELECT * FROM items WHERE
             }
         }
 
-        public IDisposable BeginCoalesce() => DHostSuppress.GetToken(this);
+        public IDisposable BeginSuppress() => DHostSuppress.GetToken(this);
         DHostSuppress<T> DHostSuppress
         {
             get
@@ -778,158 +778,17 @@ SELECT * FROM items WHERE
                 if (ObservableNetProjection is not IList projection)
                 {
                     this.ThrowFramework<InvalidOperationException>(
-                        $"Expecting {nameof(ObservableNetProjection)} is determined to be non-null in the ProjectionTopology property getter.");
-                }
+                        $"Expecting {nameof(ObservableNetProjection)} is determined to be non-null in the ProjectionTopology property getter.");                }
                 else
                 {
                     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                     // Subclass has OPTED-IN to direct changes.
-                    //
-                    // Every change made here will 'attempt to' raise events on that
-                    // object, but we expect that collection object to apply its own
-                    // suppression and instead raise eBCL when the churn has finished
-                    // in response to the ModelUpdated that is about to be raised.
-                    //
-                    // TO THAT END this operation is wrapped in an authority whereby
-                    // the ONP can tell this is taking place from the back end.
-                    //
-                    // [Careful]
-                    // Inspecting the sender of the events is not a reliable
-                    // way to ascertain authority.
                     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-                    switch (eBCL.Action)
+                    using (BeginSuppress())
                     {
-                        case NotifyCollectionChangedAction.Add: localAdd(); break;
-                        case NotifyCollectionChangedAction.Move: localMove(); break;
-                        case NotifyCollectionChangedAction.Remove: localRemove(); break;
-                        case NotifyCollectionChangedAction.Replace: localReplace(); break;
-                        case NotifyCollectionChangedAction.Reset: localReset(); break;
-                        default:
-                            this.ThrowFramework<NotSupportedException>($"The {eBCL.Action.ToFullKey()} case is not supported.");
-                            break;
+                        projection.Apply(eBCL);
                     }
                 }
-                ModelChanged?.Invoke(this, eBCL);
-
-                #region L o c a l F x
-
-                void localAdd()
-                {
-                    if (eBCL.NewItems is null)
-                    {
-                        ThrowHard<NullReferenceException>($"{nameof(eBCL.NewItems)} cannot be null.");
-                    }
-                    else
-                    {
-                        var index =
-                            eBCL.NewStartingIndex == -1
-                            ? projection.Count
-                            : eBCL.NewStartingIndex;
-                        foreach (var item in eBCL.NewItems)
-                        {
-                            projection.Insert(index++, item);
-                        }
-                    }
-                }
-
-                void localMove()
-                {
-                    if (eBCL.NewItems is null)
-                    {
-                        ThrowHard<NullReferenceException>($"{nameof(eBCL.NewItems)} cannot be null.");
-                    }
-                    else
-                    {
-                        if (eBCL.NewItems.Count != 1)
-                        {
-                            ThrowHard<NotSupportedException>(
-                                $"In {nameof(OnModelChanged)} Multi item moves are not supported. Override this method for full control.");
-                            return;
-                        }
-                        int oldIndex = eBCL.OldStartingIndex;
-                        int newIndex = eBCL.NewStartingIndex;
-
-                        if (oldIndex < 0 || newIndex < 0)
-                        {
-                            this.ThrowFramework<InvalidOperationException>(
-                                $"Expecting valid indices for {NotifyCollectionChangedAction.Move.ToFullKey()}.");
-                        }
-
-                        // Capture items first to preserve ordering for multi-item moves
-                        var moved = new List<object?>();
-                        foreach (var _ in eBCL.NewItems)
-                        {
-                            moved.Add(projection[oldIndex]);
-                            projection.RemoveAt(oldIndex);
-                        }
-
-                        int insertIndex = newIndex;
-                        foreach (var item in moved)
-                        {
-                            projection.Insert(insertIndex++, item);
-                        }
-                    }
-                }
-
-                void localRemove()
-                {
-                    if (eBCL.OldItems is null)
-                    {
-                        ThrowHard<NullReferenceException>($"{nameof(eBCL.OldItems)} cannot be null.");
-                    }
-                    else
-                    {
-                        if (eBCL.OldStartingIndex >= 0)
-                        {
-                            int index = eBCL.OldStartingIndex;
-
-                            foreach (var _ in eBCL.OldItems)
-                            {
-                                projection.RemoveAt(index);
-                            }
-                        }
-                        else
-                        {
-                            foreach (var item in eBCL.OldItems)
-                            {
-                                projection.Remove(item);
-                            }
-                        }
-                    }
-                }
-
-                void localReplace()
-                {
-                    if (eBCL.OldItems is not null &&
-                        eBCL.NewItems is not null &&
-                        eBCL.OldStartingIndex >= 0)
-                    {
-                        int index = eBCL.OldStartingIndex;
-
-                        foreach (var item in eBCL.NewItems)
-                        {
-                            projection[index++] = item;
-                        }
-                    }
-                }
-                void localReset()
-                {
-                    projection.Clear();
-
-                    // Typically this eBCL repesents an "emptying of the collection"
-                    // but this is not a guarantee. If the event offers new items,
-                    // take this opportunity to copy them.
-                    if (eBCL.NewItems is not null)
-                    {
-                        Debug.Fail($@"IFD ADVISORY - First Time.");
-                        foreach (var item in eBCL.NewItems)
-                        {
-                            projection.Add(item);
-                        }
-                    }
-                }
-                #endregion L o c a l F x
             }
         }
 
@@ -1037,7 +896,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginCoalesce())
+                        using (BeginSuppress())
                         {
                             foreach (var newItem in newItems)
                             {
@@ -1078,7 +937,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginCoalesce())
+                        using (BeginSuppress())
                         {
                             await Task.Run(() =>
                             {
