@@ -1,5 +1,9 @@
-﻿namespace IVSoftware.Portable.SQLiteMarkdown
+﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
+
+namespace IVSoftware.Portable.SQLiteMarkdown
 {
+    [Careful("Overload OnCommit in Modeled subclass, not here.")]
     public class MarkdownContext<T> : MarkdownContext
     {
         /// <summary>

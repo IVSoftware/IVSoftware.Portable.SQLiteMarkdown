@@ -353,7 +353,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
-
         /// <summary>
         /// Raise an event as unknown. Subclass is allowed to upgrade it.
         /// </summary>
