@@ -594,13 +594,16 @@ SELECT * FROM items WHERE
             switch (DHostSuppress.Phase)
             {
                 case SuppressionPhase.None:
-                    break;
-                case SuppressionPhase.Preview:
-                    break;
                 case SuppressionPhase.Commit:
                     OnModelChanged(e);
                     break;
+                case SuppressionPhase.Preview:
+                    /* G T K - N O O P */
+                    // Accumulating suppressed events.
+                    break;
                 default:
+
+                    this.ThrowFramework<NotSupportedException>($"The {DHostSuppress.Phase.ToFullKey()} case is not supported.");
                     break;
             }
         }
