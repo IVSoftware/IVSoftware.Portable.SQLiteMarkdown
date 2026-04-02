@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -499,29 +500,44 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 @this.Offset);
 
         /// <summary>
-        /// Gets the first custom attribute of the specified type applied to an enum value.
+        /// Gets the first custom attribute of the specified type
+        /// applied to an enum value or null in its absence.
         /// </summary>
         internal static TAttribute? GetCustomAttribute<TAttribute>(
             this Enum value)
             where TAttribute : Attribute
-        {
-            var type = value.GetType();
-            var name = value.ToString();
-
-            var field = type.GetField(name);
-            if (field is null)
+        { 
+            var enumType = value.GetType();
+#if DEBUG
+            if(value.ToFullKey() == "HistogrammerFormat.All")
             {
-                var numeric = Convert.ToInt64(value);
-                value.ThrowHard<InvalidOperationException>(
-                    $"Enum value '{name}' (underlying {numeric}) does not correspond to a declared field on '{type.FullName}'.");
-                return null!; // Only reached if ThrowHard is suppressed.
+                { }
             }
+#endif
+            var name = value.ToString();
+            var fields = enumType.GetFields();
+            var matchFields = fields.Where(_ => _.Name == name).ToArray();
+            { }
 
-            return field
-                .GetCustomAttributes(typeof(TAttribute), inherit: false)
-                .OfType<TAttribute>()
-                .FirstOrDefault();
+            //if(enumType
+            //    .GetMember(value.ToString())
+            //    .SingleOrDefault() is MemberInfo member)
+            //{
+            //    var found = member.GetCustomAttributes<TAttribute>().ToArray();
+            //    switch (found.Length)
+            //    {
+            //        case 0:
+            //            break;
+            //        case 1:
+            //            return found[0];
+            //        default:
+            //            value.ThrowHard<InvalidOperationException>("Sequence has more than one match");
+            //            return found[0];
+            //    }
+            //}
+            return null!;
         }
+        static uint _debugCount = 0;
 
         /// <summary>
         /// Produces the normalized semantic form of the input by trimming trailing
