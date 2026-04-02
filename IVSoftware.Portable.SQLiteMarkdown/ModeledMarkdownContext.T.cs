@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
@@ -38,7 +39,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 OnCanonicalSupersetChanged(e);
             };
-            if(typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
+            DHostSuppress.FinalDispose += (sender, eUnk) =>
+            {
+                if(eUnk is CoalescingFinalDisposeEventArgs e)
+                {
+                    OnModelChanging(e.Coalesced, out bool Cancel);
+                }
+            };
+
+            if (typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
             {
                 ProjectionTopology = NetProjectionTopology.Routed;
                 var type = GetType();
@@ -582,34 +591,29 @@ SELECT * FROM items WHERE
         protected virtual void OnCanonicalSupersetChanged(NotifyCollectionChangedEventArgs e)
         {
             Model.Apply(e);
-            switch (Authority)
+            switch (DHostSuppress.Phase)
             {
-                case CollectionChangeAuthority.Reset:
-                case CollectionChangeAuthority.Commit:
-                case CollectionChangeAuthority.Settle:
-                case CollectionChangeAuthority.Predicate:
-                    if(DHostCoalesce.IsZero())
-                    {
-                        OnModelChanged(e);
-                    }
-                    else
-                    { 
-                        /* G T K - N O O P */
-                        // Deferred
-                    }
+                case SuppressionPhase.None:
+                    break;
+                case SuppressionPhase.Preview:
+                    break;
+                case SuppressionPhase.Commit:
+                    OnModelChanged(e);
+                    break;
+                default:
                     break;
             }
         }
 
-        public IDisposable BeginCoalesce() => DHostCoalesce.GetToken(this);
-        DHostSuppress<T> DHostCoalesce
+        public IDisposable BeginCoalesce() => DHostSuppress.GetToken(this);
+        DHostSuppress<T> DHostSuppress
         {
             get
             {
-                if (_dhostBatch is null)
+                if (_dhostSuppress is null)
                 {
-                    _dhostBatch = new DHostSuppress<T>();
-                    _dhostBatch.FinalDispose += (sender, e) =>
+                    _dhostSuppress = new DHostSuppress<T>();
+                    _dhostSuppress.FinalDispose += (sender, e) =>
                     {
                         if (e is CoalescingFinalDisposeEventArgs eFD)
                         {
@@ -623,10 +627,10 @@ SELECT * FROM items WHERE
                         }
                     };
                 }
-                return _dhostBatch;
+                return _dhostSuppress;
             }
         }
-        DHostSuppress<T>? _dhostBatch = null;
+        DHostSuppress<T>? _dhostSuppress = null;
 
         protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -1085,56 +1089,8 @@ SELECT * FROM items WHERE
                     nameof(LoadCanon).ThrowHard<InvalidOperationException>("Failed authority claim.");
                 }
             }
-#if false
-            if (Equals(Authority, CollectionChangeAuthority.Commit))
-            {
-                using (var eventHost = Model.SetSelfRemovingXBoundAttribute(
-                    StdMarkdownAttribute.triage,
-                    Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.QueryResult, recordset, ReplaceItemsEventingOptions)))
-                {
-#if false && CHECK_FAST_TRACK
-                    if(Equals(FsmReservedState.FastTrack, ExecState(StdFSMState.DetectFastTrack, recordset)))
-                    {
-                        Debug.Fail($@"ADVISORY - First Time.");
-                    }
-#endif
-                    ExecState(StdFSMState.ResetOrCanonizeFQBDForEpoch, (IList)recordset);
-                    var diff = CanonicalSupersetProtected.Diff(recordset.Cast<T>().ToList());
-                    CanonicalSupersetProtected.Apply(diff);
-                    // ExecState(StdFSMState.ResetOrCanonizeModelForEpoch, recordset);
-
-                    ExecState(StdFSMState.UpdateStatesForEpoch, recordset);
-
-
-                    if (eventHost.Tag is ReplaceItemsEventingContext context)
-                    {
-                        if (context.Structural is NotifyCollectionChangedEventArgs eStructural)
-                        {
-                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
-                            {
-                                OnModelChanged(eStructural);
-                            }
-                        }
-                        if (context.Reset is NotifyCollectionChangedEventArgs eReset)
-                        {
-                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
-                            {
-                                OnModelChanged(eReset);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        this.ThrowFramework<NullReferenceException>($"Expecting {nameof(ReplaceItemsEventingContext)}");
-                    }
-                }
-            }
-            else
-            {
-                Debug.Fail($@"ADVISORY - First Time UNEXPECTED failed to gain authority.");
-            }
-#endif
         }
+
         public virtual async Task LoadCanonAsync(IEnumerable? recordset)
         {
             IList oldItems = null!, newItems = null!;

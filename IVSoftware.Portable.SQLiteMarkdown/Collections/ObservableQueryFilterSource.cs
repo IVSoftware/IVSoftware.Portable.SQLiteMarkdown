@@ -44,7 +44,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         protected override void OnModelChanging(EventArgs eUnk, out bool cancel)
         {
             base.OnModelChanging(eUnk, out cancel);
-            if(!cancel)OnCollectionChanging(eUnk, out cancel);
+            if (!cancel)
+            {
+                OnCollectionChanging(eUnk, out cancel);
+            }
         }
         protected override void OnModelChanged(NotifyCollectionChangedEventArgs eBCL)
         {
