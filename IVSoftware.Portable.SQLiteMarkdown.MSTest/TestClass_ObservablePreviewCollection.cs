@@ -639,7 +639,7 @@ NetProjection.Add     NewItems=10 NewStartingIndex= 0 NotifyCollectionChangedEve
         {
             opc.AddRange(range);
 
-            actual = opc.ToString(this.GetModelPreviewDlgt<SelectableQFModel>());
+            actual = opc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -673,7 +673,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
         }
         void subtest_AddRangeDistinct()
         {
-            actual = opc.ToString(this.GetModelPreviewDlgt<SelectableQFModel>());
+            actual = opc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -703,7 +703,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
 
             opc.AddRangeDistinct(mixedRange);
 
-            actual = opc.ToString(this.GetModelPreviewDlgt<SelectableQFModel>());
+            actual = opc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { } // <- FIRST TIME ONLY: Adjust the message.
             actual.ToClipboardAssert("Expecting result to match.");

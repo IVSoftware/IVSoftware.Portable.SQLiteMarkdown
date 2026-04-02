@@ -3515,7 +3515,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 items.InputText += "a";
                 await items;
 
-                actual = items.ToString(this.GetModelPreviewDlgt<SelectableQFModel>());
+                actual = items.ToString(out XElement _);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -3600,7 +3600,7 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 await items;
 
 
-                actual = items.ToString(this.GetModelPreviewDlgt<SelectableQFModel>());
+                actual = items.ToString(out XElement _);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 

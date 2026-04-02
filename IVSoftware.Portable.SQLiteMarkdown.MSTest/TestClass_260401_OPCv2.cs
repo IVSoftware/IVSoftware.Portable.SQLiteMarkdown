@@ -9,6 +9,7 @@ using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
+using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -22,7 +23,6 @@ public class TestClass_260401_OPCv2
         string actual, expected;
         var builder = new List<string>();
         using var te = this.TestableEpoch();
-        ModelPreviewDelegate preview = this.GetModelPreviewDlgt<SelectableQFModel>();
 
         #region I T E M    G E N
         IList<SelectableQFModel>? eph = null;
@@ -181,7 +181,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             te.ResetEpoch();
             itemsSource.PopulateForDemo(5);
 
-            actual = itemsSource.ToString(preview);
+            actual = itemsSource.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -210,7 +210,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 Assert.AreEqual(5, itemsSource.Count);
             }
 
-            actual = itemsSource.ToString(this.GetModelPreviewDlgt<SelectableQFModel>());
+            actual = itemsSource.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -236,7 +236,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 Assert.AreEqual(5, itemsSource.Count);
             }
 
-            actual = itemsSource.ToString(this.GetModelPreviewDlgt<SelectableQFModel>());
+            actual = itemsSource.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -269,7 +269,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 Assert.AreEqual(5, itemsSource.Count);
             }
 
-            actual = itemsSource.ToString(preview);
+            actual = itemsSource.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -440,7 +440,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
                 }
             }
 
-            actual = itemsSource.ToString(preview);
+            actual = itemsSource.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
             expected = @" 

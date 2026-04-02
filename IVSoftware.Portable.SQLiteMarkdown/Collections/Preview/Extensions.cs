@@ -638,7 +638,7 @@ namespace IVSoftware.Portable.Collections.Preview
             return result;
         }
 
-        delegate string GetFullPathDlgt(object o);
+        private delegate string GetFullPathDlgt(object o);
         private class ModelingCapabilityInfo
         {
             public ModelingCapability ModelingCapability { get; set; }
@@ -654,13 +654,55 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             return cache;
         }
-
-        public static ModelPreviewDelegate GetModelPreviewDlgt<T>(this object? _)
+        private static ModelPreviewDelegate GetDescriptionPreviewDlgt(this Type type)
         {
-            var type = typeof(T);
-            if (typeof(SelectableQFModel).IsAssignableFrom(type))
+            if (type.GetProperty("Description") is { } pi)
             {
-                return (item) => ((SelectableQFModel?)item)?.Description?.PadRight(10).Substring(0, 10) ?? "Not Found";
+                return localCompileDelegate(pi);
+
+                ModelPreviewDelegate localCompileDelegate(PropertyInfo pi)
+                {
+                    var instanceParam = Expression.Parameter(typeof(object), "item");
+
+                    // (T)item
+                    var castInstance = Expression.Convert(instanceParam, pi.DeclaringType!);
+
+                    // ((T)item).Description
+                    var propertyAccess = Expression.Property(castInstance, pi);
+
+                    // string? -> ensure reference type
+                    var description = Expression.Convert(propertyAccess, typeof(string));
+
+                    // description == null
+                    var nullCheck = Expression.Equal(description, Expression.Constant(null, typeof(string)));
+
+                    // description.PadRight(10)
+                    var padRight = Expression.Call(
+                        description,
+                        nameof(string.PadRight),
+                        Type.EmptyTypes,
+                        Expression.Constant(10)
+                    );
+
+                    // description.PadRight(10).Substring(0, 10)
+                    var substring = Expression.Call(
+                        padRight,
+                        nameof(string.Substring),
+                        Type.EmptyTypes,
+                        Expression.Constant(0),
+                        Expression.Constant(10)
+                    );
+
+                    // null ? "Not Found" : substring
+                    var body = Expression.Condition(
+                        nullCheck,
+                        Expression.Constant("Not Found"),
+                        substring
+                    );
+
+                    var lambda = Expression.Lambda<ModelPreviewDelegate>(body, instanceParam);
+                    return lambda.Compile();
+                }
             }
             else
             {
@@ -734,14 +776,10 @@ namespace IVSoftware.Portable.Collections.Preview
             mccache[nameof(ModelingCapability)] = result!;
             return result!;
         }
+        public static string ToString(this IList @this, out XElement model)
+        {
+            var previewDlgt = @this.GetItemType()?.GetDescriptionPreviewDlgt();
 
-        public static string ToString(this IList @this, ModelPreviewDelegate preview)
-        {
-            @this.ToString(preview, out XElement model);
-            return model.ToString();
-        }
-        public static string ToString(this IList @this, ModelPreviewDelegate preview, out XElement model)
-        {
             model = new XElement(nameof(StdMarkdownElement.model));
             var itemCount = 0;
             foreach (var item in @this)
@@ -759,7 +797,10 @@ namespace IVSoftware.Portable.Collections.Preview
                                 tag: item,
                                 name: nameof(StdMarkdownAttribute.model));
                             xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), itemCount++);
-                            xel.SetStdAttributeValue(StdMarkdownAttribute.preview, preview(item));
+                            if (previewDlgt?.Invoke(item) is string preview)
+                            {
+                                xel.SetStdAttributeValue(StdMarkdownAttribute.preview, preview);
+                            }
                             break;
                         default:
                             @this.ThrowFramework<NotSupportedException>(
@@ -800,11 +841,15 @@ namespace IVSoftware.Portable.Collections.Preview
         /// </remarks>
         public static string GetFullPath(this object @this)
         {
-            if (@this.GetType().GetModelingCapability() is { } tuple)
+            if(@this.GetType().GetModelingCapability()?.GetFullPath?.Invoke(@this) is string fullPath)
             {
-                return tuple.GetFullPath(@this);
+                return fullPath;
             }
-            throw new NotImplementedException("ToDo");
+            else
+            {
+                @this.ThrowHard<InvalidOperationException>("Failed to resolve a full path.");
+                return "Not Found";
+            }
         }
     }
 }

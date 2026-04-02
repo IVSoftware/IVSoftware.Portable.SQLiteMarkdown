@@ -16,6 +16,9 @@ using System.Xml.Linq;
 
 namespace IVSoftware.Portable.Collections.Preview
 {
+    /// <summary>
+    /// Suppressible collection with Preview semantics (but no Range semantics).
+    /// </summary>
     internal partial class ObservablePreviewCollection<T>
         : SuppressibleObservableCollection<T>
         , INotifyCollectionChanging
@@ -23,23 +26,26 @@ namespace IVSoftware.Portable.Collections.Preview
         public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
             : base(eventScope) { }
 
-        /// <summary>
-        /// Defines the extent to which a preview handler may interact with a pending
-        /// collection change proposal.
-        /// </summary>
-        /// <remarks>
-        /// This enumeration constrains what a handler is permitted to do during the
-        /// preview (Changing) phase. It does not describe the change itself, but rather
-        /// the allowed level of participation in shaping or rejecting it.
-        ///
-        /// - ReadOnly   : Observe only. No modification or cancellation is permitted.
-        /// - CancelOnly : The proposal may be rejected but not altered.
-        /// - FullControl: The proposal may be rewritten or rejected entirely.
-        ///
-        /// These flags are enforced by the preview pipeline. Handlers opting into
-        /// higher scopes assume responsibility for producing a valid and internally
-        /// consistent change contract.
-        /// </remarks>
+        protected override void InsertItem(int index, T item)
+        {
+            base.InsertItem(index, item);
+        }
+        protected override void SetItem(int index, T item)
+        {
+            base.SetItem(index, item);
+        }
+        protected override void RemoveItem(int index)
+        {
+            base.RemoveItem(index);
+        }
+        protected override void MoveItem(int oldIndex, int newIndex)
+        {
+            base.MoveItem(oldIndex, newIndex);
+        }
+        protected override void ClearItems()
+        {
+            base.ClearItems();
+        }
 
         protected virtual void OnCollectionChanging(NotifyCollectionChangingEventArgs e)
         {
@@ -64,7 +70,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public static implicit operator XElement(ObservablePreviewCollection<T> @this)
         {
-            @this.ToString(@this.PreviewDlgt, out XElement model);
+            @this.ToString(out XElement model);
             model.SetAttributeValue(@this.ModelingCapability);
             return model;
         }
@@ -125,19 +131,6 @@ namespace IVSoftware.Portable.Collections.Preview
         }
         ModelingCapability? _modelingCapability = null;
         PropertyInfo? _fullPathPI = null;
-
-        ModelPreviewDelegate PreviewDlgt
-        {
-            get
-            {
-                if (_PreviewDlgt is null)
-                {
-                    _PreviewDlgt = this.GetModelPreviewDlgt<T>();
-                }
-                return _PreviewDlgt;
-            }
-        }
-        ModelPreviewDelegate? _PreviewDlgt = null;
 
         public GetFullPathDelegate<T>? GetFullPathDlgt
         {
