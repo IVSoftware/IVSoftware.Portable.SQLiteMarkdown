@@ -11,7 +11,7 @@ namespace IVSoftware.Portable.Collections.Preview
     internal sealed class DHostSuppress<T> : DisposableHost
     {
         public ReadOnlyCollection<T> Snapshot { get; private set; } = null!;
-        INotifyCollectionChangedSuppress<T> _listFTR = null!;
+        IList _listFTR = null!;
 
         protected override void OnBeginUsing(BeginUsingEventArgs e)
         {
@@ -75,38 +75,42 @@ namespace IVSoftware.Portable.Collections.Preview
         private bool _cancel;
 
         [Canonical]
-        public IDisposable GetToken(
-            INotifyCollectionChangedSuppress<T> list,
-            Dictionary<string, object>? properties = null)
-        {
-            InitializeToken(list);
-            return base.GetToken(sender: list, properties: properties);
-        }
-
-        public IDisposable GetToken(
-            INotifyCollectionChangedSuppress<T> list,
-            string key,
-            object value)
-        {
-            InitializeToken(list);
-            return base.GetToken(sender: list, key, value);
-        }
-
-        // Hard block all ambiguous entry points
         public new IDisposable GetToken(object? sender = null, Dictionary<string, object>? properties = null)
-            => throw new NotSupportedException($"Use {nameof(GetToken)}({nameof(SuppressionPhase)}, IList, ...)");
+        {
+            if (sender is not IList list)
+                throw new NotSupportedException($"Sender must implement IList.");
+
+            InitializeToken(list);
+            return base.GetToken(sender, properties);
+        }
 
         public new IDisposable GetToken(object sender, string key, object value)
-            => throw new NotSupportedException($"Use {nameof(GetToken)}({nameof(SuppressionPhase)}, IList, ...)");
+        {
+            if (sender is not IList list)
+                throw new NotSupportedException($"Sender must implement IList.");
+
+            InitializeToken(list);
+            return base.GetToken(sender, key, value);
+        }
 
         public new IDisposable GetToken(string key, object value)
-            => throw new NotSupportedException();
+            => throw new NotSupportedException("Sender is required.");
 
-        private void InitializeToken(INotifyCollectionChangedSuppress<T> list)
+        private void InitializeToken(IList list)
         {
-            Snapshot = new ReadOnlyCollection<T>(list.ToArray<T>());
-            _listFTR = list;
-            _isModified = false;
+            if (IsZero())
+            {
+                try
+                {
+                    Snapshot = new ReadOnlyCollection<T>(list.Cast<T>().ToArray());
+                }
+                catch (InvalidCastException)
+                {
+                    throw new NotSupportedException($"Sender {nameof(IList)} must contain all {typeof(T).Name}.");
+                }
+                _listFTR = list;
+                _isModified = false;
+            }
         }
         bool _isModified = false;
         public SuppressionPhase Phase { get; private set; } = SuppressionPhase.None;
