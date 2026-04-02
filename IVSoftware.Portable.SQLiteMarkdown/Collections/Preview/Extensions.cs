@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -637,7 +638,22 @@ namespace IVSoftware.Portable.Collections.Preview
             return result;
         }
 
-        private static readonly Dictionary<Type, ModelingCapability> _mccache = new();
+        delegate string GetFullPathDlgt(object o);
+        private class ModelingCapabilityInfo
+        {
+            public ModelingCapability ModelingCapability { get; set; }
+            public GetFullPathDlgt? GetFullPath { get; set; }
+        }
+
+        private static TolerantDictionary<Type, TolerantDictionary<string, object>> _typeCache = new();
+        private static TolerantDictionary<string, object> GetCacheForType(this Type @this)
+        {
+            if (_typeCache[@this] is not { } cache)
+            {
+                _typeCache[@this] = cache = new();
+            }
+            return cache;
+        }
 
         public static ModelPreviewDelegate GetModelPreviewDlgt<T>(this object? _)
         {
@@ -651,59 +667,72 @@ namespace IVSoftware.Portable.Collections.Preview
                 throw new NotSupportedException($"No delegate is registered for {type.Name}");
             }
         }
-        public static ModelingCapability GetModelingCapability<T>(this IList @this)
-            => @this.GetModelingCapability(typeof(T));
-        public static ModelingCapability GetModelingCapability(this IList @this, Type type)
+        private static ModelingCapabilityInfo GetModelingCapability(this Type @this)
         {
-            if (_mccache.TryGetValue(type, out var modelingCapability))
+            var mccache = @this.GetCacheForType();
+
+            if (mccache[nameof(ModelingCapability)] is ModelingCapabilityInfo cached)
             {
-                return modelingCapability;
+                return cached;
             }
-            else
+
+            ModelingCapabilityInfo? result = null;
+            PropertyInfo? fullPathPI = null;
+
+            foreach (ModelingCapability capability in Enum.GetValues(typeof(ModelingCapability)))
             {
-                PropertyInfo? fullPathPI;
-                foreach (ModelingCapability capability in Enum.GetValues(typeof(ModelingCapability)))
+                switch (capability)
                 {
-                    modelingCapability = capability;
-                    switch (capability)
+                    case ModelingCapability.Id:
+                        fullPathPI = @this.GetSQLiteMapping()?.PK?.PropertyInfo;
+                        if (fullPathPI is null)
+                        {
+                            fullPathPI = @this.GetProperty(capability.ToString());
+                        }
+                        break;
+
+                    case ModelingCapability.FullPath:
+                    case ModelingCapability.Description:
+                    case ModelingCapability.Text:
+                    case ModelingCapability.Unavailable:
+                        fullPathPI = @this.GetProperty(capability.ToString());
+                        break;
+
+                    default:
+                        @this.ThrowHard<NotSupportedException>($"The {capability.ToFullKey()} case is not supported.");
+                        break;
+                }
+
+                if (fullPathPI is not null)
+                {
+                    result = new ModelingCapabilityInfo
                     {
-                        case ModelingCapability.Id:
-                            fullPathPI = type.GetSQLiteMapping()?.PK?.PropertyInfo;
-                            if (fullPathPI is null)
-                            {
-                                fullPathPI = type.GetProperty(capability.ToString());
-                            }
-                            if (fullPathPI is null) // Still...
-                            {
-                                break;
-                            }
-                            else
-                            {
-                                goto breakFromInner;
-                            }
-                        case ModelingCapability.FullPath:
-                        case ModelingCapability.Description:
-                        case ModelingCapability.Text:
-                        case ModelingCapability.Unavailable:
-                            fullPathPI = type.GetProperty(capability.ToString());
-                            if (fullPathPI is null)
-                            {
-                                break;
-                            }
-                            else
-                            {
-                                goto breakFromInner;
-                            }
-                        default:
-                            type.ThrowHard<NotSupportedException>($"The {capability.ToFullKey()} case is not supported.");
-                            modelingCapability = ModelingCapability.Unavailable;
-                            // If handled, allow loop to continue;
-                            break;
+                        ModelingCapability = capability,
+                        GetFullPath = localCompileDelegate(fullPathPI),
+                    };
+                    GetFullPathDlgt localCompileDelegate(PropertyInfo pi)
+{
+                        var instanceParam = Expression.Parameter(typeof(object), "obj");
+
+                        var castInstance = Expression.Convert(instanceParam, pi.DeclaringType!);
+                        var propertyAccess = Expression.Property(castInstance, pi);
+
+                        var castResult = Expression.Convert(propertyAccess, typeof(string));
+
+                        var lambda = Expression.Lambda<GetFullPathDlgt>(castResult, instanceParam);
+                        return lambda.Compile();
                     }
+                    break;
                 }
             }
-            breakFromInner:
-            return modelingCapability!;
+
+            if (result is null)
+            {
+                @this.ThrowHard<InvalidOperationException>("No ModelingCapability could be resolved.");
+            }
+
+            mccache[nameof(ModelingCapability)] = result!;
+            return result!;
         }
 
         public static string ToString(this IList @this, ModelPreviewDelegate preview)
@@ -758,19 +787,24 @@ namespace IVSoftware.Portable.Collections.Preview
             else return null;
         }
 
-
         /// <summary>
         /// Attempts to determine the hierarchical placement path of an arbitrary object.
         /// </summary>
         /// <remarks>
-        /// This is a heuristic. <see cref="ReadOnlyFullPathAffinity"/> is used to interpret
+        /// This is a heuristic. <see cref="ModelingCapability"/> is used to interpret
         /// the instance as <see cref="IFullPathAffinity"/> using reflection and SQLite
         /// metadata. The result is suitable for positioning within the MarkdownContext
         /// <c>Model</c> element tree when sufficient structure is present.
         ///
         /// Returns an empty string when no path information can be inferred.
         /// </remarks>
-        public static string GetFullPath(this object? @this)
-            => ReadOnlyFullPathAffinity.Create(@this)?.FullPath ?? string.Empty;
+        public static string GetFullPath(this object @this)
+        {
+            if (@this.GetType().GetModelingCapability() is { } tuple)
+            {
+                return tuple.GetFullPath(@this);
+            }
+            throw new NotImplementedException("ToDo");
+        }
     }
 }
