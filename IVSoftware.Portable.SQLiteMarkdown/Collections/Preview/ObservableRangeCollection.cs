@@ -1,7 +1,9 @@
-﻿using IVSoftware.Portable.Collections.Preview;
-using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using System;
 using System.Collections;
+using System.Xml.Linq;
 
 namespace IVSoftware.Portable.Collections.Preview
 {
@@ -9,6 +11,12 @@ namespace IVSoftware.Portable.Collections.Preview
         : SuppressibleObservableCollection<T>
         , IRangeable
     {
+
+        public static implicit operator XElement(ObservableRangeCollection<T> @this)
+        {
+            @this.ToString(out XElement model);
+            return model;
+        }
         public void AddRange(IEnumerable items)
         {
             using (BeginSuppress())
@@ -32,40 +40,18 @@ namespace IVSoftware.Portable.Collections.Preview
                 }
             }
         }
-
-        public int AddRangeDistinct(IEnumerable items)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void InsertRange(int startingIndex, IEnumerable items)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int RemoveMultiple(IEnumerable items)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void RemoveRange(int startingIndex, int endingIndex)
-        {
-            throw new NotImplementedException();
-        }
-
-#if false
         public int AddRangeDistinct(IEnumerable items)
         {
             XElement model = this;
 
-            if (ModelingCapabilityInfo.GetFullPath is not GetFullPathDlgt dlgt)
+            if (typeof(T).GetModeledPathInfo().GetPath is not GetPathDlgt dlgt)
             {
                 return 0;
             }
             else
             {
                 int changed = 0;
-                using (BeginSuppressNotify())
+                using (BeginSuppress())
                 {
                     int newStartingIndex = Count;
                     foreach (var item in items)
@@ -75,7 +61,7 @@ namespace IVSoftware.Portable.Collections.Preview
                             if (string.IsNullOrWhiteSpace(fullPath))
                             {
                                 "ObservablePreviewCollection".ThrowHard<ArgumentException>($"The '{nameof(fullPath)}' argument cannot be empty.");
-                                CancelSuppressNotify();
+                                CancelSuppress();
                                 return 0;
                             }
 
@@ -94,7 +80,7 @@ namespace IVSoftware.Portable.Collections.Preview
                         else
                         {
                             item.ThrowHard<InvalidCastException>($"All range items must be {typeof(T).Name}");
-                            CancelSuppressNotify();
+                            CancelSuppress();
                             return 0;
                         }
                     }
@@ -105,28 +91,17 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public void InsertRange(int startingIndex, IEnumerable items)
         {
-            using (BeginSuppressNotify())
-            {
-
-            }
+            throw new NotImplementedException();
         }
 
         public int RemoveMultiple(IEnumerable items)
         {
-            using (BeginSuppressNotify())
-            {
-
-            }
-            return 0;
+            throw new NotImplementedException();
         }
 
         public void RemoveRange(int startingIndex, int endingIndex)
         {
-            using (BeginSuppressNotify())
-            {
-
-            }
+            throw new NotImplementedException();
         }
-#endif
     }
 }

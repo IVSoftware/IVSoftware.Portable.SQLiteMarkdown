@@ -15,7 +15,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
     /// <summary>
     /// Listed in order of preference.
     /// </summary>
-    public enum ModeledPathProperty
+    public enum StdModelPath
     {
         /// <summary>
         /// Detected a string property named FullPath.
@@ -40,7 +40,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         /// <summary>
         /// Failed to find a suitable modeling property.
         /// </summary>
-        Unavailable,
+        NotFound,
     }
     public class AdHocModelProvider<T>
     {
@@ -54,7 +54,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
             XElement model = new XElement(nameof(StdMarkdownElement.model));
             model.SetAttributeValue(ModelingCapability);
             int itemCount = 0;
-            if (ModelingCapability != ModeledPathProperty.Unavailable)
+            if (ModelingCapability != StdModelPath.NotFound)
             {
                 foreach (var item in ItemsSource)
                 {
@@ -91,19 +91,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         /// <summary>
         /// Determine the highest fidelity full path for T.
         /// </summary>
-        public ModeledPathProperty ModelingCapability
+        public StdModelPath ModelingCapability
         {
             get
             {
                 if (_modelingCapability is null)
                 {
                     var type = typeof(T);
-                    foreach (ModeledPathProperty capability in Enum.GetValues(typeof(ModeledPathProperty)))
+                    foreach (StdModelPath capability in Enum.GetValues(typeof(StdModelPath)))
                     {
                         _modelingCapability = capability;
                         switch (capability)
                         {
-                            case ModeledPathProperty.Id:
+                            case StdModelPath.Id:
                                 _fullPathPI = type.GetSQLiteMapping()?.PK?.PropertyInfo;
                                 if (_fullPathPI is null)
                                 {
@@ -117,10 +117,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                                 {
                                     goto breakFromInner;
                                 }
-                            case ModeledPathProperty.FullPath:
-                            case ModeledPathProperty.Description:
-                            case ModeledPathProperty.Text:
-                            case ModeledPathProperty.Unavailable:
+                            case StdModelPath.FullPath:
+                            case StdModelPath.Description:
+                            case StdModelPath.Text:
+                            case StdModelPath.NotFound:
                                 _fullPathPI = type.GetProperty(capability.ToString());
                                 if (_fullPathPI is null)
                                 {
@@ -132,24 +132,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                                 }
                             default:
                                 this.ThrowHard<NotSupportedException>($"The {capability.ToFullKey()} case is not supported.");
-                                _modelingCapability = ModeledPathProperty.Unavailable;
+                                _modelingCapability = StdModelPath.NotFound;
                                 // If handled, allow loop to continue;
                                 break;
                         }
                     }
                 }
                 breakFromInner:
-                return (ModeledPathProperty)_modelingCapability!;
+                return (StdModelPath)_modelingCapability!;
             }
         }
-        ModeledPathProperty? _modelingCapability = null;
+        StdModelPath? _modelingCapability = null;
         PropertyInfo? _fullPathPI = null;
 
         public GetFullPathDelegate<T>? GetFullPathDlgt
         {
             get
             {
-                if (ModelingCapability == ModeledPathProperty.Unavailable)
+                if (ModelingCapability == StdModelPath.NotFound)
                 {
                     return null;
                 }

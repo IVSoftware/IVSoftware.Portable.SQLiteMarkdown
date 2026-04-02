@@ -125,7 +125,7 @@ namespace IVSoftware.Portable.Collections.Preview
         public static implicit operator XElement(ObservablePreviewCollection<T> @this)
         {
             @this.ToString(out XElement model);
-            model.SetAttributeValue(@this.ModelingCapabilityInfo.ModelingCapability);
+            model.SetAttributeValue(@this.ModelingCapabilityInfo.StdModelPath);
             return model;
         }
 

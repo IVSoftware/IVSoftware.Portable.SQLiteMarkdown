@@ -6,10 +6,10 @@ using System.Text;
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
 
-    internal delegate string GetFullPathDlgt(object o);
+    internal delegate string GetPathDlgt(object o);
     internal class ModeledFullPathInfo
     {
-        public ModeledPathProperty ModelingCapability { get; set; }
-        public GetFullPathDlgt? GetFullPath { get; set; }
+        public StdModelPath StdModelPath { get; set; }
+        public GetPathDlgt? GetPath { get; set; }
     }
 }

@@ -718,33 +718,33 @@ namespace IVSoftware.Portable.Collections.Preview
         {
             var mccache = @this.GetCacheForType();
 
-            if (mccache[nameof(ModeledPathProperty)] is ModeledFullPathInfo cached)
+            if (mccache[nameof(StdModelPath)] is ModeledFullPathInfo cached)
             {
                 return cached;
             }
             ModeledFullPathInfo info = null!;
             PropertyInfo? fullPathPI = null;
-            foreach (ModeledPathProperty capability in Enum.GetValues(typeof(ModeledPathProperty)))
+            foreach (StdModelPath aspirant in Enum.GetValues(typeof(StdModelPath)))
             {
-                switch (capability)
+                switch (aspirant)
                 {
-                    case ModeledPathProperty.Id:
+                    case StdModelPath.Id:
                         fullPathPI = @this.GetSQLiteMapping()?.PK?.PropertyInfo;
                         if (fullPathPI is null)
                         {
-                            fullPathPI = @this.GetProperty(capability.ToString());
+                            fullPathPI = @this.GetProperty(aspirant.ToString());
                         }
                         break;
 
-                    case ModeledPathProperty.FullPath:
-                    case ModeledPathProperty.Description:
-                    case ModeledPathProperty.Text:
-                    case ModeledPathProperty.Unavailable:
-                        fullPathPI = @this.GetProperty(capability.ToString());
+                    case StdModelPath.FullPath:
+                    case StdModelPath.Description:
+                    case StdModelPath.Text:
+                    case StdModelPath.NotFound:
+                        fullPathPI = @this.GetProperty(aspirant.ToString());
                         break;
 
                     default:
-                        @this.ThrowHard<NotSupportedException>($"The {capability.ToFullKey()} case is not supported.");
+                        @this.ThrowHard<NotSupportedException>($"The {aspirant.ToFullKey()} case is not supported.");
                         break;
                 }
 
@@ -752,10 +752,10 @@ namespace IVSoftware.Portable.Collections.Preview
                 {
                     info = new ModeledFullPathInfo
                     {
-                        ModelingCapability = capability,
-                        GetFullPath = localCompileDelegate(fullPathPI),
+                        StdModelPath = aspirant,
+                        GetPath = localCompileDelegate(fullPathPI),
                     };
-                    GetFullPathDlgt localCompileDelegate(PropertyInfo pi)
+                    GetPathDlgt localCompileDelegate(PropertyInfo pi)
 {
                         var instanceParam = Expression.Parameter(typeof(object), "obj");
 
@@ -764,7 +764,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
                         var castResult = Expression.Convert(propertyAccess, typeof(string));
 
-                        var lambda = Expression.Lambda<GetFullPathDlgt>(castResult, instanceParam);
+                        var lambda = Expression.Lambda<GetPathDlgt>(castResult, instanceParam);
                         return lambda.Compile();
                     }
                     break;
@@ -776,18 +776,18 @@ namespace IVSoftware.Portable.Collections.Preview
                 @this.ThrowHard<InvalidOperationException>("ModelingCapability cannot be resolved.");
                 info = new ModeledFullPathInfo
                 {
-                    ModelingCapability = ModeledPathProperty.Unavailable,
-                    GetFullPath = null,
+                    StdModelPath = StdModelPath.NotFound,
+                    GetPath = null,
                 };
             }
-            mccache[nameof(ModeledPathProperty)] = info;
+            mccache[nameof(StdModelPath)] = info;
             return info;
         }
         public static string ToString(this IList @this, out XElement model)
         {
             var itemType = @this.GetItemType();
             var previewDlgt = itemType?.GetDescriptionPreviewDlgt();
-            var modeling = itemType?.GetModeledPathInfo().ModelingCapability;
+            var modeling = itemType?.GetModeledPathInfo().StdModelPath;
 
             model = new XElement(nameof(StdMarkdownElement.model));
             if(modeling is not null)
@@ -845,7 +845,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// Attempts to determine the hierarchical placement path of an arbitrary object.
         /// </summary>
         /// <remarks>
-        /// This is a heuristic. <see cref="ModeledPathProperty"/> is used to interpret
+        /// This is a heuristic. <see cref="StdModelPath"/> is used to interpret
         /// the instance as <see cref="IFullPathAffinity"/> using reflection and SQLite
         /// metadata. The result is suitable for positioning within the MarkdownContext
         /// <c>Model</c> element tree when sufficient structure is present.
@@ -854,7 +854,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// </remarks>
         public static string GetFullPath(this object @this)
         {
-            if(@this.GetType().GetModeledPathInfo().GetFullPath?.Invoke(@this) is string fullPath)
+            if(@this.GetType().GetModeledPathInfo().GetPath?.Invoke(@this) is string fullPath)
             {
                 return fullPath;
             }
