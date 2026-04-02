@@ -3515,7 +3515,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 items.InputText += "a";
                 await items;
 
-                actual = items.ToString(out XElement _);
+                actual = items.ToString(ReportFormat.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -3532,12 +3532,30 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
   <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" preview=""Kangaroo  "" />
   <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" preview=""Turtle    "" />
   <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" preview=""Should NOT"" />
-</model>";
+</model>"
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Expecting that THE FIRST ITEM is a match. This is IMPORTANT to explain the result below."
+                );
+
+                // ☆☆☆☆☆
+                // Extension : Model Model (with active filter) from the OUTSIDE LOOKING IN.
+                // ☆☆☆☆☆
+                actual = items.ToString(out XElement _);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model modeling=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
+</model>"
+                ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting that EXTENSION USES THE ROUTED ITERATOR."
                 );
 
                 actual = items.StateReport();
@@ -3558,6 +3576,49 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 builder.Clear();
                 items.Clear(false);
 
+                // The BUGIRL is that there was no Reset or Change event.
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+
+                // IN THE PROCESS OF FIXING THAT BUG, WE ACCIDENTALLY PROVED SOMETHING COOL
+                // - The expectation was for a Reset.
+                // - IT WILL ALMOST ALWAYS BE A RESET.
+                // - But just as a rando thing, IN THIS CORNER CASE the Diff turned out to be BCL compatible.
+                // - The reason: The single PM is at index ZERO.
+                // And the thing is, it worked exactly how we designed it.
+                expected = @" 
+NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
+                ;
+
+                // ☆☆☆☆☆
+                // Extension : Model (with cleared filter) from the OUTSIDE LOOKING IN.
+                // ☆☆☆☆☆
+                actual = items.ToString(out XElement _);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model modeling=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" preview=""Orange Fox"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""White Rabb"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" preview=""Gray Wolf "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" preview=""Golden Lio"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" preview=""Brown Bear"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" preview=""Black Pant"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" preview=""Elephant  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" preview=""Giraffe   "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" preview=""Kangaroo  "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" preview=""Turtle    "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" preview=""Should NOT"" />
+</model>"
+                ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting that EXTENSION USES THE ROUTED ITERATOR."
+                );
+
                 actual = items.StateReport();
                 actual.ToClipboardExpected();
                 { }
@@ -3573,20 +3634,6 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 Assert.IsTrue(items.RouteToFullRecordset);
                 Assert.AreEqual(12, items.Count, "Expecting routing to track via the internal Read property.");
 
-                // The BUGIRL is that there was no Reset or Change event.
-                actual = string.Join(Environment.NewLine, builder);
-                actual.ToClipboardExpected();
-                { }
-                // WE ACCIDENTALLY PROVED SOMETHING COOL
-                // - The expectation was for a Reset.
-                // - IT WILL ALMOST ALWAYS BE A RESET.
-                // - But just as a rando thing, IN THIS CORNER CASE the Diff turned out to be BCL compatible.
-                // - The reason: The single PM is at index ZERO.
-                // And the thing is, it worked exactly how we designed it.
-                expected = @" 
-NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
-                ;
-
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
@@ -3600,7 +3647,7 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 await items;
 
 
-                actual = items.ToString(out XElement _);
+                actual = items.ToString(ReportFormat.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 

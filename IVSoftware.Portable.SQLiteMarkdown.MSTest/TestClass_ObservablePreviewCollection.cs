@@ -665,6 +665,9 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
         #endregion S U B T E S T S
     }
 
+    /// <summary>
+    /// Modeled OPC
+    /// </summary>
     [TestMethod, DoNotParallelize]
     public void Test_BasicMOPC()
     {

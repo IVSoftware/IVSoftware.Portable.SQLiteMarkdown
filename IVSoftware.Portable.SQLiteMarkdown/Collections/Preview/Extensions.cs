@@ -648,7 +648,7 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             return cache;
         }
-        private static ModelPreviewDelegate GetDescriptionPreviewDlgt(this Type type)
+        internal static ModelPreviewDelegate GetDescriptionPreviewDlgt(this Type type)
         {
             if (type.GetProperty("Description") is { } pi)
             {
@@ -756,7 +756,7 @@ namespace IVSoftware.Portable.Collections.Preview
                         GetPath = localCompileDelegate(fullPathPI),
                     };
                     GetPathDlgt localCompileDelegate(PropertyInfo pi)
-{
+                    {
                         var instanceParam = Expression.Parameter(typeof(object), "obj");
 
                         var castInstance = Expression.Convert(instanceParam, pi.DeclaringType!);

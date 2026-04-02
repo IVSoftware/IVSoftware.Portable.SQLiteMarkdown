@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
@@ -8,6 +9,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
 
@@ -32,7 +35,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// For objects with a native Model property, or that have 
         /// an implicit cast to XElement, return model.ToString().
         /// </summary>
-        Model,
+        ModelWithPreview,
 
         //OptionsReport,
         //SettingsReport,
@@ -330,6 +333,35 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     builder.Add($"[{QueryFilterConfig}: {SearchEntryState.ToFullKey()}");
                     builder.Add($"{FilteringState.ToFullKey()}]");
                     break;
+                case ReportFormat.ModelWithPreview:
+                    if(ContractType.GetDescriptionPreviewDlgt() is { } dlgt)
+                    {
+                        var needPreview =
+                            Model
+                            .Descendants()
+                            .Select(_=>_.Attribute(StdMarkdownAttribute.model))
+                            .OfType<XBoundAttribute>()
+                            .Where(_=>_.Parent.Attribute(StdMarkdownAttribute.preview) is null)
+                            .ToArray();
+
+                        foreach (var xba in needPreview)
+                        {
+                            xba.Parent.SetStdAttributeValue(StdMarkdownAttribute.preview, dlgt(xba.Tag));
+                        }
+                        var report = Model.ToString();
+
+                        foreach (var xba in needPreview)
+                        {
+                            xba.Parent.SetStdAttributeValue(StdMarkdownAttribute.preview, null);
+                        }
+                        return report;
+                    }
+                    else
+                    {
+                        return Model.ToString();
+                    }
+                    break;
+
                 //case ReportFormat.OptionsReport:
                 //    builder.Add($"{ProjectionTopology.ToFullKey()}");
                 //    builder.Add($"{ReplaceItemsEventingOption.ToFullKey()}");

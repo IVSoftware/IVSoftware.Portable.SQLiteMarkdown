@@ -43,7 +43,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if(eUnk is CoalescingFinalDisposeEventArgs e)
                 {
-                    OnModelChanging(e.Coalesced, out bool Cancel);
+                    OnModelChanged(e.Coalesced);
                 }
             };
 
@@ -467,8 +467,7 @@ SELECT * FROM items WHERE
                                 ((IList)PredicateMatchSubset)
                                 .Diff((IList)CanonicalSuperset,
                                 reason: NotifyCollectionChangeReason.RemoveFilter);
-                            OnModelChanging(ePost, out bool cancel);
-                            if(!cancel) OnModelChanged(ePost);
+                            OnModelChanged(ePost);
                         }
                         if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
                         {
@@ -477,9 +476,7 @@ SELECT * FROM items WHERE
                                     reason: NotifyCollectionChangeReason.RemoveFilter,
                                     action: NotifyCollectionChangedAction.Reset
                                 );
-                            
-                            OnModelChanging(ePost, out bool cancel);
-                            if(!cancel) OnModelChanged(ePost);
+                            OnModelChanged(ePost);
                         }
                     }
                     break;
@@ -730,15 +727,6 @@ SELECT * FROM items WHERE
             }
         }
 
-        /// <summary>
-        /// Raise an event as unknown. Subclass is allowed to upgrade it.
-        /// </summary>
-        protected virtual void OnModelChanging(EventArgs eUnk, out bool cancel)
-        {
-            ModelChanging?.Invoke(this, eUnk);
-            cancel = (eUnk as CancelEventArgs)?.Cancel ?? false;
-        }
-
 
         /// <summary>
         /// Signals that the markdown model has reached a stable state following an input-driven reconciliation.
@@ -749,8 +737,6 @@ SELECT * FROM items WHERE
         ///
         /// The supplied <see cref="NotifyCollectionChangedEventArgs"/> may be downcast to <c>ModelSettledEventArgs</c>. 
         /// When cast in this way, the reason for the model iteration is provided.
-        ///
-        /// Mental Model: "Input text has settled; the model has reconciled."
         /// </remarks>
         protected virtual void OnModelChanged(NotifyCollectionChangedEventArgs eBCL)
         {
@@ -764,7 +750,21 @@ SELECT * FROM items WHERE
                     ModelChanged?.Invoke(this, eBCL);
                     break;
                 case NetProjectionTopology.AllowDirectChanges:
-                    localApplyDirectChanges();
+                    switch (Authority)
+                    {
+                        case CollectionChangeAuthority.Settle:
+                        case CollectionChangeAuthority.Predicate:
+                            localApplyDirectChanges();
+                            break;
+                        case CollectionChangeAuthority.None:
+                        case CollectionChangeAuthority.Reset:
+                        case CollectionChangeAuthority.Commit:
+                        case CollectionChangeAuthority.Projection:
+                            break;
+                        default:
+                            this.ThrowFramework<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
+                            break;
+                    }
                     break;
                 case NetProjectionTopology.Routed:
                     ModelChanged?.Invoke(this, eBCL);
@@ -775,201 +775,161 @@ SELECT * FROM items WHERE
             }
             void localApplyDirectChanges()
             {
-                if (eBCL is not ModelSettledEventArgs eModel)
+                if (ObservableNetProjection is not IList projection)
                 {
                     this.ThrowFramework<InvalidOperationException>(
-                        $"Insisting on {nameof(ModelSettledEventArgs)} - The pattern match just gets the cast.");
+                        $"Expecting {nameof(ObservableNetProjection)} is determined to be non-null in the ProjectionTopology property getter.");
                 }
                 else
                 {
-                    if (ObservableNetProjection is not IList projection)
+                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    // Subclass has OPTED-IN to direct changes.
+                    //
+                    // Every change made here will 'attempt to' raise events on that
+                    // object, but we expect that collection object to apply its own
+                    // suppression and instead raise eBCL when the churn has finished
+                    // in response to the ModelUpdated that is about to be raised.
+                    //
+                    // TO THAT END this operation is wrapped in an authority whereby
+                    // the ONP can tell this is taking place from the back end.
+                    //
+                    // [Careful]
+                    // Inspecting the sender of the events is not a reliable
+                    // way to ascertain authority.
+                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+                    switch (eBCL.Action)
                     {
-                        this.ThrowFramework<InvalidOperationException>(
-                            $"Expecting {nameof(ObservableNetProjection)} is determined to be non-null in the ProjectionTopology property getter.");
+                        case NotifyCollectionChangedAction.Add: localAdd(); break;
+                        case NotifyCollectionChangedAction.Move: localMove(); break;
+                        case NotifyCollectionChangedAction.Remove: localRemove(); break;
+                        case NotifyCollectionChangedAction.Replace: localReplace(); break;
+                        case NotifyCollectionChangedAction.Reset: localReset(); break;
+                        default:
+                            this.ThrowFramework<NotSupportedException>($"The {eBCL.Action.ToFullKey()} case is not supported.");
+                            break;
+                    }
+                }
+                ModelChanged?.Invoke(this, eBCL);
+
+                #region L o c a l F x
+
+                void localAdd()
+                {
+                    if (eBCL.NewItems is null)
+                    {
+                        ThrowHard<NullReferenceException>($"{nameof(eBCL.NewItems)} cannot be null.");
                     }
                     else
                     {
-                        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        // Subclass has OPTED-IN to direct changes.
-                        //
-                        // Every change made here will 'attempt to' raise events on that
-                        // object, but we expect that collection object to apply its own
-                        // suppression and instead raise eBCL when the churn has finished
-                        // in response to the ModelUpdated that is about to be raised.
-                        //
-                        // TO THAT END this operation is wrapped in an authority whereby
-                        // the ONP can tell this is taking place from the back end.
-                        //
-                        // [Careful]
-                        // Inspecting the sender of those events is *not* an effective
-                        // way in in which to determine authority because *that* collection
-                        // raises *those* events, i.e., is the sender of them.
-                        Debug.Assert(
-                            Equals(Authority, CollectionChangeAuthority.Settle),
-                            "Expecting this operation takes place under Model authority."
-                        );
-                        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-                        switch (eBCL.Action)
+                        var index =
+                            eBCL.NewStartingIndex == -1
+                            ? projection.Count
+                            : eBCL.NewStartingIndex;
+                        foreach (var item in eBCL.NewItems)
                         {
-                            case NotifyCollectionChangedAction.Add: localAdd(); break;
-                            case NotifyCollectionChangedAction.Move: localMove(); break;
-                            case NotifyCollectionChangedAction.Remove: localRemove(); break;
-                            case NotifyCollectionChangedAction.Replace: localReplace(); break;
-                            case NotifyCollectionChangedAction.Reset: localReset(); break;
-                            default:
-                                this.ThrowFramework<NotSupportedException>($"The {eBCL.Action.ToFullKey()} case is not supported.");
-                                break;
+                            projection.Insert(index++, item);
                         }
                     }
-                    ModelChanged?.Invoke(this, eBCL);
-
-                    #region L o c a l F x
-
-                    void localAdd()
-                    {
-                        if (eBCL.NewItems is null)
-                        {
-                            ThrowHard<NullReferenceException>($"{nameof(eBCL.NewItems)} cannot be null.");
-                        }
-                        else
-                        {
-                            var index =
-                                eBCL.NewStartingIndex == -1
-                                ? projection.Count
-                                : eBCL.NewStartingIndex;
-                            foreach (var item in eBCL.NewItems)
-                            {
-                                projection.Insert(index++, item);
-                            }
-                        }
-                    }
-
-                    void localMove()
-                    {
-                        if (eBCL.NewItems is null)
-                        {
-                            ThrowHard<NullReferenceException>($"{nameof(eBCL.NewItems)} cannot be null.");
-                        }
-                        else
-                        {
-                            if (eBCL.NewItems.Count != 1)
-                            {
-                                ThrowHard<NotSupportedException>(
-                                    $"In {nameof(OnModelChanged)} Multi item moves are not supported. Override this method for full control.");
-                                return;
-                            }
-                            int oldIndex = eBCL.OldStartingIndex;
-                            int newIndex = eBCL.NewStartingIndex;
-
-                            if (oldIndex < 0 || newIndex < 0)
-                            {
-                                this.ThrowFramework<InvalidOperationException>(
-                                    $"Expecting valid indices for {NotifyCollectionChangedAction.Move.ToFullKey()}.");
-                            }
-
-                            // Capture items first to preserve ordering for multi-item moves
-                            var moved = new List<object?>();
-                            foreach (var _ in eBCL.NewItems)
-                            {
-                                moved.Add(projection[oldIndex]);
-                                projection.RemoveAt(oldIndex);
-                            }
-
-                            int insertIndex = newIndex;
-                            foreach (var item in moved)
-                            {
-                                projection.Insert(insertIndex++, item);
-                            }
-                        }
-                    }
-
-                    void localRemove()
-                    {
-                        if (eBCL.OldItems is null)
-                        {
-                            ThrowHard<NullReferenceException>($"{nameof(eBCL.OldItems)} cannot be null.");
-                        }
-                        else
-                        {
-                            if (eBCL.OldStartingIndex >= 0)
-                            {
-                                int index = eBCL.OldStartingIndex;
-
-                                foreach (var _ in eBCL.OldItems)
-                                {
-                                    projection.RemoveAt(index);
-                                }
-                            }
-                            else
-                            {
-                                foreach (var item in eBCL.OldItems)
-                                {
-                                    projection.Remove(item);
-                                }
-                            }
-                        }
-                    }
-
-                    void localReplace()
-                    {
-                        switch (eModel.Reason)
-                        {
-                            case NotifyCollectionChangeReason.ApplyFilter:
-                            case NotifyCollectionChangeReason.RemoveFilter:
-                                // Avoid Clear() here. Some observers treat Clear as a semantic reset
-                                // (e.g., selection or virtualization state) rather than a sequence of
-                                // removes. Replaying the individual Remove/Add operations preserves
-                                // the original mutation semantics and avoids surprising state resets.
-                                if (eBCL.OldItems is not null)
-                                {
-                                    foreach (var item in eBCL.OldItems)
-                                    {
-                                        projection.Remove(item);
-                                    }
-                                }
-                                if (eBCL.NewItems is not null)
-                                {
-                                    foreach (var item in eBCL.NewItems)
-                                    {
-                                        projection.Add(item);
-                                    }
-                                }
-                                break;
-                            default:
-                                // Normal BCL Replace
-                                if (eBCL.OldItems is not null &&
-                                    eBCL.NewItems is not null &&
-                                    eBCL.OldStartingIndex >= 0)
-                                {
-                                    int index = eBCL.OldStartingIndex;
-
-                                    foreach (var item in eBCL.NewItems)
-                                    {
-                                        projection[index++] = item;
-                                    }
-                                }
-                                break;
-                        }
-                    }
-                    void localReset()
-                    {
-                        projection.Clear();
-
-                        // Typically this eBCL repesents an "emptying of the collection"
-                        // but this is not a guarantee. If the event offers new items,
-                        // take this opportunity to copy them.
-                        if (eBCL.NewItems is not null)
-                        {
-                            Debug.Fail($@"IFD ADVISORY - First Time.");
-                            foreach (var item in eBCL.NewItems)
-                            {
-                                projection.Add(item);
-                            }
-                        }
-                    }
-                    #endregion L o c a l F x
                 }
+
+                void localMove()
+                {
+                    if (eBCL.NewItems is null)
+                    {
+                        ThrowHard<NullReferenceException>($"{nameof(eBCL.NewItems)} cannot be null.");
+                    }
+                    else
+                    {
+                        if (eBCL.NewItems.Count != 1)
+                        {
+                            ThrowHard<NotSupportedException>(
+                                $"In {nameof(OnModelChanged)} Multi item moves are not supported. Override this method for full control.");
+                            return;
+                        }
+                        int oldIndex = eBCL.OldStartingIndex;
+                        int newIndex = eBCL.NewStartingIndex;
+
+                        if (oldIndex < 0 || newIndex < 0)
+                        {
+                            this.ThrowFramework<InvalidOperationException>(
+                                $"Expecting valid indices for {NotifyCollectionChangedAction.Move.ToFullKey()}.");
+                        }
+
+                        // Capture items first to preserve ordering for multi-item moves
+                        var moved = new List<object?>();
+                        foreach (var _ in eBCL.NewItems)
+                        {
+                            moved.Add(projection[oldIndex]);
+                            projection.RemoveAt(oldIndex);
+                        }
+
+                        int insertIndex = newIndex;
+                        foreach (var item in moved)
+                        {
+                            projection.Insert(insertIndex++, item);
+                        }
+                    }
+                }
+
+                void localRemove()
+                {
+                    if (eBCL.OldItems is null)
+                    {
+                        ThrowHard<NullReferenceException>($"{nameof(eBCL.OldItems)} cannot be null.");
+                    }
+                    else
+                    {
+                        if (eBCL.OldStartingIndex >= 0)
+                        {
+                            int index = eBCL.OldStartingIndex;
+
+                            foreach (var _ in eBCL.OldItems)
+                            {
+                                projection.RemoveAt(index);
+                            }
+                        }
+                        else
+                        {
+                            foreach (var item in eBCL.OldItems)
+                            {
+                                projection.Remove(item);
+                            }
+                        }
+                    }
+                }
+
+                void localReplace()
+                {
+                    if (eBCL.OldItems is not null &&
+                        eBCL.NewItems is not null &&
+                        eBCL.OldStartingIndex >= 0)
+                    {
+                        int index = eBCL.OldStartingIndex;
+
+                        foreach (var item in eBCL.NewItems)
+                        {
+                            projection[index++] = item;
+                        }
+                    }
+                }
+                void localReset()
+                {
+                    projection.Clear();
+
+                    // Typically this eBCL repesents an "emptying of the collection"
+                    // but this is not a guarantee. If the event offers new items,
+                    // take this opportunity to copy them.
+                    if (eBCL.NewItems is not null)
+                    {
+                        Debug.Fail($@"IFD ADVISORY - First Time.");
+                        foreach (var item in eBCL.NewItems)
+                        {
+                            projection.Add(item);
+                        }
+                    }
+                }
+                #endregion L o c a l F x
             }
         }
 
