@@ -682,7 +682,6 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             return model.ToString();
         }
-
         public static string ToString(this IList @this, ModelPreviewDelegate preview, out XElement model)
         {
             model = new XElement(nameof(StdMarkdownElement.model));

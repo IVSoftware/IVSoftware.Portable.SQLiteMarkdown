@@ -8,14 +8,10 @@ using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using System;
 using System.Collections;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Numerics;
 using System.Reflection;
-using System.Security.Cryptography;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.Collections.Preview
@@ -66,43 +62,23 @@ namespace IVSoftware.Portable.Collections.Preview
             }
         }
 
+        ModelPreviewDelegate PreviewDlgt
+        {
+            get
+            {
+                if (_PreviewDlgt is null)
+                {
+                    _PreviewDlgt = this.GetModelPreviewDlgt<T>();
+                }
+                return _PreviewDlgt;
+            }
+        }
+        ModelPreviewDelegate? _PreviewDlgt = null;
+
         public static implicit operator XElement(ObservablePreviewCollection<T> @this)
         {
-            XElement model = new XElement(nameof(StdMarkdownElement.model));
+            @this.ToString(@this.PreviewDlgt, out XElement model);
             model.SetAttributeValue(@this.ModelingCapability);
-            int itemCount = 0;
-            if (@this.ModelingCapability != ModelingCapability.Unavailable)
-            {
-                foreach (var item in @this)
-                {
-                    if (@this.GetFullPathDlgt?.Invoke(item) is { } fullPath)
-                    {
-                        if (string.IsNullOrWhiteSpace(fullPath))
-                        {
-                            "ObservablePreviewCollection".ThrowHard<ArgumentException>($"The '{nameof(fullPath)}' argument cannot be empty.");
-                            continue;
-                        }
-                        var placerResult = model.Place(fullPath, out var xel);
-                        switch (placerResult)
-                        {
-                            case PlacerResult.Exists:
-                                break;
-                            case PlacerResult.Created:
-                                xel.Name = nameof(StdMarkdownElement.xitem);
-                                xel.SetBoundAttributeValue(
-                                    tag: item,
-                                    name: nameof(StdMarkdownAttribute.model));
-
-                                xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), itemCount++);
-                                break;
-                            default:
-                                "ObservablePreviewCollection".ThrowFramework<NotSupportedException>(
-                                    $"Unexpected result: `{placerResult.ToFullKey()}`. Expected options are {PlacerResult.Created} or {PlacerResult.Exists}");
-                                break;
-                        }
-                    }
-                }
-            }
             return model;
         }
 
