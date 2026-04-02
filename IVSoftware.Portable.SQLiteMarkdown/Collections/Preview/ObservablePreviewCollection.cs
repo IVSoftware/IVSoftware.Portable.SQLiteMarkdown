@@ -171,41 +171,6 @@ namespace IVSoftware.Portable.Collections.Preview
         ModelingCapabilityInfo? _modelingCapability = null;
         PropertyInfo? _fullPathPI = null;
 
-        public GetFullPathDelegate<T>? GetFullPathDlgt
-        {
-            get
-            {
-                if (ModelingCapabilityInfo.ModelingCapability == ModelingCapability.Unavailable)
-                {
-                    return null;
-                }
-                else
-                {
-                    if (_getFullPath is null)
-                    {
-                        var instance = Expression.Parameter(typeof(T), "item");
-                        var property = Expression.Property(instance, _fullPathPI);
-
-                        Expression body =
-                            property.Type == typeof(string)
-                            ? property
-                            : Expression.Call(property, nameof(object.ToString), Type.EmptyTypes);
-
-#if DEBUG
-                        Debug.WriteLine($"260331.A {Expression.Lambda<GetFullPathDelegate<T>>(body, instance)}");
-                        { }
-#endif
-
-                        _getFullPath =
-                            Expression.Lambda<GetFullPathDelegate<T>>(body, instance)
-                            .Compile();
-                    }
-                    return _getFullPath;
-                }
-            }
-        }
-        GetFullPathDelegate<T>? _getFullPath;
-
         #region D H O S T
         IDisposable BeginApply() => DHostApply.GetToken(this);
         DisposableHost DHostApply { get; } = new();
@@ -299,40 +264,50 @@ namespace IVSoftware.Portable.Collections.Preview
         public int AddRangeDistinct(IEnumerable items)
         {
             XElement model = this;
-            using (BeginSuppressNotify())
+
+            if (ModelingCapabilityInfo.GetFullPath is not GetFullPathDlgt dlgt)
             {
-                int newStartingIndex = Count;
-                foreach (var item in items)
+                return 0;
+            }
+            else
+            {
+                int changed = 0;
+                using (BeginSuppressNotify())
                 {
-                    if (item is T itemT && GetFullPathDlgt?.Invoke(itemT) is string fullPath)
+                    int newStartingIndex = Count;
+                    foreach (var item in items)
                     {
-                        if (string.IsNullOrWhiteSpace(fullPath))
+                        if (item is T itemT && dlgt(itemT) is string fullPath)
                         {
-                            "ObservablePreviewCollection".ThrowHard<ArgumentException>($"The '{nameof(fullPath)}' argument cannot be empty.");
+                            if (string.IsNullOrWhiteSpace(fullPath))
+                            {
+                                "ObservablePreviewCollection".ThrowHard<ArgumentException>($"The '{nameof(fullPath)}' argument cannot be empty.");
+                                CancelSuppressNotify();
+                                return 0;
+                            }
+
+                            switch (model.Place(fullPath))
+                            {
+                                case PlacerResult.Created:
+                                    InsertItem(newStartingIndex++, itemT);
+                                    changed++;
+                                    break;
+                                default:
+                                    /* G T K - N O O P */
+                                    // Skipping this item as non-distinct.
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            item.ThrowHard<InvalidCastException>($"All range items must be {typeof(T).Name}");
                             CancelSuppressNotify();
                             return 0;
                         }
-
-                        switch (model.Place(fullPath))
-                        {
-                            case PlacerResult.Created:
-                                InsertItem(newStartingIndex++, itemT);
-                                break;
-                            default:
-                                /* G T K - N O O P */
-                                // Skipping this item as non-distinct.
-                                break;
-                        }
                     }
-                    else
-                    {
-                        item.ThrowHard<InvalidCastException>($"All range items must be {typeof(T).Name}");
-                        CancelSuppressNotify();
-                        return 0;
-                    }
+                    return changed;
                 }
             }
-            return 0;
         }
 
         public void InsertRange(int startingIndex, IEnumerable items)
