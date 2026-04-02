@@ -757,5 +757,20 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             else return null;
         }
+
+
+        /// <summary>
+        /// Attempts to determine the hierarchical placement path of an arbitrary object.
+        /// </summary>
+        /// <remarks>
+        /// This is a heuristic. <see cref="ReadOnlyFullPathAffinity"/> is used to interpret
+        /// the instance as <see cref="IFullPathAffinity"/> using reflection and SQLite
+        /// metadata. The result is suitable for positioning within the MarkdownContext
+        /// <c>Model</c> element tree when sufficient structure is present.
+        ///
+        /// Returns an empty string when no path information can be inferred.
+        /// </remarks>
+        public static string GetFullPath(this object? @this)
+            => ReadOnlyFullPathAffinity.Create(@this)?.FullPath ?? string.Empty;
     }
 }
