@@ -8,8 +8,10 @@ using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using System;
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Xml.Linq;
@@ -20,31 +22,108 @@ namespace IVSoftware.Portable.Collections.Preview
     /// Suppressible collection with Preview semantics (but no Range semantics).
     /// </summary>
     internal partial class ObservablePreviewCollection<T>
-        : SuppressibleObservableCollection<T>
+        : ObservableCollection<T>
         , INotifyCollectionChanging
     {
-        public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
-            : base(eventScope) { }
+        public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)        
+        {
+            EventScope = eventScope;
+        }
 
+        /// <summary>
+        /// Defines the extent to which a preview handler may interact with a pending
+        /// collection change proposal.
+        /// </summary>
+        /// <remarks>
+        /// This enumeration constrains what a handler is permitted to do during the
+        /// preview (Changing) phase. It does not describe the change itself, but rather
+        /// the allowed level of participation in shaping or rejecting it.
+        ///
+        /// - ReadOnly   : Observe only. No modification or cancellation is permitted.
+        /// - CancelOnly : The proposal may be rejected but not altered.
+        /// - FullControl: The proposal may be rewritten or rejected entirely.
+        ///
+        /// These flags are enforced by the preview pipeline. Handlers opting into
+        /// higher scopes assume responsibility for producing a valid and internally
+        /// consistent change contract.
+        /// </remarks>
+        public NotifyCollectionChangeScope EventScope { get; }
         protected override void InsertItem(int index, T item)
         {
-            base.InsertItem(index, item);
+            var ePre = new NotifyCollectionChangingEventArgs(
+                action: NotifyCollectionChangeAction.Add,
+                scope: EventScope,
+                newItems: new[] { item },
+                newStartingIndex: index);
+            OnCollectionChanging(ePre);
+            if (!ePre.Cancel)
+            {
+                base.InsertItem(index, item);
+            }
         }
         protected override void SetItem(int index, T item)
         {
-            base.SetItem(index, item);
+            var ePre = new NotifyCollectionChangingEventArgs(
+                action: NotifyCollectionChangeAction.Replace,
+                scope: EventScope,
+                newItems: new[] { item },
+                oldItems: new[] { this[index] },
+                newStartingIndex: index,
+                oldStartingIndex: index);
+
+            OnCollectionChanging(ePre);
+            if (!ePre.Cancel)
+            {
+                base.SetItem(index, item);
+            }
         }
         protected override void RemoveItem(int index)
         {
-            base.RemoveItem(index);
+            var item = this[index];
+
+            var ePre = new NotifyCollectionChangingEventArgs(
+                action: NotifyCollectionChangeAction.Remove,
+                scope: EventScope,
+                oldItems: new[] { item },
+                oldStartingIndex: index);
+            OnCollectionChanging(ePre);
+            if (!ePre.Cancel)
+            {
+                base.RemoveItem(index);
+            }
         }
         protected override void MoveItem(int oldIndex, int newIndex)
         {
-            base.MoveItem(oldIndex, newIndex);
+            var item = this[oldIndex];
+
+            var ePre = new NotifyCollectionChangingEventArgs(
+                action: NotifyCollectionChangeAction.Move,
+                scope: EventScope,
+                newItems: new[] { item },
+                oldItems: new[] { item },
+                newStartingIndex: newIndex,
+                oldStartingIndex: oldIndex);
+            OnCollectionChanging(ePre);
+            if (!ePre.Cancel)
+            {
+                base.MoveItem(oldIndex, newIndex);
+            }
         }
+
         protected override void ClearItems()
         {
-            base.ClearItems();
+            var snapshot = this.ToArray();
+
+            var ePre = new NotifyCollectionChangingEventArgs(
+                action: NotifyCollectionChangeAction.Reset,
+                scope: EventScope,
+                oldItems: snapshot,
+                oldStartingIndex: -1);
+            OnCollectionChanging(ePre);
+            if (!ePre.Cancel)
+            {
+                base.ClearItems();
+            }
         }
 
         protected virtual void OnCollectionChanging(NotifyCollectionChangingEventArgs e)
@@ -71,72 +150,32 @@ namespace IVSoftware.Portable.Collections.Preview
         public static implicit operator XElement(ObservablePreviewCollection<T> @this)
         {
             @this.ToString(out XElement model);
-            model.SetAttributeValue(@this.ModelingCapability);
+            model.SetAttributeValue(@this.ModelingCapabilityInfo.ModelingCapability);
             return model;
         }
 
         /// <summary>
         /// Determine the highest fidelity full path for T.
         /// </summary>
-        public ModelingCapability ModelingCapability
+        public ModelingCapabilityInfo ModelingCapabilityInfo
         {
             get
             {                
                 if (_modelingCapability is null)
                 {
-                    var type = typeof(T);
-                    foreach (ModelingCapability capability in Enum.GetValues(typeof(ModelingCapability)))
-                    {
-                        _modelingCapability = capability;
-                        switch (capability)
-                        {
-                            case ModelingCapability.Id:
-                                _fullPathPI = type.GetSQLiteMapping()?.PK?.PropertyInfo;
-                                if (_fullPathPI is null)
-                                {
-                                    _fullPathPI = type.GetProperty(capability.ToString());
-                                }
-                                if (_fullPathPI is null) // Still...
-                                {
-                                    break;
-                                }
-                                else
-                                {
-                                    goto breakFromInner;
-                                }
-                            case ModelingCapability.FullPath:
-                            case ModelingCapability.Description:
-                            case ModelingCapability.Text:
-                            case ModelingCapability.Unavailable:
-                                _fullPathPI = type.GetProperty(capability.ToString());
-                                if (_fullPathPI is null)
-                                {
-                                    break;
-                                }
-                                else
-                                {
-                                    goto breakFromInner;
-                                }
-                            default:
-                                this.ThrowHard<NotSupportedException>($"The {capability.ToFullKey()} case is not supported.");
-                                _modelingCapability = ModelingCapability.Unavailable;
-                                // If handled, allow loop to continue;
-                                break;
-                        }
-                    }
+                    _modelingCapability = typeof(T).GetModelingCapability();
                 }
-                breakFromInner:
-                return (ModelingCapability)_modelingCapability!;
+                return (ModelingCapabilityInfo)_modelingCapability!;
             }
         }
-        ModelingCapability? _modelingCapability = null;
+        ModelingCapabilityInfo? _modelingCapability = null;
         PropertyInfo? _fullPathPI = null;
 
         public GetFullPathDelegate<T>? GetFullPathDlgt
         {
             get
             {
-                if (ModelingCapability == ModelingCapability.Unavailable)
+                if (ModelingCapabilityInfo.ModelingCapability == ModelingCapability.Unavailable)
                 {
                     return null;
                 }

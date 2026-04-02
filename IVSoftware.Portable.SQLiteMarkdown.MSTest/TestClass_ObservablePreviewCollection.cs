@@ -83,7 +83,7 @@ public class TestClass_ObservablePreviewCollection
     }
 
     [TestMethod, DoNotParallelize]
-    public void Test_BasicIList()
+    public void Test_PreviewOnly()
     {
         List<SelectableQFModel> Ephemeral() => new List<SelectableQFModel>();
         string actual, expected;
@@ -110,9 +110,8 @@ public class TestClass_ObservablePreviewCollection
         };
 
         subtest_BasicAddRemoveWithCancellation();
-        subtest_ReplaceWithCancellationAndRevert();
-        subtest_MoveWithCancellationAndRevert();
-        subtest_BatchOps();
+        subtest_ReplaceWithCancellation();
+        subtest_MoveWithCancellation();
 
         #region S U B T E S T S
         void subtest_BasicAddRemoveWithCancellation()
@@ -177,7 +176,7 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
         }
 
-        void subtest_ReplaceWithCancellationAndRevert()
+        void subtest_ReplaceWithCancellation()
         {
             builder.Clear();
             var item1 = opc.AddDynamic("Alpha", "", false, new());
@@ -413,7 +412,7 @@ NetProjection.Replace NewItems= 1 OldItems= 1 NewStartingIndex= 0 OldStartingInd
             );
         }
 
-        void subtest_MoveWithCancellationAndRevert()
+        void subtest_MoveWithCancellation()
         {
             Assert.AreNotEqual(0, opc.Count, "Expecting carry-over.");
             using (dhostCancel.GetToken())
@@ -561,51 +560,6 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingInd
                 actual.NormalizeResult(),
                 "Expecting two items in moved order."
             );
-        }
-
-        void subtest_BatchOps()
-        {
-            var opc = new ObservablePreviewCollection<SelectableQFModel>();
-            var builder = new List<string>();
-
-            #region L o c a l F x				
-            using var local = opc.WithOnDispose(
-                onInit: (sender, e) =>
-                {
-                    opc.CollectionChanged += localOnCollectionChanged;
-                },
-                onDispose: (sender, e) =>
-                {
-                    opc.CollectionChanged -= localOnCollectionChanged;
-                });
-            void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-            {
-                builder.Add(e.ToString(true));
-            }
-            #endregion L o c a l F x
-
-            using(opc.BeginSuppressNotify())
-            {
-                foreach (var item in new List<SelectableQFModel>().PopulateForDemo(10))
-                {
-                    opc.Add(item);
-                }
-            }
-
-            actual = string.Join(Environment.NewLine, builder);
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-NetProjection.Add     NewItems=10 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
-            ;
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting one digest event for batch."
-            );
-
-            Assert.AreEqual(10, opc.Count, "Expecting batch apply.");
         }
         #endregion S U B T E S T S
     }

@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
@@ -638,13 +639,6 @@ namespace IVSoftware.Portable.Collections.Preview
             return result;
         }
 
-        private delegate string GetFullPathDlgt(object o);
-        private class ModelingCapabilityInfo
-        {
-            public ModelingCapability ModelingCapability { get; set; }
-            public GetFullPathDlgt? GetFullPath { get; set; }
-        }
-
         private static TolerantDictionary<Type, TolerantDictionary<string, object>> _typeCache = new();
         private static TolerantDictionary<string, object> GetCacheForType(this Type @this)
         {
@@ -709,7 +703,18 @@ namespace IVSoftware.Portable.Collections.Preview
                 throw new NotSupportedException($"No delegate is registered for {type.Name}");
             }
         }
-        private static ModelingCapabilityInfo GetModelingCapability(this Type @this)
+
+        /// <summary>
+        /// Resolves and caches the highest-fidelity modeling capability for a type.
+        /// </summary>
+        /// <remarks>
+        /// - Probes known capability surfaces (Id, FullPath, Description, Text)
+        ///   in priority order.
+        /// - Uses SQLite mapping (PK) when available, falling back to named properties.
+        /// - Compiles a fast accessor delegate for the resolved property.
+        /// - Result is cached per type to avoid repeated reflection and compilation.
+        /// </remarks>
+        internal static ModelingCapabilityInfo GetModelingCapability(this Type @this)
         {
             var mccache = @this.GetCacheForType();
 
@@ -717,10 +722,8 @@ namespace IVSoftware.Portable.Collections.Preview
             {
                 return cached;
             }
-
-            ModelingCapabilityInfo? result = null;
+            ModelingCapabilityInfo info = null!;
             PropertyInfo? fullPathPI = null;
-
             foreach (ModelingCapability capability in Enum.GetValues(typeof(ModelingCapability)))
             {
                 switch (capability)
@@ -747,7 +750,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
                 if (fullPathPI is not null)
                 {
-                    result = new ModelingCapabilityInfo
+                    info = new ModelingCapabilityInfo
                     {
                         ModelingCapability = capability,
                         GetFullPath = localCompileDelegate(fullPathPI),
@@ -768,13 +771,17 @@ namespace IVSoftware.Portable.Collections.Preview
                 }
             }
 
-            if (result is null)
+            if (info is null)
             {
-                @this.ThrowHard<InvalidOperationException>("No ModelingCapability could be resolved.");
+                @this.ThrowHard<InvalidOperationException>("ModelingCapability cannot be resolved.");
+                info = new ModelingCapabilityInfo
+                {
+                    ModelingCapability = ModelingCapability.Unavailable,
+                    GetFullPath = null,
+                };
             }
-
-            mccache[nameof(ModelingCapability)] = result!;
-            return result!;
+            mccache[nameof(ModelingCapability)] = info;
+            return info;
         }
         public static string ToString(this IList @this, out XElement model)
         {
@@ -841,7 +848,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// </remarks>
         public static string GetFullPath(this object @this)
         {
-            if(@this.GetType().GetModelingCapability()?.GetFullPath?.Invoke(@this) is string fullPath)
+            if(@this.GetType().GetModelingCapability().GetFullPath?.Invoke(@this) is string fullPath)
             {
                 return fullPath;
             }
