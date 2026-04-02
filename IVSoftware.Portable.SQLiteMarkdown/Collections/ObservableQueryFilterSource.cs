@@ -41,14 +41,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterSource() { }
 
-        protected override void OnModelChanging(EventArgs eUnk, out bool cancel)
-        {
-            base.OnModelChanging(eUnk, out cancel);
-            if (!cancel)
-            {
-                OnCollectionChanging(eUnk, out cancel);
-            }
-        }
+        /// <summary>
+        /// Model changes have coalesced and are updating.
+        /// </summary>
+        /// <remarks>
+        /// The model is not a collection and does not implement INotifyCollectionChanged.
+        /// </remarks>
         protected override void OnModelChanged(NotifyCollectionChangedEventArgs eBCL)
         {
             base.OnModelChanged(eBCL);
@@ -332,39 +330,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs eBCL)
         {
-            OnCollectionChanging(eBCL, out bool cancel);
-            if (!cancel)
+            switch (Authority)
             {
-                switch (Authority)
-                {
-                    case CollectionChangeAuthority.Reset:
-                        // Events are being supressed by this authority epoch.
-                        break;
-                    case CollectionChangeAuthority.Settle:
-                        // Raise only sanctioned events
-                        if (eBCL is ModelSettledEventArgs eModel)
-                        {
-                            CollectionChanged?.Invoke(this, eBCL);
-                        }
-                        break;
-                    default:
-                        // Allow under normal collection self-authority.
+                case CollectionChangeAuthority.Reset:
+                    // Events are being supressed by this authority epoch.
+                    break;
+                case CollectionChangeAuthority.Settle:
+                    // Raise only sanctioned events
+                    if (eBCL is ModelSettledEventArgs eModel)
+                    {
                         CollectionChanged?.Invoke(this, eBCL);
-                        break;
-                }
+                    }
+                    break;
+                default:
+                    // Allow under normal collection self-authority.
+                    CollectionChanged?.Invoke(this, eBCL);
+                    break;
             }
         }
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
-
-        /// <summary>
-        /// Raise an event as unknown. Subclass is allowed to upgrade it.
-        /// </summary>
-        protected virtual void OnCollectionChanging(EventArgs eUnk, out bool cancel)
-        {
-            CollectionChanging?.Invoke(this, eUnk);
-            cancel = (eUnk as CancelEventArgs)?.Cancel ?? false;
-        }
-        public event EventHandler? CollectionChanging;
 
         /// <summary>
         /// No client data connection is assumed, but if a persistent
