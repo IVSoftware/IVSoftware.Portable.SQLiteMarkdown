@@ -132,18 +132,18 @@ namespace IVSoftware.Portable.Collections.Preview
         /// <summary>
         /// Determine the highest fidelity full path for T.
         /// </summary>
-        public ModelingCapabilityInfo ModelingCapabilityInfo
+        public ModeledFullPathInfo ModelingCapabilityInfo
         {
             get
             {                
                 if (_modelingCapability is null)
                 {
-                    _modelingCapability = typeof(T).GetModelingCapability();
+                    _modelingCapability = typeof(T).GetModeledPathInfo();
                 }
-                return (ModelingCapabilityInfo)_modelingCapability!;
+                return (ModeledFullPathInfo)_modelingCapability!;
             }
         }
-        ModelingCapabilityInfo? _modelingCapability = null;
+        ModeledFullPathInfo? _modelingCapability = null;
         PropertyInfo? _fullPathPI = null;
     }
 }

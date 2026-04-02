@@ -7,9 +7,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {
 
     internal delegate string GetFullPathDlgt(object o);
-    internal class ModelingCapabilityInfo
+    internal class ModeledFullPathInfo
     {
-        public ModelingCapability ModelingCapability { get; set; }
+        public ModeledPathProperty ModelingCapability { get; set; }
         public GetFullPathDlgt? GetFullPath { get; set; }
     }
 }

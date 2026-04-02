@@ -15,7 +15,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
     /// <summary>
     /// Listed in order of preference.
     /// </summary>
-    public enum ModelingCapability
+    public enum ModeledPathProperty
     {
         /// <summary>
         /// Detected a string property named FullPath.
@@ -54,7 +54,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
             XElement model = new XElement(nameof(StdMarkdownElement.model));
             model.SetAttributeValue(ModelingCapability);
             int itemCount = 0;
-            if (ModelingCapability != ModelingCapability.Unavailable)
+            if (ModelingCapability != ModeledPathProperty.Unavailable)
             {
                 foreach (var item in ItemsSource)
                 {
@@ -91,19 +91,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         /// <summary>
         /// Determine the highest fidelity full path for T.
         /// </summary>
-        public ModelingCapability ModelingCapability
+        public ModeledPathProperty ModelingCapability
         {
             get
             {
                 if (_modelingCapability is null)
                 {
                     var type = typeof(T);
-                    foreach (ModelingCapability capability in Enum.GetValues(typeof(ModelingCapability)))
+                    foreach (ModeledPathProperty capability in Enum.GetValues(typeof(ModeledPathProperty)))
                     {
                         _modelingCapability = capability;
                         switch (capability)
                         {
-                            case ModelingCapability.Id:
+                            case ModeledPathProperty.Id:
                                 _fullPathPI = type.GetSQLiteMapping()?.PK?.PropertyInfo;
                                 if (_fullPathPI is null)
                                 {
@@ -117,10 +117,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                                 {
                                     goto breakFromInner;
                                 }
-                            case ModelingCapability.FullPath:
-                            case ModelingCapability.Description:
-                            case ModelingCapability.Text:
-                            case ModelingCapability.Unavailable:
+                            case ModeledPathProperty.FullPath:
+                            case ModeledPathProperty.Description:
+                            case ModeledPathProperty.Text:
+                            case ModeledPathProperty.Unavailable:
                                 _fullPathPI = type.GetProperty(capability.ToString());
                                 if (_fullPathPI is null)
                                 {
@@ -132,24 +132,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                                 }
                             default:
                                 this.ThrowHard<NotSupportedException>($"The {capability.ToFullKey()} case is not supported.");
-                                _modelingCapability = ModelingCapability.Unavailable;
+                                _modelingCapability = ModeledPathProperty.Unavailable;
                                 // If handled, allow loop to continue;
                                 break;
                         }
                     }
                 }
                 breakFromInner:
-                return (ModelingCapability)_modelingCapability!;
+                return (ModeledPathProperty)_modelingCapability!;
             }
         }
-        ModelingCapability? _modelingCapability = null;
+        ModeledPathProperty? _modelingCapability = null;
         PropertyInfo? _fullPathPI = null;
 
         public GetFullPathDelegate<T>? GetFullPathDlgt
         {
             get
             {
-                if (ModelingCapability == ModelingCapability.Unavailable)
+                if (ModelingCapability == ModeledPathProperty.Unavailable)
                 {
                     return null;
                 }

@@ -714,21 +714,21 @@ namespace IVSoftware.Portable.Collections.Preview
         /// - Compiles a fast accessor delegate for the resolved property.
         /// - Result is cached per type to avoid repeated reflection and compilation.
         /// </remarks>
-        internal static ModelingCapabilityInfo GetModelingCapability(this Type @this)
+        internal static ModeledFullPathInfo GetModeledPathInfo(this Type @this)
         {
             var mccache = @this.GetCacheForType();
 
-            if (mccache[nameof(ModelingCapability)] is ModelingCapabilityInfo cached)
+            if (mccache[nameof(ModeledPathProperty)] is ModeledFullPathInfo cached)
             {
                 return cached;
             }
-            ModelingCapabilityInfo info = null!;
+            ModeledFullPathInfo info = null!;
             PropertyInfo? fullPathPI = null;
-            foreach (ModelingCapability capability in Enum.GetValues(typeof(ModelingCapability)))
+            foreach (ModeledPathProperty capability in Enum.GetValues(typeof(ModeledPathProperty)))
             {
                 switch (capability)
                 {
-                    case ModelingCapability.Id:
+                    case ModeledPathProperty.Id:
                         fullPathPI = @this.GetSQLiteMapping()?.PK?.PropertyInfo;
                         if (fullPathPI is null)
                         {
@@ -736,10 +736,10 @@ namespace IVSoftware.Portable.Collections.Preview
                         }
                         break;
 
-                    case ModelingCapability.FullPath:
-                    case ModelingCapability.Description:
-                    case ModelingCapability.Text:
-                    case ModelingCapability.Unavailable:
+                    case ModeledPathProperty.FullPath:
+                    case ModeledPathProperty.Description:
+                    case ModeledPathProperty.Text:
+                    case ModeledPathProperty.Unavailable:
                         fullPathPI = @this.GetProperty(capability.ToString());
                         break;
 
@@ -750,7 +750,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
                 if (fullPathPI is not null)
                 {
-                    info = new ModelingCapabilityInfo
+                    info = new ModeledFullPathInfo
                     {
                         ModelingCapability = capability,
                         GetFullPath = localCompileDelegate(fullPathPI),
@@ -774,20 +774,26 @@ namespace IVSoftware.Portable.Collections.Preview
             if (info is null)
             {
                 @this.ThrowHard<InvalidOperationException>("ModelingCapability cannot be resolved.");
-                info = new ModelingCapabilityInfo
+                info = new ModeledFullPathInfo
                 {
-                    ModelingCapability = ModelingCapability.Unavailable,
+                    ModelingCapability = ModeledPathProperty.Unavailable,
                     GetFullPath = null,
                 };
             }
-            mccache[nameof(ModelingCapability)] = info;
+            mccache[nameof(ModeledPathProperty)] = info;
             return info;
         }
         public static string ToString(this IList @this, out XElement model)
         {
-            var previewDlgt = @this.GetItemType()?.GetDescriptionPreviewDlgt();
+            var itemType = @this.GetItemType();
+            var previewDlgt = itemType?.GetDescriptionPreviewDlgt();
+            var modeling = itemType?.GetModeledPathInfo().ModelingCapability;
 
             model = new XElement(nameof(StdMarkdownElement.model));
+            if(modeling is not null)
+            {
+                model.SetStdAttributeValue(StdMarkdownAttribute.modeling, modeling);
+            }
             var itemCount = 0;
             foreach (var item in @this)
             {
@@ -839,7 +845,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// Attempts to determine the hierarchical placement path of an arbitrary object.
         /// </summary>
         /// <remarks>
-        /// This is a heuristic. <see cref="ModelingCapability"/> is used to interpret
+        /// This is a heuristic. <see cref="ModeledPathProperty"/> is used to interpret
         /// the instance as <see cref="IFullPathAffinity"/> using reflection and SQLite
         /// metadata. The result is suitable for positioning within the MarkdownContext
         /// <c>Model</c> element tree when sufficient structure is present.
@@ -848,7 +854,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// </remarks>
         public static string GetFullPath(this object @this)
         {
-            if(@this.GetType().GetModelingCapability().GetFullPath?.Invoke(@this) is string fullPath)
+            if(@this.GetType().GetModeledPathInfo().GetFullPath?.Invoke(@this) is string fullPath)
             {
                 return fullPath;
             }

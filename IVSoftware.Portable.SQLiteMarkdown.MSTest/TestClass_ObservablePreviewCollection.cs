@@ -595,7 +595,6 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingInd
 
             actual = opc.ToString(out XElement _);
             actual.ToClipboardExpected();
-            { }
             expected = @" 
 <model modelingcapability=""Id"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
