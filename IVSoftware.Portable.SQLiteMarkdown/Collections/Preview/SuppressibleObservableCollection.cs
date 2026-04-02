@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 
-namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
+namespace IVSoftware.Portable.Collections.Preview
 {
     /// <summary>
     /// Provides suppression infrastructure for observable collections.

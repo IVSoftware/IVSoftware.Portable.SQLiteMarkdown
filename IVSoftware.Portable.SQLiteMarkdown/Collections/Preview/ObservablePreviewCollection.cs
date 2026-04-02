@@ -1,18 +1,8 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown;
-using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
+﻿using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
-using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using System;
-using System.Collections;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Xml.Linq;
 
@@ -132,21 +122,6 @@ namespace IVSoftware.Portable.Collections.Preview
         }
         public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
 
-        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
-        {
-            if (DHostSuppressNotify.IsZero() && ! BatchDisposing)
-            {
-                base.OnCollectionChanged(e);
-            }
-        }
-        protected virtual void ApplyChanges(NotifyCollectionChangingEventArgs e)
-        {
-            using (BeginApply())
-            {
-                this.Apply(e);
-            }
-        }
-
         public static implicit operator XElement(ObservablePreviewCollection<T> @this)
         {
             @this.ToString(out XElement model);
@@ -170,169 +145,5 @@ namespace IVSoftware.Portable.Collections.Preview
         }
         ModelingCapabilityInfo? _modelingCapability = null;
         PropertyInfo? _fullPathPI = null;
-
-        #region D H O S T
-        IDisposable BeginApply() => DHostApply.GetToken(this);
-        DisposableHost DHostApply { get; } = new();
-        public IDisposable BeginSuppressNotify() => DHostSuppressNotify.GetToken(this);
-        public void CancelSuppressNotify() => DHostSuppressNotify.CancelSuppressNotify();
-
-        public virtual string ToString(ReportFormat formatting)
-        {
-            switch (formatting)
-            {
-                case ReportFormat.Model:
-                    return ((XElement)this).ToString();
-                default:
-                    throw new NotSupportedException($"{formatting.ToFullKey()} is not supported by this object.");
-            }
-        }
-
-        public virtual string ToString(ModelPreviewDelegate preview)
-        {
-            var model = ((XElement)this);
-
-            int index = 0;
-            foreach (var xel in model.Descendants())
-            {
-                var item = this[index++];
-                xel.SetStdAttributeValue(StdMarkdownAttribute.preview, preview(item));
-            }
-            return model.ToString();
-        }
-
-        DHostSuppress<T> DHostSuppressNotify
-        {
-            get
-            {
-                if (_dhostBatch is null)
-                {
-                    _dhostBatch = new DHostSuppress<T>();
-                    _dhostBatch.FinalDispose += (sender, e) =>
-                    {
-                        if (e is CoalescingFinalDisposeEventArgs eFD)
-                        {
-                            try
-                            {
-                                BatchDisposing = true;
-                                ApplyChanges(eFD.Coalesced);
-                            }
-                            finally
-                            {
-                                BatchDisposing = false;
-                                OnCollectionChanged(eFD.Coalesced);
-                            }
-                        }
-                    };
-                }
-                return _dhostBatch;
-            }
-        }
-
-        public bool BatchDisposing { get; private set; }
-
-        DHostSuppress<T>? _dhostBatch = null;
-        #endregion D H O S T
-    }
-
-    internal partial class ObservablePreviewCollection<T> : IRangeable
-    {
-        public void AddRange(IEnumerable items)
-        {
-            using (BeginSuppressNotify())
-            {
-                int newStartingIndex = Count;
-                foreach (var item in items)
-                {
-                    if(item is T itemT)
-                    {
-                        // [Careful]
-                        // Use Insert.
-                        // We can't use Add because the collection
-                        // doesn't actually change until the end.
-                        InsertItem(newStartingIndex++, itemT);
-                    }
-                    else
-                    {
-                        item.ThrowHard<InvalidCastException>($"All range items must be {typeof(T).Name}");
-                        return;
-                    }
-                }
-            }
-        }
-
-        public int AddRangeDistinct(IEnumerable items)
-        {
-            XElement model = this;
-
-            if (ModelingCapabilityInfo.GetFullPath is not GetFullPathDlgt dlgt)
-            {
-                return 0;
-            }
-            else
-            {
-                int changed = 0;
-                using (BeginSuppressNotify())
-                {
-                    int newStartingIndex = Count;
-                    foreach (var item in items)
-                    {
-                        if (item is T itemT && dlgt(itemT) is string fullPath)
-                        {
-                            if (string.IsNullOrWhiteSpace(fullPath))
-                            {
-                                "ObservablePreviewCollection".ThrowHard<ArgumentException>($"The '{nameof(fullPath)}' argument cannot be empty.");
-                                CancelSuppressNotify();
-                                return 0;
-                            }
-
-                            switch (model.Place(fullPath))
-                            {
-                                case PlacerResult.Created:
-                                    InsertItem(newStartingIndex++, itemT);
-                                    changed++;
-                                    break;
-                                default:
-                                    /* G T K - N O O P */
-                                    // Skipping this item as non-distinct.
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            item.ThrowHard<InvalidCastException>($"All range items must be {typeof(T).Name}");
-                            CancelSuppressNotify();
-                            return 0;
-                        }
-                    }
-                    return changed;
-                }
-            }
-        }
-
-        public void InsertRange(int startingIndex, IEnumerable items)
-        {
-            using (BeginSuppressNotify())
-            {
-
-            }
-        }
-
-        public int RemoveMultiple(IEnumerable items)
-        {
-            using (BeginSuppressNotify())
-            {
-
-            }
-            return 0;
-        }
-
-        public void RemoveRange(int startingIndex, int endingIndex)
-        {
-            using (BeginSuppressNotify())
-            {
-
-            }
-        }
     }
 }

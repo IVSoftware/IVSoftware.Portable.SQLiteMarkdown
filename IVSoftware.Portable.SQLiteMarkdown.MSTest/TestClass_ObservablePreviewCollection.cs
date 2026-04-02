@@ -575,7 +575,7 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingInd
         IList<SelectableQFModel>? eph = null;
         #endregion I T E M    G E N
 
-        var opc = new ObservablePreviewCollection<SelectableQFModel>();
+        var opc = new ObservableRangeCollection<SelectableQFModel>();
         var range = (List <SelectableQFModel>)new List<SelectableQFModel>().PopulateForDemo(5);
 
         #region E V E N T S
