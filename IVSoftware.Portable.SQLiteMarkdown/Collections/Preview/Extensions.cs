@@ -98,13 +98,31 @@ namespace IVSoftware.Portable.Collections.Preview
             var histo = model.To<EnumHistogrammer<StdMarkdownAttribute>>(@throw: true);
             int itemCount = histo[StdMarkdownAttribute.model];
 
+            // ROUTE TO LOCAL FUNCTIONS
             switch (action)
             {
-                case NotifyCollectionChangeAction.Add: localAddToModel(); break;
-                case NotifyCollectionChangeAction.Remove: localRemoveFromModel(); break;
-                case NotifyCollectionChangeAction.Replace: localReplaceInModel(); break;
-                case NotifyCollectionChangeAction.Move: localMoveInModel(); break;
-                case NotifyCollectionChangeAction.Reset: localResetModel(); break;
+                case NotifyCollectionChangeAction.Add:
+                    if ((eUnk as NotifyCollectionChangingEventArgs)?.IsBclCompatible != false)
+                    {
+                        localAddToModel(); 
+                    }
+                    else
+                    {
+                        Debug.Fail($@"ADVISORY - Playlist isn't expected in a modeling context.");
+                    }
+                    break;
+                case NotifyCollectionChangeAction.Remove: 
+                    localRemoveFromModel();
+                    break;
+                case NotifyCollectionChangeAction.Replace:
+                    localReplaceInModel();
+                    break;
+                case NotifyCollectionChangeAction.Move:
+                    localMoveInModel();
+                    break;
+                case NotifyCollectionChangeAction.Reset:
+                    localResetModel();
+                    break;
                 default:
                     eUnk.ThrowFramework<NotSupportedException>(
                             $"The {action.ToFullKey()} case is not supported.");
@@ -351,14 +369,33 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             else
             {
-                // Apply using standard BCL semantics.
+                // ROUTE TO LOCAL FUNCTIONS
                 switch (action)
                 {
-                    case NotifyCollectionChangeAction.Add: localAddToList(); break;
-                    case NotifyCollectionChangeAction.Remove: localRemoveFromList(); break;
-                    case NotifyCollectionChangeAction.Replace: localReplaceInList(); break;
-                    case NotifyCollectionChangeAction.Move: localMoveInList(); break;
-                    case NotifyCollectionChangeAction.Reset: localResetList(); break;
+                    case NotifyCollectionChangeAction.Add:
+                        var isBclCompatible =
+                            (eUnk as NotifyCollectionChangingEventArgs)?.IsBclCompatible != false;
+                        if (isBclCompatible)
+                        {
+                            localCompatibleAddToList();
+                        }
+                        else
+                        {
+                            localExecutePlaylist();
+                        }
+                        break;
+                    case NotifyCollectionChangeAction.Remove: 
+                        localRemoveFromList(); 
+                        break;
+                    case NotifyCollectionChangeAction.Replace: 
+                        localReplaceInList();
+                        break;
+                    case NotifyCollectionChangeAction.Move:
+                        localMoveInList(); 
+                        break;
+                    case NotifyCollectionChangeAction.Reset:
+                        localResetList();
+                        break;
                     default:
                         nameof(Extensions)
                             .ThrowFramework<NotSupportedException>(
@@ -368,7 +405,7 @@ namespace IVSoftware.Portable.Collections.Preview
             }
 
             #region L o c a l F x
-            void localAddToList()
+            void localCompatibleAddToList()
             {
                 if (newItems is null || newStartingIndex < 0)
                 {
@@ -468,6 +505,14 @@ namespace IVSoftware.Portable.Collections.Preview
             void localResetList()
             {
                 list.Clear();
+            }
+
+            void localExecutePlaylist()
+            {
+                foreach (NotifyCollectionChangedEventArgs eBCL in newItems)
+                {
+
+                }
             }
             #endregion L o c a l F x
         }
