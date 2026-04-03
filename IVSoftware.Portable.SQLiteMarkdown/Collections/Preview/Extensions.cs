@@ -73,6 +73,230 @@ namespace IVSoftware.Portable.Collections.Preview
         }
 
         /// <summary>
+        /// Applies a normalized collection change to a list target.
+        /// </summary>
+        /// <remarks>
+        /// - Mirrors model application semantics for IList-backed projections.
+        /// - Uses normalized action and payload for consistent mutation behavior.
+        /// - Serves as the projection-side execution counterpart to model updates.
+        /// </remarks>
+        public static void Apply(this IList list, EventArgs eUnk)
+        {
+            if (!eUnk.TryNormalizeTargets(
+                out var action,
+                out var reason,
+                out var newItems,
+                out var newStartingIndex,
+                out var oldItems,
+                out var oldStartingIndex))
+            {
+                nameof(Extensions)
+                    .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name} case is not supported.");
+                return;
+            }
+            // ROUTE TO LOCAL FUNCTIONS
+            switch (action)
+            {
+                case NotifyCollectionChangeAction.Add:
+                    var isBclCompatible =
+                        (eUnk as NotifyCollectionChangingEventArgs)?.IsBclCompatible != false;
+                    if (isBclCompatible)
+                    {
+                        localCompatibleAddToList();
+                    }
+                    else
+                    {
+                        localExecutePlaylist();
+                    }
+                    break;
+                case NotifyCollectionChangeAction.Remove:
+                    localRemoveFromList();
+                    break;
+                case NotifyCollectionChangeAction.Replace:
+                    localReplaceInList();
+                    break;
+                case NotifyCollectionChangeAction.Move:
+                    localMoveInList();
+                    break;
+                case NotifyCollectionChangeAction.Reset:
+                    localResetList();
+                    break;
+                default:
+                    nameof(Extensions)
+                        .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name} case is not supported.");
+                    break;
+            }
+
+            #region L o c a l F x
+            void localCompatibleAddToList()
+            {
+                if (newItems is null || newStartingIndex < 0)
+                {
+                    nameof(Extensions)
+                        .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
+                }
+                else
+                {
+                    var index = newStartingIndex;
+                    if (index == list.Count)
+                    {
+                        // Minor optimization avoids shifting cost.
+                        foreach (var item in newItems)
+                        {
+                            list.Add(item);
+                        }
+                    }
+                    else
+                    {
+                        foreach (var item in newItems)
+                        {
+                            list.Insert(index++, item);
+                        }
+                    }
+                }
+            }
+
+            void localRemoveFromList()
+            {
+                if (oldItems is null || oldStartingIndex < 0)
+                {
+                    nameof(Extensions)
+                        .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
+                }
+                else
+                {
+                    // Remove at index repeatedly (items shift left)
+                    for (int i = 0; i < oldItems.Count; i++)
+                    {
+                        list.RemoveAt(oldStartingIndex);
+                    }
+                }
+            }
+
+            void localMoveInList()
+            {
+                if (oldItems is null || oldStartingIndex < 0 || newStartingIndex < 0)
+                {
+                    nameof(Extensions)
+                        .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
+                }
+                else
+                {
+                    // Preserve order of moved block
+                    var buffer = new object[oldItems.Count];
+                    for (int i = 0; i < oldItems.Count; i++)
+                    {
+                        buffer[i] = list[oldStartingIndex];
+                        list.RemoveAt(oldStartingIndex);
+                    }
+
+                    var insertIndex = newStartingIndex;
+                    foreach (var item in buffer)
+                    {
+                        list.Insert(insertIndex++, item);
+                    }
+                }
+            }
+
+            void localReplaceInList()
+            {
+                if (newItems is null
+                    || oldItems is null
+                    || newStartingIndex < 0
+                    || oldStartingIndex < 0
+                    || newStartingIndex != oldStartingIndex
+                    || newItems.Count != oldItems.Count
+                    || newStartingIndex + newItems.Count > list.Count)
+                {
+                    nameof(Extensions)
+                        .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
+                }
+                else
+                {
+                    // Replace in place
+                    for (int i = 0; i < newItems.Count; i++)
+                    {
+                        list[newStartingIndex + i] = newItems[i];
+                    }
+                }
+            }
+
+            void localResetList()
+            {
+                list.Clear();
+            }
+
+            void localExecutePlaylist()
+            {
+                int 
+                    removeOffset = 0,
+                    removeThreshold = int.MaxValue;
+                foreach (var eUnk in newItems ?? Array.Empty<EventArgs>())
+                {
+                    NotifyCollectionChangingEventArgs eApply; 
+                    switch (eUnk)
+                    {
+                        case NotifyCollectionChangingEventArgs ePre:
+                            if(ePre.Scope == NotifyCollectionChangeScope.FullControl)
+                            {
+                                eApply = ePre;
+                            }
+                            else
+                            {
+                                eApply = new NotifyCollectionChangingEventArgs(ePre, scope: NotifyCollectionChangeScope.FullControl);
+                            }
+                            break;
+                        case NotifyCollectionChangedEventArgs ePost:
+                            eApply = new NotifyCollectionChangingEventArgs(ePost, scope: NotifyCollectionChangeScope.FullControl);
+                            break;
+                        default:
+                            list.ThrowFramework<NotSupportedException>($"The {eUnk.GetType().Name} case is not supported.");
+                            return;
+                    }
+                    if( removeOffset != 0
+                        && eApply.NewStartingIndex != -1 
+                        && eApply.NewStartingIndex > removeThreshold)
+                    {
+                        eApply.NewStartingIndex -= removeOffset;
+                        if(eApply.NewStartingIndex < 0)
+                        {
+                            list.ThrowFramework<IndexOutOfRangeException>($"{nameof(eApply.NewStartingIndex)} cannot be negative.");
+                            return;
+                        }
+                    }
+                    if( removeOffset != 0
+                        && eApply.OldStartingIndex != -1 
+                        && eApply.OldStartingIndex > removeThreshold)
+                    {
+                        eApply.OldStartingIndex -= removeOffset;
+                        if (eApply.OldStartingIndex < 0)
+                        {
+                            list.ThrowFramework<IndexOutOfRangeException>($"{nameof(eApply.OldStartingIndex)} cannot be negative.");
+                            return;
+                        }
+                    }
+                    list.Apply(eApply);
+                    if(eApply.Action == NotifyCollectionChangeAction.Remove)
+                    {
+                        if( eApply.OldStartingIndex != -1
+                            && eApply.OldStartingIndex < removeThreshold)
+                        {
+                            removeThreshold = eApply.OldStartingIndex;
+                        }
+                        removeOffset++;
+                    }
+                }
+            }
+            #endregion L o c a l F x
+        }
+
+        /// <summary>
         /// Applies a normalized collection change to the XML model.
         /// </summary>
         /// <remarks>
@@ -104,14 +328,14 @@ namespace IVSoftware.Portable.Collections.Preview
                 case NotifyCollectionChangeAction.Add:
                     if ((eUnk as NotifyCollectionChangingEventArgs)?.IsBclCompatible != false)
                     {
-                        localAddToModel(); 
+                        localAddToModel();
                     }
                     else
                     {
                         Debug.Fail($@"ADVISORY - Playlist isn't expected in a modeling context.");
                     }
                     break;
-                case NotifyCollectionChangeAction.Remove: 
+                case NotifyCollectionChangeAction.Remove:
                     localRemoveFromModel();
                     break;
                 case NotifyCollectionChangeAction.Replace:
@@ -331,230 +555,6 @@ namespace IVSoftware.Portable.Collections.Preview
                 {
                     Debug.Fail($@"ADVISORY - TODO distinguish ReplaceItemsEventingOption.");
                     model.RemoveNodes();
-                }
-            }
-            #endregion L o c a l F x
-        }
-
-        /// <summary>
-        /// Applies a normalized collection change to a list target.
-        /// </summary>
-        /// <remarks>
-        /// - Mirrors model application semantics for IList-backed projections.
-        /// - Uses normalized action and payload for consistent mutation behavior.
-        /// - Serves as the projection-side execution counterpart to model updates.
-        /// </remarks>
-        public static void Apply(this IList list, EventArgs eUnk)
-        {
-            if (!eUnk.TryNormalizeTargets(
-                out var action,
-                out var reason,
-                out var newItems,
-                out var newStartingIndex,
-                out var oldItems,
-                out var oldStartingIndex))
-            {
-                nameof(Extensions)
-                    .ThrowFramework<NotSupportedException>(
-                        $"The {eUnk.GetType().Name} case is not supported.");
-                return;
-            }
-            // ROUTE TO LOCAL FUNCTIONS
-            switch (action)
-            {
-                case NotifyCollectionChangeAction.Add:
-                    var isBclCompatible =
-                        (eUnk as NotifyCollectionChangingEventArgs)?.IsBclCompatible != false;
-                    if (isBclCompatible)
-                    {
-                        localCompatibleAddToList();
-                    }
-                    else
-                    {
-                        localExecutePlaylist();
-                    }
-                    break;
-                case NotifyCollectionChangeAction.Remove:
-                    localRemoveFromList();
-                    break;
-                case NotifyCollectionChangeAction.Replace:
-                    localReplaceInList();
-                    break;
-                case NotifyCollectionChangeAction.Move:
-                    localMoveInList();
-                    break;
-                case NotifyCollectionChangeAction.Reset:
-                    localResetList();
-                    break;
-                default:
-                    nameof(Extensions)
-                        .ThrowFramework<NotSupportedException>(
-                        $"The {eUnk.GetType().Name} case is not supported.");
-                    break;
-            }
-
-            #region L o c a l F x
-            void localCompatibleAddToList()
-            {
-                if (newItems is null || newStartingIndex < 0)
-                {
-                    nameof(Extensions)
-                        .ThrowFramework<NotSupportedException>(
-                        $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
-                }
-                else
-                {
-                    var index = newStartingIndex;
-                    if (index == list.Count)
-                    {
-                        // Minor optimization avoids shifting cost.
-                        foreach (var item in newItems)
-                        {
-                            list.Add(item);
-                        }
-                    }
-                    else
-                    {
-                        foreach (var item in newItems)
-                        {
-                            list.Insert(index++, item);
-                        }
-                    }
-                }
-            }
-
-            void localRemoveFromList()
-            {
-                if (oldItems is null || oldStartingIndex < 0)
-                {
-                    nameof(Extensions)
-                        .ThrowFramework<NotSupportedException>(
-                        $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
-                }
-                else
-                {
-                    // Remove at index repeatedly (items shift left)
-                    for (int i = 0; i < oldItems.Count; i++)
-                    {
-                        list.RemoveAt(oldStartingIndex);
-                    }
-                }
-            }
-
-            void localMoveInList()
-            {
-                if (oldItems is null || oldStartingIndex < 0 || newStartingIndex < 0)
-                {
-                    nameof(Extensions)
-                        .ThrowFramework<NotSupportedException>(
-                        $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
-                }
-                else
-                {
-                    // Preserve order of moved block
-                    var buffer = new object[oldItems.Count];
-                    for (int i = 0; i < oldItems.Count; i++)
-                    {
-                        buffer[i] = list[oldStartingIndex];
-                        list.RemoveAt(oldStartingIndex);
-                    }
-
-                    var insertIndex = newStartingIndex;
-                    foreach (var item in buffer)
-                    {
-                        list.Insert(insertIndex++, item);
-                    }
-                }
-            }
-
-            void localReplaceInList()
-            {
-                if (newItems is null
-                    || oldItems is null
-                    || newStartingIndex < 0
-                    || oldStartingIndex < 0
-                    || newStartingIndex != oldStartingIndex
-                    || newItems.Count != oldItems.Count
-                    || newStartingIndex + newItems.Count > list.Count)
-                {
-                    nameof(Extensions)
-                        .ThrowFramework<NotSupportedException>(
-                        $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
-                }
-                else
-                {
-                    // Replace in place
-                    for (int i = 0; i < newItems.Count; i++)
-                    {
-                        list[newStartingIndex + i] = newItems[i];
-                    }
-                }
-            }
-
-            void localResetList()
-            {
-                list.Clear();
-            }
-
-            void localExecutePlaylist()
-            {
-                int 
-                    removeOffset = 0,
-                    removeThreshold = int.MaxValue;
-                foreach (var eUnk in newItems ?? Array.Empty<EventArgs>())
-                {
-                    NotifyCollectionChangingEventArgs eApply; 
-                    switch (eUnk)
-                    {
-                        case NotifyCollectionChangingEventArgs ePre:
-                            if(ePre.Scope == NotifyCollectionChangeScope.FullControl)
-                            {
-                                eApply = ePre;
-                            }
-                            else
-                            {
-                                eApply = new NotifyCollectionChangingEventArgs(ePre, scope: NotifyCollectionChangeScope.FullControl);
-                            }
-                            break;
-                        case NotifyCollectionChangedEventArgs ePost:
-                            eApply = new NotifyCollectionChangingEventArgs(ePost, scope: NotifyCollectionChangeScope.FullControl);
-                            break;
-                        default:
-                            list.ThrowFramework<NotSupportedException>($"The {eUnk.GetType().Name} case is not supported.");
-                            return;
-                    }
-                    if( removeOffset != 0
-                        && eApply.NewStartingIndex != -1 
-                        && eApply.NewStartingIndex > removeThreshold)
-                    {
-                        eApply.NewStartingIndex -= removeOffset;
-                        if(eApply.NewStartingIndex < 0)
-                        {
-                            list.ThrowFramework<IndexOutOfRangeException>($"{nameof(eApply.NewStartingIndex)} cannot be negative.");
-                            return;
-                        }
-                    }
-                    if( removeOffset != 0
-                        && eApply.OldStartingIndex != -1 
-                        && eApply.OldStartingIndex > removeThreshold)
-                    {
-                        eApply.OldStartingIndex -= removeOffset;
-                        if (eApply.OldStartingIndex < 0)
-                        {
-                            list.ThrowFramework<IndexOutOfRangeException>($"{nameof(eApply.OldStartingIndex)} cannot be negative.");
-                            return;
-                        }
-                    }
-                    list.Apply(eApply);
-                    if(eApply.Action == NotifyCollectionChangeAction.Remove)
-                    {
-                        if( eApply.OldStartingIndex != -1
-                            && eApply.OldStartingIndex < removeThreshold)
-                        {
-                            removeThreshold = eApply.OldStartingIndex;
-                        }
-                        removeOffset++;
-                    }
                 }
             }
             #endregion L o c a l F x
