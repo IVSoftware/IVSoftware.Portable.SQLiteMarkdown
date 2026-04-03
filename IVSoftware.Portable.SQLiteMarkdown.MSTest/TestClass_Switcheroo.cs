@@ -404,7 +404,7 @@ MarkdownContext Clear(all=True)";
             public ObservableNetProjectionWithComposition()
             {
                 _mdc.SetObservableNetProjection(this, NetProjectionTopology.ObservableOnly);
-                ModelChanged += (sender, e) =>
+                ModelSettled += (sender, e) =>
                 {
                     switch (Authority)
                     {
@@ -466,10 +466,10 @@ MarkdownContext Clear(all=True)";
                 remove => ((IMarkdownContext)_mdc).InputTextSettled -= value;
             }
 
-            public event NotifyCollectionChangedEventHandler ModelChanged
+            public event EventHandler ModelSettled
             {
-                add => ((IModeledMarkdownContext)_mdc).ModelChanged += value;
-                remove => ((IModeledMarkdownContext)_mdc).ModelChanged -= value;
+                add => ((IModeledMarkdownContext)_mdc).ModelSettled += value;
+                remove => ((IModeledMarkdownContext)_mdc).ModelSettled -= value;
             }
 
             public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority)

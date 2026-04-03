@@ -43,7 +43,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if(eUnk is SuppressedFinalDisposeEventArgs e)
                 {
-                    OnModelChanged(e.Digest);
+                    OnModelSettled(e.Digest);
                 }
             };
 
@@ -380,13 +380,25 @@ SELECT * FROM items WHERE
 
                     if (CollectionChangeAuthorityProvider[nameof(StdAuthorityProperty.Snapshot)] is IList snapshot)
                     {
-                        var ePre = snapshot.Diff(PredicateMatchSubsetProtected);
-#if DEBUG
-                        if(ePre.IsBclCompatible)
-                        { }
-                        else
-                        { }
-#endif
+                        switch (Authority)
+                        {
+                            case CollectionChangeAuthority.Settle:
+                            case CollectionChangeAuthority.Predicate:
+                                var ePre = snapshot.Diff(PredicateMatchSubsetProtected);
+                                if(ePre.IsBclCompatible)
+                                {
+                                    OnModelSettled(ePre);
+                                }
+                                else
+                                {
+                                }
+                                break;
+                            default:
+                                this.ThrowFramework<InvalidOperationException>(
+                                    $"Authority = {Authority} - " +
+                                    $"Expecting {nameof(ApplyFilter)} is wrapped in a {nameof(BeginCollectionChangeAuthority)}");
+                                break;
+                        }
                     }
                     else
                     {
@@ -485,7 +497,7 @@ SELECT * FROM items WHERE
                                 ((IList)PredicateMatchSubset)
                                 .Diff((IList)CanonicalSuperset,
                                 reason: NotifyCollectionChangeReason.RemoveFilter);
-                            OnModelChanged(ePost);
+                            OnModelSettled(ePost);
                         }
                         if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
                         {
@@ -493,7 +505,7 @@ SELECT * FROM items WHERE
                             {
                                 ePost = new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset);
                             }
-                            OnModelChanged(ePost);
+                            OnModelSettled(ePost);
                         }
                     }
                     break;
@@ -617,7 +629,7 @@ SELECT * FROM items WHERE
                     {
                         case SuppressionPhase.None:
                         case SuppressionPhase.Commit:
-                            OnModelChanged(e);
+                            OnModelSettled(e);
                             break;
                         case SuppressionPhase.Preview:
                             /* G T K - N O O P */
@@ -657,7 +669,7 @@ SELECT * FROM items WHERE
                         {
                             if (eFD["IsModified"] is bool isModified && isModified)
                             {
-                                OnModelChanged(eFD.Digest);
+                                OnModelSettled(eFD.Digest);
                             }
                             else
                             {   /* G T K - N O O P */
@@ -762,7 +774,6 @@ SELECT * FROM items WHERE
             }
         }
 
-
         /// <summary>
         /// Signals that the markdown model has reached a stable state following an input-driven reconciliation.
         /// </summary>
@@ -773,7 +784,7 @@ SELECT * FROM items WHERE
         /// The supplied <see cref="NotifyCollectionChangedEventArgs"/> may be downcast to <c>ModelSettledEventArgs</c>. 
         /// When cast in this way, the reason for the model iteration is provided.
         /// </remarks>
-        protected virtual void OnModelChanged(NotifyCollectionChangedEventArgs eBCL)
+        protected virtual void OnModelSettled(EventArgs eUnk)
         {
             switch (Authority)
             {
@@ -810,12 +821,12 @@ SELECT * FROM items WHERE
                                 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                                 using (BeginSuppress())
                                 {
-                                    ObservableNetProjection.Apply(eBCL);
+                                    ObservableNetProjection.Apply(eUnk);
                                 }
                             }
                             break;
                         case NetProjectionTopology.Routed:
-                            ModelChanged?.Invoke(this, eBCL);
+                            ModelSettled?.Invoke(this, eUnk);
                             break;
                         default:
                             ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
@@ -838,8 +849,7 @@ SELECT * FROM items WHERE
             }
         }
 
-        public event EventHandler? ModelChanging;
-        public event NotifyCollectionChangedEventHandler? ModelChanged;
+        public event EventHandler? ModelSettled;
 
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.

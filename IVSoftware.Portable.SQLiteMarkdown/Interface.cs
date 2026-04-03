@@ -312,14 +312,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         XElement Model { get; }
 
         /// <summary>
-        /// Raises an immutable NotifyCollectionChangedEventArgs.
-        /// </summary>
-        /// <remarks>
-        /// The consumer can optionally upgrade to a derivative of CancelEventArgs.
-        /// </remarks>
-        event EventHandler ModelChanging;
-
-        /// <summary>
         /// Requests that an external host raise a collection change notification.
         /// </summary>
         /// <remarks>
@@ -331,7 +323,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///
         /// Mental Model: "Filtering model has been reconfigured. Ask the host to raise INCC."
         /// </remarks>
-        event NotifyCollectionChangedEventHandler ModelChanged;
+        event EventHandler ModelSettled;
         #endregion M O D E L
 
         #region P R O J E C T I O N

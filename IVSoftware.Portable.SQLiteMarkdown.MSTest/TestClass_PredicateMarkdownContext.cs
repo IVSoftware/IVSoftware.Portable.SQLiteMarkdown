@@ -296,7 +296,7 @@ NetProjectionTopology.None, ReplaceItemsEventingOption.StructuralReplaceEvent";
             pmdc.FilteringState);
 
         #region L o c a l F x
-        void localOnModelUpdated(object? sender, NotifyCollectionChangedEventArgs e)
+        void localOnModelUpdated(object? sender, EventArgs e)
         {
             builder.Add(e.ToString(ReferenceEquals(sender, pmdc.ObservableNetProjection)));
             switch (pmdc.ProjectionTopology)
@@ -327,12 +327,12 @@ NetProjectionTopology.None, ReplaceItemsEventingOption.StructuralReplaceEvent";
         using (pmdc.WithOnDispose(
             onInit: (sender, e) =>
             {
-                pmdc.ModelChanged += localOnModelUpdated;
+                pmdc.ModelSettled += localOnModelUpdated;
                 pmdc.PropertyChanged += localOnPropertyChanged;
             },
             onDispose: (sender, e) =>
             {
-                pmdc.ModelChanged -= localOnModelUpdated;
+                pmdc.ModelSettled -= localOnModelUpdated;
                 pmdc.PropertyChanged -= localOnPropertyChanged;
             }))
         {

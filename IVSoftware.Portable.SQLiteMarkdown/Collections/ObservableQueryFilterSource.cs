@@ -47,10 +47,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <remarks>
         /// The model is not a collection and does not implement INotifyCollectionChanged.
         /// </remarks>
-        protected override void OnModelChanged(NotifyCollectionChangedEventArgs eBCL)
+        protected override void OnModelSettled(EventArgs eUnk)
         {
-            base.OnModelChanged(eBCL);
-            CollectionChanged?.Invoke(this, eBCL);
+            base.OnModelSettled(eUnk);
+            CollectionChanged?.Invoke(this, (NotifyCollectionChangedEventArgs)eUnk);
         }
 
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
