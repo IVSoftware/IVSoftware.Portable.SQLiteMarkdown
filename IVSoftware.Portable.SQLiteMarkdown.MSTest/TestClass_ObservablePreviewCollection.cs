@@ -85,7 +85,6 @@ public class TestClass_ObservablePreviewCollection
         Assert.IsFalse(isContiguous);
     }
 
-
     /// <summary>
     /// Instantiates an ObservablePreviewCollection{T} and exercises it without attaching MDC.
     /// </summary>
@@ -571,7 +570,6 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingInd
         #endregion S U B T E S T S
     }
 
-
     /// <summary>
     /// Instantiates an ObservableRangeCollection{T} and exercises it without attaching MDC.
     /// </summary>
@@ -599,6 +597,9 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingInd
         subtest_AddRange();
         subtest_AddRangeDistinct();
         subtest_InsertRange();
+        subtest_RemoveRange();
+        subtest_RemoveMultiple();
+        subtest_FullWipe();
 
         #region S U B T E S T S
         void subtest_AddRange()
@@ -709,7 +710,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Verify carry over from previous subtest."
+                "Expecting carry over from previous subtest."
             );
 
             opc.InsertRange(2, new[]
@@ -746,6 +747,138 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
                 actual.NormalizeResult(),
                 "Expecting 4 items skipped and 2 items added.."
             );
+        }
+
+        void subtest_RemoveRange()
+        {
+            actual = opc.ToString(out XElement _);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model modeling=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert01  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" order=""3"" preview=""Insert02  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""4"" preview=""Insert03  "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""5"" preview=""Insert04  "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""6"" preview=""Insert05  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""7"" preview=""Item03    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""8"" preview=""Item04    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""9"" preview=""Item05    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""10"" preview=""Distinct01"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""11"" preview=""Distinct02"" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting carry over from previous subtest."
+            );
+
+            opc.RemoveRange(7, 9);
+
+            actual = opc.ToString(out XElement _);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model modeling=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert01  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" order=""3"" preview=""Insert02  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""4"" preview=""Insert03  "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""5"" preview=""Insert04  "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""6"" preview=""Insert05  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""7"" preview=""Distinct01"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""8"" preview=""Distinct02"" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting Item 03-05 removed at indexes 7, 8, 9 and ordering is updated."
+            );
+        }
+
+        void subtest_RemoveMultiple()
+        {
+            actual = opc.ToString(out XElement _);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model modeling=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert01  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" order=""3"" preview=""Insert02  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""4"" preview=""Insert03  "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""5"" preview=""Insert04  "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""6"" preview=""Insert05  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""7"" preview=""Distinct01"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""8"" preview=""Distinct02"" />
+</model>"
+            ;
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting carry over from previous subtest."
+            );
+            var itemsT = opc.Where(_ => _.Description.Contains("01")).ToArray();
+            opc.RemoveMultiple(itemsT);
+
+            actual = opc.ToString(out XElement _);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model modeling=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""0"" preview=""Item02    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" order=""1"" preview=""Insert02  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert03  "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""3"" preview=""Insert04  "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" preview=""Insert05  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""5"" preview=""Distinct02"" />
+</model>"
+            ;
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting that items matches to '01' have been discontiguously removed"
+            );
+
+            var indexes = new[] { 1, 0, 5 };
+            opc.RemoveMultiple(indexes);
+
+            actual = opc.ToString(out XElement _);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model modeling=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""0"" preview=""Insert03  "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""1"" preview=""Insert04  "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert05  "" />
+</model>"
+            ;
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting discontiguous indexes (corresponding to '02' matches) have been removed"
+            );
+        }
+
+        void subtest_FullWipe()
+        {
+            opc.RemoveRange(0, opc.Count - 1);
+            actual = opc.ToString(out XElement _);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model modeling=""Id"">
+</model>"
+            ;
+
         }
         #endregion S U B T E S T S
     }
