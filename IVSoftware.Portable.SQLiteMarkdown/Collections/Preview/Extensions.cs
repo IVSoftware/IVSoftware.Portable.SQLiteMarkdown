@@ -507,7 +507,14 @@ namespace IVSoftware.Portable.Collections.Preview
                     switch (eUnk)
                     {
                         case NotifyCollectionChangingEventArgs ePre:
-                            eApply = ePre;
+                            if(ePre.Scope == NotifyCollectionChangeScope.FullControl)
+                            {
+                                eApply = ePre;
+                            }
+                            else
+                            {
+
+                            }
                             break;
                         case NotifyCollectionChangedEventArgs ePost:
                             eApply = ePost;
