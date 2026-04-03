@@ -472,8 +472,8 @@ MarkdownContext Clear(all=True)";
                 remove => ((IModeledMarkdownContext)_mdc).ModelChanged -= value;
             }
 
-            public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority, IList snapshot)
-                => ((IModeledMarkdownContext)_mdc).BeginCollectionChangeAuthority(authority, snapshot);
+            public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority)
+                => ((IModeledMarkdownContext)_mdc).BeginCollectionChangeAuthority(authority);
 
             public FilteringState Clear(bool all)
                 => ((IMarkdownContext)_mdc).Clear(all);

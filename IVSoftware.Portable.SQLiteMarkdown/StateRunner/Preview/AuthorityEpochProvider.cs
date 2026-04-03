@@ -2,39 +2,27 @@
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
 namespace IVSoftware.Portable.StateRunner.Preview
 {
+    internal enum StdAuthorityProperty
+    {
+        Snapshot,
+    }
     [DebuggerDisplay("Count={ReferenceCount} Authority={Authority}")]
     internal abstract class AuthorityEpochProvider : DisposableHost
     {
-        public IDisposable BeginAuthority(Enum authority) => GetToken(authority);
-
-        public IDisposable GetToken(Enum authority)
-            => base.GetToken(sender: authority, properties: null);
-
-        public new IDisposable GetToken(object? sender = null, Dictionary<string, object>? properties = null)
+        public IDisposable BeginAuthority(Enum authority, ICollection snapshot)
         {
-            sender =
-                (sender is Enum authority)
-                ? authority
-                : 0;
-            return base.GetToken(sender, null, properties);
-        }
-
-        public new IDisposable GetToken(string key, object value)
-            => base.GetToken((Enum)(object)0, key, value);
-
-        public new IDisposable GetToken(object sender, string? key, object? value)
-        {
-            sender =
-                (sender is Enum authority)
-                ? authority
-                : 0;
-            return base.GetToken(sender, key, value);
+            var disp = GetToken(sender: authority, new Dictionary<string, object> 
+            {
+                { nameof(StdAuthorityProperty.Snapshot), snapshot },
+            });
+            return disp;
         }
         protected override void OnBeginUsing(BeginUsingEventArgs e)
         {

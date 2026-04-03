@@ -361,7 +361,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Intended use: EpochFinalizing should be wrapped with this reference counter.
         /// </remarks>
-        IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority, IList snapshot);
+        IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority);
 
         /// <summary>
         /// Returns the current collection DDX authority.

@@ -377,8 +377,8 @@ SELECT * FROM items WHERE
                             await ApplyAffinities(matches);
                         }
                     });
-                    var listAfter = Read.ToList();
-                    var ePre = pmsB4.Diff(Read.ToList());
+                    //var listAfter = Read.ToList();
+                    // var ePre = pmsB4.Diff(Read.ToList());
 
                     { }
                         //var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
@@ -1173,7 +1173,23 @@ SELECT * FROM items WHERE
 
         #region A U T H O R I T Y
         public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority)
-            => CollectionChangeAuthorityProvider.BeginAuthority(authority, Read.ToArray());
+        {
+            ICollection snapshot;
+            if(ObservableNetProjection is null)
+            {
+                // Diff compares against the ONP.
+                snapshot = ObservableNetProjection.Cast<T>().ToArray();
+                Debug.Fail($@"ADVISORY - First Time.");
+            }
+            else
+            {
+                // Diff compares against the iteration prior to changes.
+                snapshot = Read.ToArray();
+                Debug.Fail($@"ADVISORY - First Time.");
+            }
+            
+           return CollectionChangeAuthorityProvider.BeginAuthority(authority, Read.ToArray());
+        }
 
         public CollectionChangeAuthority Authority =>
             (CollectionChangeAuthority)CollectionChangeAuthorityProvider.Authority;
