@@ -385,6 +385,7 @@ SELECT * FROM items WHERE
                             case CollectionChangeAuthority.Settle:
                             case CollectionChangeAuthority.Predicate:
                                 var ePre = snapshot.Diff(PredicateMatchSubsetProtected);
+                                OnModelSettled(ePre);
                                 break;
                             default:
                                 this.ThrowFramework<InvalidOperationException>(
