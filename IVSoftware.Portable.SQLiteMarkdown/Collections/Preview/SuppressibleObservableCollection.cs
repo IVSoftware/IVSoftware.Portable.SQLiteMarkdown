@@ -68,15 +68,15 @@ namespace IVSoftware.Portable.Collections.Preview
                 if (_dhostSuppress is null)
                 {
                     _dhostSuppress = new DHostSuppress<T>();
-                    _dhostSuppress.FinalDispose += (sender, e) => OnFinalCoalesce((CoalescingFinalDisposeEventArgs)e);
+                    _dhostSuppress.FinalDispose += (sender, e) => OnFinalCoalesce((SuppressedFinalDisposeEventArgs)e);
                 }
                 return _dhostSuppress;
             }
         }
         DHostSuppress<T>? _dhostSuppress = null;
-        private void OnFinalCoalesce(CoalescingFinalDisposeEventArgs e)
+        private void OnFinalCoalesce(SuppressedFinalDisposeEventArgs e)
         {
-            OnCollectionChanged((e.Coalesced));
+            OnCollectionChanged((e.Digest));
         }
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         public new IEnumerator<T> GetEnumerator()

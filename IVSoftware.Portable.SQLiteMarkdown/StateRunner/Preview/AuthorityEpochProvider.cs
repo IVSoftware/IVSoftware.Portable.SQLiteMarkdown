@@ -9,7 +9,7 @@ using System.Linq;
 namespace IVSoftware.Portable.StateRunner.Preview
 {
     [DebuggerDisplay("Count={ReferenceCount} Authority={Authority}")]
-    class AuthorityEpochProvider : DisposableHost
+    internal abstract class AuthorityEpochProvider : DisposableHost
     {
         public IDisposable BeginAuthority(Enum authority) => GetToken(authority);
 
@@ -54,9 +54,18 @@ namespace IVSoftware.Portable.StateRunner.Preview
         }
         protected override void OnFinalDispose(FinalDisposeEventArgs e)
         {
-            Authority = FsmReserved.NoAuthority;
-            base.OnFinalDispose(e);
+            IsDisposing = true;
+            try
+            {
+                base.OnFinalDispose(e);
+            }
+            finally
+            {
+                IsDisposing = false;
+                Authority = FsmReserved.NoAuthority;
+            }
         }
+        public bool IsDisposing { get; private set; } = false;
 
         /// <summary>
         /// The primary authority for this epoch.

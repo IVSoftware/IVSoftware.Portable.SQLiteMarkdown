@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.StateRunner.Preview;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -34,42 +35,46 @@ namespace IVSoftware.Portable.Collections.Preview
         /// </remarks>
         protected override void OnFinalDispose(FinalDisposeEventArgs e)
         {
-            var before = Snapshot;
-            var after = _listFTR;
-
-            var digest = 
-                _cancel
-                ? new NotifyCollectionChangingEventArgs(
-                    action: NotifyCollectionChangeAction.Reset,
-                    reason: NotifyCollectionChangeReason.Coalesce | NotifyCollectionChangeReason.Cancel)
-                : before.Diff(
-                    after,
-                    reason: NotifyCollectionChangeReason.Coalesce);
-
-            var snapshot = e.Keys.ToDictionary(
-                key => key,
-                key => e[key]);
-
-            snapshot["FinalList"] = _listFTR;
-            snapshot["IsModified"] = _isModified;
-
-            var eBatch = new CoalescingFinalDisposeEventArgs(
-                e.ReleasedSenders,
-                snapshot,
-                digest,
-                _listFTR);
             try
             {
+                IsDisposing = true;
+                var before = Snapshot;
+                var after = _listFTR;
+
+                var digest =
+                    _cancel
+                    ? new NotifyCollectionChangingEventArgs(
+                        action: NotifyCollectionChangeAction.Reset,
+                        reason: NotifyCollectionChangeReason.Coalesce | NotifyCollectionChangeReason.Cancel)
+                    : before.Diff(
+                        after,
+                        reason: NotifyCollectionChangeReason.Coalesce);
+
+                var snapshot = e.Keys.ToDictionary(
+                    key => key,
+                    key => e[key]);
+
+                snapshot["FinalList"] = _listFTR;
+                snapshot["IsModified"] = _isModified;
+
+                var eBatch = new SuppressedFinalDisposeEventArgs(
+                    e.ReleasedSenders,
+                    snapshot,
+                    digest,
+                    _listFTR);
                 Phase = SuppressionPhase.Commit;
                 base.OnFinalDispose(eBatch);
             }
             finally
             {
                 Phase = SuppressionPhase.None;
+                IsDisposing = false;
             }
             _isModified = false;
             _cancel = false;
         }
+
+        public bool IsDisposing { get; private set; }
 
         public void CancelSuppressNotify() => _cancel = true;
         private bool _cancel;
@@ -116,20 +121,20 @@ namespace IVSoftware.Portable.Collections.Preview
         public SuppressionPhase Phase { get; private set; } = SuppressionPhase.None;
     }
 
-    internal class CoalescingFinalDisposeEventArgs : FinalDisposeEventArgs
+    internal class SuppressedFinalDisposeEventArgs : FinalDisposeEventArgs
     {
-        public CoalescingFinalDisposeEventArgs(
+        public SuppressedFinalDisposeEventArgs(
             IReadOnlyCollection<object> releasedSenders,
             IReadOnlyDictionary<string, object> snapshot,
             NotifyCollectionChangingEventArgs batchEventArgs,
             IList finalList)
             : base(releasedSenders, snapshot)
         {
-            Coalesced = batchEventArgs;
+            Digest = batchEventArgs;
             FinalList = finalList;
         }
 
-        public NotifyCollectionChangingEventArgs Coalesced { get; }
+        public NotifyCollectionChangingEventArgs Digest { get; }
         public IList FinalList { get; }
     }
 }

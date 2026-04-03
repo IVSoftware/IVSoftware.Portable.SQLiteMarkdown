@@ -41,9 +41,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             };
             DHostSuppress.FinalDispose += (sender, eUnk) =>
             {
-                if(eUnk is CoalescingFinalDisposeEventArgs e)
+                if(eUnk is SuppressedFinalDisposeEventArgs e)
                 {
-                    OnModelChanged(e.Coalesced);
+                    OnModelChanged(e.Digest);
                 }
             };
 
@@ -636,11 +636,11 @@ SELECT * FROM items WHERE
                     _dhostSuppress = new DHostSuppress<T>();
                     _dhostSuppress.FinalDispose += (sender, e) =>
                     {
-                        if (e is CoalescingFinalDisposeEventArgs eFD)
+                        if (e is SuppressedFinalDisposeEventArgs eFD)
                         {
                             if (eFD["IsModified"] is bool isModified && isModified)
                             {
-                                OnModelChanged(eFD.Coalesced);
+                                OnModelChanged(eFD.Digest);
                             }
                             else
                             {   /* G T K - N O O P */
@@ -1174,7 +1174,7 @@ SELECT * FROM items WHERE
         public CollectionChangeAuthority Authority =>
             (CollectionChangeAuthority)CollectionChangeAuthorityProvider.Authority;
 
-        AuthorityEpochProvider CollectionChangeAuthorityProvider { get; } = new();
+        AuthorityEpochProvider<CollectionChangeAuthority> CollectionChangeAuthorityProvider { get; } = new();
         #endregion A U T H O R I T Y
 
         /// <summary>
