@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Collections.Preview;
+﻿#if false
+using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using System;
 using System.Collections;
@@ -193,3 +194,4 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
     }
 }
+#endif

@@ -629,45 +629,57 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// count of zero; null lists are omitted entirely.
         /// </remarks>
         public static string ToString(
-            this NotifyCollectionChangedEventArgs e,
+            this EventArgs e,
             bool isProjection)
         {
             var sb = new System.Text.StringBuilder();
-
-            sb.Append($"{(isProjection ? "NetProjection" : "Other")}.{e.Action.ToString().PadRight(7)} ");
-
-            if (e.NewItems is { } newItems)
+            if (e.TryNormalizeTargets(
+                out var Action,
+                out var Reason,
+                out var NewItems,
+                out var NewStartingIndex,
+                out var OldItems,
+                out var OldStartingIndex))
             {
-                sb.Append($"NewItems={newItems.Count.ToString().PadLeft(2)} ");
-            }
 
-            if (e.OldItems is { } oldItems)
-            {
-                sb.Append($"OldItems={oldItems.Count.ToString().PadLeft(2)} ");
-            }
+                sb.Append($"{(isProjection ? "NetProjection" : "Other")}.{Action.ToString().PadRight(7)} ");
 
-            if (e.NewStartingIndex != -1)
-            {
-                sb.Append($"NewStartingIndex={e.NewStartingIndex.ToString().PadLeft(2)} ");
-            }
+                if (NewItems is { } newItems)
+                {
+                    sb.Append($"NewItems={newItems.Count.ToString().PadLeft(2)} ");
+                }
 
-            if (e.OldStartingIndex != -1)
-            {
-                sb.Append($"OldStartingIndex={e.OldStartingIndex.ToString().PadLeft(2)} ");
-            }
+                if (OldItems is { } oldItems)
+                {
+                    sb.Append($"OldItems={oldItems.Count.ToString().PadLeft(2)} ");
+                }
 
-            switch (e)
-            {
-                case ModelSettledEventArgs ems:
-                    sb.Append(nameof(ModelSettledEventArgs).PadRight(43));
-                    if(ems.Reason != NotifyCollectionChangeReason.None)
-                    {
-                        sb.Append(ems.Reason.ToFullKey().PadRight(43));
-                    }
-                    break;
-                default:
-                    sb.Append(e.GetType().Name.PadRight(43));
-                    break;
+                if (NewStartingIndex != -1)
+                {
+                    sb.Append($"NewStartingIndex={NewStartingIndex.ToString().PadLeft(2)} ");
+                }
+
+                if (OldStartingIndex != -1)
+                {
+                    sb.Append($"OldStartingIndex={OldStartingIndex.ToString().PadLeft(2)} ");
+                }
+
+                switch (e)
+                {
+                    case NotifyCollectionChangingEventArgs ePre:
+                        if (ePre.Reason != NotifyCollectionChangeReason.None)
+                        {
+                            sb.Append(ePre.Reason.ToFullKey().PadRight(43));
+                        }
+                        break;
+                    //case ModelSettledEventArgs ems:
+                    //    if(ems.Reason != NotifyCollectionChangeReason.None)
+                    //    {
+                    //        sb.Append(ems.Reason.ToFullKey().PadRight(43));
+                    //    }
+                    //    break;
+                }
+                sb.Append(e.GetType().Name.PadRight(43));
             }
             return sb.ToString();
         }

@@ -336,11 +336,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     // Events are being supressed by this authority epoch.
                     break;
                 case CollectionChangeAuthority.Settle:
+                    throw new NotImplementedException("ToDo");
                     // Raise only sanctioned events
-                    if (eBCL is ModelSettledEventArgs eModel)
-                    {
-                        CollectionChanged?.Invoke(this, eBCL);
-                    }
+                    //if (eBCL is ModelSettledEventArgs eModel)
+                    //{
+                    //    CollectionChanged?.Invoke(this, eBCL);
+                    //}
                     break;
                 default:
                     // Allow under normal collection self-authority.

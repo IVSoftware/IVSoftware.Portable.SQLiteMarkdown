@@ -377,6 +377,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             return @this;
         }
 
+#if false
         /// <summary>
         /// Classifies the structural relationship between the canonical XML model and an incoming recordset.
         /// </summary>
@@ -509,6 +510,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             ModelSettledEventArgs? _reset = default;
         }
 
+#endif
         #region A C T I O N    M A S K S
         [Obsolete("Action and Reason are entirely separate concerns in v2.0")]
         public static NotifyCollectionChangedAction ToNotifyCollectionChangedAction(this Enum @this)

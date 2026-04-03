@@ -377,19 +377,23 @@ SELECT * FROM items WHERE
                             await ApplyAffinities(matches);
                         }
                     });
+                    var listAfter = Read.ToList();
+                    var ePre = pmsB4.Diff(Read.ToList());
 
-                    var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
+                    { }
+                        //var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
 
-                    if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
-                    {
-                        OnModelChanged(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
-                            reason: NotifyCollectionChangeReason.ApplyFilter,
-                            e: eStructural));
-                    }
-                    if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
-                    {
-                        OnModelChanged(eReset);
-                    }
+                        //if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
+                        //{
+                        //    OnModelChanged(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
+                        //        reason: NotifyCollectionChangeReason.ApplyFilter,
+                        //        e: eStructural));
+                        //}
+
+                        //if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
+                        //{
+                        //    OnModelChanged(eReset);
+                        //}
 
 #if ABSTRACT
             // EXAMPLE<model histo="3" count="3" matches="1">
@@ -461,9 +465,10 @@ SELECT * FROM items WHERE
                     // Stay in filtering mode but the UI visuals might change e.g. icon glyph and/or color.
                     if (FilteringStatePrev == FilteringState.Active)
                     {
+                        NotifyCollectionChangedEventArgs? ePost = null;
                         if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
                         {
-                            var ePost = 
+                            ePost = 
                                 ((IList)PredicateMatchSubset)
                                 .Diff((IList)CanonicalSuperset,
                                 reason: NotifyCollectionChangeReason.RemoveFilter);
@@ -471,11 +476,10 @@ SELECT * FROM items WHERE
                         }
                         if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
                         {
-                            var ePost = new ModelSettledEventArgs
-                                (
-                                    reason: NotifyCollectionChangeReason.RemoveFilter,
-                                    action: NotifyCollectionChangedAction.Reset
-                                );
+                            if (ePost?.Action != NotifyCollectionChangedAction.Reset)
+                            {
+                                ePost = new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset);
+                            }
                             OnModelChanged(ePost);
                         }
                     }
@@ -1169,7 +1173,7 @@ SELECT * FROM items WHERE
 
         #region A U T H O R I T Y
         public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority)
-            => CollectionChangeAuthorityProvider.BeginAuthority(authority);
+            => CollectionChangeAuthorityProvider.BeginAuthority(authority, Read.ToArray());
 
         public CollectionChangeAuthority Authority =>
             (CollectionChangeAuthority)CollectionChangeAuthorityProvider.Authority;
