@@ -1,46 +1,44 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace IVSoftware.Portable.SQLiteMarkdown.StateRunner.Preview
+namespace IVSoftware.Portable.StateRunner.Preview
 {
-    [DebuggerDisplay("Count={ReferenceCount} Authority={Authority}")]
-    class AuthorityEpochProvider : DisposableHost
+    internal enum StdAuthorityProperty
     {
-        public IDisposable BeginAuthority(Enum authority) => GetToken(authority);
-
-        public IDisposable GetToken(Enum authority)
-            => base.GetToken(sender: authority, properties: null);
-
-        public new IDisposable GetToken(object? sender = null, Dictionary<string, object>? properties = null)
+        Snapshot,
+    }
+    [DebuggerDisplay("Count={ReferenceCount} Authority={Authority}")]
+    internal abstract class AuthorityEpochProvider : DisposableHost
+    {
+        public IDisposable BeginAuthority(Enum authority, ICollection? snapshot = null)
         {
-            sender =
-                (sender is Enum authority)
-                ? authority
-                : 0;
-            return base.GetToken(sender, null, properties);
-        }
-
-        public new IDisposable GetToken(string key, object value)
-            => base.GetToken((Enum)(object)0, key, value);
-
-        public new IDisposable GetToken(object sender, string? key, object? value)
-        {
-            sender =
-                (sender is Enum authority)
-                ? authority
-                : 0;
-            return base.GetToken(sender, key, value);
+            if (snapshot is null)
+            {
+                return GetToken(sender: authority);
+            }
+            else
+            {
+                return GetToken(sender: authority, new Dictionary<string, object>
+                {
+                    { nameof(StdAuthorityProperty.Snapshot), snapshot },
+                });
+            }
         }
         protected override void OnBeginUsing(BeginUsingEventArgs e)
         {
-            base.OnBeginUsing(e);
             if (e.AutoDisposableContext.Sender is Enum authority)
             {
                 Authority = authority;
+#if DEBUG
+                Debug.WriteLine($"260403.B BEGIN AUTHORITY {authority.ToFullKey()}");
+#endif
+                base.OnBeginUsing(e);
             }
             else
             {
@@ -50,9 +48,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.StateRunner.Preview
         }
         protected override void OnFinalDispose(FinalDisposeEventArgs e)
         {
-            Authority = FsmReserved.NoAuthority;
-            base.OnFinalDispose(e);
+            IsDisposing = true;
+            try
+            {
+                base.OnFinalDispose(e);
+            }
+            finally
+            {
+                IsDisposing = false;
+                Authority = FsmReserved.NoAuthority;
+            }
         }
+        public bool IsDisposing { get; private set; } = false;
 
         /// <summary>
         /// The primary authority for this epoch.

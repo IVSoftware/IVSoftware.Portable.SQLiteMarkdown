@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
+using IVSoftware.Portable.StateRunner.Preview;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -291,6 +292,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </remarks>
         sort,
 
+        /// <summary>
+        /// Indicates the available modeling on {T}.
+        /// </summary>
+        modeling,
+
         #region P R E D I C A T E S
         /// <summary>
         /// XBoundObject that holds a sorting predicate when present.
@@ -301,6 +307,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// XBoundObject that holds a filter predicates when present.
         /// </summary>
         predicates,
+
         triage,
         #endregion P R E D I C A T E S
     }
@@ -337,7 +344,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - Routes to CanonicalSuperset(CSS) where all CSS events raise INCC on ObservableNetProjection(ONP).
         /// - The FSM is not allowed to change state in response.
         /// </remarks>
-        None = 0,
+        None = FsmReserved.NoAuthority,
 
         /// <summary>
         /// Epoch that returns to first cause and produces a single Base Class Library (BCL) event.
@@ -346,7 +353,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Mental Model: "Clear everything while suppressing intermediate events. Raise a BCL Reset INCC when done."
         /// Association: <c>Clear(true)</c>
         /// </remarks>
-        Reset,
+        Reset = 0,
 
         /// <summary>
         /// Epoch that begins with a programmatic Commit() command and produces an INotifyPpropertyChanged (INCC) event.

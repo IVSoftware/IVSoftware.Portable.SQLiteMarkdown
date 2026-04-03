@@ -1,5 +1,5 @@
 ﻿#if false && SAVE
-using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.StateMachine;
 using System.Collections;
 using System.Collections.Specialized;

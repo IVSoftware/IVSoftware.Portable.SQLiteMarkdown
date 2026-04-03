@@ -1,14 +1,26 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using static IVSoftware.Portable.Collections.Preview.Strings;
 
-
-namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
+namespace IVSoftware.Portable.Collections.Preview
 {
+    internal static class Strings
+    {
+        public const string CONFIGURATION_INVALID_MESSAGE =
+            $"This configuration is not permitted as specified: Check related properties and ensure the combination is valid.";
+        public static string SCOPE_POLICY_VIOLATION_MESSAGE(NotifyCollectionChangeScope scope)
+        {
+            return
+                $"This operation is not permitted: {nameof(NotifyCollectionChangeScope)}={scope.ToFullKey()}," +
+                $"Always check Scope before attempting to modify the change proposal.";
+        }
+    }
     /// <summary>
     /// Represents an opt-in mutable, pre-commit collection change proposal.
     /// </summary>
@@ -39,6 +51,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 
         public static implicit operator NotifyCollectionChangingEventArgs(NotifyCollectionChangedEventArgs @this)
             => new NotifyCollectionChangingEventArgs(@this);
+
+        public NotifyCollectionChangingEventArgs(
+            NotifyCollectionChangingEventArgs ePre,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None,
+            NotifyCollectionChangeScope scope = NotifyCollectionChangeScope.ReadOnly)
+        : this(
+              action: ePre.Action,
+              reason: reason,
+              scope: scope,
+              newItems: ePre.NewItems,
+              oldItems: ePre.OldItems,
+              newStartingIndex: ePre.NewStartingIndex,
+              oldStartingIndex: ePre.OldStartingIndex)
+        {
+            EventArgsBCL = ePre;
+        }
 
         public NotifyCollectionChangingEventArgs(
             NotifyCollectionChangedEventArgs eBCL,
@@ -73,11 +101,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             Reason = reason;
             Scope = scope;
 
-            NewItems = new MutationPreviewCollection(newItems, scope, SCOPE_POLICY_VIOLATION_MESSAGE);
-            OldItems = new MutationPreviewCollection(oldItems, scope, SCOPE_POLICY_VIOLATION_MESSAGE);
+            NewItems = new MutationPreviewCollection(newItems, scope);
+            OldItems = new MutationPreviewCollection(oldItems, scope);
 
             ((MutationPreviewCollection)NewItems).Modified += (sender, e) => IsModified = true;
             ((MutationPreviewCollection)OldItems).Modified += (sender, e) => IsModified = true;
+
+            _newStartingIndex = newStartingIndex;
+            _oldStartingIndex = oldStartingIndex;
         }
         bool _isReverting = false;
 
@@ -89,9 +120,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             bool makeReset = false;
             bool ieException = false;
 
-            if (NewItems.Count > 0 && NewItems[0] is EventArgs)
+            if (!IsBclCompatible)
             {
-                IsBclCompatible = false;
                 makeReset = true;
             }
             else
@@ -240,7 +270,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         public NotifyCollectionChangeAction Action { get; }
         public NotifyCollectionChangeReason Reason { get; private set; } = NotifyCollectionChangeReason.None;
         public NotifyCollectionChangeScope Scope { get; }
-        public bool IsBclCompatible { get; private set; } = true;
+
+        public bool IsBclCompatible =>
+            NewItems is null ? true
+            : NewItems.Count == 0
+                ? true
+                : NewItems[0] is not EventArgs;
 
         public IList NewItems { get; }
 
@@ -260,12 +295,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     }
                     else
                     {
-                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE(Scope));
                     }
                 }
             }
         }
-        int _newStartingIndex = default;
+        int _newStartingIndex = -1;
 
         public int OldStartingIndex
         {
@@ -281,12 +316,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     }
                     else
                     {
-                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE(Scope));
                     }
                 }
             }
         }
-        int _oldStartingIndex = default;
+        int _oldStartingIndex = -1;
 
         bool _cancel;
 
@@ -304,18 +339,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     }
                     else
                     {
-                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE(Scope));
                     }
                 }
             }
         }
         public bool IsModified { get; private set; }
-        string SCOPE_POLICY_VIOLATION_MESSAGE =>    
-            $"This operation is not permitted: {nameof(NotifyCollectionChangeScope)}={Scope.ToFullKey()}," +
-            $"Always check Scope before attempting to modify the change proposal.";
-
-        string CONFIGURATION_INVALID_MESSAGE =>
-            $"This configuration is not permitted as specified: Check related properties and ensure the combination is valid.";
 
         /// <summary>
         /// Provides a scope-enforced preview surface for collection mutation proposals.
@@ -340,16 +369,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             : ObservableCollection<object>
             , IList
         {
-            public MutationPreviewCollection(IList? items, NotifyCollectionChangeScope scope, string policyViolationMessage)
+            public MutationPreviewCollection(IList? items, NotifyCollectionChangeScope scope)
             {
-                SCOPE_POLICY_VIOLATION_MESSAGE = policyViolationMessage;
                 foreach (var item in items ?? Array.Empty<object>())
                 {
                     Add(item);
                 }
                 Scope = scope;
             }
-            private readonly string SCOPE_POLICY_VIOLATION_MESSAGE;
 
             /// <summary>
             /// Allows full control in CTor; the requested scope is set afterward.
@@ -366,7 +393,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 }
                 else
                 {
-                    this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                    this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE(Scope));
                     return false;
                 }
             }

@@ -1,12 +1,16 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
 
@@ -23,6 +27,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             StdMarkdownAttribute.pmatch)]
         Default,
     }
+    public enum ReportFormat
+    {
+        StateReport,
+
+        /// <summary>
+        /// For objects with a native Model property, or that have 
+        /// an implicit cast to XElement, return model.ToString().
+        /// </summary>
+        ModelWithPreview,
+
+        //OptionsReport,
+        //SettingsReport,
+    }
+
+    public delegate string GetFullPathDelegate<T>(T item);
+    public delegate string ModelPreviewDelegate(object? item);
     partial class MarkdownContext
     {
         public virtual XElement Model
@@ -279,7 +299,79 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         protected EnumHistogrammer<StdMarkdownAttribute> Histo { get; } = new(ZeroCountOption.Remove);
-        public string ToString(HistogrammerFormat format) => Histo.ToString(format);
+        public string ToString(HistogrammerFormat formatting) => Histo.ToString(formatting);
+        public string ToString(ModelPreviewDelegate preview, bool keepPreviews = false)
+        {
+            foreach (var xel in Model.Descendants())
+            {
+                if(xel.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xba && xba.Tag is not null)
+                {
+                    xel.SetStdAttributeValue(StdMarkdownAttribute.preview, preview(xba.Tag));
+                }
+            }
+            var @string = Model.ToString();
+            if(!keepPreviews)
+            {
+                Model.RemoveDescendantAttributes(StdMarkdownAttribute.preview);
+            }
+            return @string;
+        }
+        public string ToString(ReportFormat formattime)
+        {
+            var builder = new List<string>();
+            switch (formattime)
+            {
+                case ReportFormat.StateReport:
+                    builder.Add($"[IME Len: {InputText.Length}");
+                    builder.Add($"IsFiltering: {IsFiltering}]");
+                    if (this is IModeledMarkdownContext mmdc)
+                    {
+                        builder.Add($"[Net: {(mmdc.ObservableNetProjection is IList list ? list.Count : "null")}");
+                    }
+                    builder.Add($"CC: {CanonicalCount}");
+                    builder.Add($"PMC: {PredicateMatchCount}]");
+                    builder.Add($"[{QueryFilterConfig}: {SearchEntryState.ToFullKey()}");
+                    builder.Add($"{FilteringState.ToFullKey()}]");
+                    break;
+                case ReportFormat.ModelWithPreview:
+                    if(ContractType.GetDescriptionPreviewDlgt() is { } dlgt)
+                    {
+                        var needPreview =
+                            Model
+                            .Descendants()
+                            .Select(_=>_.Attribute(StdMarkdownAttribute.model))
+                            .OfType<XBoundAttribute>()
+                            .Where(_=>_.Parent.Attribute(StdMarkdownAttribute.preview) is null)
+                            .ToArray();
+
+                        foreach (var xba in needPreview)
+                        {
+                            xba.Parent.SetStdAttributeValue(StdMarkdownAttribute.preview, dlgt(xba.Tag));
+                        }
+                        var report = Model.ToString();
+
+                        foreach (var xba in needPreview)
+                        {
+                            xba.Parent.SetStdAttributeValue(StdMarkdownAttribute.preview, null);
+                        }
+                        return report;
+                    }
+                    else
+                    {
+                        return Model.ToString();
+                    }
+                    break;
+
+                //case ReportFormat.OptionsReport:
+                //    builder.Add($"{ProjectionTopology.ToFullKey()}");
+                //    builder.Add($"{ReplaceItemsEventingOption.ToFullKey()}");
+                //    return string.Join(", ", builder);
+                default:
+                    this.ThrowHard<NotSupportedException>($"The {formattime.ToFullKey()} case is not supported.");
+                    break;
+            }
+            return string.Join(", ", builder);
+        }
 
         public IReadOnlyDictionary<string, Enum> ActiveFilters
         {

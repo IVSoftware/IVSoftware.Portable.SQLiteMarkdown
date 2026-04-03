@@ -1,19 +1,25 @@
-﻿using IVSoftware.Portable.Disposable;
+﻿using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Linq;
+using System.Reflection;
+using System.Xml.Linq;
 
-namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
+namespace IVSoftware.Portable.Collections.Preview
 {
-    internal class ObservablePreviewCollection<T>
+    /// <summary>
+    /// Suppressible collection with Preview semantics (but no Range semantics).
+    /// </summary>
+    internal partial class ObservablePreviewCollection<T>
         : ObservableCollection<T>
         , INotifyCollectionChanging
     {
-        public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
+        public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)        
         {
             EventScope = eventScope;
         }
+
         /// <summary>
         /// Defines the extent to which a preview handler may interact with a pending
         /// collection change proposal.
@@ -32,104 +38,46 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         /// consistent change contract.
         /// </remarks>
         public NotifyCollectionChangeScope EventScope { get; }
-
         protected override void InsertItem(int index, T item)
         {
-            var e = new NotifyCollectionChangingEventArgs(
+            var ePre = new NotifyCollectionChangingEventArgs(
                 action: NotifyCollectionChangeAction.Add,
                 scope: EventScope,
                 newItems: new[] { item },
                 newStartingIndex: index);
-
-            if (DHostApply.IsZero())
-            {
-                OnCollectionChanging(e);
-
-                if (e.Cancel) return;
-
-                if (!DHostBatch.TryAppend(e))
-                {
-                    if (e.IsModified)
-                    {
-                        ApplyChanges(e);
-                    }
-                    else
-                    {
-                        base.InsertItem(index, item);
-                    }
-                }
-            }
-            else
+            OnCollectionChanging(ePre);
+            if (!ePre.Cancel)
             {
                 base.InsertItem(index, item);
             }
         }
-
         protected override void SetItem(int index, T item)
         {
-            var oldItem = this[index];
-
-            var e = new NotifyCollectionChangingEventArgs(
+            var ePre = new NotifyCollectionChangingEventArgs(
                 action: NotifyCollectionChangeAction.Replace,
                 scope: EventScope,
                 newItems: new[] { item },
-                oldItems: new[] { oldItem },
+                oldItems: new[] { this[index] },
                 newStartingIndex: index,
                 oldStartingIndex: index);
 
-            if (DHostApply.IsZero())
-            {
-                OnCollectionChanging(e);
-
-                if (e.Cancel) return;
-
-                if (!DHostBatch.TryAppend(e))
-                {
-                    if (e.IsModified)
-                    {
-                        ApplyChanges(e);
-                    }
-                    else
-                    {
-                        base.SetItem(index, item);
-                    }
-                }
-            }
-            else
+            OnCollectionChanging(ePre);
+            if (!ePre.Cancel)
             {
                 base.SetItem(index, item);
             }
         }
-
         protected override void RemoveItem(int index)
         {
             var item = this[index];
 
-            var e = new NotifyCollectionChangingEventArgs(
+            var ePre = new NotifyCollectionChangingEventArgs(
                 action: NotifyCollectionChangeAction.Remove,
                 scope: EventScope,
                 oldItems: new[] { item },
                 oldStartingIndex: index);
-
-            if(DHostApply.IsZero())
-            {
-                OnCollectionChanging(e);
-                if (!e.Cancel)
-                {
-                    if (!DHostBatch.TryAppend(e))
-                    {
-                        if (e.IsModified)
-                        {
-                            ApplyChanges(e);
-                        }
-                        else
-                        {
-                            base.RemoveItem(index);
-                        }
-                    }
-                }
-            }
-            else
+            OnCollectionChanging(ePre);
+            if (!ePre.Cancel)
             {
                 base.RemoveItem(index);
             }
@@ -138,33 +86,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         {
             var item = this[oldIndex];
 
-            var e = new NotifyCollectionChangingEventArgs(
+            var ePre = new NotifyCollectionChangingEventArgs(
                 action: NotifyCollectionChangeAction.Move,
                 scope: EventScope,
                 newItems: new[] { item },
                 oldItems: new[] { item },
                 newStartingIndex: newIndex,
                 oldStartingIndex: oldIndex);
-
-            if (DHostApply.IsZero())
-            {
-                OnCollectionChanging(e);
-
-                if (e.Cancel) return;
-
-                if (!DHostBatch.TryAppend(e))
-                {
-                    if (e.IsModified)
-                    {
-                        ApplyChanges(e);
-                    }
-                    else
-                    {
-                        base.MoveItem(oldIndex, newIndex);
-                    }
-                }
-            }
-            else
+            OnCollectionChanging(ePre);
+            if (!ePre.Cancel)
             {
                 base.MoveItem(oldIndex, newIndex);
             }
@@ -174,91 +104,46 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         {
             var snapshot = this.ToArray();
 
-            var e = new NotifyCollectionChangingEventArgs(
+            var ePre = new NotifyCollectionChangingEventArgs(
                 action: NotifyCollectionChangeAction.Reset,
                 scope: EventScope,
                 oldItems: snapshot,
                 oldStartingIndex: -1);
-
-            if (DHostApply.IsZero())
-            {
-                OnCollectionChanging(e);
-
-                if (e.Cancel) return;
-
-                if (!DHostBatch.TryAppend(e))
-                {
-                    if (e.IsModified)
-                    {
-                        ApplyChanges(e);
-                    }
-                    else
-                    {
-                        base.ClearItems();
-                    }
-                }
-            }
-            else
+            OnCollectionChanging(ePre);
+            if (!ePre.Cancel)
             {
                 base.ClearItems();
             }
         }
+
         protected virtual void OnCollectionChanging(NotifyCollectionChangingEventArgs e)
         {
             CollectionChanging?.Invoke(this, e);
         }
         public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
 
-        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        public static implicit operator XElement(ObservablePreviewCollection<T> @this)
         {
-            if (DHostBatch.IsZero() && ! BatchDisposing)
-            {
-                base.OnCollectionChanged(e);
-            }
-        }
-        protected virtual void ApplyChanges(NotifyCollectionChangingEventArgs e)
-        {
-            using (BeginApply())
-            {
-                this.Apply(e);
-            }
+            @this.ToString(out XElement model);
+            model.SetAttributeValue(@this.ModelingCapabilityInfo.StdModelPath);
+            return model;
         }
 
-        #region D H O S T
-        IDisposable BeginApply() => DHostApply.GetToken(this);
-        DisposableHost DHostApply { get; } = new();
-        public IDisposable BeginBatch() => DHostBatch.GetToken(this);
-        DHostBatchCollectionChange DHostBatch
+        /// <summary>
+        /// Determine the highest fidelity full path for T.
+        /// </summary>
+        public ModeledFullPathInfo ModelingCapabilityInfo
         {
             get
-            {
-                if (_dhostBatch is null)
+            {                
+                if (_modelingCapability is null)
                 {
-                    _dhostBatch = new DHostBatchCollectionChange();
-                    _dhostBatch.FinalDispose += (sender, e) =>
-                    {
-                        if (e is BatchFinalDisposeEventArgs eFD)
-                        {
-                            try
-                            {
-                                BatchDisposing = true;
-                                ApplyChanges(eFD.Digest);
-                            }
-                            finally
-                            {
-                                BatchDisposing = false;
-                                OnCollectionChanged(eFD.Digest);
-                            }
-                        }
-                    };
+                    _modelingCapability = typeof(T).GetModeledPathInfo();
                 }
-                return _dhostBatch;
+                return (ModeledFullPathInfo)_modelingCapability!;
             }
         }
-
-        public bool BatchDisposing { get; private set; }
-
-        DHostBatchCollectionChange? _dhostBatch = null;
-        #endregion D H O S T
+        ModeledFullPathInfo? _modelingCapability = null;
+        PropertyInfo? _fullPathPI = null;
     }
 }

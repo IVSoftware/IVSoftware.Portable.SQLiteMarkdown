@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Common.Attributes;
+﻿using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -8,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -498,51 +500,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 @this.Offset);
 
         /// <summary>
-        /// Gets the first custom attribute of the specified type applied to an enum value.
+        /// Gets the first custom attribute of the specified type
+        /// applied to an enum value or null in its absence.
         /// </summary>
         internal static TAttribute? GetCustomAttribute<TAttribute>(
             this Enum value)
             where TAttribute : Attribute
-            => GetDeclaredEnumField(value)?
-                .GetCustomAttributes(typeof(TAttribute), false)
-                .OfType<TAttribute>()
-                .FirstOrDefault();
-
-        /// <summary>
-        /// Gets all custom attributes of the specified type applied to an enum value.
-        /// </summary>
-        internal static IEnumerable<TAttribute> GetCustomAttributes<TAttribute>(
-            this Enum value)
-            where TAttribute : Attribute
-            => GetDeclaredEnumField(value)?
-               .GetCustomAttributes(typeof(TAttribute), false)
-                .OfType<TAttribute>()
-                ?? Enumerable.Empty<TAttribute>();
-
-        /// <summary>
-        /// Returns the declared FieldInfo corresponding to a defined enum value.
-        /// </summary>
-        /// <remarks>
-        /// Ensures that the supplied enum value maps to a named constant declared on its type.
-        /// If the value represents an undefined numeric backing (e.g., casted integral or invalid flag),
-        /// an InvalidOperationException is thrown via ThrowHard.
-        /// This method does not support composite flag values unless explicitly declared.
-        /// </remarks>
-        private static FieldInfo GetDeclaredEnumField(Enum value)
         {
-            var type = value.GetType();
+            TAttribute? preview; 
+            var enumType = value.GetType();
+#if DEBUG || SAVE             
+            Debug.WriteLineIf(false, $"260403.A {value.ToFullKey()}");
+            if(value.ToFullKey() == "HistogrammerFormat.All")
+            {
+                // Symptomatic of a recursion taking place elsewhere.
+            }
+#endif
+            preview =
+                enumType
+               .GetFields()
+               .SingleOrDefault(_ => _.Name == Enum.GetName(enumType, value))
+               ?.GetCustomAttribute<TAttribute>();
 
-            if (Enum.IsDefined(type, value))
-            {
-                return type.GetField(value.ToString())!;
-            }
-            else
-            {
-                var numeric = Convert.ToInt64(value);
-                value.ThrowHard<InvalidOperationException>(
-                    $"Enum value '{value}' (underlying {numeric}) does not correspond to a declared field on '{type.FullName}'.");
-                return null!; // We warned you.
-            }
+            return preview;
         }
 
         /// <summary>
@@ -649,45 +629,57 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// count of zero; null lists are omitted entirely.
         /// </remarks>
         public static string ToString(
-            this NotifyCollectionChangedEventArgs e,
+            this EventArgs e,
             bool isProjection)
         {
             var sb = new System.Text.StringBuilder();
-
-            sb.Append($"{(isProjection ? "NetProjection" : "Other")}.{e.Action.ToString().PadRight(7)} ");
-
-            if (e.NewItems is { } newItems)
+            if (e.TryNormalizeTargets(
+                out var Action,
+                out var Reason,
+                out var NewItems,
+                out var NewStartingIndex,
+                out var OldItems,
+                out var OldStartingIndex))
             {
-                sb.Append($"NewItems={newItems.Count.ToString().PadLeft(2)} ");
-            }
 
-            if (e.OldItems is { } oldItems)
-            {
-                sb.Append($"OldItems={oldItems.Count.ToString().PadLeft(2)} ");
-            }
+                sb.Append($"{(isProjection ? "NetProjection" : "Other")}.{Action.ToString().PadRight(7)} ");
 
-            if (e.NewStartingIndex != -1)
-            {
-                sb.Append($"NewIndex={e.NewStartingIndex.ToString().PadLeft(2)} ");
-            }
+                if (NewItems is { } newItems)
+                {
+                    sb.Append($"NewItems={newItems.Count.ToString().PadLeft(2)} ");
+                }
 
-            if (e.OldStartingIndex != -1)
-            {
-                sb.Append($"OldIndex={e.OldStartingIndex.ToString().PadLeft(2)} ");
-            }
+                if (OldItems is { } oldItems)
+                {
+                    sb.Append($"OldItems={oldItems.Count.ToString().PadLeft(2)} ");
+                }
 
-            switch (e)
-            {
-                case ModelSettledEventArgs ems:
-                    sb.Append(nameof(ModelSettledEventArgs).PadRight(43));
-                    if(ems.Reason != Collections.Preview.NotifyCollectionChangeReason.None)
-                    {
-                        sb.Append(ems.Reason.ToFullKey().PadRight(43));
-                    }
-                    break;
-                default:
-                    sb.Append(e.GetType().Name.PadRight(43));
-                    break;
+                if (NewStartingIndex != -1)
+                {
+                    sb.Append($"NewStartingIndex={NewStartingIndex.ToString().PadLeft(2)} ");
+                }
+
+                if (OldStartingIndex != -1)
+                {
+                    sb.Append($"OldStartingIndex={OldStartingIndex.ToString().PadLeft(2)} ");
+                }
+
+                switch (e)
+                {
+                    case NotifyCollectionChangingEventArgs ePre:
+                        if (ePre.Reason != NotifyCollectionChangeReason.None)
+                        {
+                            sb.Append(ePre.Reason.ToFullKey().PadRight(43));
+                        }
+                        break;
+                    //case ModelSettledEventArgs ems:
+                    //    if(ems.Reason != NotifyCollectionChangeReason.None)
+                    //    {
+                    //        sb.Append(ems.Reason.ToFullKey().PadRight(43));
+                    //    }
+                    //    break;
+                }
+                sb.Append(e.GetType().Name.PadRight(43));
             }
             return sb.ToString();
         }

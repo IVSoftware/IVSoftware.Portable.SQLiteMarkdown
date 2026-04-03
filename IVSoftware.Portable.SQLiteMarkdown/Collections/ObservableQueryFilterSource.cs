@@ -1,6 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.Threading;
@@ -40,10 +40,69 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         where T : new()
     {
         public ObservableQueryFilterSource() { }
-        protected override void OnModelChanged(NotifyCollectionChangedEventArgs eBCL)
+
+        /// <summary>
+        /// Model changes have coalesced and are updating.
+        /// </summary>
+        /// <remarks>
+        /// - The model is not a collection and does not implement INotifyCollectionChanged.
+        /// - Depending on the authority, the event might represent a changed *or* changing 
+        ///   collection, but the CollectionChanged requires normalization to eBCL.
+        /// </remarks>
+        protected override void OnModelSettled(EventArgs eUnk)
         {
-            base.OnModelChanged(eBCL);
-            CollectionChanged?.Invoke(this, eBCL);
+            base.OnModelSettled(eUnk);
+
+            bool isBclCompatible = true;
+
+            NotifyCollectionChangingEventArgs eBCL;
+            // We have implicit casts, just not from EventArgs as called.
+            switch (eUnk)
+            {
+                case NotifyCollectionChangingEventArgs ePre:
+                    eBCL = ePre;
+                    isBclCompatible = ePre.IsBclCompatible;
+                    break;
+                case NotifyCollectionChangedEventArgs ePost:
+                    eBCL = ePost;
+                    break;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {eUnk.GetType().Name} case is not supported.");
+                    return;
+            }
+
+            if(isBclCompatible)
+            {
+                CollectionChanged?.Invoke(this, eBCL);
+            }
+            else
+            {
+                if(ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
+                {
+#if false
+                    // PLAYER:
+                    // Acumulate adds and send composite when Action changes.
+                    if(eBCL.NewItems is not null)
+                    {
+                        foreach (NotifyCollectionChangingEventArgs item in eBCL.NewItems)
+                        {
+
+                        }
+                    }
+#else
+                    Debug.Assert(DateTime.Now.Date == new DateTime(2026, 4, 03).Date, "Don't forget disabled");
+                    CollectionChanged?.Invoke(
+                        this,
+                        new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset));
+#endif
+                }
+                if(ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
+                {
+                    CollectionChanged?.Invoke(
+                        this,
+                        new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset));
+                }
+            }
         }
 
         [Obsolete("Use CanonicalRecordset and PredicateMatchSubset for precise semantics.")]
@@ -329,11 +388,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     // Events are being supressed by this authority epoch.
                     break;
                 case CollectionChangeAuthority.Settle:
+                    throw new NotImplementedException("ToDo");
                     // Raise only sanctioned events
-                    if(eBCL is ModelSettledEventArgs eModel)
-                    {
-                        CollectionChanged?.Invoke(this, eBCL);
-                    }
+                    //if (eBCL is ModelSettledEventArgs eModel)
+                    //{
+                    //    CollectionChanged?.Invoke(this, eBCL);
+                    //}
                     break;
                 default:
                     // Allow under normal collection self-authority.

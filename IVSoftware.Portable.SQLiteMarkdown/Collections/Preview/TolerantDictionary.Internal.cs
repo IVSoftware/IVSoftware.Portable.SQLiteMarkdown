@@ -8,7 +8,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 
 // PREVIEW-PROTOTYPE of IVSoftware.Portable.Collections
-namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+namespace IVSoftware.Portable.Collections.Preview;
 
 /// <summary>
 /// A lightweight dictionary whose indexer tolerates missing keys by returning null semantics instead of throwing.

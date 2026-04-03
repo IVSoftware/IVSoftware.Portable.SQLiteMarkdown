@@ -1,11 +1,12 @@
-﻿using IVSoftware.Portable.Common.Attributes;
+﻿using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
-using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
-using IVSoftware.Portable.SQLiteMarkdown.StateRunner.Preview;
+using IVSoftware.Portable.StateRunner.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -23,7 +24,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static IVSoftware.Portable.SQLiteMarkdown.Internal.Extensions;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -39,7 +39,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 OnCanonicalSupersetChanged(e);
             };
-            if(typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
+            DHostSuppress.FinalDispose += (sender, eUnk) =>
+            {
+                if(eUnk is SuppressedFinalDisposeEventArgs e)
+                {
+                    OnModelSettled(e.Digest);
+                }
+            };
+
+            if (typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
             {
                 ProjectionTopology = NetProjectionTopology.Routed;
                 var type = GetType();
@@ -52,6 +60,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+
         protected override void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
             // Update histogram first.
@@ -369,17 +378,25 @@ SELECT * FROM items WHERE
                         }
                     });
 
-                    var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
-
-                    if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
+                    if (CollectionChangeAuthorityProvider[nameof(StdAuthorityProperty.Snapshot)] is IList snapshot)
                     {
-                        OnModelChanged(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
-                            reason: NotifyCollectionChangeReason.ApplyFilter,
-                            e: eStructural));
+                        switch (Authority)
+                        {
+                            case CollectionChangeAuthority.Settle:
+                            case CollectionChangeAuthority.Predicate:
+                                var ePre = snapshot.Diff(PredicateMatchSubsetProtected);
+                                OnModelSettled(ePre);
+                                break;
+                            default:
+                                this.ThrowFramework<InvalidOperationException>(
+                                    $"Authority = {Authority} - " +
+                                    $"Expecting {nameof(ApplyFilter)} is wrapped in a {nameof(BeginCollectionChangeAuthority)}");
+                                break;
+                        }
                     }
-                    if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
+                    else
                     {
-                        OnModelChanged(eReset);
+                        Debug.Fail($@"ADVISORY - Expecting snapshot is baked into Settle or Predicate epoch.");
                     }
 
 #if ABSTRACT
@@ -452,23 +469,22 @@ SELECT * FROM items WHERE
                     // Stay in filtering mode but the UI visuals might change e.g. icon glyph and/or color.
                     if (FilteringStatePrev == FilteringState.Active)
                     {
+                        NotifyCollectionChangedEventArgs? ePost = null;
                         if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
                         {
-                            var ePost = 
+                            ePost = 
                                 ((IList)PredicateMatchSubset)
                                 .Diff((IList)CanonicalSuperset,
                                 reason: NotifyCollectionChangeReason.RemoveFilter);
-                            OnModelChanged(ePost);
+                            OnModelSettled(ePost);
                         }
                         if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
                         {
-                            OnModelChanged(
-                                new ModelSettledEventArgs
-                                (
-                                    reason: NotifyCollectionChangeReason.RemoveFilter,
-                                    action: NotifyCollectionChangedAction.Reset
-                                )
-                            );
+                            if (ePost?.Action != NotifyCollectionChangedAction.Reset)
+                            {
+                                ePost = new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset);
+                            }
+                            OnModelSettled(ePost);
                         }
                     }
                     break;
@@ -579,41 +595,60 @@ SELECT * FROM items WHERE
         /// </remarks>
         protected virtual void OnCanonicalSupersetChanged(NotifyCollectionChangedEventArgs e)
         {
-            Model.Apply(e);
             switch (Authority)
             {
-                case CollectionChangeAuthority.Reset:
-                case CollectionChangeAuthority.Commit:
-                case CollectionChangeAuthority.Settle:
-                case CollectionChangeAuthority.Predicate:
-                    if(DHostBatch.TryAppend(e))
-                    { 
-                        /* G T K - N O O P */
-                        // Deferred
-                    }
-                    else
+                // Mental Model: "When does the Model require an update?"
+                case CollectionChangeAuthority.None:        // When the IList interface of an MMDC is invoked programmatically.
+                case CollectionChangeAuthority.Reset:       // When an unconditional global clear is taking place.
+                case CollectionChangeAuthority.Commit:      // When the model is being fully displaced by a new canonical recordset.
+                case CollectionChangeAuthority.Projection:  // When [+] or [🗑] actions (buttons) operate on the visible surface directly.
+                    Model.Apply(e);
+                    // Determines when to broadcast INCC to the projection surface.
+                    switch (DHostSuppress.Phase)
                     {
-                        OnModelChanged(e);
+                        case SuppressionPhase.None:
+                        case SuppressionPhase.Commit:
+                            OnModelSettled(e);
+                            break;
+                        case SuppressionPhase.Preview:
+                            /* G T K - N O O P */
+                            // Accumulating suppressed events.
+                            break;
+                        default:
+
+                            this.ThrowFramework<NotSupportedException>($"The {DHostSuppress.Phase.ToFullKey()} case is not supported.");
+                            break;
                     }
+                    break;
+                // Mental Model: "When does the Model *not* require an update?"
+                case CollectionChangeAuthority.Settle:      // The IME text has settled and deferred relitigation of
+                                                            // 'qmatch' and 'match' attributes is proceeding.
+                case CollectionChangeAuthority.Predicate:   // A filter has been toggled and immediate relitigation of
+                                                            // 'pmatch' and 'match' attributes is proceeding.
+
+                    break;
+                default:
+
+                    this.ThrowHard<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
                     break;
             }
         }
 
-        public IDisposable BeginBatch() => DHostBatch.GetToken(this);
-        DHostBatchCollectionChange DHostBatch
+        public IDisposable BeginSuppress() => DHostSuppress.GetToken(this);
+        DHostSuppress<T> DHostSuppress
         {
             get
             {
-                if (_dhostBatch is null)
+                if (_dhostSuppress is null)
                 {
-                    _dhostBatch = new DHostBatchCollectionChange();
-                    _dhostBatch.FinalDispose += (sender, e) =>
+                    _dhostSuppress = new DHostSuppress<T>();
+                    _dhostSuppress.FinalDispose += (sender, e) =>
                     {
-                        if (e is BatchFinalDisposeEventArgs eFD)
+                        if (e is SuppressedFinalDisposeEventArgs eFD)
                         {
                             if (eFD["IsModified"] is bool isModified && isModified)
                             {
-                                OnModelChanged(eFD.Digest);
+                                OnModelSettled(eFD.Digest);
                             }
                             else
                             {   /* G T K - N O O P */
@@ -621,10 +656,10 @@ SELECT * FROM items WHERE
                         }
                     };
                 }
-                return _dhostBatch;
+                return _dhostSuppress;
             }
         }
-        DHostBatchCollectionChange? _dhostBatch = null;
+        DHostSuppress<T>? _dhostSuppress = null;
 
         protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -635,9 +670,6 @@ SELECT * FROM items WHERE
                 case CollectionChangeAuthority.Projection:
                     // The players.
                     break;
-                case 0:
-                    this.ThrowFramework<InvalidOperationException>($"{nameof(CollectionChangeAuthority)} is required.");
-                    return;
                 case CollectionChangeAuthority.Reset:
                     Debug.Fail($@"ADVISORY - Explicit no authority. Is this what we really want here?.");
                     return;
@@ -730,38 +762,66 @@ SELECT * FROM items WHERE
         ///
         /// The supplied <see cref="NotifyCollectionChangedEventArgs"/> may be downcast to <c>ModelSettledEventArgs</c>. 
         /// When cast in this way, the reason for the model iteration is provided.
-        ///
-        /// Mental Model: "Input text has settled; the model has reconciled."
         /// </remarks>
-        protected virtual void OnModelChanged(NotifyCollectionChangedEventArgs eBCL)
+        protected virtual void OnModelSettled(EventArgs eUnk)
         {
-            switch (ProjectionTopology)
+            if (DHostSuppress.IsDisposing)
             {
-                case NetProjectionTopology.None: 
-                    // N O O P
-                    // There is no projection to update.
-                    break;
-                case NetProjectionTopology.ObservableOnly:    // Maintain internal canon but do not push internal changes.
-                    ModelChanged?.Invoke(this, eBCL);
-                    break;
-                case NetProjectionTopology.AllowDirectChanges:
-                    localApplyDirectChanges();
-                    break;
-                case NetProjectionTopology.Routed:
-                    ModelChanged?.Invoke(this, eBCL);
-                    break;
-                default:
-                    ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
-                    break;
+                ModelSettled?.Invoke(this, eUnk);
             }
-            void localApplyDirectChanges()
+            else
             {
-                if (eBCL is not ModelSettledEventArgs eModel)
+                switch (Authority)
                 {
-                    this.ThrowFramework<InvalidOperationException>(
-                        $"Insisting on {nameof(ModelSettledEventArgs)} - The pattern match just gets the cast.");
+                    // Mental Model: "When does the Model require an update?"
+                    case CollectionChangeAuthority.None:        // When the IList interface of an MMDC is invoked programmatically.
+                    case CollectionChangeAuthority.Reset:       // When an unconditional global clear is taking place.
+                    case CollectionChangeAuthority.Commit:      // When the model is being fully displaced by a new canonical recordset.
+                    case CollectionChangeAuthority.Projection:  // When [+] or [🗑] actions (buttons) operate on the visible surface directly.
+                        break;
+                    // Mental Model: "When does the Model *not* require an update?"
+                    case CollectionChangeAuthority.Settle:      // The IME text has settled and deferred relitigation of
+                                                                // 'qmatch' and 'match' attributes is proceeding.
+                    case CollectionChangeAuthority.Predicate:   // A filter has been toggled and immediate relitigation of
+                                                                // 'pmatch' and 'match' attributes is proceeding.
+                        switch (ProjectionTopology)
+                        {
+                            case NetProjectionTopology.None:
+                                // N O O P
+                                // There is no projection to update.
+                                break;
+                            case NetProjectionTopology.ObservableOnly:    // Maintain internal canon but do not push internal changes out to projection.
+                                break;
+                            case NetProjectionTopology.AllowDirectChanges:
+                                if (ObservableNetProjection is null)
+                                {
+                                    this.ThrowHard<NullReferenceException>($"Expecting not null is baked into {ProjectionTopology.ToFullKey()}");
+                                }
+                                else
+                                {
+                                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                    // - Subclass has OPTED-IN to direct changes from this model.
+                                    // - Subclass is listening for changes, and not pushing them.
+                                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                    using (BeginSuppress())
+                                    {
+                                        ObservableNetProjection.Apply(eUnk);
+                                    }
+                                }
+                                break;
+                            case NetProjectionTopology.Routed:
+                                ModelSettled?.Invoke(this, eUnk);
+                                break;
+                            default:
+                                ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
+                                break;
+                        }
+                        break;
+                    default:
+                        this.ThrowHard<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
+                        break;
                 }
-                else
+                void localApplyDirectChanges()
                 {
                     if (ObservableNetProjection is not IList projection)
                     {
@@ -770,192 +830,12 @@ SELECT * FROM items WHERE
                     }
                     else
                     {
-                        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                        // Subclass has OPTED-IN to direct changes.
-                        //
-                        // Every change made here will 'attempt to' raise events on that
-                        // object, but we expect that collection object to apply its own
-                        // suppression and instead raise eBCL when the churn has finished
-                        // in response to the ModelUpdated that is about to be raised.
-                        //
-                        // TO THAT END this operation is wrapped in an authority whereby
-                        // the ONP can tell this is taking place from the back end.
-                        //
-                        // [Careful]
-                        // Inspecting the sender of those events is *not* an effective
-                        // way in in which to determine authority because *that* collection
-                        // raises *those* events, i.e., is the sender of them.
-                        Debug.Assert(
-                            Equals(Authority, CollectionChangeAuthority.Settle),
-                            "Expecting this operation takes place under Model authority."
-                        );
-                        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-                        switch (eBCL.Action)
-                        {
-                            case NotifyCollectionChangedAction.Add: localAdd(); break;
-                            case NotifyCollectionChangedAction.Move: localMove(); break;
-                            case NotifyCollectionChangedAction.Remove: localRemove(); break;
-                            case NotifyCollectionChangedAction.Replace: localReplace(); break;
-                            case NotifyCollectionChangedAction.Reset: localReset(); break;
-                            default:
-                                this.ThrowFramework<NotSupportedException>($"The {eBCL.Action.ToFullKey()} case is not supported.");
-                                break;
-                        }
                     }
-                    ModelChanged?.Invoke(this, eBCL);
-
-                    #region L o c a l F x
-
-                    void localAdd()
-                    {
-                        if (eBCL.NewItems is null)
-                        {
-                            ThrowHard<NullReferenceException>($"{nameof(eBCL.NewItems)} cannot be null.");
-                        }
-                        else
-                        {
-                            var index =
-                                eBCL.NewStartingIndex == -1
-                                ? projection.Count
-                                : eBCL.NewStartingIndex;
-                            foreach (var item in eBCL.NewItems)
-                            {
-                                projection.Insert(index++, item);
-                            }
-                        }
-                    }
-
-                    void localMove()
-                    {
-                        if (eBCL.NewItems is null)
-                        {
-                            ThrowHard<NullReferenceException>($"{nameof(eBCL.NewItems)} cannot be null.");
-                        }
-                        else
-                        {
-                            if (eBCL.NewItems.Count != 1)
-                            {
-                                ThrowHard<NotSupportedException>(
-                                    $"In {nameof(OnModelChanged)} Multi item moves are not supported. Override this method for full control.");
-                                return;
-                            }
-                            int oldIndex = eBCL.OldStartingIndex;
-                            int newIndex = eBCL.NewStartingIndex;
-
-                            if (oldIndex < 0 || newIndex < 0)
-                            {
-                                this.ThrowFramework<InvalidOperationException>(
-                                    $"Expecting valid indices for {NotifyCollectionChangedAction.Move.ToFullKey()}.");
-                            }
-
-                            // Capture items first to preserve ordering for multi-item moves
-                            var moved = new List<object?>();
-                            foreach (var _ in eBCL.NewItems)
-                            {
-                                moved.Add(projection[oldIndex]);
-                                projection.RemoveAt(oldIndex);
-                            }
-
-                            int insertIndex = newIndex;
-                            foreach (var item in moved)
-                            {
-                                projection.Insert(insertIndex++, item);
-                            }
-                        }
-                    }
-
-                    void localRemove()
-                    {
-                        if (eBCL.OldItems is null)
-                        {
-                            ThrowHard<NullReferenceException>($"{nameof(eBCL.OldItems)} cannot be null.");
-                        }
-                        else
-                        {
-                            if (eBCL.OldStartingIndex >= 0)
-                            {
-                                int index = eBCL.OldStartingIndex;
-
-                                foreach (var _ in eBCL.OldItems)
-                                {
-                                    projection.RemoveAt(index);
-                                }
-                            }
-                            else
-                            {
-                                foreach (var item in eBCL.OldItems)
-                                {
-                                    projection.Remove(item);
-                                }
-                            }
-                        }
-                    }
-
-                    void localReplace()
-                    {
-                        switch (eModel.Reason)
-                        {
-                            case NotifyCollectionChangeReason.QueryResult:
-                            case NotifyCollectionChangeReason.ApplyFilter:
-                            case NotifyCollectionChangeReason.RemoveFilter:
-                                // Avoid Clear() here. Some observers treat Clear as a semantic reset
-                                // (e.g., selection or virtualization state) rather than a sequence of
-                                // removes. Replaying the individual Remove/Add operations preserves
-                                // the original mutation semantics and avoids surprising state resets.
-                                if (eBCL.OldItems is not null)
-                                {
-                                    foreach (var item in eBCL.OldItems)
-                                    {
-                                        projection.Remove(item);
-                                    }
-                                }
-                                if (eBCL.NewItems is not null)
-                                {
-                                    foreach (var item in eBCL.NewItems)
-                                    {
-                                        projection.Add(item);
-                                    }
-                                }
-                                break;
-                            default:
-                                // Normal BCL Replace
-                                if (eBCL.OldItems is not null &&
-                                    eBCL.NewItems is not null &&
-                                    eBCL.OldStartingIndex >= 0)
-                                {
-                                    int index = eBCL.OldStartingIndex;
-
-                                    foreach (var item in eBCL.NewItems)
-                                    {
-                                        projection[index++] = item;
-                                    }
-                                }
-                                break;
-                        }
-                    }
-                    void localReset()
-                    {
-                        projection.Clear();
-
-                        // Typically this eBCL repesents an "emptying of the collection"
-                        // but this is not a guarantee. If the event offers new items,
-                        // take this opportunity to copy them.
-                        if (eBCL.NewItems is not null)
-                        {
-                            Debug.Fail($@"IFD ADVISORY - First Time.");
-                            foreach (var item in eBCL.NewItems)
-                            {
-                                projection.Add(item);
-                            }
-                        }
-                    }
-                    #endregion L o c a l F x
                 }
             }
         }
 
-        public event NotifyCollectionChangedEventHandler? ModelChanged;
+        public event EventHandler? ModelSettled;
 
         /// <summary>
         /// Determines whether MDC is allowed to puppeteer the projection directly.
@@ -1058,7 +938,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginBatch())
+                        using (BeginSuppress())
                         {
                             foreach (var newItem in newItems)
                             {
@@ -1073,56 +953,8 @@ SELECT * FROM items WHERE
                     nameof(LoadCanon).ThrowHard<InvalidOperationException>("Failed authority claim.");
                 }
             }
-#if false
-            if (Equals(Authority, CollectionChangeAuthority.Commit))
-            {
-                using (var eventHost = Model.SetSelfRemovingXBoundAttribute(
-                    StdMarkdownAttribute.triage,
-                    Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.QueryResult, recordset, ReplaceItemsEventingOptions)))
-                {
-#if false && CHECK_FAST_TRACK
-                    if(Equals(FsmReservedState.FastTrack, ExecState(StdFSMState.DetectFastTrack, recordset)))
-                    {
-                        Debug.Fail($@"ADVISORY - First Time.");
-                    }
-#endif
-                    ExecState(StdFSMState.ResetOrCanonizeFQBDForEpoch, (IList)recordset);
-                    var diff = CanonicalSupersetProtected.Diff(recordset.Cast<T>().ToList());
-                    CanonicalSupersetProtected.Apply(diff);
-                    // ExecState(StdFSMState.ResetOrCanonizeModelForEpoch, recordset);
-
-                    ExecState(StdFSMState.UpdateStatesForEpoch, recordset);
-
-
-                    if (eventHost.Tag is ReplaceItemsEventingContext context)
-                    {
-                        if (context.Structural is NotifyCollectionChangedEventArgs eStructural)
-                        {
-                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
-                            {
-                                OnModelChanged(eStructural);
-                            }
-                        }
-                        if (context.Reset is NotifyCollectionChangedEventArgs eReset)
-                        {
-                            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
-                            {
-                                OnModelChanged(eReset);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        this.ThrowFramework<NullReferenceException>($"Expecting {nameof(ReplaceItemsEventingContext)}");
-                    }
-                }
-            }
-            else
-            {
-                Debug.Fail($@"ADVISORY - First Time UNEXPECTED failed to gain authority.");
-            }
-#endif
         }
+
         public virtual async Task LoadCanonAsync(IEnumerable? recordset)
         {
             IList oldItems = null!, newItems = null!;
@@ -1147,7 +979,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginBatch())
+                        using (BeginSuppress())
                         {
                             await Task.Run(() =>
                             {
@@ -1350,12 +1182,31 @@ SELECT * FROM items WHERE
 
         #region A U T H O R I T Y
         public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority)
-            => CollectionChangeAuthorityProvider.BeginAuthority(authority);
+        {
+            switch (authority)
+            {
+                case CollectionChangeAuthority.Settle:
+                case CollectionChangeAuthority.Predicate:
+                    ICollection snapshot;
+                    if(ObservableNetProjection is null)
+                    {
+                        // Diff compares against the iteration prior to changes.
+                        snapshot = Read.Cast<T>().ToArray();
+                    }
+                    else
+                    {
+                        // Diff compares against the ONP.
+                        snapshot = ObservableNetProjection.Cast<T>().ToArray();
+                    }            
+                    return CollectionChangeAuthorityProvider.BeginAuthority(authority, snapshot);
+                default:
+                    return CollectionChangeAuthorityProvider.BeginAuthority(authority);
+            }
+        }
 
-        public CollectionChangeAuthority Authority =>
-            (CollectionChangeAuthority)CollectionChangeAuthorityProvider.Authority;
+        public CollectionChangeAuthority Authority => CollectionChangeAuthorityProvider.Authority;
 
-        AuthorityEpochProvider CollectionChangeAuthorityProvider { get; } = new();
+        AuthorityEpochProvider<CollectionChangeAuthority> CollectionChangeAuthorityProvider { get; } = new();
         #endregion A U T H O R I T Y
 
         /// <summary>
@@ -1389,7 +1240,16 @@ SELECT * FROM items WHERE
             {
                 if(_predicateMatchSubset is null)
                 {
-                    _predicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetProtected);
+                    if(PredicateMatchSubsetProtected is IList<T> listT)
+                    {
+                        _predicateMatchSubset = new ReadOnlyCollection<T>(listT);
+                    }
+                    else
+                    {
+                        this.ThrowFramework<InvalidOperationException>(
+                            $"Expecting {nameof(PredicateMatchSubsetProtected)} is initialized using {nameof(ObservableCollection<T>)}");
+                        _predicateMatchSubset = new List<T>();
+                    }
                 }
                 return _predicateMatchSubset;
             }
@@ -1397,7 +1257,7 @@ SELECT * FROM items WHERE
         private IReadOnlyList<T> _predicateMatchSubset = null!;
         IList ITopology.PredicateMatchSubset => (IList)PredicateMatchSubset;
 
-        public IList<T> PredicateMatchSubsetProtected
+        public IList PredicateMatchSubsetProtected
         {
             get
             {
@@ -1426,7 +1286,7 @@ SELECT * FROM items WHERE
                 return _predicateMatchSubsetProtected;
             }
         }
-        IList<T>? _predicateMatchSubsetProtected = null;
+        IList? _predicateMatchSubsetProtected = null;
 
         ObservableCollection<T>? IModeledMarkdownContext<T>.ObservableNetProjection =>
             (ObservableCollection<T>?)ObservableNetProjection;

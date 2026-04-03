@@ -92,7 +92,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                 }
             }
         }
-
         #endregion G U I D
 
         #region U T C
@@ -152,5 +151,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
             }
         }
         #endregion U T C
+
+        public static void ResetEpoch(this IDisposable @this)
+        {
+            if(@this is DisposableHost.DisposableToken token)
+            {
+                _guidCurrent = GuidReset;
+                _utcCurrent = UtcReset;
+            }
+            else
+            {
+                @this.ThrowHard<InvalidCastException>("Receiver must be a DisposableHost.DisposableToken}");
+            }
+        }
     }
 }

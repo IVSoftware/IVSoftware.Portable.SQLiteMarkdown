@@ -1,5 +1,5 @@
 ﻿using IVSoftware.Portable.SQLiteMarkdown.Collections;
-using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using IVSoftware.Portable.Collections.Preview;
 using System;
 using System.Collections;
 using System.Collections.Specialized;
@@ -19,7 +19,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
         /// <summary>
         /// These items (old and new) represent a new canonical recordset.
         /// </summary>
-        QueryResult = NotifyCollectionChangeReason.QueryResult,
+        QueryResult = 0x1000,
 
         /// <summary>
         /// These items (old and new) represent a narrower subset.
@@ -33,15 +33,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
     }
 
     [Obsolete("Backward compatibility only. Use MarkdownContext.ModelSettledEventArgs for full capability.")]
-    public class NotifyQueryFilterCollectionChangedEventArgs : ModelSettledEventArgs
+    public class NotifyQueryFilterCollectionChangedEventArgs
     {
         public NotifyQueryFilterCollectionChangedEventArgs(NotifyQueryFilterCollectionChangedAction action, IList changedItems)
-            : base(
-                  reason: (NotifyCollectionChangeReason)((int)action & ~0x7),
-                  action: (NotifyCollectionChangedAction)((int)action & 0x07),
-                  changedItems: changedItems)
-        { }
-        public new NotifyQueryFilterCollectionChangedAction Action
-            => (NotifyQueryFilterCollectionChangedAction)base.Action;
+        {
+            Action = action;
+            Reason = ((int)action & ~0x7);
+        }
+        public NotifyQueryFilterCollectionChangedAction Action { get; }
+
+        public int Reason { get; }
+        internal NotifyCollectionChangeReason ReasonInternal => (NotifyCollectionChangeReason)Reason;
     }
 }

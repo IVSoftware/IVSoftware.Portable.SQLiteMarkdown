@@ -15,7 +15,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             ? PredicateMatchCount
             : CanonicalCount;
 
-        IList<T> Read =>
+        IList Read =>
             FilteringState == FilteringState.Active
             ? PredicateMatchSubsetProtected
             : CanonicalSupersetProtected;
@@ -24,7 +24,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [Indexer]
         public T this[int index]
         {
-            get => Read[index];
+            get => (T)Read[index];
             set
             {
                 if (value is T valueT)
@@ -164,7 +164,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            if (array is null) throw new ArgumentNullException(nameof(array));
+            if (arrayIndex < 0) throw new ArgumentOutOfRangeException(nameof(arrayIndex));
+
+            var source = Read;
+            if (array.Length - arrayIndex < source.Count)
+                throw new ArgumentException("Destination array is not large enough.");
+
+            for (int i = 0; i < source.Count; i++)
+            {
+                array[arrayIndex + i] = (T)source[i]!;
+            }
         }
 
         public int IndexOf(T item) => Read.IndexOf(item);

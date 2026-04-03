@@ -1,16 +1,11 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.SQLiteMarkdown.Collections;
-using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
+using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
 using SQLite;
+using System.CodeDom;
 using System.Collections;
-using System.Collections.Specialized;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
-using static System.Windows.Forms.Design.AxImporter;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
@@ -18,6 +13,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     public enum PopulateOptions
     {
         RandomChecks = 0x1,
+        DetectIRangeable = 0x2,
     }
     public static partial class SQLiteMarkdownTestExtensions
     {
@@ -132,26 +128,39 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 @this.Clear();
             }
 
-            for (int i = 1; i <= count; i++)
+            if (options?.HasFlag(PopulateOptions.DetectIRangeable) is true && @this is IRangeable rangeable)
             {
-                Add(
-                    description: $"Item{i:d2}", 
-                    tags: string.Empty,
-                    isChecked: options?.HasFlag(PopulateOptions.RandomChecks) == true && rando.Next(2) == 1);
-            }
+                // Safe (not circular) because this object is not IRangeable.
+                IList<TItem> stagedForTest = new List<TItem>().PopulateForDemo(count);
+#if DEBUG
+                var cMe = JsonConvert.SerializeObject(stagedForTest, Formatting.Indented);
+#endif
 
-            void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
+                rangeable.AddRange(stagedForTest);
+            }
+            else
             {
-                var instance = new TItem();
-                typeof(TItem).GetProperty("Description")?.SetValue(instance, description);
-                typeof(TItem).GetProperty("Tags")?.SetValue(instance, tags);
-                typeof(TItem).GetProperty("IsChecked")?.SetValue(instance, isChecked);
-                if (keywords != null)
+                for (int i = 1; i <= count; i++)
                 {
-                    var json = JsonConvert.SerializeObject(keywords);
-                    typeof(TItem).GetProperty("Keywords")?.SetValue(instance, json);
+                    Add(
+                        description: $"Item{i:d2}",
+                        tags: string.Empty,
+                        isChecked: options?.HasFlag(PopulateOptions.RandomChecks) == true && rando.Next(2) == 1);
                 }
-                @this.Add(instance);
+
+                void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
+                {
+                    var instance = new TItem();
+                    typeof(TItem).GetProperty("Description")?.SetValue(instance, description);
+                    typeof(TItem).GetProperty("Tags")?.SetValue(instance, tags);
+                    typeof(TItem).GetProperty("IsChecked")?.SetValue(instance, isChecked);
+                    if (keywords != null)
+                    {
+                        var json = JsonConvert.SerializeObject(keywords);
+                        typeof(TItem).GetProperty("Keywords")?.SetValue(instance, json);
+                    }
+                    @this.Add(instance);
+                }
             }
             return @this;
         }

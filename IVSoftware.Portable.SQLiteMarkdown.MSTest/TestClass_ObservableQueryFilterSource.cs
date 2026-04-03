@@ -1,3 +1,4 @@
+using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
@@ -20,7 +21,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using System.Transactions;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
@@ -1496,7 +1496,7 @@ NetProjection.Reset   ModelSettledEventArgs           "
                     { }
                     expected = @" 
 NetProjection.Reset   NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems=12 NewIndex= 0 NotifyCollectionChangedEventArgs           "
+NetProjection.Add     NewItems=12 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -3220,7 +3220,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 { }
                 expected = @" 
 NetProjection.Reset   NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems=12 NewIndex= 0 NotifyCollectionChangedEventArgs           "
+NetProjection.Add     NewItems=12 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
                 ;
 
                 Assert.AreEqual(
@@ -3515,6 +3515,49 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 items.InputText += "a";
                 await items;
 
+                actual = items.ToString(ReportFormat.ModelWithPreview);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" qmatch=""True"" match=""True"" preview=""Black Cat "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" preview=""Orange Fox"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""White Rabb"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" preview=""Gray Wolf "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" preview=""Golden Lio"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" preview=""Brown Bear"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" preview=""Black Pant"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" preview=""Elephant  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" preview=""Giraffe   "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" preview=""Kangaroo  "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" preview=""Turtle    "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" preview=""Should NOT"" />
+</model>"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting that THE FIRST ITEM is a match. This is IMPORTANT to explain the result below."
+                );
+
+                // ☆☆☆☆☆
+                // Extension : Model Model (with active filter) from the OUTSIDE LOOKING IN.
+                // ☆☆☆☆☆
+                actual = items.ToString(out XElement _);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model modeling=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
+</model>"
+                ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting that EXTENSION USES THE ROUTED ITERATOR."
+                );
+
                 actual = items.StateReport();
                 actual.ToClipboardExpected();
                 { }
@@ -3522,8 +3565,135 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
 [IME Len: 9, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                 ;
 
+                Assert.IsFalse(items.RouteToFullRecordset);
+                Assert.AreEqual(
+                    1,
+                    items.Count,
+                    "Expecting FILTERED.");
+
                 // And now, a BUGIRL.
                 // This is supposed to show all the items once again.
+                builder.Clear();
+                items.Clear(false);
+
+                // The BUGIRL is that there was no Reset or Change event.
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+
+                // IN THE PROCESS OF FIXING THAT BUG, WE ACCIDENTALLY PROVED SOMETHING COOL
+                // - The expectation was for a Reset.
+                // - IT WILL ALMOST ALWAYS BE A RESET.
+                // - But just as a rando thing, IN THIS CORNER CASE the Diff turned out to be BCL compatible.
+                // - The reason: The single PM is at index ZERO.
+                // And the thing is, it worked exactly how we designed it.
+                expected = @" 
+NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
+                ;
+
+                // ☆☆☆☆☆
+                // Extension : Model (with cleared filter) from the OUTSIDE LOOKING IN.
+                // ☆☆☆☆☆
+                actual = items.ToString(out XElement _);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model modeling=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" preview=""Orange Fox"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""White Rabb"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" preview=""Gray Wolf "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" preview=""Golden Lio"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" preview=""Brown Bear"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" preview=""Black Pant"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" preview=""Elephant  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" preview=""Giraffe   "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" preview=""Kangaroo  "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" preview=""Turtle    "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" preview=""Should NOT"" />
+</model>"
+                ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting that EXTENSION USES THE ROUTED ITERATOR."
+                );
+
+                actual = items.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+                ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting full list shown after IME CLEAR but still PMC: 1 because there's no new apply filter."
+                );
+
+                Assert.IsTrue(items.RouteToFullRecordset);
+                Assert.AreEqual(12, items.Count, "Expecting routing to track via the internal Read property.");
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting ADD." +
+                    "- This is because the PMC item is the first on the list." +
+                    " ∴ when we take a DIFF, the delta is contiguous IN THIS CASE."
+                );
+
+                // Now force an change event that is not contiguous.
+                items.InputText = "brown&bear";
+                await items;
+
+
+                actual = items.ToString(ReportFormat.ModelWithPreview);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" preview=""Orange Fox"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""White Rabb"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" preview=""Gray Wolf "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" preview=""Golden Lio"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" qmatch=""True"" match=""True"" preview=""Brown Bear"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" preview=""Black Pant"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" preview=""Elephant  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" preview=""Giraffe   "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" preview=""Kangaroo  "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" preview=""Turtle    "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" preview=""Should NOT"" />
+</model>"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting ONE MATCH that is NOT THE FIRST ITEM."
+                );
+
+                actual = items.ToString(ReportFormat.StateReport);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 10, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+                ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting standard one-item result."
+                );
+
+                Assert.IsFalse(items.RouteToFullRecordset);
+                Assert.AreEqual(
+                    1,
+                    items.Count,
+                    "Expecting FILTERED.");
+
+                // So, back to that BUGIRL that was mentioned:
+                // - Check for event
+                // - Expect it to be discontiguous OR for it to arrive as a reset.
                 builder.Clear();
                 items.Clear(false);
 
@@ -3533,17 +3703,21 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 expected = @" 
 [IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
-
-                Assert.IsTrue(items.RouteToFullRecordset);
-                Assert.AreEqual(12, items.Count, "Expecting routing to trach via the internal Read property.");
-
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Expecting full list shown after IME CLEAR but still PMC: 1 because there's no new apply filter."
                 );
 
-                // The BUGIRL is that this reset event was missing.
+                Assert.IsTrue(items.RouteToFullRecordset);
+                Assert.AreEqual(
+                    12,
+                    items.Count,
+                    "Expecting FULL.");
+
+                // Once again, the BUGIRL is that there was no Reset or Change event.
+                // - This time it *will* be a Reset for the CollectionChanged.
+                // - But we expect to see a playlist in the CollectionChanging.
                 actual = string.Join(Environment.NewLine, builder);
                 actual.ToClipboardExpected();
                 { }
@@ -3554,8 +3728,26 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting RESET event."
+                    "Expecting RESET (because it's a mixed message)."
                 );
+
+                actual = items.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+                ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting full list shown after IME CLEAR but still PMC: 1 because there's no new apply filter."
+                );
+
+                Assert.IsTrue(items.RouteToFullRecordset);
+                Assert.AreEqual(
+                    12, 
+                    items.Count,
+                    "Expecting FULL.");
             }
             #endregion S U B T E S T S
 
