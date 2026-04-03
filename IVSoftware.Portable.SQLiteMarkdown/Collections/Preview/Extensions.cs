@@ -359,49 +359,38 @@ namespace IVSoftware.Portable.Collections.Preview
                         $"The {eUnk.GetType().Name} case is not supported.");
                 return;
             }
-
-            if (newItems?.Count > 0 && newItems[0] is EventArgs)
+            // ROUTE TO LOCAL FUNCTIONS
+            switch (action)
             {
-                foreach (var step in newItems.OfType<EventArgs>())
-                {
-                    list.Apply(step);
-                }
-            }
-            else
-            {
-                // ROUTE TO LOCAL FUNCTIONS
-                switch (action)
-                {
-                    case NotifyCollectionChangeAction.Add:
-                        var isBclCompatible =
-                            (eUnk as NotifyCollectionChangingEventArgs)?.IsBclCompatible != false;
-                        if (isBclCompatible)
-                        {
-                            localCompatibleAddToList();
-                        }
-                        else
-                        {
-                            localExecutePlaylist();
-                        }
-                        break;
-                    case NotifyCollectionChangeAction.Remove: 
-                        localRemoveFromList(); 
-                        break;
-                    case NotifyCollectionChangeAction.Replace: 
-                        localReplaceInList();
-                        break;
-                    case NotifyCollectionChangeAction.Move:
-                        localMoveInList(); 
-                        break;
-                    case NotifyCollectionChangeAction.Reset:
-                        localResetList();
-                        break;
-                    default:
-                        nameof(Extensions)
-                            .ThrowFramework<NotSupportedException>(
-                            $"The {eUnk.GetType().Name} case is not supported.");
-                        break;
-                }
+                case NotifyCollectionChangeAction.Add:
+                    var isBclCompatible =
+                        (eUnk as NotifyCollectionChangingEventArgs)?.IsBclCompatible != false;
+                    if (isBclCompatible)
+                    {
+                        localCompatibleAddToList();
+                    }
+                    else
+                    {
+                        localExecutePlaylist();
+                    }
+                    break;
+                case NotifyCollectionChangeAction.Remove:
+                    localRemoveFromList();
+                    break;
+                case NotifyCollectionChangeAction.Replace:
+                    localReplaceInList();
+                    break;
+                case NotifyCollectionChangeAction.Move:
+                    localMoveInList();
+                    break;
+                case NotifyCollectionChangeAction.Reset:
+                    localResetList();
+                    break;
+                default:
+                    nameof(Extensions)
+                        .ThrowFramework<NotSupportedException>(
+                        $"The {eUnk.GetType().Name} case is not supported.");
+                    break;
             }
 
             #region L o c a l F x
@@ -509,9 +498,22 @@ namespace IVSoftware.Portable.Collections.Preview
 
             void localExecutePlaylist()
             {
-                foreach (NotifyCollectionChangedEventArgs eBCL in newItems)
+                foreach (var eUnk in newItems ?? Array.Empty<EventArgs>())
                 {
-
+                    NotifyCollectionChangedEventArgs eBcl; 
+                    switch (eUnk)
+                    {
+                        case NotifyCollectionChangingEventArgs ePre:
+                            eBcl = ePre;
+                            break;
+                        case NotifyCollectionChangedEventArgs ePost:
+                            eBcl = ePost;
+                            break;
+                        default:
+                            list.ThrowFramework<NotSupportedException>($"The {eUnk.GetType().Name} case is not supported.");
+                            return;
+                    } 
+                    list.Apply(eBcl);
                 }
             }
             #endregion L o c a l F x

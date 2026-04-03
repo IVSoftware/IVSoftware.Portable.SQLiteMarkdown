@@ -1,14 +1,26 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-
+using static IVSoftware.Portable.Collections.Preview.Strings;
 
 namespace IVSoftware.Portable.Collections.Preview
 {
+    internal static class Strings
+    {
+        public const string CONFIGURATION_INVALID_MESSAGE =
+            $"This configuration is not permitted as specified: Check related properties and ensure the combination is valid.";
+        public static string SCOPE_POLICY_VIOLATION_MESSAGE(NotifyCollectionChangeScope scope)
+        {
+            return
+                $"This operation is not permitted: {nameof(NotifyCollectionChangeScope)}={scope.ToFullKey()}," +
+                $"Always check Scope before attempting to modify the change proposal.";
+        }
+    }
     /// <summary>
     /// Represents an opt-in mutable, pre-commit collection change proposal.
     /// </summary>
@@ -73,8 +85,8 @@ namespace IVSoftware.Portable.Collections.Preview
             Reason = reason;
             Scope = scope;
 
-            NewItems = new MutationPreviewCollection(newItems, scope, SCOPE_POLICY_VIOLATION_MESSAGE);
-            OldItems = new MutationPreviewCollection(oldItems, scope, SCOPE_POLICY_VIOLATION_MESSAGE);
+            NewItems = new MutationPreviewCollection(newItems, scope);
+            OldItems = new MutationPreviewCollection(oldItems, scope);
 
             ((MutationPreviewCollection)NewItems).Modified += (sender, e) => IsModified = true;
             ((MutationPreviewCollection)OldItems).Modified += (sender, e) => IsModified = true;
@@ -267,7 +279,7 @@ namespace IVSoftware.Portable.Collections.Preview
                     }
                     else
                     {
-                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE(Scope));
                     }
                 }
             }
@@ -288,7 +300,7 @@ namespace IVSoftware.Portable.Collections.Preview
                     }
                     else
                     {
-                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE(Scope));
                     }
                 }
             }
@@ -311,21 +323,12 @@ namespace IVSoftware.Portable.Collections.Preview
                     }
                     else
                     {
-                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                        this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE(Scope));
                     }
                 }
             }
         }
         public bool IsModified { get; private set; }
-
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        private string SCOPE_POLICY_VIOLATION_MESSAGE =>    
-            $"This operation is not permitted: {nameof(NotifyCollectionChangeScope)}={Scope.ToFullKey()}," +
-            $"Always check Scope before attempting to modify the change proposal.";
-
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        private string CONFIGURATION_INVALID_MESSAGE =>
-            $"This configuration is not permitted as specified: Check related properties and ensure the combination is valid.";
 
         /// <summary>
         /// Provides a scope-enforced preview surface for collection mutation proposals.
@@ -350,16 +353,14 @@ namespace IVSoftware.Portable.Collections.Preview
             : ObservableCollection<object>
             , IList
         {
-            public MutationPreviewCollection(IList? items, NotifyCollectionChangeScope scope, string policyViolationMessage)
+            public MutationPreviewCollection(IList? items, NotifyCollectionChangeScope scope)
             {
-                SCOPE_POLICY_VIOLATION_MESSAGE = policyViolationMessage;
                 foreach (var item in items ?? Array.Empty<object>())
                 {
                     Add(item);
                 }
                 Scope = scope;
             }
-            private readonly string SCOPE_POLICY_VIOLATION_MESSAGE;
 
             /// <summary>
             /// Allows full control in CTor; the requested scope is set afterward.
@@ -376,7 +377,7 @@ namespace IVSoftware.Portable.Collections.Preview
                 }
                 else
                 {
-                    this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE);
+                    this.ThrowHard<InvalidOperationException>(SCOPE_POLICY_VIOLATION_MESSAGE(Scope));
                     return false;
                 }
             }
