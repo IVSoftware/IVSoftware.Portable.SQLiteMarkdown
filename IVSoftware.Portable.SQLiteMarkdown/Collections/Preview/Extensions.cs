@@ -498,22 +498,56 @@ namespace IVSoftware.Portable.Collections.Preview
 
             void localExecutePlaylist()
             {
+                int 
+                    removeOffset = 0,
+                    removeThreshold = int.MaxValue;
                 foreach (var eUnk in newItems ?? Array.Empty<EventArgs>())
                 {
-                    NotifyCollectionChangedEventArgs eBcl; 
+                    NotifyCollectionChangingEventArgs eApply; 
                     switch (eUnk)
                     {
                         case NotifyCollectionChangingEventArgs ePre:
-                            eBcl = ePre;
+                            eApply = ePre;
                             break;
                         case NotifyCollectionChangedEventArgs ePost:
-                            eBcl = ePost;
+                            eApply = ePost;
                             break;
                         default:
                             list.ThrowFramework<NotSupportedException>($"The {eUnk.GetType().Name} case is not supported.");
                             return;
-                    } 
-                    list.Apply(eBcl);
+                    }
+                    if( removeOffset != 0
+                        && eApply.NewStartingIndex != -1 
+                        && eApply.NewStartingIndex > removeThreshold)
+                    {
+                        eApply.NewStartingIndex -= removeOffset;
+                        if(eApply.NewStartingIndex < 0)
+                        {
+                            list.ThrowFramework<IndexOutOfRangeException>($"{nameof(eApply.NewStartingIndex)} cannot be negative.");
+                            return;
+                        }
+                    }
+                    if( removeOffset != 0
+                        && eApply.OldStartingIndex != -1 
+                        && eApply.OldStartingIndex > removeThreshold)
+                    {
+                        eApply.OldStartingIndex -= removeOffset;
+                        if (eApply.OldStartingIndex < 0)
+                        {
+                            list.ThrowFramework<IndexOutOfRangeException>($"{nameof(eApply.OldStartingIndex)} cannot be negative.");
+                            return;
+                        }
+                    }
+                    list.Apply(eApply);
+                    if(eApply.Action == NotifyCollectionChangeAction.Remove)
+                    {
+                        if( eApply.OldStartingIndex != -1
+                            && eApply.OldStartingIndex < removeThreshold)
+                        {
+                            removeThreshold = eApply.OldStartingIndex;
+                        }
+                        removeOffset++;
+                    }
                 }
             }
             #endregion L o c a l F x
