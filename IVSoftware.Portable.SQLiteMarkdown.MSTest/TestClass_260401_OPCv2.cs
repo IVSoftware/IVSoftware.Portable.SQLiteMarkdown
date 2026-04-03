@@ -1,11 +1,7 @@
 ﻿using IVSoftware.Portable.Collections.Preview;
-using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
@@ -472,6 +468,4 @@ NetProjection.Replace NewItems= 5 OldItems= 5 NewStartingIndex= 0 OldStartingInd
         }
         #endregion S U B T E S T S
     }
-
-
 }

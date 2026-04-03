@@ -11,12 +11,12 @@ namespace IVSoftware.Portable.Collections.Preview
         : SuppressibleObservableCollection<T>
         , IRangeable
     {
-
         public static implicit operator XElement(ObservableRangeCollection<T> @this)
         {
             @this.ToString(out XElement model);
             return model;
         }
+
         public void AddRange(IEnumerable items)
         {
             using (BeginSuppress())
@@ -40,12 +40,15 @@ namespace IVSoftware.Portable.Collections.Preview
                 }
             }
         }
+
         public int AddRangeDistinct(IEnumerable items)
         {
             XElement model = this;
 
             if (typeof(T).GetModeledPathInfo().GetPath is not GetPathDlgt dlgt)
             {
+                this.ThrowHard<InvalidOperationException>(
+                    $"{nameof(GetPathDlgt)} is reqired to form path for distinct.");
                 return 0;
             }
             else
@@ -91,7 +94,25 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public void InsertRange(int startingIndex, IEnumerable items)
         {
-            throw new NotImplementedException();
+            using (BeginSuppress())
+            {
+                foreach (var item in items)
+                {
+                    if (item is T itemT)
+                    {
+                        // [Careful]
+                        // Use Insert.
+                        // We can't use Add because the collection
+                        // doesn't actually change until the end.
+                        InsertItem(startingIndex++, itemT);
+                    }
+                    else
+                    {
+                        item.ThrowHard<InvalidCastException>($"All range items must be {typeof(T).Name}");
+                        return;
+                    }
+                }
+            }
         }
 
         public int RemoveMultiple(IEnumerable items)

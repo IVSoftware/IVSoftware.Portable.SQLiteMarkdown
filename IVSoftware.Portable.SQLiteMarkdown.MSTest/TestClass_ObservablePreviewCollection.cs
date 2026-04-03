@@ -15,6 +15,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 [TestClass]
 public class TestClass_ObservablePreviewCollection
 {
+    /// <summary>
+    /// Prototype of an index gap detector for Diff.
+    /// </summary>
     [TestMethod]
     public void Test_GapDetector()
     {
@@ -82,6 +85,10 @@ public class TestClass_ObservablePreviewCollection
         Assert.IsFalse(isContiguous);
     }
 
+
+    /// <summary>
+    /// Instantiates an ObservablePreviewCollection{T} and exercises it without attaching MDC.
+    /// </summary>
     [TestMethod, DoNotParallelize]
     public void Test_PreviewOnly()
     {
@@ -564,6 +571,10 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingInd
         #endregion S U B T E S T S
     }
 
+
+    /// <summary>
+    /// Instantiates an ObservableRangeCollection{T} and exercises it without attaching MDC.
+    /// </summary>
     [TestMethod]
     public void Test_BasicIRangeable()
     {
@@ -587,6 +598,7 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingInd
 
         subtest_AddRange();
         subtest_AddRangeDistinct();
+        subtest_InsertRange();
 
         #region S U B T E S T S
         void subtest_AddRange()
@@ -624,6 +636,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
                 "Expecting a single aggregate collection change."
             );
         }
+
         void subtest_AddRangeDistinct()
         {
             actual = opc.ToString(out XElement _);
@@ -658,18 +671,91 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
 
             actual = opc.ToString(out XElement _);
             actual.ToClipboardExpected();
-            { } // <- FIRST TIME ONLY: Adjust the message.
-            actual.ToClipboardAssert("Expecting result to match.");
             { }
+            expected = @" 
+<model modeling=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""5"" preview=""Distinct01"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""6"" preview=""Distinct02"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting 4 items skipped and 2 items added.."
+            );
+        }
+
+        void subtest_InsertRange()
+        {
+            actual = opc.ToString(out XElement _);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model modeling=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""5"" preview=""Distinct01"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""6"" preview=""Distinct02"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Verify carry over from previous subtest."
+            );
+
+            opc.InsertRange(2, new[]
+            {
+                eph.AddDynamic("Insert01"),
+                eph.AddDynamic("Insert02"),
+                eph.AddDynamic("Insert03"),
+                eph.AddDynamic("Insert04"),
+                eph.AddDynamic("Insert05"),
+            });
+
+            actual = opc.ToString(out XElement _);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model modeling=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert01  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" order=""3"" preview=""Insert02  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""4"" preview=""Insert03  "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""5"" preview=""Insert04  "" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""6"" preview=""Insert05  "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""7"" preview=""Item03    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""8"" preview=""Item04    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""9"" preview=""Item05    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""10"" preview=""Distinct01"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""11"" preview=""Distinct02"" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting 4 items skipped and 2 items added.."
+            );
         }
         #endregion S U B T E S T S
     }
 
+
     /// <summary>
-    /// Modeled OPC
+    /// Instantiates a Modeled OPC that inherits ObservableCollection and binds itself to MMDC.
     /// </summary>
     [TestMethod, DoNotParallelize]
-    public void Test_BasicMOPC()
+    public void Test_BasicModeledOPC()
     {
         string actual, expected;
         using var te = this.TestableEpoch();
@@ -794,18 +880,8 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
         }
         #endregion S U B T E S T S
     }
+
     #region L o c a l C l a s s e s
-    private class MMDC : ModeledMarkdownContext<SelectableQFModel>
-    {
-        public new FilteringState FilteringState
-        {
-            get => FilteringState;
-            set
-            {
-                FilteringState = value;
-            }
-        }
-    }
     private class ModeledOPC : ObservableRangeCollection<SelectableQFModel>
     {
         public ModeledOPC()
@@ -816,6 +892,21 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
         private MMDC MMDC { get; }
         public XElement Model => MMDC.Model;
         public string ToString(ReportFormat formatting) => MMDC.ToString(formatting);
+    }
+
+    /// <summary>
+    /// Exposes FilteringState as public for test.
+    /// </summary>
+    private class MMDC : ModeledMarkdownContext<SelectableQFModel>
+    {
+        public new FilteringState FilteringState
+        {
+            get => FilteringState;
+            set
+            {
+                FilteringState = value;
+            }
+        }
     }
     #endregion L o c a l C l a s s e s
 }

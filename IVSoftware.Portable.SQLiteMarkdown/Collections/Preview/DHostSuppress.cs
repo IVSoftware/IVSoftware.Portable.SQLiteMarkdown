@@ -38,6 +38,17 @@ namespace IVSoftware.Portable.Collections.Preview
             try
             {
                 IsDisposing = true;
+
+                // If canceled, rollback all of the items to the original.
+                if(_cancel)
+                {
+                    _listFTR.Clear();
+                    foreach (var item in Snapshot)
+                    {
+                        _listFTR.Add(item);
+                    }
+                }
+
                 var before = Snapshot;
                 var after = _listFTR;
 
