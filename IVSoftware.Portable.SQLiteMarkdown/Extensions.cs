@@ -508,34 +508,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             where TAttribute : Attribute
         { 
             var enumType = value.GetType();
-#if DEBUG
+#if DEBUG || SAVE 
+            // This particular case was recursive and
+            // causing SO for some strange reason.
             if(value.ToFullKey() == "HistogrammerFormat.All")
-            {
-                { }
-            }
-#endif
-            var name = value.ToString();
-            var fields = enumType.GetFields();
-            var matchFields = fields.Where(_ => _.Name == name).ToArray();
             { }
+#endif
+            var preview =
+                enumType
+               .GetFields()
+               .SingleOrDefault(_ => _.Name == value.ToString())
+               ?.GetCustomAttribute<TAttribute>();
 
-            //if(enumType
-            //    .GetMember(value.ToString())
-            //    .SingleOrDefault() is MemberInfo member)
-            //{
-            //    var found = member.GetCustomAttributes<TAttribute>().ToArray();
-            //    switch (found.Length)
-            //    {
-            //        case 0:
-            //            break;
-            //        case 1:
-            //            return found[0];
-            //        default:
-            //            value.ThrowHard<InvalidOperationException>("Sequence has more than one match");
-            //            return found[0];
-            //    }
-            //}
-            return null!;
+            return preview;
         }
         static uint _debugCount = 0;
 
