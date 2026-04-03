@@ -225,9 +225,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         enum DebuggerReserved { Debugger }
         private string DebuggerDisplay => ToString(DebuggerReserved.Debugger);
 
+        const bool LOG_HISTO = false;
         private void log(Enum key, [CallerMemberName]string? caller = null)
         {
-            Debug.WriteLine($"260329.A - {caller} {key} {DebuggerDisplay}");
+            Debug.WriteLineIf(LOG_HISTO, $"260329.A - {caller} {key} {DebuggerDisplay}");
         }
 
         public void Clear() => _histo.Clear();

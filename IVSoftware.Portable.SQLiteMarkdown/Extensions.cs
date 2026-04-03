@@ -509,8 +509,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             TAttribute? preview; 
             var enumType = value.GetType();
-#if DEBUG || SAVE 
-            Debug.WriteLine($"260403.A {value.ToFullKey()}");
+#if DEBUG || SAVE             
+            Debug.WriteLineIf(false, $"260403.A {value.ToFullKey()}");
             if(value.ToFullKey() == "HistogrammerFormat.All")
             {
                 // Symptomatic of a recursion taking place elsewhere.
