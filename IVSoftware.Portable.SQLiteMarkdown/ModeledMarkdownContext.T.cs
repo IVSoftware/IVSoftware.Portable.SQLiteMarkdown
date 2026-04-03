@@ -381,6 +381,7 @@ SELECT * FROM items WHERE
                     if (CollectionChangeAuthorityProvider[nameof(StdAuthorityProperty.Snapshot)] is IList snapshot)
                     {
                         var ePre = snapshot.Diff(PredicateMatchSubsetProtected);
+                        { }
                     }
                     else
                     {
