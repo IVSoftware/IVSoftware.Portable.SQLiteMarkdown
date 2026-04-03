@@ -140,7 +140,7 @@ namespace IVSoftware.Portable.Collections.Preview
                 {
                     _modelingCapability = typeof(T).GetModeledPathInfo();
                 }
-                return (ModeledFullPathInfo)_modelingCapability!;
+                return _modelingCapability!;
             }
         }
         ModeledFullPathInfo? _modelingCapability = null;
