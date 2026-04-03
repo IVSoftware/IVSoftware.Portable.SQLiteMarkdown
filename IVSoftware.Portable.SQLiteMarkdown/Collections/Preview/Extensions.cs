@@ -139,7 +139,7 @@ namespace IVSoftware.Portable.Collections.Preview
                                     xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), itemCount++);
                                     if (mdc.IsFiltering)
                                     {
-                                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 4, 2).Date, "Don't forget disabled");
+                                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 4, 3).Date, "Don't forget disabled");
                                         // Make sure we mark canonical match until next filter op.
                                         // matches++;
                                     }

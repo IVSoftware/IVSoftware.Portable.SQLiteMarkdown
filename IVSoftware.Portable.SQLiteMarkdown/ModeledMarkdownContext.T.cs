@@ -587,20 +587,41 @@ SELECT * FROM items WHERE
         /// </remarks>
         protected virtual void OnCanonicalSupersetChanged(NotifyCollectionChangedEventArgs e)
         {
-            Model.Apply(e);
-            switch (DHostSuppress.Phase)
+            switch (Authority)
             {
-                case SuppressionPhase.None:
-                case SuppressionPhase.Commit:
-                    OnModelChanged(e);
+                // Mental Model: "When does the Model require an update?"
+                case CollectionChangeAuthority.None:        // When the IList interface of an MMDC is invoked programmatically.
+                case CollectionChangeAuthority.Reset:       // When an unconditional global clear is taking place.
+                case CollectionChangeAuthority.Commit:      // When the model is being fully displaced by a new canonical recordset.
+                case CollectionChangeAuthority.Projection:  // When [+] or [🗑] actions (buttons) operate on the visible surface directly.
+                    Model.Apply(e);
+                    // Determines when to broadcast INCC to the projection surface.
+                    switch (DHostSuppress.Phase)
+                    {
+                        case SuppressionPhase.None:
+                        case SuppressionPhase.Commit:
+                            OnModelChanged(e);
+                            break;
+                        case SuppressionPhase.Preview:
+                            /* G T K - N O O P */
+                            // Accumulating suppressed events.
+                            break;
+                        default:
+
+                            this.ThrowFramework<NotSupportedException>($"The {DHostSuppress.Phase.ToFullKey()} case is not supported.");
+                            break;
+                    }
                     break;
-                case SuppressionPhase.Preview:
-                    /* G T K - N O O P */
-                    // Accumulating suppressed events.
+                // Mental Model: "When does the Model *not* require an update?"
+                case CollectionChangeAuthority.Settle:      // The IME text has settled and deferred relitigation of
+                                                            // 'qmatch' and 'match' attributes is proceeding.
+                case CollectionChangeAuthority.Predicate:   // A filter has been toggled and immediate relitigation of
+                                                            // 'pmatch' and 'match' attributes is proceeding.
+
                     break;
                 default:
 
-                    this.ThrowFramework<NotSupportedException>($"The {DHostSuppress.Phase.ToFullKey()} case is not supported.");
+                    this.ThrowHard<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
                     break;
             }
         }
@@ -740,37 +761,55 @@ SELECT * FROM items WHERE
         /// </remarks>
         protected virtual void OnModelChanged(NotifyCollectionChangedEventArgs eBCL)
         {
-            switch (ProjectionTopology)
+            switch (Authority)
             {
-                case NetProjectionTopology.None: 
-                    // N O O P
-                    // There is no projection to update.
+                // Mental Model: "When does the Model require an update?"
+                case CollectionChangeAuthority.None:        // When the IList interface of an MMDC is invoked programmatically.
+                case CollectionChangeAuthority.Reset:       // When an unconditional global clear is taking place.
+                case CollectionChangeAuthority.Commit:      // When the model is being fully displaced by a new canonical recordset.
+                case CollectionChangeAuthority.Projection:  // When [+] or [🗑] actions (buttons) operate on the visible surface directly.
                     break;
-                case NetProjectionTopology.ObservableOnly:    // Maintain internal canon but do not push internal changes.
-                    ModelChanged?.Invoke(this, eBCL);
-                    break;
-                case NetProjectionTopology.AllowDirectChanges:
-                    switch (Authority)
+                // Mental Model: "When does the Model *not* require an update?"
+                case CollectionChangeAuthority.Settle:      // The IME text has settled and deferred relitigation of
+                                                            // 'qmatch' and 'match' attributes is proceeding.
+                case CollectionChangeAuthority.Predicate:   // A filter has been toggled and immediate relitigation of
+                                                            // 'pmatch' and 'match' attributes is proceeding.
+
+                    switch (ProjectionTopology)
                     {
-                        case CollectionChangeAuthority.Settle:
-                        case CollectionChangeAuthority.Predicate:
-                            localApplyDirectChanges();
+                        case NetProjectionTopology.None:
+                            // N O O P
+                            // There is no projection to update.
                             break;
-                        case CollectionChangeAuthority.None:
-                        case CollectionChangeAuthority.Reset:
-                        case CollectionChangeAuthority.Commit:
-                        case CollectionChangeAuthority.Projection:
+                        case NetProjectionTopology.ObservableOnly:    // Maintain internal canon but do not push internal changes out to projection.
+                            break;
+                        case NetProjectionTopology.AllowDirectChanges:
+                            if (ObservableNetProjection is null)
+                            {
+                                this.ThrowHard<NullReferenceException>($"Expecting not null is baked into {ProjectionTopology.ToFullKey()}");
+                            }
+                            else
+                            {
+                                // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                // - Subclass has OPTED-IN to direct changes from this model.
+                                // - Subclass is listening for changes, and not pushing them.
+                                // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                using (BeginSuppress())
+                                {
+                                    ObservableNetProjection.Apply(eBCL);
+                                }
+                            }
+                            break;
+                        case NetProjectionTopology.Routed:
+                            ModelChanged?.Invoke(this, eBCL);
                             break;
                         default:
-                            this.ThrowFramework<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
+                            ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
                             break;
                     }
                     break;
-                case NetProjectionTopology.Routed:
-                    ModelChanged?.Invoke(this, eBCL);
-                    break;
                 default:
-                    ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
+                    this.ThrowHard<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
                     break;
             }
             void localApplyDirectChanges()
@@ -781,13 +820,6 @@ SELECT * FROM items WHERE
                         $"Expecting {nameof(ObservableNetProjection)} is determined to be non-null in the ProjectionTopology property getter.");                }
                 else
                 {
-                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                    // Subclass has OPTED-IN to direct changes.
-                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                    using (BeginSuppress())
-                    {
-                        projection.Apply(eBCL);
-                    }
                 }
             }
         }

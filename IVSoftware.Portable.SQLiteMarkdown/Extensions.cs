@@ -506,23 +506,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         internal static TAttribute? GetCustomAttribute<TAttribute>(
             this Enum value)
             where TAttribute : Attribute
-        { 
+        {
+            TAttribute? preview; 
             var enumType = value.GetType();
 #if DEBUG || SAVE 
-            // This particular case was recursive and
-            // causing SO for some strange reason.
+            Debug.WriteLine($"260403.A {value.ToFullKey()}");
             if(value.ToFullKey() == "HistogrammerFormat.All")
-            { }
+            {
+                // Symptomatic of a recursion taking place elsewhere.
+            }
 #endif
-            var preview =
+            preview =
                 enumType
                .GetFields()
-               .SingleOrDefault(_ => _.Name == value.ToString())
+               .SingleOrDefault(_ => _.Name == Enum.GetName(enumType, value))
                ?.GetCustomAttribute<TAttribute>();
 
             return preview;
         }
-        static uint _debugCount = 0;
 
         /// <summary>
         /// Produces the normalized semantic form of the input by trimming trailing
