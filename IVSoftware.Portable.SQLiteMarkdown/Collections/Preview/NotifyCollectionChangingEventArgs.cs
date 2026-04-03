@@ -247,7 +247,7 @@ namespace IVSoftware.Portable.Collections.Preview
             NewItems is null ? true
             : NewItems.Count == 0
                 ? true
-                : NewItems[0] is EventArgs;
+                : NewItems[0] is not EventArgs;
 
         public IList NewItems { get; }
 
