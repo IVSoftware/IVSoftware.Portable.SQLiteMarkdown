@@ -56,12 +56,12 @@ namespace IVSoftware.Portable.Collections.Preview
         /// <summary>
         /// These items (old and new) represent a deferred collection change digest.
         /// </summary>
-        Coalesce = RemoveFilter << 1,
+        Digest = RemoveFilter << 1,
 
         /// <summary>
         /// Indicates that a batch was canceled while it was building.
         /// </summary>
-        Cancel = Coalesce << 1,
+        Cancel = Digest << 1,
 
         /// <summary>
         /// Attributes a Reset action produced by an illegal configuration request.

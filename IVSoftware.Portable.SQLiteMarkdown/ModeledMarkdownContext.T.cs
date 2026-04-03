@@ -765,65 +765,72 @@ SELECT * FROM items WHERE
         /// </remarks>
         protected virtual void OnModelSettled(EventArgs eUnk)
         {
-            switch (Authority)
+            if (DHostSuppress.IsDisposing)
             {
-                // Mental Model: "When does the Model require an update?"
-                case CollectionChangeAuthority.None:        // When the IList interface of an MMDC is invoked programmatically.
-                case CollectionChangeAuthority.Reset:       // When an unconditional global clear is taking place.
-                case CollectionChangeAuthority.Commit:      // When the model is being fully displaced by a new canonical recordset.
-                case CollectionChangeAuthority.Projection:  // When [+] or [🗑] actions (buttons) operate on the visible surface directly.
-                    break;
-                // Mental Model: "When does the Model *not* require an update?"
-                case CollectionChangeAuthority.Settle:      // The IME text has settled and deferred relitigation of
-                                                            // 'qmatch' and 'match' attributes is proceeding.
-                case CollectionChangeAuthority.Predicate:   // A filter has been toggled and immediate relitigation of
-                                                            // 'pmatch' and 'match' attributes is proceeding.
-
-                    switch (ProjectionTopology)
-                    {
-                        case NetProjectionTopology.None:
-                            // N O O P
-                            // There is no projection to update.
-                            break;
-                        case NetProjectionTopology.ObservableOnly:    // Maintain internal canon but do not push internal changes out to projection.
-                            break;
-                        case NetProjectionTopology.AllowDirectChanges:
-                            if (ObservableNetProjection is null)
-                            {
-                                this.ThrowHard<NullReferenceException>($"Expecting not null is baked into {ProjectionTopology.ToFullKey()}");
-                            }
-                            else
-                            {
-                                // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                                // - Subclass has OPTED-IN to direct changes from this model.
-                                // - Subclass is listening for changes, and not pushing them.
-                                // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                                using (BeginSuppress())
-                                {
-                                    ObservableNetProjection.Apply(eUnk);
-                                }
-                            }
-                            break;
-                        case NetProjectionTopology.Routed:
-                            ModelSettled?.Invoke(this, eUnk);
-                            break;
-                        default:
-                            ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
-                            break;
-                    }
-                    break;
-                default:
-                    this.ThrowHard<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
-                    break;
+                ModelSettled?.Invoke(this, eUnk);
             }
-            void localApplyDirectChanges()
+            else
             {
-                if (ObservableNetProjection is not IList projection)
+                switch (Authority)
                 {
-                    this.ThrowFramework<InvalidOperationException>(
-                        $"Expecting {nameof(ObservableNetProjection)} is determined to be non-null in the ProjectionTopology property getter.");                }
-                else
+                    // Mental Model: "When does the Model require an update?"
+                    case CollectionChangeAuthority.None:        // When the IList interface of an MMDC is invoked programmatically.
+                    case CollectionChangeAuthority.Reset:       // When an unconditional global clear is taking place.
+                    case CollectionChangeAuthority.Commit:      // When the model is being fully displaced by a new canonical recordset.
+                    case CollectionChangeAuthority.Projection:  // When [+] or [🗑] actions (buttons) operate on the visible surface directly.
+                        break;
+                    // Mental Model: "When does the Model *not* require an update?"
+                    case CollectionChangeAuthority.Settle:      // The IME text has settled and deferred relitigation of
+                                                                // 'qmatch' and 'match' attributes is proceeding.
+                    case CollectionChangeAuthority.Predicate:   // A filter has been toggled and immediate relitigation of
+                                                                // 'pmatch' and 'match' attributes is proceeding.
+                        switch (ProjectionTopology)
+                        {
+                            case NetProjectionTopology.None:
+                                // N O O P
+                                // There is no projection to update.
+                                break;
+                            case NetProjectionTopology.ObservableOnly:    // Maintain internal canon but do not push internal changes out to projection.
+                                break;
+                            case NetProjectionTopology.AllowDirectChanges:
+                                if (ObservableNetProjection is null)
+                                {
+                                    this.ThrowHard<NullReferenceException>($"Expecting not null is baked into {ProjectionTopology.ToFullKey()}");
+                                }
+                                else
+                                {
+                                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                    // - Subclass has OPTED-IN to direct changes from this model.
+                                    // - Subclass is listening for changes, and not pushing them.
+                                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                    using (BeginSuppress())
+                                    {
+                                        ObservableNetProjection.Apply(eUnk);
+                                    }
+                                }
+                                break;
+                            case NetProjectionTopology.Routed:
+                                ModelSettled?.Invoke(this, eUnk);
+                                break;
+                            default:
+                                ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
+                                break;
+                        }
+                        break;
+                    default:
+                        this.ThrowHard<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
+                        break;
+                }
+                void localApplyDirectChanges()
                 {
+                    if (ObservableNetProjection is not IList projection)
+                    {
+                        this.ThrowFramework<InvalidOperationException>(
+                            $"Expecting {nameof(ObservableNetProjection)} is determined to be non-null in the ProjectionTopology property getter.");
+                    }
+                    else
+                    {
+                    }
                 }
             }
         }

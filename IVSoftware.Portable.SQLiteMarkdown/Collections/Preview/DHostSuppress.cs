@@ -45,10 +45,10 @@ namespace IVSoftware.Portable.Collections.Preview
                     _cancel
                     ? new NotifyCollectionChangingEventArgs(
                         action: NotifyCollectionChangeAction.Reset,
-                        reason: NotifyCollectionChangeReason.Coalesce | NotifyCollectionChangeReason.Cancel)
+                        reason: NotifyCollectionChangeReason.Digest | NotifyCollectionChangeReason.Cancel)
                     : before.Diff(
                         after,
-                        reason: NotifyCollectionChangeReason.Coalesce);
+                        reason: NotifyCollectionChangeReason.Digest);
 
                 var snapshot = e.Keys.ToDictionary(
                     key => key,
