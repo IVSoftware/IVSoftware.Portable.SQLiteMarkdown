@@ -6,7 +6,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
-using IVSoftware.Portable.SQLiteMarkdown.StateRunner.Preview;
+using IVSoftware.Portable.StateRunner.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -662,9 +662,6 @@ SELECT * FROM items WHERE
                 case CollectionChangeAuthority.Projection:
                     // The players.
                     break;
-                case 0:
-                    this.ThrowFramework<InvalidOperationException>($"{nameof(CollectionChangeAuthority)} is required.");
-                    return;
                 case CollectionChangeAuthority.Reset:
                     Debug.Fail($@"ADVISORY - Explicit no authority. Is this what we really want here?.");
                     return;

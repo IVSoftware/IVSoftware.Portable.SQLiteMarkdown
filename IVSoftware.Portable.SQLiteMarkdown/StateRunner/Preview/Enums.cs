@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace IVSoftware.Portable.SQLiteMarkdown.StateRunner.Preview
+namespace IVSoftware.Portable.StateRunner.Preview
 {
     enum FsmReserved { NoAuthority = int.MinValue, }
     enum FsmReservedState

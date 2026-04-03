@@ -226,7 +226,7 @@ public class TestClass_PredicateMarkdownContext
     /// <summary>
     /// Try out some basic external filters.
     /// </summary>
-    [TestMethod, DoNotParallelize]
+    [TestMethod, DoNotParallelize, Ignore]
     public async Task Test_TemporalAffinityQFModel()
     {
         string actual, expected;

@@ -1,11 +1,12 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace IVSoftware.Portable.SQLiteMarkdown.StateRunner.Preview
+namespace IVSoftware.Portable.StateRunner.Preview
 {
     [DebuggerDisplay("Count={ReferenceCount} Authority={Authority}")]
     class AuthorityEpochProvider : DisposableHost
@@ -37,10 +38,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.StateRunner.Preview
         }
         protected override void OnBeginUsing(BeginUsingEventArgs e)
         {
-            base.OnBeginUsing(e);
             if (e.AutoDisposableContext.Sender is Enum authority)
             {
                 Authority = authority;
+#if DEBUG
+                Debug.WriteLine($"260403.B BEGIN AUTHORITY {authority.ToFullKey()}");
+#endif
+                base.OnBeginUsing(e);
             }
             else
             {
