@@ -50,6 +50,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         protected override void OnModelSettled(EventArgs eUnk)
         {
             base.OnModelSettled(eUnk);
+
+            if(ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
+            {
+            }
+
+            if(ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
+            {
+            }
             CollectionChanged?.Invoke(this, (NotifyCollectionChangedEventArgs)eUnk);
         }
 

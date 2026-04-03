@@ -385,13 +385,6 @@ SELECT * FROM items WHERE
                             case CollectionChangeAuthority.Settle:
                             case CollectionChangeAuthority.Predicate:
                                 var ePre = snapshot.Diff(PredicateMatchSubsetProtected);
-                                if(ePre.IsBclCompatible)
-                                {
-                                    OnModelSettled(ePre);
-                                }
-                                else
-                                {
-                                }
                                 break;
                             default:
                                 this.ThrowFramework<InvalidOperationException>(
@@ -404,21 +397,6 @@ SELECT * FROM items WHERE
                     {
                         Debug.Fail($@"ADVISORY - Expecting snapshot is baked into Settle or Predicate epoch.");
                     }
-                    //var listAfter = Read.ToList();
-                    // var ePre = pmsB4.Diff(Read.ToList());
-                        //var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
-
-                        //if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
-                        //{
-                        //    OnModelChanged(ModelSettledEventArgs.FromNotifyCollectionChangedEventArgs(
-                        //        reason: NotifyCollectionChangeReason.ApplyFilter,
-                        //        e: eStructural));
-                        //}
-
-                        //if (eventContext.Reset is NotifyCollectionChangedEventArgs eReset)
-                        //{
-                        //    OnModelChanged(eReset);
-                        //}
 
 #if ABSTRACT
             // EXAMPLE<model histo="3" count="3" matches="1">
