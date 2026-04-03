@@ -16,13 +16,19 @@ namespace IVSoftware.Portable.StateRunner.Preview
     [DebuggerDisplay("Count={ReferenceCount} Authority={Authority}")]
     internal abstract class AuthorityEpochProvider : DisposableHost
     {
-        public IDisposable BeginAuthority(Enum authority, ICollection snapshot)
+        public IDisposable BeginAuthority(Enum authority, ICollection? snapshot = null)
         {
-            var disp = GetToken(sender: authority, new Dictionary<string, object> 
+            if (snapshot is null)
             {
-                { nameof(StdAuthorityProperty.Snapshot), snapshot },
-            });
-            return disp;
+                return GetToken(sender: authority);
+            }
+            else
+            {
+                return GetToken(sender: authority, new Dictionary<string, object>
+                {
+                    { nameof(StdAuthorityProperty.Snapshot), snapshot },
+                });
+            }
         }
         protected override void OnBeginUsing(BeginUsingEventArgs e)
         {

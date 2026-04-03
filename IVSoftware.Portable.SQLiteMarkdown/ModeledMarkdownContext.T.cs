@@ -377,10 +377,17 @@ SELECT * FROM items WHERE
                             await ApplyAffinities(matches);
                         }
                     });
+
+                    if (CollectionChangeAuthorityProvider[nameof(StdAuthorityProperty.Snapshot)] is IList snapshot)
+                    {
+                        var ePre = snapshot.Diff(PredicateMatchSubsetProtected);
+                    }
+                    else
+                    {
+                        Debug.Fail($@"ADVISORY - Expecting snapshot is baked into Settle or Predicate epoch.");
+                    }
                     //var listAfter = Read.ToList();
                     // var ePre = pmsB4.Diff(Read.ToList());
-
-                    { }
                         //var eventContext = Model.GetReplacementTriageEvents(NotifyCollectionChangeReason.ApplyFilter, matches, ReplaceItemsEventingOptions);
 
                         //if (eventContext.Structural is NotifyCollectionChangedEventArgs eStructural)
@@ -1174,25 +1181,28 @@ SELECT * FROM items WHERE
         #region A U T H O R I T Y
         public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority)
         {
-            ICollection snapshot;
-            if(ObservableNetProjection is null)
+            switch (authority)
             {
-                // Diff compares against the ONP.
-                snapshot = ObservableNetProjection.Cast<T>().ToArray();
-                Debug.Fail($@"ADVISORY - First Time.");
+                case CollectionChangeAuthority.Settle:
+                case CollectionChangeAuthority.Predicate:
+                    ICollection snapshot;
+                    if(ObservableNetProjection is null)
+                    {
+                        // Diff compares against the iteration prior to changes.
+                        snapshot = Read.Cast<T>().ToArray();
+                    }
+                    else
+                    {
+                        // Diff compares against the ONP.
+                        snapshot = ObservableNetProjection.Cast<T>().ToArray();
+                    }            
+                    return CollectionChangeAuthorityProvider.BeginAuthority(authority, snapshot);
+                default:
+                    return CollectionChangeAuthorityProvider.BeginAuthority(authority);
             }
-            else
-            {
-                // Diff compares against the iteration prior to changes.
-                snapshot = Read.ToArray();
-                Debug.Fail($@"ADVISORY - First Time.");
-            }
-            
-           return CollectionChangeAuthorityProvider.BeginAuthority(authority, Read.ToArray());
         }
 
-        public CollectionChangeAuthority Authority =>
-            (CollectionChangeAuthority)CollectionChangeAuthorityProvider.Authority;
+        public CollectionChangeAuthority Authority => CollectionChangeAuthorityProvider.Authority;
 
         AuthorityEpochProvider<CollectionChangeAuthority> CollectionChangeAuthorityProvider { get; } = new();
         #endregion A U T H O R I T Y
@@ -1228,7 +1238,16 @@ SELECT * FROM items WHERE
             {
                 if(_predicateMatchSubset is null)
                 {
-                    _predicateMatchSubset = new ReadOnlyCollection<T>(PredicateMatchSubsetProtected);
+                    if(PredicateMatchSubsetProtected is IList<T> listT)
+                    {
+                        _predicateMatchSubset = new ReadOnlyCollection<T>(listT);
+                    }
+                    else
+                    {
+                        this.ThrowFramework<InvalidOperationException>(
+                            $"Expecting {nameof(PredicateMatchSubsetProtected)} is initialized using {nameof(ObservableCollection<T>)}");
+                        _predicateMatchSubset = new List<T>();
+                    }
                 }
                 return _predicateMatchSubset;
             }
@@ -1236,7 +1255,7 @@ SELECT * FROM items WHERE
         private IReadOnlyList<T> _predicateMatchSubset = null!;
         IList ITopology.PredicateMatchSubset => (IList)PredicateMatchSubset;
 
-        public IList<T> PredicateMatchSubsetProtected
+        public IList PredicateMatchSubsetProtected
         {
             get
             {
@@ -1265,7 +1284,7 @@ SELECT * FROM items WHERE
                 return _predicateMatchSubsetProtected;
             }
         }
-        IList<T>? _predicateMatchSubsetProtected = null;
+        IList? _predicateMatchSubsetProtected = null;
 
         ObservableCollection<T>? IModeledMarkdownContext<T>.ObservableNetProjection =>
             (ObservableCollection<T>?)ObservableNetProjection;

@@ -15,7 +15,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             ? PredicateMatchCount
             : CanonicalCount;
 
-        IList<T> Read =>
+        IList Read =>
             FilteringState == FilteringState.Active
             ? PredicateMatchSubsetProtected
             : CanonicalSupersetProtected;
@@ -24,7 +24,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [Indexer]
         public T this[int index]
         {
-            get => Read[index];
+            get => (T)Read[index];
             set
             {
                 if (value is T valueT)
