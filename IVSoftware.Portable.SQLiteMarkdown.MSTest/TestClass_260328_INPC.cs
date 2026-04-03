@@ -6,9 +6,11 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using System.Collections;
 using Newtonsoft.Json;
+using System.Xml.Linq;
 using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Util;
 using System.Collections.ObjectModel;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -178,5 +180,97 @@ IsChecked: Brown Dog "
             actual.NormalizeResult(),
             "Expecting output to show the tilde problem."
         );
+    }
+
+    /// <summary>
+    /// Exercise the flagship OPRC
+    /// </summary>
+    [TestMethod, DoNotParallelize]
+    [Claim("00000000-0000-0000-0000-000000000000")]
+    public void Test_ObservablePreviewRangeCollection()
+    {
+        string actual, expected;
+        var builder = new List<string>();
+        using var te = this.TestableEpoch();
+
+        #region I T E M    G E N
+        IList<SelectableQFModel>? eph = null;
+        #endregion I T E M    G E N
+
+        var itemsSource = new ObservablePreviewRangeCollection<SelectableQFModel>();
+
+        #region E V E N T S
+        itemsSource.CollectionChanged += (sender, e) =>
+        {
+            builder.Add(e.ToString(ReferenceEquals(sender, itemsSource)));
+        };
+        #endregion E V E N T S
+
+        #region S U B T E S T S
+
+        subtest_RemoveWithCancel();
+        void subtest_RemoveWithCancel()
+        {
+            using (itemsSource.BeginSuppress())
+            {
+                itemsSource.PopulateForDemo(5);
+            }
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           ";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting 1x INCC."
+            );
+
+            actual = itemsSource.ToString(ReportFormat.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { }
+
+            expected = @" 
+<model mdc=""[MDC]"" histo=""[model:5 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"" stdmodelpath=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting ToString(ReportFormat.ModelWithPreview) from active MarkdownContext."
+            );
+
+
+            using(itemsSource.BeginSuppress())
+            {
+                itemsSource.RemoveAt(1);
+                itemsSource.RemoveAt(1);
+                itemsSource.RemoveAt(1);
+            }
+
+            actual = itemsSource.ToString(ReportFormat.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { }
+
+            expected = @" 
+<model mdc=""[MDC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"" stdmodelpath=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting ToString(ReportFormat.ModelWithPreview) from active MarkdownContext."
+            );
+
+        }
+        #endregion S U B T E S T S
     }
 }

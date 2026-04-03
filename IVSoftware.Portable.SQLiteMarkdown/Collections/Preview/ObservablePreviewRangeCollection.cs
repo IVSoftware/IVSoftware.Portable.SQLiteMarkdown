@@ -11,37 +11,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         : ObservableRangeCollection<T>
         , IRangeable
         , INotifyCollectionChanging
+        where T : new()
     {
-        public static implicit operator XElement(ObservablePreviewRangeCollection<T> @this)
-        {
-            @this.ToString(out XElement model);
-            model.SetAttributeValue(@this.ModelingCapabilityInfo.StdModelPath);
-            return model;
-        }
+        public static implicit operator XElement(ObservablePreviewRangeCollection<T> @this) =>
+            @this.MarkdownContext.Model;
         public ObservablePreviewRangeCollection(
             NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
         {
-            EventScope = eventScope;
+            MarkdownContext.SetObservableNetProjection(this, NetProjectionTopology.AllowDirectChanges);
+            MarkdownContext.Model.SetAttributeValue(ModelingCapabilityInfo.StdModelPath);
         }
 
-        /// <summary>
-        /// Defines the extent to which a preview handler may interact with a pending
-        /// collection change proposal.
-        /// </summary>
-        /// <remarks>
-        /// This enumeration constrains what a handler is permitted to do during the
-        /// preview (Changing) phase. It does not describe the change itself, but rather
-        /// the allowed level of participation in shaping or rejecting it.
-        ///
-        /// - ReadOnly   : Observe only. No modification or cancellation is permitted.
-        /// - CancelOnly : The proposal may be rejected but not altered.
-        /// - FullControl: The proposal may be rewritten or rejected entirely.
-        ///
-        /// These flags are enforced by the preview pipeline. Handlers opting into
-        /// higher scopes assume responsibility for producing a valid and internally
-        /// consistent change contract.
-        /// </remarks>
-        public NotifyCollectionChangeScope EventScope { get; }
+        protected ModeledMarkdownContext<T> MarkdownContext { get; } = new();
+
+
         protected override void InsertItem(int index, T item)
         {
             var ePre = new NotifyCollectionChangingEventArgs(
@@ -124,6 +107,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         {
             CollectionChanging?.Invoke(this, e);
         }
+
+        public string ToString(ReportFormat formatting) => MarkdownContext.ToString(formatting);
+
         public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
 
         /// <summary>
