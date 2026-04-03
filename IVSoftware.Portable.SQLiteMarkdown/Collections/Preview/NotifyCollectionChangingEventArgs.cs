@@ -92,9 +92,8 @@ namespace IVSoftware.Portable.Collections.Preview
             bool makeReset = false;
             bool ieException = false;
 
-            if (NewItems.Count > 0 && NewItems[0] is EventArgs)
+            if (!IsBclCompatible)
             {
-                IsBclCompatible = false;
                 makeReset = true;
             }
             else
@@ -243,7 +242,12 @@ namespace IVSoftware.Portable.Collections.Preview
         public NotifyCollectionChangeAction Action { get; }
         public NotifyCollectionChangeReason Reason { get; private set; } = NotifyCollectionChangeReason.None;
         public NotifyCollectionChangeScope Scope { get; }
-        public bool IsBclCompatible { get; private set; } = true;
+
+        public bool IsBclCompatible =>
+            NewItems is null ? true
+            : NewItems.Count == 0
+                ? true
+                : NewItems[0] is EventArgs;
 
         public IList NewItems { get; }
 
