@@ -513,11 +513,11 @@ namespace IVSoftware.Portable.Collections.Preview
                             }
                             else
                             {
-
+                                eApply = new NotifyCollectionChangingEventArgs(ePre, scope: NotifyCollectionChangeScope.FullControl);
                             }
                             break;
                         case NotifyCollectionChangedEventArgs ePost:
-                            eApply = ePost;
+                            eApply = new NotifyCollectionChangingEventArgs(ePost, scope: NotifyCollectionChangeScope.FullControl);
                             break;
                         default:
                             list.ThrowFramework<NotSupportedException>($"The {eUnk.GetType().Name} case is not supported.");

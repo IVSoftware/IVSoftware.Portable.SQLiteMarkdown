@@ -53,6 +53,22 @@ namespace IVSoftware.Portable.Collections.Preview
             => new NotifyCollectionChangingEventArgs(@this);
 
         public NotifyCollectionChangingEventArgs(
+            NotifyCollectionChangingEventArgs ePre,
+            NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None,
+            NotifyCollectionChangeScope scope = NotifyCollectionChangeScope.ReadOnly)
+        : this(
+              action: ePre.Action,
+              reason: reason,
+              scope: scope,
+              newItems: ePre.NewItems,
+              oldItems: ePre.OldItems,
+              newStartingIndex: ePre.NewStartingIndex,
+              oldStartingIndex: ePre.OldStartingIndex)
+        {
+            EventArgsBCL = ePre;
+        }
+
+        public NotifyCollectionChangingEventArgs(
             NotifyCollectionChangedEventArgs eBCL,
             NotifyCollectionChangeReason reason = NotifyCollectionChangeReason.None,
             NotifyCollectionChangeScope scope = NotifyCollectionChangeScope.ReadOnly)
