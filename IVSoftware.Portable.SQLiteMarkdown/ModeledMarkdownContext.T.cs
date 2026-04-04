@@ -1057,7 +1057,7 @@ SELECT * FROM items WHERE
                 Debug.Assert(canon?.Count == loopbackCount);
 
                 var count = this.Count;
-                var enumerator = this.GetEnumerator();
+                var enumerator = ((IList)this).GetEnumerator();
                 var cssCount = CanonicalSuperset.Count;
 #endif
                 #region L o c a l F x

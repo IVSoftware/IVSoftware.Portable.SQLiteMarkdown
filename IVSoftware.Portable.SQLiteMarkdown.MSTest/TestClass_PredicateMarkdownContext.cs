@@ -374,9 +374,13 @@ NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingOption.StructuralR
 
             actual = pmdc.ToString(out XElement _);
             actual.ToClipboardExpected();
-            { } // <- FIRST TIME ONLY: Adjust the message.
-            actual.ToClipboardAssert("Expecting result to match.");
             { }
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting external model to show three items.."
+            );
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();

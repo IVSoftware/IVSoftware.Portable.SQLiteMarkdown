@@ -14,7 +14,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         , IPredicateMarkdownContext
         where T : new()
     {
-        public IReadOnlyDictionary<string, Enum> ActiveFilters => ActivePredicatesProtected.AsReadOnly;
 
         [Careful("Don't draw inferences from changes in the collection itself.")]
         TolerantDictionary<string, Enum> ActivePredicatesProtected

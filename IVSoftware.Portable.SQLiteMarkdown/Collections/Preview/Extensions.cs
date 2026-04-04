@@ -899,6 +899,14 @@ namespace IVSoftware.Portable.Collections.Preview
             {
                 model.SetStdAttributeValue(StdMarkdownAttribute.modeling, modeling);
             }
+#if DEBUG
+            var count = @this.Count;
+            var length = @this.Cast<object>().ToArray().Length;
+            if(count != length)
+            {
+                Debug.Fail($@"ADVISORY - First Time.");
+            }
+#endif
             var itemCount = 0;
             foreach (var item in @this)
             {
