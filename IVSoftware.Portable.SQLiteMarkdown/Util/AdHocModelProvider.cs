@@ -13,10 +13,15 @@ using System.Xml.Linq;
 namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {
     /// <summary>
-    /// Listed in order of preference.
+    /// Heuristic order for FullPath discovery.
     /// </summary>
     public enum StdModelPath
     {
+        /// <summary>
+        /// Detected a string property decorated with [ModelPath] attribute
+        /// </summary>
+        FullPathAttribute,
+
         /// <summary>
         /// Detected a string property named FullPath.
         /// </summary>
@@ -28,12 +33,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         Id,
 
         /// <summary>
-        /// A [PrimaryKey] property or a string property named Description.
+        /// A  string property named Description.
         /// </summary>
         Description,
 
         /// <summary>
-        /// A [PrimaryKey] property or a string property named Text.
+        /// A property or a string property named Text.
         /// </summary>
         Text,
 
@@ -42,6 +47,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         /// </summary>
         NotFound,
     }
+
+    /// <summary>
+    /// Heuristic order for Preview discovery.
+    /// </summary>
+    public enum StdPreviewPath
+    {
+        /// <summary>
+        /// Detected a string property decorated with [ModelPreview] attribute
+        /// </summary>
+        PreviewAttribute,
+
+        /// <summary>
+        /// Detected a string property named Preview.
+        /// </summary>
+        Preview,
+
+        /// <summary>
+        /// A  string property named Description.
+        /// </summary>
+        Description,
+
+        /// <summary>
+        /// A property or a string property named Text.
+        /// </summary>
+        Text,
+
+        /// <summary>
+        /// Failed to find a suitable modeling property.
+        /// </summary>
+        NotFound,
+    }
+
     public class AdHocModelProvider<T>
     {
         public AdHocModelProvider(IList<T> itemsSource) 
