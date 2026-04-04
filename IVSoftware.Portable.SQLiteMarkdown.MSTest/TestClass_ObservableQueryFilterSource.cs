@@ -3214,12 +3214,12 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 items.Commit();             // Query on a synchronous memory connection => ReplaceItems() => LoadCanon().
 
                 // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
-                // Limit touched 260304
+                // Limit touched 260404
                 actual = string.Join(Environment.NewLine, builder);
                 actual.ToClipboardExpected();
                 { }
+                // Expecting single event because list started out empty.
                 expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           
 NetProjection.Add     NewItems=12 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
                 ;
 

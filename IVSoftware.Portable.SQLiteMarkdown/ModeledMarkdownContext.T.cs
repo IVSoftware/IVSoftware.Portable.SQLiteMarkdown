@@ -35,10 +35,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public ModeledMarkdownContext()
         {
             CanonicalSupersetProtected = new();
-            CanonicalSupersetProtected.CollectionChanged += (sender, e) =>
-            {
-                OnCanonicalSupersetChanged(e);
-            };
             DHostMDX.FinalDispose += (sender, eUnk) =>
             {
                 if(eUnk is ModelDataExchangeFinalDisposeEventArgs e)
@@ -593,7 +589,7 @@ SELECT * FROM items WHERE
         /// filtering state, and collection notifications remain consistent with the
         /// authoritative dataset for the current epoch.
         /// </remarks>
-        protected virtual void OnCanonicalSupersetChanged(NotifyCollectionChangedEventArgs e)
+        protected virtual void OnCanonicalSupersetChanged(NotifyCollectionChangedEventArgs eBCL)
         {
             switch (Authority)
             {
@@ -603,74 +599,77 @@ SELECT * FROM items WHERE
                 case CollectionChangeAuthority.Commit:      // When the model is being fully displaced by a new canonical recordset.
                 case CollectionChangeAuthority.Projection:  // When [+] or [🗑] actions (buttons) operate on the visible surface directly.
                     // Call the Apply extension on Model.
-                    Model.Apply(e);
+                    Model.Apply(eBCL);
                     // Raise the ModelSettled event conditionally.
-
-                    try
+                    switch (DHostMDX.Authority)
                     {
-                        _reentry = true;
-                        if (DHostMDX.IsDisposing)
-                        {
-                            OnModelSettled(e);
-                        }
-                        else
-                        {
-                            switch (Authority)
+                        case ModelDataExchangeAuthority.Collection:
+                        case ModelDataExchangeAuthority.Model:
+                            OnModelSettled(eBCL);
+                            break;
+                        case ModelDataExchangeAuthority.CollectionDeferred:
+                        case ModelDataExchangeAuthority.ModelDeferred:
+                            if(DHostMDX.IsDisposing)
                             {
-                                // Mental Model: "When does the Model require an update?"
-                                case CollectionChangeAuthority.None:        // When the IList interface of an MMDC is invoked programmatically.
-                                case CollectionChangeAuthority.Reset:       // When an unconditional global clear is taking place.
-                                case CollectionChangeAuthority.Commit:      // When the model is being fully displaced by a new canonical recordset.
-                                case CollectionChangeAuthority.Projection:  // When [+] or [🗑] actions (buttons) operate on the visible surface directly.
+                                OnModelSettled(eBCL);
+                            }
+                            break;
+                        default:
+                            this.ThrowFramework<NotSupportedException>($"The {DHostMDX.Authority.ToFullKey()} case is not supported.");
+                            break;
+                    }
+#if false
+                    switch (Authority)
+                    {
+                        // Mental Model: "When does the Model require an update?"
+                        case CollectionChangeAuthority.None:        // When the IList interface of an MMDC is invoked programmatically.
+                        case CollectionChangeAuthority.Reset:       // When an unconditional global clear is taking place.
+                        case CollectionChangeAuthority.Commit:      // When the model is being fully displaced by a new canonical recordset.
+                        case CollectionChangeAuthority.Projection:  // When [+] or [🗑] actions (buttons) operate on the visible surface directly.
+                            break;
+                        // Mental Model: "When does the Model *not* require an update?"
+                        case CollectionChangeAuthority.Settle:      // The IME text has settled and deferred relitigation of
+                                                                    // 'qmatch' and 'match' attributes is proceeding.
+                        case CollectionChangeAuthority.Predicate:   // A filter has been toggled and immediate relitigation of
+                                                                    // 'pmatch' and 'match' attributes is proceeding.
+                            switch (ProjectionTopology)
+                            {
+                                case NetProjectionTopology.None:
+                                    // N O O P
+                                    // There is no projection to update.
                                     break;
-                                // Mental Model: "When does the Model *not* require an update?"
-                                case CollectionChangeAuthority.Settle:      // The IME text has settled and deferred relitigation of
-                                                                            // 'qmatch' and 'match' attributes is proceeding.
-                                case CollectionChangeAuthority.Predicate:   // A filter has been toggled and immediate relitigation of
-                                                                            // 'pmatch' and 'match' attributes is proceeding.
-                                    switch (ProjectionTopology)
+                                case NetProjectionTopology.ObservableOnly:    // Maintain internal canon but do not push internal changes out to projection.
+                                    break;
+                                case NetProjectionTopology.AllowDirectChanges:
+                                    if (ObservableNetProjection is null)
                                     {
-                                        case NetProjectionTopology.None:
-                                            // N O O P
-                                            // There is no projection to update.
-                                            break;
-                                        case NetProjectionTopology.ObservableOnly:    // Maintain internal canon but do not push internal changes out to projection.
-                                            break;
-                                        case NetProjectionTopology.AllowDirectChanges:
-                                            if (ObservableNetProjection is null)
-                                            {
-                                                this.ThrowHard<NullReferenceException>($"Expecting not null is baked into {ProjectionTopology.ToFullKey()}");
-                                            }
-                                            else
-                                            {
-                                                // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                                                // - Subclass has OPTED-IN to direct changes from this model.
-                                                // - Subclass is listening for changes, and not pushing them.
-                                                // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                                                using (BeginAuthority(ModelDataExchangeAuthority.ModelDeferred))
-                                                {
-                                                    OnModelSettled(e);
-                                                }
-                                            }
-                                            break;
-                                        case NetProjectionTopology.Routed:
+                                        this.ThrowHard<NullReferenceException>($"Expecting not null is baked into {ProjectionTopology.ToFullKey()}");
+                                    }
+                                    else
+                                    {
+                                        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                        // - Subclass has OPTED-IN to direct changes from this model.
+                                        // - Subclass is listening for changes, and not pushing them.
+                                        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                        using (BeginAuthority(ModelDataExchangeAuthority.ModelDeferred))
+                                        {
                                             OnModelSettled(e);
-                                            break;
-                                        default:
-                                            ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
-                                            break;
+                                        }
                                     }
                                     break;
+                                case NetProjectionTopology.Routed:
+                                    OnModelSettled(e);
+                                    break;
                                 default:
-                                    this.ThrowHard<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
+                                    ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
                                     break;
                             }
-                        }
+                            break;
+                        default:
+                            this.ThrowHard<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
+                            break;
                     }
-                    finally
-                    {
-                        _reentry = false;
-                    }
+#endif
                     break;
                 default:
 
@@ -1210,7 +1209,38 @@ SELECT * FROM items WHERE
         public IReadOnlyList<T> CanonicalSuperset => CanonicalSupersetProtected;
         IList ITopology.CanonicalSuperset => (IList)CanonicalSuperset;
 
-        protected ObservableCollection<T> CanonicalSupersetProtected { get; }
+        public ObservableCollection<T> CanonicalSupersetProtected
+        {
+            get => _canonicalSupersetProtected;
+            set
+            {
+                if (value is null)
+                {
+                    this.ThrowHard<InvalidOperationException>(
+                        $"{nameof(CanonicalSupersetProtected)} cannot be set to null.");
+                }
+                else
+                {
+                    if (!Equals(_canonicalSupersetProtected, value))
+                    {
+                        if(_canonicalSupersetProtected is not null)
+                        {
+                            _canonicalSupersetProtected.CollectionChanged -= (sender, e) =>
+                            {
+                                OnCanonicalSupersetChanged(e);
+                            };
+                        }
+                        _canonicalSupersetProtected = value;
+                        _canonicalSupersetProtected.CollectionChanged += (sender, e) =>
+                        {
+                            OnCanonicalSupersetChanged(e);
+                        };
+                        OnPropertyChanged();
+                    }
+                }
+            }
+        }
+        ObservableCollection<T> _canonicalSupersetProtected = null!;    // Initialized in CTor.
 
         /// <summary>
         /// Provides a typed, read-only view of the predicate-match subset.
