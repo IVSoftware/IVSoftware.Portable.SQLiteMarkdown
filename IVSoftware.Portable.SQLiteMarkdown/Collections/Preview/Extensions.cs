@@ -871,6 +871,16 @@ namespace IVSoftware.Portable.Collections.Preview
             mccache[nameof(StdModelPath)] = info;
             return info;
         }
+
+        /// <summary>
+        /// Builds a canonical XElement model and returns its string form.
+        /// </summary>
+        /// <remarks>
+        /// - Enumerates items and places each by full path into the model tree.
+        /// - Sets modeling metadata and order; attaches bound model reference.
+        /// - Optionally applies preview via resolved delegate.
+        /// - Throws if path or placement result is invalid.
+        /// </remarks>
         public static string ToString(this IList @this, out XElement model)
         {
             var itemType = @this.GetItemType();
@@ -916,6 +926,7 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             return model.ToString();
         }
+
         public static Type? GetItemType(this IList @this)
         {
             Type listType = @this.GetType();
