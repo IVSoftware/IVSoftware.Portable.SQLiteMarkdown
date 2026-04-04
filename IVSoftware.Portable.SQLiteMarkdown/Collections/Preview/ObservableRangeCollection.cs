@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Collections.Modeled;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using System;
@@ -6,7 +7,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.Collections.Preview

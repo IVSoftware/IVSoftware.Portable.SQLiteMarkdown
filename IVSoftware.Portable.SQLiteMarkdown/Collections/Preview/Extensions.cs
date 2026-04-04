@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Collections.Modeled;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
@@ -824,6 +825,12 @@ namespace IVSoftware.Portable.Collections.Preview
                         }
                         break;
 
+                    case StdModelPath.ModelPathAttribute:
+                        fullPathPI = @this
+                            .GetProperties()
+                            .FirstOrDefault(p =>
+                                p.GetCustomAttribute<ModelPathAttribute>(inherit: true) is not null);
+                        break;
                     case StdModelPath.FullPath:
                     case StdModelPath.Description:
                     case StdModelPath.Text:

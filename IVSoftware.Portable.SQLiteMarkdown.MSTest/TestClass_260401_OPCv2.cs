@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Collections.Preview;
+﻿using IVSoftware.Portable.Collections.Modeled;
+using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;

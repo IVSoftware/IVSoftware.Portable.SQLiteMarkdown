@@ -20,7 +20,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         /// <summary>
         /// Detected a string property decorated with [ModelPath] attribute
         /// </summary>
-        FullPathAttribute,
+        ModelPathAttribute,
 
         /// <summary>
         /// Detected a string property named FullPath.

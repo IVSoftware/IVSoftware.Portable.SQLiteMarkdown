@@ -1,14 +1,11 @@
 ﻿using IVSoftware.Portable.Collections.Preview;
-using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Linq;
 
-namespace IVSoftware.Portable.Collections.Preview
+namespace IVSoftware.Portable.Collections.Modeled
 {
     /// <summary>
     /// Provides suppression infrastructure for observable collections.

@@ -58,6 +58,88 @@ The ability to model an arbitrary object (and its containing collection) require
 - Discovered, heuristically, using reflection.
 - Invoked as a cached compiled delegate thereafter.
 
+### ModelPath Heuristic
+
+Full paths may be hierarchal and delimited with backward slash characters. 
+
+The one-time discovery follows this sequence. 
+
+```
+public enum StdModelPath
+{
+    /// <summary>
+    /// Detected a string property decorated with [ModelPath] attribute
+    /// </summary>
+    FullPathAttribute,
+
+    /// <summary>
+    /// Detected a string property named FullPath.
+    /// </summary>
+    FullPath,
+
+    /// <summary>
+    /// A [PrimaryKey] property or a string property named Id.
+    /// </summary>
+    Id,
+
+    /// <summary>
+    /// A  string property named Description.
+    /// </summary>
+    Description,
+
+    /// <summary>
+    /// A property or a string property named Text.
+    /// </summary>
+    Text,
+
+    /// <summary>
+    /// Failed to find a suitable modeling property.
+    /// </summary>
+    NotFound,
+}
+```
+
+### Preview Heuristic
+
+Modeling may include a `preview` attribute. This is a truncated version of a description property that enhances human-readability of a model that might otherwise show guid values.
+
+```
+/// <summary>
+/// Heuristic order for Preview discovery.
+/// </summary>
+public enum StdPreviewPath
+{
+    /// <summary>
+    /// Detected a string property decorated with [ModelPreview] attribute
+    /// </summary>
+    PreviewAttribute,
+
+    /// <summary>
+    /// Detected a string property named Preview.
+    /// </summary>
+    Preview,
+
+    /// <summary>
+    /// A  string property named Description.
+    /// </summary>
+    Description,
+
+    /// <summary>
+    /// A property or a string property named Text.
+    /// </summary>
+    Text,
+
+    /// <summary>
+    /// Failed to find a suitable modeling property.
+    /// </summary>
+    NotFound,
+}
+```
+
+**EXAMPLE OUTPUT**
+
+
+
 
 
 
