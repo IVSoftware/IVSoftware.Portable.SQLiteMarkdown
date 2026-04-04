@@ -288,7 +288,7 @@ public class TestClass_260328_Model
     }
 
     [TestMethod, DoNotParallelize]
-    public void Test_HisogrammerMDC()
+    public void Test_HistogrammerMDC()
     {
         using var te = this.TestableEpoch();
 

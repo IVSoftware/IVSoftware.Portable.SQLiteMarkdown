@@ -605,7 +605,72 @@ SELECT * FROM items WHERE
                     // Call the Apply extension on Model.
                     Model.Apply(e);
                     // Raise the ModelSettled event conditionally.
-                    OnModelSettled(e);
+
+                    try
+                    {
+                        _reentry = true;
+                        if (DHostMDX.IsDisposing)
+                        {
+                            OnModelSettled(e);
+                        }
+                        else
+                        {
+                            switch (Authority)
+                            {
+                                // Mental Model: "When does the Model require an update?"
+                                case CollectionChangeAuthority.None:        // When the IList interface of an MMDC is invoked programmatically.
+                                case CollectionChangeAuthority.Reset:       // When an unconditional global clear is taking place.
+                                case CollectionChangeAuthority.Commit:      // When the model is being fully displaced by a new canonical recordset.
+                                case CollectionChangeAuthority.Projection:  // When [+] or [🗑] actions (buttons) operate on the visible surface directly.
+                                    break;
+                                // Mental Model: "When does the Model *not* require an update?"
+                                case CollectionChangeAuthority.Settle:      // The IME text has settled and deferred relitigation of
+                                                                            // 'qmatch' and 'match' attributes is proceeding.
+                                case CollectionChangeAuthority.Predicate:   // A filter has been toggled and immediate relitigation of
+                                                                            // 'pmatch' and 'match' attributes is proceeding.
+                                    switch (ProjectionTopology)
+                                    {
+                                        case NetProjectionTopology.None:
+                                            // N O O P
+                                            // There is no projection to update.
+                                            break;
+                                        case NetProjectionTopology.ObservableOnly:    // Maintain internal canon but do not push internal changes out to projection.
+                                            break;
+                                        case NetProjectionTopology.AllowDirectChanges:
+                                            if (ObservableNetProjection is null)
+                                            {
+                                                this.ThrowHard<NullReferenceException>($"Expecting not null is baked into {ProjectionTopology.ToFullKey()}");
+                                            }
+                                            else
+                                            {
+                                                // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                                // - Subclass has OPTED-IN to direct changes from this model.
+                                                // - Subclass is listening for changes, and not pushing them.
+                                                // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                                using (BeginAuthority(ModelDataExchangeAuthority.ModelDeferred))
+                                                {
+                                                    OnModelSettled(e);
+                                                }
+                                            }
+                                            break;
+                                        case NetProjectionTopology.Routed:
+                                            OnModelSettled(e);
+                                            break;
+                                        default:
+                                            ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
+                                            break;
+                                    }
+                                    break;
+                                default:
+                                    this.ThrowHard<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
+                                    break;
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        _reentry = false;
+                    }
                     break;
                 default:
 
@@ -614,7 +679,7 @@ SELECT * FROM items WHERE
             }
         }
 
-        public IDisposable BeginAuthority() => DHostMDX.GetToken(this);
+        public IDisposable BeginAuthority(ModelDataExchangeAuthority authority) => DHostMDX.GetToken(authority);
         ModelDataExchangeAuthorityProvider<T> DHostMDX
         {
             get
@@ -750,76 +815,12 @@ SELECT * FROM items WHERE
             if(_reentry)
             {
                 Debug.Fail($@"ADVISORY - First Time.");
-                // Even though this isn't ro be relied upon, it absolutely would work!
+                // Even though this isn't to be relied upon, it absolutely would work!
                 return;
             }
             else
             {
-                try
-                {
-                    _reentry = true;
-                    if (DHostMDX.IsDisposing)
-                    {
-                        ModelSettled?.Invoke(this, eUnk);
-                    }
-                    else
-                    {
-                        switch (Authority)
-                        {
-                            // Mental Model: "When does the Model require an update?"
-                            case CollectionChangeAuthority.None:        // When the IList interface of an MMDC is invoked programmatically.
-                            case CollectionChangeAuthority.Reset:       // When an unconditional global clear is taking place.
-                            case CollectionChangeAuthority.Commit:      // When the model is being fully displaced by a new canonical recordset.
-                            case CollectionChangeAuthority.Projection:  // When [+] or [🗑] actions (buttons) operate on the visible surface directly.
-                                break;
-                            // Mental Model: "When does the Model *not* require an update?"
-                            case CollectionChangeAuthority.Settle:      // The IME text has settled and deferred relitigation of
-                                                                        // 'qmatch' and 'match' attributes is proceeding.
-                            case CollectionChangeAuthority.Predicate:   // A filter has been toggled and immediate relitigation of
-                                                                        // 'pmatch' and 'match' attributes is proceeding.
-                                switch (ProjectionTopology)
-                                {
-                                    case NetProjectionTopology.None:
-                                        // N O O P
-                                        // There is no projection to update.
-                                        break;
-                                    case NetProjectionTopology.ObservableOnly:    // Maintain internal canon but do not push internal changes out to projection.
-                                        break;
-                                    case NetProjectionTopology.AllowDirectChanges:
-                                        if (ObservableNetProjection is null)
-                                        {
-                                            this.ThrowHard<NullReferenceException>($"Expecting not null is baked into {ProjectionTopology.ToFullKey()}");
-                                        }
-                                        else
-                                        {
-                                            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                                            // - Subclass has OPTED-IN to direct changes from this model.
-                                            // - Subclass is listening for changes, and not pushing them.
-                                            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                                            using (BeginAuthority())
-                                            {
-                                                ObservableNetProjection.Apply(eUnk);
-                                            }
-                                        }
-                                        break;
-                                    case NetProjectionTopology.Routed:
-                                        ModelSettled?.Invoke(this, eUnk);
-                                        break;
-                                    default:
-                                        ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
-                                        break;
-                                }
-                                break;
-                            default:
-                                this.ThrowHard<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
-                                break;
-                        }
-                    }
-                }
-                finally
-                {
-                    _reentry = false;
-                }
+                ModelSettled?.Invoke(this, eUnk);
             }
         }
         public event EventHandler? ModelSettled;
@@ -925,7 +926,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginAuthority())
+                        using (BeginAuthority(ModelDataExchangeAuthority.ModelDeferred))
                         {
                             foreach (var newItem in newItems)
                             {
@@ -966,7 +967,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginAuthority())
+                        using (BeginAuthority(ModelDataExchangeAuthority.ModelDeferred))
                         {
                             await Task.Run(() =>
                             {
