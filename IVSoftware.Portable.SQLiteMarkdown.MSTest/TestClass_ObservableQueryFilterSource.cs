@@ -3515,6 +3515,12 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 items.InputText += "a";
                 await items;
 
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting result to match."
+                );
+
                 actual = items.ToString(ReportFormat.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
@@ -3542,7 +3548,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 );
 
                 // ☆☆☆☆☆
-                // Extension : Model Model (with active filter) from the OUTSIDE LOOKING IN.
+                // Extension : Model the Model (with active filter) from the OUTSIDE LOOKING IN.
                 // ☆☆☆☆☆
                 actual = items.ToString(out XElement _);
                 actual.ToClipboardExpected();
@@ -3646,6 +3652,15 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 items.InputText = "brown&bear";
                 await items;
 
+                actual = items.ToString(out XElement _);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model modeling=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""0"" preview=""Brown Bear"" />
+</model>"
+                ;
+
 
                 actual = items.ToString(ReportFormat.ModelWithPreview);
                 actual.ToClipboardExpected();
@@ -3748,6 +3763,19 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                     12, 
                     items.Count,
                     "Expecting FULL.");
+
+                items.InputText = "rabbit|wolf";
+                await items;
+
+                actual = items.ToString(out XElement _);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model modeling=""Id"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""0"" preview=""White Rabb"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""1"" preview=""Gray Wolf "" />
+</model>"
+                ;
             }
             #endregion S U B T E S T S
 

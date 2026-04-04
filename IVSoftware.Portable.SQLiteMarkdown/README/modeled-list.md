@@ -38,7 +38,7 @@ The second function carries a kind of superpower - the ability to accumulate int
 
 Rehydrating `collectionBefore` to `collectionAfter` is performed by calling the `Apply` extension, which accepts either `NotifyCollectionChangedEventArgs` (from the the BCL) or  `NotifyCollectionChangingEventArgs` (from this library).
 
-```
+```csharp
 /// <summary>
 /// Applies a normalized collection change to a list target.
 /// </summary>
@@ -64,7 +64,7 @@ Full paths may be hierarchal and delimited with backward slash characters.
 
 The one-time discovery follows this sequence. 
 
-```
+```csharp
 public enum StdModelPath
 {
     /// <summary>
@@ -103,7 +103,7 @@ public enum StdModelPath
 
 Modeling may include a `preview` attribute. This is a truncated version of a description property that enhances human-readability of a model that might otherwise show guid values.
 
-```
+```csharp
 /// <summary>
 /// Heuristic order for Preview discovery.
 /// </summary>
@@ -137,6 +137,17 @@ public enum StdPreviewPath
 ```
 
 **EXAMPLE OUTPUT**
+
+Typical output from `myList.ToString(out XElement _)` shows:
+
+- The `modeling` attribute indicates that the path heuristic ran and identified `Id` as the designated path.
+- The `preview` attribute enhances human-readability with a string that is both padded and truncated.
+
+```xml<model modeling="Id">
+  <xitem text="312d1c21-0000-0000-0000-000000000007" model="[SelectableQFModel]" order="0" preview="White Rabb" />
+  <xitem text="312d1c21-0000-0000-0000-000000000009" model="[SelectableQFModel]" order="1" preview="Gray Wolf " />
+</model>
+```
 
 
 

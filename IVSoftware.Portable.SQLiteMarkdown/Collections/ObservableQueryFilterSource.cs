@@ -90,7 +90,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         }
                     }
 #else
-                    Debug.Assert(DateTime.Now.Date == new DateTime(2026, 4, 03).Date, "Don't forget disabled");
+                    Debug.Assert(DateTime.Now.Date == new DateTime(2026, 4, 04).Date, "Don't forget disabled");
                     CollectionChanged?.Invoke(
                         this,
                         new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset));

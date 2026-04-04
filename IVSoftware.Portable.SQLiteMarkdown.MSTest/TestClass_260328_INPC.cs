@@ -246,7 +246,6 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
                 "Expecting ToString(ReportFormat.ModelWithPreview) from active MarkdownContext."
             );
 
-
             using(itemsSource.BeginSuppress())
             {
                 itemsSource.RemoveAt(1);
