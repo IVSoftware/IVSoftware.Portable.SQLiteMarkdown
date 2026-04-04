@@ -35,13 +35,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public ModeledMarkdownContext()
         {
             CanonicalSupersetProtected = new();
-            DHostMDX.FinalDispose += (sender, eUnk) =>
-            {
-                if(eUnk is ModelDataExchangeFinalDisposeEventArgs e)
-                {
-                    OnModelSettled(e.Digest);
-                }
-            };
 
             if (typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
             {
@@ -793,7 +786,15 @@ SELECT * FROM items WHERE
             }
             else
             {
-                ModelSettled?.Invoke(this, eUnk);
+                try
+                {
+                    _reentry = true;
+                    ModelSettled?.Invoke(this, eUnk);
+                }
+                finally
+                {
+                    _reentry = false;
+                }
             }
         }
         public event EventHandler? ModelSettled;

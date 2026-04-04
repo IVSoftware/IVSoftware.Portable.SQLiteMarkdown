@@ -371,7 +371,6 @@ NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingOption.StructuralR
             Assert.AreEqual(1, busyCount);
             Assert.IsFalse(pmdc.Busy);
 
-
             actual = pmdc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
@@ -393,7 +392,7 @@ NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingOption.StructuralR
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Other.Reset   NewItems= 0 OldItems= 0 NotifyCollectionChangeReason.Digest      NotifyCollectionChangingEventArgs          "
+Other.Add     NewItems=37 OldItems= 0 NewStartingIndex= 0 NotifyCollectionChangeReason.Digest        NotifyCollectionChangingEventArgs          "
             ;
 
             Assert.AreEqual(
@@ -454,7 +453,24 @@ Other.Reset   NewItems= 0 OldItems= 0 NotifyCollectionChangeReason.Digest      N
             "Expecting modeled matches."
         );
 
-        // Assert.AreEqual(ProjectionTopology.Composition, pmdc.ProjectionTopology, "Because oc is INCC.");
+
+        actual = pmdc.ToString(out XElement _);
+        actual.ToClipboardExpected();
+        { } // <- FIRST TIME ONLY: Adjust the message.
+        actual.ToClipboardAssert("Expecting result to match.");
+        { }
+        expected = @" 
+<model modeling=""FullPath"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[TemporalAffinityQFModel]"" order=""0"" preview=""Green Appl"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000d"" model=""[TemporalAffinityQFModel]"" order=""1"" preview=""Green Pear"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000020"" model=""[TemporalAffinityQFModel]"" order=""2"" preview=""Errata    "" />
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting result to match."
+        );
 
         actual = pmdc.StateReport();
         actual.ToClipboardExpected();
