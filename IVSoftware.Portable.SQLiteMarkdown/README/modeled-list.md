@@ -27,7 +27,7 @@ public static string ToString(this IList @this, out XElement model){...}
 ```
 ___
 
-## ModelDataExchange (MDX)
+## ModelDataExchange
 
 The MDX has two functions:
 

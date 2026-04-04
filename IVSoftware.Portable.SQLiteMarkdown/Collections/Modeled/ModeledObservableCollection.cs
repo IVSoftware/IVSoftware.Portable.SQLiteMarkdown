@@ -20,7 +20,7 @@ namespace IVSoftware.Portable.Collections.Modeled
     /// </remarks>
     public class ModeledObservableCollection<T> 
         : ObservableCollection<T>
-        , INotifyCollectionChangedSuppress<T>
+        , IModeledNotifyCollectionChanged<T>
     {        
         public ModeledObservableCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
         {
@@ -53,7 +53,8 @@ namespace IVSoftware.Portable.Collections.Modeled
                 base.OnCollectionChanged(e);
             }
         }
-        public IDisposable BeginSuppress() => DHostModelExchangeAuthority.GetToken(this);
+        public IDisposable BeginAuthority(ModelDataExchangeAuthority authority)
+            => DHostModelExchangeAuthority.GetToken(authority);
 
         public void CancelSuppress() => DHostModelExchangeAuthority.CancelSuppressNotify();
         public ModelDataExchangeAuthority Phase => DHostModelExchangeAuthority.Authority;

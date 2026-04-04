@@ -614,7 +614,7 @@ SELECT * FROM items WHERE
             }
         }
 
-        public IDisposable BeginSuppress() => DHostModelDataExchangeAuthority.GetToken(this);
+        public IDisposable BeginAuthority() => DHostModelDataExchangeAuthority.GetToken(this);
         ModelDataExchangeAuthorityProvider<T> DHostModelDataExchangeAuthority
         {
             get
@@ -795,7 +795,7 @@ SELECT * FROM items WHERE
                                             // - Subclass has OPTED-IN to direct changes from this model.
                                             // - Subclass is listening for changes, and not pushing them.
                                             // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                                            using (BeginSuppress())
+                                            using (BeginAuthority())
                                             {
                                                 ObservableNetProjection.Apply(eUnk);
                                             }
@@ -924,7 +924,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginSuppress())
+                        using (BeginAuthority())
                         {
                             foreach (var newItem in newItems)
                             {
@@ -965,7 +965,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginSuppress())
+                        using (BeginAuthority())
                         {
                             await Task.Run(() =>
                             {

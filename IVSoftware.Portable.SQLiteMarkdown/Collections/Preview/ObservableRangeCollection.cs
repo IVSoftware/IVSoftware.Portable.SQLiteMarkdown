@@ -23,7 +23,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public void AddRange(IEnumerable items)
         {
-            using (BeginSuppress())
+            using (BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 int newStartingIndex = Count;
                 foreach (var item in items)
@@ -58,7 +58,7 @@ namespace IVSoftware.Portable.Collections.Preview
             else
             {
                 int changed = 0;
-                using (BeginSuppress())
+                using (BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
                 {
                     int newStartingIndex = Count;
                     foreach (var item in items)
@@ -98,7 +98,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public void InsertRange(int startingIndex, IEnumerable items)
         {
-            using (BeginSuppress())
+            using (BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 foreach (var item in items)
                 {
@@ -161,7 +161,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
             if (itemsT.Count == count)
             {
-                using (BeginSuppress())
+                using (BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
                 {
                     foreach (var item in itemsT)
                     {
@@ -186,7 +186,7 @@ namespace IVSoftware.Portable.Collections.Preview
                         return 0;
                     }
                 }
-                using (BeginSuppress())
+                using (BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
                 {
                     foreach (var removeAt in indexes.OrderByDescending(_ => _))
                     {
@@ -221,9 +221,9 @@ namespace IVSoftware.Portable.Collections.Preview
                 this.ThrowHard<IndexOutOfRangeException>(
                     $"The {nameof(endingIndex)} must be less than {nameof(Count)}.");
             }
-            else 
-            { 
-                using (BeginSuppress())
+            else
+            {
+                using (BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
                 {
                     var count = (endingIndex - startingIndex) + 1;
                     while (count > 0)

@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.StateRunner.Preview;
 using System;
@@ -18,6 +19,10 @@ namespace IVSoftware.Portable.Collections.Preview
         }
         IList _source;
         public ReadOnlyCollection<T> Snapshot { get; private set; } = null!;
+
+        [Canonical]
+        public IDisposable GetToken(ModelDataExchangeAuthority authority) 
+            => GetToken(sender: authority);
 
         protected override void OnBeginUsing(BeginUsingEventArgs e)
         {
@@ -41,6 +46,7 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             else
             {
+                this.ThrowHard<ArgumentException>($"Requires a token whose sender is {nameof(ModelDataExchangeAuthority)}");
                 Authority = (ModelDataExchangeAuthority)FsmReserved.NoAuthority;
             }
             base.OnBeginUsing(e);

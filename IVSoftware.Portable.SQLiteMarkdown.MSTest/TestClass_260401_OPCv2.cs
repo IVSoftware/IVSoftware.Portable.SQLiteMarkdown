@@ -15,7 +15,7 @@ public class TestClass_260401_OPCv2
 {
     [TestMethod, DoNotParallelize]
     [Claim("00000000-0000-0000-0000-000000000000")]
-    public void Test_Suppressible()
+    public void Test_ModeledObservableCollection()
     {
         string actual, expected;
         var builder = new List<string>();
@@ -197,7 +197,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 "Expecting result to match."
             );
 
-            using (itemsSource.BeginSuppress())
+            using (itemsSource.BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 itemsSource.RemoveAt(1);
                 Assert.AreEqual(5, itemsSource.Count);
@@ -225,7 +225,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             te.ResetEpoch();
             itemsSource.PopulateForDemo(5);
 
-            using (itemsSource.BeginSuppress())
+            using (itemsSource.BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 itemsSource.RemoveAt(1);
                 Assert.AreEqual(5, itemsSource.Count);
@@ -254,7 +254,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             itemsSource.PopulateForDemo(5);
 
             int liveCount = itemsSource.Count;
-            using (itemsSource.BeginSuppress())
+            using (itemsSource.BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 itemsSource.RemoveAt(1);                        // Remove Item02 (middle)
                 liveCount--;
@@ -301,7 +301,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
             );
 
             // P R E V I E W
-            using (itemsSource.BeginSuppress())
+            using (itemsSource.BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 itemsSource.Add(i1);
                 itemsSource.Add(i2);
@@ -323,7 +323,7 @@ NetProjection.Add     NewItems= 3 NewStartingIndex= 0 NotifyCollectionChangedEve
 
             // - This *looks* contiguous but it isn't.
             // ∴We should get a Reset not a BCL-compatible event
-            using (itemsSource.BeginSuppress())
+            using (itemsSource.BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 itemsSource.Remove(i1);         // Remove Item01 from index 0      
                 itemsSource.RemoveAt(1);        // Remove item03 from index 1
@@ -346,7 +346,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             // is the (only) one that should remain
             Assert.AreSame(itemsSource[0], i2);
 
-            using (itemsSource.BeginSuppress())
+            using (itemsSource.BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 itemsSource.PopulateForDemo(5);
             }
@@ -363,7 +363,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
                 "Expecting 1x jagged Reset."
             );
 
-            using (itemsSource.BeginSuppress())
+            using (itemsSource.BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 // Replace index 1-4 with with Item01 (contiguous)
                 for (int i = 1; i < itemsSource.Count; i++)
@@ -385,7 +385,7 @@ NetProjection.Replace NewItems= 4 OldItems= 4 NewStartingIndex= 0 OldStartingInd
             );
 
             // P R E V I E W
-            using (itemsSource.BeginSuppress())
+            using (itemsSource.BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 itemsSource.Clear();
                 Assert.AreEqual(5, itemsSource.Count);  // Remember! We're projecting a different reality.
@@ -408,7 +408,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
                 "Expecting 1x jagged reset."
             );
 
-            using (itemsSource.BeginSuppress())
+            using (itemsSource.BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 itemsSource.PopulateForDemo(5);
             }
@@ -425,7 +425,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
                 "Expecting 1x jagged Reset."
             );
 
-            using (itemsSource.BeginSuppress())
+            using (itemsSource.BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 // C O N T I G U O U S !
                 // - Move is *not* a qualifying ranged operation.

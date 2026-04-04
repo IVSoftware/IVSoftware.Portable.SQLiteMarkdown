@@ -186,14 +186,22 @@ namespace IVSoftware.Portable.Collections.Preview
     }
 #endif
 
-        /// <summary>
-        /// Provides a suppression mechanism for <see cref="INotifyCollectionChanged"/> notifications.
-        /// </summary>
-        /// <remarks>
-        /// Defines a scoped model for temporarily suppressing collection change notifications
-        /// during coordinated or batched updates with the goal of reducing or eliminating churn.
-        /// </remarks>
-    internal interface INotifyCollectionChangedSuppress : IList
+    /// <summary>
+    /// Defines a modeled contract for <see cref="INotifyCollectionChanged"/> 
+    /// under ModelDataExchange authority.
+    /// </summary>
+    /// <remarks>
+    /// Represents a collection whose change notifications are governed by MDX,
+    /// where authority determines both:
+    /// - The direction of updates (source vs. projection), and
+    /// - Whether events are immediate or deferred.
+    ///
+    /// In deferred modes, intermediate changes may be accumulated and coalesced
+    /// into either:
+    /// - A single BCL-compatible event, or
+    /// - A non-compatible Add event whose NewItems form an event playlist.
+    /// </remarks>
+    internal interface IModeledNotifyCollectionChanged : IList
     {
         /// <summary>
         /// Increments the ref count for the suppression epoch.
@@ -202,7 +210,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// When the ref count returns to zero, disposal raises a final event
         /// with a coalesced <see cref="NotifyCollectionChangingEventArgs"/> instance.
         /// </remarks>
-        IDisposable BeginSuppress();
+        IDisposable BeginAuthority(ModelDataExchangeAuthority authority);
 
         /// <summary>
         /// Sets an internal flag indicating that the final emission for the current
@@ -211,7 +219,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// <remarks>
         /// This method does not terminate the suppression scope or affect the reference
         /// count. Disposal proceeds normally via the <see cref="IDisposable"/> tokens
-        /// returned by <see cref="BeginSuppress"/>. Instead, it alters the semantics
+        /// returned by <see cref="BeginAuthority"/>. Instead, it alters the semantics
         /// of the final emission, signaling that the coalesced result should be disregarded.
         /// </remarks>
         void CancelSuppress();
@@ -245,9 +253,9 @@ namespace IVSoftware.Portable.Collections.Preview
         NotifyCollectionChangeScope EventScope { get; }
     }
 
-    internal interface INotifyCollectionChangedSuppress<T> 
+    internal interface IModeledNotifyCollectionChanged<T> 
         : IList<T>
-        , INotifyCollectionChangedSuppress { } 
+        , IModeledNotifyCollectionChanged { } 
 
     internal interface IRangeable
     {
