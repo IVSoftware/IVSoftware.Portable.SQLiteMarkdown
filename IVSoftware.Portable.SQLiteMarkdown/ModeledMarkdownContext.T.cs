@@ -305,77 +305,75 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
         protected override async Task ApplyFilter()
         {
-            using (BeginAuthority(ModelDataExchangeAuthority.ModelDeferred))
-            {
-            }
-            await base.ApplyFilter();
-
             using (DHostBusy.GetToken())
             {
                 await _sslimAF.WaitAsync();
+                await base.ApplyFilter();
                 try
                 {
-                    string sql;
-                    IList matches = Array.Empty<object>();
-                    string[] matchPaths;
-
-                    await Task.Run(async () =>
+                    using (BeginAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
                     {
-                        PredicateMatchSubsetProtected.Clear();
-                        Model.RemoveDescendantAttributes(
-                            [
-                                StdMarkdownAttribute.match,
+                        string sql;
+                        IList matches = Array.Empty<object>();
+                        string[] matchPaths;
+
+                        await Task.Run(async () =>
+                        {
+                            PredicateMatchSubsetProtected.Clear();
+                            Model.RemoveDescendantAttributes(
+                                [
+                                    StdMarkdownAttribute.match,
                                 StdMarkdownAttribute.pmatch,
                                 StdMarkdownAttribute.qmatch,
-                            ]);
+                                ]);
 
-                        #region F I L T E R    Q U E R Y
-                        sql = ParseSqlMarkdown();
+                            #region F I L T E R    Q U E R Y
+                            sql = ParseSqlMarkdown();
 #if DEBUG
-                        if (InputText == "b")
-                        {
-                            Debug.Assert(sql == @"
+                            if (InputText == "b")
+                            {
+                                Debug.Assert(sql == @"
 SELECT * FROM items WHERE
 (FilterTerm LIKE '%b%')".TrimStart(),
-                            "PROBABLY *NOT* BUGIRL - SCREENING FOR A SPURIOUS FAIL");
-                        }
-#endif
-                        // Execute the filter query against the proxy table. The returned rows are
-                        // lightweight proxy records used only to discover which canonical models
-                        // satisfy the predicate. These proxy instances are not inserted into the
-                        // projection; instead their paths are resolved back to the original model
-                        // objects bound in the AST.
-                        matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
-
-                        if(matches.Count == 0 && Equals(Settings[StdMarkdownContextSetting.AllowPluralize], true))
-                        {
-                            sql = sql.ToFuzzyQuery();
-                            matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
-                        }
-                        #endregion F I L T E R    Q U E R Y
-
-                        matchPaths = localGetPaths();
-
-                        foreach (var path in matchPaths)
-                        {
-                            switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
-                            {
-                                case PlacerResult.Exists:
-                                    // IFTTT - the XObject.Change will add this to PMSS.
-                                    xaf.SetAttributeValue(nameof(StdMarkdownAttribute.qmatch), bool.TrueString);
-                                    break;
-                                case PlacerResult.Created:
-                                    this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
-                                    break;
-                                default:
-                                    break;
+                                "PROBABLY *NOT* BUGIRL - SCREENING FOR A SPURIOUS FAIL");
                             }
-                        }
-                        if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
-                        {
-                            await ApplyAffinities(matches);
-                        }
-                    });
+#endif
+                            // Execute the filter query against the proxy table. The returned rows are
+                            // lightweight proxy records used only to discover which canonical models
+                            // satisfy the predicate. These proxy instances are not inserted into the
+                            // projection; instead their paths are resolved back to the original model
+                            // objects bound in the AST.
+                            matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
+
+                            if (matches.Count == 0 && Equals(Settings[StdMarkdownContextSetting.AllowPluralize], true))
+                            {
+                                sql = sql.ToFuzzyQuery();
+                                matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
+                            }
+                            #endregion F I L T E R    Q U E R Y
+
+                            matchPaths = localGetPaths();
+
+                            foreach (var path in matchPaths)
+                            {
+                                switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
+                                {
+                                    case PlacerResult.Exists:
+                                        // IFTTT - the XObject.Change will add this to PMSS.
+                                        xaf.SetAttributeValue(nameof(StdMarkdownAttribute.qmatch), bool.TrueString);
+                                        break;
+                                    case PlacerResult.Created:
+                                        this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                            if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                            {
+                                await ApplyAffinities(matches);
+                            }
+                        });
 
 #if false
                     if (CollectionChangeAuthorityProvider[nameof(StdAuthorityProperty.Snapshot)] is IList snapshot)
@@ -406,32 +404,33 @@ SELECT * FROM items WHERE
 #endif
 #endif
 
-                    #region L o c a l F x
+                        #region L o c a l F x
 
-                    /// <summary>
-                    /// Resolves the path identifiers for the matched recordset. When the proxy
-                    /// implements <c>IPrioritizedAffinity</c>, paths are taken directly from
-                    /// <c>FullPath</c>; otherwise the value of the mapped SQLite primary key is
-                    /// used. A missing primary key mapping is treated as a framework error.
-                    /// </summary>
-                    string[] localGetPaths()
-                    {
-                        if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                        /// <summary>
+                        /// Resolves the path identifiers for the matched recordset. When the proxy
+                        /// implements <c>IPrioritizedAffinity</c>, paths are taken directly from
+                        /// <c>FullPath</c>; otherwise the value of the mapped SQLite primary key is
+                        /// used. A missing primary key mapping is treated as a framework error.
+                        /// </summary>
+                        string[] localGetPaths()
                         {
-                            return matches.Cast<IPrioritizedAffinity>().Select(_ => _.FullPath).ToArray();
-                        }
-                        else
-                        {
-                            if (ProxyType.GetSQLiteMapping().PK?.PropertyInfo is PropertyInfo pi)
+                            if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
                             {
-                                return matches.Cast<object>().Select(_ => (string)pi.GetValue(_)).ToArray();
+                                return matches.Cast<IPrioritizedAffinity>().Select(_ => _.FullPath).ToArray();
                             }
-                            // Error fall-through.
-                            this.ThrowHard<InvalidOperationException>();
-                            return [];
+                            else
+                            {
+                                if (ProxyType.GetSQLiteMapping().PK?.PropertyInfo is PropertyInfo pi)
+                                {
+                                    return matches.Cast<object>().Select(_ => (string)pi.GetValue(_)).ToArray();
+                                }
+                                // Error fall-through.
+                                this.ThrowHard<InvalidOperationException>();
+                                return [];
+                            }
                         }
+                        #endregion L o c a l F x
                     }
-                    #endregion L o c a l F x
                 }
                 catch (Exception ex)
                 {
@@ -680,14 +679,17 @@ SELECT * FROM items WHERE
             }
         }
 
-        public IDisposable BeginAuthority(ModelDataExchangeAuthority authority) => DHostMDX.GetToken(authority);
+        public IDisposable BeginAuthority(ModelDataExchangeAuthority authority, IList source)
+        {
+            return DHostMDX.GetToken(authority, source);
+        }
         ModelDataExchangeAuthorityProvider<T> DHostMDX
         {
             get
             {
                 if (_dhostMDX is null)
                 {
-                    _dhostMDX = new ModelDataExchangeAuthorityProvider<T>(this);
+                    _dhostMDX = new ModelDataExchangeAuthorityProvider<T>();
                     _dhostMDX.FinalDispose += (sender, e) =>
                     {
                         if (e is ModelDataExchangeFinalDisposeEventArgs eFD)
@@ -927,7 +929,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginAuthority(ModelDataExchangeAuthority.ModelDeferred))
+                        using (BeginAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
                         {
                             foreach (var newItem in newItems)
                             {
@@ -968,7 +970,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginAuthority(ModelDataExchangeAuthority.ModelDeferred))
+                        using (BeginAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
                         {
                             await Task.Run(() =>
                             {

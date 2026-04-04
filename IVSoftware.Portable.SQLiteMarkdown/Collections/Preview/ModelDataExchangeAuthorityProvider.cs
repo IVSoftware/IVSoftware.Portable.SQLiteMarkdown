@@ -13,16 +13,27 @@ namespace IVSoftware.Portable.Collections.Preview
     public sealed class ModelDataExchangeAuthorityProvider<T> 
         : DisposableHost
     {
-        public ModelDataExchangeAuthorityProvider(IList source)
-        {
-            _source = source;
-        }
-        IList _source;
         public ReadOnlyCollection<T> Snapshot { get; private set; } = null!;
 
+        IList? _source = null;
+
         [Canonical]
-        public IDisposable GetToken(ModelDataExchangeAuthority authority) 
-            => GetToken(sender: authority);
+        public IDisposable GetToken(ModelDataExchangeAuthority authority, IList source)
+        {
+            try
+            {
+                _source = source;            // Catch the IList constraint here.
+                Snapshot = new(source.Cast<T>().ToArray());
+            }
+            catch (InvalidCastException ex)
+            {
+                this.RethrowHard(ex);
+                // Only reachable if RethrowHard is handled.
+                Snapshot = new(Array.Empty<T>());
+                authority = (ModelDataExchangeAuthority)FsmReserved.NoAuthority;
+            }
+            return base.GetToken(sender: authority);
+        }
 
         protected override void OnBeginUsing(BeginUsingEventArgs e)
         {
@@ -30,21 +41,16 @@ namespace IVSoftware.Portable.Collections.Preview
             _isModified = false;
             if(e.AutoDisposableContext.Sender is ModelDataExchangeAuthority authority)
             {
-                try
+                if(_source is null)
                 {
-                    // [Careful]
-                    // Must be done before authority; otherwise the iteration is circular.
-                    Snapshot = new(_source.Cast<T>().ToArray());
-                    Authority = authority;
-                }
-                catch (InvalidCastException ex)
-                {
-                    this.RethrowHard(ex);
+                    this.ThrowHard<InvalidOperationException>(
+                        $"{nameof(GetToken)} must be called with {nameof(ModelDataExchangeAuthority)} and {nameof(IList)} arguments.");
                     // Only reachable if RethrowHard is handled.
                     Snapshot = new(Array.Empty<T>());
                     Authority = (ModelDataExchangeAuthority)FsmReserved.NoAuthority;
                     return;
                 }
+                Authority = authority;
             }
             else
             {
@@ -71,42 +77,50 @@ namespace IVSoftware.Portable.Collections.Preview
             try
             {
                 IsDisposing = true;
-
-                // If canceled, rollback all of the items to the original.
-                if(_cancel)
+                if (_source is null)
                 {
-                    ((IList)_source).Clear();
-                    foreach (var item in Snapshot)
-                    {
-                        _source.Add(item);
-                    }
+                    // Already warned.
+                    base.OnFinalDispose(e);
                 }
+                else
+                {
 
-                var before = Snapshot;
-                var after = _source;
+                    // If canceled, rollback all of the items to the original.
+                    if (_cancel)
+                    {
+                        _source.Clear();
+                        foreach (var item in Snapshot)
+                        {
+                            _source.Add(item);
+                        }
+                    }
 
-                var digest =
-                    _cancel
-                    ? new NotifyCollectionChangingEventArgs(
-                        action: NotifyCollectionChangeAction.Reset,
-                        reason: NotifyCollectionChangeReason.Digest | NotifyCollectionChangeReason.Cancel)
-                    : before.Diff(
-                        after,
-                        reason: NotifyCollectionChangeReason.Digest);
+                    var before = Snapshot;
+                    var after = _source;
 
-                var snapshot = e.Keys.ToDictionary(
-                    key => key,
-                    key => e[key]);
+                    var digest =
+                        _cancel
+                        ? new NotifyCollectionChangingEventArgs(
+                            action: NotifyCollectionChangeAction.Reset,
+                            reason: NotifyCollectionChangeReason.Digest | NotifyCollectionChangeReason.Cancel)
+                        : before.Diff(
+                            after,
+                            reason: NotifyCollectionChangeReason.Digest);
 
-                snapshot["FinalList"] = _source;
-                snapshot["IsModified"] = _isModified;
+                    var snapshot = e.Keys.ToDictionary(
+                        key => key,
+                        key => e[key]);
 
-                var eBatch = new ModelDataExchangeFinalDisposeEventArgs(
-                    e.ReleasedSenders,
-                    snapshot,
-                    digest,
-                    _source);
-                base.OnFinalDispose(eBatch);
+                    snapshot["FinalList"] = _source;
+                    snapshot["IsModified"] = _isModified;
+
+                    var eBatch = new ModelDataExchangeFinalDisposeEventArgs(
+                        e.ReleasedSenders,
+                        snapshot,
+                        digest,
+                        _source);
+                    base.OnFinalDispose(eBatch);
+                }
             }
             finally
             {
@@ -115,6 +129,7 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             _isModified = false;
             _cancel = false;
+            _source = null;
         }
 
         public bool IsDisposing { get; private set; }

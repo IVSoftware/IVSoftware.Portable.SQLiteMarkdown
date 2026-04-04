@@ -65,7 +65,7 @@ namespace IVSoftware.Portable.Collections.Modeled
             {
                 if (_dhostMDX is null)
                 {
-                    _dhostMDX = new ModelDataExchangeAuthorityProvider<T>(this);
+                    _dhostMDX = new ModelDataExchangeAuthorityProvider<T>();
                     _dhostMDX.FinalDispose += (sender, e) => OnFinalCoalesce((ModelDataExchangeFinalDisposeEventArgs)e);
                 }
                 return _dhostMDX;
