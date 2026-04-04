@@ -48,42 +48,53 @@ namespace IVSoftware.Portable.Collections.Modeled
 
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            if (DHostModelExchangeAuthority.IsZero())
+            if (DHostMDX.IsZero())
             {
                 base.OnCollectionChanged(e);
             }
         }
         public IDisposable BeginAuthority(ModelDataExchangeAuthority authority)
-            => DHostModelExchangeAuthority.GetToken(authority);
+            => DHostMDX.GetToken(authority);
 
-        public void CancelSuppress() => DHostModelExchangeAuthority.CancelSuppressNotify();
-        public ModelDataExchangeAuthority Phase => DHostModelExchangeAuthority.Authority;
+        public void CancelSuppress() => DHostMDX.CancelSuppressNotify();
+        public ModelDataExchangeAuthority Phase => DHostMDX.Authority;
 
-        public ModelDataExchangeAuthorityProvider<T> DHostModelExchangeAuthority
+        public ModelDataExchangeAuthorityProvider<T> DHostMDX
         {
             get
             {
-                if (_dhostModelExchangeAuthorityProvider is null)
+                if (_dhostMDX is null)
                 {
-                    _dhostModelExchangeAuthorityProvider = new ModelDataExchangeAuthorityProvider<T>(this);
-                    _dhostModelExchangeAuthorityProvider.FinalDispose += (sender, e) => OnFinalCoalesce((ModelDateExchangeFinalDisposeEventArgs)e);
+                    _dhostMDX = new ModelDataExchangeAuthorityProvider<T>(this);
+                    _dhostMDX.FinalDispose += (sender, e) => OnFinalCoalesce((ModelDataExchangeFinalDisposeEventArgs)e);
                 }
-                return _dhostModelExchangeAuthorityProvider;
+                return _dhostMDX;
             }
         }
-        ModelDataExchangeAuthorityProvider<T>? _dhostModelExchangeAuthorityProvider = null;
-        private void OnFinalCoalesce(ModelDateExchangeFinalDisposeEventArgs e)
+        ModelDataExchangeAuthorityProvider<T>? _dhostMDX = null;
+        private void OnFinalCoalesce(ModelDataExchangeFinalDisposeEventArgs e)
         {
             OnCollectionChanged((e.Digest));
         }
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         public new IEnumerator<T> GetEnumerator()
-            => DHostModelExchangeAuthority.IsZero()
+            => DHostMDX.IsZero()
             ? base.GetEnumerator()
-            : DHostModelExchangeAuthority.Snapshot.GetEnumerator();
+            : DHostMDX.Snapshot.GetEnumerator();
         public new int Count
-            => DHostModelExchangeAuthority.IsZero()
-            ? base.Count
-            : DHostModelExchangeAuthority.Snapshot.Count;
+        {
+            get
+            {
+                switch (DHostMDX.Authority)
+                {
+                    case ModelDataExchangeAuthority.CollectionDeferred when !DHostMDX.IsDisposing:
+                        return DHostMDX.Snapshot.Count;
+                    case ModelDataExchangeAuthority.ModelDeferred when !DHostMDX.IsDisposing:
+                        return DHostMDX.Snapshot.Count;
+                    default:
+                        return base.Count;
+                }
+            }
+        }
     }
 }

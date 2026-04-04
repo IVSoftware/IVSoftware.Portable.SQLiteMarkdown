@@ -199,11 +199,11 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
 
             using (itemsSource.BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
-                itemsSource.RemoveAt(1);
+                itemsSource.RemoveAt(1);                // Remove Item02
                 Assert.AreEqual(5, itemsSource.Count);
-                itemsSource.RemoveAt(2);
+                itemsSource.RemoveAt(2);                // Remove Item04
                 Assert.AreEqual(5, itemsSource.Count);
-                itemsSource.RemoveAt(1);
+                itemsSource.RemoveAt(1);                // Remove Item03
                 Assert.AreEqual(5, itemsSource.Count);
             }
 

@@ -32,6 +32,8 @@ namespace IVSoftware.Portable.Collections.Preview
             {
                 try
                 {
+                    // [Careful]
+                    // Must be done before authority; otherwise the iteration is circular.
                     Snapshot = new(_source.Cast<T>().ToArray());
                     Authority = authority;
                 }
@@ -99,7 +101,7 @@ namespace IVSoftware.Portable.Collections.Preview
                 snapshot["FinalList"] = _source;
                 snapshot["IsModified"] = _isModified;
 
-                var eBatch = new ModelDateExchangeFinalDisposeEventArgs(
+                var eBatch = new ModelDataExchangeFinalDisposeEventArgs(
                     e.ReleasedSenders,
                     snapshot,
                     digest,
@@ -126,9 +128,9 @@ namespace IVSoftware.Portable.Collections.Preview
         public ModelDataExchangeAuthority Authority { get; private set; } = ModelDataExchangeAuthority.Collection;
     }
 
-    internal class ModelDateExchangeFinalDisposeEventArgs : FinalDisposeEventArgs
+    internal class ModelDataExchangeFinalDisposeEventArgs : FinalDisposeEventArgs
     {
-        public ModelDateExchangeFinalDisposeEventArgs(
+        public ModelDataExchangeFinalDisposeEventArgs(
             IReadOnlyCollection<object> releasedSenders,
             IReadOnlyDictionary<string, object> snapshot,
             NotifyCollectionChangingEventArgs batchEventArgs,

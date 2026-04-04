@@ -39,9 +39,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 OnCanonicalSupersetChanged(e);
             };
-            DHostModelDataExchangeAuthority.FinalDispose += (sender, eUnk) =>
+            DHostMDX.FinalDispose += (sender, eUnk) =>
             {
-                if(eUnk is ModelDateExchangeFinalDisposeEventArgs e)
+                if(eUnk is ModelDataExchangeFinalDisposeEventArgs e)
                 {
                     OnModelSettled(e.Digest);
                 }
@@ -614,17 +614,17 @@ SELECT * FROM items WHERE
             }
         }
 
-        public IDisposable BeginAuthority() => DHostModelDataExchangeAuthority.GetToken(this);
-        ModelDataExchangeAuthorityProvider<T> DHostModelDataExchangeAuthority
+        public IDisposable BeginAuthority() => DHostMDX.GetToken(this);
+        ModelDataExchangeAuthorityProvider<T> DHostMDX
         {
             get
             {
-                if (_dhostSuppress is null)
+                if (_dhostMDX is null)
                 {
-                    _dhostSuppress = new ModelDataExchangeAuthorityProvider<T>(this);
-                    _dhostSuppress.FinalDispose += (sender, e) =>
+                    _dhostMDX = new ModelDataExchangeAuthorityProvider<T>(this);
+                    _dhostMDX.FinalDispose += (sender, e) =>
                     {
-                        if (e is ModelDateExchangeFinalDisposeEventArgs eFD)
+                        if (e is ModelDataExchangeFinalDisposeEventArgs eFD)
                         {
                             if (eFD["IsModified"] is bool isModified && isModified)
                             {
@@ -636,10 +636,10 @@ SELECT * FROM items WHERE
                         }
                     };
                 }
-                return _dhostSuppress;
+                return _dhostMDX;
             }
         }
-        ModelDataExchangeAuthorityProvider<T>? _dhostSuppress = null;
+        ModelDataExchangeAuthorityProvider<T>? _dhostMDX = null;
 
         protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -749,6 +749,7 @@ SELECT * FROM items WHERE
         {
             if(_reentry)
             {
+                Debug.Fail($@"ADVISORY - First Time.");
                 // Even though this isn't ro be relied upon, it absolutely would work!
                 return;
             }
@@ -757,7 +758,7 @@ SELECT * FROM items WHERE
                 try
                 {
                     _reentry = true;
-                    if (DHostModelDataExchangeAuthority.IsDisposing)
+                    if (DHostMDX.IsDisposing)
                     {
                         ModelSettled?.Invoke(this, eUnk);
                     }
