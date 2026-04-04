@@ -356,6 +356,18 @@ NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingOption.StructuralR
             pmdc.InputText = "green";
             await pmdc;
 
+            actual = pmdc.StateReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[IME Len: 5, IsFiltering: True], [Net: 37, CC: 37, PMC: 3], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
+
             Assert.AreEqual(1, busyCount);
             Assert.IsFalse(pmdc.Busy);
 
