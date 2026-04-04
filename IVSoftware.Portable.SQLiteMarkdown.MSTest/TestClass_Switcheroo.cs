@@ -226,7 +226,7 @@ Throw MarkdownContextPolicyViolation.ExplicitClearAdvisory | ExplicitClearAdviso
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -306,7 +306,7 @@ MarkdownContext Clear(all=False)";
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                     ;
                     Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting QUERY COMPLETE WITH RESULTS.");
                     { }

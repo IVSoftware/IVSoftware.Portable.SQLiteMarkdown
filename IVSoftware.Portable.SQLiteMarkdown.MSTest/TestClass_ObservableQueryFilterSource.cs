@@ -1380,7 +1380,7 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1444,7 +1444,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -3218,8 +3218,8 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 actual = string.Join(Environment.NewLine, builder);
                 actual.ToClipboardExpected();
                 { }
-                // Expecting single event because list started out empty.
                 expected = @" 
+NetProjection.Reset   NotifyCollectionChangedEventArgs           
 NetProjection.Add     NewItems=12 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
                 ;
 
@@ -3331,7 +3331,7 @@ Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portabl
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 7, IsFiltering: True], [Net: null, CC: 3, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 7, IsFiltering: True], [Net: null, CC: 3, PMC: 3], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting State Report to match.");
 
