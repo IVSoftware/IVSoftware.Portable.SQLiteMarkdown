@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace IVSoftware.Portable.Collections.Preview
 {
-    internal sealed class DHostSuppress<T> : DisposableHost
+    public sealed class ModelAuthorityProvider<T> : DisposableHost
     {
         public ReadOnlyCollection<T> Snapshot { get; private set; } = null!;
         IList _listFTR = null!;
@@ -17,7 +17,7 @@ namespace IVSoftware.Portable.Collections.Preview
         protected override void OnBeginUsing(BeginUsingEventArgs e)
         {
             _cancel = false;
-            Phase = SuppressionPhase.Preview;
+            Phase = ModelAuthority.Preview;
             base.OnBeginUsing(e);
         }
 
@@ -73,12 +73,12 @@ namespace IVSoftware.Portable.Collections.Preview
                     snapshot,
                     digest,
                     _listFTR);
-                Phase = SuppressionPhase.Commit;
+                Phase = ModelAuthority.Commit;
                 base.OnFinalDispose(eBatch);
             }
             finally
             {
-                Phase = SuppressionPhase.None;
+                Phase = ModelAuthority.None;
                 IsDisposing = false;
             }
             _isModified = false;
@@ -129,7 +129,7 @@ namespace IVSoftware.Portable.Collections.Preview
             }
         }
         bool _isModified = false;
-        public SuppressionPhase Phase { get; private set; } = SuppressionPhase.None;
+        public ModelAuthority Phase { get; private set; } = ModelAuthority.None;
     }
 
     internal class SuppressedFinalDisposeEventArgs : FinalDisposeEventArgs

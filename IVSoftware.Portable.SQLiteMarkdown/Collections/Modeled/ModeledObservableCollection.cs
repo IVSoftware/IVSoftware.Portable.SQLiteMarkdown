@@ -18,11 +18,11 @@ namespace IVSoftware.Portable.Collections.Modeled
     /// - Does not implement Preview or Range behavior itself; it only enables
     ///   those patterns to be layered on top.
     /// </remarks>
-    internal class SuppressibleObservableCollection<T> 
+    public class ModeledObservableCollection<T> 
         : ObservableCollection<T>
         , INotifyCollectionChangedSuppress<T>
     {        
-        public SuppressibleObservableCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
+        public ModeledObservableCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
         {
             EventScope = eventScope;
         }
@@ -48,41 +48,41 @@ namespace IVSoftware.Portable.Collections.Modeled
 
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            if (DHostSuppress.IsZero())
+            if (DHostModelAuthority.IsZero())
             {
                 base.OnCollectionChanged(e);
             }
         }
-        public IDisposable BeginSuppress() => DHostSuppress.GetToken(this);
+        public IDisposable BeginSuppress() => DHostModelAuthority.GetToken(this);
 
-        public void CancelSuppress() => DHostSuppress.CancelSuppressNotify();
-        public SuppressionPhase Phase => DHostSuppress.Phase;
+        public void CancelSuppress() => DHostModelAuthority.CancelSuppressNotify();
+        public ModelAuthority Phase => DHostModelAuthority.Phase;
 
-        public DHostSuppress<T> DHostSuppress
+        public ModelAuthorityProvider<T> DHostModelAuthority
         {
             get
             {
-                if (_dhostSuppress is null)
+                if (_dhostModelAuthority is null)
                 {
-                    _dhostSuppress = new DHostSuppress<T>();
-                    _dhostSuppress.FinalDispose += (sender, e) => OnFinalCoalesce((SuppressedFinalDisposeEventArgs)e);
+                    _dhostModelAuthority = new ModelAuthorityProvider<T>();
+                    _dhostModelAuthority.FinalDispose += (sender, e) => OnFinalCoalesce((SuppressedFinalDisposeEventArgs)e);
                 }
-                return _dhostSuppress;
+                return _dhostModelAuthority;
             }
         }
-        DHostSuppress<T>? _dhostSuppress = null;
+        ModelAuthorityProvider<T>? _dhostModelAuthority = null;
         private void OnFinalCoalesce(SuppressedFinalDisposeEventArgs e)
         {
             OnCollectionChanged((e.Digest));
         }
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         public new IEnumerator<T> GetEnumerator()
-            => DHostSuppress.IsZero()
+            => DHostModelAuthority.IsZero()
             ? base.GetEnumerator()
-            : DHostSuppress.Snapshot.GetEnumerator();
+            : DHostModelAuthority.Snapshot.GetEnumerator();
         public new int Count
-            => DHostSuppress.IsZero()
+            => DHostModelAuthority.IsZero()
             ? base.Count
-            : DHostSuppress.Snapshot.Count;
+            : DHostModelAuthority.Snapshot.Count;
     }
 }

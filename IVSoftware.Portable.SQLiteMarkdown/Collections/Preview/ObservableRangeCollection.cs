@@ -12,7 +12,7 @@ using System.Xml.Linq;
 namespace IVSoftware.Portable.Collections.Preview
 {
     internal class ObservableRangeCollection<T>
-        : SuppressibleObservableCollection<T>
+        : ModeledObservableCollection<T>
         , IRangeable
     {
         public static implicit operator XElement(ObservableRangeCollection<T> @this)

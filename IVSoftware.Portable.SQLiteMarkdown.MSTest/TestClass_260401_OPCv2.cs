@@ -29,7 +29,7 @@ public class TestClass_260401_OPCv2
         var i3 = eph.AddDynamic("Item03");
         #endregion I T E M    G E N
 
-        var itemsSource = new SuppressibleObservableCollection<SelectableQFModel>();
+        var itemsSource = new ModeledObservableCollection<SelectableQFModel>();
 
         #region E V E N T S
         itemsSource.CollectionChanged += (sender, e) =>

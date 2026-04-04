@@ -606,11 +606,11 @@ SELECT * FROM items WHERE
                     // Determines when to broadcast INCC to the projection surface.
                     switch (DHostSuppress.Phase)
                     {
-                        case SuppressionPhase.None:
-                        case SuppressionPhase.Commit:
+                        case ModelAuthority.None:
+                        case ModelAuthority.Commit:
                             OnModelSettled(e);
                             break;
-                        case SuppressionPhase.Preview:
+                        case ModelAuthority.Preview:
                             /* G T K - N O O P */
                             // Accumulating suppressed events.
                             break;
@@ -635,13 +635,13 @@ SELECT * FROM items WHERE
         }
 
         public IDisposable BeginSuppress() => DHostSuppress.GetToken(this);
-        DHostSuppress<T> DHostSuppress
+        ModelAuthorityProvider<T> DHostSuppress
         {
             get
             {
                 if (_dhostSuppress is null)
                 {
-                    _dhostSuppress = new DHostSuppress<T>();
+                    _dhostSuppress = new ModelAuthorityProvider<T>();
                     _dhostSuppress.FinalDispose += (sender, e) =>
                     {
                         if (e is SuppressedFinalDisposeEventArgs eFD)
@@ -659,7 +659,7 @@ SELECT * FROM items WHERE
                 return _dhostSuppress;
             }
         }
-        DHostSuppress<T>? _dhostSuppress = null;
+        ModelAuthorityProvider<T>? _dhostSuppress = null;
 
         protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
         {

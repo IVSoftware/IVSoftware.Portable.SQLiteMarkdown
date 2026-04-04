@@ -87,7 +87,7 @@ namespace IVSoftware.Portable.Collections.Preview
     /// consistent change contract.
     /// </remarks>
     [Flags]
-    internal enum NotifyCollectionChangeScope
+    public enum NotifyCollectionChangeScope
     {
         /// <summary>
         /// Observe the proposal without modifying or canceling it.
@@ -137,7 +137,7 @@ namespace IVSoftware.Portable.Collections.Preview
     /// invoked, this value indicates under what authority that is taking place.
     /// </remarks>
     [NotFlags]
-    public enum SuppressionPhase
+    public enum ModelAuthority
     {
         /// <summary>
         /// Suppression has not been requested; collection change notifications propagate normally.
@@ -203,7 +203,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// Indicates whether changes are being staged under suppression or the final
         /// coalesced result is being emitted.
         /// </remarks>
-        SuppressionPhase Phase { get; }
+        ModelAuthority Phase { get; }
 
         /// <summary>
         /// Defines the extent to which a preview handler may interact with a pending
