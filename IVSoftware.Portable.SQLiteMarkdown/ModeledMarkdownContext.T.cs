@@ -39,7 +39,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 OnCanonicalSupersetChanged(e);
             };
-            DHostSuppress.FinalDispose += (sender, eUnk) =>
+            DHostModelDataExchangeAuthority.FinalDispose += (sender, eUnk) =>
             {
                 if(eUnk is SuppressedFinalDisposeEventArgs e)
                 {
@@ -603,22 +603,69 @@ SELECT * FROM items WHERE
                 case CollectionChangeAuthority.Commit:      // When the model is being fully displaced by a new canonical recordset.
                 case CollectionChangeAuthority.Projection:  // When [+] or [🗑] actions (buttons) operate on the visible surface directly.
                     Model.Apply(e);
+
                     // Determines when to broadcast INCC to the projection surface.
-                    switch (DHostSuppress.Phase)
+                    switch (DHostModelDataExchangeAuthority.Authority)
                     {
-                        case ModelAuthority.None:
-                        case ModelAuthority.Commit:
-                            OnModelSettled(e);
+                        case ModelDataExchangeAuthority.Collection:
+                            if(DHostModelDataExchangeAuthority.IsDisposing)
+                            {
+                                throw new NotImplementedException("ToDo");
+                            }
+                            else 
+                            {
+                                throw new NotImplementedException("ToDo");
+                            }
                             break;
-                        case ModelAuthority.Preview:
-                            /* G T K - N O O P */
-                            // Accumulating suppressed events.
+                        case ModelDataExchangeAuthority.CollectionDeferred:
+                            if (DHostModelDataExchangeAuthority.IsDisposing)
+                            {
+                                throw new NotImplementedException("ToDo");
+                            }
+                            else
+                            {
+                                throw new NotImplementedException("ToDo");
+                            }
+                            break;
+                        case ModelDataExchangeAuthority.Model:
+                            if (DHostModelDataExchangeAuthority.IsDisposing)
+                            {
+                                throw new NotImplementedException("ToDo");
+                            }
+                            else
+                            {
+                                throw new NotImplementedException("ToDo");
+                            }
+                            break;
+                        case ModelDataExchangeAuthority.ModelDeferred:
+                            if (DHostModelDataExchangeAuthority.IsDisposing)
+                            {
+                                throw new NotImplementedException("ToDo");
+                            }
+                            else
+                            {
+                                throw new NotImplementedException("ToDo");
+                            }
                             break;
                         default:
-
-                            this.ThrowFramework<NotSupportedException>($"The {DHostSuppress.Phase.ToFullKey()} case is not supported.");
-                            break;
+                            this.ThrowFramework<NotSupportedException>($"The {DHostModelDataExchangeAuthority.Authority.ToFullKey()} case is not supported.");
+                            return;
                     }
+                    //switch (DHostModelAuthority.Authority)
+                    //{
+                    //    case ModelAuthority.Collection:
+                    //    case ModelAuthority.Commit:
+                    //        OnModelSettled(e);
+                    //        break;
+                    //    case ModelAuthority.Preview:
+                    //        /* G T K - N O O P */
+                    //        // Accumulating suppressed events.
+                    //        break;
+                    //    default:
+
+                    //        this.ThrowFramework<NotSupportedException>($"The {DHostModelAuthority.Authority.ToFullKey()} case is not supported.");
+                    //        break;
+                    //}
                     break;
                 // Mental Model: "When does the Model *not* require an update?"
                 case CollectionChangeAuthority.Settle:      // The IME text has settled and deferred relitigation of
@@ -634,8 +681,8 @@ SELECT * FROM items WHERE
             }
         }
 
-        public IDisposable BeginSuppress() => DHostSuppress.GetToken(this);
-        ModelAuthorityProvider<T> DHostSuppress
+        public IDisposable BeginSuppress() => DHostModelDataExchangeAuthority.GetToken(this);
+        ModelAuthorityProvider<T> DHostModelDataExchangeAuthority
         {
             get
             {
@@ -765,7 +812,7 @@ SELECT * FROM items WHERE
         /// </remarks>
         protected virtual void OnModelSettled(EventArgs eUnk)
         {
-            if (DHostSuppress.IsDisposing)
+            if (DHostModelDataExchangeAuthority.IsDisposing)
             {
                 ModelSettled?.Invoke(this, eUnk);
             }

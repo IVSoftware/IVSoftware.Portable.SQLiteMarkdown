@@ -17,7 +17,14 @@ namespace IVSoftware.Portable.Collections.Preview
         protected override void OnBeginUsing(BeginUsingEventArgs e)
         {
             _cancel = false;
-            Phase = ModelAuthority.Preview;
+            if(e.AutoDisposableContext.Sender is ModelDataExchangeAuthority authority)
+            {
+                Authority = authority;
+            }
+            else
+            {
+                Authority = (ModelDataExchangeAuthority)FsmReserved.NoAuthority;
+            }
             base.OnBeginUsing(e);
         }
 
@@ -73,12 +80,11 @@ namespace IVSoftware.Portable.Collections.Preview
                     snapshot,
                     digest,
                     _listFTR);
-                Phase = ModelAuthority.Commit;
                 base.OnFinalDispose(eBatch);
             }
             finally
             {
-                Phase = ModelAuthority.None;
+                Authority = ModelDataExchangeAuthority.Collection;
                 IsDisposing = false;
             }
             _isModified = false;
@@ -89,25 +95,6 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public void CancelSuppressNotify() => _cancel = true;
         private bool _cancel;
-
-        [Canonical]
-        public new IDisposable GetToken(object? sender = null, Dictionary<string, object>? properties = null)
-        {
-            if (sender is not IList list)
-                throw new NotSupportedException($"Sender must implement IList.");
-
-            InitializeToken(list);
-            return base.GetToken(sender, properties);
-        }
-
-        public new IDisposable GetToken(object sender, string key, object value)
-        {
-            if (sender is not IList list)
-                throw new NotSupportedException($"Sender must implement IList.");
-
-            InitializeToken(list);
-            return base.GetToken(sender, key, value);
-        }
 
         public new IDisposable GetToken(string key, object value)
             => throw new NotSupportedException("Sender is required.");
@@ -129,7 +116,7 @@ namespace IVSoftware.Portable.Collections.Preview
             }
         }
         bool _isModified = false;
-        public ModelAuthority Phase { get; private set; } = ModelAuthority.None;
+        public ModelDataExchangeAuthority Authority { get; private set; } = ModelDataExchangeAuthority.Collection;
     }
 
     internal class SuppressedFinalDisposeEventArgs : FinalDisposeEventArgs

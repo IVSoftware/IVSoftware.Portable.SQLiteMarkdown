@@ -128,7 +128,26 @@ namespace IVSoftware.Portable.Collections.Preview
         /// </remarks>
         NotifyCollectionChangeScope EventScope { get; }
     }
+    /// <summary>
+    /// Represents the current authority epoch for collection change notifications.
+    /// </summary>
+    /// <remarks>
+    /// Works in conjunction with IsDisposing to manage direction, coalescing, and 
+    /// final application of changes that are driven by the collection or the model.
+    /// </remarks>
+    [NotFlags]
+    public enum ModelDataExchangeAuthority
+    {
+        Collection,
 
+        CollectionDeferred,
+
+        Model,
+
+        ModelDeferred,
+    }
+
+#if false
     /// <summary>
     /// Represents the current phase of a suppression epoch for collection change notifications.
     /// </summary>
@@ -165,14 +184,15 @@ namespace IVSoftware.Portable.Collections.Preview
         /// </remarks>
         Commit,
     }
+#endif
 
-    /// <summary>
-    /// Provides a suppression mechanism for <see cref="INotifyCollectionChanged"/> notifications.
-    /// </summary>
-    /// <remarks>
-    /// Defines a scoped model for temporarily suppressing collection change notifications
-    /// during coordinated or batched updates with the goal of reducing or eliminating churn.
-    /// </remarks>
+        /// <summary>
+        /// Provides a suppression mechanism for <see cref="INotifyCollectionChanged"/> notifications.
+        /// </summary>
+        /// <remarks>
+        /// Defines a scoped model for temporarily suppressing collection change notifications
+        /// during coordinated or batched updates with the goal of reducing or eliminating churn.
+        /// </remarks>
     internal interface INotifyCollectionChangedSuppress : IList
     {
         /// <summary>
@@ -203,7 +223,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// Indicates whether changes are being staged under suppression or the final
         /// coalesced result is being emitted.
         /// </remarks>
-        ModelAuthority Phase { get; }
+        ModelDataExchangeAuthority Phase { get; }
 
         /// <summary>
         /// Defines the extent to which a preview handler may interact with a pending

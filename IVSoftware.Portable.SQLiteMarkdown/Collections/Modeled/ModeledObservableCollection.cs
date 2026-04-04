@@ -56,7 +56,7 @@ namespace IVSoftware.Portable.Collections.Modeled
         public IDisposable BeginSuppress() => DHostModelAuthority.GetToken(this);
 
         public void CancelSuppress() => DHostModelAuthority.CancelSuppressNotify();
-        public ModelAuthority Phase => DHostModelAuthority.Phase;
+        public ModelDataExchangeAuthority Phase => DHostModelAuthority.Authority;
 
         public ModelAuthorityProvider<T> DHostModelAuthority
         {
