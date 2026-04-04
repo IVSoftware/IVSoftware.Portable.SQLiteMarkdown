@@ -680,9 +680,7 @@ SELECT * FROM items WHERE
         }
 
         public IDisposable BeginAuthority(ModelDataExchangeAuthority authority, IList source)
-        {
-            return DHostMDX.GetToken(authority, source);
-        }
+            => DHostMDX.GetToken(authority, source);
         ModelDataExchangeAuthorityProvider<T> DHostMDX
         {
             get
