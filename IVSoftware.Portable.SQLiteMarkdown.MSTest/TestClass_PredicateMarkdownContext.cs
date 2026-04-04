@@ -360,8 +360,8 @@ NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingOption.StructuralR
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 5, IsFiltering: True], [Net: 37, CC: 37, PMC: 3], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]";
-
+[IME Len: 5, IsFiltering: True], [Net: 3, CC: 37, PMC: 3], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+            ;
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
@@ -456,8 +456,6 @@ Other.Add     NewItems=37 OldItems= 0 NewStartingIndex= 0 NotifyCollectionChange
 
         actual = pmdc.ToString(out XElement _);
         actual.ToClipboardExpected();
-        { } // <- FIRST TIME ONLY: Adjust the message.
-        actual.ToClipboardAssert("Expecting result to match.");
         { }
         expected = @" 
 <model modeling=""FullPath"">
@@ -483,6 +481,5 @@ Other.Add     NewItems=37 OldItems= 0 NewStartingIndex= 0 NotifyCollectionChange
             actual.NormalizeResult(),
             "Expecting ??"
         );
-
     }
 }

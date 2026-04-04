@@ -789,6 +789,9 @@ SELECT * FROM items WHERE
                 try
                 {
                     _reentry = true;
+
+                    Debug.Assert(DateTime.Now.Date == new DateTime(2026, 4, 04).Date, "TNT - Don't forget disabled");
+                    ObservableNetProjection?.Apply(eUnk);
                     ModelSettled?.Invoke(this, eUnk);
                 }
                 finally
