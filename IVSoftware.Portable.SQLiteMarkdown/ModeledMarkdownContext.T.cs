@@ -305,6 +305,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
         protected override async Task ApplyFilter()
         {
+            using (BeginAuthority(ModelDataExchangeAuthority.ModelDeferred))
+            {
+            }
             await base.ApplyFilter();
 
             using (DHostBusy.GetToken())
@@ -374,14 +377,13 @@ SELECT * FROM items WHERE
                         }
                     });
 
+#if false
                     if (CollectionChangeAuthorityProvider[nameof(StdAuthorityProperty.Snapshot)] is IList snapshot)
                     {
                         switch (Authority)
                         {
                             case CollectionChangeAuthority.Settle:
                             case CollectionChangeAuthority.Predicate:
-                                var ePre = snapshot.Diff(PredicateMatchSubsetProtected);
-                                OnModelSettled(ePre);
                                 break;
                             default:
                                 this.ThrowFramework<InvalidOperationException>(
@@ -402,7 +404,7 @@ SELECT * FROM items WHERE
               <xitem text="312d1c21-0000-0000-0000-00000000002e" model="[SelectableQFModelLTOQO]" sort="2" ismatch="True" />
             </model>
 #endif
-
+#endif
 
                     #region L o c a l F x
 

@@ -352,6 +352,7 @@ NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingOption.StructuralR
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting Options Report to match.");
 
+            // Model.Apply() after settle.
             pmdc.InputText = "green";
             await pmdc;
 
