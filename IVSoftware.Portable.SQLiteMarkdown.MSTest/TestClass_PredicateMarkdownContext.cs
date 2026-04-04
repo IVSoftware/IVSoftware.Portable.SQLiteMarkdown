@@ -375,6 +375,13 @@ NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingOption.StructuralR
             actual = pmdc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
+            expected = @" 
+<model modeling=""FullPath"">
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[TemporalAffinityQFModel]"" order=""0"" preview=""Green Appl"" />
+  <xitem text=""312d1c21-0000-0000-0000-00000000000d"" model=""[TemporalAffinityQFModel]"" order=""1"" preview=""Green Pear"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000020"" model=""[TemporalAffinityQFModel]"" order=""2"" preview=""Errata    "" />
+</model>"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),

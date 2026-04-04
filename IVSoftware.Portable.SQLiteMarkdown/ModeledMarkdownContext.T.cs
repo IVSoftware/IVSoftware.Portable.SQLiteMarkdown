@@ -457,6 +457,15 @@ SELECT * FROM items WHERE
             }
         }
 
+        protected override void OnFilteringStateChanged()
+        {
+            base.OnFilteringStateChanged();
+            if(FilteringState == FilteringState.Ineligible)
+            {
+                PredicateMatchSubsetProtected.Clear();
+            }
+        }
+
         /// <summary>
         /// Links or reassigns a non-canonical (presumably UI) items source to the markdown context.
         /// </summary>

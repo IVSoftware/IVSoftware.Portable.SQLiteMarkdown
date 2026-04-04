@@ -904,7 +904,7 @@ namespace IVSoftware.Portable.Collections.Preview
             var length = @this.Cast<object>().ToArray().Length;
             if(count != length)
             {
-                Debug.Fail($@"ADVISORY - First Time.");
+                Debug.Fail($@"ADVISORY - Indicates leakage in interface implementation.");
             }
 #endif
             var itemCount = 0;
