@@ -374,36 +374,6 @@ SELECT * FROM items WHERE
                                 await ApplyAffinities(matches);
                             }
                         });
-
-#if false
-                    if (CollectionChangeAuthorityProvider[nameof(StdAuthorityProperty.Snapshot)] is IList snapshot)
-                    {
-                        switch (Authority)
-                        {
-                            case CollectionChangeAuthority.Settle:
-                            case CollectionChangeAuthority.Predicate:
-                                break;
-                            default:
-                                this.ThrowFramework<InvalidOperationException>(
-                                    $"Authority = {Authority} - " +
-                                    $"Expecting {nameof(ApplyFilter)} is wrapped in a {nameof(BeginCollectionChangeAuthority)}");
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        Debug.Fail($@"ADVISORY - Expecting snapshot is baked into Settle or Predicate epoch.");
-                    }
-
-#if ABSTRACT
-            // EXAMPLE<model histo="3" count="3" matches="1">
-              <xitem text="312d1c21-0000-0000-0000-000000000001" model="[SelectableQFModelLTOQO]" sort="0" />
-              <xitem text="312d1c21-0000-0000-0000-00000000002c" model="[SelectableQFModelLTOQO]" sort="1" />
-              <xitem text="312d1c21-0000-0000-0000-00000000002e" model="[SelectableQFModelLTOQO]" sort="2" ismatch="True" />
-            </model>
-#endif
-#endif
-
                         #region L o c a l F x
 
                         /// <summary>
@@ -445,7 +415,6 @@ SELECT * FROM items WHERE
 
 
         #region P R O J E C T I O N
-
         protected override void OnInputTextChanged()
         {
             switch (Authority)
@@ -692,13 +661,7 @@ SELECT * FROM items WHERE
                     {
                         if (e is ModelDataExchangeFinalDisposeEventArgs eFD)
                         {
-                            if (eFD["IsModified"] is bool isModified && isModified)
-                            {
-                                OnModelSettled(eFD.Digest);
-                            }
-                            else
-                            {   /* G T K - N O O P */
-                            }
+                            OnModelSettled(eFD.Digest);
                         }
                     };
                 }
@@ -815,8 +778,8 @@ SELECT * FROM items WHERE
         {
             if(_reentry)
             {
+                // This isn't being relied on, but possibly could work standalone!
                 Debug.Fail($@"ADVISORY - First Time.");
-                // Even though this isn't to be relied upon, it absolutely would work!
                 return;
             }
             else
@@ -934,6 +897,16 @@ SELECT * FROM items WHERE
                                 CanonicalSupersetProtected.Add(newItem);
                             }
                         }
+                    }
+
+                    // 260404 - Critical for ModelDataExchange paradigms.
+                    // This needs to be staged now, because DHostMDX takes out
+                    // a token at the start of ApplyFilter and uses Read to
+                    // make a snapshot of the source, which now points to PMSS.
+                    PredicateMatchSubsetProtected.Clear();
+                    foreach (var item in CanonicalSuperset)
+                    {
+                        PredicateMatchSubsetProtected.Add(item);
                     }
                     UpdateStatesForEpoch();
                 }

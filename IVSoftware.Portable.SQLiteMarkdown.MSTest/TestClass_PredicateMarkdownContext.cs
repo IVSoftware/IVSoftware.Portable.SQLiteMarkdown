@@ -234,7 +234,7 @@ public class TestClass_PredicateMarkdownContext
         var builder = new List<string>();
         int busyCount = 0;
 
-        const bool INCLUDE_LIVE_DEMO = true;
+        bool INCLUDE_LIVE_DEMO = true;
         int COUNT = INCLUDE_LIVE_DEMO ? 37 : 31;
 
         var opc = new ObservableCollection<TemporalAffinityQFModel>();
@@ -277,12 +277,12 @@ NetProjectionTopology.None, ReplaceItemsEventingOption.StructuralReplaceEvent";
         if(INCLUDE_LIVE_DEMO)
         {
             expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 37, CC: 37, PMC: 0], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]";
+[IME Len: 0, IsFiltering: True], [Net: 37, CC: 37, PMC: 37], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]";
         }
         else
         {
             expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 31, CC: 37, PMC: 0], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]";
+[IME Len: 0, IsFiltering: True], [Net: 31, CC: 37, PMC: 37], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]";
         }
 
         Assert.AreEqual(
@@ -340,7 +340,7 @@ NetProjectionTopology.None, ReplaceItemsEventingOption.StructuralReplaceEvent";
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 37, CC: 37, PMC: 0], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 37, CC: 37, PMC: 37], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting State Report to match.");
 
@@ -358,6 +358,13 @@ NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingOption.StructuralR
 
             Assert.AreEqual(1, busyCount);
             Assert.IsFalse(pmdc.Busy);
+
+
+            actual = pmdc.ToString(out XElement _);
+            actual.ToClipboardExpected();
+            { } // <- FIRST TIME ONLY: Adjust the message.
+            actual.ToClipboardAssert("Expecting result to match.");
+            { }
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();

@@ -6,6 +6,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 
 namespace IVSoftware.Portable.Collections.Preview
@@ -13,9 +15,6 @@ namespace IVSoftware.Portable.Collections.Preview
     public sealed class ModelDataExchangeAuthorityProvider<T> 
         : DisposableHost
     {
-        public ReadOnlyCollection<T> Snapshot { get; private set; } = null!;
-
-        IList? _source = null;
 
         [Canonical]
         public IDisposable GetToken(ModelDataExchangeAuthority authority, IList source)
@@ -23,6 +22,7 @@ namespace IVSoftware.Portable.Collections.Preview
             try
             {
                 _source = source;            // Catch the IList constraint here.
+                _incc = source as INotifyCollectionChanged;
                 Snapshot = new(source.Cast<T>().ToArray());
             }
             catch (InvalidCastException ex)
@@ -34,6 +34,34 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             return base.GetToken(sender: authority);
         }
+
+        public ReadOnlyCollection<T> Snapshot { get; private set; } = null!;
+
+        IList? _source = null;
+        public INotifyCollectionChanged? INCC
+        {
+            get => _incc;
+            set
+            {
+                if(value is null)
+                {
+                    Debug.Fail($@"ADVISORY - First Time.");
+                }
+                if (!Equals(_incc, value))
+                {
+                    _incc?.CollectionChanged -= OnCollectionChanged;
+                    _incc = value;
+                    _incc?.CollectionChanged += OnCollectionChanged;
+                }
+            }
+        }
+
+        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            _isModified = true;
+        }
+
+        INotifyCollectionChanged? _incc = null;
 
         protected override void OnBeginUsing(BeginUsingEventArgs e)
         {
@@ -84,7 +112,6 @@ namespace IVSoftware.Portable.Collections.Preview
                 }
                 else
                 {
-
                     // If canceled, rollback all of the items to the original.
                     if (_cancel)
                     {
@@ -111,15 +138,15 @@ namespace IVSoftware.Portable.Collections.Preview
                         key => key,
                         key => e[key]);
 
-                    snapshot["FinalList"] = _source;
-                    snapshot["IsModified"] = _isModified;
-
-                    var eBatch = new ModelDataExchangeFinalDisposeEventArgs(
+                    var eFinalDisposeCollectionChangeWrapper = new ModelDataExchangeFinalDisposeEventArgs(
                         e.ReleasedSenders,
                         snapshot,
                         digest,
                         _source);
-                    base.OnFinalDispose(eBatch);
+
+                    snapshot["FinalList"] = _source;
+
+                    base.OnFinalDispose(eFinalDisposeCollectionChangeWrapper);
                 }
             }
             finally
@@ -127,7 +154,6 @@ namespace IVSoftware.Portable.Collections.Preview
                 Authority = ModelDataExchangeAuthority.Collection;
                 IsDisposing = false;
             }
-            _isModified = false;
             _cancel = false;
             _source = null;
         }
