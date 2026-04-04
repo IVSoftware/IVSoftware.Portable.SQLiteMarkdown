@@ -34,7 +34,15 @@ The MDX has two functions:
 - Control the update direction.
 - Determine whether changes are immediate or deferred.
 
-The second function carries a kind of superpower - the ability to accumulate intermediate collection change events and algorithmically coalesce them. The work product is either a single, BCL-compatible multi event, or a non-compatible `Add` event where the `NewItems` consist of an event playlist. 
+The second function carries a kind of superpower - the ability to accumulate intermediate collection change events and algorithmically coalesce them. The work product is either a single, BCL-compatible multi event, or a non-compatible `Add` event where the `NewItems` consist of an event playlist.
+
+### Authority
+
+Given two directions with either immediate or deferred eventing, the result is four authorities.
+
+
+
+### Rehydration
 
 Rehydrating `collectionBefore` to `collectionAfter` is performed by calling the `Apply` extension, which accepts either `NotifyCollectionChangedEventArgs` (from the the BCL) or  `NotifyCollectionChangingEventArgs` (from this library).
 
@@ -49,6 +57,9 @@ Rehydrating `collectionBefore` to `collectionAfter` is performed by calling the 
 /// </remarks>
 public static void Apply(this IList list, EventArgs eUnk)
 ```
+
+
+
 ___
 
 ## The Basis of Modeling

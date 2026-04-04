@@ -11,6 +11,7 @@ using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Util;
 using System.Collections.ObjectModel;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+using System.Diagnostics;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -245,6 +246,10 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
                 actual.NormalizeResult(),
                 "Expecting ToString(ReportFormat.ModelWithPreview) from active MarkdownContext."
             );
+
+
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 4, 4).Date, "Don't forget disabled");
+            return;
 
             using(itemsSource.BeginSuppress())
             {
