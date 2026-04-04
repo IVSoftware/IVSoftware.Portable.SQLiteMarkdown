@@ -41,7 +41,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             };
             DHostModelDataExchangeAuthority.FinalDispose += (sender, eUnk) =>
             {
-                if(eUnk is SuppressedFinalDisposeEventArgs e)
+                if(eUnk is ModelDateExchangeFinalDisposeEventArgs e)
                 {
                     OnModelSettled(e.Digest);
                 }
@@ -615,16 +615,16 @@ SELECT * FROM items WHERE
         }
 
         public IDisposable BeginSuppress() => DHostModelDataExchangeAuthority.GetToken(this);
-        ModelAuthorityProvider<T> DHostModelDataExchangeAuthority
+        ModelDataExchangeAuthorityProvider<T> DHostModelDataExchangeAuthority
         {
             get
             {
                 if (_dhostSuppress is null)
                 {
-                    _dhostSuppress = new ModelAuthorityProvider<T>();
+                    _dhostSuppress = new ModelDataExchangeAuthorityProvider<T>(this);
                     _dhostSuppress.FinalDispose += (sender, e) =>
                     {
-                        if (e is SuppressedFinalDisposeEventArgs eFD)
+                        if (e is ModelDateExchangeFinalDisposeEventArgs eFD)
                         {
                             if (eFD["IsModified"] is bool isModified && isModified)
                             {
@@ -639,7 +639,7 @@ SELECT * FROM items WHERE
                 return _dhostSuppress;
             }
         }
-        ModelAuthorityProvider<T>? _dhostSuppress = null;
+        ModelDataExchangeAuthorityProvider<T>? _dhostSuppress = null;
 
         protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
         {

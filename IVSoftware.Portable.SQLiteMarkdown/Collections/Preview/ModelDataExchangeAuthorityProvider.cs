@@ -1,4 +1,4 @@
-﻿using IVSoftware.Portable.Common.Attributes;
+﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.StateRunner.Preview;
 using System;
@@ -9,17 +9,35 @@ using System.Linq;
 
 namespace IVSoftware.Portable.Collections.Preview
 {
-    public sealed class ModelAuthorityProvider<T> : DisposableHost
+    public sealed class ModelDataExchangeAuthorityProvider<T> 
+        : DisposableHost
     {
+        public ModelDataExchangeAuthorityProvider(IList source)
+        {
+            _source = source;
+        }
+        IList _source;
         public ReadOnlyCollection<T> Snapshot { get; private set; } = null!;
-        IList _listFTR = null!;
 
         protected override void OnBeginUsing(BeginUsingEventArgs e)
         {
             _cancel = false;
+            _isModified = false;
             if(e.AutoDisposableContext.Sender is ModelDataExchangeAuthority authority)
             {
-                Authority = authority;
+                try
+                {
+                    Snapshot = new(_source.Cast<T>().ToArray());
+                    Authority = authority;
+                }
+                catch (InvalidCastException ex)
+                {
+                    this.RethrowHard(ex);
+                    // Only reachable if RethrowHard is handled.
+                    Snapshot = new(Array.Empty<T>());
+                    Authority = (ModelDataExchangeAuthority)FsmReserved.NoAuthority;
+                    return;
+                }
             }
             else
             {
@@ -49,15 +67,15 @@ namespace IVSoftware.Portable.Collections.Preview
                 // If canceled, rollback all of the items to the original.
                 if(_cancel)
                 {
-                    _listFTR.Clear();
+                    ((IList)_source).Clear();
                     foreach (var item in Snapshot)
                     {
-                        _listFTR.Add(item);
+                        _source.Add(item);
                     }
                 }
 
                 var before = Snapshot;
-                var after = _listFTR;
+                var after = _source;
 
                 var digest =
                     _cancel
@@ -72,14 +90,14 @@ namespace IVSoftware.Portable.Collections.Preview
                     key => key,
                     key => e[key]);
 
-                snapshot["FinalList"] = _listFTR;
+                snapshot["FinalList"] = _source;
                 snapshot["IsModified"] = _isModified;
 
-                var eBatch = new SuppressedFinalDisposeEventArgs(
+                var eBatch = new ModelDateExchangeFinalDisposeEventArgs(
                     e.ReleasedSenders,
                     snapshot,
                     digest,
-                    _listFTR);
+                    _source);
                 base.OnFinalDispose(eBatch);
             }
             finally
@@ -98,30 +116,13 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public new IDisposable GetToken(string key, object value)
             => throw new NotSupportedException("Sender is required.");
-
-        private void InitializeToken(IList list)
-        {
-            if (IsZero())
-            {
-                try
-                {
-                    Snapshot = new ReadOnlyCollection<T>(list.Cast<T>().ToArray());
-                }
-                catch (InvalidCastException)
-                {
-                    throw new NotSupportedException($"Sender {nameof(IList)} must contain all {typeof(T).Name}.");
-                }
-                _listFTR = list;
-                _isModified = false;
-            }
-        }
         bool _isModified = false;
         public ModelDataExchangeAuthority Authority { get; private set; } = ModelDataExchangeAuthority.Collection;
     }
 
-    internal class SuppressedFinalDisposeEventArgs : FinalDisposeEventArgs
+    internal class ModelDateExchangeFinalDisposeEventArgs : FinalDisposeEventArgs
     {
-        public SuppressedFinalDisposeEventArgs(
+        public ModelDateExchangeFinalDisposeEventArgs(
             IReadOnlyCollection<object> releasedSenders,
             IReadOnlyDictionary<string, object> snapshot,
             NotifyCollectionChangingEventArgs batchEventArgs,
