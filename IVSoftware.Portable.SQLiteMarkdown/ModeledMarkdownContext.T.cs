@@ -602,77 +602,10 @@ SELECT * FROM items WHERE
                 case CollectionChangeAuthority.Reset:       // When an unconditional global clear is taking place.
                 case CollectionChangeAuthority.Commit:      // When the model is being fully displaced by a new canonical recordset.
                 case CollectionChangeAuthority.Projection:  // When [+] or [🗑] actions (buttons) operate on the visible surface directly.
+                    // Call the Apply extension on Model.
                     Model.Apply(e);
-
-                    // Determines when to broadcast INCC to the projection surface.
-                    switch (DHostModelDataExchangeAuthority.Authority)
-                    {
-                        case ModelDataExchangeAuthority.Collection:
-                            if(DHostModelDataExchangeAuthority.IsDisposing)
-                            {
-                                throw new NotImplementedException("ToDo");
-                            }
-                            else 
-                            {
-                                throw new NotImplementedException("ToDo");
-                            }
-                            break;
-                        case ModelDataExchangeAuthority.CollectionDeferred:
-                            if (DHostModelDataExchangeAuthority.IsDisposing)
-                            {
-                                throw new NotImplementedException("ToDo");
-                            }
-                            else
-                            {
-                                throw new NotImplementedException("ToDo");
-                            }
-                            break;
-                        case ModelDataExchangeAuthority.Model:
-                            if (DHostModelDataExchangeAuthority.IsDisposing)
-                            {
-                                throw new NotImplementedException("ToDo");
-                            }
-                            else
-                            {
-                                throw new NotImplementedException("ToDo");
-                            }
-                            break;
-                        case ModelDataExchangeAuthority.ModelDeferred:
-                            if (DHostModelDataExchangeAuthority.IsDisposing)
-                            {
-                                throw new NotImplementedException("ToDo");
-                            }
-                            else
-                            {
-                                throw new NotImplementedException("ToDo");
-                            }
-                            break;
-                        default:
-                            this.ThrowFramework<NotSupportedException>($"The {DHostModelDataExchangeAuthority.Authority.ToFullKey()} case is not supported.");
-                            return;
-                    }
-                    //switch (DHostModelAuthority.Authority)
-                    //{
-                    //    case ModelAuthority.Collection:
-                    //    case ModelAuthority.Commit:
-                    //        OnModelSettled(e);
-                    //        break;
-                    //    case ModelAuthority.Preview:
-                    //        /* G T K - N O O P */
-                    //        // Accumulating suppressed events.
-                    //        break;
-                    //    default:
-
-                    //        this.ThrowFramework<NotSupportedException>($"The {DHostModelAuthority.Authority.ToFullKey()} case is not supported.");
-                    //        break;
-                    //}
-                    break;
-                // Mental Model: "When does the Model *not* require an update?"
-                case CollectionChangeAuthority.Settle:      // The IME text has settled and deferred relitigation of
-                                                            // 'qmatch' and 'match' attributes is proceeding.
-                case CollectionChangeAuthority.Predicate:   // A filter has been toggled and immediate relitigation of
-                                                            // 'pmatch' and 'match' attributes is proceeding.
-
+                    // Raise the ModelSettled event conditionally.
+                    OnModelSettled(e);
                     break;
                 default:
 
@@ -800,6 +733,8 @@ SELECT * FROM items WHERE
             }
         }
 
+        bool _reentry = false;
+
         /// <summary>
         /// Signals that the markdown model has reached a stable state following an input-driven reconciliation.
         /// </summary>
@@ -812,76 +747,80 @@ SELECT * FROM items WHERE
         /// </remarks>
         protected virtual void OnModelSettled(EventArgs eUnk)
         {
-            if (DHostModelDataExchangeAuthority.IsDisposing)
+            if(_reentry)
             {
-                ModelSettled?.Invoke(this, eUnk);
+                // Even though this isn't ro be relied upon, it absolutely would work!
+                return;
             }
             else
             {
-                switch (Authority)
+                try
                 {
-                    // Mental Model: "When does the Model require an update?"
-                    case CollectionChangeAuthority.None:        // When the IList interface of an MMDC is invoked programmatically.
-                    case CollectionChangeAuthority.Reset:       // When an unconditional global clear is taking place.
-                    case CollectionChangeAuthority.Commit:      // When the model is being fully displaced by a new canonical recordset.
-                    case CollectionChangeAuthority.Projection:  // When [+] or [🗑] actions (buttons) operate on the visible surface directly.
-                        break;
-                    // Mental Model: "When does the Model *not* require an update?"
-                    case CollectionChangeAuthority.Settle:      // The IME text has settled and deferred relitigation of
-                                                                // 'qmatch' and 'match' attributes is proceeding.
-                    case CollectionChangeAuthority.Predicate:   // A filter has been toggled and immediate relitigation of
-                                                                // 'pmatch' and 'match' attributes is proceeding.
-                        switch (ProjectionTopology)
-                        {
-                            case NetProjectionTopology.None:
-                                // N O O P
-                                // There is no projection to update.
-                                break;
-                            case NetProjectionTopology.ObservableOnly:    // Maintain internal canon but do not push internal changes out to projection.
-                                break;
-                            case NetProjectionTopology.AllowDirectChanges:
-                                if (ObservableNetProjection is null)
-                                {
-                                    this.ThrowHard<NullReferenceException>($"Expecting not null is baked into {ProjectionTopology.ToFullKey()}");
-                                }
-                                else
-                                {
-                                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                                    // - Subclass has OPTED-IN to direct changes from this model.
-                                    // - Subclass is listening for changes, and not pushing them.
-                                    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                                    using (BeginSuppress())
-                                    {
-                                        ObservableNetProjection.Apply(eUnk);
-                                    }
-                                }
-                                break;
-                            case NetProjectionTopology.Routed:
-                                ModelSettled?.Invoke(this, eUnk);
-                                break;
-                            default:
-                                ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
-                                break;
-                        }
-                        break;
-                    default:
-                        this.ThrowHard<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
-                        break;
-                }
-                void localApplyDirectChanges()
-                {
-                    if (ObservableNetProjection is not IList projection)
+                    _reentry = true;
+                    if (DHostModelDataExchangeAuthority.IsDisposing)
                     {
-                        this.ThrowFramework<InvalidOperationException>(
-                            $"Expecting {nameof(ObservableNetProjection)} is determined to be non-null in the ProjectionTopology property getter.");
+                        ModelSettled?.Invoke(this, eUnk);
                     }
                     else
                     {
+                        switch (Authority)
+                        {
+                            // Mental Model: "When does the Model require an update?"
+                            case CollectionChangeAuthority.None:        // When the IList interface of an MMDC is invoked programmatically.
+                            case CollectionChangeAuthority.Reset:       // When an unconditional global clear is taking place.
+                            case CollectionChangeAuthority.Commit:      // When the model is being fully displaced by a new canonical recordset.
+                            case CollectionChangeAuthority.Projection:  // When [+] or [🗑] actions (buttons) operate on the visible surface directly.
+                                break;
+                            // Mental Model: "When does the Model *not* require an update?"
+                            case CollectionChangeAuthority.Settle:      // The IME text has settled and deferred relitigation of
+                                                                        // 'qmatch' and 'match' attributes is proceeding.
+                            case CollectionChangeAuthority.Predicate:   // A filter has been toggled and immediate relitigation of
+                                                                        // 'pmatch' and 'match' attributes is proceeding.
+                                switch (ProjectionTopology)
+                                {
+                                    case NetProjectionTopology.None:
+                                        // N O O P
+                                        // There is no projection to update.
+                                        break;
+                                    case NetProjectionTopology.ObservableOnly:    // Maintain internal canon but do not push internal changes out to projection.
+                                        break;
+                                    case NetProjectionTopology.AllowDirectChanges:
+                                        if (ObservableNetProjection is null)
+                                        {
+                                            this.ThrowHard<NullReferenceException>($"Expecting not null is baked into {ProjectionTopology.ToFullKey()}");
+                                        }
+                                        else
+                                        {
+                                            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                            // - Subclass has OPTED-IN to direct changes from this model.
+                                            // - Subclass is listening for changes, and not pushing them.
+                                            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                            using (BeginSuppress())
+                                            {
+                                                ObservableNetProjection.Apply(eUnk);
+                                            }
+                                        }
+                                        break;
+                                    case NetProjectionTopology.Routed:
+                                        ModelSettled?.Invoke(this, eUnk);
+                                        break;
+                                    default:
+                                        ThrowFramework<NotSupportedException>($"The {ProjectionTopology.ToFullKey()} case is not supported.");
+                                        break;
+                                }
+                                break;
+                            default:
+                                this.ThrowHard<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
+                                break;
+                        }
                     }
+                }
+                finally
+                {
+                    _reentry = false;
                 }
             }
         }
-
         public event EventHandler? ModelSettled;
 
         /// <summary>
