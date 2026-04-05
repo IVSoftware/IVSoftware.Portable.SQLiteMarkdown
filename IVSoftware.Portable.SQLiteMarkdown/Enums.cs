@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Common.Attributes;
+﻿using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.StateRunner.Preview;
 using System;
@@ -553,8 +554,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// Specifies how CollectionChanging (preview) events are emitted.
     /// </summary>
     /// <remarks>
-    /// - Controls whether preview events are raised per mutation or deferred
-    ///   to align with batched reconciliation.
+    /// - Controls whether preview events are raised per mutation 
+    ///   or whether they honor <see cref="ModelDataExchangeAuthority"/> deferrals.
     /// - Does not affect CollectionChanged, which may still be deferred.
     /// </remarks>
     [NotFlags]
@@ -564,19 +565,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Raises CollectionChanging immediately for each mutation.
         /// </summary>
         /// <remarks>
-        /// - Provides fine-grained intent signals for validation and policy.
-        /// - Preview events may not correspond 1:1 with final outcomes.
+        /// Provides fine-grained intent signals for validation and policy.
         /// </remarks>
         Discrete,
 
         /// <summary>
-        /// Defers CollectionChanging until batch reconciliation.
+        /// Honor <see cref="ModelDataExchangeAuthority"/> for deferrals.
         /// </summary>
-        /// <remarks>
-        /// - Suppresses per-mutation preview events.
-        /// - Emits a single coalesced preview aligned with the final batch.
-        /// - Reduces event volume but sacrifices granularity.
-        /// </remarks>
         Deferred,
     }
 
