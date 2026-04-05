@@ -549,6 +549,37 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         AllowDirectChanges,
     }
 
+    /// <summary>
+    /// Specifies how CollectionChanging (preview) events are emitted.
+    /// </summary>
+    /// <remarks>
+    /// - Controls whether preview events are raised per mutation or deferred
+    ///   to align with batched reconciliation.
+    /// - Does not affect CollectionChanged, which may still be deferred.
+    /// </remarks>
+    [NotFlags]
+    public enum CollectionChangingEventingOption
+    {
+        /// <summary>
+        /// Raises CollectionChanging immediately for each mutation.
+        /// </summary>
+        /// <remarks>
+        /// - Provides fine-grained intent signals for validation and policy.
+        /// - Preview events may not correspond 1:1 with final outcomes.
+        /// </remarks>
+        Discrete,
+
+        /// <summary>
+        /// Defers CollectionChanging until batch reconciliation.
+        /// </summary>
+        /// <remarks>
+        /// - Suppresses per-mutation preview events.
+        /// - Emits a single coalesced preview aligned with the final batch.
+        /// - Reduces event volume but sacrifices granularity.
+        /// </remarks>
+        Deferred,
+    }
+
     [Flags]
     public enum ReplaceItemsEventingOption
     {

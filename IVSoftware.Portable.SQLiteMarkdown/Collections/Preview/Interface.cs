@@ -11,6 +11,9 @@ namespace IVSoftware.Portable.Collections.Preview
     /// <summary>
     /// Specifies an action associated with either a Changed or Changing event.
     /// </summary>
+    /// <remarks>
+    /// As the 'out' type of TryNormalizeTargets the name must be *neutral*".
+    /// </remarks>
     public enum NotifyCollectionChangeAction
     {
         Add = NotifyCollectionChangedAction.Add,
