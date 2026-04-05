@@ -306,7 +306,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// - Consumers should detect and process these attributes explicitly and in a controlled order.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
-    public class IFTTTAttribute : Attribute
+    internal class IFTTTAttribute : Attribute
     {
         public IFTTTAttribute(string? description = null)
         {
