@@ -261,7 +261,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         match,
 
         /// <summary>
-        /// This record matches all active predicates.
+        /// This record matches all active queries.
         /// </summary>
         [IFTTT("-> match")]
         [DefaultValue("True")]
@@ -273,6 +273,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [IFTTT("-> match")]
         [DefaultValue("True")]
         pmatch,
+
+        /// <summary>
+        /// This record is a live addition due to UI unteraction.
+        /// </summary>
+        [IFTTT("-> match")]
+        live,
 
         /// <summary>
         /// Canonical record order.

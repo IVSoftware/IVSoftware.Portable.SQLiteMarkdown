@@ -572,10 +572,16 @@ SELECT * FROM items WHERE
                 case CollectionChangeAuthority.Projection:  // When [+] or [🗑] actions (buttons) operate on the visible surface directly.
                     // Call the Apply extension on Model.
                     Model.Apply(eBCL);
-                    // Raise the ModelSettled event conditionally.
+
+                    // Check the model authority here, not inside
+                    // the model settled virtual method.
                     switch (DHostMDX.Authority)
                     {
                         case ModelDataExchangeAuthority.Collection:
+                            // N O O P
+                            // Signifies that the collection has either
+                            // sourced, or responded to, ann changes.
+                            break;
                         case ModelDataExchangeAuthority.Model:
                             OnModelSettled(eBCL);
                             break;
@@ -789,8 +795,6 @@ SELECT * FROM items WHERE
                 try
                 {
                     _reentry = true;
-
-                    Debug.Assert(DateTime.Now.Date == new DateTime(2026, 4, 04).Date, "TNT - Don't forget disabled");
                     ObservableNetProjection?.Apply(eUnk);
                     ModelSettled?.Invoke(this, eUnk);
                 }
