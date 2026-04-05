@@ -235,7 +235,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 if (xattr is XBoundAttribute xba)
                 {
-                    OnBoundItemObjectChange(xba, e.ObjectChange);
+                    OnXBoundItemObjectChange(xba, e.ObjectChange);
                 }
                 else
                 {

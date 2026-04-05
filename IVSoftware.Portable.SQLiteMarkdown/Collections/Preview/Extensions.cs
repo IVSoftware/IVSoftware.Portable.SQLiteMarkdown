@@ -378,13 +378,7 @@ namespace IVSoftware.Portable.Collections.Preview
                                     xel.SetBoundAttributeValue(
                                         tag: item,
                                         name: nameof(StdMarkdownAttribute.model));
-
                                     xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), itemCount++);
-                                    if (mdc.IsFiltering)
-                                    {
-                                        // Make sure we mark canonical match until next filter op.
-                                        xel.SetStdAttributeValue(StdMarkdownAttribute.match, bool.TrueString);
-                                    }
                                     break;
                                 default:
                                     eUnk.ThrowFramework<NotSupportedException>(

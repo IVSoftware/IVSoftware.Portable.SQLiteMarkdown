@@ -6,8 +6,8 @@ using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
-using IVSoftware.Portable.StateRunner.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.StateRunner.Preview;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -96,7 +97,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             switch (std)
                             {
                                 case StdMarkdownAttribute.model when xattr is XBoundAttribute xba && xba.Tag is T itemT:
-                                    OnBoundItemObjectChange(xba: xba, e.ObjectChange);
+                                    OnXBoundItemObjectChange(xba: xba, e.ObjectChange);
                                     break;
                             }
                         }
@@ -159,7 +160,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         const bool SQLITE_STRICT = false;
 #endif
         [Canonical("The globally unique authority for binding items and their INPC events.")]
-        protected override void OnBoundItemObjectChange(XBoundAttribute xba, XObjectChange action)
+        protected override void OnXBoundItemObjectChange(XBoundAttribute xba, XObjectChange action)
         {
             var itemT = (T)xba.Tag;
             switch (action)
@@ -170,6 +171,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if(localTryAddToDatabase() == true)
                     {
                         // Do we need to add to PMSS manually here?
+                    }
+                    if(Authority == CollectionChangeAuthority.Projection)
+                    {
+                        xba.Parent.SetStdAttributeValue(StdMarkdownAttribute.live, bool.TrueString);
                     }
                     break;
                 case XObjectChange.Remove:
@@ -459,6 +464,7 @@ SELECT * FROM items WHERE
             }
         }
 
+        #region C H A N G E    O N P    H A N D L E    O R    I T E M S
         /// <summary>
         /// Links or reassigns a non-canonical (presumably UI) items source to the markdown context.
         /// </summary>
@@ -506,7 +512,6 @@ SELECT * FROM items WHERE
         }
         IList? _observableProjection = null;
 
-
         /// <summary>
         /// Raised when the *handle* to the ObservableNetCollection changes.
         /// </summary>
@@ -529,15 +534,6 @@ SELECT * FROM items WHERE
             }
         }
 
-
-        protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
-        {
-            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
-            {
-                await base.OnEpochFinalizingAsync(e);
-            }
-        }
-
         /// <summary>
         /// Receives projection change notifications required to maintain the canonical ledger.
         /// </summary>
@@ -549,6 +545,16 @@ SELECT * FROM items WHERE
                 {
                     CanonicalSupersetProtected.Apply(e);
                 }
+            }
+        }
+        #endregion C H A N G E    O N P    H A N D L E    O R    I T E M S
+
+        protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
+        {
+            Debug.Assert(Authority == CollectionChangeAuthority.Settle);
+            using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
+            {
+                await base.OnEpochFinalizingAsync(e);
             }
         }
 
