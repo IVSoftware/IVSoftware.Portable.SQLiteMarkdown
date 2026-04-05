@@ -314,8 +314,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// XBoundObject that holds a filter predicates when present.
         /// </summary>
         predicates,
-
-        triage,
         #endregion P R E D I C A T E S
     }
 
@@ -548,44 +546,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///   the observable collection.
         /// </remarks>
         AllowDirectChanges,
-    }
-
-    [NotFlags]
-    internal enum ReplaceItemsEventingTriage
-    {
-        /// <summary>
-        /// Describes a noop "wash" invocation.
-        /// </summary>
-        /// <remarks>
-        /// Unconditionally suppress event invocation.
-        /// </remarks>
-        AlwaysEmpty,
-
-        /// <summary>
-        /// Describes a virtual replacement with Add semantics.
-        /// </summary>
-        /// <remarks>
-        /// StructuralReplaceEvent - generates a Add action for N new items.
-        /// ResetOnAnyChange - generates an Reset event.
-        /// </remarks>
-        EmptyBefore,
-
-        /// <summary>
-        /// Describes a virtual replacement with Clear semantics.
-        /// </summary>
-        /// <remarks>
-        /// StructuralReplaceEvent - generates a Remove action for N old items.
-        /// ResetOnAnyChange - generates an Reset event.
-        /// </remarks>
-        EmptyAfter,
-
-        /// <summary>
-        /// Describes a virtual replacement with Replace semantics.
-        /// </summary>
-        /// <remarks>
-        /// StructuralReplaceEvent - generates a Replace action for N old and N' new items.
-        /// ResetOnAnyChange - generates an Reset event.
-        /// </remarks>
-        NeverEmpty,
     }
 }
