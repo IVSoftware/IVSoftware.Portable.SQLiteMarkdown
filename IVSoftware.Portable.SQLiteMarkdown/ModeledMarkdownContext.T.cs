@@ -549,9 +549,15 @@ SELECT * FROM items WHERE
         }
         #endregion C H A N G E    O N P    H A N D L E    O R    I T E M S
 
+        /// <summary>
+        /// Execute asynchronous work in the settlement phase of the BC WDT epoch.
+        /// </summary>
+        /// <remarks>
+        /// Any subclass override should check out its own Settle authority
+        /// token and perform all work under its auspices.
+        /// </remarks>
         protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
-        {
-            Debug.Assert(Authority == CollectionChangeAuthority.Settle);
+        {            
             using (BeginCollectionChangeAuthority(CollectionChangeAuthority.Settle))
             {
                 await base.OnEpochFinalizingAsync(e);

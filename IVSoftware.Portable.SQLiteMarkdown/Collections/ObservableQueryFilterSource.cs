@@ -54,6 +54,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             base.OnModelSettled(eUnk);
 
             bool isBclCompatible = true;
+            bool isResetEvent = true;
 
             NotifyCollectionChangingEventArgs eBCL;
             // We have implicit casts, just not from EventArgs as called.
@@ -62,24 +63,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 case NotifyCollectionChangingEventArgs ePre:
                     eBCL = ePre;
                     isBclCompatible = ePre.IsBclCompatible;
+                    isResetEvent = ePre.Action == NotifyCollectionChangeAction.Reset;
                     break;
                 case NotifyCollectionChangedEventArgs ePost:
                     eBCL = ePost;
+                    isResetEvent = ePost.Action == NotifyCollectionChangedAction.Reset;
                     break;
                 default:
                     this.ThrowFramework<NotSupportedException>($"The {eUnk.GetType().Name} case is not supported.");
                     return;
             }
 
-            if(isBclCompatible)
+            if (isBclCompatible)
             {
                 CollectionChanged?.Invoke(this, eBCL);
             }
             else
             {
+                Debug.Assert(!isResetEvent, "Expecting any Reset event to be BCL Compatible");
                 if(ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
                 {
-#if false
                     // PLAYER:
                     // Acumulate adds and send composite when Action changes.
                     if(eBCL.NewItems is not null)
@@ -89,14 +92,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
                         }
                     }
-#else
-                    Debug.Assert(DateTime.Now.Date == new DateTime(2026, 4, 04).Date, "Don't forget disabled");
-                    CollectionChanged?.Invoke(
-                        this,
-                        new NotifyCollectionChangedEventArgs(action: NotifyCollectionChangedAction.Reset));
-#endif
                 }
-                if(ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
+                if(
+                    true // TEMPORARY until the structural replace event player comes online.
+                    || ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
                 {
                     CollectionChanged?.Invoke(
                         this,
