@@ -13,17 +13,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         , INotifyCollectionChanging
         where T : new()
     {
-        public static implicit operator XElement(ObservablePreviewRangeCollection<T> @this) =>
-            @this.MarkdownContext.Model;
         public ObservablePreviewRangeCollection(
             NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
-        {
-            MarkdownContext.SetObservableNetProjection(this, NetProjectionTopology.AllowDirectChanges);
-            MarkdownContext.Model.SetAttributeValue(ModelingCapabilityInfo.StdModelPath);
-        }
-
-        protected ModeledMarkdownContext<T> MarkdownContext { get; } = new();
-
+        { }
 
         protected override void InsertItem(int index, T item)
         {
@@ -107,8 +99,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         {
             CollectionChanging?.Invoke(this, e);
         }
-
-        public string ToString(ReportFormat formatting) => MarkdownContext.ToString(formatting);
 
         public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
 

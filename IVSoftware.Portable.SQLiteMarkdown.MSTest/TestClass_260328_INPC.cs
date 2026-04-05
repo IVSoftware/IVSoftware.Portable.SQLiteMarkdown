@@ -205,6 +205,10 @@ IsChecked: Brown Dog "
         {
             builder.Add(e.ToString(ReferenceEquals(sender, itemsSource)));
         };
+        itemsSource.CollectionChanging += (sender, e) =>
+        {
+            builder.Add(e.ToString(ReferenceEquals(sender, itemsSource)));
+        };
         #endregion E V E N T S
 
         #region S U B T E S T S
@@ -220,7 +224,14 @@ IsChecked: Brown Dog "
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           ";
+NetProjection.Reset   NewItems= 0 OldItems= 0 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 0 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 1 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 2 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 3 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 4 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -228,18 +239,18 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
                 "Expecting 1x INCC."
             );
 
-            actual = itemsSource.ToString(ReportFormat.ModelWithPreview);
+            actual = itemsSource.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
-
             expected = @" 
-<model mdc=""[MDC]"" histo=""[model:5 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"" stdmodelpath=""Id"">
+<model modeling=""Id"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
   <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
   <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
   <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
   <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
-</model>";
+</model>"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -247,87 +258,46 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
                 "Expecting ToString(ReportFormat.ModelWithPreview) from active MarkdownContext."
             );
 
-            if(DateTime.Now.Date <= new DateTime(2026, 4, 5).Date)
+            builder.Clear();
+            using (itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 itemsSource.RemoveAt(1);
-
-                actual = itemsSource.ToString(out XElement _);
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-<model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""1"" preview=""Item03    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""2"" preview=""Item04    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""3"" preview=""Item05    "" />
-</model>";
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting result to match."
-                );
                 itemsSource.RemoveAt(1);
-
-                actual = itemsSource.ToString(out XElement _);
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-<model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""1"" preview=""Item04    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""2"" preview=""Item05    "" />
-</model>"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting result to match."
-                );
                 itemsSource.RemoveAt(1);
+            }
 
-                actual = itemsSource.ToString(out XElement _);
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
+            // View from the outside
+            actual = itemsSource.ToString(out XElement _);
+            actual.ToClipboardExpected();
+            ;
+            expected = @" 
 <model modeling=""Id"">
   <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
   <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""1"" preview=""Item05    "" />
 </model>";
 
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting result to match."
-                );
-            }
-            else
-            {
-                Debug.Fail("Don't forget disabled");
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
 
-                using(itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
-                {
-                    itemsSource.RemoveAt(1);
-                    itemsSource.RemoveAt(1);
-                    itemsSource.RemoveAt(1);
-                }
 
-                actual = itemsSource.ToString(ReportFormat.ModelWithPreview);
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-<model mdc=""[MDC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"" stdmodelpath=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
-</model>";
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+NetProjection.Remove  NewItems= 0 OldItems= 1 OldStartingIndex= 1 NotifyCollectionChangingEventArgs          
+NetProjection.Remove  NewItems= 0 OldItems= 1 OldStartingIndex= 1 NotifyCollectionChangingEventArgs          
+NetProjection.Remove  NewItems= 0 OldItems= 1 OldStartingIndex= 1 NotifyCollectionChangingEventArgs          
+NetProjection.Reset   NotifyCollectionChangedEventArgs           "
+            ;
 
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting ToString(ReportFormat.ModelWithPreview) from active MarkdownContext."
-                );
-            }
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting builder content to match."
+            );
         }
         #endregion S U B T E S T S
     }
