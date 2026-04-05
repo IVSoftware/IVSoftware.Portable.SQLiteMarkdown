@@ -220,10 +220,22 @@ IsChecked: Brown Dog "
             {
                 itemsSource.PopulateForDemo(5);
             }
+
+            Assert.AreEqual(
+                CollectionChangingEventingOption.Discrete, 
+                itemsSource.CollectionChangingEventingOption,
+                "Expecting USE DISCRETE CHANGING EVENTS.");
+
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
             actual.ToClipboardExpected();
             { }
             expected = @" 
+NetProjection.Reset   NewItems= 0 OldItems= 0 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 0 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 1 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 2 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 3 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 4 NotifyCollectionChangingEventArgs          
 NetProjection.Add     NewItems= 5 OldItems= 0 NewStartingIndex= 0 NotifyCollectionChangeReason.Digest        NotifyCollectionChangingEventArgs          
 NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
             ;
@@ -254,6 +266,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             );
 
             builder.Clear();
+            itemsSource.CollectionChangingEventingOption = CollectionChangingEventingOption.Deferred;
             using (itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 itemsSource.RemoveAt(1);
@@ -276,7 +289,6 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
                 actual.NormalizeResult(),
                 "Expecting result to match."
             );
-
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
             actual.ToClipboardExpected();
             { }

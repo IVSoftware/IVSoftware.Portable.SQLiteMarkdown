@@ -95,11 +95,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 base.ClearItems();
             }
         }
-        protected override void OnFinalCoalesce(ModelDataExchangeFinalDisposeEventArgs e)
-        {
-            OnCollectionChanging(e.Digest);
-            base.OnFinalCoalesce(e);
-        }
 
         protected virtual void OnCollectionChanging(NotifyCollectionChangingEventArgs e)
         {
@@ -111,9 +106,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     break;
                 case ModelDataExchangeAuthority.CollectionDeferred:
                 case ModelDataExchangeAuthority.ModelDeferred:
-                    if(DHostMDX.IsDisposing)
+                    switch (CollectionChangingEventingOption)
                     {
-                        CollectionChanging?.Invoke(this, e);
+                        case CollectionChangingEventingOption.Discrete:
+                            CollectionChanging?.Invoke(this, e);
+                            break;
+                        case CollectionChangingEventingOption.Deferred:
+                            if (DHostMDX.IsDisposing)
+                            {
+                                CollectionChanging?.Invoke(this, e);
+                            }
+                            break;
+                        default:
+                            break;
                     }
                     break;
                 default:
@@ -121,8 +126,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     break;
             }
         }
-
         public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
+
+        public CollectionChangingEventingOption CollectionChangingEventingOption { get; set; }
+        protected override void OnFinalCoalesce(ModelDataExchangeFinalDisposeEventArgs e)
+        {
+            OnCollectionChanging(e.Digest);
+            base.OnFinalCoalesce(e);
+        }
 
         /// <summary>
         /// Determine the highest fidelity full path for T.

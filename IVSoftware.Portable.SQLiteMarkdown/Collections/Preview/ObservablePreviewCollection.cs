@@ -98,32 +98,44 @@ namespace IVSoftware.Portable.Collections.Preview
                 base.ClearItems();
             }
         }
-        public CollectionChangingEventingOption CollectionChangingEventingOption { get; set; }
-        protected override void OnFinalCoalesce(ModelDataExchangeFinalDisposeEventArgs e)
+        protected virtual void OnCollectionChanging(NotifyCollectionChangingEventArgs e)
         {
             switch (DHostMDX.Authority)
             {
                 case ModelDataExchangeAuthority.Collection:
                 case ModelDataExchangeAuthority.Model:
+                    CollectionChanging?.Invoke(this, e);
                     break;
                 case ModelDataExchangeAuthority.CollectionDeferred:
                 case ModelDataExchangeAuthority.ModelDeferred:
-                    if (DHostMDX.IsDisposing)
+                    switch (CollectionChangingEventingOption)
                     {
-                        OnCollectionChanging(e.Digest);
+                        case CollectionChangingEventingOption.Discrete:
+                            CollectionChanging?.Invoke(this, e);
+                            break;
+                        case CollectionChangingEventingOption.Deferred:
+                            if (DHostMDX.IsDisposing)
+                            {
+                                CollectionChanging?.Invoke(this, e);
+                            }
+                            break;
+                        default:
+                            break;
                     }
                     break;
                 default:
                     this.ThrowFramework<NotSupportedException>($"The {DHostMDX.Authority.ToFullKey()} case is not supported.");
                     break;
             }
-            base.OnFinalCoalesce(e);
-        }
-        protected virtual void OnCollectionChanging(NotifyCollectionChangingEventArgs e)
-        {
-            CollectionChanging?.Invoke(this, e);
         }
         public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
+
+        public CollectionChangingEventingOption CollectionChangingEventingOption { get; set; }
+        protected override void OnFinalCoalesce(ModelDataExchangeFinalDisposeEventArgs e)
+        {
+            OnCollectionChanging(e.Digest);
+            base.OnFinalCoalesce(e);
+        }
 
         public static implicit operator XElement(ObservablePreviewCollection<T> @this)
         {
