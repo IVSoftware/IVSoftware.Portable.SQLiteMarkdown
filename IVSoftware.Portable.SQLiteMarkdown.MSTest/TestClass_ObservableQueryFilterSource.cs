@@ -1315,6 +1315,9 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
             var itemsSource = new ObservableQueryFilterSource<SelectableQFModelLTOQO>();
             using (var cnx = InitializeInMemoryDatabase())
             {
+                // This is just to skip to the second temporarily
+                // Debug.Assert(DateTime.Now.Date == new DateTime(2026, 4, 05).Date, "Don't forget disabled");
+
                 subtestBasicQueryAnimal();
                 subtestBasicQueryAnimalINPC();
 
@@ -1457,6 +1460,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     // Expecting "no surprises" here.
                     builder.Clear();
                     eventQueue.Clear();
+                    Assert.IsNull(itemsSource.ObservableNetProjection, "[Reminder] Expecting routed config.");
                     itemsSource.Clear();
 
                     actual = string.Join(Environment.NewLine, builder);

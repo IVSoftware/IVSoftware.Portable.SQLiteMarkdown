@@ -590,10 +590,6 @@ SELECT * FROM items WHERE
                     switch (DHostMDX.Authority)
                     {
                         case ModelDataExchangeAuthority.Collection:
-                            // N O O P
-                            // Signifies that the collection has either
-                            // sourced, or responded to, ann changes.
-                            break;
                         case ModelDataExchangeAuthority.Model:
                             OnModelSettled(eBCL);
                             break;
@@ -798,8 +794,6 @@ SELECT * FROM items WHERE
         {
             if(_reentry)
             {
-                // This isn't being relied on, but possibly could work standalone!
-                Debug.Fail($@"ADVISORY - First Time.");
                 return;
             }
             else
