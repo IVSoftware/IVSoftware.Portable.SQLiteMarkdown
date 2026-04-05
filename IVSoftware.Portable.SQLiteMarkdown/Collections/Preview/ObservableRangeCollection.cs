@@ -23,7 +23,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public void AddRange(IEnumerable items)
         {
-            using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred))
+            using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
             {
                 int newStartingIndex = Count;
                 foreach (var item in items)
@@ -58,7 +58,7 @@ namespace IVSoftware.Portable.Collections.Preview
             else
             {
                 int changed = 0;
-                using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred))
+                using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
                 {
                     int newStartingIndex = Count;
                     foreach (var item in items)
@@ -98,7 +98,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public void InsertRange(int startingIndex, IEnumerable items)
         {
-            using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred))
+            using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
             {
                 foreach (var item in items)
                 {
@@ -161,7 +161,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
             if (itemsT.Count == count)
             {
-                using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred))
+                using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
                 {
                     foreach (var item in itemsT)
                     {
@@ -186,7 +186,7 @@ namespace IVSoftware.Portable.Collections.Preview
                         return 0;
                     }
                 }
-                using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred))
+                using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
                 {
                     foreach (var removeAt in indexes.OrderByDescending(_ => _))
                     {
@@ -223,7 +223,7 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             else
             {
-                using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred))
+                using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
                 {
                     var count = (endingIndex - startingIndex) + 1;
                     while (count > 0)
