@@ -174,7 +174,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                     if(Authority == CollectionChangeAuthority.Projection)
                     {
-                        xba.Parent.SetStdAttributeValue(StdMarkdownAttribute.live, bool.TrueString);
+                        if( QueryFilterConfig.HasFlag(QueryFilterConfig.Filter) 
+                            && FilteringState == FilteringState.Active)
+                        {
+                            xba.Parent.SetStdAttributeValue(StdMarkdownAttribute.live, bool.TrueString);
+                        }
                     }
                     break;
                 case XObjectChange.Remove:
