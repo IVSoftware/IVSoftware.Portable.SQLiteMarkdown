@@ -212,7 +212,7 @@ IsChecked: Brown Dog "
         subtest_RemoveWithCancel();
         void subtest_RemoveWithCancel()
         {
-            using (itemsSource.BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
+            using (itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 itemsSource.PopulateForDemo(5);
             }
@@ -251,7 +251,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             Debug.Assert(DateTime.Now.Date == new DateTime(2026, 4, 4).Date, "Don't forget disabled");
             return;
 
-            using(itemsSource.BeginAuthority(ModelDataExchangeAuthority.CollectionDeferred))
+            using(itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 itemsSource.RemoveAt(1);
                 itemsSource.RemoveAt(1);

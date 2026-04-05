@@ -210,7 +210,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// When the ref count returns to zero, disposal raises a final event
         /// with a coalesced <see cref="NotifyCollectionChangingEventArgs"/> instance.
         /// </remarks>
-        IDisposable BeginAuthority(ModelDataExchangeAuthority authority);
+        IDisposable BeginMDXAuthority(ModelDataExchangeAuthority authority, IList source);
 
         /// <summary>
         /// Sets an internal flag indicating that the final emission for the current
@@ -219,7 +219,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// <remarks>
         /// This method does not terminate the suppression scope or affect the reference
         /// count. Disposal proceeds normally via the <see cref="IDisposable"/> tokens
-        /// returned by <see cref="BeginAuthority"/>. Instead, it alters the semantics
+        /// returned by <see cref="BeginMDXAuthority"/>. Instead, it alters the semantics
         /// of the final emission, signaling that the coalesced result should be disregarded.
         /// </remarks>
         void CancelSuppress();

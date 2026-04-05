@@ -15,7 +15,14 @@ namespace IVSoftware.Portable.Collections.Preview
     public sealed class ModelDataExchangeAuthorityProvider<T> 
         : DisposableHost
     {
-
+        /// <summary>
+        /// Raises a coalesced change event for subsequent changes to the source during the epoch.
+        /// </summary>
+        /// <remarks>
+        /// The initial source must be passed in. There's no way to know if this is:
+        /// - Before and after Range suppression (could me a non-modeled collection)
+        /// - Before and after Filter change (source is routed to PMSS)
+        /// </remarks>
         [Canonical]
         public IDisposable GetToken(ModelDataExchangeAuthority authority, IList source)
         {

@@ -893,14 +893,14 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
         string actual, expected;
         using var te = this.TestableEpoch();
         var builder = new List<string>();
-        ModeledOPC mopc = new ();
+        ObservableCollectionWithInternalMMDC onp = new ();
 
         #region E V E N T S
         // Differentiate between the itemsSource being driven by
         // the simView and the simView being driven by itemsSource.
-        mopc.CollectionChanged += (sender, e) =>
+        onp.CollectionChanged += (sender, e) =>
         {
-            builder.Add(e.ToString(ReferenceEquals(sender, mopc)));
+            builder.Add(e.ToString(ReferenceEquals(sender, onp)));
         };
         #endregion E V E N T S
 
@@ -910,19 +910,20 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
         #region S U B T E S T S
         void subtest_PopulateWithDiscreteEvents()
         {
-            mopc.PopulateForDemo(5);
+            onp.PopulateForDemo(5);
 
-            actual = mopc.Model.ToString();
+            actual = onp.Model.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
 <model mdc=""[MDC]"" histo=""[model:5 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" />
-</model>";
+  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" live=""True"" order=""0"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" live=""True"" order=""1"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" live=""True"" order=""2"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" live=""True"" order=""3"" />
+  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" live=""True"" order=""4"" />
+</model>"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -947,7 +948,7 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEve
                 "Expecting model has emitted discrete events."
             );
 
-            actual = mopc.ToString(ReportFormat.StateReport);
+            actual = onp.ToString(ReportFormat.StateReport);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -965,9 +966,9 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEve
             te.ResetEpoch();
             builder.Clear();
 
-            mopc.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
+            onp.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
 
-            actual = mopc.Model.ToString();
+            actual = onp.Model.ToString();
             actual.ToClipboardExpected();
             { }
 
@@ -999,7 +1000,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
                 "Expecting model has emitted discrete events."
             );
 
-            actual = mopc.ToString(ReportFormat.StateReport);
+            actual = onp.ToString(ReportFormat.StateReport);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -1015,9 +1016,9 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
     }
 
     #region L o c a l C l a s s e s
-    private class ModeledOPC : ObservableRangeCollection<SelectableQFModel>
+    private class ObservableCollectionWithInternalMMDC : ObservableRangeCollection<SelectableQFModel>
     {
-        public ModeledOPC()
+        public ObservableCollectionWithInternalMMDC()
         {
             MMDC = new();
             MMDC.SetObservableNetProjection(this);

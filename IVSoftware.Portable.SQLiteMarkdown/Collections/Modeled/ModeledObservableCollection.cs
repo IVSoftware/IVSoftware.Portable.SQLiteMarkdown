@@ -53,8 +53,8 @@ namespace IVSoftware.Portable.Collections.Modeled
                 base.OnCollectionChanged(e);
             }
         }
-        public IDisposable BeginAuthority(ModelDataExchangeAuthority authority)
-            => DHostMDX.GetToken(authority);
+        public IDisposable BeginMDXAuthority(ModelDataExchangeAuthority authority, IList source)
+            => DHostMDX.GetToken(authority, source);
 
         public void CancelSuppress() => DHostMDX.CancelSuppressNotify();
         public ModelDataExchangeAuthority Phase => DHostMDX.Authority;

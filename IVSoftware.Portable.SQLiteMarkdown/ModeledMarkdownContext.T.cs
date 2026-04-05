@@ -309,7 +309,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 await base.ApplyFilter();
                 try
                 {
-                    using (BeginAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
+                    using (BeginMDXAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
                     {
                         string sql;
                         IList matches = Array.Empty<object>();
@@ -664,7 +664,7 @@ SELECT * FROM items WHERE
             }
         }
 
-        public IDisposable BeginAuthority(ModelDataExchangeAuthority authority, IList source)
+        public IDisposable BeginMDXAuthority(ModelDataExchangeAuthority authority, IList source)
             => DHostMDX.GetToken(authority, source);
         ModelDataExchangeAuthorityProvider<T> DHostMDX
         {
@@ -794,6 +794,8 @@ SELECT * FROM items WHERE
         {
             if(_reentry)
             {
+                // This isn't being relied on, but possibly could work standalone!
+                Debug.Fail($@"ADVISORY - First Time.");
                 return;
             }
             else
@@ -801,7 +803,10 @@ SELECT * FROM items WHERE
                 try
                 {
                     _reentry = true;
-                    ObservableNetProjection?.Apply(eUnk);
+                    if (Authority != CollectionChangeAuthority.Projection)
+                    {
+                        ObservableNetProjection?.Apply(eUnk);
+                    }
                     ModelSettled?.Invoke(this, eUnk);
                 }
                 finally
@@ -913,7 +918,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
+                        using (BeginMDXAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
                         {
                             foreach (var newItem in newItems)
                             {
@@ -964,7 +969,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
+                        using (BeginMDXAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
                         {
                             await Task.Run(() =>
                             {
