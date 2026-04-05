@@ -17,7 +17,8 @@ namespace IVSoftware.Portable.Collections.Preview
         Remove = NotifyCollectionChangedAction.Remove,
         Replace = NotifyCollectionChangedAction.Replace,
         Move = NotifyCollectionChangedAction.Move,
-        Reset = NotifyCollectionChangedAction.Reset
+        Reset = NotifyCollectionChangedAction.Reset,
+        Digest,
     }
 
     /// <summary>

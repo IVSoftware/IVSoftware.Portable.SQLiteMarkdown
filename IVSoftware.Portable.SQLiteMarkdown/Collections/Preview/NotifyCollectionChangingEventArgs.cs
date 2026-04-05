@@ -267,7 +267,15 @@ namespace IVSoftware.Portable.Collections.Preview
             }
         }
 
-        public NotifyCollectionChangeAction Action { get; }
+        public NotifyCollectionChangeAction Action
+        {
+            get => 
+                IsBclCompatible 
+                ? _action
+                : NotifyCollectionChangeAction.Digest;
+            private set =>_action = value;
+        }
+        NotifyCollectionChangeAction _action = default;
         public NotifyCollectionChangeReason Reason { get; private set; } = NotifyCollectionChangeReason.None;
         public NotifyCollectionChangeScope Scope { get; }
 

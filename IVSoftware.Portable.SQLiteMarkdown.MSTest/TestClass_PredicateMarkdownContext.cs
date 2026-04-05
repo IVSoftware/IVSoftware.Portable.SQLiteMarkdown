@@ -392,7 +392,7 @@ NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingOption.StructuralR
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Other.Add     NewItems=37 OldItems= 0 NewStartingIndex= 0 NotifyCollectionChangeReason.Digest        NotifyCollectionChangingEventArgs          "
+Other.Digest     NewItems=37 OldItems= 0 NewStartingIndex= 0 NotifyCollectionChangeReason.Digest        NotifyCollectionChangingEventArgs          "
             ;
 
             Assert.AreEqual(

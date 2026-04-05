@@ -100,16 +100,7 @@ namespace IVSoftware.Portable.Collections.Preview
             switch (action)
             {
                 case NotifyCollectionChangeAction.Add:
-                    var isBclCompatible =
-                        (eUnk as NotifyCollectionChangingEventArgs)?.IsBclCompatible != false;
-                    if (isBclCompatible)
-                    {
-                        localCompatibleAddToList();
-                    }
-                    else
-                    {
-                        localExecutePlaylist();
-                    }
+                    localCompatibleAddToList();
                     break;
                 case NotifyCollectionChangeAction.Remove:
                     localRemoveFromList();
@@ -122,6 +113,9 @@ namespace IVSoftware.Portable.Collections.Preview
                     break;
                 case NotifyCollectionChangeAction.Reset:
                     localResetList();
+                    break;
+                case NotifyCollectionChangeAction.Digest:
+                    localExecutePlaylist();
                     break;
                 default:
                     nameof(Extensions)
