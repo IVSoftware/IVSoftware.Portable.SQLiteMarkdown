@@ -11,7 +11,7 @@ namespace IVSoftware.Portable.Collections.Preview
     /// <summary>
     /// Specifies an action associated with either a Changed or Changing event.
     /// </summary>
-    internal enum NotifyCollectionChangeAction
+    public enum NotifyCollectionChangeAction
     {
         Add = NotifyCollectionChangedAction.Add,
         Remove = NotifyCollectionChangedAction.Remove,
@@ -24,7 +24,7 @@ namespace IVSoftware.Portable.Collections.Preview
     /// Reason for Changed or Changing extended actions.
     /// </summary>
     [Flags]
-    internal enum NotifyCollectionChangeReason
+    public enum NotifyCollectionChangeReason
     {
         /// <summary>
         /// This is a pass-though BCL event structure.

@@ -176,7 +176,7 @@ namespace IVSoftware.Portable.Collections.Preview
         public ModelDataExchangeAuthority Authority { get; private set; } = ModelDataExchangeAuthority.Collection;
     }
 
-    internal class ModelDataExchangeFinalDisposeEventArgs : FinalDisposeEventArgs
+    public class ModelDataExchangeFinalDisposeEventArgs : FinalDisposeEventArgs
     {
         public ModelDataExchangeFinalDisposeEventArgs(
             IReadOnlyCollection<object> releasedSenders,

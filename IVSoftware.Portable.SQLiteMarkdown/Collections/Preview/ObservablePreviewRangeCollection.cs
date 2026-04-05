@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Linq;
@@ -94,10 +95,31 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 base.ClearItems();
             }
         }
+        protected override void OnFinalCoalesce(ModelDataExchangeFinalDisposeEventArgs e)
+        {
+            OnCollectionChanging(e.Digest);
+            base.OnFinalCoalesce(e);
+        }
 
         protected virtual void OnCollectionChanging(NotifyCollectionChangingEventArgs e)
         {
-            CollectionChanging?.Invoke(this, e);
+            switch (DHostMDX.Authority)
+            {
+                case ModelDataExchangeAuthority.Collection:
+                case ModelDataExchangeAuthority.Model:
+                    CollectionChanging?.Invoke(this, e);
+                    break;
+                case ModelDataExchangeAuthority.CollectionDeferred:
+                case ModelDataExchangeAuthority.ModelDeferred:
+                    if(DHostMDX.IsDisposing)
+                    {
+                        CollectionChanging?.Invoke(this, e);
+                    }
+                    break;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {DHostMDX.Authority.ToFullKey()} case is not supported.");
+                    break;
+            }
         }
 
         public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;

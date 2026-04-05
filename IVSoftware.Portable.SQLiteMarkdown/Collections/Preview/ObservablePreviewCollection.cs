@@ -1,4 +1,6 @@
-﻿using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+﻿using IVSoftware.Portable.Collections.Modeled;
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections.ObjectModel;
@@ -12,32 +14,12 @@ namespace IVSoftware.Portable.Collections.Preview
     /// Suppressible collection with Preview semantics (but no Range semantics).
     /// </summary>
     internal partial class ObservablePreviewCollection<T>
-        : ObservableCollection<T>
+        : ModeledObservableCollection<T>
         , INotifyCollectionChanging
     {
-        public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)        
-        {
-            EventScope = eventScope;
-        }
+        public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
+            : base(eventScope) { }
 
-        /// <summary>
-        /// Defines the extent to which a preview handler may interact with a pending
-        /// collection change proposal.
-        /// </summary>
-        /// <remarks>
-        /// This enumeration constrains what a handler is permitted to do during the
-        /// preview (Changing) phase. It does not describe the change itself, but rather
-        /// the allowed level of participation in shaping or rejecting it.
-        ///
-        /// - ReadOnly   : Observe only. No modification or cancellation is permitted.
-        /// - CancelOnly : The proposal may be rejected but not altered.
-        /// - FullControl: The proposal may be rewritten or rejected entirely.
-        ///
-        /// These flags are enforced by the preview pipeline. Handlers opting into
-        /// higher scopes assume responsibility for producing a valid and internally
-        /// consistent change contract.
-        /// </remarks>
-        public NotifyCollectionChangeScope EventScope { get; }
         protected override void InsertItem(int index, T item)
         {
             var ePre = new NotifyCollectionChangingEventArgs(
@@ -115,7 +97,27 @@ namespace IVSoftware.Portable.Collections.Preview
                 base.ClearItems();
             }
         }
-
+        protected override void OnFinalCoalesce(ModelDataExchangeFinalDisposeEventArgs e)
+        {
+            switch (DHostMDX.Authority)
+            {
+                case ModelDataExchangeAuthority.Collection:
+                case ModelDataExchangeAuthority.Model:
+                    break;
+                case ModelDataExchangeAuthority.CollectionDeferred:
+                case ModelDataExchangeAuthority.ModelDeferred:
+                    { }
+                    if (DHostMDX.IsDisposing)
+                    {
+                        OnCollectionChanging(e.Digest);
+                    }
+                    break;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {DHostMDX.Authority.ToFullKey()} case is not supported.");
+                    break;
+            }
+            base.OnFinalCoalesce(e);
+        }
         protected virtual void OnCollectionChanging(NotifyCollectionChangingEventArgs e)
         {
             CollectionChanging?.Invoke(this, e);

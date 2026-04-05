@@ -1,4 +1,6 @@
 ﻿using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -72,7 +74,7 @@ namespace IVSoftware.Portable.Collections.Modeled
             }
         }
         ModelDataExchangeAuthorityProvider<T>? _dhostMDX = null;
-        private void OnFinalCoalesce(ModelDataExchangeFinalDisposeEventArgs e)
+        protected virtual void OnFinalCoalesce(ModelDataExchangeFinalDisposeEventArgs e)
         {
             OnCollectionChanged((e.Digest));
         }

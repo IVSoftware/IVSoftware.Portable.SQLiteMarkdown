@@ -42,7 +42,7 @@ namespace IVSoftware.Portable.Collections.Preview
     ///   during the Changing phase. When translated to BCL, Reset intentionally discards
     ///   payload and represents only a structural invalidation.
     /// </remarks>
-    internal class NotifyCollectionChangingEventArgs : CancelEventArgs
+    public class NotifyCollectionChangingEventArgs : CancelEventArgs
     {
         NotifyCollectionChangedEventArgs? EventArgsBCL = null;
 
