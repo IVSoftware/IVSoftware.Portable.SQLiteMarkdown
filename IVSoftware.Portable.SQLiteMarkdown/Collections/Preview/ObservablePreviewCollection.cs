@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Collections.Modeled;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
@@ -97,6 +98,7 @@ namespace IVSoftware.Portable.Collections.Preview
                 base.ClearItems();
             }
         }
+        public CollectionChangingEventingOption CollectionChangingEventingOption { get; set; }
         protected override void OnFinalCoalesce(ModelDataExchangeFinalDisposeEventArgs e)
         {
             switch (DHostMDX.Authority)
@@ -106,7 +108,6 @@ namespace IVSoftware.Portable.Collections.Preview
                     break;
                 case ModelDataExchangeAuthority.CollectionDeferred:
                 case ModelDataExchangeAuthority.ModelDeferred:
-                    { }
                     if (DHostMDX.IsDisposing)
                     {
                         OnCollectionChanging(e.Digest);
