@@ -396,7 +396,6 @@ namespace IVSoftware.Portable.Collections.Preview
 
             void localRemoveFromModel()
             {
-                Debug.Fail($@"ADVISORY - First Time.");
                 if (oldItems is null)
                 {
                     eUnk.ThrowFramework<NotSupportedException>(
