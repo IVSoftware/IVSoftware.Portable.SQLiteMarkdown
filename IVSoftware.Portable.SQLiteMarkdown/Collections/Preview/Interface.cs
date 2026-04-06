@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.SQLiteMarkdown;
+﻿using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.SQLiteMarkdown;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.StateRunner.Preview;
 using System;
@@ -8,188 +9,6 @@ using System.Collections.Specialized;
 
 namespace IVSoftware.Portable.Collections.Preview
 {
-    /// <summary>
-    /// Specifies an action associated with either a Changed or Changing event.
-    /// </summary>
-    /// <remarks>
-    /// As the 'out' type of TryNormalizeTargets the name must be *neutral*".
-    /// </remarks>
-    public enum NotifyCollectionChangeAction
-    {
-        Add = NotifyCollectionChangedAction.Add,
-        Remove = NotifyCollectionChangedAction.Remove,
-        Replace = NotifyCollectionChangedAction.Replace,
-        Move = NotifyCollectionChangedAction.Move,
-        Reset = NotifyCollectionChangedAction.Reset,
-        Digest,
-    }
-
-    /// <summary>
-    /// Reason for Changed or Changing extended actions.
-    /// </summary>
-    [Flags]
-    public enum NotifyCollectionChangeReason
-    {
-        /// <summary>
-        /// This is a pass-though BCL event structure.
-        /// </summary>
-        None = 0x0000,
-
-#if false && RESERVED
-        /// <summary>
-        /// These items (old and new) represent a new canonical recordset.
-        /// </summary>
-        QueryResult = 0x1000,
-
-        /// <summary>
-        /// These items (old and new) represent a narrower subset.
-        /// </summary>
-        ApplyFilter = QueryResult << 1,
-#else
-        /// <summary>
-        /// These items (old and new) represent a narrower subset.
-        /// </summary>
-        ApplyFilter = 0x2000,
-#endif
-
-        /// <summary>
-        /// These items (old and new) represent a wider subset.
-        /// </summary>
-        RemoveFilter = ApplyFilter << 1,
-
-        /// <summary>
-        /// These items (old and new) represent a deferred collection change digest.
-        /// </summary>
-        Digest = RemoveFilter << 1,
-
-        /// <summary>
-        /// Indicates that a batch was canceled while it was building.
-        /// </summary>
-        Cancel = Digest << 1,
-
-        /// <summary>
-        /// Attributes a Reset action produced by an illegal configuration request.
-        /// </summary>
-        Exception = Cancel << 1,
-    }
-
-    /// <summary>
-    /// Defines the extent to which a preview handler may interact with a pending
-    /// collection change proposal.
-    /// </summary>
-    /// <remarks>
-    /// This enumeration constrains what a handler is permitted to do during the
-    /// preview (Changing) phase. It does not describe the change itself, but rather
-    /// the allowed level of participation in shaping or rejecting it.
-    ///
-    /// - ReadOnly   : Observe only. No modification or cancellation is permitted.
-    /// - CancelOnly : The proposal may be rejected but not altered.
-    /// - FullControl: The proposal may be rewritten or rejected entirely.
-    ///
-    /// These flags are enforced by the preview pipeline. Handlers opting into
-    /// higher scopes assume responsibility for producing a valid and internally
-    /// consistent change contract.
-    /// </remarks>
-    [Flags]
-    public enum NotifyCollectionChangeScope
-    {
-        /// <summary>
-        /// Observe the proposal without modifying or canceling it.
-        /// </summary>
-        ReadOnly = 0x0,
-
-        /// <summary>
-        /// Allows the proposal to be canceled but not modified.
-        /// </summary>
-        CancelOnly = 0x1,
-
-        /// <summary>
-        /// Allows full control over the proposal, including rewriting or canceling it.
-        /// </summary>
-        FullControl = 0x3,
-    }
-
-    internal interface INotifyCollectionChanging
-    {
-        public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
-
-        /// <summary>
-        /// Defines the extent to which a preview handler may interact with a pending
-        /// collection change proposal.
-        /// </summary>
-        /// <remarks>
-        /// This enumeration constrains what a handler is permitted to do during the
-        /// preview (Changing) phase. It does not describe the change itself, but rather
-        /// the allowed level of participation in shaping or rejecting it.
-        ///
-        /// - ReadOnly   : Observe only. No modification or cancellation is permitted.
-        /// - CancelOnly : The proposal may be rejected but not altered.
-        /// - FullControl: The proposal may be rewritten or rejected entirely.
-        ///
-        /// These flags are enforced by the preview pipeline. Handlers opting into
-        /// higher scopes assume responsibility for producing a valid and internally
-        /// consistent change contract.
-        /// </remarks>
-        NotifyCollectionChangeScope EventScope { get; }
-    }
-    /// <summary>
-    /// Represents the current authority epoch for collection change notifications.
-    /// </summary>
-    /// <remarks>
-    /// Works in conjunction with IsDisposing to manage direction, coalescing, and 
-    /// final application of changes that are driven by the collection or the model.
-    /// </remarks>
-    [NotFlags]
-    public enum ModelDataExchangeAuthority
-    {
-        Collection,
-
-        CollectionDeferred,
-
-        Model,
-
-        ModelDeferred,
-    }
-
-#if false
-    /// <summary>
-    /// Represents the current phase of a suppression epoch for collection change notifications.
-    /// </summary>
-    /// <remarks>
-    /// Given that the core overridable surface of ObservableCollection{T} is being
-    /// invoked, this value indicates under what authority that is taking place.
-    /// </remarks>
-    [NotFlags]
-    public enum ModelAuthority
-    {
-        /// <summary>
-        /// Suppression has not been requested; collection change notifications propagate normally.
-        /// </summary>
-        None, 
-
-        /// <summary>
-        /// Suppression has been requested; and a preview event is under construction.
-        /// </summary>
-        /// <remarks>
-        /// Typical Response: 
-        /// - On detecting that an epoch has been released under Preview authority, the
-        ///   consumer generally forwards a coalesced ledger so that can be variously
-        ///   read, canceled and/or mutated <see cref="NotifyCollectionChangeScope"/>.
-        /// </remarks>
-        Preview,
-
-        /// <summary>
-        /// Suppression has been requested; and a preview event is being applied.
-        /// </summary>
-        /// <remarks>
-        /// Typical Response: 
-        /// - On detecting that an epoch has been released under Commit authority, the
-        ///   consumer generally forwards a monolithic multi-change or Reset (BCL) event.
-        /// </remarks>
-        Commit,
-    }
-#endif
-
     /// <summary>
     /// Defines a modeled contract for <see cref="INotifyCollectionChanged"/> 
     /// under ModelDataExchange authority.
@@ -214,7 +33,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// When the ref count returns to zero, disposal raises a final event
         /// with a coalesced <see cref="NotifyCollectionChangingEventArgs"/> instance.
         /// </remarks>
-        IDisposable BeginMDXAuthority(ModelDataExchangeAuthority authority, IList source);
+        IDisposable RequestModelEpochAuthority(ModelDataExchangeAuthority authority, IList source);
 
         /// <summary>
         /// Sets an internal flag indicating that the final emission for the current
@@ -223,7 +42,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// <remarks>
         /// This method does not terminate the suppression scope or affect the reference
         /// count. Disposal proceeds normally via the <see cref="IDisposable"/> tokens
-        /// returned by <see cref="BeginMDXAuthority"/>. Instead, it alters the semantics
+        /// returned by <see cref="RequestModelEpochAuthority"/>. Instead, it alters the semantics
         /// of the final emission, signaling that the coalesced result should be disregarded.
         /// </remarks>
         void CancelSuppress();

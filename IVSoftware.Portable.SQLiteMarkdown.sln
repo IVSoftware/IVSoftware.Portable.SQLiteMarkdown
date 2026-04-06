@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.SQLiteM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.Collections.Common.Extensions", "..\IVSoftware.Portable.Collections.Common\IVSoftware.Portable.Collections.Common.Extensions\IVSoftware.Portable.Collections.Common.Extensions.csproj", "{2793D233-1AB3-3134-A548-F47086C26421}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.Collections.Common", "..\IVSoftware.Portable.Collections.Common\IVSoftware.Portable.Collections.Common\IVSoftware.Portable.Collections.Common.csproj", "{798190AC-61E5-027E-E58A-B9C6DE4FD28B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{2793D233-1AB3-3134-A548-F47086C26421}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2793D233-1AB3-3134-A548-F47086C26421}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2793D233-1AB3-3134-A548-F47086C26421}.Release|Any CPU.Build.0 = Release|Any CPU
+		{798190AC-61E5-027E-E58A-B9C6DE4FD28B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{798190AC-61E5-027E-E58A-B9C6DE4FD28B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{798190AC-61E5-027E-E58A-B9C6DE4FD28B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{798190AC-61E5-027E-E58A-B9C6DE4FD28B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

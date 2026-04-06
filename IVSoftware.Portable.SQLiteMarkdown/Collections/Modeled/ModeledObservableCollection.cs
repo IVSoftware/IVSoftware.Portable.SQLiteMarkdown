@@ -1,6 +1,5 @@
-﻿using IVSoftware.Portable.Collections.Preview;
-using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
+﻿using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Collections.Preview;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,11 +19,11 @@ namespace IVSoftware.Portable.Collections.Modeled
     /// - Does not implement Preview or Range behavior itself; it only enables
     ///   those patterns to be layered on top.
     /// </remarks>
-    public class ModeledObservableCollection<T> 
+    public class ModeledObservableCollectionOR<T> 
         : ObservableCollection<T>
         , IModeledNotifyCollectionChanged<T>
     {        
-        public ModeledObservableCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
+        public ModeledObservableCollectionOR(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
         {
             EventScope = eventScope;
         }
@@ -50,49 +49,49 @@ namespace IVSoftware.Portable.Collections.Modeled
 
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            if (DHostMDX.IsZero())
+            if (DHostModelEpoch.IsZero())
             {
                 base.OnCollectionChanged(e);
             }
         }
-        public IDisposable BeginMDXAuthority(ModelDataExchangeAuthority authority, IList source)
-            => DHostMDX.GetToken(authority, source);
+        public IDisposable RequestModelEpochAuthority(ModelDataExchangeAuthority authority, IList source)
+            => DHostModelEpoch.GetToken(authority, source);
 
-        public void CancelSuppress() => DHostMDX.CancelSuppressNotify();
-        public ModelDataExchangeAuthority Phase => DHostMDX.Authority;
+        public void CancelSuppress() => DHostModelEpoch.CancelSuppressNotify();
+        public ModelDataExchangeAuthority Phase => DHostModelEpoch.Authority;
 
-        public ModelDataExchangeAuthorityProvider<T> DHostMDX
+        public ModelDataExchangeAuthorityProvider<T> DHostModelEpoch
         {
             get
             {
-                if (_dhostMDX is null)
+                if (_dhostDHostModelEpoch is null)
                 {
-                    _dhostMDX = new ModelDataExchangeAuthorityProvider<T>();
-                    _dhostMDX.FinalDispose += (sender, e) => OnFinalCoalesce((ModelDataExchangeFinalDisposeEventArgs)e);
+                    _dhostDHostModelEpoch = new ModelDataExchangeAuthorityProvider<T>();
+                    _dhostDHostModelEpoch.FinalDispose += (sender, e) => OnDHostModelEpochFinalizing((ModelDataExchangeFinalDisposeEventArgs)e);
                 }
-                return _dhostMDX;
+                return _dhostDHostModelEpoch;
             }
         }
-        ModelDataExchangeAuthorityProvider<T>? _dhostMDX = null;
-        protected virtual void OnFinalCoalesce(ModelDataExchangeFinalDisposeEventArgs e)
+        ModelDataExchangeAuthorityProvider<T>? _dhostDHostModelEpoch = null;
+        protected virtual void OnDHostModelEpochFinalizing(ModelDataExchangeFinalDisposeEventArgs e)
         {
             OnCollectionChanged((e.Digest));
         }
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         public new IEnumerator<T> GetEnumerator()
-            => DHostMDX.IsZero()
+            => DHostModelEpoch.IsZero()
             ? base.GetEnumerator()
-            : DHostMDX.Snapshot.GetEnumerator();
+            : DHostModelEpoch.Snapshot.GetEnumerator();
         public new int Count
         {
             get
             {
-                switch (DHostMDX.Authority)
+                switch (DHostModelEpoch.Authority)
                 {
-                    case ModelDataExchangeAuthority.CollectionDeferred when !DHostMDX.IsDisposing:
-                        return DHostMDX.Snapshot.Count;
-                    case ModelDataExchangeAuthority.ModelDeferred when !DHostMDX.IsDisposing:
-                        return DHostMDX.Snapshot.Count;
+                    case ModelDataExchangeAuthority.CollectionDeferred when !DHostModelEpoch.IsDisposing:
+                        return DHostModelEpoch.Snapshot.Count;
+                    case ModelDataExchangeAuthority.ModelDeferred when !DHostModelEpoch.IsDisposing:
+                        return DHostModelEpoch.Snapshot.Count;
                     default:
                         return base.Count;
                 }

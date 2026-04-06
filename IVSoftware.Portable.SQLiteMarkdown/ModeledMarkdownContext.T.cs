@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Collections.Preview;
+﻿using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
@@ -313,7 +314,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 await base.ApplyFilter();
                 try
                 {
-                    using (BeginMDXAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
+                    using (RequestModelEpochAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
                     {
                         string sql;
                         IList matches = Array.Empty<object>();
@@ -591,7 +592,7 @@ SELECT * FROM items WHERE
 
                     // Check the model authority here, not inside
                     // the model settled virtual method.
-                    switch (DHostMDX.Authority)
+                    switch (DHostModelEpoch.Authority)
                     {
                         case ModelDataExchangeAuthority.Collection:
                         case ModelDataExchangeAuthority.Model:
@@ -599,13 +600,13 @@ SELECT * FROM items WHERE
                             break;
                         case ModelDataExchangeAuthority.CollectionDeferred:
                         case ModelDataExchangeAuthority.ModelDeferred:
-                            if(DHostMDX.IsDisposing)
+                            if(DHostModelEpoch.IsDisposing)
                             {
                                 OnModelSettled(eBCL);
                             }
                             break;
                         default:
-                            this.ThrowFramework<NotSupportedException>($"The {DHostMDX.Authority.ToFullKey()} case is not supported.");
+                            this.ThrowFramework<NotSupportedException>($"The {DHostModelEpoch.Authority.ToFullKey()} case is not supported.");
                             break;
                     }
 #if false
@@ -668,16 +669,16 @@ SELECT * FROM items WHERE
             }
         }
 
-        public IDisposable BeginMDXAuthority(ModelDataExchangeAuthority authority, IList source)
-            => DHostMDX.GetToken(authority, source);
-        ModelDataExchangeAuthorityProvider<T> DHostMDX
+        public IDisposable RequestModelEpochAuthority(ModelDataExchangeAuthority authority, IList source)
+            => DHostModelEpoch.GetToken(authority, source);
+        ModelDataExchangeAuthorityProvider<T> DHostModelEpoch
         {
             get
             {
-                if (_dhostMDX is null)
+                if (_DHostModelEpoch is null)
                 {
-                    _dhostMDX = new ModelDataExchangeAuthorityProvider<T>();
-                    _dhostMDX.FinalDispose += (sender, e) =>
+                    _DHostModelEpoch = new ModelDataExchangeAuthorityProvider<T>();
+                    _DHostModelEpoch.FinalDispose += (sender, e) =>
                     {
                         if (e is ModelDataExchangeFinalDisposeEventArgs eFD)
                         {
@@ -685,10 +686,10 @@ SELECT * FROM items WHERE
                         }
                     };
                 }
-                return _dhostMDX;
+                return _DHostModelEpoch;
             }
         }
-        ModelDataExchangeAuthorityProvider<T>? _dhostMDX = null;
+        ModelDataExchangeAuthorityProvider<T>? _DHostModelEpoch = null;
 
         protected virtual void UpdateModelWithAuthority(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -922,7 +923,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginMDXAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
+                        using (RequestModelEpochAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
                         {
                             foreach (var newItem in newItems)
                             {
@@ -932,7 +933,7 @@ SELECT * FROM items WHERE
                     }
 
                     // 260404 - Critical for ModelDataExchange paradigms.
-                    // This needs to be staged now, because DHostMDX takes out
+                    // This needs to be staged now, because DHostModelEpoch takes out
                     // a token at the start of ApplyFilter and uses Read to
                     // make a snapshot of the source, which now points to PMSS.
                     PredicateMatchSubsetProtected.Clear();
@@ -973,7 +974,7 @@ SELECT * FROM items WHERE
                     // SecondEvent: Add (digest) on Final batch dispose.
                     if (newItems.Count > 0)
                     {
-                        using (BeginMDXAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
+                        using (RequestModelEpochAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
                         {
                             await Task.Run(() =>
                             {

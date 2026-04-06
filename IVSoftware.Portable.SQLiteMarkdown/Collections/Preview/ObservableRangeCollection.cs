@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
+using IVSoftware.Portable.Collections.Common;
 
 namespace IVSoftware.Portable.Collections.Preview
 {
@@ -23,7 +24,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public void AddRange(IEnumerable items)
         {
-            using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
+            using (RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
             {
                 int newStartingIndex = Count;
                 foreach (var item in items)
@@ -58,7 +59,7 @@ namespace IVSoftware.Portable.Collections.Preview
             else
             {
                 int changed = 0;
-                using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
+                using (RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
                 {
                     int newStartingIndex = Count;
                     foreach (var item in items)
@@ -68,7 +69,7 @@ namespace IVSoftware.Portable.Collections.Preview
                             if (string.IsNullOrWhiteSpace(fullPath))
                             {
                                 "ObservablePreviewCollection".ThrowHard<ArgumentException>($"The '{nameof(fullPath)}' argument cannot be empty.");
-                                CancelSuppress();
+                                CancelModelAuthorityEpoch();
                                 return 0;
                             }
 
@@ -87,7 +88,7 @@ namespace IVSoftware.Portable.Collections.Preview
                         else
                         {
                             item.ThrowHard<InvalidCastException>($"All range items must be {typeof(T).Name}");
-                            CancelSuppress();
+                            CancelModelAuthorityEpoch();
                             return 0;
                         }
                     }
@@ -98,7 +99,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public void InsertRange(int startingIndex, IEnumerable items)
         {
-            using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
+            using (RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
             {
                 foreach (var item in items)
                 {
@@ -161,7 +162,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
             if (itemsT.Count == count)
             {
-                using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
+                using (RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
                 {
                     foreach (var item in itemsT)
                     {
@@ -186,7 +187,7 @@ namespace IVSoftware.Portable.Collections.Preview
                         return 0;
                     }
                 }
-                using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
+                using (RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
                 {
                     foreach (var removeAt in indexes.OrderByDescending(_ => _))
                     {
@@ -223,7 +224,7 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             else
             {
-                using (BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
+                using (RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
                 {
                     var count = (endingIndex - startingIndex) + 1;
                     while (count > 0)

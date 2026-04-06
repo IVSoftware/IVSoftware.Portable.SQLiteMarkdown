@@ -12,6 +12,8 @@ using IVSoftware.Portable.SQLiteMarkdown.MSTest.Util;
 using System.Collections.ObjectModel;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using System.Diagnostics;
+using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Collections.Common;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -216,7 +218,7 @@ IsChecked: Brown Dog "
         subtest_RemoveWithCancel();
         void subtest_RemoveWithCancel()
         {
-            using (itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (itemsSource.RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 itemsSource.PopulateForDemo(5);
             }
@@ -267,7 +269,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
 
             builder.Clear();
             itemsSource.CollectionChangingEventingOption = CollectionChangingEventingOption.Deferred;
-            using (itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (itemsSource.RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 itemsSource.RemoveAt(1);
                 itemsSource.RemoveAt(1);

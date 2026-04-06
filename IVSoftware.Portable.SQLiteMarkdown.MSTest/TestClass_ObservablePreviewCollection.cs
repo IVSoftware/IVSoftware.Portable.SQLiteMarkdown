@@ -9,6 +9,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.Threading.Channels;
 using System.Xml.Linq;
+using IVSoftware.Portable.Collections.Common;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 

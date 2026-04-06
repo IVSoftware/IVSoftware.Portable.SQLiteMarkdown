@@ -1,5 +1,7 @@
-﻿using IVSoftware.Portable.Collections.Modeled;
+﻿using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Collections.Modeled;
 using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
@@ -197,7 +199,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 "Expecting result to match."
             );
 
-            using (itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (itemsSource.RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 itemsSource.RemoveAt(1);                // Remove Item02
                 Assert.AreEqual(5, itemsSource.Count);
@@ -225,7 +227,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             te.ResetEpoch();
             itemsSource.PopulateForDemo(5);
 
-            using (itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (itemsSource.RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 itemsSource.RemoveAt(1);
                 Assert.AreEqual(5, itemsSource.Count);
@@ -254,7 +256,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             itemsSource.PopulateForDemo(5);
 
             int liveCount = itemsSource.Count;
-            using (itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (itemsSource.RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 itemsSource.RemoveAt(1);                        // Remove Item02 (middle)
                 liveCount--;
@@ -301,7 +303,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
             );
 
             // P R E V I E W
-            using (itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (itemsSource.RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 itemsSource.Add(i1);
                 itemsSource.Add(i2);
@@ -323,7 +325,7 @@ NetProjection.Add     NewItems= 3 NewStartingIndex= 0 NotifyCollectionChangedEve
 
             // - This *looks* contiguous but it isn't.
             // ∴We should get a Reset not a BCL-compatible event
-            using (itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (itemsSource.RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 itemsSource.Remove(i1);         // Remove Item01 from index 0      
                 itemsSource.RemoveAt(1);        // Remove item03 from index 1
@@ -346,7 +348,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             // is the (only) one that should remain
             Assert.AreSame(itemsSource[0], i2);
 
-            using (itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (itemsSource.RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 itemsSource.PopulateForDemo(5);
             }
@@ -363,7 +365,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
                 "Expecting 1x jagged Reset."
             );
 
-            using (itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (itemsSource.RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 // Replace index 1-4 with with Item01 (contiguous)
                 for (int i = 1; i < itemsSource.Count; i++)
@@ -385,7 +387,7 @@ NetProjection.Replace NewItems= 4 OldItems= 4 NewStartingIndex= 0 OldStartingInd
             );
 
             // P R E V I E W
-            using (itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (itemsSource.RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 itemsSource.Clear();
                 Assert.AreEqual(5, itemsSource.Count);  // Remember! We're projecting a different reality.
@@ -408,7 +410,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
                 "Expecting 1x jagged reset."
             );
 
-            using (itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (itemsSource.RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 itemsSource.PopulateForDemo(5);
             }
@@ -425,7 +427,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
                 "Expecting 1x jagged Reset."
             );
 
-            using (itemsSource.BeginMDXAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (itemsSource.RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 // C O N T I G U O U S !
                 // - Move is *not* a qualifying ranged operation.

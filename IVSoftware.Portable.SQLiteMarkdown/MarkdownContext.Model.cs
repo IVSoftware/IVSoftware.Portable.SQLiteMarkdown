@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Collections.Preview;
+﻿using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
@@ -16,17 +17,6 @@ using System.Xml.Schema;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public enum HistogrammerFormat
-    {
-        All,
-
-        [HistogrammerFormat(
-            StdMarkdownAttribute.model, 
-            StdMarkdownAttribute.match,
-            StdMarkdownAttribute.qmatch,
-            StdMarkdownAttribute.pmatch)]
-        Default,
-    }
     public enum ReportFormat
     {
         StateReport,
