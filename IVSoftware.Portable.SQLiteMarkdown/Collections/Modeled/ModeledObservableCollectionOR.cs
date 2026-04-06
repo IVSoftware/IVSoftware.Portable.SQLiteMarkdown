@@ -1,7 +1,6 @@
-﻿using IVSoftware.Portable.Collections.Common;
+﻿#if false
+using IVSoftware.Portable.Collections.Common;
 using IVSoftware.Portable.Collections.Preview;
-using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -101,3 +100,4 @@ namespace IVSoftware.Portable.Collections.Modeled
         }
     }
 }
+#endif

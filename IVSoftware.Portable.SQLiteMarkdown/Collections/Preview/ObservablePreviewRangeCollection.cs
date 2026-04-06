@@ -17,7 +17,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
     {
         public ObservablePreviewRangeCollection(
             NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
-        { }
+        {
+            EventScope = eventScope;
+        }
 
         protected override void InsertItem(int index, T item)
         {
@@ -150,6 +152,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 return _modelingCapability!;
             }
         }
+
+        public NotifyCollectionChangeScope EventScope { get; }
+
         ModeledFullPathInfo? _modelingCapability = null;
         PropertyInfo? _fullPathPI = null;
     }
