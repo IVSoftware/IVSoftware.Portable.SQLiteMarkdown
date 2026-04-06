@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
 using IVSoftware.Portable.Common.Collections;
+using IVSoftware.Portable.Common.Collections.Internal;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {

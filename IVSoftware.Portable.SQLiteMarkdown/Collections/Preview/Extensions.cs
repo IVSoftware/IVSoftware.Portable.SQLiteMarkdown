@@ -239,62 +239,6 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             #endregion L o c a l F x
         }
-        internal static ModelPreviewDelegate GetDescriptionPreviewDlgt(this Type type)
-        {
-            if (type.GetProperty("Description") is { } pi)
-            {
-                return localCompileDelegate(pi);
-
-                ModelPreviewDelegate localCompileDelegate(PropertyInfo pi)
-                {
-                    var instanceParam = Expression.Parameter(typeof(object), "item");
-
-                    // (T)item
-                    var castInstance = Expression.Convert(instanceParam, pi.DeclaringType!);
-
-                    // ((T)item).Description
-                    var propertyAccess = Expression.Property(castInstance, pi);
-
-                    // string? -> ensure reference type
-                    var description = Expression.Convert(propertyAccess, typeof(string));
-
-                    // description == null
-                    var nullCheck = Expression.Equal(description, Expression.Constant(null, typeof(string)));
-
-                    // description.PadRight(10)
-                    var padRight = Expression.Call(
-                        description,
-                        nameof(string.PadRight),
-                        Type.EmptyTypes,
-                        Expression.Constant(10)
-                    );
-
-                    // description.PadRight(10).Substring(0, 10)
-                    var substring = Expression.Call(
-                        padRight,
-                        nameof(string.Substring),
-                        Type.EmptyTypes,
-                        Expression.Constant(0),
-                        Expression.Constant(10)
-                    );
-
-                    // null ? "Not Found" : substring
-                    var body = Expression.Condition(
-                        nullCheck,
-                        Expression.Constant("Not Found"),
-                        substring
-                    );
-
-                    var lambda = Expression.Lambda<ModelPreviewDelegate>(body, instanceParam);
-                    return lambda.Compile();
-                }
-            }
-            else
-            {
-                throw new NotSupportedException($"No delegate is registered for {type.Name}");
-            }
-        }
-
         /// <summary>
         /// Builds a canonical XElement model and returns its string form.
         /// </summary>
@@ -313,7 +257,7 @@ namespace IVSoftware.Portable.Collections.Preview
             model = new XElement(nameof(StdModelElement.model));
             if(modeling is not null)
             {
-                model.SetStdAttributeValue(StdModelAttribute.modeling, modeling);
+                model.SetStdAttributeValue(StdModelAttribute.mpath, modeling);
             }
 #if DEBUG
             var count = @this.Count;

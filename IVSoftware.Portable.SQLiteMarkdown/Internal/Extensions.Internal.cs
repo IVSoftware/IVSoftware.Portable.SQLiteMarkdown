@@ -237,62 +237,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             #endregion
         }
 
-        /// <summary>
-        /// Assigns the value of the attribute identified by the specified <see cref="StdModelAttribute"/>.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model: "Write canonical attribute text with controlled length semantics."
-        /// The value is converted to string and written using the enum name as the attribute key.       
-        /// - When the resulting string exceeds <paramref name="maxLength"/>, the value is truncated
-        ///   and the configured throw policy is invoked.
-        /// - When <paramref name="padToMaxLength"/> is <c>true</c>, the value is right-padded to the specified length.
-        /// </remarks>
-        internal static void SetStdAttributeValue(
-            this XElement @this,
-            StdModelAttribute std,
-            object? value,
-            byte maxLength = byte.MaxValue,
-            bool padToMaxLength = false,
-            ThrowOrAdvise? @throw = null)
-        {
-            if (value is null)
-            {
-                @this.SetAttributeValue(std.ToString(), null);
-                return;
-            }
-
-            string @string = value.ToString() ?? string.Empty;
-            if (@string.Length > maxLength)
-            {
-                @string = @string.Substring(0, maxLength);
-
-                var msg = $"Value for {std.ToFullKey()} exceeded {maxLength} characters and has been truncated.";
-                switch (@throw)
-                {
-                    case ThrowOrAdvise.ThrowHard:
-                        @this.ThrowHard<InvalidOperationException>(msg);
-                        break;
-                    case ThrowOrAdvise.ThrowSoft:
-                        @this.ThrowSoft<InvalidOperationException>(msg);
-                        break;
-                    case ThrowOrAdvise.ThrowFramework:
-                        @this.ThrowFramework<InvalidOperationException>(msg);
-                        break;
-                    case ThrowOrAdvise.Advisory:
-                        @this.Advisory(msg);
-                        break;
-                    case null:
-                    default:
-                        break;
-                }
-            }
-            else if (padToMaxLength)
-            {
-                @string = @string.PadRight(maxLength);
-            }
-            @this.SetAttributeValue(std.ToString(), @string);
-        }
-
         internal static string PadToMaxLength(
             this string @string,
             out bool isMaxLengthExceeded,
