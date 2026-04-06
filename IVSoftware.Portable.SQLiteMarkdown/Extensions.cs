@@ -436,21 +436,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public static bool CanParseAsJson(this string @this)
             => Regex.IsMatch(@this, @"^\s*\[\s*(""(?:[^""\\]|\\.)*""\s*,\s*)*(""[^""\\]*""\s*)\]\s*$");
 
-        /// <summary>
-        /// Enumerates base classes of the specified subclass.
-        /// </summary>
-        public static IEnumerable<Type> BaseTypes(
-            this Type type,
-            bool includeSelf = false)
-        {
-            for (var current = includeSelf ? type : type.BaseType;
-                 current is not null;
-                 current = current.BaseType)
-            {
-                yield return current;
-            }
-        }
-
         internal static bool TryGetTableNameFromBaseClass(this Type @this, out string tableName, out Type baseClass)
         {
             foreach (var @base in @this.BaseTypes().Reverse())
@@ -562,61 +547,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// </summary>
         public static bool IsSemanticallyEmpty(this string? input)
             => input.TrimEndTransients().Length == 0;
-
-        /// <summary>
-        /// Normalizes and concatenates materialized path segments using '\' as the canonical separator.
-        /// </summary>
-        /// <remarks>
-        /// - Accepts null or mixed '/' and '\' input.
-        /// - Trims whitespace.
-        /// - Removes empty segments.
-        /// - Always emits a canonical '\' separated path.
-        /// - If root is null or empty, only segments are considered.
-        /// </remarks>
-        public static string LintCombinedSegments(this string? root, params string[] segments)
-        {
-            var concat = new List<string>();
-
-            void Append(string? value)
-            {
-                var linted = localLintSinglePath(value);
-                if (!string.IsNullOrEmpty(linted))
-                {
-                    concat.AddRange(linted.Split('\\'));
-                }
-            }
-
-            // Root may be null. In that case it contributes nothing.
-            if (!string.IsNullOrWhiteSpace(root))
-            {
-                Append(root);
-            }
-
-            if (segments != null)
-            {
-                foreach (var segment in segments)
-                {
-                    Append(segment);
-                }
-            }
-
-            return string.Join("\\", concat);
-
-            #region L o c a l F x
-            string localLintSinglePath(string? path)
-            {
-                if (string.IsNullOrWhiteSpace(path))
-                    return string.Empty;
-
-                var parts = path
-                    .Split(new[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(s => s.Trim())
-                    .Where(s => s.Length > 0);
-
-                return string.Join("\\", parts);
-            }
-            #endregion
-        }
 
         /// <summary>
         /// Produces a compact diagnostic string describing a collection change event.

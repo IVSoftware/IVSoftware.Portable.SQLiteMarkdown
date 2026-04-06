@@ -239,16 +239,6 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             #endregion L o c a l F x
         }
-
-        private static TolerantDictionary<Type, TolerantDictionary<string, object>> _typeCache = new();
-        private static TolerantDictionary<string, object> GetCacheForType(this Type @this)
-        {
-            if (_typeCache[@this] is not { } cache)
-            {
-                _typeCache[@this] = cache = new();
-            }
-            return cache;
-        }
         internal static ModelPreviewDelegate GetDescriptionPreviewDlgt(this Type type)
         {
             if (type.GetProperty("Description") is { } pi)
@@ -303,92 +293,6 @@ namespace IVSoftware.Portable.Collections.Preview
             {
                 throw new NotSupportedException($"No delegate is registered for {type.Name}");
             }
-        }
-
-        /// <summary>
-        /// Resolves and caches the highest-fidelity modeling capability for a type.
-        /// </summary>
-        /// <remarks>
-        /// - Probes known capability surfaces (Id, FullPath, Description, Text)
-        ///   in priority order.
-        /// - Uses SQLite mapping (PK) when available, falling back to named properties.
-        /// - Compiles a fast accessor delegate for the resolved property.
-        /// - Result is cached per type to avoid repeated reflection and compilation.
-        /// </remarks>
-        internal static ModeledFullPathInfo GetModeledPathInfo(this Type @this)
-        {
-            var mccache = @this.GetCacheForType();
-
-            if (mccache[nameof(StdModelPath)] is ModeledFullPathInfo cached)
-            {
-                return cached;
-            }
-            ModeledFullPathInfo info = null!;
-            PropertyInfo? fullPathPI = null;
-            foreach (StdModelPath aspirant in Enum.GetValues(typeof(StdModelPath)))
-            {
-                switch (aspirant)
-                {
-                    case StdModelPath.Id:
-                        fullPathPI = @this.GetSQLiteMapping()?.PK?.PropertyInfo;
-                        if (fullPathPI is null)
-                        {
-                            fullPathPI = @this.GetProperty(aspirant.ToString());
-                        }
-                        break;
-
-                    case StdModelPath.ModelPathAttribute:
-                        fullPathPI = @this
-                            .GetProperties()
-                            .FirstOrDefault(p =>
-                                p.GetCustomAttribute<ModelPathAttribute>(inherit: true) is not null);
-                        break;
-                    case StdModelPath.FullPath:
-                    case StdModelPath.Description:
-                    case StdModelPath.Text:
-                    case StdModelPath.NotFound:
-                        fullPathPI = @this.GetProperty(aspirant.ToString());
-                        break;
-
-                    default:
-                        @this.ThrowHard<NotSupportedException>($"The {aspirant.ToFullKey()} case is not supported.");
-                        break;
-                }
-
-                if (fullPathPI is not null)
-                {
-                    info = new ModeledFullPathInfo
-                    {
-                        StdModelPath = aspirant,
-                        GetPath = localCompileDelegate(fullPathPI),
-                    };
-                    GetPathDlgt localCompileDelegate(PropertyInfo pi)
-                    {
-                        var instanceParam = Expression.Parameter(typeof(object), "obj");
-
-                        var castInstance = Expression.Convert(instanceParam, pi.DeclaringType!);
-                        var propertyAccess = Expression.Property(castInstance, pi);
-
-                        var castResult = Expression.Convert(propertyAccess, typeof(string));
-
-                        var lambda = Expression.Lambda<GetPathDlgt>(castResult, instanceParam);
-                        return lambda.Compile();
-                    }
-                    break;
-                }
-            }
-
-            if (info is null)
-            {
-                @this.ThrowHard<InvalidOperationException>("ModelingCapability cannot be resolved.");
-                info = new ModeledFullPathInfo
-                {
-                    StdModelPath = StdModelPath.NotFound,
-                    GetPath = null,
-                };
-            }
-            mccache[nameof(StdModelPath)] = info;
-            return info;
         }
 
         /// <summary>

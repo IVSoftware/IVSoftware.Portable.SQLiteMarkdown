@@ -1,32 +1,28 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Common.Collections.Internal;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Xml.Linq;
 
-namespace IVSoftware.Portable.SQLiteMarkdown.Internal
+namespace IVSoftware.Portable.Common.Collections
 {
-    sealed class ReadOnlyFullPathAffinity : IFullPathAffinity
+    sealed class ReadOnlyModelFullPath : IModelFullPath
     {
         readonly object _unk;
 
-        public static ReadOnlyFullPathAffinity Create(object? unk)
+        public static ReadOnlyModelFullPath Create(object? unk)
         {
             if (unk is null)
             {
-                nameof(ReadOnlyFullPathAffinity).ThrowHard<ArgumentNullException>($"{nameof(unk)} cannot be null.");
+                nameof(ReadOnlyModelFullPath).ThrowHard<ArgumentNullException>($"{nameof(unk)} cannot be null.");
                 return null!; // We warned you.
             }
             else
             {
-                return new ReadOnlyFullPathAffinity(unk);
+                return new ReadOnlyModelFullPath(unk);
             }
         }
-        private ReadOnlyFullPathAffinity(object unk) => _unk = unk;
+        private ReadOnlyModelFullPath(object unk) => _unk = unk;
 
         /// <summary>
         /// This class states policy that Id <==> PrimaryKey, and attempts to reflect it.
@@ -41,7 +37,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             {
                 if (_id is null)
                 {
-                    if (_unk is IFullPathAffinity known)
+                    if (_unk is IModelFullPath known)
                     {
                         _id = known.Id ?? string.Empty;
                     }
@@ -61,7 +57,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             {
                 if (_parentId is null)
                 {
-                    if (_unk is IFullPathAffinity known)
+                    if (_unk is IModelFullPath known)
                     {
                         _parentId = known.ParentId ?? string.Empty;
                     }
@@ -82,13 +78,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             {
                 if (_parentPath is null)
                 {
-                    if (_unk is IFullPathAffinity known)
+                    if (_unk is IModelFullPath known)
                     {
                         _parentPath = known.ParentPath ?? string.Empty;
                     }
                     else
                     {
-                        if (_unk.GetType().GetProperty(nameof(IFullPathAffinity.FullPath))?.GetValue(_unk) is string full)
+                        if (_unk.GetType().GetProperty(nameof(IModelFullPath.FullPath))?.GetValue(_unk) is string full)
                         {
                             var parts = full.Split('\\');
                             _parentPath = parts.Length > 1
