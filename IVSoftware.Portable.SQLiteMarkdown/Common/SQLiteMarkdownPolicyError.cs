@@ -58,7 +58,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         [PolicyEnforcement(ThrowOrAdvise.ThrowSoft)]
         ExplicitClearAdvisory,
 
-        [Description($"{nameof(ConfigurationModifiedByDatabaseAssignment)} Policy violation: It is illegal to toggle between boolean and non boolean values for the same XAttribute.")]
+        [Description($"{nameof(XAttributeBooleanToggle)} Policy violation: It is illegal to toggle between boolean and non boolean values for the same XAttribute.")]
         [PolicyEnforcement(ThrowOrAdvise.ThrowHard)]
         XAttributeBooleanToggle,
     }
