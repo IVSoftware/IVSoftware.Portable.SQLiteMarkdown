@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Xml.Linq;
 using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Collections.Common.Internal;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
@@ -99,48 +100,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 return valueT;
             }
             return default;
-        }
-
-        /// <summary>
-        /// Returns the <see cref="XAttribute"/> identified by the specified <see cref="Enum"/> key.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model: "Enum member → canonical attribute name."
-        /// - Resolves the attribute using the enum name as the attribute key.
-        /// - When the attribute is not present, behavior is governed by <paramref name="throw"/>. 
-        /// - Advisory or unspecified returns <c>null</c>.
-        /// </remarks>
-        internal static XAttribute? Attribute(
-            this XElement @this,
-            Enum stdEnum, ThrowOrAdvise? @throw = null)
-        {
-            string msg;
-            if (@this.Attribute(stdEnum.ToString()) is not XAttribute attr)
-            {
-                msg = $"The {stdEnum.ToFullKey()} attribute was not found.";
-            }
-            else
-            {
-                return attr;
-            }
-            switch (@throw)
-            {
-                case ThrowOrAdvise.ThrowHard:
-                    @this.ThrowHard<InvalidOperationException>(msg);
-                    break;
-                case ThrowOrAdvise.ThrowSoft:
-                    @this.ThrowSoft<InvalidOperationException>(msg);
-                    break;
-                case ThrowOrAdvise.ThrowFramework:
-                    @this.ThrowFramework<InvalidOperationException>(msg);
-                    break;
-                case ThrowOrAdvise.Advisory:
-                    @this.Advisory(msg);
-                    break;
-                case null:
-                default: break;
-            }
-            return null;
         }
 
         /// <summary>

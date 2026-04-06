@@ -281,22 +281,4 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         public CollectionChangeAuthority Authority { get; } = 0;
     }
-
-    /// <summary>
-    /// Marks an attribute that requires prioritized onboarding when an XElement joins the model.
-    /// </summary>
-    /// <remarks>
-    /// - Applies to attributes whose effects must be established before normal change processing.
-    /// - Attribute change iteration order is not reliable during onboarding.
-    /// - Consumers should detect and process these attributes explicitly and in a controlled order.
-    /// </remarks>
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
-    internal class IFTTTAttribute : Attribute
-    {
-        public IFTTTAttribute(string? description = null)
-        {
-            Description = description ?? string.Empty;
-        }
-        public string Description { get; }
-    }
 }

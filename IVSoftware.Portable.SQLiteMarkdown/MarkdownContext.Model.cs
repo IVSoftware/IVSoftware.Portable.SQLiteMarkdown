@@ -1,9 +1,9 @@
 ﻿using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Collections.Common.Internal;
 using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
@@ -11,9 +11,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Xml;
 using System.Xml.Linq;
-using System.Xml.Schema;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {

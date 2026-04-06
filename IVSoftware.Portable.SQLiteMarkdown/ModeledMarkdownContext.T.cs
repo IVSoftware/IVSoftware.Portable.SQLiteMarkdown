@@ -1,9 +1,8 @@
 ﻿using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Collections.Common.Internal;
 using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
@@ -21,7 +20,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
