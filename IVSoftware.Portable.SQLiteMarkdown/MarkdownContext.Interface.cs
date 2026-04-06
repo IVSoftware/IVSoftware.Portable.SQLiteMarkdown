@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.Threading;
@@ -112,9 +113,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             protected set => this.ThrowHard<InvalidOperationException>(
                 @"[Obsolete(""Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount."")]");
         }
-        public virtual int CanonicalCount => Histo[StdMarkdownAttribute.model];
+        public virtual int CanonicalCount => Histo[StdModelAttribute.model];
 
-        public virtual int PredicateMatchCount => Histo[StdMarkdownAttribute.match];
+        public virtual int PredicateMatchCount => Histo[StdModelAttribute.match];
 
         /// <summary>
         /// Responsible for raising the InputTextSettled event.

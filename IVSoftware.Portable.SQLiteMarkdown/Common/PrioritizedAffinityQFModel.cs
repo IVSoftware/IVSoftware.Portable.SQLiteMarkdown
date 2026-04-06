@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -196,13 +197,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         [Ephemeral, JsonIgnore]
         public string? Preview
         {
-            get => Model.GetAttributeValue<string>(StdMarkdownAttribute.preview);
+            get => Model.GetAttributeValue<string>(StdModelAttribute.preview);
             set
             {
                 if (!Equals(Preview, value))
                 {
                     Model.SetStdAttributeValue(
-                        StdMarkdownAttribute.preview,
+                        StdModelAttribute.preview,
                         value,
                         padToMaxLength: true,
                         maxLength: DefaultPreviewLength);
@@ -220,12 +221,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         [Ephemeral]
         public long? PriorityOverride
         {
-            get => Model.GetAttributeValue<long?>(StdMarkdownAttribute.order);
+            get => Model.GetAttributeValue<long?>(StdModelAttribute.order);
             set
             {
                 if (!Equals(PriorityOverride, value))
                 {
-                    Model.SetStdAttributeValue(StdMarkdownAttribute.order, value);
+                    Model.SetStdAttributeValue(StdModelAttribute.order, value);
                     OnPropertyChanged();
                 }
             }

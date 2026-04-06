@@ -25,7 +25,7 @@ public class TestClass_260328_Model
             changeCountB4;
         var mdc = new ModeledMarkdownContext<SelectableQFModel>();
         var model = mdc.Model;
-        var histo = model.To<EnumHistogrammer<StdMarkdownAttribute>>();
+        var histo = model.To<EnumHistogrammer<StdModelAttribute>>();
 
         subtest_TrackLateral();
         subtest_TrackCurrentChild();
@@ -35,7 +35,7 @@ public class TestClass_260328_Model
         void subtest_TrackLateral()
         {
             // Add
-            model.SetStdAttributeValue(StdMarkdownAttribute.qmatch, true);
+            model.SetStdAttributeValue(StdModelAttribute.qmatch, true);
 
             actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
@@ -53,7 +53,7 @@ public class TestClass_260328_Model
             // - Setting to same value *does* raise raw XObject.Change events.
             // - However these are intercepted prior to OnXAttributeChanged.
             changeCountB4 = changeCount;
-            model.SetStdAttributeValue(StdMarkdownAttribute.qmatch, true);
+            model.SetStdAttributeValue(StdModelAttribute.qmatch, true);
             Assert.AreEqual(changeCountB4, changeCount);
 
             actual = histo.ToString(HistogrammerFormat.Default);
@@ -70,7 +70,7 @@ public class TestClass_260328_Model
             );
 
             // Remove
-            model.RemoveDescendantAttributes(StdMarkdownAttribute.qmatch, includeSelf: true);
+            model.RemoveDescendantAttributes(StdModelAttribute.qmatch, includeSelf: true);
             actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
             { }
@@ -91,7 +91,7 @@ public class TestClass_260328_Model
             model.Add(xel);
 
             // Add
-            xel.SetStdAttributeValue(StdMarkdownAttribute.qmatch, true);
+            xel.SetStdAttributeValue(StdModelAttribute.qmatch, true);
 
             actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
@@ -124,7 +124,7 @@ public class TestClass_260328_Model
             // - Setting to same value *does* raise raw XObject.Change events.
             // - However these are intercepted prior to OnXAttributeChanged.
             changeCountB4 = changeCount;
-            xel.SetStdAttributeValue(StdMarkdownAttribute.qmatch, true);
+            xel.SetStdAttributeValue(StdModelAttribute.qmatch, true);
             Assert.AreEqual(changeCountB4, changeCount);
 
 
@@ -156,7 +156,7 @@ public class TestClass_260328_Model
             );
 
             // Remove from Model
-            model.RemoveDescendantAttributes(StdMarkdownAttribute.qmatch);
+            model.RemoveDescendantAttributes(StdModelAttribute.qmatch);
             actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
             { }
@@ -190,7 +190,7 @@ public class TestClass_260328_Model
         {
             var xel = new XElement(
                 nameof(StdMarkdownElement.xitem),
-                new XAttribute(nameof(StdMarkdownAttribute.qmatch), bool.TrueString));
+                new XAttribute(nameof(StdModelAttribute.qmatch), bool.TrueString));
 
             // Add offline - before this node is parented.
             model.Add(xel);
@@ -239,7 +239,7 @@ public class TestClass_260328_Model
                 "Expecting histogram to increment."
             );
 
-            xel.SetStdAttributeValue(StdMarkdownAttribute.qmatch, false);
+            xel.SetStdAttributeValue(StdModelAttribute.qmatch, false);
 
             actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
@@ -267,8 +267,8 @@ public class TestClass_260328_Model
 
             var xel = new XElement(
                 nameof(StdMarkdownElement.xitem),
-                new XBoundAttribute(nameof(StdMarkdownAttribute.model), i1),
-                new XAttribute(nameof(StdMarkdownAttribute.qmatch), true));
+                new XBoundAttribute(nameof(StdModelAttribute.model), i1),
+                new XAttribute(nameof(StdModelAttribute.qmatch), true));
 
             model.Add(xel);
 

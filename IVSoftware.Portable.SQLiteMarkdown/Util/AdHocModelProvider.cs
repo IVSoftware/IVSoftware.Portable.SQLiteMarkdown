@@ -9,6 +9,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
+using IVSoftware.Portable.Collections.Common;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {
@@ -111,9 +112,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                                 xel.Name = nameof(StdMarkdownElement.xitem);
                                 xel.SetBoundAttributeValue(
                                     tag: item,
-                                    name: nameof(StdMarkdownAttribute.model));
+                                    name: nameof(StdModelAttribute.model));
 
-                                xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), itemCount++);
+                                xel.SetAttributeValue(nameof(StdModelAttribute.order), itemCount++);
                                 break;
                             default:
                                 "ObservablePreviewCollection".ThrowFramework<NotSupportedException>(
