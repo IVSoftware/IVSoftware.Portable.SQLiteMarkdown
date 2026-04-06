@@ -113,9 +113,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Central model authority for IFTTT.
         /// </summary>
+        /// <remarks>
+        /// - The itemT will not always be present, especially in bare metal testing.
+        /// - Its absence is considered normal, not even advisory.
+        /// </remarks>
         protected override void OnXAttributeChanged(XAttribute xattr, XElement pxel, XObjectChangeEventArgs e)
         {
-            T item = pxel.To<T>();
+            T? itemT = pxel.To<T?>();
             bool? value;
             base.OnXAttributeChanged(xattr, pxel, e);
             if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdModelAttribute std))
@@ -127,13 +131,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         switch (e.ObjectChange)
                         {
                             case XObjectChange.Add:
-                                if (value == true)
+                                if (value == true && itemT is T)
                                 {
-                                    PredicateMatchSubsetProtected.Add(item);
+                                    PredicateMatchSubsetProtected.Add(itemT);
                                 }
                                 break;
                             case XObjectChange.Remove:
-                                PredicateMatchSubsetProtected.Remove(item);
+                                PredicateMatchSubsetProtected.Remove(itemT);
                                 break;
                             case XObjectChange.Value:
                                 Debug.Fail($@"ADVISORY 260330 - Proposed validation attribute for Histo should make this unreachable.");
@@ -144,10 +148,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                         /* G T K - N O O P */
                                         break;
                                     case true:
-                                        PredicateMatchSubsetProtected.Add(item);
+                                        PredicateMatchSubsetProtected.Add(itemT);
                                         break;
                                     case false:
-                                        PredicateMatchSubsetProtected.Remove(item);
+                                        PredicateMatchSubsetProtected.Remove(itemT);
                                         break;
                                 }
                                 break;
