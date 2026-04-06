@@ -6,29 +6,6 @@ using System.Collections.Specialized;
 
 namespace IVSoftware.Portable.Collections.Preview
 {
-    internal interface INotifyCollectionChanging
-    {
-        public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
-
-        /// <summary>
-        /// Defines the extent to which a preview handler may interact with a pending
-        /// collection change proposal.
-        /// </summary>
-        /// <remarks>
-        /// This enumeration constrains what a handler is permitted to do during the
-        /// preview (Changing) phase. It does not describe the change itself, but rather
-        /// the allowed level of participation in shaping or rejecting it.
-        ///
-        /// - ReadOnly   : Observe only. No modification or cancellation is permitted.
-        /// - CancelOnly : The proposal may be rejected but not altered.
-        /// - FullControl: The proposal may be rewritten or rejected entirely.
-        ///
-        /// These flags are enforced by the preview pipeline. Handlers opting into
-        /// higher scopes assume responsibility for producing a valid and internally
-        /// consistent change contract.
-        /// </remarks>
-        NotifyCollectionChangeScope EventScope { get; }
-    }
 
     /// <summary>
     /// Defines a modeled contract for <see cref="INotifyCollectionChanged"/> 

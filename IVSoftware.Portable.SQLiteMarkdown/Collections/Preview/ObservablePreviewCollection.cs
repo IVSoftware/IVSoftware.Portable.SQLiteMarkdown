@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Collections.Modeled;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -13,11 +14,13 @@ namespace IVSoftware.Portable.Collections.Preview
     /// Suppressible collection with Preview semantics (but no Range semantics).
     /// </summary>
     internal partial class ObservablePreviewCollection<T>
-        : IVSoftware.Portable.Collections.Modeled.ModeledObservableCollection<T>
+        : ModeledObservableCollection<T>
         , INotifyCollectionChanging
     {
         public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
-            : base(eventScope) { }
+        {
+            EventScope = eventScope;
+        }
 
         protected override void InsertItem(int index, T item)
         {
@@ -98,7 +101,7 @@ namespace IVSoftware.Portable.Collections.Preview
         }
         protected virtual void OnCollectionChanging(NotifyCollectionChangingEventArgs e)
         {
-            switch (DHostMDX.Authority)
+            switch (DHostModelEpoch.Authority)
             {
                 case ModelDataExchangeAuthority.Collection:
                 case ModelDataExchangeAuthority.Model:
@@ -112,7 +115,7 @@ namespace IVSoftware.Portable.Collections.Preview
                             CollectionChanging?.Invoke(this, e);
                             break;
                         case CollectionChangingEventingOption.Deferred:
-                            if (DHostMDX.IsDisposing)
+                            if (DHostModelEpoch.IsDisposing)
                             {
                                 CollectionChanging?.Invoke(this, e);
                             }
@@ -122,7 +125,7 @@ namespace IVSoftware.Portable.Collections.Preview
                     }
                     break;
                 default:
-                    this.ThrowFramework<NotSupportedException>($"The {DHostMDX.Authority.ToFullKey()} case is not supported.");
+                    this.ThrowFramework<NotSupportedException>($"The {DHostModelEpoch.Authority.ToFullKey()} case is not supported.");
                     break;
             }
         }
@@ -156,6 +159,9 @@ namespace IVSoftware.Portable.Collections.Preview
                 return _modelingCapability!;
             }
         }
+
+        public NotifyCollectionChangeScope EventScope { get; }
+
         ModeledFullPathInfo? _modelingCapability = null;
         PropertyInfo? _fullPathPI = null;
     }

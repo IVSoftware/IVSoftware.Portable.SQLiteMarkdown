@@ -99,7 +99,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 
         protected virtual void OnCollectionChanging(NotifyCollectionChangingEventArgs e)
         {
-            switch (DHostMDX.Authority)
+            switch (DHostModelEpoch.Authority)
             {
                 case ModelDataExchangeAuthority.Collection:
                 case ModelDataExchangeAuthority.Model:
@@ -113,7 +113,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                             CollectionChanging?.Invoke(this, e);
                             break;
                         case CollectionChangingEventingOption.Deferred:
-                            if (DHostMDX.IsDisposing)
+                            if (DHostModelEpoch.IsDisposing)
                             {
                                 CollectionChanging?.Invoke(this, e);
                             }
@@ -123,7 +123,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                     }
                     break;
                 default:
-                    this.ThrowFramework<NotSupportedException>($"The {DHostMDX.Authority.ToFullKey()} case is not supported.");
+                    this.ThrowFramework<NotSupportedException>($"The {DHostModelEpoch.Authority.ToFullKey()} case is not supported.");
                     break;
             }
         }

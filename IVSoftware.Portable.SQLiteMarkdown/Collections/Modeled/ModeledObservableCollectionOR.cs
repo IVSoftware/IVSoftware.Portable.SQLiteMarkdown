@@ -21,11 +21,11 @@ namespace IVSoftware.Portable.Collections.Modeled
     /// - Does not implement Preview or Range behavior itself; it only enables
     ///   those patterns to be layered on top.
     /// </remarks>
-    public class ModeledObservableCollection<T> 
+    public class ModeledObservableCollectionOR<T> 
         : ObservableCollection<T>
         , IModeledNotifyCollectionChanged<T>
     {        
-        public ModeledObservableCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
+        public ModeledObservableCollectionOR(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
         {
             EventScope = eventScope;
         }
@@ -51,18 +51,18 @@ namespace IVSoftware.Portable.Collections.Modeled
 
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            if (DHostMDX.IsZero())
+            if (DHostModelEpoch.IsZero())
             {
                 base.OnCollectionChanged(e);
             }
         }
         public IDisposable BeginMDXAuthority(ModelDataExchangeAuthority authority, IList source)
-            => DHostMDX.GetToken(authority, source);
+            => DHostModelEpoch.GetToken(authority, source);
 
-        public void CancelModelAuthorityEpoch() => DHostMDX.CancelModelAuthorityEpoch();
-        public ModelDataExchangeAuthority Phase => DHostMDX.Authority;
+        public void CancelModelAuthorityEpoch() => DHostModelEpoch.CancelModelAuthorityEpoch();
+        public ModelDataExchangeAuthority Phase => DHostModelEpoch.Authority;
 
-        public ModelDataExchangeAuthorityProvider<T> DHostMDX
+        public ModelDataExchangeAuthorityProvider<T> DHostModelEpoch
         {
             get
             {
@@ -81,19 +81,19 @@ namespace IVSoftware.Portable.Collections.Modeled
         }
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         public new IEnumerator<T> GetEnumerator()
-            => DHostMDX.IsZero()
+            => DHostModelEpoch.IsZero()
             ? base.GetEnumerator()
-            : DHostMDX.Snapshot.GetEnumerator();
+            : DHostModelEpoch.Snapshot.GetEnumerator();
         public new int Count
         {
             get
             {
-                switch (DHostMDX.Authority)
+                switch (DHostModelEpoch.Authority)
                 {
-                    case ModelDataExchangeAuthority.CollectionDeferred when !DHostMDX.IsDisposing:
-                        return DHostMDX.Snapshot.Count;
-                    case ModelDataExchangeAuthority.ModelDeferred when !DHostMDX.IsDisposing:
-                        return DHostMDX.Snapshot.Count;
+                    case ModelDataExchangeAuthority.CollectionDeferred when !DHostModelEpoch.IsDisposing:
+                        return DHostModelEpoch.Snapshot.Count;
+                    case ModelDataExchangeAuthority.ModelDeferred when !DHostModelEpoch.IsDisposing:
+                        return DHostModelEpoch.Snapshot.Count;
                     default:
                         return base.Count;
                 }
