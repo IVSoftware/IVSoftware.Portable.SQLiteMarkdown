@@ -12,8 +12,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml.Linq;
-using IVSoftware.Portable.Collections.Common;
-using IVSoftware.Portable.Collections.Common.Internal;
+using IVSoftware.Portable.Common.Collections;
+using IVSoftware.Portable.Common.Collections.Internal;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {

@@ -1,4 +1,4 @@
-﻿using IVSoftware.Portable.Collections.Common;
+﻿using IVSoftware.Portable.Common.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;

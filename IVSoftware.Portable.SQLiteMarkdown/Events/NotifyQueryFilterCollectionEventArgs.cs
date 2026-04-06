@@ -3,7 +3,7 @@ using IVSoftware.Portable.Collections.Preview;
 using System;
 using System.Collections;
 using System.Collections.Specialized;
-using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Common.Collections;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Events
 {

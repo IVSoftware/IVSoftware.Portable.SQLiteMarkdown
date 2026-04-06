@@ -124,7 +124,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\IVSoftware.Portable.Collections.Common\IVSoftware.Portable.Collections.Common\IVSoftware.Portable.Collections.Common.csproj" />
+	  <ProjectReference Include="..\..\IVSoftware.Portable.Common.Collections\IVSoftware.Portable.Common.Collections\IVSoftware.Portable.Common.Collections.csproj" />
 	</ItemGroup>
 
 </Project>

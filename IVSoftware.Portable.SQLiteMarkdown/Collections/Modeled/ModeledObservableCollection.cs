@@ -1,4 +1,4 @@
-﻿using IVSoftware.Portable.Collections.Common;
+﻿using IVSoftware.Portable.Common.Collections;
 using IVSoftware.Portable.Collections.Preview;
 using System;
 using System.Collections;

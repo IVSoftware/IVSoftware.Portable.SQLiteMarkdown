@@ -9,7 +9,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
-using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Common.Collections;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {
