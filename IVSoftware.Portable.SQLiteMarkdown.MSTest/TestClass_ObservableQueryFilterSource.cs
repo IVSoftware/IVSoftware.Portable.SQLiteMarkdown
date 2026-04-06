@@ -3240,18 +3240,18 @@ NetProjection.Add     NewItems=12 NewStartingIndex= 0 NotifyCollectionChangedEve
                 // [Careful("What?")] No 'preview' attribute? THAT'S BECAUSE THIS IS SelectableQFModel and *not* IAffinityModel.
                 expected = @" 
 <model mdc=""[MDC]"" histo=""[model:12 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" />
 </model>"
                 ;
 
@@ -3482,18 +3482,18 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 { }
                 expected = @" 
 <model mdc=""[MDC]"" histo=""[model:12 match:9 qmatch:9 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" qmatch=""True"" match=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" qmatch=""True"" match=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" qmatch=""True"" match=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" qmatch=""True"" match=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" qmatch=""True"" match=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" qmatch=""True"" match=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" qmatch=""True"" match=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" qmatch=""True"" match=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" qmatch=""True"" match=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" qmatch=""True"" match=""True"" />
 </model>"
                 ;
 
@@ -3531,18 +3531,18 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 { }
                 expected = @" 
 <model mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" qmatch=""True"" match=""True"" preview=""Black Cat "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" preview=""Orange Fox"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""White Rabb"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" preview=""Gray Wolf "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" preview=""Golden Lio"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" preview=""Brown Bear"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" preview=""Black Pant"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" preview=""Elephant  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" preview=""Giraffe   "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" preview=""Kangaroo  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" preview=""Turtle    "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" preview=""Should NOT"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" qmatch=""True"" match=""True"" preview=""Black Cat "" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" preview=""Orange Fox"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""White Rabb"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" preview=""Gray Wolf "" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" preview=""Golden Lio"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" preview=""Brown Bear"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" preview=""Black Pant"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" preview=""Elephant  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" preview=""Giraffe   "" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" preview=""Kangaroo  "" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" preview=""Turtle    "" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" preview=""Should NOT"" />
 </model>"
                 ;
 
@@ -3560,7 +3560,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 { }
                 expected = @" 
 <model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
 </model>"
                 ;
                 Assert.AreEqual(
@@ -3610,18 +3610,18 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 { }
                 expected = @" 
 <model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" preview=""Orange Fox"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""White Rabb"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" preview=""Gray Wolf "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" preview=""Golden Lio"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" preview=""Brown Bear"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" preview=""Black Pant"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" preview=""Elephant  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" preview=""Giraffe   "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" preview=""Kangaroo  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" preview=""Turtle    "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" preview=""Should NOT"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" preview=""Orange Fox"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""White Rabb"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" preview=""Gray Wolf "" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" preview=""Golden Lio"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" preview=""Brown Bear"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" preview=""Black Pant"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" preview=""Elephant  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" preview=""Giraffe   "" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" preview=""Kangaroo  "" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" preview=""Turtle    "" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" preview=""Should NOT"" />
 </model>"
                 ;
                 Assert.AreEqual(
@@ -3662,7 +3662,7 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 { }
                 expected = @" 
 <model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""0"" preview=""Brown Bear"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""0"" preview=""Brown Bear"" />
 </model>"
                 ;
 
@@ -3672,18 +3672,18 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 { }
                 expected = @" 
 <model mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" preview=""Orange Fox"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""White Rabb"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" preview=""Gray Wolf "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" preview=""Golden Lio"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" qmatch=""True"" match=""True"" preview=""Brown Bear"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" preview=""Black Pant"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" preview=""Elephant  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" preview=""Giraffe   "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" preview=""Kangaroo  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" preview=""Turtle    "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" preview=""Should NOT"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" preview=""Orange Fox"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""White Rabb"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" preview=""Gray Wolf "" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" preview=""Golden Lio"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" qmatch=""True"" match=""True"" preview=""Brown Bear"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" preview=""Black Pant"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" preview=""Elephant  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" preview=""Giraffe   "" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" preview=""Kangaroo  "" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" preview=""Turtle    "" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" preview=""Should NOT"" />
 </model>"
                 ;
 
@@ -3777,8 +3777,8 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 { }
                 expected = @" 
 <model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""0"" preview=""White Rabb"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""1"" preview=""Gray Wolf "" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""0"" preview=""White Rabb"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""1"" preview=""Gray Wolf "" />
 </model>"
                 ;
             }

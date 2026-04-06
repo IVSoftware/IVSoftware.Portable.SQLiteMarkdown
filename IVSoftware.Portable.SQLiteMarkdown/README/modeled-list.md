@@ -155,8 +155,8 @@ Typical output from `myList.ToString(out XElement _)` shows:
 - The `preview` attribute enhances human-readability with a string that is both padded and truncated.
 
 ```xml<model modeling="Id">
-  <xitem text="312d1c21-0000-0000-0000-000000000007" model="[SelectableQFModel]" order="0" preview="White Rabb" />
-  <xitem text="312d1c21-0000-0000-0000-000000000009" model="[SelectableQFModel]" order="1" preview="Gray Wolf " />
+  <item text="312d1c21-0000-0000-0000-000000000007" model="[SelectableQFModel]" order="0" preview="White Rabb" />
+  <item text="312d1c21-0000-0000-0000-000000000009" model="[SelectableQFModel]" order="1" preview="Gray Wolf " />
 </model>
 ```
 

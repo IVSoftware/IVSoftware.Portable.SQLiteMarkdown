@@ -611,11 +611,11 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingInd
             actual.ToClipboardExpected();
             expected = @" 
 <model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
 </model>"
             ;
 
@@ -646,11 +646,11 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
 </model>";
 
             Assert.AreEqual(
@@ -676,13 +676,13 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""5"" preview=""Distinct01"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""6"" preview=""Distinct02"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""5"" preview=""Distinct01"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""6"" preview=""Distinct02"" />
 </model>";
 
             Assert.AreEqual(
@@ -699,13 +699,13 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""5"" preview=""Distinct01"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""6"" preview=""Distinct02"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""5"" preview=""Distinct01"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""6"" preview=""Distinct02"" />
 </model>";
 
             Assert.AreEqual(
@@ -728,18 +728,18 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert01  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" order=""3"" preview=""Insert02  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""4"" preview=""Insert03  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""5"" preview=""Insert04  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""6"" preview=""Insert05  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""7"" preview=""Item03    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""8"" preview=""Item04    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""9"" preview=""Item05    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""10"" preview=""Distinct01"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""11"" preview=""Distinct02"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert01  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" order=""3"" preview=""Insert02  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""4"" preview=""Insert03  "" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""5"" preview=""Insert04  "" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""6"" preview=""Insert05  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""7"" preview=""Item03    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""8"" preview=""Item04    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""9"" preview=""Item05    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""10"" preview=""Distinct01"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""11"" preview=""Distinct02"" />
 </model>"
             ;
 
@@ -757,18 +757,18 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert01  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" order=""3"" preview=""Insert02  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""4"" preview=""Insert03  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""5"" preview=""Insert04  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""6"" preview=""Insert05  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""7"" preview=""Item03    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""8"" preview=""Item04    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""9"" preview=""Item05    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""10"" preview=""Distinct01"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""11"" preview=""Distinct02"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert01  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" order=""3"" preview=""Insert02  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""4"" preview=""Insert03  "" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""5"" preview=""Insert04  "" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""6"" preview=""Insert05  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""7"" preview=""Item03    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""8"" preview=""Item04    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""9"" preview=""Item05    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""10"" preview=""Distinct01"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""11"" preview=""Distinct02"" />
 </model>"
             ;
 
@@ -785,15 +785,15 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert01  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" order=""3"" preview=""Insert02  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""4"" preview=""Insert03  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""5"" preview=""Insert04  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""6"" preview=""Insert05  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""7"" preview=""Distinct01"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""8"" preview=""Distinct02"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert01  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" order=""3"" preview=""Insert02  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""4"" preview=""Insert03  "" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""5"" preview=""Insert04  "" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""6"" preview=""Insert05  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""7"" preview=""Distinct01"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""8"" preview=""Distinct02"" />
 </model>"
             ;
 
@@ -811,15 +811,15 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert01  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" order=""3"" preview=""Insert02  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""4"" preview=""Insert03  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""5"" preview=""Insert04  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""6"" preview=""Insert05  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""7"" preview=""Distinct01"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""8"" preview=""Distinct02"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert01  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" order=""3"" preview=""Insert02  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""4"" preview=""Insert03  "" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""5"" preview=""Insert04  "" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""6"" preview=""Insert05  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""7"" preview=""Distinct01"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""8"" preview=""Distinct02"" />
 </model>"
             ;
             Assert.AreEqual(
@@ -835,12 +835,12 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""0"" preview=""Item02    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" order=""1"" preview=""Insert02  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert03  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""3"" preview=""Insert04  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" preview=""Insert05  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""5"" preview=""Distinct02"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""0"" preview=""Item02    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" order=""1"" preview=""Insert02  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert03  "" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""3"" preview=""Insert04  "" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" preview=""Insert05  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""5"" preview=""Distinct02"" />
 </model>"
             ;
             Assert.AreEqual(
@@ -857,9 +857,9 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""0"" preview=""Insert03  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""1"" preview=""Insert04  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert05  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""0"" preview=""Insert03  "" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""1"" preview=""Insert04  "" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""2"" preview=""Insert05  "" />
 </model>"
             ;
             Assert.AreEqual(
@@ -918,11 +918,11 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model mdc=""[MDC]"" histo=""[model:5 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" />
 </model>"
             ;
 
@@ -975,11 +975,11 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEve
 
             expected = @" 
 <model mdc=""[MDC]"" histo=""[model:5 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" />
 </model>";
 
             Assert.AreEqual(

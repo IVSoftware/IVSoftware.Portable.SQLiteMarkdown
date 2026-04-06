@@ -43,7 +43,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                             case PlacerResult.Exists:
                                 break;
                             case PlacerResult.Created:
-                                xel.Name = nameof(StdModelElement.xitem);
+                                xel.Name = nameof(StdModelElement.item);
                                 xel.SetBoundAttributeValue(
                                     tag: item,
                                     name: nameof(StdModelAttribute.model));

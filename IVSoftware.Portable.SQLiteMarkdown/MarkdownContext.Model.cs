@@ -265,13 +265,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             bool valid; // Captures an explicit value, if parseable.
 
-            // If none of the xitems have a qmatch then *all* of them implicily have a qmatch.
+            // If none of the items have a qmatch then *all* of them implicily have a qmatch.
             bool? qmatch =
                 Histo[StdModelAttribute.qmatch] == 0
                 ? null
                 : bool.TryParse(@this.Attribute(StdModelAttribute.qmatch)?.Value, out valid) ? valid : null;
 
-            // If none of the xitems have a pmatch then *all* of them implicily have a pmatch.
+            // If none of the items have a pmatch then *all* of them implicily have a pmatch.
             bool? pmatch =
                 Histo[StdModelAttribute.pmatch] == 0
                 ? null

@@ -454,7 +454,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 { }
                 expected = @" 
 <model mdc=""[MDC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
 </model>";
 
                 Assert.AreEqual(
@@ -542,8 +542,8 @@ InputText"
                 { }
                 expected = @" 
 <model mdc=""[MDC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" />
 </model>";
 
                 Assert.AreEqual(
@@ -578,8 +578,8 @@ InputText"
                 { }
                 expected = @" 
 <model mdc=""[MDC]"" histo=""[model:2 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" qmatch=""True"" match=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" />
 </model>"
                 ;
                 Assert.AreEqual(
@@ -758,8 +758,8 @@ InputText"
                 { }
                 expected = @" 
 <model mdc=""[MDC]"" histo=""[model:2 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" qmatch=""True"" match=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" qmatch=""True"" match=""True"" />
 </model>"
                 ;
 

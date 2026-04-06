@@ -78,7 +78,7 @@ public class TestClass_260328_INPC
         // ☆☆☆☆☆
         expected = @" 
 <model mdc=""[MDC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
 </model>"
         ;
 
@@ -253,11 +253,11 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model mpath=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
 </model>"
             ;
 
@@ -282,8 +282,8 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             ;
             expected = @" 
 <model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""1"" preview=""Item05    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""1"" preview=""Item05    "" />
 </model>";
 
             Assert.AreEqual(

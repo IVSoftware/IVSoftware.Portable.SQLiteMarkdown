@@ -213,8 +213,8 @@ Throw MarkdownContextPolicyViolation.ExplicitClearAdvisory | ExplicitClearAdviso
                 { }
                 expected = @" 
 <model mdc=""[MDC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" />
 </model>"
                 ;
 

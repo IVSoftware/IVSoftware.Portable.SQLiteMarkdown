@@ -83,7 +83,7 @@ public class TestClass_260328_Model
 
         void subtest_TrackCurrentChild()
         {
-            var xel = new XElement(nameof(StdModelElement.xitem));
+            var xel = new XElement(nameof(StdModelElement.item));
             model.Add(xel);
 
             // Add
@@ -107,7 +107,7 @@ public class TestClass_260328_Model
             { }
             expected = @" 
 <model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem qmatch=""True"" match=""True"" />
+  <item qmatch=""True"" match=""True"" />
 </model>";
 
             Assert.AreEqual(
@@ -142,7 +142,7 @@ public class TestClass_260328_Model
             { }
             expected = @" 
 <model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem qmatch=""True"" match=""True"" />
+  <item qmatch=""True"" match=""True"" />
 </model>";
 
             Assert.AreEqual(
@@ -171,7 +171,7 @@ public class TestClass_260328_Model
             { }
             expected = @" 
 <model mdc=""[MDC]"" histo=""[model:0 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem />
+  <item />
 </model>"
             ;
 
@@ -185,7 +185,7 @@ public class TestClass_260328_Model
         void subtest_TrackAddRemoveChild()
         {
             var xel = new XElement(
-                nameof(StdModelElement.xitem),
+                nameof(StdModelElement.item),
                 new XAttribute(nameof(StdModelAttribute.qmatch), bool.TrueString));
 
             // Add offline - before this node is parented.
@@ -262,7 +262,7 @@ public class TestClass_260328_Model
             #endregion I T E M    G E N
 
             var xel = new XElement(
-                nameof(StdModelElement.xitem),
+                nameof(StdModelElement.item),
                 new XBoundAttribute(nameof(StdModelAttribute.model), i1),
                 new XAttribute(nameof(StdModelAttribute.qmatch), true));
 
@@ -300,16 +300,16 @@ public class TestClass_260328_Model
         { }
         expected = @" 
 <model mdc=""[MMDC]"" histo=""10"" count=""10"" matches=""10"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" sort=""1"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" sort=""2"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" sort=""3"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" sort=""4"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" sort=""5"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" sort=""6"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" sort=""7"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" sort=""8"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" sort=""9"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" sort=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" sort=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" sort=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" sort=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" sort=""4"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" sort=""5"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" sort=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" sort=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" sort=""8"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" sort=""9"" />
 </model>"
         ;
 
