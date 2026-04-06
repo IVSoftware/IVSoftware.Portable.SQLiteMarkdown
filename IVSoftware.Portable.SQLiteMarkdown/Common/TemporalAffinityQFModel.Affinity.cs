@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -108,20 +109,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         {
             get
             {
-                switch (TemporalAffinity)
+                if (TemporalAffinity is null)
                 {
-                    case null:
-                        break;
-                    case SQLiteMarkdown.TemporalAffinity.Asap:
-                        break;
-                    case SQLiteMarkdown.TemporalAffinity.FixedTime:
-                        break;
-                    case SQLiteMarkdown.TemporalAffinity.FixedDate:
-                        break;
-                    case SQLiteMarkdown.TemporalAffinity.FixedDateAndTime:
-                        break;
-                    default:
-                        break;
+
+                }
+                else
+                {
+                    switch (TemporalAffinity)
+                    {
+                        case IVSoftware.Portable.Collections.Common.TemporalAffinity.Asap:
+                            break;
+                        case IVSoftware.Portable.Collections.Common.TemporalAffinity.FixedTime:
+                            break;
+                        case IVSoftware.Portable.Collections.Common.TemporalAffinity.FixedDate:
+                            break;
+                        case IVSoftware.Portable.Collections.Common.TemporalAffinity.FixedDateAndTime:
+                            break;
+                        default:
+                            break;
+                    }
                 }
                 return _utcStart; 
             }
