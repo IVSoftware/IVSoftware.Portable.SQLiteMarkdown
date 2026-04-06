@@ -40,7 +40,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (_model is null)
                 {
                     _model = new
-                        XElement(nameof(StdMarkdownElement.model))
+                        XElement(nameof(StdModelElement.model))
                         .WithBoundAttributeValue(this, StdModelAttribute.mdc, "[MDC]")
                         .WithBoundAttributeValue(Histo, StdModelAttribute.histo, "[Histo]")
                         .WithBoundAttributeValue(ActiveFilters, StdModelAttribute.filters, "[No Active Filters]");

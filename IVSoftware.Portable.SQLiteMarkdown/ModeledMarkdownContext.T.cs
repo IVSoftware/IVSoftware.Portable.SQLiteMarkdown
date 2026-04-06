@@ -1033,7 +1033,7 @@ SELECT * FROM items WHERE
                     case PlacerResult.Exists:
                         break;
                     case PlacerResult.Created:
-                        xel.Name = nameof(StdMarkdownElement.xitem);
+                        xel.Name = nameof(StdModelElement.item);
                         xel.SetBoundAttributeValue(
                             tag: item,
                             name: nameof(StdModelAttribute.model));

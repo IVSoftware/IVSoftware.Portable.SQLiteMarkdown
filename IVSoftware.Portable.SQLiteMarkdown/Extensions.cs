@@ -435,20 +435,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public static bool CanParseAsJson(this string @this)
             => Regex.IsMatch(@this, @"^\s*\[\s*(""(?:[^""\\]|\\.)*""\s*,\s*)*(""[^""\\]*""\s*)\]\s*$");
 
-        /// <summary>
-        /// Enumerates base classes of the specified subclass.
-        /// </summary>
-        public static IEnumerable<Type> BaseTypes(
-            this Type type,
-            bool includeSelf = false)
-        {
-            for (var current = includeSelf ? type : type.BaseType;
-                 current is not null;
-                 current = current.BaseType)
-            {
-                yield return current;
-            }
-        }
 
         internal static bool TryGetTableNameFromBaseClass(this Type @this, out string tableName, out Type baseClass)
         {

@@ -17,7 +17,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         {
             string actual, expected;
             Enum @enum;
-            XElement model = new(nameof(StdMarkdownElement.model));
+            XElement model = new(nameof(StdModelElement.model));
 
             int @int;
 

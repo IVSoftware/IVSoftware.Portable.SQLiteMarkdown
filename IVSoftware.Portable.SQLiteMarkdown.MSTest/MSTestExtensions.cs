@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using SQLite;
 using System.CodeDom;
 using System.Collections;
-using IVSoftware.Portable.Collections.Common.Extensions;
+using IVSoftware.Portable.Collections.Common;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {

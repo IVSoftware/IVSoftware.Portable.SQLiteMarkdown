@@ -87,7 +87,7 @@ public class TestClass_260328_Model
 
         void subtest_TrackCurrentChild()
         {
-            var xel = new XElement(nameof(StdMarkdownElement.xitem));
+            var xel = new XElement(nameof(StdModelElement.item));
             model.Add(xel);
 
             // Add
@@ -189,7 +189,7 @@ public class TestClass_260328_Model
         void subtest_TrackAddRemoveChild()
         {
             var xel = new XElement(
-                nameof(StdMarkdownElement.xitem),
+                nameof(StdModelElement.item),
                 new XAttribute(nameof(StdModelAttribute.qmatch), bool.TrueString));
 
             // Add offline - before this node is parented.
@@ -266,7 +266,7 @@ public class TestClass_260328_Model
             #endregion I T E M    G E N
 
             var xel = new XElement(
-                nameof(StdMarkdownElement.xitem),
+                nameof(StdModelElement.item),
                 new XBoundAttribute(nameof(StdModelAttribute.model), i1),
                 new XAttribute(nameof(StdModelAttribute.qmatch), true));
 

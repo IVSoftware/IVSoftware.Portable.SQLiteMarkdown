@@ -13,72 +13,6 @@ using IVSoftware.Portable.Collections.Common;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {
-    /// <summary>
-    /// Heuristic order for FullPath discovery.
-    /// </summary>
-    public enum StdModelPath
-    {
-        /// <summary>
-        /// Detected a string property decorated with [ModelPath] attribute
-        /// </summary>
-        ModelPathAttribute,
-
-        /// <summary>
-        /// Detected a string property named FullPath.
-        /// </summary>
-        FullPath,
-
-        /// <summary>
-        /// A [PrimaryKey] property or a string property named Id.
-        /// </summary>
-        Id,
-
-        /// <summary>
-        /// A  string property named Description.
-        /// </summary>
-        Description,
-
-        /// <summary>
-        /// A property or a string property named Text.
-        /// </summary>
-        Text,
-
-        /// <summary>
-        /// Failed to find a suitable modeling property.
-        /// </summary>
-        NotFound,
-    }
-
-    /// <summary>
-    /// Heuristic order for Preview discovery.
-    /// </summary>
-    public enum StdPreviewPath
-    {
-        /// <summary>
-        /// Detected a string property decorated with [ModelPreview] attribute
-        /// </summary>
-        PreviewAttribute,
-
-        /// <summary>
-        /// Detected a string property named Preview.
-        /// </summary>
-        Preview,
-
-        /// <summary>
-        /// A  string property named Description.
-        /// </summary>
-        Description,
-
-        /// <summary>
-        /// A property or a string property named Text.
-        /// </summary>
-        Text,
-
-        /// <summary>
-        /// Failed to find a suitable modeling property.
-        /// </summary>
-        NotFound,
-    }
 
     public class AdHocModelProvider<T>
     {
@@ -89,7 +23,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         private IList<T> ItemsSource { get; }
         public XElement CreateModel()
         {
-            XElement model = new XElement(nameof(StdMarkdownElement.model));
+            XElement model = new XElement(nameof(StdModelElement.model));
             model.SetAttributeValue(ModelingCapability);
             int itemCount = 0;
             if (ModelingCapability != StdModelPath.NotFound)
@@ -109,7 +43,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                             case PlacerResult.Exists:
                                 break;
                             case PlacerResult.Created:
-                                xel.Name = nameof(StdMarkdownElement.xitem);
+                                xel.Name = nameof(StdModelElement.item);
                                 xel.SetBoundAttributeValue(
                                     tag: item,
                                     name: nameof(StdModelAttribute.model));
