@@ -401,7 +401,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             int COUNT;
 
             var mmdc = new ModeledMarkdownContext<PrioritizedAffinityQFModel>();
-            var histo = mmdc.Model.To<EnumHistogrammer<StdMarkdownAttribute>>();
+            var histo = mmdc.Model.To<EnumHistogrammer<StdModelAttribute>>();
 
             actual = mmdc.StateReport();
             actual.ToClipboardExpected();

@@ -311,8 +311,8 @@ namespace IVSoftware.Portable.Collections.Preview
                 return;
             }
             var mdc = model.To<IMarkdownContext>(@throw: true);
-            var histo = model.To<EnumHistogrammer<StdMarkdownAttribute>>(@throw: true);
-            int itemCount = histo[StdMarkdownAttribute.model];
+            var histo = model.To<EnumHistogrammer<StdModelAttribute>>(@throw: true);
+            int itemCount = histo[StdModelAttribute.model];
 
             // ROUTE TO LOCAL FUNCTIONS
             switch (action)
@@ -365,11 +365,11 @@ namespace IVSoftware.Portable.Collections.Preview
                                 case PlacerResult.Exists:
                                     break;
                                 case PlacerResult.Created:
-                                    xel.Name = nameof(StdMarkdownElement.xitem);
+                                    xel.Name = nameof(StdModelElement.xitem);
                                     xel.SetBoundAttributeValue(
                                         tag: item,
-                                        name: nameof(StdMarkdownAttribute.model));
-                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), itemCount++);
+                                        name: nameof(StdModelAttribute.model));
+                                    xel.SetAttributeValue(nameof(StdModelAttribute.order), itemCount++);
                                     break;
                                 default:
                                     eUnk.ThrowFramework<NotSupportedException>(
@@ -469,12 +469,12 @@ namespace IVSoftware.Portable.Collections.Preview
                                     break;
 
                                 case PlacerResult.Created:
-                                    xel.Name = nameof(StdMarkdownElement.xitem);
+                                    xel.Name = nameof(StdModelElement.xitem);
                                     xel.SetBoundAttributeValue(
                                         tag: item,
-                                        name: nameof(StdMarkdownAttribute.model));
+                                        name: nameof(StdModelAttribute.model));
 
-                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), itemCount++);
+                                    xel.SetAttributeValue(nameof(StdModelAttribute.order), itemCount++);
                                     break;
 
                                 default:
@@ -511,7 +511,7 @@ namespace IVSoftware.Portable.Collections.Preview
                             switch (placerResult)
                             {
                                 case PlacerResult.Exists:
-                                    xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), targetIndex++);
+                                    xel.SetAttributeValue(nameof(StdModelAttribute.order), targetIndex++);
                                     break;
 
                                 default:
@@ -710,10 +710,10 @@ namespace IVSoftware.Portable.Collections.Preview
             var previewDlgt = itemType?.GetDescriptionPreviewDlgt();
             var modeling = itemType?.GetModeledPathInfo().StdModelPath;
 
-            model = new XElement(nameof(StdMarkdownElement.model));
+            model = new XElement(nameof(StdModelElement.model));
             if(modeling is not null)
             {
-                model.SetStdAttributeValue(StdMarkdownAttribute.modeling, modeling);
+                model.SetStdAttributeValue(StdModelAttribute.modeling, modeling);
             }
 #if DEBUG
             var count = @this.Count;
@@ -734,14 +734,14 @@ namespace IVSoftware.Portable.Collections.Preview
                         case PlacerResult.Exists:
                             break;
                         case PlacerResult.Created:
-                            xel.Name = nameof(StdMarkdownElement.xitem);
+                            xel.Name = nameof(StdModelElement.xitem);
                             xel.SetBoundAttributeValue(
                                 tag: item,
-                                name: nameof(StdMarkdownAttribute.model));
-                            xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), itemCount++);
+                                name: nameof(StdModelAttribute.model));
+                            xel.SetAttributeValue(nameof(StdModelAttribute.order), itemCount++);
                             if (previewDlgt?.Invoke(item) is string preview)
                             {
-                                xel.SetStdAttributeValue(StdMarkdownAttribute.preview, preview);
+                                xel.SetStdAttributeValue(StdModelAttribute.preview, preview);
                             }
                             break;
                         default:

@@ -70,12 +70,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     //   and go on an XElement that's already wired for the events.
                     foreach (var xattr in xel.Attributes())
                     {
-                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std)
+                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdModelAttribute std)
                             && std.GetCustomAttribute<IFTTTAttribute>() is not null)
                         {
                             switch (std)
                             {
-                                case StdMarkdownAttribute.model when xattr is XBoundAttribute xba && xba.Tag is T itemT:
+                                case StdModelAttribute.model when xattr is XBoundAttribute xba && xba.Tag is T itemT:
                                     if (PredicateMatchSubsetProtected.Contains(itemT))
                                     {   /* G T K - N O O P */
                                     }
@@ -93,12 +93,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     // [Remember] The node has been removed so no XObject changes. We need to call the actions manually.
                     foreach (var xattr in xel.Attributes())
                     {
-                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std)
+                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdModelAttribute std)
                             && std.GetCustomAttribute<IFTTTAttribute>() is not null)
                         {
                             switch (std)
                             {
-                                case StdMarkdownAttribute.model when xattr is XBoundAttribute xba && xba.Tag is T itemT:
+                                case StdModelAttribute.model when xattr is XBoundAttribute xba && xba.Tag is T itemT:
                                     OnXBoundItemObjectChange(xba: xba, e.ObjectChange);
                                     break;
                             }
@@ -118,11 +118,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             T item = pxel.To<T>();
             bool? value;
             base.OnXAttributeChanged(xattr, pxel, e);
-            if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
+            if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdModelAttribute std))
             {
                 switch (std)
                 {
-                    case StdMarkdownAttribute.match:
+                    case StdModelAttribute.match:
                         value = bool.TryParse(xattr.Value, out var valid) ? valid : null;
                         switch (e.ObjectChange)
                         {
@@ -179,7 +179,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         if( QueryFilterConfig.HasFlag(QueryFilterConfig.Filter) 
                             && FilteringState == FilteringState.Active)
                         {
-                            xba.Parent.SetStdAttributeValue(StdMarkdownAttribute.live, bool.TrueString);
+                            xba.Parent.SetStdAttributeValue(StdModelAttribute.live, bool.TrueString);
                         }
                     }
                     break;
@@ -288,7 +288,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     case FilteringState.Armed:
                         return true;
                     case FilteringState.Active:
-                        if (0 == Histo[StdMarkdownAttribute.match])
+                        if (0 == Histo[StdModelAttribute.match])
                         {
                             // The collection is eligible for filtering (has at least two items).
                             // All items have been filtered out.
@@ -326,9 +326,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             PredicateMatchSubsetProtected.Clear();
                             Model.RemoveDescendantAttributes(
                                 [
-                                    StdMarkdownAttribute.match,
-                                StdMarkdownAttribute.pmatch,
-                                StdMarkdownAttribute.qmatch,
+                                    StdModelAttribute.match,
+                                StdModelAttribute.pmatch,
+                                StdModelAttribute.qmatch,
                                 ]);
 
                             #region F I L T E R    Q U E R Y
@@ -364,7 +364,7 @@ SELECT * FROM items WHERE
                                 {
                                     case PlacerResult.Exists:
                                         // IFTTT - the XObject.Change will add this to PMSS.
-                                        xaf.SetAttributeValue(nameof(StdMarkdownAttribute.qmatch), bool.TrueString);
+                                        xaf.SetAttributeValue(nameof(StdModelAttribute.qmatch), bool.TrueString);
                                         break;
                                     case PlacerResult.Created:
                                         this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
@@ -1028,7 +1028,7 @@ SELECT * FROM items WHERE
         {            
             if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
             {
-                int indexForAdd = Histo[StdMarkdownAttribute.model];
+                int indexForAdd = Histo[StdModelAttribute.model];
 
                 var placerResult = Model.Place(full, out var xel);
                 switch (placerResult)
@@ -1036,11 +1036,11 @@ SELECT * FROM items WHERE
                     case PlacerResult.Exists:
                         break;
                     case PlacerResult.Created:
-                        xel.Name = nameof(StdMarkdownElement.xitem);
+                        xel.Name = nameof(StdModelElement.xitem);
                         xel.SetBoundAttributeValue(
                             tag: item,
-                            name: nameof(StdMarkdownAttribute.model));
-                        xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), indexForAdd);
+                            name: nameof(StdModelAttribute.model));
+                        xel.SetAttributeValue(nameof(StdModelAttribute.order), indexForAdd);
                         break;
                     default:
                         this.ThrowFramework<NotSupportedException>(

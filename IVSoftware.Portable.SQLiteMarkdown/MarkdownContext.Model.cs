@@ -43,10 +43,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (_model is null)
                 {
                     _model = new
-                        XElement(nameof(StdMarkdownElement.model))
-                        .WithBoundAttributeValue(this, StdMarkdownAttribute.mdc, "[MDC]")
-                        .WithBoundAttributeValue(Histo, StdMarkdownAttribute.histo, "[Histo]")
-                        .WithBoundAttributeValue(ActiveFilters, StdMarkdownAttribute.filters, "[No Active Filters]");
+                        XElement(nameof(StdModelElement.model))
+                        .WithBoundAttributeValue(this, StdModelAttribute.mdc, "[MDC]")
+                        .WithBoundAttributeValue(Histo, StdModelAttribute.histo, "[Histo]")
+                        .WithBoundAttributeValue(ActiveFilters, StdModelAttribute.filters, "[No Active Filters]");
 
                     _model.Changing += (sender, e) =>
                     {
@@ -86,7 +86,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     if (newValue is null ^ oldValue is null)
                                     {
                                         this.ThrowPolicyException(MarkdownContextPolicyViolation.XAttributeBooleanToggle);
-                                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
+                                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdModelAttribute std))
                                         {
                                             if (oldValue == true)
                                             {
@@ -139,7 +139,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case XObjectChange.Add:
                     foreach (var xattr in xel.Attributes())
                     {
-                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
+                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdModelAttribute std))
                         {
                             if (bool.TryParse(xattr.Value, out bool valid) && valid == false)
                             {   /* G T K - N O O P */
@@ -155,13 +155,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     // Now: IFTTT on the stable histogram population.
                     foreach (var xattr in xel.Attributes())
                     {
-                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std)
+                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdModelAttribute std)
                             && std.GetCustomAttribute<IFTTTAttribute>() is not null)
                         {
                             switch (std)
                             {
-                                case StdMarkdownAttribute.qmatch:
-                                case StdMarkdownAttribute.pmatch:
+                                case StdModelAttribute.qmatch:
+                                case StdModelAttribute.pmatch:
                                     // The IFTTT for 'match' wired and ready. 
                                     SetMatchAttributeValue(xel);
                                     break;
@@ -172,7 +172,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case XObjectChange.Remove:
                     foreach (var xattr in xel.Attributes())
                     {
-                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
+                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdModelAttribute std))
                         {
                             if (bool.TryParse(xattr.Value, out bool valid) && valid == false)
                             {   /* G T K - N O O P */
@@ -190,7 +190,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnXAttributeChanged(XAttribute xattr, XElement pxel, XObjectChangeEventArgs e)
         {
-            if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdMarkdownAttribute std))
+            if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdModelAttribute std))
             {
                 bool? newValue = bool.TryParse(xattr.Value, out var valid) ? valid : null;
                 switch (e.ObjectChange)
@@ -232,8 +232,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     switch (std)
                     {
-                        case StdMarkdownAttribute.qmatch:
-                        case StdMarkdownAttribute.pmatch:
+                        case StdModelAttribute.qmatch:
+                        case StdModelAttribute.pmatch:
                             SetMatchAttributeValue(pxel);
                             break;
                     }
@@ -241,7 +241,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 #region L o c a l F x
                 void localUpdateHisto()
                 {
-                    if (Model.Attribute(StdMarkdownAttribute.histo) is XBoundAttribute xba)
+                    if (Model.Attribute(StdModelAttribute.histo) is XBoundAttribute xba)
                     {
                         xba.Value = Histo.ToString(HistogrammerFormat.Default);
                     }
@@ -270,40 +270,40 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             // If none of the xitems have a qmatch then *all* of them implicily have a qmatch.
             bool? qmatch =
-                Histo[StdMarkdownAttribute.qmatch] == 0
+                Histo[StdModelAttribute.qmatch] == 0
                 ? null
-                : bool.TryParse(@this.Attribute(StdMarkdownAttribute.qmatch)?.Value, out valid) ? valid : null;
+                : bool.TryParse(@this.Attribute(StdModelAttribute.qmatch)?.Value, out valid) ? valid : null;
 
             // If none of the xitems have a pmatch then *all* of them implicily have a pmatch.
             bool? pmatch =
-                Histo[StdMarkdownAttribute.pmatch] == 0
+                Histo[StdModelAttribute.pmatch] == 0
                 ? null
-                : bool.TryParse(@this.Attribute(StdMarkdownAttribute.pmatch)?.Value, out valid) ? valid : null;
+                : bool.TryParse(@this.Attribute(StdModelAttribute.pmatch)?.Value, out valid) ? valid : null;
             if (qmatch == true || pmatch == true)
             {
-                @this.SetStdAttributeValue(StdMarkdownAttribute.match, bool.TrueString);
+                @this.SetStdAttributeValue(StdModelAttribute.match, bool.TrueString);
             }
             else
             {
-                @this.SetStdAttributeValue(StdMarkdownAttribute.match, null);
+                @this.SetStdAttributeValue(StdModelAttribute.match, null);
             }
         }
 
-        protected EnumHistogrammer<StdMarkdownAttribute> Histo { get; } = new(ZeroCountOption.Remove);
+        protected EnumHistogrammer<StdModelAttribute> Histo { get; } = new(ZeroCountOption.Remove);
         public string ToString(HistogrammerFormat formatting) => Histo.ToString(formatting);
         public string ToString(ModelPreviewDelegate preview, bool keepPreviews = false)
         {
             foreach (var xel in Model.Descendants())
             {
-                if(xel.Attribute(StdMarkdownAttribute.model) is XBoundAttribute xba && xba.Tag is not null)
+                if(xel.Attribute(StdModelAttribute.model) is XBoundAttribute xba && xba.Tag is not null)
                 {
-                    xel.SetStdAttributeValue(StdMarkdownAttribute.preview, preview(xba.Tag));
+                    xel.SetStdAttributeValue(StdModelAttribute.preview, preview(xba.Tag));
                 }
             }
             var @string = Model.ToString();
             if(!keepPreviews)
             {
-                Model.RemoveDescendantAttributes(StdMarkdownAttribute.preview);
+                Model.RemoveDescendantAttributes(StdModelAttribute.preview);
             }
             return @string;
         }
@@ -330,20 +330,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         var needPreview =
                             Model
                             .Descendants()
-                            .Select(_=>_.Attribute(StdMarkdownAttribute.model))
+                            .Select(_=>_.Attribute(StdModelAttribute.model))
                             .OfType<XBoundAttribute>()
-                            .Where(_=>_.Parent.Attribute(StdMarkdownAttribute.preview) is null)
+                            .Where(_=>_.Parent.Attribute(StdModelAttribute.preview) is null)
                             .ToArray();
 
                         foreach (var xba in needPreview)
                         {
-                            xba.Parent.SetStdAttributeValue(StdMarkdownAttribute.preview, dlgt(xba.Tag));
+                            xba.Parent.SetStdAttributeValue(StdModelAttribute.preview, dlgt(xba.Tag));
                         }
                         var report = Model.ToString();
 
                         foreach (var xba in needPreview)
                         {
-                            xba.Parent.SetStdAttributeValue(StdMarkdownAttribute.preview, null);
+                            xba.Parent.SetStdAttributeValue(StdModelAttribute.preview, null);
                         }
                         return report;
                     }

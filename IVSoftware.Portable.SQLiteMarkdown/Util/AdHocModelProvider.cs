@@ -9,6 +9,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
+using IVSoftware.Portable.Collections.Common;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {
@@ -88,7 +89,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         private IList<T> ItemsSource { get; }
         public XElement CreateModel()
         {
-            XElement model = new XElement(nameof(StdMarkdownElement.model));
+            XElement model = new XElement(nameof(StdModelElement.model));
             model.SetAttributeValue(ModelingCapability);
             int itemCount = 0;
             if (ModelingCapability != StdModelPath.NotFound)
@@ -108,12 +109,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                             case PlacerResult.Exists:
                                 break;
                             case PlacerResult.Created:
-                                xel.Name = nameof(StdMarkdownElement.xitem);
+                                xel.Name = nameof(StdModelElement.xitem);
                                 xel.SetBoundAttributeValue(
                                     tag: item,
-                                    name: nameof(StdMarkdownAttribute.model));
+                                    name: nameof(StdModelAttribute.model));
 
-                                xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), itemCount++);
+                                xel.SetAttributeValue(nameof(StdModelAttribute.order), itemCount++);
                                 break;
                             default:
                                 "ObservablePreviewCollection".ThrowFramework<NotSupportedException>(

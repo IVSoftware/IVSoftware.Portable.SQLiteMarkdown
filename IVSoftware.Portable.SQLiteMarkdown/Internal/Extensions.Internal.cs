@@ -37,7 +37,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
     {
         #region P R E V I E W
         /// <summary>
-        /// Returns the <see cref="XBoundAttribute"/> for the specified <see cref="StdMarkdownAttribute"/>.
+        /// Returns the <see cref="XBoundAttribute"/> for the specified <see cref="StdModelAttribute"/>.
         /// </summary>
         /// <remarks>
         /// Resolves the attribute using the enum name. If the attribute is missing or not bound
@@ -46,7 +46,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// </remarks>
         internal static XBoundAttribute? XBoundAttribute(
             this XElement @this,
-            StdMarkdownAttribute stdEnum,   // This type *only* by design. Do not generalize to Enum.
+            StdModelAttribute stdEnum,   // This type *only* by design. Do not generalize to Enum.
             ThrowOrAdvise? @throw = null)
         {
             string msg;
@@ -83,16 +83,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         }
 
         /// <summary>
-        /// Returns the typed <c>Tag</c> value of the <see cref="XBoundAttribute"/> identified by the specified <see cref="StdMarkdownAttribute"/>.
+        /// Returns the typed <c>Tag</c> value of the <see cref="XBoundAttribute"/> identified by the specified <see cref="StdModelAttribute"/>.
         /// </summary>
         /// <remarks>
-        /// Resolves the attribute via <see cref="XBoundAttribute(XElement, StdMarkdownAttribute, ThrowOrAdvise?)"/>.
+        /// Resolves the attribute via <see cref="XBoundAttribute(XElement, StdModelAttribute, ThrowOrAdvise?)"/>.
         /// If the attribute is missing, not bound, or its <c>Tag</c> is not assignable to
         /// <typeparamref name="T"/>, the result is <c>default</c>.
         /// </remarks>
         internal static T? XBoundAttributeValue<T>(
             this XElement @this,
-            StdMarkdownAttribute stdEnum,   // This type *only* by design. Do not generalize to Enum.
+            StdModelAttribute stdEnum,   // This type *only* by design. Do not generalize to Enum.
             ThrowOrAdvise? @throw = null)
         {
             if (@this.XBoundAttribute(stdEnum, @throw) is { } xba && xba.Tag is T valueT)
@@ -238,7 +238,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         }
 
         /// <summary>
-        /// Assigns the value of the attribute identified by the specified <see cref="StdMarkdownAttribute"/>.
+        /// Assigns the value of the attribute identified by the specified <see cref="StdModelAttribute"/>.
         /// </summary>
         /// <remarks>
         /// Mental Model: "Write canonical attribute text with controlled length semantics."
@@ -249,7 +249,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// </remarks>
         internal static void SetStdAttributeValue(
             this XElement @this,
-            StdMarkdownAttribute std,
+            StdModelAttribute std,
             object? value,
             byte maxLength = byte.MaxValue,
             bool padToMaxLength = false,
