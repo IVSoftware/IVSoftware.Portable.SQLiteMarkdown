@@ -13,7 +13,7 @@ using IVSoftware.Portable.Collections.Common;
 namespace IVSoftware.Portable.Collections.Preview
 {
     internal class ObservableRangeCollection<T>
-        : ModeledObservableCollection<T>
+        : ObservableModeledCollection<T>
         , IRangeable
     {
         public static implicit operator XElement(ObservableRangeCollection<T> @this)

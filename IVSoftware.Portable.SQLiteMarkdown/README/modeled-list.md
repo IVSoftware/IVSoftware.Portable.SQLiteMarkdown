@@ -2,7 +2,7 @@
 
 # Modeled Observable Collection
 
-`ModeledObservableCollection<T>` is a direct subclass of `ObservableCollection<T>` that has the ability to present itself as a hierarchal `XElement` model, based on a designated `[FullPath]` attribute.
+`ObservableModeledCollection<T>` is a direct subclass of `ObservableCollection<T>` that has the ability to present itself as a hierarchal `XElement` model, based on a designated `[FullPath]` attribute.
 
 When its `XElement? Model { get; set; }` property is not `null`:
 

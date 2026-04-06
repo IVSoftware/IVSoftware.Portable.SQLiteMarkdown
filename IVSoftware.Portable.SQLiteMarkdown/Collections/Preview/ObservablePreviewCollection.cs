@@ -16,7 +16,7 @@ namespace IVSoftware.Portable.Collections.Preview
     /// Suppressible collection with Preview semantics (but no Range semantics).
     /// </summary>
     internal partial class ObservablePreviewCollection<T>
-        : ModeledObservableCollection<T>
+        : ObservableModeledCollection<T>
         , INotifyCollectionChanging
     {
         public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)

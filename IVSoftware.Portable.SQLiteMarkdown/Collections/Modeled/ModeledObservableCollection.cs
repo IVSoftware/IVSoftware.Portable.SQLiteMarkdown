@@ -19,11 +19,11 @@ namespace IVSoftware.Portable.Collections.Modeled
     /// - Does not implement Preview or Range behavior itself; it only enables
     ///   those patterns to be layered on top.
     /// </remarks>
-    public class ModeledObservableCollectionOR<T> 
+    public class ObservableModeledCollectionOR<T> 
         : ObservableCollection<T>
         , IModeledNotifyCollectionChanged<T>
     {        
-        public ModeledObservableCollectionOR(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
+        public ObservableModeledCollectionOR(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
         {
             EventScope = eventScope;
         }
