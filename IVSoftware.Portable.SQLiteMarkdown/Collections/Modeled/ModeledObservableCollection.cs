@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Collections.Preview;
+﻿using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
@@ -58,7 +59,7 @@ namespace IVSoftware.Portable.Collections.Modeled
         public IDisposable BeginMDXAuthority(ModelDataExchangeAuthority authority, IList source)
             => DHostMDX.GetToken(authority, source);
 
-        public void CancelSuppress() => DHostMDX.CancelSuppressNotify();
+        public void CancelModelAuthorityEpoch() => DHostMDX.CancelModelAuthorityEpoch();
         public ModelDataExchangeAuthority Phase => DHostMDX.Authority;
 
         public ModelDataExchangeAuthorityProvider<T> DHostMDX
@@ -68,13 +69,13 @@ namespace IVSoftware.Portable.Collections.Modeled
                 if (_dhostMDX is null)
                 {
                     _dhostMDX = new ModelDataExchangeAuthorityProvider<T>();
-                    _dhostMDX.FinalDispose += (sender, e) => OnFinalCoalesce((ModelDataExchangeFinalDisposeEventArgs)e);
+                    _dhostMDX.FinalDispose += (sender, e) => OnModelEpochDispose((ModelEpochDisposeEventArgs)e);
                 }
                 return _dhostMDX;
             }
         }
         ModelDataExchangeAuthorityProvider<T>? _dhostMDX = null;
-        protected virtual void OnFinalCoalesce(ModelDataExchangeFinalDisposeEventArgs e)
+        protected virtual void OnModelEpochDispose(ModelEpochDisposeEventArgs e)
         {
             OnCollectionChanged((e.Digest));
         }

@@ -6,15 +6,10 @@ using Newtonsoft.Json;
 using SQLite;
 using System.CodeDom;
 using System.Collections;
+using IVSoftware.Portable.Collections.Common.Extensions;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
-    [Flags]
-    public enum PopulateOptions
-    {
-        RandomChecks = 0x1,
-        DetectIRangeable = 0x2,
-    }
     public static partial class SQLiteMarkdownTestExtensions
     {
         public static void PopulateDemoDatabase<TItem>(this SQLiteConnection @this, bool includeLive = false, PopulateOptions? options = null)

@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Disposable;
+﻿using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using Newtonsoft.Json;
 using SQLite;

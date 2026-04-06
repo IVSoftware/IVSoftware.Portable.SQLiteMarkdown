@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Collections.Preview;
+﻿using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
@@ -129,10 +130,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
 
         public CollectionChangingEventingOption CollectionChangingEventingOption { get; set; }
-        protected override void OnFinalCoalesce(ModelDataExchangeFinalDisposeEventArgs e)
+        protected override void OnModelEpochDispose(ModelEpochDisposeEventArgs e)
         {
             OnCollectionChanging(e.Digest);
-            base.OnFinalCoalesce(e);
+            base.OnModelEpochDispose(e);
         }
 
         /// <summary>

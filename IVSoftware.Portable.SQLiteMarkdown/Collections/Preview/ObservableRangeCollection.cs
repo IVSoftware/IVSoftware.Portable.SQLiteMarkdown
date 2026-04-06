@@ -8,11 +8,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
+using IVSoftware.Portable.Collections.Common;
 
 namespace IVSoftware.Portable.Collections.Preview
 {
     internal class ObservableRangeCollection<T>
-        : ModeledObservableCollection<T>
+        : Modeled.ModeledObservableCollection<T>
         , IRangeable
     {
         public static implicit operator XElement(ObservableRangeCollection<T> @this)
@@ -68,7 +69,7 @@ namespace IVSoftware.Portable.Collections.Preview
                             if (string.IsNullOrWhiteSpace(fullPath))
                             {
                                 "ObservablePreviewCollection".ThrowHard<ArgumentException>($"The '{nameof(fullPath)}' argument cannot be empty.");
-                                CancelSuppress();
+                                CancelModelAuthorityEpoch();
                                 return 0;
                             }
 
@@ -87,7 +88,7 @@ namespace IVSoftware.Portable.Collections.Preview
                         else
                         {
                             item.ThrowHard<InvalidCastException>($"All range items must be {typeof(T).Name}");
-                            CancelSuppress();
+                            CancelModelAuthorityEpoch();
                             return 0;
                         }
                     }

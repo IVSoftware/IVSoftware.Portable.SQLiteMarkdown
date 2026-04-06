@@ -1,10 +1,8 @@
-﻿using IVSoftware.Portable.Collections.Modeled;
+﻿using IVSoftware.Portable.Collections.Common;
 using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.SQLiteMarkdown;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
@@ -15,7 +13,7 @@ namespace IVSoftware.Portable.Collections.Preview
     /// Suppressible collection with Preview semantics (but no Range semantics).
     /// </summary>
     internal partial class ObservablePreviewCollection<T>
-        : ModeledObservableCollection<T>
+        : IVSoftware.Portable.Collections.Modeled.ModeledObservableCollection<T>
         , INotifyCollectionChanging
     {
         public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
@@ -131,10 +129,10 @@ namespace IVSoftware.Portable.Collections.Preview
         public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
 
         public CollectionChangingEventingOption CollectionChangingEventingOption { get; set; }
-        protected override void OnFinalCoalesce(ModelDataExchangeFinalDisposeEventArgs e)
+        protected override void OnModelEpochDispose(ModelEpochDisposeEventArgs e)
         {
             OnCollectionChanging(e.Digest);
-            base.OnFinalCoalesce(e);
+            base.OnModelEpochDispose(e);
         }
 
         public static implicit operator XElement(ObservablePreviewCollection<T> @this)

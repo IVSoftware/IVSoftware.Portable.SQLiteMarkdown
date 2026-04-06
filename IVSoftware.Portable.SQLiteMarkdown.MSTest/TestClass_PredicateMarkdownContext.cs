@@ -1,3 +1,5 @@
+using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Collections.Common.Extensions;
 using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;

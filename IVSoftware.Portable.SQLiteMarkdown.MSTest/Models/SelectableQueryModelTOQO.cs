@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Xml.Linq;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.Collections.Common;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
 {

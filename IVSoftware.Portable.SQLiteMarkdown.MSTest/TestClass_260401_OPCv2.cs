@@ -1,11 +1,10 @@
-﻿using IVSoftware.Portable.Collections.Modeled;
+﻿using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Collections.Modeled;
 using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
-using System.Collections.ObjectModel;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
@@ -29,7 +28,7 @@ public class TestClass_260401_OPCv2
         var i3 = eph.AddDynamic("Item03");
         #endregion I T E M    G E N
 
-        var itemsSource = new ModeledObservableCollection<SelectableQFModel>();
+        var itemsSource = new IVSoftware.Portable.Collections.Modeled.ModeledObservableCollection<SelectableQFModel>();
 
         #region E V E N T S
         itemsSource.CollectionChanged += (sender, e) =>

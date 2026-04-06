@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Collections.Preview;
+﻿using IVSoftware.Portable.Collections.Common;
+using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
@@ -679,7 +680,7 @@ SELECT * FROM items WHERE
                     _dhostMDX = new ModelDataExchangeAuthorityProvider<T>();
                     _dhostMDX.FinalDispose += (sender, e) =>
                     {
-                        if (e is ModelDataExchangeFinalDisposeEventArgs eFD)
+                        if (e is ModelEpochDisposeEventArgs eFD)
                         {
                             OnModelSettled(eFD.Digest);
                         }
