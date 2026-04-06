@@ -376,7 +376,7 @@ NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingOption.StructuralR
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model modeling=""FullPath"">
+<model mpath=""FullPath"">
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[TemporalAffinityQFModel]"" order=""0"" preview=""Green Appl"" />
   <item text=""312d1c21-0000-0000-0000-00000000000d"" model=""[TemporalAffinityQFModel]"" order=""1"" preview=""Green Pear"" />
   <item text=""312d1c21-0000-0000-0000-000000000020"" model=""[TemporalAffinityQFModel]"" order=""2"" preview=""Errata    "" />
@@ -459,7 +459,7 @@ Other.Digest     NewItems=37 OldItems= 0 NewStartingIndex= 0 NotifyCollectionCha
         actual.ToClipboardExpected();
         { }
         expected = @" 
-<model modeling=""FullPath"">
+<model mpath=""FullPath"">
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[TemporalAffinityQFModel]"" order=""0"" preview=""Green Appl"" />
   <item text=""312d1c21-0000-0000-0000-00000000000d"" model=""[TemporalAffinityQFModel]"" order=""1"" preview=""Green Pear"" />
   <item text=""312d1c21-0000-0000-0000-000000000020"" model=""[TemporalAffinityQFModel]"" order=""2"" preview=""Errata    "" />

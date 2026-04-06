@@ -3559,7 +3559,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model modeling=""Id"">
+<model mpath=""Id"">
   <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
 </model>"
                 ;
@@ -3609,7 +3609,7 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model modeling=""Id"">
+<model mpath=""Id"">
   <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
   <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" preview=""Orange Fox"" />
   <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""White Rabb"" />
@@ -3661,7 +3661,7 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model modeling=""Id"">
+<model mpath=""Id"">
   <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""0"" preview=""Brown Bear"" />
 </model>"
                 ;
@@ -3776,7 +3776,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model modeling=""Id"">
+<model mpath=""Id"">
   <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""0"" preview=""White Rabb"" />
   <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""1"" preview=""Gray Wolf "" />
 </model>"

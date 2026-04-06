@@ -154,7 +154,7 @@ Typical output from `myList.ToString(out XElement _)` shows:
 - The `modeling` attribute indicates that the path heuristic ran and identified `Id` as the designated path.
 - The `preview` attribute enhances human-readability with a string that is both padded and truncated.
 
-```xml<model modeling="Id">
+```xml<model mpath="Id">
   <item text="312d1c21-0000-0000-0000-000000000007" model="[SelectableQFModel]" order="0" preview="White Rabb" />
   <item text="312d1c21-0000-0000-0000-000000000009" model="[SelectableQFModel]" order="1" preview="Gray Wolf " />
 </model>
