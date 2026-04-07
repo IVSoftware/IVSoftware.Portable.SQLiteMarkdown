@@ -1,4 +1,5 @@
 using IVSoftware.Portable.Common.Collections;
+using IVSoftware.Portable.Common.Collections.Internal;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;

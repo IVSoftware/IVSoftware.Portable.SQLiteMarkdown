@@ -31,7 +31,7 @@ public class TestClass_260328_Model
         void subtest_TrackLateral()
         {
             // Add
-            model.SetStdAttributeValue(StdModelAttribute.qmatch, true);
+            model.SetStdModelAttributeValue(StdModelAttribute.qmatch, true);
 
             actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
@@ -49,7 +49,7 @@ public class TestClass_260328_Model
             // - Setting to same value *does* raise raw XObject.Change events.
             // - However these are intercepted prior to OnXAttributeChanged.
             changeCountB4 = changeCount;
-            model.SetStdAttributeValue(StdModelAttribute.qmatch, true);
+            model.SetStdModelAttributeValue(StdModelAttribute.qmatch, true);
             Assert.AreEqual(changeCountB4, changeCount);
 
             actual = histo.ToString(HistogrammerFormat.Default);
@@ -87,7 +87,7 @@ public class TestClass_260328_Model
             model.Add(xel);
 
             // Add
-            xel.SetStdAttributeValue(StdModelAttribute.qmatch, true);
+            xel.SetStdModelAttributeValue(StdModelAttribute.qmatch, true);
 
             actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
@@ -120,7 +120,7 @@ public class TestClass_260328_Model
             // - Setting to same value *does* raise raw XObject.Change events.
             // - However these are intercepted prior to OnXAttributeChanged.
             changeCountB4 = changeCount;
-            xel.SetStdAttributeValue(StdModelAttribute.qmatch, true);
+            xel.SetStdModelAttributeValue(StdModelAttribute.qmatch, true);
             Assert.AreEqual(changeCountB4, changeCount);
 
 
@@ -235,7 +235,7 @@ public class TestClass_260328_Model
                 "Expecting histogram to increment."
             );
 
-            xel.SetStdAttributeValue(StdModelAttribute.qmatch, false);
+            xel.SetStdModelAttributeValue(StdModelAttribute.qmatch, false);
 
             actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();

@@ -252,12 +252,12 @@ namespace IVSoftware.Portable.Collections.Preview
         {
             var itemType = @this.GetItemType();
             var previewDlgt = itemType?.GetDescriptionPreviewDlgt();
-            var modeling = itemType?.GetModeledPathInfo().StdModelPath;
+            var mpath = itemType?.GetModeledPathInfo().StdModelPath;
 
             model = new XElement(nameof(StdModelElement.model));
-            if(modeling is not null)
+            if(mpath is not null)
             {
-                model.SetStdAttributeValue(StdModelAttribute.mpath, modeling);
+                model.SetStdModelAttributeValue(StdModelAttribute.mpath, mpath);
             }
 #if DEBUG
             var count = @this.Count;
@@ -285,7 +285,7 @@ namespace IVSoftware.Portable.Collections.Preview
                             xel.SetAttributeValue(nameof(StdModelAttribute.order), itemCount++);
                             if (previewDlgt?.Invoke(item) is string preview)
                             {
-                                xel.SetStdAttributeValue(StdModelAttribute.preview, preview);
+                                xel.SetStdModelAttributeValue(StdModelAttribute.preview, preview);
                             }
                             break;
                         default:

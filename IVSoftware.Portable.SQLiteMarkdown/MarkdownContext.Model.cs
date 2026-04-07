@@ -278,11 +278,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 : bool.TryParse(@this.Attribute(StdModelAttribute.pmatch)?.Value, out valid) ? valid : null;
             if (qmatch == true || pmatch == true)
             {
-                @this.SetStdAttributeValue(StdModelAttribute.match, bool.TrueString);
+                @this.SetStdModelAttributeValue(StdModelAttribute.match, bool.TrueString);
             }
             else
             {
-                @this.SetStdAttributeValue(StdModelAttribute.match, null);
+                @this.SetStdModelAttributeValue(StdModelAttribute.match, null);
             }
         }
 
@@ -294,7 +294,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if(xel.Attribute(StdModelAttribute.model) is XBoundAttribute xba && xba.Tag is not null)
                 {
-                    xel.SetStdAttributeValue(StdModelAttribute.preview, preview(xba.Tag));
+                    xel.SetStdModelAttributeValue(StdModelAttribute.preview, preview(xba.Tag));
                 }
             }
             var @string = Model.ToString();
@@ -334,13 +334,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                         foreach (var xba in needPreview)
                         {
-                            xba.Parent.SetStdAttributeValue(StdModelAttribute.preview, dlgt(xba.Tag));
+                            xba.Parent.SetStdModelAttributeValue(StdModelAttribute.preview, dlgt(xba.Tag));
                         }
                         var report = Model.ToString();
 
                         foreach (var xba in needPreview)
                         {
-                            xba.Parent.SetStdAttributeValue(StdModelAttribute.preview, null);
+                            xba.Parent.SetStdModelAttributeValue(StdModelAttribute.preview, null);
                         }
                         return report;
                     }

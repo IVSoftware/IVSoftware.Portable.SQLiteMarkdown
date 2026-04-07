@@ -183,7 +183,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         if( QueryFilterConfig.HasFlag(QueryFilterConfig.Filter) 
                             && FilteringState == FilteringState.Active)
                         {
-                            xba.Parent.SetStdAttributeValue(StdModelAttribute.live, bool.TrueString);
+                            xba.Parent.SetStdModelAttributeValue(StdModelAttribute.live, bool.TrueString);
                         }
                     }
                     break;
