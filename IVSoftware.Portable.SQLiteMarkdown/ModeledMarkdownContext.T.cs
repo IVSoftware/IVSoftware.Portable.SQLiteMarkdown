@@ -1302,7 +1302,18 @@ SELECT * FROM items WHERE
                         switch (e.Action)
                         {
                             case NotifyCollectionChangeAction.Add:
-                                e.Cancel = !QueryFilterConfig.HasFlag(QueryFilterConfig.Filter);
+                                // First, cancel if Filter mode is not enabled.
+                                if (!(e.Cancel = !QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)))
+                                {
+                                    // If not canceled then check this edge case.
+                                    if (e.NewItems?[0] is null)
+                                    {   /* G T K */
+                                        // This is a valid state (apparently) that arises in test when 
+                                        // the 'match' attribute goes true on a node without an 'model'
+                                        e.Cancel = true;
+                                    }
+                                }
+
                                 break;
                             case NotifyCollectionChangeAction.Remove:
                                 break;
