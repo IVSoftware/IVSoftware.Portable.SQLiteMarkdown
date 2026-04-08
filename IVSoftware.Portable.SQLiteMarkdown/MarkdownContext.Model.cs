@@ -15,6 +15,7 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
+using System.Diagnostics;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -118,7 +119,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 case StdModelAttribute.qmatch:
                                 case StdModelAttribute.pmatch:
                                     // The IFTTT for 'match' wired and ready. 
-                                    SetMatchAttributeValue(xel);
+                                    OnIFTTTAttributeChanged(xattr, pxel, e, std);
                                     break;
                             }
                         }
@@ -169,7 +170,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     break;
                             }
 #endif
-                            SetMatchAttributeValue(pxel);
+                            if (std.GetCustomAttribute<IFTTTAttribute>() is not null)
+                            {
+                                OnIFTTTAttributeChanged(xattr, pxel, e, std);
+                            }
                             break;
                     }
                 }
@@ -190,29 +194,85 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// 1. IME text is cleared -> all 'qmatch' attributes are removed -> show all items.
         /// 2. User enters text -> some items are marked 'qmatch' -> show only matching items.
         /// </remarks>
-        void SetMatchAttributeValue(XElement @this)
+        protected virtual void OnIFTTTAttributeChanged(XAttribute xattr, XElement pxel, XObjectChangeEventArgs e, Enum std)
         {
             bool valid; // Captures an explicit value, if parseable.
 
-            // If none of the items have a qmatch then *all* of them implicily have a qmatch.
-            bool? qmatch =
-                Histo[StdModelAttribute.qmatch] == 0
-                ? null
-                : bool.TryParse(@this.Attribute(StdModelAttribute.qmatch)?.Value, out valid) ? valid : null;
+            // Capture value now, without taking removal into consideration.
+            bool? 
+                match =  bool.TryParse(pxel.Attribute(StdModelAttribute.match)?.Value, out valid) ? valid : null,
+                qmatch = bool.TryParse(pxel.Attribute(StdModelAttribute.qmatch)?.Value, out valid) ? valid : null,
+                pmatch = bool.TryParse(pxel.Attribute(StdModelAttribute.pmatch)?.Value, out valid) ? valid : null;
 
-            // If none of the items have a pmatch then *all* of them implicily have a pmatch.
-            bool? pmatch =
-                Histo[StdModelAttribute.pmatch] == 0
-                ? null
-                : bool.TryParse(@this.Attribute(StdModelAttribute.pmatch)?.Value, out valid) ? valid : null;
-            if (qmatch == true || pmatch == true)
+            switch (std)
             {
-                @this.SetStdModelAttributeValue(StdModelAttribute.match, bool.TrueString);
+                case StdModelAttribute.pmatch:
+                    switch (e.ObjectChange)
+                    {
+                        case XObjectChange.Add:
+                            pxel.SetStdModelAttributeValue(StdModelAttribute.match, true);
+                            break;
+                        case XObjectChange.Remove:
+                            // Match relies on the 'other'.
+                            pxel.SetStdModelAttributeValue(StdModelAttribute.match, qmatch);
+                            break;
+                        case XObjectChange.Value:
+                            if (pmatch == true)
+                            {   /* G T K */
+                                // Idempotent change
+                                Debug.Assert(match == true);
+                            }
+                            else
+                            {
+                                Debug.Fail($@"ADVISORY - First Time and it's Not Good.");
+                            }
+                            break;
+                    }
+                    break;
+                case StdModelAttribute.qmatch:
+                    switch (e.ObjectChange)
+                    {
+                        case XObjectChange.Add:
+                            pxel.SetStdModelAttributeValue(StdModelAttribute.match, true);
+                            break;
+                        case XObjectChange.Remove:
+                            // Match relies on the 'other'.
+                            pxel.SetStdModelAttributeValue(StdModelAttribute.match, pmatch);
+                            break;
+                        case XObjectChange.Value:
+                            if (qmatch == true)
+                            {   /* G T K */
+                                // Idempotent change
+                                Debug.Assert(match == true);
+                            }
+                            else
+                            {
+                                Debug.Fail($@"ADVISORY - First Time and it's Not Good.");
+                            }
+                            break;
+                    }
+                    break;
             }
-            else
-            {
-                @this.SetStdModelAttributeValue(StdModelAttribute.match, null);
-            }
+
+            //// If none of the items have a qmatch then *all* of them implicily have a qmatch.
+            //bool? qmatch =
+            //    Histo[StdModelAttribute.qmatch] == 0
+            //    ? null
+            //    : bool.TryParse(@this.Attribute(StdModelAttribute.qmatch)?.Value, out valid) ? valid : null;
+
+            //// If none of the items have a pmatch then *all* of them implicily have a pmatch.
+            //bool? pmatch =
+            //    Histo[StdModelAttribute.pmatch] == 0
+            //    ? null
+            //    : bool.TryParse(@this.Attribute(StdModelAttribute.pmatch)?.Value, out valid) ? valid : null;
+            //if (qmatch == true || pmatch == true)
+            //{
+            //    @this.SetStdModelAttributeValue(StdModelAttribute.match, bool.TrueString);
+            //}
+            //else
+            //{
+            //    @this.SetStdModelAttributeValue(StdModelAttribute.match, null);
+            //}
         }
 
         protected EnumHistogrammer<StdModelAttribute> Histo { get; } = new(ZeroCountOption.Remove);
