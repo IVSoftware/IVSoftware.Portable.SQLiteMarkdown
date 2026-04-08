@@ -77,36 +77,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                     _parentsOfRemoved.Remove(xob);
                                     break;
                                 case XObjectChange.Value when xob is XAttribute xattr:
-                                    var oldValue = _oldValues.TryGetValue(xattr, out var validOld) ? validOld : null;
-                                    bool? newValue = bool.TryParse(xattr.Value, out var validNew) ? validNew : null;
-                                    _oldValues.Remove(xattr);
-                                    if (newValue is null ^ oldValue is null)
-                                    {
-                                        this.ThrowPolicyException(MarkdownContextPolicyViolation.XAttributeBooleanToggle);
-                                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdModelAttribute std))
-                                        {
-                                            if (oldValue == true)
-                                            {
-                                                Histo.Decrement(std);
-                                            }
-                                            else if (newValue == true)
-                                            {
-                                                Histo.Increment(std, xattr);
-                                            }
-                                        }
-                                        return;
-                                    }
-                                    else
-                                    {
-                                        if (newValue == oldValue)
-                                        {
-                                            return;
-                                        }
-                                        else
-                                        {   /* G T K */
-                                            // Toggle detected.
-                                        }
-                                    }
                                     break;
                             }
                             switch (sender)
@@ -136,18 +106,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case XObjectChange.Add:
                     foreach (var xattr in xel.Attributes())
                     {
-                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdModelAttribute std))
-                        {
-                            if (bool.TryParse(xattr.Value, out bool valid) && valid == false)
-                            {   /* G T K - N O O P */
-                                // POLICY: Explicit false values cannot modify the histogram.
-                            }
-                            else
-                            {
-                                // Increment *all* first.
-                                Histo.Increment(std, xattr);
-                            }
-                        }
                     }
                     // Now: IFTTT on the stable histogram population.
                     foreach (var xattr in xel.Attributes())
@@ -193,32 +151,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 switch (e.ObjectChange)
                 {
                     case XObjectChange.Add:
-                        if (newValue != false)
-                        {
-                            Histo.Increment(std, xattr);
-                        }
-                        localUpdateHisto();
                         break;
                     case XObjectChange.Remove:
-                        if (newValue != false)
-                        {
-                            Histo.Decrement(std);
-                        }
-                        localUpdateHisto();
                         break;
                     case XObjectChange.Value:
-                        switch (newValue)
-                        {
-                            case null:
-                                /* N O O P */
-                                break;
-                            case true:
-                                Histo.Increment(std, xattr);
-                                break;
-                            case false:
-                                Histo.Decrement(std);
-                                break;
-                        }
                         break;
                 }
                 if (xattr is XBoundAttribute xba)
@@ -235,15 +171,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             break;
                     }
                 }
-                #region L o c a l F x
-                void localUpdateHisto()
-                {
-                    if (Model.Attribute(StdModelAttribute.histo) is XBoundAttribute xba)
-                    {
-                        xba.Value = Histo.ToString(HistogrammerFormat.Default);
-                    }
-                }
-                #endregion L o c a l F x
             }
         }
 
