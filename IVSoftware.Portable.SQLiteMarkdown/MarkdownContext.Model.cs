@@ -148,15 +148,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdModelAttribute std))
             {
                 bool? newValue = bool.TryParse(xattr.Value, out var valid) ? valid : null;
-                switch (e.ObjectChange)
-                {
-                    case XObjectChange.Add:
-                        break;
-                    case XObjectChange.Remove:
-                        break;
-                    case XObjectChange.Value:
-                        break;
-                }
                 if (xattr is XBoundAttribute xba)
                 {
                     OnXBoundAttributeChanged(xba, e.ObjectChange);
@@ -167,6 +158,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     {
                         case StdModelAttribute.qmatch:
                         case StdModelAttribute.pmatch:
+#if DEBUG
+                            switch (e.ObjectChange)
+                            {
+                                case XObjectChange.Add:
+                                    break;
+                                case XObjectChange.Remove:
+                                    break;
+                                case XObjectChange.Value:
+                                    break;
+                            }
+#endif
                             SetMatchAttributeValue(pxel);
                             break;
                     }
