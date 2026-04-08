@@ -39,58 +39,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         .WithBoundAttributeValue(Histo, StdModelAttribute.histo, "[Histo]")
                         .WithBoundAttributeValue(ActiveFilters, StdModelAttribute.filters, "[No Active Filters]");
 
-                    _model.Changing += (sender, eBCL) =>
-                    {
-                        XModelChangeEventArgs e = new XModelChangeEventArgs(sender, eBCL.ObjectChange);
-                        if (sender is XObject xob)
-                        {
-                            switch (e.ObjectChange)
-                            {
-                                case XObjectChange.Remove:
-                                    break;
-                                case XObjectChange.Value when xob is XAttribute xattr:
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException();
-                        }
-                    };
-
-                    _model.Changed += (sender, eBCL) =>
-                    {
-                        XModelChangeEventArgs e = new XModelChangeEventArgs(sender, eBCL.ObjectChange);
-                        if (sender is XObject xob)
-                        {
-                            XElement? pxel = xob.Parent;
-                            switch (e.ObjectChange)
-                            {
-                                case XObjectChange.Remove:
-                                    pxel = XModelChangeEventArgs.ParentsOfRemoved[xob];
-                                    break;
-                                case XObjectChange.Value when xob is XAttribute xattr:
-                                    break;
-                            }
-                            switch (sender)
-                            {
-                                case XElement xel:
-                                    OnXElementChanged(xel, pxel ?? throw new NullReferenceException(), e);
-                                    break;
-                                case XAttribute xattr:
-                                    OnXAttributeChanged(xattr, pxel ?? throw new NullReferenceException(), e);
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException();
-                        }
-                    };
+                    Model.Changing += (sender, e) => OnXModelChange(new(sender, e.ObjectChange, XModelChangeState.Changing));
+                    Model.Changed += (sender, e) => OnXModelChange(new(sender, e.ObjectChange, XModelChangeState.Changed));
                 }
                 return _model;
             }
         }
+
+        protected virtual void OnXModelChange(XModelChangeEventArgs value)
+        {
+            throw new NotImplementedException();
+        }
+
         protected XElement? _model = null;
         protected virtual void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
