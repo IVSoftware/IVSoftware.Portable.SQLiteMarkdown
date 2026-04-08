@@ -47,10 +47,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             switch (e.ObjectChange)
                             {
                                 case XObjectChange.Remove:
-                                    _parentsOfRemoved[xob] = xob.Parent ?? throw new NullReferenceException();
                                     break;
                                 case XObjectChange.Value when xob is XAttribute xattr:
-                                    _oldValues[xattr] = bool.TryParse(xattr.Value, out var valid) ? valid : null;
                                     break;
                             }
                         }
@@ -69,8 +67,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             switch (e.ObjectChange)
                             {
                                 case XObjectChange.Remove:
-                                    pxel = _parentsOfRemoved[xob];
-                                    _parentsOfRemoved.Remove(xob);
+                                    pxel = XModelChangeEventArgs.ParentsOfRemoved[xob];
                                     break;
                                 case XObjectChange.Value when xob is XAttribute xattr:
                                     break;
@@ -358,9 +355,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         IReadOnlyDictionary<string, Enum>? _activeFilters = null;
         protected Dictionary<string, Enum> ActiveFiltersProtected { get; } = new();
-
-
-        Dictionary<XObject, XElement> _parentsOfRemoved = new();
-        Dictionary<XAttribute, bool?> _oldValues = new();
     }
 }
