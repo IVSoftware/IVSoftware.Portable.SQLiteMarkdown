@@ -99,7 +99,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             switch (std)
                             {
                                 case StdModelAttribute.model when xattr is XBoundAttribute xba && xba.Tag is T itemT:
-                                    OnXBoundItemObjectChange(xba: xba, e.ObjectChange);
+                                    OnXBoundAttributeChanged(xba: xba, e.ObjectChange);
                                     break;
                             }
                         }
@@ -114,7 +114,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Central model authority for IFTTT.
         /// </summary>
         /// <remarks>
-        /// - The itemT will not always be present, especially in bare metal testing.
+        /// - The itemT field is allowed to be null, especially in bare metal testing.
         /// - Its absence is considered normal, not even advisory.
         /// </remarks>
         protected override void OnXAttributeChanged(XAttribute xattr, XElement pxel, XObjectChangeEventArgs e)
@@ -140,11 +140,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                                 PredicateMatchSubsetProtected.Remove(itemT);
                                 break;
                             case XObjectChange.Value:
-                                Debug.Fail($@"ADVISORY 260330 - Proposed validation attribute for Histo should make this unreachable.");
                                 switch (value)
                                 {
-                                    // The value isn't null, but isn't parseable to bool either.
                                     case null:
+                                        // The value isn't null, but isn't parseable to bool either.
+                                        Debug.Fail($@"ADVISORY 260330 - Proposed validation attribute for Histo should make this unreachable.");
                                         /* G T K - N O O P */
                                         break;
                                     case true:
@@ -166,7 +166,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         const bool SQLITE_STRICT = false;
 #endif
         [Canonical("The globally unique authority for binding items and their INPC events.")]
-        protected override void OnXBoundItemObjectChange(XBoundAttribute xba, XObjectChange action)
+        protected override void OnXBoundAttributeChanged(XBoundAttribute xba, XObjectChange action)
         {
             var itemT = (T)xba.Tag;
             switch (action)

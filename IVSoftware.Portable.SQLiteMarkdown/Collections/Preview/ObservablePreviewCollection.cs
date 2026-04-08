@@ -104,32 +104,42 @@ namespace IVSoftware.Portable.Collections.Preview
         }
         protected virtual void OnCollectionChanging(NotifyCollectionChangingEventArgs e)
         {
-            switch (DHostModelEpoch.Authority)
+            if (Authority == ModelDataExchangeAuthority.Collection)
+            {   /* G T K */
+                // We'd rather avoid reentry but for sure we can't allow it to proceed if it happens.
+            }
+            else
             {
-                case ModelDataExchangeAuthority.Collection:
-                case ModelDataExchangeAuthority.Model:
-                    CollectionChanging?.Invoke(this, e);
-                    break;
-                case ModelDataExchangeAuthority.CollectionDeferred:
-                case ModelDataExchangeAuthority.ModelDeferred:
-                    switch (CollectionChangingEventingOption)
+                using (RequestModelEpochAuthority(ModelDataExchangeAuthority.Collection, this))
+                {
+                    switch (DHostModelEpoch.Authority)
                     {
-                        case CollectionChangingEventingOption.Discrete:
+                        case ModelDataExchangeAuthority.Collection:
+                        case ModelDataExchangeAuthority.Model:
                             CollectionChanging?.Invoke(this, e);
                             break;
-                        case CollectionChangingEventingOption.Deferred:
-                            if (DHostModelEpoch.IsDisposing)
+                        case ModelDataExchangeAuthority.CollectionDeferred:
+                        case ModelDataExchangeAuthority.ModelDeferred:
+                            switch (CollectionChangingEventingOption)
                             {
-                                CollectionChanging?.Invoke(this, e);
+                                case CollectionChangingEventingOption.Discrete:
+                                    CollectionChanging?.Invoke(this, e);
+                                    break;
+                                case CollectionChangingEventingOption.Deferred:
+                                    if (DHostModelEpoch.IsDisposing)
+                                    {
+                                        CollectionChanging?.Invoke(this, e);
+                                    }
+                                    break;
+                                default:
+                                    break;
                             }
                             break;
                         default:
+                            this.ThrowFramework<NotSupportedException>($"The {DHostModelEpoch.Authority.ToFullKey()} case is not supported.");
                             break;
                     }
-                    break;
-                default:
-                    this.ThrowFramework<NotSupportedException>($"The {DHostModelEpoch.Authority.ToFullKey()} case is not supported.");
-                    break;
+                }
             }
         }
         public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;

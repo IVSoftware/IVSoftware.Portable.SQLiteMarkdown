@@ -79,7 +79,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         const bool SQLITE_STRICT = false;
 #endif
         [Canonical("The globally unique authority for binding items and their INPC events.")]
-        protected virtual void OnXBoundItemObjectChange(XBoundAttribute xba, XObjectChange action) { }
+        protected virtual void OnXBoundAttributeChanged(XBoundAttribute xba, XObjectChange action) { }
 
         /// <summary>
         /// Semantic clarity for Interval, which comes from inheriting WatchDogTimer.
