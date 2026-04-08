@@ -70,6 +70,9 @@ public class TestClass_260328_Model
             actual = histo.ToString(HistogrammerFormat.Default);
             actual.ToClipboardExpected();
             { }
+            var pathological  = @" 
+[model:0 match:1 qmatch:1 pmatch:0]"
+            ;
             expected = @" 
 [model:0 match:0 qmatch:0 pmatch:0]"
             ;

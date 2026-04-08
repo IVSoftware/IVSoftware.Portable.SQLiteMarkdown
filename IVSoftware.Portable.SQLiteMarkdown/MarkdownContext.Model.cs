@@ -1,21 +1,14 @@
 ﻿using IVSoftware.Portable.Common.Collections;
 using IVSoftware.Portable.Common.Collections.Internal;
-using IVSoftware.Portable.Collections.Preview;
-using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.SQLiteMarkdown.Common;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Xml;
-using System.Xml.Linq;
-using System.Xml.Schema;
 using System.Diagnostics;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -46,8 +39,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         .WithBoundAttributeValue(Histo, StdModelAttribute.histo, "[Histo]")
                         .WithBoundAttributeValue(ActiveFilters, StdModelAttribute.filters, "[No Active Filters]");
 
-                    _model.Changing += (sender, e) =>
+                    _model.Changing += (sender, eBCL) =>
                     {
+                        XModelChangeEventArgs e = new XModelChangeEventArgs(sender, eBCL.ObjectChange);
                         if (sender is XObject xob)
                         {
                             switch (e.ObjectChange)
@@ -66,8 +60,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         }
                     };
 
-                    _model.Changed += (sender, e) =>
+                    _model.Changed += (sender, eBCL) =>
                     {
+                        XModelChangeEventArgs e = new XModelChangeEventArgs(sender, eBCL.ObjectChange);
                         if (sender is XObject xob)
                         {
                             XElement? pxel = xob.Parent;
