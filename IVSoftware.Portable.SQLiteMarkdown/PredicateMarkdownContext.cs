@@ -142,6 +142,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
+        public IReadOnlyDictionary<string, Enum> ActiveFilters => throw new NotImplementedException();
+
         private DisposableHost? _dhostAtomic = null;
 
         public void ClearFilters(bool clearInputText = true)

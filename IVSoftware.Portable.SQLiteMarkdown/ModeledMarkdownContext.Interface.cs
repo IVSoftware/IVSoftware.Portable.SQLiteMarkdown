@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Xml.Linq.Collections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -231,6 +232,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 CanonicalSupersetProtected.Remove(valueT);
             }
         }
+
+        internal string ToString(FormattingEH formatting) =>
+            CanonicalSupersetProtected.ToString(formatting);
     }
 
     partial class ModeledMarkdownContext<T> : IList<T>

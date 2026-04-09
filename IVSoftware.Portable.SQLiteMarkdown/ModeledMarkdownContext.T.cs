@@ -47,6 +47,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
+#if false
         protected override void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
         {
             // Update histogram first.
@@ -154,6 +155,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
+
+#endif
+
+
 #if DEBUG
         const bool SQLITE_STRICT = true;
 #else
@@ -286,7 +291,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     case FilteringState.Armed:
                         return true;
                     case FilteringState.Active:
-                        if (0 == Histo[StdModelAttribute.match])
+                        if (0 == CanonicalSupersetProtected.Histo[StdModelAttribute.match])
                         {
                             // The collection is eligible for filtering (has at least two items).
                             // All items have been filtered out.
@@ -301,7 +306,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-
         bool _routeToFullRecordset = true;
 
         SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
@@ -1027,9 +1031,9 @@ SELECT * FROM items WHERE
 
         void AddItemToModel(object? item)
         {            
-            if (item.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
+            if (item?.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
             {
-                int indexForAdd = Histo[StdModelAttribute.model];
+                int indexForAdd = CanonicalSupersetProtected.Histo[StdModelAttribute.model];
 
                 var placerResult = Model.Place(full, out var xel);
                 switch (placerResult)
@@ -1220,6 +1224,8 @@ SELECT * FROM items WHERE
         IList ITopology.CanonicalSuperset => (IList)CanonicalSuperset;
 
         public XElement Model => CanonicalSupersetProtected.Model;
+
+
 
         public ObservableModeledCollection<T> CanonicalSupersetProtected
         {
