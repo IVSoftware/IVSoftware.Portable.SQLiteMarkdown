@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.Collections.Internal;
+using IVSoftware.Portable.Xml.Linq.Collections.Events;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
 {

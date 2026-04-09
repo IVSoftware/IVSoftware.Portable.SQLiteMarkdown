@@ -3,6 +3,7 @@ using IVSoftware.Portable.SQLiteMarkdown;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.StateRunner.Preview;
 using IVSoftware.Portable.Xml.Linq.Collections;
+using IVSoftware.Portable.Xml.Linq.Collections.Events;
 using System;
 using System.Collections;
 using System.Collections.Generic;

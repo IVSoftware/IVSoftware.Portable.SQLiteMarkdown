@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Ephemeral = SQLite.IgnoreAttribute;
 using IVSoftware.Portable.Xml.Linq.Collections;
+using IVSoftware.Portable.Xml.Linq.Collections.Events;
 
 [assembly: InternalsVisibleTo("IVSoftware.Portable.Collections, PublicKey=0024000004800000940000000602000000240000525341310004000001000100695db9bd80b2ad68555b025183f517a808771ddbb0d7c730a5187aa8ef76f2152d6d0449bfda81b600a18686208d7ec04a60d7356ec4d119cce75d8cc9fe5ecc580bfaa5a2bdc96a1143ef494e07cb5dbb778422df151adf79d6ce157f25152fa9c304fe11ad3e193d056456b5f818ee61150bc8745e68890194f8c24353a697")]
 

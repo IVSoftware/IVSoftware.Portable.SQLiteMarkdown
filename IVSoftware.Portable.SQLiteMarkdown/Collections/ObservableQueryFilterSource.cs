@@ -17,6 +17,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using IVSoftware.Portable.Common.Collections;
 using IVSoftware.Portable.Xml.Linq.Collections;
+using IVSoftware.Portable.Xml.Linq.Collections.Events;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {

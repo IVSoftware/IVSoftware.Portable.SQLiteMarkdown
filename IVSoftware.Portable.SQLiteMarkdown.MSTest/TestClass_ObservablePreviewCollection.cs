@@ -11,6 +11,7 @@ using System.Threading.Channels;
 using System.Xml.Linq;
 using IVSoftware.Portable.Common.Collections;
 using IVSoftware.Portable.Xml.Linq.Collections;
+using IVSoftware.Portable.Xml.Linq.Collections.Events;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
