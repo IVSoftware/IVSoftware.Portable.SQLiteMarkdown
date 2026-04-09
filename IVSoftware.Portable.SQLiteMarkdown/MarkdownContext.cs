@@ -8,6 +8,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;

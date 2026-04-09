@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Collections;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.Xml.Linq.Collections;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

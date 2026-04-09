@@ -51,5 +51,8 @@
   <ItemGroup>
     <Folder Include="Feedback\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.csproj" />
+  </ItemGroup>
 
 </Project>

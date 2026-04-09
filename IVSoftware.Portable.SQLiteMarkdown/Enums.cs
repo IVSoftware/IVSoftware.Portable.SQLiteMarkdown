@@ -1,12 +1,7 @@
-﻿using IVSoftware.Portable.Common.Collections.Internal;
-using IVSoftware.Portable.Collections.Preview;
-using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
+﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.StateRunner.Preview;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {

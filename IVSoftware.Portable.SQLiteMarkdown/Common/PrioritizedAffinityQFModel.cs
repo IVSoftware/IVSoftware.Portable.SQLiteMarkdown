@@ -1,8 +1,7 @@
-﻿using IVSoftware.Portable.Common.Collections;
-using IVSoftware.Portable.Common.Collections.Internal;
-using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
+﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.Collections;
+using IVSoftware.Portable.Xml.Linq.Collections.Internal;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
 using SQLite;
@@ -10,9 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Xml.Linq;
-using System.Xml.Schema;
 using EphemeralAttribute = SQLite.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common

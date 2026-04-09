@@ -1,19 +1,12 @@
-﻿using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.SQLiteMarkdown.Collections;
-using IVSoftware.Portable.Collections.Preview;
+﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml.Linq;
-using IVSoftware.Portable.Common.Collections;
-using IVSoftware.Portable.Common.Collections.Internal;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {

@@ -1,15 +1,11 @@
-﻿using IVSoftware.Portable.Common.Collections;
-using IVSoftware.Portable.Collections.Modeled;
-using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.SQLiteMarkdown;
-using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
+﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq.Collections;
+using IVSoftware.Portable.Xml.Linq.Collections.Internal;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
-using IVSoftware.Portable.Common.Collections.Internal;
 
 namespace IVSoftware.Portable.Collections.Preview
 {

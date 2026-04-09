@@ -4,6 +4,7 @@ using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
@@ -463,7 +464,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     $"Expecting model shows {COUNT} item."
                 );
 
-                actual = histo.ToString(HistogrammerFormat.Default);
+                actual = histo.ToString(FormattingEH.Default);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 

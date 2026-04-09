@@ -1,6 +1,6 @@
-﻿using IVSoftware.Portable.Common.Collections.Internal;
-using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
+﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq.Collections;
+using IVSoftware.Portable.Xml.Linq.Collections.Internal;
 using System;
 using System.Linq;
 

@@ -1,8 +1,8 @@
 using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.Common.Collections;
-using IVSoftware.Portable.Common.Collections.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.Collections;
+using IVSoftware.Portable.Xml.Linq.Collections.Internal;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.Xml.Linq;
@@ -33,7 +33,7 @@ public class TestClass_260328_Model
             // Add
             model.SetStdModelAttributeValue(StdModelAttribute.qmatch, true);
 
-            actual = histo.ToString(HistogrammerFormat.Default);
+            actual = histo.ToString(FormattingEH.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -52,7 +52,7 @@ public class TestClass_260328_Model
             model.SetStdModelAttributeValue(StdModelAttribute.qmatch, true);
             Assert.AreEqual(changeCountB4, changeCount);
 
-            actual = histo.ToString(HistogrammerFormat.Default);
+            actual = histo.ToString(FormattingEH.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -67,7 +67,7 @@ public class TestClass_260328_Model
 
             // Remove
             model.RemoveDescendantAttributes(StdModelAttribute.qmatch, includeSelf: true);
-            actual = histo.ToString(HistogrammerFormat.Default);
+            actual = histo.ToString(FormattingEH.Default);
             actual.ToClipboardExpected();
             { }
             var pathological  = @" 
@@ -92,7 +92,7 @@ public class TestClass_260328_Model
             // Add
             xel.SetStdModelAttributeValue(StdModelAttribute.qmatch, true);
 
-            actual = histo.ToString(HistogrammerFormat.Default);
+            actual = histo.ToString(FormattingEH.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -127,7 +127,7 @@ public class TestClass_260328_Model
             Assert.AreEqual(changeCountB4, changeCount);
 
 
-            actual = histo.ToString(HistogrammerFormat.Default);
+            actual = histo.ToString(FormattingEH.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -156,7 +156,7 @@ public class TestClass_260328_Model
 
             // Remove from Model
             model.RemoveDescendantAttributes(StdModelAttribute.qmatch);
-            actual = histo.ToString(HistogrammerFormat.Default);
+            actual = histo.ToString(FormattingEH.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -194,7 +194,7 @@ public class TestClass_260328_Model
             // Add offline - before this node is parented.
             model.Add(xel);
 
-            actual = histo.ToString(HistogrammerFormat.Default);
+            actual = histo.ToString(FormattingEH.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -209,7 +209,7 @@ public class TestClass_260328_Model
 
             // Remove
             xel.Remove();
-            actual = histo.ToString(HistogrammerFormat.Default);
+            actual = histo.ToString(FormattingEH.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -225,7 +225,7 @@ public class TestClass_260328_Model
             // Add it back in again
             model.Add(xel);
 
-            actual = histo.ToString(HistogrammerFormat.Default);
+            actual = histo.ToString(FormattingEH.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -240,7 +240,7 @@ public class TestClass_260328_Model
 
             xel.SetStdModelAttributeValue(StdModelAttribute.qmatch, false);
 
-            actual = histo.ToString(HistogrammerFormat.Default);
+            actual = histo.ToString(FormattingEH.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -271,7 +271,7 @@ public class TestClass_260328_Model
 
             model.Add(xel);
 
-            actual = histo.ToString(HistogrammerFormat.Default);
+            actual = histo.ToString(FormattingEH.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -321,7 +321,7 @@ public class TestClass_260328_Model
         #region S U B T E S T S
         void subtest_ToStringHistoDefault()
         {
-            actual = mmdc.ToString(HistogrammerFormat.Default);
+            actual = mmdc.ToString(FormattingEH.Default);
             actual.ToClipboardExpected();
             { }
             expected = @" 

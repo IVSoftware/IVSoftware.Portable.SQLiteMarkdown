@@ -15,6 +15,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Xml.Linq;
 using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
+using IVSoftware.Portable.Xml.Linq.Collections;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 

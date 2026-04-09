@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System;
 using System.Collections;

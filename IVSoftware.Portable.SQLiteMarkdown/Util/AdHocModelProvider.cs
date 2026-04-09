@@ -1,5 +1,7 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Collections.Preview;
+﻿using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq.Collections;
+using IVSoftware.Portable.Xml.Linq.Collections.Internal;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using System;
@@ -7,10 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 using System.Xml.Linq;
-using IVSoftware.Portable.Common.Collections;
-using IVSoftware.Portable.Common.Collections.Internal;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {

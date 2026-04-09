@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.Collections;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {

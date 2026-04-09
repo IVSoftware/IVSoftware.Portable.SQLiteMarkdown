@@ -1,6 +1,6 @@
-﻿using IVSoftware.Portable.Common.Collections;
-using IVSoftware.Portable.Common.Collections.Internal;
-using IVSoftware.Portable.Xml.Linq;
+﻿using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.Collections;
+using IVSoftware.Portable.Xml.Linq.Collections.Internal;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
@@ -39,8 +39,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         .WithBoundAttributeValue(Histo, StdModelAttribute.histo, "[Histo]")
                         .WithBoundAttributeValue(ActiveFilters, StdModelAttribute.filters, "[No Active Filters]");
 
-                    Model.Changing += (sender, e) => OnXModelChange(new(sender, e.ObjectChange, XModelChangeState.Changing));
-                    Model.Changed += (sender, e) => OnXModelChange(new(sender, e.ObjectChange, XModelChangeState.Changed));
+                    Model.Changing += (sender, e) => OnXModelChange(new(sender, e.ObjectChange, changing: true));
+                    Model.Changed += (sender, e) => OnXModelChange(new(sender, e.ObjectChange, changing: false));
                 }
                 return _model;
             }
@@ -228,7 +228,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         protected EnumHistogrammer<StdModelAttribute> Histo { get; } = new(ZeroCountOption.Remove);
-        public string ToString(HistogrammerFormat formatting) => Histo.ToString(formatting);
+        public string ToString(FormattingEH formatting) => Histo.ToString(formatting);
         public string ToString(ModelPreviewDelegate preview, bool keepPreviews = false)
         {
             foreach (var xel in Model.Descendants())

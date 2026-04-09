@@ -14,6 +14,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using System.Diagnostics;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Collections;
+using IVSoftware.Portable.Xml.Linq.Collections;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 

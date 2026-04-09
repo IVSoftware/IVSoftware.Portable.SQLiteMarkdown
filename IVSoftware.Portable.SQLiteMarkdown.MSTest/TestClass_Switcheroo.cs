@@ -19,6 +19,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
+using IVSoftware.Portable.Xml.Linq.Collections;
 
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest

@@ -3,6 +3,7 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.Threading;
+using IVSoftware.Portable.Xml.Linq.Collections;
 using SQLite;
 using System;
 using System.ComponentModel;

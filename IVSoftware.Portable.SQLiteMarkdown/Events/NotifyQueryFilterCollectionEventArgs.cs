@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using IVSoftware.Portable.Common.Collections;
+using IVSoftware.Portable.Xml.Linq.Collections;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Events
 {
