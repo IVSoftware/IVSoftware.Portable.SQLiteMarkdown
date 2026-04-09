@@ -47,7 +47,7 @@ public class TestClass_260328_Model
 
             // CONFIRMED:
             // - Setting to same value *does* raise raw XObject.Change events.
-            // - However these are intercepted prior to OnXAttributeChanged.
+            // - However, edge semantics are now pristine for idempotent cases.
             changeCountB4 = changeCount;
             model.SetStdModelAttributeValue(StdModelAttribute.qmatch, true);
             Assert.AreEqual(changeCountB4, changeCount);
@@ -70,9 +70,6 @@ public class TestClass_260328_Model
             actual = histo.ToString(FormattingEH.Default);
             actual.ToClipboardExpected();
             { }
-            var pathological  = @" 
-[model:0 match:1 qmatch:1 pmatch:0]"
-            ;
             expected = @" 
 [model:0 match:0 qmatch:0 pmatch:0]"
             ;
