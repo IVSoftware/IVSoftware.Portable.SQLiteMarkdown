@@ -233,6 +233,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
+        /// <summary>
+        /// String formatter for the Model (an XElement).
+        /// </summary>
+        internal string ToString(FormattingOMC formatting) =>
+            CanonicalSupersetProtected.ToString(formatting);
+
+        /// <summary>
+        /// String formatter for the EnumHistogrammer
+        /// </summary>
         internal string ToString(FormattingEH formatting) =>
             CanonicalSupersetProtected.ToString(formatting);
     }

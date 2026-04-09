@@ -1,30 +1,5 @@
-﻿using IVSoftware.Portable.Xml.Linq;
-using IVSoftware.Portable.Xml.Linq.Collections;
-using IVSoftware.Portable.Xml.Linq.Collections.Internal;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Xml.Linq;
-
-namespace IVSoftware.Portable.SQLiteMarkdown
+﻿namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public enum ReportFormat
-    {
-        StateReport,
-
-        /// <summary>
-        /// For objects with a native Model property, or that have 
-        /// an implicit cast to XElement, return model.ToString().
-        /// </summary>
-        ModelWithPreview,
-
-        //OptionsReport,
-        //SettingsReport,
-    }
     partial class MarkdownContext
     {
 #if false

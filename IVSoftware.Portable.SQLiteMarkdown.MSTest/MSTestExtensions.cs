@@ -173,6 +173,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 _ => throw new InvalidOperationException("Multiple items in queue."),
             };
 
+      
+
         public static string StateReport(this MarkdownContext @this)
         {
             var builder = new List<string>();

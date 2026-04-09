@@ -950,7 +950,7 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEve
                 "Expecting model has emitted discrete events."
             );
 
-            actual = onp.ToString(ReportFormat.StateReport);
+            actual = onp.ToString(FormattingOMC.StateReport);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -1002,7 +1002,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
                 "Expecting model has emitted discrete events."
             );
 
-            actual = onp.ToString(ReportFormat.StateReport);
+            actual = onp.ToString(FormattingOMC.StateReport);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -1026,8 +1026,6 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             MMDC.SetObservableNetProjection(this);
         }
         private MMDC MMDC { get; }
-        public XElement Model => MMDC.Model;
-        public string ToString(ReportFormat formatting) => MMDC.ToString(formatting);
     }
 
     /// <summary>

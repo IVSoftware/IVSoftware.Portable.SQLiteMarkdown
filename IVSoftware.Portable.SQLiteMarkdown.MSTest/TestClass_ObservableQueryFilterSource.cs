@@ -3527,7 +3527,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                     "Expecting result to match."
                 );
 
-                actual = items.ToString(ReportFormat.ModelWithPreview);
+                actual = items.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -3668,7 +3668,7 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 ;
 
 
-                actual = items.ToString(ReportFormat.ModelWithPreview);
+                actual = items.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -3694,7 +3694,7 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                     "Expecting ONE MATCH that is NOT THE FIRST ITEM."
                 );
 
-                actual = items.ToString(ReportFormat.StateReport);
+                actual = items.ToString(FormattingOMC.StateReport);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
