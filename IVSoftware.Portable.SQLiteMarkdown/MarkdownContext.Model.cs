@@ -27,6 +27,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
     partial class MarkdownContext
     {
+#if false
         public virtual XElement Model
         {
             get
@@ -315,5 +316,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         IReadOnlyDictionary<string, Enum>? _activeFilters = null;
         protected Dictionary<string, Enum> ActiveFiltersProtected { get; } = new();
+#endif
     }
 }
+

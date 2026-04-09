@@ -1,8 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.Common.Collections;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
@@ -10,21 +8,17 @@ using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
-using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;
 using SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -1627,9 +1621,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if (all)
             {
-                // - Model does not answer to authority 
-                // ∴ Database will update.
-                Model.RemoveNodes();
                 InputText = string.Empty;
                 FilteringState = FilteringState.Ineligible;
                 SearchEntryState = SearchEntryState.Cleared;

@@ -104,8 +104,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         TableMapping _contractTypeTableMapping = default;
 #endif
 
-
-
         [Obsolete("Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount.")]
         [PublishedContract("1.0")] // Required for backward compatibility. Do not remove this property.
         public int UnfilteredCount
@@ -114,9 +112,35 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             protected set => this.ThrowHard<InvalidOperationException>(
                 @"[Obsolete(""Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount."")]");
         }
-        public virtual int CanonicalCount => Histo[StdModelAttribute.model];
 
-        public virtual int PredicateMatchCount => Histo[StdModelAttribute.match];
+        #region D U E    T O    L E G A C Y
+        /// <summary>
+        /// We wish these weren't here in the superclass, but they already are.
+        /// That said, it would be cool if they were abstract, but they're not.
+        /// </summary>
+        /// <remarks>
+        /// Bottom line, we'll make consumer aware and let them handle the Throw if they don't care about it.
+        /// </remarks>
+        public virtual int CanonicalCount 
+        {
+            get
+            {
+                this.ThrowHard<ModelException>(
+    $"{nameof(CanonicalCount)} requires override in derived type.");
+                return 0;
+            }
+        }
+
+        public virtual int PredicateMatchCount
+        {
+            get
+            {
+                this.ThrowHard<ModelException>(
+    $"{nameof(PredicateMatchCount)} requires override in derived type.");
+                return 0;
+            }
+        }
+        #endregion D U E    T O    L E G A C Y
 
         /// <summary>
         /// Responsible for raising the InputTextSettled event.

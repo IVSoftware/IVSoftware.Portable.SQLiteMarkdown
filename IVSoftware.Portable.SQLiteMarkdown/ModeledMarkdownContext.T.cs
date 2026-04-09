@@ -872,6 +872,9 @@ SELECT * FROM items WHERE
                     {
                         default:
                         case CollectionChangeAuthority.Reset:
+                            // - Model does not answer to authority 
+                            // ∴ Database will update.
+                            Model.RemoveNodes();
                             // Call the base *with* reset authority.
                             base.OnClear(all);
                             CanonicalSupersetProtected.Clear();
@@ -1216,7 +1219,9 @@ SELECT * FROM items WHERE
         public IReadOnlyList<T> CanonicalSuperset => CanonicalSupersetProtected;
         IList ITopology.CanonicalSuperset => (IList)CanonicalSuperset;
 
-        public ObservableCollection<T> CanonicalSupersetProtected
+        public XElement Model => CanonicalSupersetProtected.Model;
+
+        public ObservableModeledCollection<T> CanonicalSupersetProtected
         {
             get => _canonicalSupersetProtected;
             set
@@ -1247,7 +1252,7 @@ SELECT * FROM items WHERE
                 }
             }
         }
-        ObservableCollection<T> _canonicalSupersetProtected = null!;    // Initialized in CTor.
+        ObservableModeledCollection<T> _canonicalSupersetProtected = null!;    // Initialized in CTor.
 
         /// <summary>
         /// Provides a typed, read-only view of the predicate-match subset.
