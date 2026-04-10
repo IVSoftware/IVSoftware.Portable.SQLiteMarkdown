@@ -200,7 +200,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             {
                 if (!Equals(Preview, value))
                 {
-                    Model.SetStdModelAttributeValue(
+                    Model.SetStdAttributeValue(
                         StdModelAttribute.preview,
                         value,
                         padToMaxLength: true,
@@ -224,7 +224,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             {
                 if (!Equals(PriorityOverride, value))
                 {
-                    Model.SetStdModelAttributeValue(StdModelAttribute.order, value);
+                    Model.SetStdAttributeValue(StdModelAttribute.order, value);
                     OnPropertyChanged();
                 }
             }

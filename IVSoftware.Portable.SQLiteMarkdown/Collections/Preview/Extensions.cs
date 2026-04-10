@@ -250,7 +250,7 @@ namespace IVSoftware.Portable.Collections.Preview
             model = new XElement(nameof(StdModelElement.model));
             if(mpath is not null)
             {
-                model.SetStdModelAttributeValue(StdModelAttribute.mpath, mpath);
+                model.SetStdAttributeValue(StdModelAttribute.mpath, mpath);
             }
 #if DEBUG
             var count = @this.Count;
@@ -278,7 +278,7 @@ namespace IVSoftware.Portable.Collections.Preview
                             xel.SetAttributeValue(nameof(StdModelAttribute.order), itemCount++);
                             if (previewDlgt?.Invoke(item) is string preview)
                             {
-                                xel.SetStdModelAttributeValue(StdModelAttribute.preview, preview);
+                                xel.SetStdAttributeValue(StdModelAttribute.preview, preview);
                             }
                             break;
                         default:

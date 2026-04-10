@@ -138,11 +138,11 @@
                     switch (e.ObjectChange)
                     {
                         case XObjectChange.Add:
-                            pxel.SetStdModelAttributeValue(StdModelAttribute.match, true);
+                            pxel.SetStdAttributeValue(StdModelAttribute.match, true);
                             break;
                         case XObjectChange.Remove:
                             // Match relies on the 'other'.
-                            pxel.SetStdModelAttributeValue(StdModelAttribute.match, qmatch);
+                            pxel.SetStdAttributeValue(StdModelAttribute.match, qmatch);
                             break;
                         case XObjectChange.Value:
                             if (pmatch == true)
@@ -161,11 +161,11 @@
                     switch (e.ObjectChange)
                     {
                         case XObjectChange.Add:
-                            pxel.SetStdModelAttributeValue(StdModelAttribute.match, true);
+                            pxel.SetStdAttributeValue(StdModelAttribute.match, true);
                             break;
                         case XObjectChange.Remove:
                             // Match relies on the 'other'.
-                            pxel.SetStdModelAttributeValue(StdModelAttribute.match, pmatch);
+                            pxel.SetStdAttributeValue(StdModelAttribute.match, pmatch);
                             break;
                         case XObjectChange.Value:
                             if (qmatch == true)
@@ -195,11 +195,11 @@
             //    : bool.TryParse(@this.Attribute(StdModelAttribute.pmatch)?.Value, out valid) ? valid : null;
             //if (qmatch == true || pmatch == true)
             //{
-            //    @this.SetStdModelAttributeValue(StdModelAttribute.match, bool.TrueString);
+            //    @this.SetStdAttributeValue(StdModelAttribute.match, bool.TrueString);
             //}
             //else
             //{
-            //    @this.SetStdModelAttributeValue(StdModelAttribute.match, null);
+            //    @this.SetStdAttributeValue(StdModelAttribute.match, null);
             //}
         }
 
@@ -211,7 +211,7 @@
             {
                 if(xel.Attribute(StdModelAttribute.model) is XBoundAttribute xba && xba.Tag is not null)
                 {
-                    xel.SetStdModelAttributeValue(StdModelAttribute.preview, preview(xba.Tag));
+                    xel.SetStdAttributeValue(StdModelAttribute.preview, preview(xba.Tag));
                 }
             }
             var @string = Model.ToString();
@@ -251,13 +251,13 @@
 
                         foreach (var xba in needPreview)
                         {
-                            xba.Parent.SetStdModelAttributeValue(StdModelAttribute.preview, dlgt(xba.Tag));
+                            xba.Parent.SetStdAttributeValue(StdModelAttribute.preview, dlgt(xba.Tag));
                         }
                         var report = Model.ToString();
 
                         foreach (var xba in needPreview)
                         {
-                            xba.Parent.SetStdModelAttributeValue(StdModelAttribute.preview, null);
+                            xba.Parent.SetStdAttributeValue(StdModelAttribute.preview, null);
                         }
                         return report;
                     }
