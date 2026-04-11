@@ -3,6 +3,7 @@ using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.StateRunner.Preview;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.Collections;
@@ -33,7 +34,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public ModeledMarkdownContext()
         {
             CanonicalSupersetProtected = new();
-            Model.AddFirst(new XBoundAttribute(nameof(StdModelAttribute.mdc), this, "[MDC]"));
+            Model.AddAttributeFirst(attr: new XBoundAttribute(nameof(StdModelAttribute.mdc), this, "[MDC]"));
+            Model.SetAttributeValue("filters", "[No Active Filters]");
 
             if (typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
             {

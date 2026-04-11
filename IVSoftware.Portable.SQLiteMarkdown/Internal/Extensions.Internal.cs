@@ -148,7 +148,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// - Attribute identity is determined by Name.LocalName.
         /// - Preserves relative order of remaining attributes.
         /// </remarks>
-        public static XElement AddFirst(this XElement @this, XAttribute attr)
+        public static XElement AddAttributeFirst(this XElement @this, XAttribute attr)
         {
             var attrsB4 = @this.Attributes().ToArray();
             @this.RemoveAttributes();

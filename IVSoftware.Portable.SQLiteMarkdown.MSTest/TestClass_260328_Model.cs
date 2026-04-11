@@ -104,11 +104,6 @@ public class TestClass_260328_Model
 
             actual = model.ToString();
             actual.ToClipboardExpected();
-            { }
-            expected = @" 
-<model histo=""[model:0 match:1 qmatch:1 pmatch:0]"">
-  <item qmatch=""True"" match=""true"" />
-</model>"
             ;
             expected = @" 
 <model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
