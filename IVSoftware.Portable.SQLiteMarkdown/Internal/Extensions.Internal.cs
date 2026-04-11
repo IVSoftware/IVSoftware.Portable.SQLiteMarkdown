@@ -37,7 +37,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// as an <see cref="XBoundAttribute"/>, behavior is governed by <paramref name="throw"/>.
         /// Advisory or unspecified returns <c>null</c>.
         /// </remarks>
-        internal static XBoundAttribute? XBoundAttribute(
+        public static XBoundAttribute? XBoundAttribute(
             this XElement @this,
             StdModelAttribute stdEnum,   // This type *only* by design. Do not generalize to Enum.
             ThrowOrAdvise? @throw = null)
@@ -83,7 +83,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// If the attribute is missing, not bound, or its <c>Tag</c> is not assignable to
         /// <typeparamref name="T"/>, the result is <c>default</c>.
         /// </remarks>
-        internal static T? XBoundAttributeValue<T>(
+        public static T? XBoundAttributeValue<T>(
             this XElement @this,
             StdModelAttribute stdEnum,   // This type *only* by design. Do not generalize to Enum.
             ThrowOrAdvise? @throw = null)
@@ -95,7 +95,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             return default;
         }
 
-        internal static string PadToMaxLength(
+        public static string PadToMaxLength(
             this string @string,
             out bool isMaxLengthExceeded,
             byte maxLength = byte.MaxValue,
@@ -113,14 +113,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             return @string;
         }
 
-        internal static string PadToMaxLength(
+        public static string PadToMaxLength(
             this string @string,
             byte maxLength = byte.MaxValue,
             bool padToMaxLength = false)
             => @string.PadToMaxLength(out _, maxLength, padToMaxLength);
 
         // Fluent event attacher. Internal only; goes in Collections, with Preview semantics.
-        internal static T WithCollectionChangeHandler<T>(this T @this, NotifyCollectionChangedEventHandler handler)
+        public static T WithCollectionChangeHandler<T>(this T @this, NotifyCollectionChangedEventHandler handler)
             where T : INotifyCollectionChanged
         {
             ((INotifyCollectionChanged)@this).CollectionChanged += handler;
@@ -139,140 +139,64 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             return @this;
         }
 
-#if false
         /// <summary>
-        /// Classifies the structural relationship between the canonical XML model and an incoming recordset.
+        /// Inserts the specified attribute at the first position.
         /// </summary>
         /// <remarks>
-        /// Determines the <see cref="ReplaceItemsEventingTriage"/> describing the transition
-        /// from the existing canonical state represented by <paramref name="model"/> to the
-        /// incoming sequence <paramref name="newItems"/>.
-        ///
-        /// The canonical state is considered empty when the model contains no child elements.
-        /// The incoming sequence is considered empty when it is null or contains no items.
-        ///
-        /// When evaluating non-<see cref="ICollection"/> sequences, only a minimal probe is
-        /// performed to determine emptiness.
+        /// - Existing attributes are removed and re-added to enforce ordering.
+        /// - Any prior attribute with the same local name is replaced.
+        /// - Attribute identity is determined by Name.LocalName.
+        /// - Preserves relative order of remaining attributes.
         /// </remarks>
-        static ReplaceItemsEventingTriage GetReplacementTriage(
-            IList oldItems,
-            IList newItems)
+        public static XElement AddFirst(this XElement @this, XAttribute attr)
         {
-            bool oldEmpty = oldItems.Count == 0;
-            bool newEmpty = newItems.Count == 0;
+            var attrsB4 = @this.Attributes().ToArray();
+            @this.RemoveAttributes();
 
-            return
-                oldEmpty && newEmpty
-                ? ReplaceItemsEventingTriage.AlwaysEmpty
-                : oldEmpty
-                    ? ReplaceItemsEventingTriage.EmptyBefore
-                    : newEmpty
-                        ? ReplaceItemsEventingTriage.EmptyAfter
-                        : ReplaceItemsEventingTriage.NeverEmpty;
+            @this.Add(attr);
+
+            foreach (var attrB4 in attrsB4.Where(_ => _.Name.LocalName != attr.Name.LocalName))
+            {
+                @this.Add(attrB4);
+            }
+            return @this;
         }
-        public static ReplaceItemsEventingContext GetReplacementTriageEvents(
-            this XElement model,
-            NotifyCollectionChangeReason reason,
-            IEnumerable? canon,
-            ReplaceItemsEventingOption options)
-        => new ReplaceItemsEventingContext(model, reason, canon, options);
 
         /// <summary>
-        /// Produces collection change events describing the replacement of the canonical item set.
+        /// Moves or inserts the specified attribute to a given index.
         /// </summary>
-        public class ReplaceItemsEventingContext
+        /// <remarks>
+        /// - Rebuilds the attribute list to enforce positional ordering.
+        /// - Any prior attribute with the same local name is replaced.
+        /// - Index is clamped to the valid attribute range.
+        /// - Attribute identity is determined by Name.LocalName.
+        /// - Preserves relative order of unaffected attributes.
+        /// </remarks>
+        public static XElement Move(this XElement @this, XAttribute attr, int index)
         {
-            public ReplaceItemsEventingContext(
-                XElement model,
-                NotifyCollectionChangeReason reason,
-                IEnumerable? canon,
-                ReplaceItemsEventingOption options)
+            var attrsB4 = @this.Attributes().ToList();
+
+            // Remove any existing attribute with same name
+            attrsB4.RemoveAll(_ => _.Name.LocalName == attr.Name.LocalName);
+
+            // Clamp index
+            if (index < 0) index = 0;
+            if (index > attrsB4.Count) index = attrsB4.Count;
+
+            // Insert at desired position
+            attrsB4.Insert(index, attr);
+
+            // Rebuild
+            @this.RemoveAttributes();
+            foreach (var a in attrsB4)
             {
-                Options = options;
-                IList
-                    oldItems = new List<object>(),
-                    newItems = canon?.Cast<object>().ToList() ?? [];
-                foreach (var xel in model.Descendants())
-                {
-                    if (xel.Attribute(nameof(StdMarkdownAttribute.model)) is XBoundAttribute xba
-                        && xba.Tag is { } item)
-                    {
-                        oldItems.Add(item);
-                    }
-                }
-                var triage = GetReplacementTriage(oldItems, newItems);
-                switch (triage)
-                {
-                    case ReplaceItemsEventingTriage.AlwaysEmpty:
-                        Structural = null;
-                        Reset = null;
-                        break;
-
-                    case ReplaceItemsEventingTriage.EmptyBefore:
-                        Structural = new ModelSettledEventArgs(
-                            NotifyCollectionChangedAction.Add,
-                            changedItems: newItems,
-                            reason);
-                        Reset = new ModelSettledEventArgs(
-                            NotifyCollectionChangedAction.Reset,
-                            reason);
-                        break;
-
-                    case ReplaceItemsEventingTriage.EmptyAfter:
-                        Structural = new ModelSettledEventArgs(
-                            NotifyCollectionChangedAction.Remove,
-                            changedItems: oldItems,
-                            reason);
-                        Reset = new ModelSettledEventArgs(
-                            NotifyCollectionChangedAction.Reset,
-                            reason);
-                        break;
-
-                    case ReplaceItemsEventingTriage.NeverEmpty:
-                        Structural = new ModelSettledEventArgs(
-                            NotifyCollectionChangedAction.Replace,
-                            newItems: newItems,
-                            oldItems: oldItems,
-                            reason);
-                        Reset = new ModelSettledEventArgs(
-                            NotifyCollectionChangedAction.Reset,
-                            reason);
-                        break;
-
-                    default:
-                        this.ThrowHard<NotSupportedException>($"The {triage.ToFullKey()} case is not supported.");
-                        break;
-                }
+                @this.Add(a);
             }
-            public ReplaceItemsEventingOption Options { get; }
-            public ModelSettledEventArgs? Structural
-            {
-                get => _structural;
-                private set
-                {
-                    if (Options.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
-                    {
-                        _structural = value;
-                    }
-                }
-            }
-            ModelSettledEventArgs? _structural = default;
 
-            public ModelSettledEventArgs? Reset
-            {
-                get => _reset;
-                private set
-                {
-                    if (Options.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
-                    {
-                        _reset = value;
-                    }
-                }
-            }
-            ModelSettledEventArgs? _reset = default;
+            return @this;
         }
 
-#endif
+
         #region A C T I O N    M A S K S
         [Obsolete("Action and Reason are entirely separate concerns in v2.0")]
         public static NotifyCollectionChangedAction ToNotifyCollectionChangedAction(this Enum @this)

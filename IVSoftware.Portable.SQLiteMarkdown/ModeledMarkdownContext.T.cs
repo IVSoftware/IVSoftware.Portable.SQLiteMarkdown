@@ -33,6 +33,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public ModeledMarkdownContext()
         {
             CanonicalSupersetProtected = new();
+            Model.AddFirst(new XBoundAttribute(nameof(StdModelAttribute.mdc), this, "[MDC]"));
 
             if (typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
             {
