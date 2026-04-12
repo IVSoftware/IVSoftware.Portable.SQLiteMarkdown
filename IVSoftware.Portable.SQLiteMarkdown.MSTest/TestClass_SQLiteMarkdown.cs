@@ -464,7 +464,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     $"Expecting model shows {COUNT} item."
                 );
 
-                actual = histo.ToString(FormattingEH.Default);
+                actual = histo.ToString(FormattingEH.Current);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
