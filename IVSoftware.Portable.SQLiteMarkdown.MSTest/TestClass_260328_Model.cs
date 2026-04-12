@@ -90,7 +90,7 @@ public class TestClass_260328_Model
             // Add
             xel.SetStdAttributeValue(StdModelAttribute.qmatch, true);
 
-            actual = histo.ToString(FormattingEH.Current);
+            actual = histo.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -125,7 +125,7 @@ public class TestClass_260328_Model
             Assert.AreEqual(changeCountB4, changeCount);
 
 
-            actual = histo.ToString(FormattingEH.Current);
+            actual = histo.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -154,7 +154,7 @@ public class TestClass_260328_Model
 
             // Remove from Model
             model.RemoveDescendantAttributes(StdModelAttribute.qmatch);
-            actual = histo.ToString(FormattingEH.Current);
+            actual = histo.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -192,7 +192,7 @@ public class TestClass_260328_Model
             // Add offline - before this node is parented.
             model.Add(xel);
 
-            actual = histo.ToString(FormattingEH.Current);
+            actual = histo.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -207,7 +207,7 @@ public class TestClass_260328_Model
 
             // Remove
             xel.Remove();
-            actual = histo.ToString(FormattingEH.Current);
+            actual = histo.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -223,7 +223,7 @@ public class TestClass_260328_Model
             // Add it back in again
             model.Add(xel);
 
-            actual = histo.ToString(FormattingEH.Current);
+            actual = histo.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -238,7 +238,7 @@ public class TestClass_260328_Model
 
             xel.SetStdAttributeValue(StdModelAttribute.qmatch, false);
 
-            actual = histo.ToString(FormattingEH.Current);
+            actual = histo.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -269,7 +269,7 @@ public class TestClass_260328_Model
 
             model.Add(xel);
 
-            actual = histo.ToString(FormattingEH.Current);
+            actual = histo.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
