@@ -242,7 +242,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// String formatter for the EnumHistogrammer
         /// </summary>
-        internal string ToString(FormattingEH formatting) =>
+        internal string ToString(FormattingEHM formatting) =>
             CanonicalSupersetProtected.ToString(formatting);
     }
 

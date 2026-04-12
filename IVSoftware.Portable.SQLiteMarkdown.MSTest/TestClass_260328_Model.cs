@@ -22,6 +22,7 @@ public class TestClass_260328_Model
         var mdc = new ModeledMarkdownContext<SelectableQFModel>();
         var model = mdc.Model;
         var histo = model.To<EnumHistogrammer<StdModelAttribute>>();
+        histo.AllowRootChanges = true;
 
         subtest_TrackLateral();
         subtest_TrackCurrentChild();
@@ -33,9 +34,12 @@ public class TestClass_260328_Model
             // Add
             model.SetStdAttributeValue(StdModelAttribute.qmatch, true);
 
-            actual = histo.ToString(FormattingEH.Current);
+            actual = histo.ToString();
             actual.ToClipboardExpected();
             { }
+            expected = @" 
+[model:0 match:1 qmatch:1 pmatch:0 live:0]"
+            ;
             expected = @" 
 [model:0 match:1 qmatch:1 pmatch:0]"
             ;
@@ -318,7 +322,7 @@ public class TestClass_260328_Model
         #region S U B T E S T S
         void subtest_ToStringHistoDefault()
         {
-            actual = mmdc.ToString(FormattingEH.Current);
+            actual = mmdc.ToString(FormattingEHM.Matches);
             actual.ToClipboardExpected();
             { }
             expected = @" 
