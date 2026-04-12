@@ -151,7 +151,7 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MDC]"" histo=""[model:10 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
+<model mdc=""[MDC]"" histo=""[model:10 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" />
   <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" />
@@ -197,7 +197,7 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MDC]"" histo=""[model:10 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
+<model mdc=""[MDC]"" histo=""[model:10 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" />
   <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" />
@@ -408,7 +408,7 @@ Other.Digest     NewItems=37 OldItems= 0 NewStartingIndex= 0 NotifyCollectionCha
         actual.ToClipboardExpected();
         { }
         expected = @" 
-<model mdc=""[MDC]"" histo=""[model:37 match:3 qmatch:3 pmatch:0]"" filters=""[No Active Filters]"">
+<model mdc=""[MDC]"" histo=""[model:37 match:3 qmatch:3 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[TemporalAffinityQFModel]"" preview=""Brown Dog "" order=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[TemporalAffinityQFModel]"" preview=""Green Appl"" order=""1"" qmatch=""True"" match=""True"" />
   <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[TemporalAffinityQFModel]"" preview=""Yellow Ban"" order=""2"" />

@@ -3240,7 +3240,7 @@ NetProjection.Add     NewItems=12 NewStartingIndex= 0 NotifyCollectionChangedEve
                 { }
                 // [Careful("What?")] No 'preview' attribute? THAT'S BECAUSE THIS IS SelectableQFModel and *not* IAffinityModel.
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:12 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
+<model mdc=""[MDC]"" histo=""[model:12 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" />
   <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" />
@@ -3482,7 +3482,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:12 match:9 qmatch:9 pmatch:0]"" filters=""[No Active Filters]"">
+<model mdc=""[MDC]"" histo=""[model:12 match:9 qmatch:9 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" qmatch=""True"" match=""True"" />
   <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" qmatch=""True"" match=""True"" />
   <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" qmatch=""True"" match=""True"" />
@@ -3531,7 +3531,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
+<model mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" qmatch=""True"" match=""True"" preview=""Black Cat "" />
   <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" preview=""Orange Fox"" />
   <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""White Rabb"" />
@@ -3672,7 +3672,7 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
+<model mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
   <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" preview=""Orange Fox"" />
   <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""White Rabb"" />

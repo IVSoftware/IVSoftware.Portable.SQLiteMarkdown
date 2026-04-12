@@ -40,9 +40,6 @@ public class TestClass_260328_Model
             expected = @" 
 [model:0 match:1 qmatch:1 pmatch:0 live:0]"
             ;
-            expected = @" 
-[model:0 match:1 qmatch:1 pmatch:0]"
-            ;
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
@@ -56,11 +53,11 @@ public class TestClass_260328_Model
             model.SetStdAttributeValue(StdModelAttribute.qmatch, true);
             Assert.AreEqual(changeCountB4, changeCount);
 
-            actual = histo.ToString(FormattingEH.Current);
+            actual = histo.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[model:0 match:1 qmatch:1 pmatch:0]"
+[model:0 match:1 qmatch:1 pmatch:0 live:0]"
             ;
 
             Assert.AreEqual(
@@ -71,11 +68,11 @@ public class TestClass_260328_Model
 
             // Remove
             model.RemoveDescendantAttributes(StdModelAttribute.qmatch, includeSelf: true);
-            actual = histo.ToString(FormattingEH.Current);
+            actual = histo.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[model:0 match:0 qmatch:0 pmatch:0]"
+[model:0 match:0 qmatch:0 pmatch:0 live:0]"
             ;
 
             Assert.AreEqual(
@@ -97,7 +94,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[model:0 match:1 qmatch:1 pmatch:0]"
+[model:0 match:1 qmatch:1 pmatch:0 live:0]"
             ;
 
             Assert.AreEqual(
@@ -110,7 +107,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             ;
             expected = @" 
-<model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
+<model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item qmatch=""True"" match=""True"" />
 </model>";
 
@@ -132,7 +129,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[model:0 match:1 qmatch:1 pmatch:0]"
+[model:0 match:1 qmatch:1 pmatch:0 live:0]"
             ;
 
             Assert.AreEqual(
@@ -145,7 +142,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
+<model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item qmatch=""True"" match=""True"" />
 </model>";
 
@@ -161,7 +158,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[model:0 match:0 qmatch:0 pmatch:0]"
+[model:0 match:0 qmatch:0 pmatch:0 live:0]"
             ;
 
             Assert.AreEqual(
@@ -174,7 +171,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MDC]"" histo=""[model:0 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
+<model mdc=""[MDC]"" histo=""[model:0 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item />
 </model>"
             ;
@@ -199,7 +196,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[model:0 match:1 qmatch:1 pmatch:0]"
+[model:0 match:1 qmatch:1 pmatch:0 live:0]"
             ;
 
             Assert.AreEqual(
@@ -214,7 +211,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[model:0 match:0 qmatch:0 pmatch:0]"
+[model:0 match:0 qmatch:0 pmatch:0 live:0]"
             ;
 
             Assert.AreEqual(
@@ -230,7 +227,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[model:0 match:1 qmatch:1 pmatch:0]"
+[model:0 match:1 qmatch:1 pmatch:0 live:0]"
             ;
 
             Assert.AreEqual(
@@ -245,7 +242,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[model:0 match:0 qmatch:0 pmatch:0]"
+[model:0 match:0 qmatch:0 pmatch:0 live:0]"
             ;
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -276,7 +273,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[model:1 match:1 qmatch:1 pmatch:0]"
+[model:1 match:1 qmatch:1 pmatch:0 live:0]"
             ;
 
             Assert.AreEqual(
@@ -326,7 +323,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[model:10 match:0 qmatch:0 pmatch:0]"
+[model:10 match:0 qmatch:0 pmatch:0 live:0]"
             ;
 
             Assert.AreEqual(

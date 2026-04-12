@@ -454,7 +454,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual.ToClipboardAssert($"Expecting model shows {COUNT} item.");
                 { }
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
+<model mdc=""[MDC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
 </model>";
 
@@ -468,7 +468,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[model:1 match:0 qmatch:0 pmatch:0]";
+[model:1 match:0 qmatch:0 pmatch:0 live:0]";
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -542,7 +542,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
+<model mdc=""[MDC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" />
 </model>";
@@ -578,7 +578,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:2 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
+<model mdc=""[MDC]"" histo=""[model:2 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" qmatch=""True"" match=""True"" />
   <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" />
 </model>"
@@ -758,7 +758,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:2 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
+<model mdc=""[MDC]"" histo=""[model:2 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" qmatch=""True"" match=""True"" />
 </model>"
