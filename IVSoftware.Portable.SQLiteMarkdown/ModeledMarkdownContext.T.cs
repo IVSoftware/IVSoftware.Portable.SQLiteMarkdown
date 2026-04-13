@@ -11,6 +11,7 @@ using IVSoftware.Portable.Xml.Linq.Collections.Events;
 using IVSoftware.Portable.Xml.Linq.Collections.Internal;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
+using SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -313,6 +314,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         bool _routeToFullRecordset = true;
 
         SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
+
+
+        protected override SQLiteConnection FilterQueryDatabase
+        {
+            get
+            {
+                if (CanonicalSupersetProtected.FilterQueryDatabase is { } cnx)
+                {
+                    return cnx;
+                }
+                else
+                {
+                    Debug.Fail($@"ADVISORY - First Time.");
+                    return null!;
+                }
+            }
+        }
         protected override async Task ApplyFilter()
         {
             using (DHostBusy.GetToken())
@@ -422,7 +440,6 @@ SELECT * FROM items WHERE
                 }
             }
         }
-
 
         #region P R O J E C T I O N
         protected override void OnInputTextChanged()

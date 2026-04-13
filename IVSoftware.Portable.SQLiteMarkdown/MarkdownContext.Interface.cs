@@ -18,7 +18,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             OnPropertyChanged(new ItemPropertyChangedEventArgs(e.PropertyName, item));
         }
-
+        protected virtual SQLiteConnection FilterQueryDatabase => throw new NotImplementedException("ToDo");
+#if false
         /// <summary>
         /// The ephemeral backing store for this collection's contract filtering.
         /// </summary>
@@ -75,35 +76,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         SQLiteConnection? _filterQueryDatabase = default;
 
-#if false
-        private bool TryCreateTableForContractType()
-        {
-            if( _filterQueryDatabase is not null 
-                && ContractType?.GetConstructor(Type.EmptyTypes) is not null)
-            {
-                ContractTypeTableMapping = _filterQueryDatabase.GetMapping(ContractType);
-                _filterQueryDatabase.CreateTable(ContractType);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        public TableMapping ContractTypeTableMapping
-        {
-            get => _contractTypeTableMapping;
-            set
-            {
-                if (!Equals(_contractTypeTableMapping, value))
-                {
-                    _contractTypeTableMapping = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        TableMapping _contractTypeTableMapping = default;
 #endif
+
 
         [Obsolete("Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount.")]
         [PublishedContract("1.0")] // Required for backward compatibility. Do not remove this property.
