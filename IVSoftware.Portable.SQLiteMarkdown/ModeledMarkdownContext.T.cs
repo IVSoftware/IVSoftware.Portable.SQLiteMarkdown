@@ -1245,21 +1245,40 @@ SELECT * FROM items WHERE
                     {
                         if(_canonicalSupersetProtected is not null)
                         {
-                            _canonicalSupersetProtected.CollectionChanged -= (sender, e) =>
-                            {
-                                OnCanonicalSupersetChanged(e);
-                            };
+                            _canonicalSupersetProtected.CollectionChanged -= CollectionChangedEventForwarder;
                         }
                         _canonicalSupersetProtected = value;
-                        _canonicalSupersetProtected.CollectionChanged += (sender, e) =>
-                        {
-                            OnCanonicalSupersetChanged(e);
-                        };
+
+                        // Hook changes to the collection itself. 
+                        _canonicalSupersetProtected.CollectionChanged += CollectionChangedEventForwarder;
+
                         OnPropertyChanged();
                     }
                 }
             }
         }
+
+        private void CollectionChangedEventForwarder(object sender, NotifyCollectionChangedEventArgs e) 
+            => OnCanonicalSupersetChanged(e);
+        private void PropertyChangedEventForwarder(object sender, PropertyChangedEventArgs eUnk)
+        {
+            // Sanitize the stream and forward just
+            // the ItemPropertyChanged events.
+            switch (eUnk)
+            {
+                case ItemPropertyChangedEventArgs eItem:
+                    OnPropertyChanged(eItem);
+                    break;
+                case EHPropertyChangedEventArgs:
+                    /* G T K - N O O P */
+                    break;
+                case PropertyChangedEventArgs:
+                default:
+                    /* G T K - N O O P */
+                    break;
+            }
+        }
+
         ObservableModeledCollection<T> _canonicalSupersetProtected = null!;    // Initialized in CTor.
 
         /// <summary>
