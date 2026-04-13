@@ -6,6 +6,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.Collections.Events;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using System.Collections;
@@ -37,6 +38,13 @@ public class TestClass_260328_INPC
         {
             QueryFilterConfig = QueryFilterConfig.Query
         };
+
+        // NEW 260412
+        var histoV2 = items.Model.To<EnumHistogrammer<StdModelAttribute>>();
+        Assert.AreEqual(histoV2.PrimaryNotify, StdModelAttribute.model);
+        histoV2.PropertyChanged += (sender, e) =>
+        { };
+
 
         items.CollectionChanged += (sender, e) =>
         {
