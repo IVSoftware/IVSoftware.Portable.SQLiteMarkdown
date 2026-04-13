@@ -19,9 +19,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         where T : new()
     {
         public ObservablePreviewRangeCollection(
-            NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
+            NotifyCollectionChangePolicy eventScope = NotifyCollectionChangePolicy.CancelOnly)
         {
             EventScope = eventScope;
+        }
+
+        /// <summary>
+        /// Promote the protected BC version for public INotifyPropertyChanging contract.
+        /// </summary>
+        public new event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging
+        {
+            add => base.CollectionChanging += value;
+            remove => base.CollectionChanging -= value;
+        }
+
+        /// <summary>
+        /// Promote the protected BC version for public INotifyPropertyChanging contract.
+        /// </summary>
+        public new CollectionChangingEventingPolicy EventingPolicy
+        {
+            get => base.EventingPolicy;
+            set => base.EventingPolicy = value;
         }
 
         protected override void InsertItem(int index, T item)
@@ -101,40 +119,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 base.ClearItems();
             }
         }
-
-        protected virtual void OnCollectionChanging(NotifyCollectionChangingEventArgs e)
-        {
-            switch (DHostModelEpoch.Authority)
-            {
-                case ModelDataExchangeAuthority.Collection:
-                case ModelDataExchangeAuthority.Model:
-                    CollectionChanging?.Invoke(this, e);
-                    break;
-                case ModelDataExchangeAuthority.CollectionDeferred:
-                case ModelDataExchangeAuthority.ModelDeferred:
-                    switch (CollectionChangingEventingOption)
-                    {
-                        case CollectionChangingEventingOption.Discrete:
-                            CollectionChanging?.Invoke(this, e);
-                            break;
-                        case CollectionChangingEventingOption.Deferred:
-                            if (DHostModelEpoch.IsDisposing)
-                            {
-                                CollectionChanging?.Invoke(this, e);
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                    break;
-                default:
-                    this.ThrowFramework<NotSupportedException>($"The {DHostModelEpoch.Authority.ToFullKey()} case is not supported.");
-                    break;
-            }
-        }
-        public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
-
-        public CollectionChangingEventingOption CollectionChangingEventingOption { get; set; }
         protected override void OnModelEpochFinalizing(ModelEpochDisposeEventArgs e)
         {
             OnCollectionChanging(e.Digest);
@@ -156,7 +140,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             }
         }
 
-        public NotifyCollectionChangeScope EventScope { get; }
+        public NotifyCollectionChangePolicy EventScope { get; }
 
         ModeledFullPathInfo? _modelingCapability = null;
         PropertyInfo? _fullPathPI = null;

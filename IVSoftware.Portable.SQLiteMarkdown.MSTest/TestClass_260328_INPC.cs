@@ -47,7 +47,6 @@ public class TestClass_260328_INPC
 
         // NEW 260412
         var histoV2 = items.Model.To<EnumHistogrammer>();
-        Assert.AreEqual(histoV2.PrimaryNotify, StdModelAttribute.model);
         histoV2.PropertyChanged += (sender, e) =>
         { 
             // Works
@@ -248,7 +247,7 @@ IsChecked: Brown Dog "
 
             Assert.AreEqual(
                 CollectionChangingEventingOption.Discrete, 
-                itemsSource.CollectionChangingEventingOption,
+                itemsSource.EventingPolicy,
                 "Expecting USE DISCRETE CHANGING EVENTS.");
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();

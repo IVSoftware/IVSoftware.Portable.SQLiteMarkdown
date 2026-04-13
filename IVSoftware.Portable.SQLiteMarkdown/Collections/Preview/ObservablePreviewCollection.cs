@@ -17,7 +17,7 @@ namespace IVSoftware.Portable.Collections.Preview
         : ObservableModeledCollection<T>
         , INotifyCollectionChanging
     {
-        public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
+        public ObservablePreviewCollection(NotifyCollectionChangePolicy eventScope = NotifyCollectionChangePolicy.CancelOnly)
         {
             EventScope = eventScope;
         }
@@ -171,7 +171,7 @@ namespace IVSoftware.Portable.Collections.Preview
             }
         }
 
-        public NotifyCollectionChangeScope EventScope { get; }
+        public NotifyCollectionChangePolicy EventScope { get; }
 
         ModeledFullPathInfo? _modelingCapability = null;
         PropertyInfo? _fullPathPI = null;

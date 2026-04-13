@@ -1326,7 +1326,7 @@ SELECT * FROM items WHERE
                 if (_predicateMatchSubsetProtected is null)
                 {
                     // 260329 - Observable for debug convenience only at this time.
-                    var opc = new ObservablePreviewCollection<T>(eventScope: NotifyCollectionChangeScope.CancelOnly);
+                    var opc = new ObservablePreviewCollection<T>(eventScope: NotifyCollectionChangePolicy.CancelOnly);
                     opc.CollectionChanging += (sender, e) =>
                     {
                         Debug.WriteLine($"260330.A {nameof(PredicateMatchSubsetProtected)}.{e.Action} Count={PredicateMatchSubsetProtected.Count}");

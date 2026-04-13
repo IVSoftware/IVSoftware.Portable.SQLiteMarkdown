@@ -180,17 +180,17 @@ namespace IVSoftware.Portable.Collections.Preview
                     switch (eUnk)
                     {
                         case NotifyCollectionChangingEventArgs ePre:
-                            if(ePre.Scope == NotifyCollectionChangeScope.FullControl)
+                            if(ePre.Scope == NotifyCollectionChangePolicy.FullControl)
                             {
                                 eApply = ePre;
                             }
                             else
                             {
-                                eApply = new NotifyCollectionChangingEventArgs(ePre, scope: NotifyCollectionChangeScope.FullControl);
+                                eApply = new NotifyCollectionChangingEventArgs(ePre, scope: NotifyCollectionChangePolicy.FullControl);
                             }
                             break;
                         case NotifyCollectionChangedEventArgs ePost:
-                            eApply = new NotifyCollectionChangingEventArgs(ePost, scope: NotifyCollectionChangeScope.FullControl);
+                            eApply = new NotifyCollectionChangingEventArgs(ePost, scope: NotifyCollectionChangePolicy.FullControl);
                             break;
                         default:
                             list.ThrowFramework<NotSupportedException>($"The {eUnk.GetType().Name} case is not supported.");

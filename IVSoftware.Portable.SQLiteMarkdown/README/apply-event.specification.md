@@ -120,7 +120,7 @@ internal interface INotifyCollectionChanging
     /// higher scopes assume responsibility for producing a valid and internally
     /// consistent change contract.
     /// </remarks>
-    NotifyCollectionChangeScope EventScope { get; }
+    NotifyCollectionChangePolicy EventScope { get; }
 }
 ```
 
@@ -194,7 +194,7 @@ The classic example is when a collection opts in to `INotifyPropertyChanged` mes
 /// consistent change contract.
 /// </remarks>
 [Flags]
-internal enum NotifyCollectionChangeScope
+internal enum NotifyCollectionChangePolicy
 {
     /// <summary>
     /// Observe the proposal without modifying or canceling it.
