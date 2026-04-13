@@ -182,7 +182,7 @@ public class TestClass_PredicateMarkdownContext
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MDC]"" histo=""[Histo]"" filters=""[No Active Filters]"" />"
+<model mdc=""[MDC]"" histo=""[HISTO]"" filters=""[No Active Filters]"" />"
             ;
 
             Assert.AreEqual(
