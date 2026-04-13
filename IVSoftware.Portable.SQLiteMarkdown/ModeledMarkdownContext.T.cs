@@ -315,20 +315,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
 
-
         protected override SQLiteConnection FilterQueryDatabase
         {
             get
             {
-                if (CanonicalSupersetProtected.FilterQueryDatabase is { } cnx)
+                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                 {
-                    return cnx;
+                    CanonicalSupersetProtected.ModelTracking |= ModelTracking.ItemQueries;
+                    if (CanonicalSupersetProtected.FilterQueryDatabase is { } cnx)
+                    {
+                        return cnx;
+                    }
                 }
-                else
-                {
-                    Debug.Fail($@"ADVISORY - First Time.");
-                    return null!;
-                }
+                Debug.Fail($@"ADVISORY - First Time.");
+                return null!;
             }
         }
         protected override async Task ApplyFilter()

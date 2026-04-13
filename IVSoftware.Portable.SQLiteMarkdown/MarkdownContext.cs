@@ -1417,7 +1417,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             Clear(all: true);
                             break;
                     }
-
                     OnPropertyChanged();
                 }
             }
