@@ -1253,7 +1253,7 @@ SELECT * FROM items WHERE
                         // Hook changes to the collection itself. 
                         _canonicalSupersetProtected.CollectionChanged += CollectionChangedEventForwarder;
                         // Hook item property changes
-                        _canonicalSupersetProtected.PropertyChanged -= PropertyChangedEventForwarder;
+                        _canonicalSupersetProtected.PropertyChanged += PropertyChangedEventForwarder;
 
                         OnPropertyChanged();
                     }
