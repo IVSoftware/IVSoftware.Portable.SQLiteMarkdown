@@ -42,7 +42,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         , IList<T>
         where T : new()
     {
-        public ObservableQueryFilterSource() { }
+        /// <summary>
+        /// BC subscribes to INCC and INPC events of CanonicalRecordsetProtected.
+        /// </summary>
+        public ObservableQueryFilterSource() 
+        {
+            // The ModeledMarkdownContext<T> BC is currently responsible
+            // for initializing CanonicalRecordsetProtected.
+        }
 
         /// <summary>
         /// Model changes have coalesced and are updating.

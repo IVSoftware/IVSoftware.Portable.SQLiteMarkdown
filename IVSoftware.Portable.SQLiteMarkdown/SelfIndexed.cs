@@ -216,7 +216,7 @@ CustomProperties (subclass property) is a user-defined metadata property bag.")]
         /// <summary>
         /// The property is KNOWN TO HAVE CHANGED.
         /// </summary>
-        private void updateIfIndexed(string propertyName)
+        private void updateIfIndexed(string? propertyName)
         {
             if (persistedProperties[PersistenceMode.Json]
                .FirstOrDefault(_ => _.Name == propertyName)

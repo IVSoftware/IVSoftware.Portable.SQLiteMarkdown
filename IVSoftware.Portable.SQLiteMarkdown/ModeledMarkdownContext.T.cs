@@ -1246,17 +1246,22 @@ SELECT * FROM items WHERE
                         if(_canonicalSupersetProtected is not null)
                         {
                             _canonicalSupersetProtected.CollectionChanged -= CollectionChangedEventForwarder;
+                            _canonicalSupersetProtected.PropertyChanged -= PropertyChangedEventForwarder;
                         }
                         _canonicalSupersetProtected = value;
 
                         // Hook changes to the collection itself. 
                         _canonicalSupersetProtected.CollectionChanged += CollectionChangedEventForwarder;
+                        // Hook item property changes
+                        _canonicalSupersetProtected.PropertyChanged -= PropertyChangedEventForwarder;
 
                         OnPropertyChanged();
                     }
                 }
             }
         }
+
+        ObservableModeledCollection<T> _canonicalSupersetProtected = null!;    // Initialized in CTor.
 
         private void CollectionChangedEventForwarder(object sender, NotifyCollectionChangedEventArgs e) 
             => OnCanonicalSupersetChanged(e);
@@ -1278,8 +1283,6 @@ SELECT * FROM items WHERE
                     break;
             }
         }
-
-        ObservableModeledCollection<T> _canonicalSupersetProtected = null!;    // Initialized in CTor.
 
         /// <summary>
         /// Provides a typed, read-only view of the predicate-match subset.
