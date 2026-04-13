@@ -8,6 +8,7 @@ using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
+using Newtonsoft.Json;
 using SQLite;
 using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
@@ -377,7 +378,10 @@ SELECT * FROM items WHERE
     [TestMethod]
     public void Test_NoSpuriousFilterQueryDatabaseInstantiation()
     {
+        string actual, expected;
+
         Queue<SenderEventPair> eventQueue = new();
+        Throw @throw;
 
         #region L o c a l F x 
         using var awaited = this.WithOnDispose(
@@ -419,6 +423,33 @@ SELECT * FROM items WHERE
         void subtest_AssertCtorNoFQD()
         {
             mdc = new();
+
+            @throw = (Throw)eventQueue.DequeueSingle().e;
+
+            actual = $"{@throw.GetType().Name} {@throw.ToString()}";
+            actual.ToClipboardExpected();
+            { } // <- FIRST TIME ONLY: Adjust the message.
+            actual.ToClipboardAssert("Expecting result to match.");
+            { }
+            expected = @" 
+Advisory Id: Clear
+Clearing histogram while model-bound; rebuilding from current model.";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
+            expected = @" 
+Id: Clear
+Clearing histogram while model-bound; rebuilding from current model.";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
+
             Assert.AreEqual(0, eventQueue.Count(), "Expecting *no* database creation.");
         }
 

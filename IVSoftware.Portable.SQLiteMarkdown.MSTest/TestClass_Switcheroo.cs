@@ -145,6 +145,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
+Advisory Clear | Clearing histogram while model-bound rebuilds (not clears) counts from current model.
 Throw MarkdownContextPolicyViolation.ExplicitClearAdvisory | ExplicitClearAdvisory Policy advisory:
 - Inherited MarkdownContext detected, but no parameterless Clear() was found.
 - Clear(bool all = false) participates in the MDC filtering state machine and may not
@@ -237,7 +238,7 @@ Throw MarkdownContextPolicyViolation.ExplicitClearAdvisory | ExplicitClearAdviso
                     "Expecting StateReport FSOL to match HasCounts."
                 );
 
-                nResult = inherited.FilterQueryDatabase.ExecuteScalar<int>("Select Count(*) FROM items");
+                nResult = inherited.FilterQueryDatabase.Table<SelectableQFModel>().Count();
 
                 Assert.AreEqual(
                     inherited.CanonicalCount,
