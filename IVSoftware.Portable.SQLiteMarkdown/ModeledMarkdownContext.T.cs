@@ -1272,6 +1272,8 @@ SELECT * FROM items WHERE
             switch (eUnk)
             {
                 case ItemPropertyChangedEventArgs eItem:
+                    // To be clear, the connection point PropertyChanged
+                    // is all the way down in WDT in this inheritance.
                     OnPropertyChanged(eItem);
                     break;
                 case EHPropertyChangedEventArgs:
