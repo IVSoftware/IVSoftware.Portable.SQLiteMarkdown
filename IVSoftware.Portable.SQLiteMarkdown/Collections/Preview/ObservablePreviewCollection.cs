@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.Collections.Events;
 using IVSoftware.Portable.Xml.Linq.Collections.Internal;
@@ -13,16 +14,26 @@ namespace IVSoftware.Portable.Collections.Preview
     /// <summary>
     /// Suppressible collection with Preview semantics (but no Range semantics).
     /// </summary>
-    internal partial class ObservablePreviewCollection<T>
-        : ObservableModeledCollection<T>
-        , INotifyCollectionChanging
+    [Careful(
+        "The CollectionChanging is protected; " +
+        "This SAF object *does not* expose INotifyCollectionChanging")]
+    internal partial class ObservablePreviewCollection<T> : ObservableModeledCollection<T>
     {
-        public ObservablePreviewCollection(NotifyCollectionChangePolicy eventScope = NotifyCollectionChangePolicy.CancelOnly)
+        public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
         {
             EventScope = eventScope;
-        }
+		}
 
-        protected override void InsertItem(int index, T item)
+		/// <summary>
+		/// Promote the protected BC version for public INotifyPropertyChanging contract.
+		/// </summary>
+		public new event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging
+		{
+			add => base.CollectionChanging += value;
+			remove => base.CollectionChanging -= value;
+		}
+
+		protected override void InsertItem(int index, T item)
         {
             var ePre = new NotifyCollectionChangingEventArgs(
                 action: NotifyCollectionChangeAction.Add,
@@ -99,49 +110,8 @@ namespace IVSoftware.Portable.Collections.Preview
                 base.ClearItems();
             }
         }
-        protected virtual void OnCollectionChanging(NotifyCollectionChangingEventArgs e)
-        {
-            if (Authority == ModelDataExchangeAuthority.Collection)
-            {   /* G T K */
-                // We'd rather avoid reentry but for sure we can't allow it to proceed if it happens.
-            }
-            else
-            {
-                using (RequestModelEpochAuthority(ModelDataExchangeAuthority.Collection, this))
-                {
-                    switch (DHostModelEpoch.Authority)
-                    {
-                        case ModelDataExchangeAuthority.Collection:
-                        case ModelDataExchangeAuthority.Model:
-                            CollectionChanging?.Invoke(this, e);
-                            break;
-                        case ModelDataExchangeAuthority.CollectionDeferred:
-                        case ModelDataExchangeAuthority.ModelDeferred:
-                            switch (CollectionChangingEventingOption)
-                            {
-                                case CollectionChangingEventingOption.Discrete:
-                                    CollectionChanging?.Invoke(this, e);
-                                    break;
-                                case CollectionChangingEventingOption.Deferred:
-                                    if (DHostModelEpoch.IsDisposing)
-                                    {
-                                        CollectionChanging?.Invoke(this, e);
-                                    }
-                                    break;
-                                default:
-                                    break;
-                            }
-                            break;
-                        default:
-                            this.ThrowFramework<NotSupportedException>($"The {DHostModelEpoch.Authority.ToFullKey()} case is not supported.");
-                            break;
-                    }
-                }
-            }
-        }
-        public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
 
-        public CollectionChangingEventingOption CollectionChangingEventingOption { get; set; }
+        public CollectionChangingEventingPolicy CollectionChangingEventingPolicy { get; set; }
 
         protected override void OnModelEpochFinalizing(ModelEpochDisposeEventArgs e)
         {
@@ -171,7 +141,7 @@ namespace IVSoftware.Portable.Collections.Preview
             }
         }
 
-        public NotifyCollectionChangePolicy EventScope { get; }
+        public NotifyCollectionChangeScope EventScope { get; }
 
         ModeledFullPathInfo? _modelingCapability = null;
         PropertyInfo? _fullPathPI = null;

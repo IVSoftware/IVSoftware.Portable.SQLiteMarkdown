@@ -246,8 +246,8 @@ IsChecked: Brown Dog "
             }
 
             Assert.AreEqual(
-                CollectionChangingEventingOption.Discrete, 
-                itemsSource.EventingPolicy,
+                CollectionChangingEventingPolicy.Discrete, 
+                itemsSource.CollectionChangingEventingPolicy,
                 "Expecting USE DISCRETE CHANGING EVENTS.");
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
@@ -290,7 +290,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             );
 
             builder.Clear();
-            itemsSource.CollectionChangingEventingOption = CollectionChangingEventingOption.Deferred;
+            itemsSource.CollectionChangingEventingPolicy = CollectionChangingEventingPolicy.Coalesce;
             using (itemsSource.RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 itemsSource.RemoveAt(1);

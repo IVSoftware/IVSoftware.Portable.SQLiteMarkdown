@@ -195,7 +195,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         {
             var builder = new List<string>();
             builder.Add($"{@this.ProjectionTopology.ToFullKey()}");
-            builder.Add($"{@this.ReplaceItemsEventingOptions.ToFullKey()}");
+            builder.Add($"{@this.ReplaceItemsEventingPolicy.ToFullKey()}");
             return string.Join(", ", builder);
         }
     }

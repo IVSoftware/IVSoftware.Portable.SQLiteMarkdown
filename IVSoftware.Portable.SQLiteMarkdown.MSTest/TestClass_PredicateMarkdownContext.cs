@@ -256,7 +256,7 @@ public class TestClass_PredicateMarkdownContext
         actual.ToClipboardExpected();
         { }
         expected = @" 
-NetProjectionTopology.None, ReplaceItemsEventingOption.StructuralReplaceEvent";
+NetProjectionTopology.None, ReplaceItemsEventingPolicy.StructuralReplaceEvent";
 
         Assert.AreEqual(
             expected.NormalizeResult(),
@@ -350,7 +350,7 @@ NetProjectionTopology.None, ReplaceItemsEventingOption.StructuralReplaceEvent";
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingOption.StructuralReplaceEvent"
+NetProjectionTopology.AllowDirectChanges, ReplaceItemsEventingPolicy.StructuralReplaceEvent"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting Options Report to match.");
 

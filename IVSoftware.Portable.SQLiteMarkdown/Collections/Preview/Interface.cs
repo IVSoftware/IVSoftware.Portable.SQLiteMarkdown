@@ -75,7 +75,7 @@ namespace IVSoftware.Portable.Collections.Preview
         /// higher scopes assume responsibility for producing a valid and internally
         /// consistent change contract.
         /// </remarks>
-        NotifyCollectionChangePolicy EventScope { get; }
+        NotifyCollectionChangeScope EventScope { get; }
     }
 
     internal interface IModeledNotifyCollectionChanged<T> 

@@ -381,7 +381,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Some UI platforms respond more efficiently to a raw reset.
         /// </remarks>
-        ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; }
+
+        [Careful("Do not conflate with CollectionChangingEventingPolicy")]
+        ReplaceItemsEventingPolicy ReplaceItemsEventingPolicy { get; set; }
         #endregion C O N F I G U R A T I O N    P R O P E R T I E S
 
         #region P R O J E C T I O N

@@ -1362,7 +1362,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-NetProjectionTopology.Routed, ReplaceItemsEventingOption.StructuralReplaceEvent"
+NetProjectionTopology.Routed, ReplaceItemsEventingPolicy.StructuralReplaceEvent"
                     ;
 
                     Assert.AreEqual(
@@ -1873,7 +1873,7 @@ InputText";
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-NetProjectionTopology.Routed, ReplaceItemsEventingOption.StructuralReplaceEvent";
+NetProjectionTopology.Routed, ReplaceItemsEventingPolicy.StructuralReplaceEvent";
 
                         Assert.AreEqual(
                             expected.NormalizeResult(),
@@ -2149,7 +2149,7 @@ SELECT * FROM items WHERE
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-NetProjectionTopology.Routed, ReplaceItemsEventingOption.StructuralReplaceEvent"
+NetProjectionTopology.Routed, ReplaceItemsEventingPolicy.StructuralReplaceEvent"
                         ;
 
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");

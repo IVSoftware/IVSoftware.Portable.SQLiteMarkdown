@@ -503,10 +503,10 @@ MarkdownContext Clear(all=True)";
 
             public NetProjectionTopology? ProjectionTopology => ((IModeledMarkdownContext)_mdc).ProjectionTopology;
 
-            public ReplaceItemsEventingOption ReplaceItemsEventingOptions
+            public ReplaceItemsEventingPolicy ReplaceItemsEventingPolicy
             {
-                get => ((IModeledMarkdownContext)_mdc).ReplaceItemsEventingOptions;
-                set => ((IModeledMarkdownContext)_mdc).ReplaceItemsEventingOptions = value;
+                get => ((IModeledMarkdownContext)_mdc).ReplaceItemsEventingPolicy;
+                set => ((IModeledMarkdownContext)_mdc).ReplaceItemsEventingPolicy = value;
             }
 
             public CollectionChangeAuthority Authority => ((IModeledMarkdownContext)_mdc).Authority;

@@ -19,7 +19,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         where T : new()
     {
         public ObservablePreviewRangeCollection(
-            NotifyCollectionChangePolicy eventScope = NotifyCollectionChangePolicy.CancelOnly)
+            NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
         {
             EventScope = eventScope;
         }
@@ -36,7 +36,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         /// <summary>
         /// Promote the protected BC version for public INotifyPropertyChanging contract.
         /// </summary>
-        public new CollectionChangingEventingPolicy EventingPolicy
+        public CollectionChangingEventingPolicy CollectionChangingEventingPolicy
         {
             get => base.EventingPolicy;
             set => base.EventingPolicy = value;
@@ -140,7 +140,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             }
         }
 
-        public NotifyCollectionChangePolicy EventScope { get; }
+        public NotifyCollectionChangeScope EventScope { get; }
 
         ModeledFullPathInfo? _modelingCapability = null;
         PropertyInfo? _fullPathPI = null;

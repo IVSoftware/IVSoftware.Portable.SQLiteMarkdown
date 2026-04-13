@@ -446,7 +446,7 @@ SELECT * FROM items WHERE
                     if (FilteringStatePrev == FilteringState.Active)
                     {
                         NotifyCollectionChangedEventArgs? ePost = null;
-                        if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
+                        if (ReplaceItemsEventingPolicy.HasFlag(ReplaceItemsEventingPolicy.StructuralReplaceEvent))
                         {
                             ePost = 
                                 ((IList)PredicateMatchSubset)
@@ -454,7 +454,7 @@ SELECT * FROM items WHERE
                                 reason: NotifyCollectionChangeReason.RemoveFilter);
                             OnModelSettled(ePost);
                         }
-                        if (ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
+                        if (ReplaceItemsEventingPolicy.HasFlag(ReplaceItemsEventingPolicy.ResetOnAnyChange))
                         {
                             if (ePost?.Action != NotifyCollectionChangedAction.Reset)
                             {
@@ -845,7 +845,7 @@ SELECT * FROM items WHERE
         /// </remarks>
         public NetProjectionTopology ProjectionTopology { get; protected set; } = NetProjectionTopology.None;
 
-        public ReplaceItemsEventingOption ReplaceItemsEventingOptions { get; set; } = ReplaceItemsEventingOption.StructuralReplaceEvent;
+        public ReplaceItemsEventingPolicy EventingOptions { get; set; } = ReplaceItemsEventingPolicy.StructuralReplaceEvent;
 
         /// <summary>
         /// Indicates that the runtime type is a subclass of MMDC.
@@ -1326,7 +1326,7 @@ SELECT * FROM items WHERE
                 if (_predicateMatchSubsetProtected is null)
                 {
                     // 260329 - Observable for debug convenience only at this time.
-                    var opc = new ObservablePreviewCollection<T>(eventScope: NotifyCollectionChangePolicy.CancelOnly);
+                    var opc = new ObservablePreviewCollection<T>(eventScope: NotifyCollectionChangeScope.CancelOnly);
                     opc.CollectionChanging += (sender, e) =>
                     {
                         Debug.WriteLine($"260330.A {nameof(PredicateMatchSubsetProtected)}.{e.Action} Count={PredicateMatchSubsetProtected.Count}");
@@ -1363,5 +1363,7 @@ SELECT * FROM items WHERE
 
         ObservableCollection<T>? IModeledMarkdownContext<T>.ObservableNetProjection =>
             (ObservableCollection<T>?)ObservableNetProjection;
+
+        public ReplaceItemsEventingPolicy ReplaceItemsEventingPolicy { get; set; }
     }
 }

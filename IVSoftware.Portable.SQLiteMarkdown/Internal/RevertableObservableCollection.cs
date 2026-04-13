@@ -11,13 +11,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
 {
     sealed class RevertableObservableCollection<T> : ObservableCollection<T>
     {
-        public RevertableObservableCollection(ObservableCollection<T> previewCollection, NotifyCollectionChangePolicy eventScope)
+        public RevertableObservableCollection(ObservableCollection<T> previewCollection, NotifyCollectionChangeScope eventScope)
         {
             EventScope = eventScope;
             PreviewCollection = previewCollection;
         }
         ObservableCollection<T> PreviewCollection;
-        public NotifyCollectionChangePolicy EventScope { get; }
+        public NotifyCollectionChangeScope EventScope { get; }
 
         #region E X P O S E    P U B L I C
         public new void ClearItems() => base.ClearItems();

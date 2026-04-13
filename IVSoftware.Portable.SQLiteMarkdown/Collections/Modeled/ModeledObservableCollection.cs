@@ -24,7 +24,7 @@ namespace IVSoftware.Portable.Collections.Modeled
         : ObservableCollection<T>
         , IModeledNotifyCollectionChanged<T>
     {        
-        public ObservableModeledCollectionOR(NotifyCollectionChangePolicy eventScope = NotifyCollectionChangePolicy.CancelOnly)
+        public ObservableModeledCollectionOR(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
         {
             EventScope = eventScope;
         }
@@ -46,7 +46,7 @@ namespace IVSoftware.Portable.Collections.Modeled
         /// higher scopes assume responsibility for producing a valid and internally
         /// consistent change contract.
         /// </remarks>
-        public NotifyCollectionChangePolicy EventScope { get; }
+        public NotifyCollectionChangeScope EventScope { get; }
 
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {

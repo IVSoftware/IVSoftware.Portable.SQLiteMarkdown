@@ -91,7 +91,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             else
             {
                 Debug.Assert(!isResetEvent, "Expecting any Reset event to be BCL Compatible");
-                if(ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.StructuralReplaceEvent))
+                if(ReplaceItemsEventingPolicy.HasFlag(ReplaceItemsEventingPolicy.StructuralReplaceEvent))
                 {
                     // PLAYER:
                     // Acumulate adds and send composite when Action changes.
@@ -105,7 +105,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
                 if(
                     true // TEMPORARY until the structural replace event player comes online.
-                    || ReplaceItemsEventingOptions.HasFlag(ReplaceItemsEventingOption.ResetOnAnyChange))
+                    || ReplaceItemsEventingPolicy.HasFlag(ReplaceItemsEventingPolicy.ResetOnAnyChange))
                 {
                     CollectionChanged?.Invoke(
                         this,

@@ -215,7 +215,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// - BCL Reset: When Reset epoch completes.
     /// - Replace with Reason: When Commit() epoch completes.
     /// - Replace with Reason: When Remodel(bool) epoch completes.
-    /// ReplaceItemsEventingOption
+    /// ReplaceItemsEventingPolicy
     /// - Replace with Reason is another way of saying Clear then Add.
     /// - Depending on this setting, replace actions produce 'any or all' of
     ///   1. BCL Reset event on the clear phase before the replace.
