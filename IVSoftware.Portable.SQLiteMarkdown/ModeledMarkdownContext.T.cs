@@ -1229,8 +1229,6 @@ SELECT * FROM items WHERE
 
         public XElement Model => CanonicalSupersetProtected.Model;
 
-
-
         public ObservableModeledCollection<T> CanonicalSupersetProtected
         {
             get => _canonicalSupersetProtected;
