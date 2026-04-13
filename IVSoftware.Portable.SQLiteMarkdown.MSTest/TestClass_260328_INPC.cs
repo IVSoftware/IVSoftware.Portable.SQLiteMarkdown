@@ -40,7 +40,7 @@ public class TestClass_260328_INPC
         };
 
         // NEW 260412
-        var histoV2 = items.Model.To<EnumHistogrammer<StdModelAttribute>>();
+        var histoV2 = items.Model.To<EnumHistogrammer>();
         Assert.AreEqual(histoV2.PrimaryNotify, StdModelAttribute.model);
         histoV2.PropertyChanged += (sender, e) =>
         { };
