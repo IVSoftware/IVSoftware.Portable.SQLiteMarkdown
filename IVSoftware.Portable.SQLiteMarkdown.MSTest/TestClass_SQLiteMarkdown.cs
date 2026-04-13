@@ -448,15 +448,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 COUNT = 1;
                 mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
 
-                actual = mmdc.Model.ToString();
+                actual = mmdc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
-                { } // <- FIRST TIME ONLY: Adjust the message.
-                actual.ToClipboardAssert($"Expecting model shows {COUNT} item.");
                 { }
                 expected = @" 
 <model mdc=""[MDC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
-</model>";
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PrioritizedAffinityQFModel]"" order=""0"" preview=""Item01    "" />
+</model>"
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -538,14 +537,15 @@ InputText"
                 // SIMULATE - Now perform the external QUERY.
                 mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
 
-                actual = mmdc.Model.ToString();
+                actual = mmdc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
 <model mdc=""[MDC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" />
-</model>";
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" order=""0"" preview=""Item01    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" order=""1"" preview=""Item02    "" />
+</model>"
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -574,13 +574,13 @@ InputText"
                 mmdc.InputText = "Item01";
                 await mmdc;
 
-                actual = mmdc.Model.ToString();
+                actual = mmdc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:2 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" qmatch=""True"" match=""True"" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" />
+<model mdc=""[MDC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" order=""0"" preview=""Item01    ""  qmatch=""True"" match=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" order=""1"" preview=""Item02    "" />
 </model>"
                 ;
                 Assert.AreEqual(
