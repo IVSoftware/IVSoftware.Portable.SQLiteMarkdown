@@ -39,20 +39,39 @@ public class TestClass_260328_INPC
             QueryFilterConfig = QueryFilterConfig.Query
         };
 
-        // NEW 260412
-        var histoV2 = items.Model.To<EnumHistogrammer>();
-        Assert.AreEqual(histoV2.PrimaryNotify, StdModelAttribute.model);
-        histoV2.PropertyChanged += (sender, e) =>
-        { };
-
 
         items.CollectionChanged += (sender, e) =>
         {
             builderINCC.Add(e.ToString(true));
         };
 
+        // NEW 260412
+        var histoV2 = items.Model.To<EnumHistogrammer>();
+        Assert.AreEqual(histoV2.PrimaryNotify, StdModelAttribute.model);
+        histoV2.PropertyChanged += (sender, e) =>
+        { 
+            // Works
+            // This represents ObservableModeledCollection hooking
+            // its EHInternal.PropertyChanges in its CTor.
+        };
+
         items.PropertyChanged += (sender, e) =>
         {
+            // #{1223BF7B-53C1-4610-A9F4-3F9EDE9FFD19}
+            // OLD 260412 - was not working after the integration.
+            // PROPOSED SOLUTION
+            // - The missing link for legacy integration is taking the
+            //   OMC (which internally is CanonicalSupersetProtected) and
+            //   dropping it laterally into the inherited OnPropertyChanged
+            //   of the inheritied WDT.
+            // - There's also a SOC line drawn here.
+            //   1. WDT is a concern of Modeled MDC because of the IME
+            //   2. Make sure that a WDT does *not* sneak into the pristine
+            //      ObservableModeledCollection. There's no need for it there.
+            // - This fulfills the vision that MMDC is a one-to-many host
+            //   of ObservableModeledCollection that can be swapped out on 
+            //   the CanonicalSupersetProtected property handle.
+
             switch (e)
             {
                 case ItemPropertyChangedEventArgs inpc when inpc.Item is SelectableQFModel item:
