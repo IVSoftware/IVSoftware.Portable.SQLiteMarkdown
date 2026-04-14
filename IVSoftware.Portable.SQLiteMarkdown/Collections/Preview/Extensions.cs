@@ -232,6 +232,7 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             #endregion L o c a l F x
         }
+
         /// <summary>
         /// Builds a canonical XElement model and returns its string form.
         /// </summary>
