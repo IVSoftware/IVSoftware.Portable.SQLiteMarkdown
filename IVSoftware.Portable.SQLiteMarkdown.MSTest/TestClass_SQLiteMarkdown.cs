@@ -577,11 +577,10 @@ InputText"
                 actual = mmdc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
-
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" order=""0"" preview=""Item01    ""  qmatch=""True"" match=""True"" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" order=""1"" preview=""Item02    "" />
+<model mdc=""[MDC]"" histo=""[model:2 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" qmatch=""True"" match=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" />
 </model>"
                 ;
                 Assert.AreEqual(

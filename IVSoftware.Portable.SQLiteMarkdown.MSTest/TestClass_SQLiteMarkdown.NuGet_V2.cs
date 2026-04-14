@@ -428,21 +428,11 @@ SELECT * FROM items WHERE
 
             actual = $"{@throw.GetType().Name} {@throw.ToString()}";
             actual.ToClipboardExpected();
-            { } // <- FIRST TIME ONLY: Adjust the message.
-            actual.ToClipboardAssert("Expecting result to match.");
             { }
             expected = @" 
 Advisory Id: Clear
-Clearing histogram while model-bound; rebuilding from current model.";
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting result to match."
-            );
-            expected = @" 
-Id: Clear
-Clearing histogram while model-bound; rebuilding from current model.";
+Clearing histogram while model-bound rebuilds (not clears) counts from current model."
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
