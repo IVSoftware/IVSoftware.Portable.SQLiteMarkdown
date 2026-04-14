@@ -39,17 +39,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Model.SetAttributeValue("filters", "[No Active Filters]");
 
 
-#if DEBUG
-            Model.Changing += (sender, e) =>
-            {
-                switch (e.ObjectChange)
-                {
-                    case XObjectChange.Remove:
-                        break;
-                }
-            };
-#endif
-
             if (typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
             {
                 ProjectionTopology = NetProjectionTopology.Routed;
@@ -62,6 +51,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     this.ThrowPolicyException(MarkdownContextPolicyViolation.ExplicitClearAdvisory);
                 }
             }
+
+#if DEBUG
+            Debug.Assert(Model.ToString() == @"<model mdc=""[MDC]"" histo=""[HISTO]"" filters=""[No Active Filters]"" />");
+            Model.Changing += (sender, e) =>
+            {
+                switch (e.ObjectChange)
+                {
+                    case XObjectChange.Remove:
+                        break;
+                }
+            };
+#endif
         }
 
 #if false
