@@ -17,12 +17,10 @@ namespace IVSoftware.Portable.Collections.Preview
         : ObservableModeledCollection<T>
         , IRangeable
     {
-        public static implicit operator XElement(ObservableRangeCollection<T> @this)
+        public ObservableRangeCollection()
         {
-            @this.ToString(out XElement model);
-            return model;
-        }
 
+        }
         public void AddRange(IEnumerable items)
         {
             using (RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
@@ -49,7 +47,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public int AddRangeDistinct(IEnumerable items)
         {
-            XElement model = this;
+            XElement inertModel = new(Model);
 
             if (typeof(T).GetModeledPathInfo().GetPath is not GetPathDlgt dlgt)
             {
@@ -74,7 +72,7 @@ namespace IVSoftware.Portable.Collections.Preview
                                 return 0;
                             }
 
-                            switch (model.Place(fullPath))
+                            switch (inertModel.Place(fullPath))
                             {
                                 case PlacerResult.Created:
                                     InsertItem(newStartingIndex++, itemT);
