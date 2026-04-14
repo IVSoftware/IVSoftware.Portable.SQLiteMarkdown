@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.Collections.Events;
 using IVSoftware.Portable.Xml.Linq.Collections.Internal;
@@ -279,7 +280,7 @@ namespace IVSoftware.Portable.Collections.Preview
                             xel.SetAttributeValue(nameof(StdModelAttribute.order), itemCount++);
                             if (previewDlgt?.Invoke(item) is string preview)
                             {
-                                xel.SetStdAttributeValue(StdModelAttribute.preview, preview);
+                                xel.InsertPreviewAttributeAfter(StdModelAttribute.model);
                             }
                             break;
                         default:
