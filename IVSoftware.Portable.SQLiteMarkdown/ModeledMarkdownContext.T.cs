@@ -296,7 +296,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     case FilteringState.Armed:
                         return true;
                     case FilteringState.Active:
-                        if (0 == CanonicalSupersetProtected.Histo[StdModelAttribute.match])
+                        if (0 == CanonicalSupersetProtected.HistoBins[StdModelAttribute.match])
                         {
                             // The collection is eligible for filtering (has at least two items).
                             // All items have been filtered out.
@@ -1054,7 +1054,7 @@ SELECT * FROM items WHERE
         {            
             if (item?.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
             {
-                int indexForAdd = CanonicalSupersetProtected.Histo[StdModelAttribute.model];
+                int indexForAdd = CanonicalSupersetProtected.HistoBins[StdModelAttribute.model];
 
                 var placerResult = Model.Place(full, out var xel);
                 switch (placerResult)
