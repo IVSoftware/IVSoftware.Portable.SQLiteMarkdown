@@ -38,6 +38,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Model.AddAttributeFirst(attr: new XBoundAttribute(nameof(StdModelAttribute.mdc), this, "[MDC]"));
             Model.SetAttributeValue("filters", "[No Active Filters]");
 
+
+#if DEBUG
+            Model.Changing += (sender, e) =>
+            {
+                switch (e.ObjectChange)
+                {
+                    case XObjectChange.Remove:
+                        break;
+                }
+            };
+#endif
+
             if (typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
             {
                 ProjectionTopology = NetProjectionTopology.Routed;
