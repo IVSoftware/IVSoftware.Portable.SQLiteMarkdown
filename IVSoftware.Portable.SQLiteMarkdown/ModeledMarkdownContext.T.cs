@@ -65,117 +65,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
         }
 
-#if false
-        protected override void OnXElementChanged(XElement xel, XElement pxel, XObjectChangeEventArgs e)
-        {
-            // Update histogram first.
-            base.OnXElementChanged(xel, pxel, e);
-
-            // Now: IFTTT on the stable histogram population.
-            switch (e.ObjectChange)
-            {
-                case XObjectChange.Add:
-                    // 260230 AFAIK
-                    // - An XElement coming online with attributes already
-                    //   populated is a test-only phenomenon.
-                    // - It needs to be robust regardless.
-                    // - Ordinarily, however, the IFTTT happens when attributes come
-                    //   and go on an XElement that's already wired for the events.
-                    foreach (var xattr in xel.Attributes())
-                    {
-                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdModelAttribute std)
-                            && std.GetCustomAttribute<IFTTTAttribute>() is not null)
-                        {
-                            switch (std)
-                            {
-                                case StdModelAttribute.model when xattr is XBoundAttribute xba && xba.Tag is T itemT:
-                                    if (PredicateMatchSubsetProtected.Contains(itemT))
-                                    {   /* G T K - N O O P */
-                                    }
-                                    else
-                                    {
-                                        Debug.Fail($@"ADVISORY - First Time UNEXPECTED just confirm.");
-                                        PredicateMatchSubsetProtected.Add(itemT);
-                                    }
-                                    break;
-                            }
-                        }
-                    }
-                    break;
-                case XObjectChange.Remove:
-                    // [Remember] The node has been removed so no XObject changes. We need to call the actions manually.
-                    foreach (var xattr in xel.Attributes())
-                    {
-                        if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdModelAttribute std)
-                            && std.GetCustomAttribute<IFTTTAttribute>() is not null)
-                        {
-                            switch (std)
-                            {
-                                case StdModelAttribute.model when xattr is XBoundAttribute xba && xba.Tag is T itemT:
-                                    OnXBoundAttributeChanged(xba: xba, e.ObjectChange);
-                                    break;
-                            }
-                        }
-                    }
-                    break;
-                case XObjectChange.Value:
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Central model authority for IFTTT.
-        /// </summary>
-        /// <remarks>
-        /// - The itemT field is allowed to be null, especially in bare metal testing.
-        /// - Its absence is considered normal, not even advisory.
-        /// </remarks>
-        protected override void OnXAttributeChanged(XAttribute xattr, XElement pxel, XObjectChangeEventArgs e)
-        {
-            T? itemT = pxel.To<T?>();
-            bool? value;
-            base.OnXAttributeChanged(xattr, pxel, e);
-            if (Enum.TryParse(xattr.Name.LocalName, ignoreCase: false, out StdModelAttribute std))
-            {
-                switch (std)
-                {
-                    case StdModelAttribute.match:
-                        value = bool.TryParse(xattr.Value, out var valid) ? valid : null;
-                        switch (e.ObjectChange)
-                        {
-                            case XObjectChange.Add:
-                                if (value == true && itemT is T)
-                                {
-                                    PredicateMatchSubsetProtected.Add(itemT);
-                                }
-                                break;
-                            case XObjectChange.Remove:
-                                PredicateMatchSubsetProtected.Remove(itemT);
-                                break;
-                            case XObjectChange.Value:
-                                switch (value)
-                                {
-                                    case null:
-                                        // The value isn't null, but isn't parseable to bool either.
-                                        Debug.Fail($@"ADVISORY 260330 - Proposed validation attribute for Histo should make this unreachable.");
-                                        /* G T K - N O O P */
-                                        break;
-                                    case true:
-                                        PredicateMatchSubsetProtected.Add(itemT);
-                                        break;
-                                    case false:
-                                        PredicateMatchSubsetProtected.Remove(itemT);
-                                        break;
-                                }
-                                break;
-                        }
-                        break;
-                }
-            }
-        }
-
-#endif
-
 
 #if DEBUG
         const bool SQLITE_STRICT = true;
@@ -1293,8 +1182,10 @@ SELECT * FROM items WHERE
 
         ObservableModeledCollection<T> _canonicalSupersetProtected = null!;    // Initialized in CTor.
 
-        private void CollectionChangedEventForwarder(object sender, NotifyCollectionChangedEventArgs e) 
-            => OnCanonicalSupersetChanged(e);
+        private void CollectionChangedEventForwarder(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            OnCanonicalSupersetChanged(e);
+        }
         private void PropertyChangedEventForwarder(object sender, PropertyChangedEventArgs eUnk)
         {
             // Sanitize the stream and forward just

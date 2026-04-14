@@ -96,7 +96,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// Bottom line, we'll make consumer aware and let them handle the Throw if they don't care about it.
         /// </remarks>
-        public virtual int CanonicalCount 
+        public virtual int CanonicalCount
         {
             get
             {
