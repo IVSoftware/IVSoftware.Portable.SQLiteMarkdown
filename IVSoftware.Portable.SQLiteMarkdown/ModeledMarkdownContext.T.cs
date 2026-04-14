@@ -1381,6 +1381,10 @@ SELECT * FROM items WHERE
         ObservableCollection<T>? IModeledMarkdownContext<T>.ObservableNetProjection =>
             (ObservableCollection<T>?)ObservableNetProjection;
 
-        public ReplaceItemsEventingPolicy ReplaceItemsEventingPolicy { get; set; }
+        public ReplaceItemsEventingPolicy ReplaceItemsEventingPolicy 
+        {
+            get; 
+            set;
+        } = ReplaceItemsEventingPolicy.StructuralReplaceEvent;
     }
 }

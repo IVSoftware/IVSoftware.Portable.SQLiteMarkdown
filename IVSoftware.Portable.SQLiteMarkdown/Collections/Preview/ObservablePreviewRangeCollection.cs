@@ -38,8 +38,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
         /// </summary>
         public CollectionChangingEventingPolicy CollectionChangingEventingPolicy
         {
-            get => base.EventingPolicy;
-            set => base.EventingPolicy = value;
+            get => base.CollectionChangingEventingPolicy;
+            set => base.CollectionChangingEventingPolicy = value;
         }
 
         protected override void InsertItem(int index, T item)
