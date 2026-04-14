@@ -139,63 +139,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             return @this;
         }
 
-        /// <summary>
-        /// Inserts the specified attribute at the first position.
-        /// </summary>
-        /// <remarks>
-        /// - Existing attributes are removed and re-added to enforce ordering.
-        /// - Any prior attribute with the same local name is replaced.
-        /// - Attribute identity is determined by Name.LocalName.
-        /// - Preserves relative order of remaining attributes.
-        /// </remarks>
-        public static XElement AddAttributeFirst(this XElement @this, XAttribute attr)
-        {
-            var attrsB4 = @this.Attributes().ToArray();
-            @this.RemoveAttributes();
-
-            @this.Add(attr);
-
-            foreach (var attrB4 in attrsB4.Where(_ => _.Name.LocalName != attr.Name.LocalName))
-            {
-                @this.Add(attrB4);
-            }
-            return @this;
-        }
-
-        /// <summary>
-        /// Moves or inserts the specified attribute to a given index.
-        /// </summary>
-        /// <remarks>
-        /// - Rebuilds the attribute list to enforce positional ordering.
-        /// - Any prior attribute with the same local name is replaced.
-        /// - Index is clamped to the valid attribute range.
-        /// - Attribute identity is determined by Name.LocalName.
-        /// - Preserves relative order of unaffected attributes.
-        /// </remarks>
-        public static XElement Move(this XElement @this, XAttribute attr, int index)
-        {
-            var attrsB4 = @this.Attributes().ToList();
-
-            // Remove any existing attribute with same name
-            attrsB4.RemoveAll(_ => _.Name.LocalName == attr.Name.LocalName);
-
-            // Clamp index
-            if (index < 0) index = 0;
-            if (index > attrsB4.Count) index = attrsB4.Count;
-
-            // Insert at desired position
-            attrsB4.Insert(index, attr);
-
-            // Rebuild
-            @this.RemoveAttributes();
-            foreach (var a in attrsB4)
-            {
-                @this.Add(a);
-            }
-
-            return @this;
-        }
-
 
         #region A C T I O N    M A S K S
         [Obsolete("Action and Reason are entirely separate concerns in v2.0")]
