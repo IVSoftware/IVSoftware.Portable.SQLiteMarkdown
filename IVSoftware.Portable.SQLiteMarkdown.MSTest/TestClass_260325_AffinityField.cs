@@ -1,10 +1,6 @@
-﻿using IVSoftware.Portable.Common.Collections;
-using IVSoftware.Portable.SQLiteMarkdown.Common;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
+﻿using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.Xml.Linq.Collections;
-using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine;
 using Newtonsoft.Json;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest

@@ -124,31 +124,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// Lightweight mapper that eliminates guesswork e.g. as
-    /// to how the `Selection` property contributes to filter.
-    /// </summary>
-    public enum StdPredicate
-    {
-        /// <summary>
-        /// Selected items without regard to e.g. Primary, Multi, Exclusive etc.
-        /// </summary>
-        [Where("Selection", WherePredicate.IsNotZero)]
-        IsSelected,
-
-        /// <summary>
-        /// Items that are affirmatively checked. As in "show only the items that are checked".
-        /// </summary>
-        [Where("IsChecked", WherePredicate.IsTrue)]
-        IsChecked,
-
-        /// <summary>
-        /// Items that are affirmatively unchecked. As in "show only the items that are unchecked".
-        /// </summary>
-        [Where("IsChecked", WherePredicate.IsFalse)]
-        IsUnchecked,
-    }
-
-    /// <summary>
     /// MarkdownContext role for implementation by composition.
     /// </summary>
     /// <remarks>

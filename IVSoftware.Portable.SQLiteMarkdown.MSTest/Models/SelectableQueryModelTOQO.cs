@@ -1,11 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using IVSoftware.Portable.Xml.Linq.Collections;
+using Newtonsoft.Json;
 using SQLite;
 using System.Diagnostics;
-using System.Reflection;
-using System.Xml.Linq;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
-using IVSoftware.Portable.Common.Collections;
-using IVSoftware.Portable.Xml.Linq.Collections;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
 {

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using IVSoftware.Portable.Xml.Linq.Collections.Tracking;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {

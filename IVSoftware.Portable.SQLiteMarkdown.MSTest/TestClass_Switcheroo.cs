@@ -1,12 +1,9 @@
-using IVSoftware.Portable.Common.Collections;
-using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Switcheroo;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
+using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
@@ -18,8 +15,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
-using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
-using IVSoftware.Portable.Xml.Linq.Collections;
 
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
