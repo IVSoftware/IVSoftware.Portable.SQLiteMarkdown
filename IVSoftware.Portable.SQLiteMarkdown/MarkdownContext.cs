@@ -1384,6 +1384,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             return formatted;
         }
+        public virtual string ToString(Enum formatting)
+        {
+            switch (formatting)
+            {
+                case FormattingOMC.StateReport:
+                    break;
+                default:
+                    break;
+            }
+            Debug.Fail($@"ADVISORY - First Time.");
+            return ToString();
+        }
 
         #region C O N F I G
         public QueryFilterConfig QueryFilterConfig

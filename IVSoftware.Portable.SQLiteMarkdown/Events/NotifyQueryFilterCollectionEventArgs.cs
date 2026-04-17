@@ -1,10 +1,7 @@
-﻿using IVSoftware.Portable.SQLiteMarkdown.Collections;
-using IVSoftware.Portable.Collections.Preview;
+﻿using IVSoftware.Portable.Xml.Linq.Collections;
 using System;
 using System.Collections;
 using System.Collections.Specialized;
-using IVSoftware.Portable.Common.Collections;
-using IVSoftware.Portable.Xml.Linq.Collections;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Events
 {

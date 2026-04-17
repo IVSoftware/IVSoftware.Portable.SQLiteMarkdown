@@ -1,6 +1,6 @@
-﻿using IVSoftware.Portable.Collections.Preview;
-using IVSoftware.Portable.Common.Attributes;
+﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.Collections.Events;
 using IVSoftware.Portable.Xml.Linq.Collections.Internal;
@@ -485,32 +485,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             => new DateTimeOffset(
                 @this.Ticks - (@this.Ticks % TimeSpan.TicksPerSecond),
                 @this.Offset);
-
-        /// <summary>
-        /// Gets the first custom attribute of the specified type
-        /// applied to an enum value or null in its absence.
-        /// </summary>
-        internal static TAttribute? GetCustomAttribute<TAttribute>(
-            this Enum value)
-            where TAttribute : Attribute
-        {
-            TAttribute? preview; 
-            var enumType = value.GetType();
-#if DEBUG || SAVE             
-            Debug.WriteLineIf(false, $"260403.A {value.ToFullKey()}");
-            if(value.ToFullKey() == "HistogrammerFormat.All")
-            {
-                // Symptomatic of a recursion taking place elsewhere.
-            }
-#endif
-            preview =
-                enumType
-               .GetFields()
-               .SingleOrDefault(_ => _.Name == Enum.GetName(enumType, value))
-               ?.GetCustomAttribute<TAttribute>();
-
-            return preview;
-        }
 
         /// <summary>
         /// Produces the normalized semantic form of the input by trimming trailing

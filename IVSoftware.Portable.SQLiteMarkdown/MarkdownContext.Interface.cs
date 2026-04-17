@@ -1,8 +1,5 @@
-﻿using IVSoftware.Portable.Common.Collections;
-using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.SQLiteMarkdown.Common;
+﻿using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
-using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.Collections.Events;
 using SQLite;

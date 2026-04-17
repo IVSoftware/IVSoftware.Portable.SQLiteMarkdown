@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Xml.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -143,6 +144,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         public IReadOnlyDictionary<string, Enum> ActiveFilters => throw new NotImplementedException();
+
+        public event NotifyCollectionChangedEventHandler? ModelChanged;
 
         private DisposableHost? _dhostAtomic = null;
 

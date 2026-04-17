@@ -104,7 +104,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="IVSoftware.Portable.Threading" Version="*" />
+		<PackageReference Include="IVSoftware.Portable.Threading" Version="2.0.0-beta" />
 		<PackageReference Include="IVSoftware.Portable.Common" Version="1.0.1" />
 		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="*" />
 		<PackageReference Include="Newtonsoft.Json" Version="*" />
@@ -124,7 +124,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\IVSoftware.Portable.Common.Collections\IVSoftware.Portable.Common.Collections\IVSoftware.Portable.Common.Collections.csproj" />
 	  <ProjectReference Include="..\..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.csproj" />
 	</ItemGroup>
 
