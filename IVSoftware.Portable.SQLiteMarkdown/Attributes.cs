@@ -257,12 +257,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         // Do Not Change signature, return type, or argument names.
         // Do Not Obsolete (if you can help it).
-        public PublishedContractAttribute(string? version = null, Type? type = null)
+        public PublishedContractAttribute(
+            string? version = null,
+            Type? type = null,
+            string? assembly = null)
         {
             Version = version;
             Type = type;
+            Assembly = assembly;
         }
         public string? Version { get; }
+        public string? Assembly { get; }
         public Type? Type { get; }
     }
 

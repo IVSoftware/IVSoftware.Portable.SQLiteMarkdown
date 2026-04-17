@@ -119,7 +119,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 base.ClearItems();
             }
         }
-        protected override void OnModelEpochFinalizing(ModelEpochDisposeEventArgs e)
+        protected virtual void OnModelEpochFinalizing(ModelEpochDisposeEventArgs e)
         {
             OnCollectionChanging(e.Digest);
             base.OnModelEpochFinalizing(e);
