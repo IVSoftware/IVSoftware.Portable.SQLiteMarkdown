@@ -819,7 +819,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// If the raw recordset of a query returns ONE child item at depth = 2, then the
     /// net query returns THREE. The UI now has greater opportunity to display context.
     /// </remarks>
-    internal interface IPrioritizedAffinity : IModelFullPath, IAffinityModel
+    internal interface IPrioritizedAffinity : IPathPlaceable, IAffinityModel
     {
         [Ephemeral]
         bool IsRoot { get; }
