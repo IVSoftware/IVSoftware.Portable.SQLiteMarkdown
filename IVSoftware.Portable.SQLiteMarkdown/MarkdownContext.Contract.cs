@@ -1,5 +1,5 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Xml.Linq.Collections;
+using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
 using System;

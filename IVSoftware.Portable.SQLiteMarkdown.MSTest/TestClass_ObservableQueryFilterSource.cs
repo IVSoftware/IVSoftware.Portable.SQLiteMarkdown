@@ -9,7 +9,7 @@ using IVSoftware.Portable.SQLiteMarkdown.MSTest.DemoDB;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.QFTemplates;
-using IVSoftware.Portable.Xml.Linq.Collections;
+using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;

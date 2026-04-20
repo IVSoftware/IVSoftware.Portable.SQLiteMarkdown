@@ -1,6 +1,7 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq;
-using IVSoftware.Portable.Xml.Linq.Collections;
+using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections.Specialized;

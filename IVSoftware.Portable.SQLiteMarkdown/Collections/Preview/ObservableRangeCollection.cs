@@ -8,8 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
-using IVSoftware.Portable.Xml.Linq.Collections;
-using IVSoftware.Portable.Xml.Linq.Collections.Internal;
+using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Internal;
 
 namespace IVSoftware.Portable.Collections.Preview
 {

@@ -1,7 +1,7 @@
 ﻿using IVSoftware.Portable.Collections.Preview;
-using IVSoftware.Portable.Xml.Linq.Collections;
-using IVSoftware.Portable.Xml.Linq.Collections.Events;
-using IVSoftware.Portable.Xml.Linq.Collections.Internal;
+using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Events;
+using IVSoftware.Portable.Collections.Internal;
 using System;
 using System.Linq;
 using System.Reflection;

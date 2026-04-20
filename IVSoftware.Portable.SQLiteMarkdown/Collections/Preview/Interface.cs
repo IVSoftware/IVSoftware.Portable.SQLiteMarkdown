@@ -1,5 +1,5 @@
-﻿using IVSoftware.Portable.Xml.Linq.Collections;
-using IVSoftware.Portable.Xml.Linq.Collections.Events;
+﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Events;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -77,32 +77,4 @@ namespace IVSoftware.Portable.Collections.Preview
     internal interface IModeledNotifyCollectionChanged<T> 
         : IList<T>
         , IModeledNotifyCollectionChanged { } 
-
-    internal interface IRangeable
-    {
-        void AddRange(IEnumerable items);
-        int AddRangeDistinct(IEnumerable items);
-        void InsertRange(int startingIndex, IEnumerable items);
-        void RemoveRange(int startingIndex, int endingIndex);
-        int RemoveMultiple(IEnumerable items);
-    }
-    internal interface IRangeable<T> : IRangeable
-    {
-        void AddRange(IEnumerable<T> items);
-
-        /// <summary>
-        /// Addin multiple items that are individually validated as distinct..
-        /// </summary>
-        int AddRangeDistinct(IEnumerable<T> items);
-
-        /// <summary>
-        /// Removal of a multiple contiguous items.
-        /// </summary>
-        void InsertRange(int startingIndex, IEnumerable<T> newItems);
-
-        /// <summary>
-        /// Removal of a multiple items that aren't necessarily contiguous.
-        /// </summary>
-        int RemoveMultiple(IEnumerable<T> items);
-    }
 }

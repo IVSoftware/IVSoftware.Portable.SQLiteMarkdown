@@ -1,10 +1,10 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq;
-using IVSoftware.Portable.Xml.Linq.Collections;
-using IVSoftware.Portable.Xml.Linq.Collections.Events;
-using IVSoftware.Portable.Xml.Linq.Collections.Internal;
-using IVSoftware.Portable.Xml.Linq.Collections.Tracking;
+using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Events;
+using IVSoftware.Portable.Collections.Internal;
+using IVSoftware.Portable.Collections.Tracking;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using SQLite;

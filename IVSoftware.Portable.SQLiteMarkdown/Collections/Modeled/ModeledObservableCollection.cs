@@ -1,5 +1,5 @@
 ﻿using IVSoftware.Portable.Collections.Preview;
-using IVSoftware.Portable.Xml.Linq.Collections;
+using IVSoftware.Portable.Collections;
 using System;
 using System.Collections;
 using System.Collections.Generic;

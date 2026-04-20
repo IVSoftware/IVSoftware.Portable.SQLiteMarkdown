@@ -1,4 +1,4 @@
-﻿using IVSoftware.Portable.Xml.Linq.Collections;
+﻿using IVSoftware.Portable.Collections;
 using Newtonsoft.Json;
 using SQLite;
 using System.Diagnostics;

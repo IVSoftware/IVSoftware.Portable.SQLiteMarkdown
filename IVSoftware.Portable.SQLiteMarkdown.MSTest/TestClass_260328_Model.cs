@@ -1,8 +1,10 @@
 using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.Xml.Linq;
-using IVSoftware.Portable.Xml.Linq.Collections;
-using IVSoftware.Portable.Xml.Linq.Collections.Internal;
+using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Events;
+using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.Xml.Linq;
@@ -16,13 +18,32 @@ public class TestClass_260328_Model
     public void Test_Histogrammer()
     {
         string actual, expected;
-        int 
-            changeCount = 0,
-            changeCountB4;
+        var builder = new List<string>();
+
         var mdc = new ModeledMarkdownContext<SelectableQFModel>();
         var model = mdc.Model;
         var histo = model.To<EnumHistogrammer<StdModelAttribute>>();
         histo.AllowRootChanges = true;
+
+
+        #region L o c a l F x				
+        using var local = this.WithOnDispose(
+            onInit: (sender, e) =>
+            {
+                histo.XModelChanged += localOnXModelChanged;
+            },
+            onDispose: (sender, e) =>
+            {
+                histo.XModelChanged -= localOnXModelChanged;
+            });
+        void localOnXModelChanged(object? sender, XModelChangeEventArgs e)
+        {
+            if (!e.Changing)
+            {
+                builder.Add(e.ToString());
+            }
+        }
+        #endregion L o c a l F x
 
         subtest_TrackLateral();
         subtest_TrackCurrentChild();
@@ -33,6 +54,19 @@ public class TestClass_260328_Model
         {
             // Add
             model.SetStdAttributeValue(StdModelAttribute.qmatch, true);
+
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[Changed] Key=match ObjectChange=Add Parent=not null Edge=Increment
+[Changed] Key=qmatch ObjectChange=Add Parent=not null Edge=Increment";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting Add + INCREMENT +> SINK."
+            );
 
             actual = histo.ToString();
             actual.ToClipboardExpected();
@@ -49,9 +83,19 @@ public class TestClass_260328_Model
             // CONFIRMED:
             // - Setting to same value *does* raise raw XObject.Change events.
             // - However, edge semantics are now pristine for idempotent cases.
-            changeCountB4 = changeCount;
             model.SetStdAttributeValue(StdModelAttribute.qmatch, true);
-            Assert.AreEqual(changeCountB4, changeCount);
+
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[Changed] Key=qmatch ObjectChange=Value Parent=not null Edge=Hold";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting VALUE + HOLD."
+            );
 
             actual = histo.ToString();
             actual.ToClipboardExpected();
@@ -68,6 +112,22 @@ public class TestClass_260328_Model
 
             // Remove
             model.RemoveDescendantAttributes(StdModelAttribute.qmatch, includeSelf: true);
+
+
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[Changed] Key=match ObjectChange=Remove Parent=not null Edge=Decrement
+[Changed] Key=qmatch ObjectChange=Remove Parent=not null Edge=Decrement";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting REMOVE SOURCE + SINK"
+            );
+
+
             actual = histo.ToString();
             actual.ToClipboardExpected();
             { }
@@ -85,10 +145,38 @@ public class TestClass_260328_Model
         void subtest_TrackCurrentChild()
         {
             var xel = new XElement(nameof(StdModelElement.item));
+
+            // Add Xel
             model.Add(xel);
 
-            // Add
+
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[Changed] Key=XElementHasNoKey ObjectChange=Add Parent=not null Edge=Hold";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting CHANGE for XElement Add."
+            );
+
+            // Add Xattr
             xel.SetStdAttributeValue(StdModelAttribute.qmatch, true);
+
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[Changed] Key=match ObjectChange=Add Parent=not null Edge=Increment
+[Changed] Key=qmatch ObjectChange=Add Parent=not null Edge=Increment";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting Add INCREMENT +> SINK."
+            );
 
             actual = histo.ToString();
             actual.ToClipboardExpected();
@@ -105,11 +193,12 @@ public class TestClass_260328_Model
 
             actual = model.ToString();
             actual.ToClipboardExpected();
-            ;
+            { }
             expected = @" 
 <model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
-  <item qmatch=""True"" match=""True"" />
-</model>";
+  <item match=""True"" qmatch=""True"" />
+</model>"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -120,9 +209,19 @@ public class TestClass_260328_Model
             // CONFIRMED:
             // - Setting to same value *does* raise raw XObject.Change events.
             // - However these are intercepted prior to OnXAttributeChanged.
-            changeCountB4 = changeCount;
             xel.SetStdAttributeValue(StdModelAttribute.qmatch, true);
-            Assert.AreEqual(changeCountB4, changeCount);
+
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[Changed] Key=qmatch ObjectChange=Value Parent=not null Edge=Hold";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting Add + VALUE + HOLD."
+            );
 
 
             actual = histo.ToString();
@@ -143,8 +242,9 @@ public class TestClass_260328_Model
             { }
             expected = @" 
 <model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
-  <item qmatch=""True"" match=""True"" />
-</model>";
+  <item match=""True"" qmatch=""True"" />
+</model>"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -185,58 +285,89 @@ public class TestClass_260328_Model
 
         void subtest_TrackAddRemoveChild()
         {
+            actual = model.ToString();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model mdc=""[MDC]"" histo=""[model:0 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+  <item />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting carryover."
+            );
+
+            // Add 'qmatch' offline - before this node is parented.
             var xel = new XElement(
                 nameof(StdModelElement.item),
                 new XAttribute(nameof(StdModelAttribute.qmatch), bool.TrueString));
 
-            // Add offline - before this node is parented.
+            // Onboard
             model.Add(xel);
 
-            actual = histo.ToString();
+            actual = model.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[model:0 match:1 qmatch:1 pmatch:0 live:0]"
+<model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+  <item />
+  <item match=""True"" qmatch=""True"" />
+</model>"
             ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting offline qmatch to 'join' the histogram when attached to a parent."
+                "Expecting successful onboarding."
             );
 
             // Remove
             xel.Remove();
-            actual = histo.ToString();
+            actual = model.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[model:0 match:0 qmatch:0 pmatch:0 live:0]"
+<model mdc=""[MDC]"" histo=""[model:0 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+  <item />
+</model>"
             ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting empty histogram."
+                "Expecting successful offloading + empty histogram."
             );
 
             // Add it back in again
             model.Add(xel);
 
-            actual = histo.ToString();
+            actual = model.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[model:0 match:1 qmatch:1 pmatch:0 live:0]"
+<model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+  <item />
+  <item match=""True"" qmatch=""True"" />
+</model>"
             ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting histogram to increment."
+                "Expecting successful onboarding again; QMATCH +> MATCH."
             );
 
+            // Now test EXPLICIT FALSE
+            builder.Clear();
             xel.SetStdAttributeValue(StdModelAttribute.qmatch, false);
+
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { } // <- FIRST TIME ONLY: Adjust the message.
+            actual.ToClipboardAssert("Expecting DECREMENT EDGE.");
+            { }
 
             actual = histo.ToString();
             actual.ToClipboardExpected();

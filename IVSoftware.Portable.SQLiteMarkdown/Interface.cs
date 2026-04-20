@@ -1,8 +1,9 @@
-﻿using IVSoftware.Portable.Common.Attributes;
+﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
-using IVSoftware.Portable.Xml.Linq.Collections;
-using IVSoftware.Portable.Xml.Linq.Collections.Events;
+using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Events;
 using SQLite;
 using System;
 using System.Collections;
