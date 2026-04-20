@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
 
-namespace IVSoftware.Portable.Collections.Preview
+namespace IVSoftware.Portable.Xml.Linq.Collections
 {
     /// <summary>
     /// Suppressible collection with Preview semantics (but no Range semantics).
@@ -23,7 +23,7 @@ namespace IVSoftware.Portable.Collections.Preview
 		/// <summary>
 		/// Promote the protected BC version for public INotifyPropertyChanging contract.
 		/// </summary>
-		public new event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging
+		public new event NotifyCollectionChangingEventHandler? CollectionChanging
 		{
 			add => base.CollectionChanging += value;
 			remove => base.CollectionChanging -= value;

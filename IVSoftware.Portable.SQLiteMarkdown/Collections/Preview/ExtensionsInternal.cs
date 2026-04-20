@@ -12,9 +12,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace IVSoftware.Portable.Collections.Preview
+namespace IVSoftware.Portable.Collections
 {
-    static class Extensions
+    internal static class ExtensionsInternal
     {
         /// <summary>
         /// Applies a normalized collection change to a list target.
@@ -34,7 +34,7 @@ namespace IVSoftware.Portable.Collections.Preview
                 out var oldItems,
                 out var oldStartingIndex))
             {
-                nameof(Extensions)
+                nameof(ExtensionsInternal)
                     .ThrowFramework<NotSupportedException>(
                         $"The {eUnk.GetType().Name} case is not supported.");
                 return;
@@ -61,7 +61,7 @@ namespace IVSoftware.Portable.Collections.Preview
                     localExecutePlaylist();
                     break;
                 default:
-                    nameof(Extensions)
+                    nameof(ExtensionsInternal)
                         .ThrowFramework<NotSupportedException>(
                         $"The {eUnk.GetType().Name} case is not supported.");
                     break;
@@ -72,7 +72,7 @@ namespace IVSoftware.Portable.Collections.Preview
             {
                 if (newItems is null || newStartingIndex < 0)
                 {
-                    nameof(Extensions)
+                    nameof(ExtensionsInternal)
                         .ThrowFramework<NotSupportedException>(
                         $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
                 }
@@ -101,7 +101,7 @@ namespace IVSoftware.Portable.Collections.Preview
             {
                 if (oldItems is null || oldStartingIndex < 0)
                 {
-                    nameof(Extensions)
+                    nameof(ExtensionsInternal)
                         .ThrowFramework<NotSupportedException>(
                         $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
                 }
@@ -119,7 +119,7 @@ namespace IVSoftware.Portable.Collections.Preview
             {
                 if (oldItems is null || oldStartingIndex < 0 || newStartingIndex < 0)
                 {
-                    nameof(Extensions)
+                    nameof(ExtensionsInternal)
                         .ThrowFramework<NotSupportedException>(
                         $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
                 }
@@ -151,7 +151,7 @@ namespace IVSoftware.Portable.Collections.Preview
                     || newItems.Count != oldItems.Count
                     || newStartingIndex + newItems.Count > list.Count)
                 {
-                    nameof(Extensions)
+                    nameof(ExtensionsInternal)
                         .ThrowFramework<NotSupportedException>(
                         $"The {eUnk.GetType().Name}.{action} is improperly provisioned for this action.");
                 }

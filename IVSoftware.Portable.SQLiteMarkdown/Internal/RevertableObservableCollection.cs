@@ -70,7 +70,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             {   /* G T K - N O O P */
             }
         }
-        public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
+        public event NotifyCollectionChangingEventHandler? CollectionChanging;
     }
 }
 #endif

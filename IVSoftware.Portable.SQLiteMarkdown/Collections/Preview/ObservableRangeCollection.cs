@@ -16,11 +16,18 @@ namespace IVSoftware.Portable.Collections.Preview
     internal class ObservableRangeCollection<T>
         : ObservableModeledCollection<T>
         , IRangeable
+        , INotifyPreviewCollection
     {
-        public ObservableRangeCollection()
-        {
+        public ObservableRangeCollection() { }
 
+        CollectionChangingEventingPolicy INotifyCollectionChanging.CollectionChangingEventingPolicy => CollectionChangingEventingPolicy;
+
+        public new event NotifyCollectionChangingEventHandler? CollectionChanging
+        {
+            add => base.CollectionChanging += value;
+            remove => base.CollectionChanging -= value;
         }
+
         public void AddRange(IEnumerable items)
         {
             using (RequestModelEpochAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))

@@ -1,10 +1,10 @@
-﻿using IVSoftware.Portable.Common.Attributes;
+﻿using IVSoftware.Portable.Collections.Events;
+using IVSoftware.Portable.Collections.Internal;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.StateRunner.Preview;
-using IVSoftware.Portable.Collections;
-using IVSoftware.Portable.Collections.Events;
-using IVSoftware.Portable.Collections.Internal;
+using IVSoftware.Portable.Xml.Linq.Collections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ using System.Linq;
 
 namespace IVSoftware.Portable.Collections.Preview
 {
-    public sealed class ModelDataExchangeAuthorityProvider<T> 
+    public sealed class ModelDataExchangeAuthorityProviderOR<T> 
         : DisposableHost
     {
         /// <summary>
@@ -177,22 +177,5 @@ namespace IVSoftware.Portable.Collections.Preview
             => throw new NotSupportedException("Sender is required.");
         bool _isModified = false;
         public ModelDataExchangeAuthority Authority { get; private set; } = ModelDataExchangeAuthority.Collection;
-    }
-
-    public class ModelDataExchangeFinalDisposeEventArgs : FinalDisposeEventArgs
-    {
-        public ModelDataExchangeFinalDisposeEventArgs(
-            IReadOnlyCollection<object> releasedSenders,
-            IReadOnlyDictionary<string, object> snapshot,
-            NotifyCollectionChangingEventArgs batchEventArgs,
-            IList finalList)
-            : base(releasedSenders, snapshot)
-        {
-            Digest = batchEventArgs;
-            FinalList = finalList;
-        }
-
-        public NotifyCollectionChangingEventArgs Digest { get; }
-        public IList FinalList { get; }
     }
 }

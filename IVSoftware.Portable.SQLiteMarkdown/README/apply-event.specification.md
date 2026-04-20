@@ -101,7 +101,7 @@ Collections may also implement `INotifyCollectionChanging` as a separate concern
 ```
 internal interface INotifyCollectionChanging
 {
-    public event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging;
+    public event NotifyCollectionChangingEventHandler? CollectionChanging;
 
     /// <summary>
     /// Defines the extent to which a preview handler may interact with a pending

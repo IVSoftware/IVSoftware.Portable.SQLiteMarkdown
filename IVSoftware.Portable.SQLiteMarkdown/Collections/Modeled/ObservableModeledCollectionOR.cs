@@ -5,6 +5,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using IVSoftware.Portable.Collections.Internal;
+using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.Xml.Linq.Collections;
 
 namespace IVSoftware.Portable.Collections.Modeled
 {
@@ -55,12 +58,15 @@ namespace IVSoftware.Portable.Collections.Modeled
             }
         }
         public IDisposable RequestModelEpochAuthority(ModelDataExchangeAuthority authority, IList source)
-            => DHostModelEpoch.GetToken(authority, source);
+            => DHostModelEpoch.RequestAuthority(authority, properties: new ()
+            {
+                {nameof(StdDHostProperty.IList), source}
+            });
 
-        public void CancelSuppress() => DHostModelEpoch.CancelSuppressNotify();
+        public void CancelSuppress() => DHostModelEpoch.CancelAuthorityEpoch();
         public ModelDataExchangeAuthority Phase => DHostModelEpoch.Authority;
 
-        public ModelDataExchangeAuthorityProvider<T> DHostModelEpoch
+        ModelDataExchangeAuthorityProvider<T> DHostModelEpoch
         {
             get
             {
@@ -73,9 +79,12 @@ namespace IVSoftware.Portable.Collections.Modeled
             }
         }
         ModelDataExchangeAuthorityProvider<T>? _dhostDHostModelEpoch = null;
-        protected virtual void OnDHostModelEpochFinalizing(ModelDataExchangeFinalDisposeEventArgs e)
+        protected virtual void OnDHostModelEpochFinalizing(FinalDisposeEventArgs eUnk)
         {
-            OnCollectionChanged((e.Digest));
+            if (eUnk is ModelDataExchangeFinalDisposeEventArgs e)
+            {
+                OnCollectionChanged((e.Digest));
+            }
         }
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         public new IEnumerator<T> GetEnumerator()

@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.Collections;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 

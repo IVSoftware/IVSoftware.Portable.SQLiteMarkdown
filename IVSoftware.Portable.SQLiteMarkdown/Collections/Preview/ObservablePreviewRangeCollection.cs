@@ -11,19 +11,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
     internal class ObservablePreviewRangeCollection<T>
         : ObservableRangeCollection<T>
         , IRangeable
-        , INotifyCollectionChanging
         where T : new()
     {
         public ObservablePreviewRangeCollection() { }
-
-        /// <summary>
-        /// PROMOTE the protected BC version for public INotifyPropertyChanging contract.
-        /// </summary>
-        public new event EventHandler<NotifyCollectionChangingEventArgs>? CollectionChanging
-        {
-            add => base.CollectionChanging += value;
-            remove => base.CollectionChanging -= value;
-        }
 
         /// <summary>
         /// PROMOTE the protected BC version for public INotifyPropertyChanging contract.
