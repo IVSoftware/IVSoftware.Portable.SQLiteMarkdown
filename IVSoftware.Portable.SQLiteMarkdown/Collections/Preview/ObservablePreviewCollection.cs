@@ -18,10 +18,7 @@ namespace IVSoftware.Portable.Collections.Preview
         "This SAF object *does not* expose INotifyCollectionChanging")]
     internal partial class ObservablePreviewCollection<T> : ObservableModeledCollection<T>
     {
-        public ObservablePreviewCollection(NotifyCollectionChangeScope eventScope = NotifyCollectionChangeScope.CancelOnly)
-        {
-            EventScope = eventScope;
-		}
+        public ObservablePreviewCollection() { }
 
 		/// <summary>
 		/// Promote the protected BC version for public INotifyPropertyChanging contract.
@@ -110,8 +107,6 @@ namespace IVSoftware.Portable.Collections.Preview
             }
         }
 
-        public CollectionChangingEventingPolicy CollectionChangingEventingPolicy { get; set; }
-
         
         protected virtual void OnModelEpochFinalizing(ModelEpochDisposeEventArgs e)
         {
@@ -140,8 +135,6 @@ namespace IVSoftware.Portable.Collections.Preview
                 return _modelingCapability!;
             }
         }
-
-        public NotifyCollectionChangeScope EventScope { get; }
 
         ModeledFullPathInfo? _modelingCapability = null;
         PropertyInfo? _fullPathPI = null;

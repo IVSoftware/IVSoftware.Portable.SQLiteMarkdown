@@ -96,7 +96,7 @@ public class TestClass_ObservablePreviewCollection
         SelectableQFModel? currentItem;
 
         var builder = new List<string>();
-        var opc = new ObservablePreviewCollection<SelectableQFModel>(eventScope: NotifyCollectionChangeScope.CancelOnly);
+        var opc = new ObservablePreviewCollection<SelectableQFModel>();
         DisposableHost dhostCancel = new();
         opc.CollectionChanging += (sender, e) =>
         {
