@@ -15,6 +15,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {
     public class AdHocModelProvider<T>
     {
+#if false
         public AdHocModelProvider(IList<T> itemsSource) 
         {
             ItemsSource = itemsSource;
@@ -150,5 +151,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
             }
         }
         GetFullPathDelegate<T>? _getFullPath;
+#endif
     }
 }

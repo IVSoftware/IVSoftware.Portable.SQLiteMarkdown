@@ -2,6 +2,7 @@
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.Collections.Events;
+using IVSoftware.Portable.Xml.Linq.Collections.Exceptions;
 using SQLite;
 using System;
 using System.ComponentModel;

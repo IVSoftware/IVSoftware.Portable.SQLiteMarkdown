@@ -223,7 +223,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                 {
-                    CanonicalSupersetProtected.ModelTracking |= ModelTracking.ItemQueries;
+                    CanonicalSupersetProtected.ModelTracking |= ModelTrackingFlag.ItemQueries;
                     if (CanonicalSupersetProtected.FilterQueryDatabase is { } cnx)
                     {
                         return cnx;
