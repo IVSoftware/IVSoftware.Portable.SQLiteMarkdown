@@ -1,14 +1,14 @@
-﻿using IVSoftware.Portable.Collections.Preview;
+﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Events;
+using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
+using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
 using IVSoftware.Portable.StateRunner.Preview;
 using IVSoftware.Portable.Xml.Linq;
-using IVSoftware.Portable.Collections;
-using IVSoftware.Portable.Collections.Events;
-using IVSoftware.Portable.Collections.Internal;
+using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using SQLite;
@@ -24,8 +24,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using IVSoftware.Portable.Xml.Linq.Collections;
-using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -520,7 +518,7 @@ SELECT * FROM items WHERE
 
                     // Check the model authority here, not inside
                     // the model settled virtual method.
-                    switch (DHostModelEpoch.Authority)
+                    switch (DHostMDEX.Authority)
                     {
                         case ModelDataExchangeAuthority.Collection:
                         case ModelDataExchangeAuthority.Model:
@@ -528,13 +526,13 @@ SELECT * FROM items WHERE
                             break;
                         case ModelDataExchangeAuthority.CollectionDeferred:
                         case ModelDataExchangeAuthority.ModelDeferred:
-                            if(DHostModelEpoch.IsDisposing)
+                            if(DHostMDEX.IsDisposing)
                             {
                                 OnModelSettled(eBCL);
                             }
                             break;
                         default:
-                            this.ThrowFramework<NotSupportedException>($"The {DHostModelEpoch.Authority.ToFullKey()} case is not supported.");
+                            this.ThrowFramework<NotSupportedException>($"The {DHostMDEX.Authority.ToFullKey()} case is not supported.");
                             break;
                     }
 #if false
@@ -598,8 +596,8 @@ SELECT * FROM items WHERE
         }
 
         public IDisposable RequestModelEpochAuthority(ModelDataExchangeAuthority authority, IList source)
-            => DHostModelEpoch.GetToken(authority, source);
-        ModelDataExchangeAuthorityProvider<T> DHostModelEpoch
+            => DHostMDEX.GetToken(authority, source);
+        ModelDataExchangeAuthorityProvider<T> DHostMDEX
         {
             get
             {
@@ -694,7 +692,7 @@ SELECT * FROM items WHERE
                     }
                     break;
                 default:
-                    ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");
+                    this.ThrowHard<NotSupportedException>($"The {e.Action.ToFullKey()} case is not supported.");
                     break;
             }
 
@@ -980,7 +978,7 @@ SELECT * FROM items WHERE
             }
             else
             {
-                ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
+                this.ThrowHard<NullReferenceException>("Expecting object type specifies a [PrimaryKey].");
             }
         }
 
@@ -992,7 +990,7 @@ SELECT * FROM items WHERE
             {
                 Debug.Fail($@"ADVISORY - First Time.");
             }
-            else ThrowHard<NullReferenceException>("Expecting object exists.");
+            else this.ThrowHard<NullReferenceException>("Expecting object exists.");
         }
         protected override void OnCommit(RecordsetRequestEventArgs e)
         {

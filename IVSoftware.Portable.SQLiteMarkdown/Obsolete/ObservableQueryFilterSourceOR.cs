@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using IVSoftware.Portable.Common.Exceptions;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
 {

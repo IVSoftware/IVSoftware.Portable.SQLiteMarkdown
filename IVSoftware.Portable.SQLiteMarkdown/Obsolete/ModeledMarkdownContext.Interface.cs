@@ -1,5 +1,6 @@
-﻿using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.Collections;
+﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -64,7 +65,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if (item is not T valueT)
             {
-                ThrowHard<InvalidCastException>(
+                this.ThrowHard<InvalidCastException>(
                     $"Item must be assignable to {typeof(T).Name}."
                 );
                 return -1;
@@ -74,7 +75,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
             if (index < 0)
             {
-                ThrowHard<InvalidOperationException>(
+                this.ThrowHard<InvalidOperationException>(
                     "Unable to resolve canonical index for routed item."
                 );
             }
@@ -100,7 +101,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (value is not T valueT)
                 {
-                    ThrowHard<InvalidCastException>(
+                    this.ThrowHard<InvalidCastException>(
                         $"IList.this setter requires value assignable to {typeof(T).Name}."
                     );
                     return;
@@ -139,7 +140,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if (value is not T valueT)
             {
-                ThrowHard<InvalidCastException>(
+                this.ThrowHard<InvalidCastException>(
                     $"{nameof(IList.Add)} requires value assignable to {typeof(T).Name}."
                 );
                 return 0;
@@ -180,7 +181,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
-                ThrowHard<ArrayTypeMismatchException>(
+                this.ThrowHard<ArrayTypeMismatchException>(
                     $"{nameof(ICollection.CopyTo)} requires array of type {typeof(T).Name}."
                 );
             }
@@ -201,7 +202,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if (value is not T valueT)
             {
-                ThrowHard<InvalidCastException>(
+                this.ThrowHard<InvalidCastException>(
                     $"{nameof(IList.Insert)} requires value assignable to {typeof(T).Name}."
                 );
                 return;

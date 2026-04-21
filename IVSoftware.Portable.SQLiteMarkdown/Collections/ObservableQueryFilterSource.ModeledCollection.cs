@@ -101,6 +101,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
                 return _canonicalSupersetProtected;
             }
+            set
+            {
+                if(value is null)
+                {
+                    this.ThrowHard<InvalidOperationException>(
+                        $"{nameof(CanonicalSupersetProtected)} cannot be null. This path is intended for interface upgrades.");
+                }
+                else
+                {
+
+                }
+            }
         }
 
         ObservableModeledCollection<T>? _canonicalSupersetProtected = null;

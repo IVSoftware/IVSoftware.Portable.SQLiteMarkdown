@@ -61,14 +61,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {StdMarkdownContextSetting.UseAdaptiveShowAll, true },
         };
 
-        // Avoids exposing the MDC itself on the static Throw event.
-        protected Throw ThrowHard<T>(string messageOrId) => nameof(MarkdownContext).ThrowHard<T>(messageOrId);
-        protected Throw ThrowFramework<T>(string messageOrId)
-        {
-            Debug.Write($@"ADVISORY - ThrowFramework(@throw) polarity is wrong in Common 1.0.1-beta.");
-            return nameof(MarkdownContext).ThrowFramework<T>(messageOrId);
-        }
-
 #if DEBUG
         const bool SQLITE_STRICT = true;
 #else
@@ -1549,7 +1541,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             set
             {
                 // To enable legacy behavior, handle this Throw.
-                if (ThrowHard<NotSupportedException>(
+                if (this.ThrowHard<NotSupportedException>(
                    "Use a subclass to gain access to the protected setter for FilteringState.").Handled)
                 {
                     FilteringState = value;

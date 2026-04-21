@@ -119,7 +119,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             get
             {
                 // Do not call this base class method.
-                ThrowHard<ModelException>($"{nameof(CanonicalCount)} requires override in derived type.");
+                this.ThrowHard<ModelException>($"{nameof(CanonicalCount)} requires override in derived type.");
                 // Reachable only if Throw is handled.
                 return 0;
             }
@@ -130,7 +130,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             get
             {
                 // Do not call this base class method.
-                ThrowHard<ModelException>($"{nameof(PredicateMatchCount)} requires override in derived type.");
+                this.ThrowHard<ModelException>($"{nameof(PredicateMatchCount)} requires override in derived type.");
                 // Reachable only if Throw is handled.
                 return 0;
             }
