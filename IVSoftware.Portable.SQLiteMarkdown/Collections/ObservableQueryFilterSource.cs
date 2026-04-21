@@ -66,12 +66,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         public void ReplaceItems(IEnumerable<T> items)
-            => ObservableModeledCollection.LoadCanon((IList)items);
+            => ModeledCollectionProtected.LoadCanon((IList)items);
 
         public async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
-            this.RethrowFramework(new NotSupportedException());
+            await OnReplaceItemsAsync(items);
         }
+
+        /// <summary>
+        /// Provides an asynchronous entry point for replacing the collection.
+        /// </summary>
+        /// <remarks>
+        /// The default implementation offloads ReplaceItems to a background
+        /// thread using Task.Run.
+        ///
+        /// Override to supply a custom scheduling strategy, integrate with an
+        /// existing async pipeline, or coordinate with UI/thread affinity
+        /// requirements.
+        ///
+        /// Implementations should preserve the atomic "replace canon" semantic
+        /// of ReplaceItems and avoid interleaving partial updates.
+        /// </remarks>
+        protected virtual Task OnReplaceItemsAsync(IEnumerable<T> items)
+            => Task.Run(() => ReplaceItems(items));
+
         public void SetObservableNetProjection(
             ObservableCollection<T>? onp,
             NetProjectionTopology? topology = null)
