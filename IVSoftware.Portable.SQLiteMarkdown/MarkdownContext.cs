@@ -64,7 +64,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected Throw ThrowHard<T>(string messageOrId) => nameof(MarkdownContext).ThrowHard<T>(messageOrId);
         protected Throw ThrowFramework<T>(string messageOrId)
         {
-            Debug.Fail($@"ADVISORY - @throw polarity is wrong in Common 1.0.1-beta.");
+            Debug.Write($@"ADVISORY - ThrowFramework(@throw) polarity is wrong in Common 1.0.1-beta.");
             return nameof(MarkdownContext).ThrowFramework<T>(messageOrId);
         }
 
