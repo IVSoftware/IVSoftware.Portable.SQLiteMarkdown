@@ -59,13 +59,13 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[Changed] Key=match ObjectChange=Add Parent=not null Edge=Increment
-[Changed] Key=qmatch ObjectChange=Add Parent=not null Edge=Increment";
+[Changed] Key=qmatch ObjectChange=Add Parent=not null Edge=Increment"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting Add + INCREMENT +> SINK."
+                "Expecting Add + INCREMENT +> SINK (with StdModelAuthority.SuspendForwardXModel) = 1 event."
             );
 
             actual = histo.ToString();
@@ -77,7 +77,7 @@ public class TestClass_260328_Model
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting histogram to match."
+                "Expecting that the sink SHOWS AS INCREMENTED + DID NOT EVENT."
             );
 
             // CONFIRMED:
