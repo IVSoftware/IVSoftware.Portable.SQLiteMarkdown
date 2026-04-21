@@ -29,12 +29,12 @@ using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public partial class ModeledMarkdownContextOR<T>
+    public partial class ModeledMarkdownContext<T>
         : MarkdownContext<T>
         , IModeledMarkdownContext<T>
         where T : new()
     {
-        public ModeledMarkdownContextOR()
+        public ModeledMarkdownContext()
         {
             CanonicalSupersetProtected = new();
             Model.AddAttributeFirst(attr: new XBoundAttribute(nameof(StdModelAttribute.mdc), this, "[MDC]"));
@@ -777,7 +777,7 @@ SELECT * FROM items WHERE
             {
                 if (_isInherited is null)
                 {
-                    _isInherited = GetType() != typeof(ModeledMarkdownContextOR<T>);
+                    _isInherited = GetType() != typeof(ModeledMarkdownContext<T>);
                 }
                 return (bool)_isInherited;
             }

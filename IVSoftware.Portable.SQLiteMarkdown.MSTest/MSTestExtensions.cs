@@ -7,6 +7,7 @@ using SQLite;
 using System.CodeDom;
 using System.Collections;
 using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
@@ -181,14 +182,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             var builder = new List<string>();
             builder.Add($"[IME Len: {@this.InputText.Length}");
             builder.Add($"IsFiltering: {@this.IsFiltering}]");
-            if (@this is IModeledMarkdownContext mmdc)
-            {
-                builder.Add($"[Net: {(mmdc.ObservableNetProjection is IList list ? list.Count : "null")}");
-            }
             builder.Add($"CC: {@this.CanonicalCount}");
             builder.Add($"PMC: {@this.PredicateMatchCount}]");
             builder.Add($"[{@this.QueryFilterConfig}: {@this.SearchEntryState.ToFullKey()}");
             builder.Add($"{@this.FilteringState.ToFullKey()}]");
+            return string.Join(", ", builder);
+        }
+
+        public static string TopologyReport(this IObservableQueryFilterSource @this)
+        {
+            var builder = new List<string>();
+#if false
+            builder.Add($"{@this.ProjectionTopology.ToFullKey()}");
+            builder.Add($"{@this.ReplaceItemsEventingPolicy.ToFullKey()}");
+#endif
             return string.Join(", ", builder);
         }
 

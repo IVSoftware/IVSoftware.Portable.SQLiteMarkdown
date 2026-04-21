@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Collections;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.Collections.ObjectModel;
+using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {

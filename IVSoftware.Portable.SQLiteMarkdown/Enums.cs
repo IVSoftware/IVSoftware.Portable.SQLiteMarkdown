@@ -401,34 +401,4 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         RaiseModelSettledEvent = StdFSMState.ModelSettled,
     }
-
-    [NotFlags]
-    public enum NetProjectionTopology
-    {
-        /// <summary>
-        /// No event or synchronization targets exist.
-        /// </summary>
-        None,
-
-        /// <summary>
-        /// The runtime type is a subclass of MarkdownContext and implements INotifyCollectionChanged.
-        /// </summary>
-        Routed,
-
-        /// <summary>
-        /// A concrete ObservableNetProjection is available for observation only.
-        /// </summary>
-        ObservableOnly,
-
-        /// <summary>
-        /// A concrete ObservableNetProjection is available for both observation and for read-write.
-        /// </summary>
-        /// <remarks>
-        /// OPT-IN: 
-        /// - Enables MDC to puppeteer the projection when maintaining canonical state.
-        /// - This is a powerful opt-in granting MDC safe write authority over 
-        ///   the observable collection.
-        /// </remarks>
-        AllowDirectChanges,
-    }
 }

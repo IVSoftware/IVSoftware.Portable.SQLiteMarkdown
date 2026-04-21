@@ -24,10 +24,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
     /// tracked, and stateful, exposing both query and filter readiness for external observation.
     /// </summary>
 
-    [DebuggerDisplay("Count={Count}")]
     [PublishedContract("1.0.0")]
+    [DebuggerDisplay("Count={Count}")]
     public class ObservableQueryFilterSourceOR<T>
-        : ModeledMarkdownContextOR<T>
+        : ModeledMarkdownContext<T>
         , IObservableQueryFilterSource<T>
         , IList
         , IList<T>

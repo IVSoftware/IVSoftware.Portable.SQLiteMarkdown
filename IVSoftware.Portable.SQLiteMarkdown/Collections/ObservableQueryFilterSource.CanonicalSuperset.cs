@@ -4,9 +4,26 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
+    partial class ObservableQueryFilterSource<T> : IModeledCollection
+    {
+        public XElement Model => ((IModeledCollection)ObservableModeledCollection).Model;
+
+        public ModelTrackingFlag ModelTracking { get => ((IModeledCollection)ObservableModeledCollection).ModelTracking; set => ((IModeledCollection)ObservableModeledCollection).ModelTracking = value; }
+        SQLiteQueryOnlyConnection? IModeledCollection.FilterQueryDatabase => ((IModeledCollection)ObservableModeledCollection).FilterQueryDatabase;
+
+        public void SetObservableNetProjection(INotifyPreviewCollection? onp, NetProjectionTopology? topology = null)
+        {
+            ((IModeledCollection)ObservableModeledCollection).SetObservableNetProjection(onp, topology);
+        }
+
+        public INotifyPreviewCollection ObservableNetProjection 
+            => ((IModeledCollection)ObservableModeledCollection).ObservableNetProjection;
+
+    }
     partial class ObservableQueryFilterSource<T> : INotifyPreviewCollection
     {
         public NotifyCollectionChangeScope EventScope
@@ -29,7 +46,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         : IList
         , IList<T>
     {
-        public ObservableModeledCollection<T> CanonicalSupersetProtected
+        public ObservableModeledCollection<T> ObservableModeledCollection
         {
             get
             {
@@ -41,99 +58,99 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        public bool IsFixedSize => ((IList)CanonicalSupersetProtected).IsFixedSize;
+        public bool IsFixedSize => ((IList)ObservableModeledCollection).IsFixedSize;
 
-        public bool IsReadOnly => ((IList)CanonicalSupersetProtected).IsReadOnly;
+        public bool IsReadOnly => ((IList)ObservableModeledCollection).IsReadOnly;
 
-        public int Count => ((ICollection)CanonicalSupersetProtected).Count;
+        public int Count => ((ICollection)ObservableModeledCollection).Count;
 
-        public bool IsSynchronized => ((ICollection)CanonicalSupersetProtected).IsSynchronized;
+        public bool IsSynchronized => ((ICollection)ObservableModeledCollection).IsSynchronized;
 
-        public object SyncRoot => ((ICollection)CanonicalSupersetProtected).SyncRoot;
+        public object SyncRoot => ((ICollection)ObservableModeledCollection).SyncRoot;
 
-        T IList<T>.this[int index] { get => ((IList<T>)CanonicalSupersetProtected)[index]; set => ((IList<T>)CanonicalSupersetProtected)[index] = value; }
-        public object this[int index] { get => ((IList)CanonicalSupersetProtected)[index]; set => ((IList)CanonicalSupersetProtected)[index] = value; }
+        T IList<T>.this[int index] { get => ((IList<T>)ObservableModeledCollection)[index]; set => ((IList<T>)ObservableModeledCollection)[index] = value; }
+        public object this[int index] { get => ((IList)ObservableModeledCollection)[index]; set => ((IList)ObservableModeledCollection)[index] = value; }
 
         ObservableModeledCollection<T>? _canonicalSupersetProtected = null;
 
         public int Add(object value)
         {
-            return ((IList)CanonicalSupersetProtected).Add(value);
+            return ((IList)ObservableModeledCollection).Add(value);
         }
 
         public void Clear()
         {
-            ((IList)CanonicalSupersetProtected).Clear();
+            ((IList)ObservableModeledCollection).Clear();
         }
 
         public bool Contains(object value)
         {
-            return ((IList)CanonicalSupersetProtected).Contains(value);
+            return ((IList)ObservableModeledCollection).Contains(value);
         }
 
         public int IndexOf(object value)
         {
-            return ((IList)CanonicalSupersetProtected).IndexOf(value);
+            return ((IList)ObservableModeledCollection).IndexOf(value);
         }
 
         public void Insert(int index, object value)
         {
-            ((IList)CanonicalSupersetProtected).Insert(index, value);
+            ((IList)ObservableModeledCollection).Insert(index, value);
         }
 
         public void Remove(object value)
         {
-            ((IList)CanonicalSupersetProtected).Remove(value);
+            ((IList)ObservableModeledCollection).Remove(value);
         }
 
         public void RemoveAt(int index)
         {
-            ((IList)CanonicalSupersetProtected).RemoveAt(index);
+            ((IList)ObservableModeledCollection).RemoveAt(index);
         }
 
         public void CopyTo(Array array, int index)
         {
-            ((ICollection)CanonicalSupersetProtected).CopyTo(array, index);
+            ((ICollection)ObservableModeledCollection).CopyTo(array, index);
         }
 
         public IEnumerator GetEnumerator()
         {
-            return ((IEnumerable)CanonicalSupersetProtected).GetEnumerator();
+            return ((IEnumerable)ObservableModeledCollection).GetEnumerator();
         }
 
         public int IndexOf(T item)
         {
-            return ((IList<T>)CanonicalSupersetProtected).IndexOf(item);
+            return ((IList<T>)ObservableModeledCollection).IndexOf(item);
         }
 
         public void Insert(int index, T item)
         {
-            ((IList<T>)CanonicalSupersetProtected).Insert(index, item);
+            ((IList<T>)ObservableModeledCollection).Insert(index, item);
         }
 
         public void Add(T item)
         {
-            ((ICollection<T>)CanonicalSupersetProtected).Add(item);
+            ((ICollection<T>)ObservableModeledCollection).Add(item);
         }
 
         public bool Contains(T item)
         {
-            return ((ICollection<T>)CanonicalSupersetProtected).Contains(item);
+            return ((ICollection<T>)ObservableModeledCollection).Contains(item);
         }
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            ((ICollection<T>)CanonicalSupersetProtected).CopyTo(array, arrayIndex);
+            ((ICollection<T>)ObservableModeledCollection).CopyTo(array, arrayIndex);
         }
 
         public bool Remove(T item)
         {
-            return ((ICollection<T>)CanonicalSupersetProtected).Remove(item);
+            return ((ICollection<T>)ObservableModeledCollection).Remove(item);
         }
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
-            return ((IEnumerable<T>)CanonicalSupersetProtected).GetEnumerator();
+            return ((IEnumerable<T>)ObservableModeledCollection).GetEnumerator();
         }
     }
 }

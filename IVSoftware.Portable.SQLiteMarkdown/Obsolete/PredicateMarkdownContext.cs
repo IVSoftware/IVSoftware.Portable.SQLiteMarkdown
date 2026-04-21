@@ -13,7 +13,7 @@ using IVSoftware.Portable.Collections;
 namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
 {
     public class PredicateMarkdownContext<T> 
-        : ModeledMarkdownContextOR<T>
+        : ModeledMarkdownContext<T>
         , IPredicateMarkdownContext
         where T : new()
     {

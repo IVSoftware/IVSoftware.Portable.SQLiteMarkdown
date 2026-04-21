@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.SQLiteMarkdown.Common;
+﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 using System.Collections.ObjectModel;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Util

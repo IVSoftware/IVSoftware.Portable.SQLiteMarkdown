@@ -15,6 +15,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
+using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
 
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest

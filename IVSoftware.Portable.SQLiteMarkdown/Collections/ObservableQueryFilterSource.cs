@@ -1,15 +1,43 @@
-﻿using IVSoftware.Portable.Collections.Events;
+﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Events;
+using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
+    /// <summary>
+    /// Provides a query-then-filter state engine for collections of <typeparamref name="T"/>, 
+    /// supporting expression-based parsing, SQLite-backed filtering, and in-memory dataset routing. 
+    /// 
+    /// This class is UI-agnostic but designed to work with navigable list views where a shared search
+    /// bar drives both initial queries and incremental filtering. It supports both remote query 
+    /// and local refinement workflows without assuming any specific platform or UI framework.
+    ///
+    /// Filtering is driven by attribute-decorated model properties and is internally debounced, 
+    /// tracked, and stateful, exposing both query and filter readiness for external observation.
+    /// </summary>
+    [PublishedContract("1.0.0")]
+    [DebuggerDisplay("Count={Count}")]
     public partial class ObservableQueryFilterSource<T>
         : MarkdownContext<T>
-        , IObservableQueryFilterSource
+        , IObservableQueryFilterSource<T>
+        , IList
+        , IList<T>
+        where T : new()
+    {
+        [Canonical("The parameterless CTor is the only CTor")]
+        public ObservableQueryFilterSource() { }
+    }
+
+    partial class ObservableQueryFilterSource<T>
+        : IObservableQueryFilterSource
         , IObservableQueryFilterSource<T>
     {
         public string Placeholder
@@ -28,15 +56,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public void InitializeFilterOnlyMode(IEnumerable<T> items)
         {
-            throw new NotImplementedException();
+            this.RethrowFramework(new NotSupportedException());
         }
 
         public void ReplaceItems(IEnumerable<T> items)
-            => CanonicalSupersetProtected.LoadCanon((IList)items);
+            => ObservableModeledCollection.LoadCanon((IList)items);
 
-        public Task ReplaceItemsAsync(IEnumerable<T> items)
+        public async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
-            throw new NotImplementedException();
+            this.RethrowFramework(new NotSupportedException());
         }
+        public void SetObservableNetProjection(
+            ObservableCollection<T>? onp,
+            NetProjectionTopology? topology = null)
+        {
+            this.RethrowFramework(new NotSupportedException());
+        }
+
+        [Obsolete("Retained for backward compatibility")]
+        public bool RouteToFullRecordset { get; protected set; }
+
+        /// <summary>
+        /// Not on interface.
+        /// </summary>
+        public NetProjectionTopology ProjectionTopology { get; }
     }
 }

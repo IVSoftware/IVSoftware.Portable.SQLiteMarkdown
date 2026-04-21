@@ -110,9 +110,7 @@ public class TestClass_260328_INPC
             "Expecting: FILTER MODE => ALWAYS TRACKS."
         );
 
-        var inpcItem = items[0];
-        Assert.IsInstanceOfType<SelectableQFModel>(inpcItem);
-        { }
+        var inpcItem = (SelectableQFModel)items[0];
 
         // Toggle the item in the backend.
         inpcItem.IsChecked = true;

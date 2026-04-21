@@ -10,6 +10,7 @@ using SQLite;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Xml.Linq;
+using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 

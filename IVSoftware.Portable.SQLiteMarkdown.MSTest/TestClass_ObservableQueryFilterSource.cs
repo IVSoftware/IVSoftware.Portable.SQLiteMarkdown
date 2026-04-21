@@ -3163,7 +3163,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
             };
             items.CollectionChanged += (sender, e) =>
             {
-                if (ReferenceEquals(sender, items.CanonicalSuperset))
+                if (ReferenceEquals(sender, items.ObservableNetProjection))
                 {
                     Debug.Fail($@"ADVISORY - First Time.");
                 }
