@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
     /// <summary>
+    /// 1 of 2 partial classes in this file.
     /// Provides a query-then-filter state engine for collections of <typeparamref name="T"/>, 
     /// supporting expression-based parsing, SQLite-backed filtering, and in-memory dataset routing. 
     /// 
@@ -42,6 +43,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
     }
 
+    /// <summary>
+    /// 2 of 2 partial classes in this file.
+    /// </summary>
     partial class ObservableQueryFilterSource<T>
         : IObservableQueryFilterSource
         , IObservableQueryFilterSource<T>

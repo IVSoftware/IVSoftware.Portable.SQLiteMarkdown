@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Collections.Events;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
@@ -15,26 +16,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     /// <summary>
     /// 1 of 4 interfaces in this file.
     /// </summary>
-    partial class ObservableQueryFilterSource<T> : IModeledCollection
+    partial class ObservableQueryFilterSource<T> 
+        : IModeledCollection
     {
         public XElement Model => CanonicalSupersetProtected.Model;
 
-        public ModelTrackingFlag ModelTracking { get => ((IModeledCollection)CanonicalSupersetProtected).ModelTracking; set => ((IModeledCollection)CanonicalSupersetProtected).ModelTracking = value; }
-
-        public IList? ObservableNetProjection => ((IModeledCollection)CanonicalSupersetProtected).ObservableNetProjection;
-
-        SQLiteQueryOnlyConnection? IModeledCollection.FilterQueryDatabase => ((IModeledCollection)CanonicalSupersetProtected).FilterQueryDatabase;
-
-        public void SetObservableNetProjection(INotifyPreviewCollection? onp, NetProjectionTopology? topology = null)
-        {
-            ((IModeledCollection)CanonicalSupersetProtected).SetObservableNetProjection(onp, topology);
+        public ModelTrackingFlag ModelTracking
+        { 
+            get => ((IModeledCollection)CanonicalSupersetProtected).ModelTracking; 
+            set => ((IModeledCollection)CanonicalSupersetProtected).ModelTracking = value;
         }
+
+        public IList? ObservableNetProjection => 
+            ((IModeledCollection)CanonicalSupersetProtected).ObservableNetProjection;
+
+        public ModelDataExchangeAuthority Authority =>
+            ((IModeledCollection)CanonicalSupersetProtected).Authority;
+
+        public IReadOnlyDictionary<StdModelAttribute, int> HistoBins =>
+            ((IModeledCollection)CanonicalSupersetProtected).HistoBins;
+
+        SQLiteQueryOnlyConnection? IModeledCollection.FilterQueryDatabase => 
+            ((IModeledCollection)CanonicalSupersetProtected).FilterQueryDatabase;
+
+        public void SetObservableNetProjection(INotifyPreviewCollection? onp, NetProjectionTopology? topology = null) =>
+            ((IModeledCollection)CanonicalSupersetProtected).SetObservableNetProjection(onp, topology);
     }
 
     /// <summary>
     /// 2 of 4 interfaces in this file.
     /// </summary>
-    partial class ObservableQueryFilterSource<T> : INotifyPreviewCollection
+    partial class ObservableQueryFilterSource<T> 
+        : INotifyPreviewCollection
     {
         public NotifyCollectionChangeScope EventScope
         { 
