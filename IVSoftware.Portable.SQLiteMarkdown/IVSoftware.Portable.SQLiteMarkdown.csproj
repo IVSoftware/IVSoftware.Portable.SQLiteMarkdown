@@ -102,6 +102,11 @@
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<SignAssembly>True</SignAssembly>
 	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="Collections\Modeled\**" />
+	  <EmbeddedResource Remove="Collections\Modeled\**" />
+	  <None Remove="Collections\Modeled\**" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="IVSoftware.Portable.Threading" Version="2.0.0-beta" />
@@ -120,7 +125,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Collections\Modeled\" />
 	  <Folder Include="README\img\" />
 	</ItemGroup>
 

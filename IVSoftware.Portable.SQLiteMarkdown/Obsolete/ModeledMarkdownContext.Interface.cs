@@ -37,7 +37,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     ///   6. Ensured enumeration routes through IEnumerable interfaces only.
     ///   7. Introduced CanonIndexOf to enforce identity-based mapping.
     /// </remarks>
-    partial class ModeledMarkdownContext<T> : IList
+    partial class ModeledMarkdownContextOR<T> : IList
     {
         #region R O U T I N G
         public int Count =>
@@ -246,7 +246,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             CanonicalSupersetProtected.ToString(formatting);
     }
 
-    partial class ModeledMarkdownContext<T> : IList<T>
+    partial class ModeledMarkdownContextOR<T> : IList<T>
     {
         #region R O U T I N G
         /// <summary>

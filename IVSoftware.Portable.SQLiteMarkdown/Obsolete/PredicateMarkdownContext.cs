@@ -10,10 +10,10 @@ using System.Linq;
 using IVSoftware.Portable.Collections.Tracking;
 using IVSoftware.Portable.Collections;
 
-namespace IVSoftware.Portable.SQLiteMarkdown
+namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
 {
     public class PredicateMarkdownContext<T> 
-        : ModeledMarkdownContext<T>
+        : ModeledMarkdownContextOR<T>
         , IPredicateMarkdownContext
         where T : new()
     {

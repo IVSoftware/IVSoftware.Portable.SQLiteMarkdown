@@ -1,5 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
+using System;
+using System.Collections.Generic;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {

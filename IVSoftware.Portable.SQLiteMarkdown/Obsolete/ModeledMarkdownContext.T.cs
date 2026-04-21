@@ -25,15 +25,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public partial class ModeledMarkdownContext<T>
+    public partial class ModeledMarkdownContextOR<T>
         : MarkdownContext<T>
         , IModeledMarkdownContext<T>
         where T : new()
     {
-        public ModeledMarkdownContext()
+        public ModeledMarkdownContextOR()
         {
             CanonicalSupersetProtected = new();
             Model.AddAttributeFirst(attr: new XBoundAttribute(nameof(StdModelAttribute.mdc), this, "[MDC]"));
@@ -776,7 +777,7 @@ SELECT * FROM items WHERE
             {
                 if (_isInherited is null)
                 {
-                    _isInherited = GetType() != typeof(ModeledMarkdownContext<T>);
+                    _isInherited = GetType() != typeof(ModeledMarkdownContextOR<T>);
                 }
                 return (bool)_isInherited;
             }

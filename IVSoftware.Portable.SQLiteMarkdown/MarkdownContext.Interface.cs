@@ -7,6 +7,7 @@ using SQLite;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
