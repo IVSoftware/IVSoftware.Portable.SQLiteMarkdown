@@ -8,6 +8,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Linq;
 using System.Xml.Linq;
 
 
@@ -94,10 +96,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 {
                     _canonicalSupersetProtected = new ObservableModeledCollection<T>();
 
-                    // NOTE: This is *not* an INotifyCollectionChanging API per published contract.
-                    _canonicalSupersetProtected.CollectionChanged += (sender, e) =>
-                    {
-                    };
+                    // [Careful]
+                    // Must be unsubscribable, not lambda.
+                    _canonicalSupersetProtected.CollectionChanged += CollectionChangedEventForwarder;
                 }
                 return _canonicalSupersetProtected;
             }
@@ -108,14 +109,113 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     this.ThrowHard<InvalidOperationException>(
                         $"{nameof(CanonicalSupersetProtected)} cannot be null. This path is intended for interface upgrades.");
                 }
-                else
+                else if(!ReferenceEquals(value, CanonicalSuperset))
                 {
-
+                    CanonicalSupersetProtected.CollectionChanged -= CollectionChangedEventForwarder;
+                    _canonicalSuperset = value;
+                    CanonicalSupersetProtected.CollectionChanged += CollectionChangedEventForwarder;
                 }
             }
         }
-
         ObservableModeledCollection<T>? _canonicalSupersetProtected = null;
+
+        private void CollectionChangedEventForwarder(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            OnCanonicalSupersetCollectionChanged(e);
+        }
+
+        protected virtual void OnCanonicalSupersetCollectionChanged(NotifyCollectionChangedEventArgs e) 
+        {
+            if(ModelTracking.HasFlag(ModelTrackingFlag.ItemPropertyChanges))
+            {
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        if (e.NewItems is not null)
+                        {
+                            foreach (var item in e.NewItems.OfType<T>())
+                            {
+                                localAddINPC(item);
+                            }
+                        }
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        if (e.OldItems is not null)
+                        {
+                            foreach (var item in e.OldItems.OfType<T>())
+                            {
+                                localRemoveINPC(item);
+                            }
+                        }
+                        break;
+                    case NotifyCollectionChangedAction.Replace:
+                        break;
+                }
+            }
+            if(ModelTracking.HasFlag(ModelTrackingFlag.ItemQueries))
+            {
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        if (e.NewItems is not null)
+                        {
+                            foreach (var item in e.NewItems.OfType<T>())
+                            {
+                                localInsertOrReplace(item);
+                            }
+                        }
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        if (e.OldItems is not null)
+                        {
+                            foreach (var item in e.OldItems.OfType<T>())
+                            {
+                                localDelete(item);
+                            }
+                        }
+                        break;
+                    case NotifyCollectionChangedAction.Replace:
+                        break;
+                }
+            }
+            #region L o c a l F x
+            void localAddINPC(T item)
+            {
+                if(item is INotifyPropertyChanged inpc)
+                {
+                    inpc.PropertyChanged += PropertyChangedEventForwarder;
+                }
+            }
+            void localRemoveINPC(T item)
+            {
+                if (item is INotifyPropertyChanged inpc)
+                {
+                    inpc.PropertyChanged -= PropertyChangedEventForwarder;
+                }
+            }
+            void localInsertOrReplace(T item)
+            {
+                FilterQueryDatabase.InsertOrReplace(item);
+            }
+            void localDelete(T item)
+            {
+                FilterQueryDatabase.Delete(item);
+            }
+            #endregion L o c a l F x
+        }
+
+        private void PropertyChangedEventForwarder(object sender, PropertyChangedEventArgs e)
+        {
+            if (sender is T itemT)
+            {
+                OnPropertyChanged(new ItemPropertyChangedEventArgs(e.PropertyName, itemT));
+            }
+            else
+            {
+                this.ThrowHard<InvalidCastException>(
+                    $"Expecting INPC senders will be {typeof(T).Name} at all times.");
+            }
+        }
 
         public bool IsFixedSize => ((IList)CanonicalSuperset).IsFixedSize;
 
