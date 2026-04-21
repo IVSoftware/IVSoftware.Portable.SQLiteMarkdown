@@ -120,6 +120,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="Collections\Modeled\" />
 	  <Folder Include="README\img\" />
 	</ItemGroup>
 
