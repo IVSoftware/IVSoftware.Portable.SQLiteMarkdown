@@ -192,25 +192,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     /// <summary>
     /// 4 of 4 interfaces in this file.
     /// </summary>
-    partial class ObservableQueryFilterSource<T> : IRoutedEnumerable<RoutingOQFS>
+    partial class ObservableQueryFilterSource<T>
+    : IRoutedEnumerable<T, RoutingOQFS>
     {
-        IEnumerator GetEnumerator(RoutingOQFS route)
-        {
-            switch (route)
-            {
-                case RoutingOQFS.CanonicalSuperset:
-                    // TODO: Routing
-                    return GetEnumerator();
-                case RoutingOQFS.PredicateMatchSubset:
-                    // TODO: Routing
-                    return GetEnumerator();
-                default:
-                    this.ThrowFramework<NotSupportedException>($"The {route.ToFullKey()} case is not supported.");
-                    // Reachable only if Throw is handled.
-                    return this.GetEnumerator();
-            }
-        }
-
         public int GetCount(RoutingOQFS route)
         {
             var e = GetEnumerator(route);
@@ -223,38 +207,44 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             return count;
         }
 
-        int IRoutedEnumerable.GetCount(Enum route)
+        public int GetCount(Enum route)
+            => GetCount((RoutingOQFS)route);
+
+        public IEnumerator<T> GetEnumerator(RoutingOQFS route)
         {
-            if (route is RoutingOQFS routeT)
+            switch (route)
             {
-                return GetCount(routeT);
-            }
-            else
-            {
-                this.ThrowSoft<InvalidCastException>(
-                    $"Expecting {nameof(RoutingOQFS)}. The returned count will always be 0.");
-                return 0;
+                case RoutingOQFS.CanonicalSuperset:
+                    // TODO: Routing
+                    return ((IEnumerable<T>)this).GetEnumerator();
+
+                case RoutingOQFS.PredicateMatchSubset:
+                    // TODO: Routing
+                    return ((IEnumerable<T>)this).GetEnumerator();
+
+                default:
+                    this.ThrowFramework<NotSupportedException>(
+                        $"The {route.ToFullKey()} case is not supported.");
+                    return ((IEnumerable<T>)this).GetEnumerator();
             }
         }
 
-        IEnumerator IRoutedEnumerable<RoutingOQFS>.GetEnumerator(RoutingOQFS route)
+        public IEnumerator GetEnumerator(Enum route)
         {
-            if (route is RoutingOQFS routeT)
+            var e = GetEnumerator((RoutingOQFS)route);
+
+            while (e.MoveNext())
             {
-                return GetEnumerator(routeT);
-            }
-            else
-            {
-                this.ThrowSoft<InvalidCastException>(
-                    $"Expecting {nameof(RoutingOQFS)}. The returned enumerator will always be empty.");
-                return Array.Empty<T>().GetEnumerator();
+                yield return e.Current!;
             }
         }
+
         #region L E G A C Y    H O O K S
         public override int CanonicalCount
-            => this.GetCount(RoutingOQFS.CanonicalSuperset);
-        public override int PredicateMatchCount 
-            => this.GetCount(RoutingOQFS.PredicateMatchSubset);
-        #endregion L E G A C Y    H O O K S
+            => GetCount(RoutingOQFS.CanonicalSuperset);
+
+        public override int PredicateMatchCount
+            => GetCount(RoutingOQFS.PredicateMatchSubset);
+        #endregion
     }
 }
