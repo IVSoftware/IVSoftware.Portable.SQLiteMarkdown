@@ -2,6 +2,8 @@
 using IVSoftware.Portable.Collections.Events;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -33,7 +35,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         where T : new()
     {
         [Canonical("The parameterless CTor is the only CTor")]
-        public ObservableQueryFilterSource() { }
+        public ObservableQueryFilterSource() 
+        {
+            Model.AddAttributeFirst(new XBoundAttribute(nameof(StdModelAttribute.mdc), this, "[MDC]"));
+            Model.SetStdAttributeValue(StdModelAttribute.filters, "[No Active Filters]");
+        }
     }
 
     partial class ObservableQueryFilterSource<T>
@@ -60,7 +66,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         public void ReplaceItems(IEnumerable<T> items)
-            => ModeledCollectionProtected.LoadCanon((IList)items);
+            => CanonicalSupersetProtected.LoadCanon((IList)items);
 
         public async Task ReplaceItemsAsync(IEnumerable<T> items)
         {

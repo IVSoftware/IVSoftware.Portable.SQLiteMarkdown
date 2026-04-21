@@ -93,7 +93,6 @@ public class TestClass_260328_INPC
         Assert.AreEqual(1, items.Count);
         actual = items.Model.ToString();
         actual.ToClipboardExpected();
-        { }
 
         // ☆☆☆☆☆
         // FSOL: This pattern [model:1 match:0 qmatch:0 pmatch:0 live:0] is 'one' indication to show all items.

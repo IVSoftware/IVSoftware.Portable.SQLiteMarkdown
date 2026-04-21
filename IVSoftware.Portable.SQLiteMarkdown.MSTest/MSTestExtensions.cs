@@ -186,11 +186,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             {
                 if(omc.ObservableNetProjection is IList list)
                 {
-                    builder.Add($"Net: {list.Count}");
+                    builder.Add($"[Net: {list.Count}");
                 }
                 else
                 {
-                    builder.Add($"Net: null");
+                    builder.Add($"[Net: null");
                 }
             }
             builder.Add($"CC: {@this.CanonicalCount}");
