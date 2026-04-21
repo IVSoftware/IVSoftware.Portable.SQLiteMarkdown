@@ -34,7 +34,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             OnCollectionChanging(ePre);
             if (!ePre.Cancel)
             {
-                base.InsertItem(index, item);
+                using (RequestStdModelAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
+                {
+                    base.InsertItem(index, item);
+                }
             }
         }
         protected override void SetItem(int index, T item)
@@ -50,7 +53,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             OnCollectionChanging(ePre);
             if (!ePre.Cancel)
             {
-                base.SetItem(index, item);
+                using (RequestStdModelAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
+                {
+                    base.SetItem(index, item);
+                }
             }
         }
         protected override void RemoveItem(int index)
@@ -65,7 +71,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             OnCollectionChanging(ePre);
             if (!ePre.Cancel)
             {
-                base.RemoveItem(index);
+                using (RequestStdModelAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
+                {
+                    base.RemoveItem(index);
+                }
             }
         }
         protected override void MoveItem(int oldIndex, int newIndex)
@@ -82,7 +91,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             OnCollectionChanging(ePre);
             if (!ePre.Cancel)
             {
-                base.MoveItem(oldIndex, newIndex);
+                using (RequestStdModelAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
+                {
+                    base.MoveItem(oldIndex, newIndex);
+                }
             }
         }
 
@@ -98,7 +110,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
             OnCollectionChanging(ePre);
             if (!ePre.Cancel)
             {
-                base.ClearItems();
+                using (RequestStdModelAuthority(StdModelAuthority.SuspendForwardCollectionChange))
+                {
+                    using (RequestStdModelAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
+                    {
+                        base.ClearItems();
+                    }
+                }
             }
         }
         protected virtual void OnModelEpochFinalizing(ModelEpochDisposeEventArgs e)
