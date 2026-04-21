@@ -1,5 +1,7 @@
 ﻿using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Collections.Events;
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,33 +9,31 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Xml.Linq;
 
+
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
+    /// <summary>
+    /// 1 of 4 interfaces in this file.
+    /// </summary>
     partial class ObservableQueryFilterSource<T> : IModeledCollection
     {
-        public XElement Model => ((IModeledCollection)ModeledCollection).Model;
+        public XElement Model => ModeledCollectionProtected.Model;
 
-        public ModelTrackingFlag ModelTracking { get => ((IModeledCollection)ModeledCollection).ModelTracking; set => ((IModeledCollection)ModeledCollection).ModelTracking = value; }
-        SQLiteQueryOnlyConnection? IModeledCollection.FilterQueryDatabase => ((IModeledCollection)ModeledCollection).FilterQueryDatabase;
+        public ModelTrackingFlag ModelTracking { get => ((IModeledCollection)ModeledCollectionProtected).ModelTracking; set => ((IModeledCollection)ModeledCollectionProtected).ModelTracking = value; }
+
+        public IList? ObservableNetProjection => ((IModeledCollection)ModeledCollectionProtected).ObservableNetProjection;
+
+        SQLiteQueryOnlyConnection? IModeledCollection.FilterQueryDatabase => ((IModeledCollection)ModeledCollectionProtected).FilterQueryDatabase;
 
         public void SetObservableNetProjection(INotifyPreviewCollection? onp, NetProjectionTopology? topology = null)
         {
-            ((IModeledCollection)ModeledCollection).SetObservableNetProjection(onp, topology);
+            ((IModeledCollection)ModeledCollectionProtected).SetObservableNetProjection(onp, topology);
         }
-
-        public IEnumerator GetEnumerator(Enum route)
-        {
-            return ((IRoutedEnumerable)ModeledCollection).GetEnumerator(route);
-        }
-
-        public int GetCount(Enum route)
-        {
-            return ((IRoutedEnumerable)ModeledCollection).GetCount(route);
-        }
-
-        public INotifyPreviewCollection? ObservableNetProjection 
-            => ((IModeledCollection)ModeledCollection).ObservableNetProjection;
     }
+
+    /// <summary>
+    /// 2 of 4 interfaces in this file.
+    /// </summary>
     partial class ObservableQueryFilterSource<T> : INotifyPreviewCollection
     {
         public NotifyCollectionChangeScope EventScope
@@ -52,6 +52,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
         public event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
     }
+
+    /// <summary>
+    /// 3 of 4 interfaces in this file.
+    /// </summary>
     partial class ObservableQueryFilterSource<T> 
         : IList
         , IList<T>
@@ -79,12 +83,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 if (_modeledCollectionProtected is null)
                 {
                     _modeledCollectionProtected = new ObservableModeledCollection<T>();
-                    // NOTE: This is *not* an INotifyCollectionChanging API per published contract.
-                    ((INotifyCollectionChanging)_modeledCollectionProtected)
-                        .CollectionChanging += (sender, e) =>
-                    {
-                    };
 
+                    // NOTE: This is *not* an INotifyCollectionChanging API per published contract.
                     _modeledCollectionProtected.CollectionChanged += (sender, e) =>
                     {
                     };
@@ -187,5 +187,74 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             return ((IEnumerable<T>)ModeledCollection).GetEnumerator();
         }
+    }
+
+    /// <summary>
+    /// 4 of 4 interfaces in this file.
+    /// </summary>
+    partial class ObservableQueryFilterSource<T> : IRoutedEnumerable<RoutingOQFS>
+    {
+        IEnumerator GetEnumerator(RoutingOQFS route)
+        {
+            switch (route)
+            {
+                case RoutingOQFS.CanonicalSuperset:
+                    // TODO: Routing
+                    return GetEnumerator();
+                case RoutingOQFS.PredicateMatchSubset:
+                    // TODO: Routing
+                    return GetEnumerator();
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {route.ToFullKey()} case is not supported.");
+                    // Reachable only if Throw is handled.
+                    return this.GetEnumerator();
+            }
+        }
+
+        public int GetCount(RoutingOQFS route)
+        {
+            var e = GetEnumerator(route);
+
+            int count = 0;
+            while (e.MoveNext())
+            {
+                count++;
+            }
+            return count;
+        }
+
+        int IRoutedEnumerable.GetCount(Enum route)
+        {
+            if (route is RoutingOQFS routeT)
+            {
+                return GetCount(routeT);
+            }
+            else
+            {
+                this.ThrowSoft<InvalidCastException>(
+                    $"Expecting {nameof(RoutingOQFS)}. The returned count will always be 0.");
+                return 0;
+            }
+        }
+
+        IEnumerator IRoutedEnumerable<RoutingOQFS>.GetEnumerator(RoutingOQFS route)
+        {
+            if (route is RoutingOQFS routeT)
+            {
+                return GetEnumerator(routeT);
+            }
+            else
+            {
+                this.ThrowSoft<InvalidCastException>(
+                    $"Expecting {nameof(RoutingOQFS)}. The returned enumerator will always be empty.");
+                return Array.Empty<T>().GetEnumerator();
+            }
+        }
+        #region L E G A C Y    H O O K S
+        public override int CanonicalCount
+            => this.GetCount(RoutingOQFS.CanonicalSuperset);
+        public override int PredicateMatchCount 
+            => this.GetCount(RoutingOQFS.PredicateMatchSubset);
+        #endregion L E G A C Y    H O O K S
     }
 }

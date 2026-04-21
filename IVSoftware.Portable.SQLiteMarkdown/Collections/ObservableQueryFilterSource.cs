@@ -34,12 +34,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         [Canonical("The parameterless CTor is the only CTor")]
         public ObservableQueryFilterSource() { }
-
-        // Legacy hooks
-        public override int CanonicalCount 
-        {
-            get => Count;
-        }
     }
 
     partial class ObservableQueryFilterSource<T>

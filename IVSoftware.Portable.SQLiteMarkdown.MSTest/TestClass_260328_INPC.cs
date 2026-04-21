@@ -60,9 +60,9 @@ public class TestClass_260328_INPC
             // OLD 260412 - was not working after the integration.
             // PROPOSED SOLUTION
             // - The missing link for legacy integration is taking the
-            //   OMC (which internally is CanonicalSupersetProtected) and
+            //   OMC (which internally is ModeledCollectionProtected) and
             //   dropping it laterally into the inherited OnPropertyChanged
-            //   of the inheritied WDT.
+            //   of the inherited WDT.
             // - There's also a SOC line drawn here.
             //   1. WDT is a concern of Modeled MDC because of the IME
             //   2. Make sure that a WDT does *not* sneak into the pristine

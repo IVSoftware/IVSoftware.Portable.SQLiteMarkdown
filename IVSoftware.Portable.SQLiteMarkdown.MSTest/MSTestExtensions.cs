@@ -182,6 +182,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             var builder = new List<string>();
             builder.Add($"[IME Len: {@this.InputText.Length}");
             builder.Add($"IsFiltering: {@this.IsFiltering}]");
+            if(@this is IModeledCollection omc)
+            {
+                if(omc.ObservableNetProjection is IList list)
+                {
+                    builder.Add($"Net: {list.Count}");
+                }
+                else
+                {
+                    builder.Add($"Net: null");
+                }
+            }
             builder.Add($"CC: {@this.CanonicalCount}");
             builder.Add($"PMC: {@this.PredicateMatchCount}]");
             builder.Add($"[{@this.QueryFilterConfig}: {@this.SearchEntryState.ToFullKey()}");
