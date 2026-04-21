@@ -8,6 +8,8 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
+using IVSoftware.Portable.Threading;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -17,8 +19,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             OnPropertyChanged(new ItemPropertyChangedEventArgs(e.PropertyName, item));
         }
-        protected virtual SQLiteConnection FilterQueryDatabase => throw new NotImplementedException("ToDo");
-#if false
+
         /// <summary>
         /// The ephemeral backing store for this collection's contract filtering.
         /// </summary>
@@ -29,26 +30,41 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///   provide an advisory stream should this be called upon to service more
         ///   than the implicit single table for the collection.
         /// </remarks>
-        protected SQLiteConnection FilterQueryDatabase
+        protected virtual SQLiteConnection FilterQueryDatabase
         {
             get
             {
-                if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                if (this is IModeledCollection omc)
                 {
-                    this.ThrowPolicyException(MarkdownContextPolicyViolation.FilterEngineUnavailable);
-                    // NOTE:
-                    // Handling the Throw creates a benign condition where a DB
-                    // that might not really be necessary is instantiated regardless.
+                    if (omc.ModelTracking.HasFlag(ModelTrackingFlag.ItemQueries))
+                    {
+                        return omc.FilterQueryDatabase!;
+                    }
+                    else
+                    {
+                        // Allowable and consistent with the IModeledCollection contract;
+                        return null!;
+                    }
                 }
+                else
+                {
+                    if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                    {
+                        this.ThrowPolicyException(MarkdownContextPolicyViolation.FilterEngineUnavailable);
+                        // Unreachable unless Throw is handled.
+                        // Opting to continue creates a benign condition where a DB
+                        // that might not really be necessary is instantiated regardless.
+                    }
 
-                // HYBRID - factory getter.
-                if (_filterQueryDatabase is null)
-                {
-                    _filterQueryDatabase = new SQLiteConnection(":memory:");
-                    // ContractType is set at construction and cannot be null.
-                    _filterQueryDatabase.CreateTable(ContractType);
+                    // HYBRID - factory getter.
+                    if (_filterQueryDatabase is null)
+                    {
+                        _filterQueryDatabase = new SQLiteQueryOnlyConnection();
+                        // ContractType is set at construction and cannot be null.
+                        _filterQueryDatabase.CreateTable(ContractType);
+                    }
+                    return _filterQueryDatabase;
                 }
-                return _filterQueryDatabase;
             }
             set
             {
@@ -75,8 +91,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         SQLiteConnection? _filterQueryDatabase = default;
 
-#endif
-
 
         [Obsolete("Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount.")]
         [PublishedContract("1.0")] // Required for backward compatibility. Do not remove this property.
@@ -87,20 +101,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 @"[Obsolete(""Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount."")]");
         }
 
-        #region D U E    T O    L E G A C Y
+        #region L E G A C Y    H O O K S
         /// <summary>
-        /// We wish these weren't here in the superclass, but they already are.
-        /// That said, it would be cool if they were abstract, but they're not.
+        /// Supports an inheritance model where the binding source *is a* MarkdownContext.
         /// </summary>
         /// <remarks>
-        /// Bottom line, we'll make consumer aware and let them handle the Throw if they don't care about it.
+        /// - As a separation of concerns, these *don't really belong here* but 
+        ///   have already been published as part of MarkdownContext class.
+        /// - When this class *is not* inherited, these lack semantic meaning.
+        /// - When this class *is* inherited, their presence may imply that
+        ///   this class is maintaining the counts somehow. It isn't.
+        /// THIS WILL THROW unless handled. The rationale is that anything good
+        /// that comes from these will be value added by the subclass.
         /// </remarks>
         public virtual int CanonicalCount
         {
             get
             {
-                this.ThrowHard<ModelException>(
-    $"{nameof(CanonicalCount)} requires override in derived type.");
+                // Do not call this base class method.
+                ThrowHard<ModelException>($"{nameof(CanonicalCount)} requires override in derived type.");
+                // Reachable only if Throw is handled.
                 return 0;
             }
         }
@@ -109,12 +129,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             get
             {
-                this.ThrowHard<ModelException>(
-    $"{nameof(PredicateMatchCount)} requires override in derived type.");
+                // Do not call this base class method.
+                ThrowHard<ModelException>($"{nameof(PredicateMatchCount)} requires override in derived type.");
+                // Reachable only if Throw is handled.
                 return 0;
             }
         }
-        #endregion D U E    T O    L E G A C Y
+        #endregion L E G A C Y    H O O K S
 
         /// <summary>
         /// Responsible for raising the InputTextSettled event.
