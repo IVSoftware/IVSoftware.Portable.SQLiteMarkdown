@@ -31,12 +31,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 scope: EventScope,
                 newItems: new[] { item },
                 newStartingIndex: index);
-            OnCollectionChanging(ePre);
-            if (!ePre.Cancel)
+            if (!EHProtected.HasAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
             {
-                using (RequestStdModelAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
+                OnCollectionChanging(ePre);
+                if (!ePre.Cancel)
                 {
-                    base.InsertItem(index, item);
+                    using (RequestStdModelAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
+                    {
+                        base.InsertItem(index, item);
+                    }
                 }
             }
         }
@@ -50,12 +53,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 newStartingIndex: index,
                 oldStartingIndex: index);
 
-            OnCollectionChanging(ePre);
-            if (!ePre.Cancel)
+            if (!EHProtected.HasAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
             {
-                using (RequestStdModelAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
+                OnCollectionChanging(ePre);
+                if (!ePre.Cancel)
                 {
-                    base.SetItem(index, item);
+                    using (RequestStdModelAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
+                    {
+                        base.SetItem(index, item);
+                    }
                 }
             }
         }
@@ -68,12 +74,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 scope: EventScope,
                 oldItems: new[] { item },
                 oldStartingIndex: index);
-            OnCollectionChanging(ePre);
-            if (!ePre.Cancel)
+            if (!EHProtected.HasAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
             {
-                using (RequestStdModelAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
+                OnCollectionChanging(ePre);
+                if (!ePre.Cancel)
                 {
-                    base.RemoveItem(index);
+                    using (RequestStdModelAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
+                    {
+                        base.RemoveItem(index);
+                    }
                 }
             }
         }
@@ -88,12 +97,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 oldItems: new[] { item },
                 newStartingIndex: newIndex,
                 oldStartingIndex: oldIndex);
-            OnCollectionChanging(ePre);
-            if (!ePre.Cancel)
+            if (!EHProtected.HasAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
             {
-                using (RequestStdModelAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
+                OnCollectionChanging(ePre);
+                if (!ePre.Cancel)
                 {
-                    base.MoveItem(oldIndex, newIndex);
+                    using (RequestStdModelAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
+                    {
+                        base.MoveItem(oldIndex, newIndex);
+                    }
                 }
             }
         }
@@ -107,10 +119,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections.Preview
                 scope: EventScope,
                 oldItems: snapshot,
                 oldStartingIndex: -1);
-            OnCollectionChanging(ePre);
-            if (!ePre.Cancel)
+            if (!EHProtected.HasAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
             {
-                using (RequestStdModelAuthority(StdModelAuthority.SuspendForwardCollectionChange))
+                OnCollectionChanging(ePre);
+                if (!ePre.Cancel)
                 {
                     using (RequestStdModelAuthority(StdModelAuthority.SuspendForwardCollectionChanging))
                     {
