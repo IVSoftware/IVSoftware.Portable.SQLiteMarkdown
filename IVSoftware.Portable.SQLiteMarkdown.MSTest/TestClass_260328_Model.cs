@@ -364,9 +364,16 @@ public class TestClass_260328_Model
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
             actual.ToClipboardExpected();
-            { } // <- FIRST TIME ONLY: Adjust the message.
-            actual.ToClipboardAssert("Expecting DECREMENT EDGE.");
             { }
+            expected = @" 
+[Changed] Key=match ObjectChange=Remove Parent=not null Edge=Decrement
+[Changed] Key=qmatch ObjectChange=Value Parent=not null Edge=Decrement";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting DECREMENT EDGE."
+            );
 
             actual = histo.ToString();
             actual.ToClipboardExpected();
