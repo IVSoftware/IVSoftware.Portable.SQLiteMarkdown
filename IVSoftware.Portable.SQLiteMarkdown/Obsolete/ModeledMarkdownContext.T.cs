@@ -37,6 +37,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             CanonicalSupersetProtected = new();
             Model.AddAttributeFirst(attr: new XBoundAttribute(nameof(StdModelAttribute.mdc), this, "[MDC]"));
             Model.SetAttributeValue("filters", "[No Active Filters]");
+            Model.SortAttributes<StdModelAttribute>();
 
 
             if (typeof(INotifyCollectionChanged).IsAssignableFrom(GetType()))
@@ -53,7 +54,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
 
 #if DEBUG
-            Debug.Assert(Model.ToString() == @"<model mdc=""[MDC]"" histo=""[HISTO]"" filters=""[No Active Filters]"" />");
+            var formatted = Model.ToString();
+            { }
+            Debug.Assert(
+                Model
+                .ToString()
+                .Equals(
+                    @"<model omc=""[OMC]"" histo=""[Empty]"" mdc=""[MDC]"" filters=""[No Active Filters]"" />"));
             Model.Changing += (sender, e) =>
             {
                 switch (e.ObjectChange)

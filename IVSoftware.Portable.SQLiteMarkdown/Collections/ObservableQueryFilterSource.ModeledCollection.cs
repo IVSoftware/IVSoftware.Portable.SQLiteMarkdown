@@ -86,8 +86,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 return _canonicalSuperset;
             }
         }
-        IReadOnlyCollection<T>? _canonicalSuperset = null;
+        IReadOnlyCollection<T>? _canonicalSuperset = null; 
+        
+        protected ObservableModeledCollection<T> CanonicalSupersetProtected { get; set; }
 
+#if false
         protected ObservableModeledCollection<T> CanonicalSupersetProtected
         {
             get
@@ -118,6 +121,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
         ObservableModeledCollection<T>? _canonicalSupersetProtected = null;
+
 
         private void CollectionChangedEventForwarder(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -216,6 +220,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     $"Expecting INPC senders will be {typeof(T).Name} at all times.");
             }
         }
+
+#endif
 
         public bool IsFixedSize => ((IList)CanonicalSuperset).IsFixedSize;
 

@@ -256,10 +256,21 @@ NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 0 NotifyCollecti
 NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 1 NotifyCollectionChangingEventArgs          
 NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 2 NotifyCollectionChangingEventArgs          
 NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 3 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 4 NotifyCollectionChangingEventArgs          "
+            ;
+
+#if false && SAVE
+            expected = @" 
+NetProjection.Reset   NewItems= 0 OldItems= 0 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 0 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 1 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 2 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 3 NotifyCollectionChangingEventArgs          
 NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 4 NotifyCollectionChangingEventArgs          
 NetProjection.Add     NewItems= 5 OldItems= 0 NewStartingIndex= 0 NotifyCollectionChangeReason.Digest        NotifyCollectionChangingEventArgs          
 NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
             ;
+#endif
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
