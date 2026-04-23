@@ -8,6 +8,8 @@ using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.Xml.Linq;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using System.Collections.Specialized;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -410,13 +412,36 @@ public class TestClass_260328_Model
     [TestMethod, DoNotParallelize]
     public void Test_HistogrammerMDC()
     {
-        using var te = this.TestableEpoch();
-
         string actual, expected;
-        ModeledMarkdownContext<SelectableQFModel> mmdc = new(){ QueryFilterConfig = QueryFilterConfig.Query };
-        XElement model = mmdc.Model;
+        using var te = this.TestableEpoch();
+        List<string> 
+            builderChanging = new (),
+            builderChanged  = new ();
+        ObservableQueryFilterSource<SelectableQFModel> oqfs = new(){ QueryFilterConfig = QueryFilterConfig.Query };
+        XElement model = oqfs.Model;
 
-        mmdc.LoadCanon(new List<SelectableQFModel>().PopulateForDemo(10));
+        #region L o c a l F x				
+        using var local = this.WithOnDispose(
+            onInit: (sender, e) =>
+            {
+                oqfs.CollectionChanging += localOnCollectionChanging;
+                oqfs.CollectionChanged += localOnCollectionChanged;
+            },
+            onDispose: (sender, e) =>
+            {
+                oqfs.CollectionChanged -= localOnCollectionChanged;
+            });
+
+        void localOnCollectionChanging(object? sender, NotifyCollectionChangingEventArgs e)
+        {
+            builderChanging.Add(e.ToString(false));
+        }
+        void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+        }
+        #endregion L o c a l F x
+
+        oqfs.ReplaceItems(new List<SelectableQFModel>().PopulateForDemo(10));
 
         actual = model.ToString();
         actual.ToClipboardExpected();
@@ -441,7 +466,7 @@ public class TestClass_260328_Model
         #region S U B T E S T S
         void subtest_ToStringHistoDefault()
         {
-            actual = mmdc.ToString(FormattingEHM.Matches);
+            actual = oqfs.ToString(FormattingEHM.Matches);
             actual.ToClipboardExpected();
             { }
             expected = @" 
