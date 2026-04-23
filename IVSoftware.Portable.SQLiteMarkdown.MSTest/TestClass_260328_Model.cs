@@ -194,7 +194,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item match=""True"" qmatch=""True"" />
 </model>"
             ;
@@ -240,7 +240,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item match=""True"" qmatch=""True"" />
 </model>"
             ;
@@ -270,7 +270,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MDC]"" histo=""[model:0 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:0 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item />
 </model>"
             ;
@@ -288,9 +288,10 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MDC]"" histo=""[model:0 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:0 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item />
-</model>";
+</model>"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -310,7 +311,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item />
   <item match=""True"" qmatch=""True"" />
 </model>"
@@ -328,7 +329,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MDC]"" histo=""[model:0 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:0 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item />
 </model>"
             ;
@@ -346,7 +347,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:0 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item />
   <item match=""True"" qmatch=""True"" />
 </model>"

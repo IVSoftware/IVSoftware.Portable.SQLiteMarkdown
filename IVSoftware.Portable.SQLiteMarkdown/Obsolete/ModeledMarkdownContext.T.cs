@@ -60,7 +60,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 Model
                 .ToString()
                 .Equals(
-                    @"<model omc=""[OMC]"" histo=""[Empty]"" mdc=""[MDC]"" filters=""[No Active Filters]"" />"));
+                    @"<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[Empty]"" filters=""[No Active Filters]"" />"));
             Model.Changing += (sender, e) =>
             {
                 switch (e.ObjectChange)

@@ -86,9 +86,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 return _canonicalSuperset;
             }
         }
-        IReadOnlyCollection<T>? _canonicalSuperset = null; 
-        
-        protected ObservableModeledCollection<T> CanonicalSupersetProtected { get; set; }
+        IReadOnlyCollection<T>? _canonicalSuperset = null;
+
+
+        protected ObservableModeledCollection<T> CanonicalSupersetProtected 
+        { 
+            get; 
+            set;
+        } = new ObservableModeledCollection<T>();
 
 #if false
         protected ObservableModeledCollection<T> CanonicalSupersetProtected
