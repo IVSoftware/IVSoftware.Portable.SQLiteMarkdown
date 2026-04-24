@@ -20,19 +20,18 @@ public class TestClass_260401_OPCv2
         using var te = this.TestableEpoch();
 
         #region I T E M    G E N
-        IList<SelectableQFModel>? eph = null;
         // CREATE (no side effects)
-        var i1 = eph.AddDynamic("Item01");
-        var i2 = eph.AddDynamic("Item02");
-        var i3 = eph.AddDynamic("Item03");
+        var i1 = "Item01".MakeDynamic<SelectableQFModel>();
+        var i2 = "Item02".MakeDynamic<SelectableQFModel>();
+        var i3 = "Item03".MakeDynamic<SelectableQFModel>();
         #endregion I T E M    G E N
 
-        var itemsSource = new ObservableModeledCollection<SelectableQFModel>();
+        var omc = new ObservableModeledCollection<SelectableQFModel>();
 
         #region E V E N T S
-        itemsSource.CollectionChanged += (sender, e) =>
+        omc.CollectionChanged += (sender, e) =>
         {
-            builder.Add(e.ToString(ReferenceEquals(sender, itemsSource)));
+            builder.Add(e.ToString(ReferenceEquals(sender, omc)));
         };
         #endregion E V E N T S
 
@@ -44,9 +43,9 @@ public class TestClass_260401_OPCv2
 
         void subtest_None()
         {
-            itemsSource.Add(i1);
-            itemsSource.Add(i2);
-            itemsSource.Add(i3);
+            omc.Add(i1);
+            omc.Add(i2);
+            omc.Add(i3);
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
@@ -62,8 +61,41 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 2 NotifyCollectionChangedEve
                 "Expecting 3x Add events."
             );
 
+            actual = omc.ToString(FormattingOMC.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model omc=""[OMC]"" histo=""[model:3 match:0 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" order=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" order=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" order=""2"" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting THREE items."
+            );
+
             builder.Clear();
-            itemsSource.RemoveAt(2);
+            omc.RemoveAt(2);
+
+            actual = omc.ToString(FormattingOMC.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model omc=""[OMC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" order=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" order=""1"" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting LAST item REMOVED."
+            );
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
@@ -78,8 +110,24 @@ NetProjection.Remove  OldItems= 1 OldStartingIndex= 2 NotifyCollectionChangedEve
                 "Expecting 1x Remove events."
             );
 
+            actual = omc.ToString(FormattingOMC.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model omc=""[OMC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" order=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" order=""1"" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting LAST item REMOVED."
+            );
+
             builder.Clear();
-            itemsSource[1] = i3;
+            omc[1] = i3;
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
@@ -94,8 +142,23 @@ NetProjection.Replace NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingInd
                 "Expecting 1x Replace events."
             );
 
+            actual = omc.ToString(FormattingOMC.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model omc=""[OMC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" order=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" order=""1"" />
+</model>"
+            ;
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
+
             builder.Clear();
-            itemsSource.Move(1, 0);
+            omc.Move(1, 0);
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
@@ -110,7 +173,7 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 0 OldStartingInd
                 "Expecting 1x Move events."
             );
 
-            actual = JsonConvert.SerializeObject(itemsSource, Formatting.Indented);
+            actual = JsonConvert.SerializeObject(omc, Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -155,7 +218,7 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 0 OldStartingInd
 
 
             builder.Clear();
-            itemsSource.Clear();
+            omc.Clear();
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
@@ -174,9 +237,9 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
         void subtest_Freeze()
         {
             te.ResetEpoch();
-            itemsSource.PopulateForDemo(5);
+            omc.PopulateForDemo(5);
 
-            actual = itemsSource.ToString(out XElement _);
+            actual = omc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -195,17 +258,17 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 "Expecting result to match."
             );
 
-            using (itemsSource.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
             {
-                itemsSource.RemoveAt(1);                // Remove Item02
-                Assert.AreEqual(5, itemsSource.Count);
-                itemsSource.RemoveAt(2);                // Remove Item04
-                Assert.AreEqual(5, itemsSource.Count);
-                itemsSource.RemoveAt(1);                // Remove Item03
-                Assert.AreEqual(5, itemsSource.Count);
+                omc.RemoveAt(1);                // Remove Item02
+                Assert.AreEqual(5, omc.Count);
+                omc.RemoveAt(2);                // Remove Item04
+                Assert.AreEqual(5, omc.Count);
+                omc.RemoveAt(1);                // Remove Item03
+                Assert.AreEqual(5, omc.Count);
             }
 
-            actual = itemsSource.ToString(out XElement _);
+            actual = omc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -221,17 +284,17 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 "Expecting result to match."
             );
             te.ResetEpoch();
-            itemsSource.PopulateForDemo(5);
+            omc.PopulateForDemo(5);
 
-            using (itemsSource.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
             {
-                itemsSource.RemoveAt(1);
-                Assert.AreEqual(5, itemsSource.Count);
-                itemsSource.RemoveAt(2);
-                Assert.AreEqual(5, itemsSource.Count);
+                omc.RemoveAt(1);
+                Assert.AreEqual(5, omc.Count);
+                omc.RemoveAt(2);
+                Assert.AreEqual(5, omc.Count);
             }
 
-            actual = itemsSource.ToString(out XElement _);
+            actual = omc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -249,22 +312,22 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             );
 
             te.ResetEpoch();
-            itemsSource.PopulateForDemo(5);
+            omc.PopulateForDemo(5);
 
-            int liveCount = itemsSource.Count;
-            using (itemsSource.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            int liveCount = omc.Count;
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
             {
-                itemsSource.RemoveAt(1);                        // Remove Item02 (middle)
+                omc.RemoveAt(1);                        // Remove Item02 (middle)
                 liveCount--;
-                Assert.AreEqual(5, itemsSource.Count);
-                itemsSource.RemoveAt(0);                        // Remove Item01 (front)
+                Assert.AreEqual(5, omc.Count);
+                omc.RemoveAt(0);                        // Remove Item01 (front)
                 liveCount--;
-                Assert.AreEqual(5, itemsSource.Count);
-                itemsSource.RemoveAt(liveCount - 1);            // Remove Item05 (tail)
-                Assert.AreEqual(5, itemsSource.Count);
+                Assert.AreEqual(5, omc.Count);
+                omc.RemoveAt(liveCount - 1);            // Remove Item05 (tail)
+                Assert.AreEqual(5, omc.Count);
             }
 
-            actual = itemsSource.ToString(out XElement _);
+            actual = omc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -284,7 +347,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
         void subtest_Preview()
         {            
             builder.Clear();
-            itemsSource.Clear();
+            omc.Clear();
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
             actual.ToClipboardAssert("Expecting builder content to match.");
@@ -299,11 +362,11 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
             );
 
             // P R E V I E W
-            using (itemsSource.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
             {
-                itemsSource.Add(i1);
-                itemsSource.Add(i2);
-                itemsSource.Add(i3);
+                omc.Add(i1);
+                omc.Add(i2);
+                omc.Add(i3);
             }
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
@@ -321,10 +384,10 @@ NetProjection.Add     NewItems= 3 NewStartingIndex= 0 NotifyCollectionChangedEve
 
             // - This *looks* contiguous but it isn't.
             // ∴We should get a Reset not a BCL-compatible event
-            using (itemsSource.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
             {
-                itemsSource.Remove(i1);         // Remove Item01 from index 0      
-                itemsSource.RemoveAt(1);        // Remove item03 from index 1
+                omc.Remove(i1);         // Remove Item01 from index 0      
+                omc.RemoveAt(1);        // Remove item03 from index 1
             }
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
@@ -342,11 +405,11 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
 
             // It might not look like it, but Item02 
             // is the (only) one that should remain
-            Assert.AreSame(itemsSource[0], i2);
+            Assert.AreSame(omc[0], i2);
 
-            using (itemsSource.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
             {
-                itemsSource.PopulateForDemo(5);
+                omc.PopulateForDemo(5);
             }
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
@@ -361,12 +424,12 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
                 "Expecting 1x jagged Reset."
             );
 
-            using (itemsSource.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
             {
                 // Replace index 1-4 with with Item01 (contiguous)
-                for (int i = 1; i < itemsSource.Count; i++)
+                for (int i = 1; i < omc.Count; i++)
                 {
-                    itemsSource[i] = i1;
+                    omc[i] = i1;
                 }
             }
 
@@ -383,16 +446,16 @@ NetProjection.Replace NewItems= 4 OldItems= 4 NewStartingIndex= 0 OldStartingInd
             );
 
             // P R E V I E W
-            using (itemsSource.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
             {
-                itemsSource.Clear();
-                Assert.AreEqual(5, itemsSource.Count);  // Remember! We're projecting a different reality.
-                itemsSource.Add(i1);
-                itemsSource.Add(i2);
-                itemsSource.Add(i3);
-                Assert.AreEqual(5, itemsSource.Count);
+                omc.Clear();
+                Assert.AreEqual(5, omc.Count);  // Remember! We're projecting a different reality.
+                omc.Add(i1);
+                omc.Add(i2);
+                omc.Add(i3);
+                Assert.AreEqual(5, omc.Count);
             }
-            Assert.AreEqual(3, itemsSource.Count);      // Now count is back to IRL.
+            Assert.AreEqual(3, omc.Count);      // Now count is back to IRL.
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
             actual.ToClipboardExpected();
@@ -406,9 +469,9 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
                 "Expecting 1x jagged reset."
             );
 
-            using (itemsSource.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
             {
-                itemsSource.PopulateForDemo(5);
+                omc.PopulateForDemo(5);
             }
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
@@ -423,19 +486,19 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
                 "Expecting 1x jagged Reset."
             );
 
-            using (itemsSource.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
             {
                 // C O N T I G U O U S !
                 // - Move is *not* a qualifying ranged operation.
                 // - However, the net result affects contiguous indexes.
                 // ∴ Produces contiguous Replace.
-                for (int srce=1, dest=0; srce < itemsSource.Count; srce++, dest++)
+                for (int srce=1, dest=0; srce < omc.Count; srce++, dest++)
                 {
-                    itemsSource.Move(srce, dest);
+                    omc.Move(srce, dest);
                 }
             }
 
-            actual = itemsSource.ToString(out XElement _);
+            actual = omc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
             expected = @" 
