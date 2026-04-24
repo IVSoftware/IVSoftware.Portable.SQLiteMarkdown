@@ -32,14 +32,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public IList? ObservableNetProjection => 
             ((IModeledCollection)CanonicalSupersetProtected).ObservableNetProjection;
 
-        public ModelDataExchangeAuthority Authority =>
-            ((IModeledCollection)CanonicalSupersetProtected).Authority;
+        public ModelDataExchangeAuthority ModelDataExchangeAuthority => 
+            ((IModeledCollection)CanonicalSupersetProtected).ModelDataExchangeAuthority;
 
-        public IReadOnlyDictionary<StdModelAttribute, int> HistoBins =>
-            ((IModeledCollection)CanonicalSupersetProtected).HistoBins;
+        public IReadOnlyDictionary<StdModelAttribute, int> Histo => 
+            ((IModeledCollection)CanonicalSupersetProtected).Histo;
 
         SQLiteQueryOnlyConnection? IModeledCollection.FilterQueryDatabase => 
             ((IModeledCollection)CanonicalSupersetProtected).FilterQueryDatabase;
+
+        public bool HasAuthority(Enum authority)
+        {
+            return ((IModeledCollection)CanonicalSupersetProtected).HasAuthority(authority);
+        }
 
         public void SetObservableNetProjection(INotifyPreviewCollection? onp, NetProjectionTopology? topology = null) =>
             ((IModeledCollection)CanonicalSupersetProtected).SetObservableNetProjection(onp, topology);

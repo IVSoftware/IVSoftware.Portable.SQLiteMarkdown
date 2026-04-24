@@ -19,35 +19,13 @@ namespace IVSoftware.Portable.Collections.Preview
 
         CollectionChangingEventingPolicy INotifyCollectionChanging.CollectionChangingEventingPolicy => CollectionChangingEventingPolicy;
 
-        public new event NotifyCollectionChangingEventHandler? CollectionChanging
+        public event NotifyCollectionChangingEventHandler? CollectionChanging
         {
-            add => base.CollectionChanging += value;
-            remove => base.CollectionChanging -= value;
+            add => NotifyCollectionChangingImpl.CollectionChanging += value;
+            remove => NotifyCollectionChangingImpl.CollectionChanging -= value;
         }
 
-        public void AddRange(IEnumerable items)
-        {
-            using (RequestModelDataExchangeAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
-            {
-                int newStartingIndex = Count;
-                foreach (var item in items)
-                {
-                    if (item is T itemT)
-                    {
-                        // [Careful]
-                        // Use Insert.
-                        // We can't use Add because the collection
-                        // doesn't actually change until the end.
-                        InsertItem(newStartingIndex++, itemT);
-                    }
-                    else
-                    {
-                        item.ThrowHard<InvalidCastException>($"All range items must be {typeof(T).Name}");
-                        return;
-                    }
-                }
-            }
-        }
+        public void AddRange(IEnumerable items) => RangeableImpl.AddRange(items);
 
         public int AddRangeDistinct(IEnumerable items)
         {
@@ -62,7 +40,7 @@ namespace IVSoftware.Portable.Collections.Preview
             else
             {
                 int changed = 0;
-                using (RequestModelDataExchangeAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
+                using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
                 {
                     int newStartingIndex = Count;
                     foreach (var item in items)
@@ -102,7 +80,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public void InsertRange(int startingIndex, IEnumerable items)
         {
-            using (RequestModelDataExchangeAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
+            using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
             {
                 foreach (var item in items)
                 {
@@ -165,7 +143,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
             if (itemsT.Count == count)
             {
-                using (RequestModelDataExchangeAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
+                using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
                 {
                     foreach (var item in itemsT)
                     {
@@ -190,7 +168,7 @@ namespace IVSoftware.Portable.Collections.Preview
                         return 0;
                     }
                 }
-                using (RequestModelDataExchangeAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
+                using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
                 {
                     foreach (var removeAt in indexes.OrderByDescending(_ => _))
                     {
@@ -227,7 +205,7 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             else
             {
-                using (RequestModelDataExchangeAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
+                using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
                 {
                     var count = (endingIndex - startingIndex) + 1;
                     while (count > 0)

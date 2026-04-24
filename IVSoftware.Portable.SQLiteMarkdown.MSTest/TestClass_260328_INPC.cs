@@ -237,7 +237,7 @@ IsChecked: Brown Dog "
         subtest_RemoveWithCancel();
         void subtest_RemoveWithCancel()
         {
-            using (itemsSource.RequestModelDataExchangeAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (itemsSource.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 itemsSource.PopulateForDemo(5);
             }
@@ -299,7 +299,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
 
             builder.Clear();
             itemsSource.CollectionChangingEventingPolicy = CollectionChangingEventingPolicy.Coalesce;
-            using (itemsSource.RequestModelDataExchangeAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
+            using (itemsSource.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, itemsSource))
             {
                 itemsSource.RemoveAt(1);
                 itemsSource.RemoveAt(1);

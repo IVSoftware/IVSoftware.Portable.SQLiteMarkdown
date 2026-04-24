@@ -205,7 +205,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     case FilteringState.Armed:
                         return true;
                     case FilteringState.Active:
-                        if (0 == CanonicalSupersetProtected.HistoBins[StdModelAttribute.match])
+                        if (0 == CanonicalSupersetProtected.Histo[StdModelAttribute.match])
                         {
                             // The collection is eligible for filtering (has at least two items).
                             // All items have been filtered out.
@@ -603,14 +603,19 @@ SELECT * FROM items WHERE
         }
 
         public IDisposable RequestModelEpochAuthority(ModelDataExchangeAuthority authority, IList source)
-            => DHostMDEX.GetToken(authority, source);
+            => DHostMDEX.RequestAuthority(
+                authority, 
+                new Dictionary<string, object>() 
+                {
+                    {nameof(IList), source }
+                });
         ModelDataExchangeAuthorityProvider<T> DHostMDEX
         {
             get
             {
                 if (_DHostModelEpoch is null)
                 {
-                    _DHostModelEpoch = new ModelDataExchangeAuthorityProvider<T>();
+                    _DHostModelEpoch = new ModelDataExchangeAuthorityProvider<T>(null!);
                     _DHostModelEpoch.FinalDispose += (sender, e) =>
                     {
                         if (e is ModelDataExchangeFinalDisposeEventArgs eFD)
@@ -963,7 +968,7 @@ SELECT * FROM items WHERE
         {            
             if (item?.GetFullPath() is { } full && !string.IsNullOrWhiteSpace(full))
             {
-                int indexForAdd = CanonicalSupersetProtected.HistoBins[StdModelAttribute.model];
+                int indexForAdd = CanonicalSupersetProtected.Histo[StdModelAttribute.model];
 
                 var placerResult = Model.Place(full, out var xel);
                 switch (placerResult)
