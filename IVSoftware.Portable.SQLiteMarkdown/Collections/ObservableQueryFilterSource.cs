@@ -108,5 +108,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// Not on interface.
         /// </summary>
         public NetProjectionTopology ProjectionTopology { get; }
+
+        public override string ToString(Enum formatting)
+        {
+            switch (formatting)
+            {
+                case FormattingEHM.Matches:
+                    return CanonicalSupersetProtected.ToString(FormattingEHM.Matches);
+                default:
+                    return base.ToString();
+            }
+        }
     }
 }

@@ -410,7 +410,7 @@ public class TestClass_260328_Model
     }
 
     [TestMethod, DoNotParallelize]
-    public void Test_HistogrammerMDC()
+    public void Test_HistogrammerOMC()
     {
         string actual, expected;
         using var te = this.TestableEpoch();

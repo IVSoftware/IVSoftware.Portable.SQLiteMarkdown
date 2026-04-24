@@ -1386,7 +1386,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 default:
                     break;
             }
-            Debug.Fail($@"ADVISORY - First Time.");
             return ToString();
         }
 
