@@ -88,9 +88,7 @@ public class TestClass_260328_INPC
         ;
         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-        itemT = "Brown Dog".MakeDynamic<SelectableQFModel>("[canine][color]", false, new() { "loyal", "friend", "furry" });
-
-        items.Add(itemT);
+        items.AddDynamic("Brown Dog", "[canine][color]", false, new() { "loyal", "friend", "furry" });
 
         Assert.IsFalse(items.IsFiltering);
         Assert.AreEqual(1, items.Count);
@@ -101,10 +99,9 @@ public class TestClass_260328_INPC
         // FSOL: This pattern [model:1 match:0 qmatch:0 pmatch:0 live:0] is 'one' indication to show all items.
         // ☆☆☆☆☆
         expected = @" 
-<model mdc=""[MDC]"" omc=""[OMC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0 live:0]"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
 </model>"
-        ;
         ;
 
         Assert.AreEqual(

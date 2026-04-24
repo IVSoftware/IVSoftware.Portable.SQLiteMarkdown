@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Collections.Events;
+using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq;
@@ -38,8 +39,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Canonical("The parameterless CTor is the only CTor")]
         public ObservableQueryFilterSource() 
         {
-            Model.AddAttributeFirst(new XBoundAttribute(nameof(StdModelAttribute.mdc), this, "[MDC]"));
-            Model.SetStdAttributeValue(StdModelAttribute.filters, "[No Active Filters]");
+            CanonicalSupersetProtected = new();
         }
     }
 

@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Collections.Events;
+using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -93,12 +94,48 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         IReadOnlyCollection<T>? _canonicalSuperset = null;
 
+        public ObservableModeledCollection<T> CanonicalSupersetProtected
+        {
+            get => _canonicalSupersetProtected;
+            set
+            {
+                if (value is null)
+                {
+                    this.ThrowHard<InvalidOperationException>(
+                        $"{nameof(CanonicalSupersetProtected)} cannot be null. This path is intended for interface upgrades.");
+                }
+                else if (!ReferenceEquals(value, _canonicalSupersetProtected))
+                {
+                    if (!Equals(_canonicalSupersetProtected, value))
+                    {
+                        _canonicalSupersetProtected?.PropertyChanged -= PropertyChangedEventForwarder;
+                        _canonicalSupersetProtected = value;
+                        localInitModel();
+                        OnPropertyChanged();
+                    }
+                    void localInitModel()
+                    {
+                        Model.Attribute(StdModelAttribute.mdc)?.Remove();
+                        Model.SetBoundAttributeValue(this, nameof(StdModelAttribute.mdc), "[MDC]");
+                        Model.WithSortAttributes<StdModelAttribute>(
+                            reqSMA: (authority) => CanonicalSupersetProtected.RequestAuthority(authority));
+                        _canonicalSupersetProtected?.PropertyChanged += PropertyChangedEventForwarder;
+                    }
+                }
+            }
+        }
+        ObservableModeledCollection<T> _canonicalSupersetProtected = default;
 
-        protected ObservableModeledCollection<T> CanonicalSupersetProtected 
-        { 
-            get; 
-            set;
-        } = new ObservableModeledCollection<T>();
+        /// <summary>
+        /// FORWARDER FOR:
+        /// - PropertyChangedEventArgs
+        /// - EH_PropertyChangedEventArgs
+        /// - ItemPropertyChangedEventArgs
+        /// </summary>
+        private void PropertyChangedEventForwarder(object sender, PropertyChangedEventArgs eUnk)
+        {
+            OnPropertyChanged(eUnk);
+        }
 
 #if false
         protected ObservableModeledCollection<T> CanonicalSupersetProtected
