@@ -88,7 +88,9 @@ public class TestClass_260328_INPC
         ;
         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-        items.AddDynamic("Brown Dog", "[canine][color]", false, new() { "loyal", "friend", "furry" });
+        itemT = "Brown Dog".MakeDynamic<SelectableQFModel>("[canine][color]", false, new() { "loyal", "friend", "furry" });
+
+        items.Add(itemT);
 
         Assert.IsFalse(items.IsFiltering);
         Assert.AreEqual(1, items.Count);
