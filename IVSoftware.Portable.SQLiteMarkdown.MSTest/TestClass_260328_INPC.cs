@@ -32,6 +32,7 @@ public class TestClass_260328_INPC
         List<string> 
             builderINPC = new (),
             builderINCC = new ();
+        SelectableQFModel itemT;
 
         // OBQFS exposes INPC of its items as ItemPropertyChangedEventArgs
         var items = new ObservableQueryFilterSource<SelectableQFModel>
@@ -93,14 +94,15 @@ public class TestClass_260328_INPC
         Assert.AreEqual(1, items.Count);
         actual = items.Model.ToString();
         actual.ToClipboardExpected();
-
+        { }
         // ☆☆☆☆☆
         // FSOL: This pattern [model:1 match:0 qmatch:0 pmatch:0 live:0] is 'one' indication to show all items.
         // ☆☆☆☆☆
         expected = @" 
-<model mdc=""[MDC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+<model mdc=""[MDC]"" omc=""[OMC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" />
 </model>"
+        ;
         ;
 
         Assert.AreEqual(

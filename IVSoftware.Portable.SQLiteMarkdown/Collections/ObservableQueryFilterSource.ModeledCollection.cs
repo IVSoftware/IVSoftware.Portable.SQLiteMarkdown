@@ -245,23 +245,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         T IList<T>.this[int index] 
         { 
-            get => ((IList<T>)CanonicalSuperset)[index];
-            set => ((IList<T>)CanonicalSupersetProtected)[index] = value;
+            get => CanonicalSupersetProtected[index];
+            set => CanonicalSupersetProtected[index] = value;
         }
         public object this[int index] 
         { 
             get => ((IList)CanonicalSuperset)[index];
-            set => ((IList)CanonicalSupersetProtected)[index] = value;
+            set => CanonicalSupersetProtected[index] = (T)value;
         }
 
         public int Add(object value)
         {
-            return ((IList)CanonicalSupersetProtected).Add(value);
+            T valueT = (T)value;
+            CanonicalSupersetProtected.Add((T)valueT);
+            return CanonicalSupersetProtected.IndexOf(valueT);
         }
 
         public void Clear()
         {
-            ((IList)CanonicalSupersetProtected).Clear();
+            CanonicalSupersetProtected.Clear();
         }
 
         public bool Contains(object value)
@@ -276,17 +278,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public void Insert(int index, object value)
         {
-            ((IList)CanonicalSupersetProtected).Insert(index, value);
+            CanonicalSupersetProtected.Insert(index, (T)value);
         }
 
         public void Remove(object value)
         {
-            ((IList)CanonicalSupersetProtected).Remove(value);
+            CanonicalSupersetProtected.Remove((T)value);
         }
 
         public void RemoveAt(int index)
         {
-            ((IList)CanonicalSupersetProtected).RemoveAt(index);
+            CanonicalSupersetProtected.RemoveAt(index);
         }
 
         public void CopyTo(Array array, int index)
@@ -301,37 +303,37 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public int IndexOf(T item)
         {
-            return ((IList<T>)CanonicalSuperset).IndexOf(item);
+            return CanonicalSupersetProtected.IndexOf(item);
         }
 
         public void Insert(int index, T item)
         {
-            ((IList<T>)CanonicalSupersetProtected).Insert(index, item);
+            CanonicalSupersetProtected.Insert(index, item);
         }
 
         public void Add(T item)
         {
-            ((ICollection<T>)CanonicalSupersetProtected).Add(item);
+            CanonicalSupersetProtected.Add(item);
         }
 
         public bool Contains(T item)
         {
-            return ((ICollection<T>)CanonicalSuperset).Contains(item);
+            return CanonicalSupersetProtected.Contains(item);
         }
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            ((ICollection<T>)CanonicalSuperset).CopyTo(array, arrayIndex);
+            CanonicalSupersetProtected.CopyTo(array, arrayIndex);
         }
 
         public bool Remove(T item)
         {
-            return ((ICollection<T>)CanonicalSupersetProtected).Remove(item);
+            return CanonicalSupersetProtected.Remove(item);
         }
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
-            return ((IEnumerable<T>)CanonicalSuperset).GetEnumerator();
+            return CanonicalSupersetProtected.GetEnumerator();
         }
     }
 

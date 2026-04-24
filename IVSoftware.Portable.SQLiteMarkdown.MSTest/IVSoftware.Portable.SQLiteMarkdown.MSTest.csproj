@@ -18,9 +18,7 @@
 		<PackageReference Include="coverlet.collector" Version="6.0.0" />
 		<PackageReference Include="IVSoftware.Portable.Threading" Version="2.0.0-beta" />
 		<PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="1.0.8" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-		<PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
-		<PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
+		<PackageReference Include="MSTest" Version="4.2.1" />
 		<PackageReference Include="sqlite-net-pcl" Version="*" />
 		<PackageReference Include="Newtonsoft.Json" Version="*" />
 	</ItemGroup>
@@ -52,6 +50,7 @@
     <Folder Include="Feedback\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.Extensions\IVSoftware.MSTest.Extensions.csproj" />
     <ProjectReference Include="..\..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.csproj" />
   </ItemGroup>
 
