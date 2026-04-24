@@ -257,7 +257,8 @@ NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 0 NotifyCollecti
 NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 1 NotifyCollectionChangingEventArgs          
 NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 2 NotifyCollectionChangingEventArgs          
 NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 3 NotifyCollectionChangingEventArgs          
-NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 4 NotifyCollectionChangingEventArgs          "
+NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 4 NotifyCollectionChangingEventArgs          
+NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
             ;
 
 #if false && SAVE
@@ -284,11 +285,11 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" order=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" order=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" order=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" order=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" order=""4"" />
 </model>"
             ;
 
@@ -310,12 +311,13 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             // View from the outside
             actual = itemsSource.ToString(out XElement _);
             actual.ToClipboardExpected();
-            ;
+            { }
             expected = @" 
 <model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""1"" preview=""Item05    "" />
-</model>";
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" order=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" order=""1"" />
+</model>"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
