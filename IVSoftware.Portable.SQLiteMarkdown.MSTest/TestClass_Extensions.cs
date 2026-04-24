@@ -52,11 +52,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     }))
                 {
                     // No error for int?
-                    _ = model.GetAttributeValue<int?>(StdModelAttribute.order);
+                    _ = model.GetStdAttributeValue<int?>(StdModelAttribute.order);
                     Assert.AreEqual(0, builderThrow.Count);
 
                     // Error expected for int (non-nullable)
-                    _ = model.GetAttributeValue<int>(StdModelAttribute.text);
+                    _ = model.GetStdAttributeValue<int>(StdModelAttribute.text);
                     actual = string.Join(Environment.NewLine, builderThrow);
                     expected = @" 
 Non-nullable type(Int32) requires default";
@@ -70,14 +70,14 @@ Non-nullable type(Int32) requires default";
                     // Successfully uses default if not convertible
                     builderThrow.Clear();
                     model.SetAttributeValue(nameof(StdModelAttribute.text), "banana");
-                    @int = model.GetAttributeValue<int>(StdModelAttribute.text, 9);
+                    @int = model.GetStdAttributeValue<int>(StdModelAttribute.text, 9);
 
                     // Conversion succeeds without complaining.
                     Assert.AreEqual(9, @int);
                     Assert.AreEqual(0, builderThrow.Count);
 
                     // Error: no default is provided.
-                    @int = model.GetAttributeValue<int>(StdModelAttribute.text);
+                    @int = model.GetStdAttributeValue<int>(StdModelAttribute.text);
 
                     actual = string.Join(Environment.NewLine, builderThrow);
                     actual.ToClipboardExpected();
@@ -96,22 +96,22 @@ The string provided 'banana' is not numeric.";
             void subtest_ObjectUnconstrained()
             {
                 object? @object;
-                @object = model.GetAttributeValue<object?>(StdModelAttribute.order);
+                @object = model.GetStdAttributeValue<object?>(StdModelAttribute.order);
                 Assert.IsNull(@object);
 
-                @object = model.GetAttributeValue<object?>(StdModelAttribute.order, @default: 0);
+                @object = model.GetStdAttributeValue<object?>(StdModelAttribute.order, @default: 0);
                 Assert.AreEqual(0, @object);
             }
 
             void subtest_IntFromDefaultAttribute()
             {
-                @int = model.GetAttributeValue<int>(DefaultValuesForTest.Two);
+                @int = model.GetStdAttributeValue<int>(DefaultValuesForTest.Two);
                 Assert.AreEqual(2, @int);
             }
 
             void subtest_IntFromDefaultArg()
             {
-                @int = model.GetAttributeValue<int>(StdModelAttribute.order, 7);
+                @int = model.GetStdAttributeValue<int>(StdModelAttribute.order, 7);
                 Assert.AreEqual(7, @int);
             }
 
@@ -128,7 +128,7 @@ The string provided 'banana' is not numeric.";
 
                 StdModelAttribute
                     expectedEnum = (StdModelAttribute)2,
-                    stdActual = model.GetAttributeValue<StdModelAttribute>(DefaultValuesForTest.Two);
+                    stdActual = model.GetStdAttributeValue<StdModelAttribute>(DefaultValuesForTest.Two);
                 // Strict equality not Equals.
                 Assert.IsTrue(expectedEnum == stdActual);
             }
@@ -136,7 +136,7 @@ The string provided 'banana' is not numeric.";
             void subtest_AttributeSimplyPresent()
             {
                 model.SetAttributeValue(nameof(StdModelAttribute.order), "42");
-                int value = model.GetAttributeValue<int>(StdModelAttribute.order);
+                int value = model.GetStdAttributeValue<int>(StdModelAttribute.order);
                 Assert.AreEqual(42, value);
             }
             #endregion S U B T E S T S

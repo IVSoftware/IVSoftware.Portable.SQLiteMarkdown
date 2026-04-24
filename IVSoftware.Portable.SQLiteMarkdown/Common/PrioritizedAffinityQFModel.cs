@@ -195,7 +195,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         [Ephemeral, JsonIgnore]
         public string? Preview
         {
-            get => Model.GetAttributeValue<string>(StdModelAttribute.preview);
+            get => Model.GetStdAttributeValue<string>(StdModelAttribute.preview);
             set
             {
                 if (!Equals(Preview, value))
@@ -219,7 +219,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         [Ephemeral]
         public long? PriorityOverride
         {
-            get => Model.GetAttributeValue<long?>(StdModelAttribute.order);
+            get => Model.GetStdAttributeValue<long?>(StdModelAttribute.order);
             set
             {
                 if (!Equals(PriorityOverride, value))
