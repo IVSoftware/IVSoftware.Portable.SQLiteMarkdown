@@ -5,6 +5,7 @@ using IVSoftware.Portable.Collections;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using System.Xml.Linq;
+using System.Diagnostics;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -38,6 +39,7 @@ public class TestClass_260401_OPCv2
         subtest_None();
         subtest_Freeze();
         subtest_Preview();
+
 
         #region S U B T E S T S
 
@@ -360,9 +362,10 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
         }
 
         void subtest_Preview()
-        {            
+        {
             builder.Clear();
             omc.Clear();
+            localValidateClear();
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
             actual.ToClipboardAssert("Expecting builder content to match.");
@@ -383,6 +386,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
                 omc.Add(i2);
                 omc.Add(i3);
             }
+            localValidateCount();
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
             actual.ToClipboardExpected();
@@ -397,6 +401,22 @@ NetProjection.Add     NewItems= 3 NewStartingIndex= 0 NotifyCollectionChangedEve
                 "Expecting 1x Add Coalesce events."
             );
 
+            actual = omc.ToString(FormattingOMC.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model omc=""[OMC]"" histo=""[model:3 match:0 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" order=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" order=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" order=""2"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
+
             // - This *looks* contiguous but it isn't.
             // ∴We should get a Reset not a BCL-compatible event
             using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
@@ -404,6 +424,22 @@ NetProjection.Add     NewItems= 3 NewStartingIndex= 0 NotifyCollectionChangedEve
                 omc.Remove(i1);         // Remove Item01 from index 0      
                 omc.RemoveAt(1);        // Remove item03 from index 1
             }
+            localValidateCount();
+
+            actual = omc.ToString(FormattingOMC.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model omc=""[OMC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" order=""1"" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
             actual.ToClipboardExpected();
@@ -426,6 +462,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             {
                 omc.PopulateForDemo(5);
             }
+            localValidateCount();
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
             actual.ToClipboardExpected();
@@ -439,14 +476,32 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
                 "Expecting 1x jagged Reset."
             );
 
+            // WHAT HAPPENS IN MODEL WITH IDENTICAL KEYS ???
             using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
             {
-                // Replace index 1-4 with with Item01 (contiguous)
                 for (int i = 1; i < omc.Count; i++)
                 {
                     omc[i] = i1;
                 }
             }
+            localValidateCount();
+
+            actual = omc.ToString(FormattingOMC.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { } // <- FIRST TIME ONLY: Adjust the message.
+            actual.ToClipboardAssert("Expecting result to match.");
+            { }
+            expected = @" 
+<model omc=""[OMC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Item01    "" order=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" order=""1"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
             actual.ToClipboardExpected();
@@ -544,5 +599,29 @@ NetProjection.Replace NewItems= 5 OldItems= 5 NewStartingIndex= 0 OldStartingInd
             );
         }
         #endregion S U B T E S T S
+
+        #region L o c a l F x
+        void localValidateClear()
+        {
+            Assert.HasCount(0, omc);
+
+            actual = omc.ToString(FormattingOMC.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model omc=""[OMC]"" histo=""[model:0 match:0 qmatch:0 pmatch:0 live:0]"" />";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting canonical Clear profile."
+            );
+        }
+        void localValidateCount()
+        {
+            var modelTally = omc.Histo[StdModelAttribute.model];
+            Assert.AreEqual(omc.Count, modelTally);
+        }
+        #endregion L o c a l F x
     }
 }
