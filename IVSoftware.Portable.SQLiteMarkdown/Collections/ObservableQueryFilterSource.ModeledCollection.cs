@@ -39,6 +39,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public IReadOnlyDictionary<StdModelAttribute, int> Histo => 
             ((IModeledCollection)CanonicalSupersetProtected).Histo;
 
+        public IDictionary<Enum, IAuthorityEpochProvider> AuthorityProviders => 
+            ((IModeledCollection)CanonicalSupersetProtected).AuthorityProviders;
+
         SQLiteQueryOnlyConnection? IModeledCollection.FilterQueryDatabase => 
             ((IModeledCollection)CanonicalSupersetProtected).FilterQueryDatabase;
 
