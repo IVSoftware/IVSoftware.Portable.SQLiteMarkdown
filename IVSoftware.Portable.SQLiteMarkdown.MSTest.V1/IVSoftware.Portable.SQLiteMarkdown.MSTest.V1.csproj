@@ -16,6 +16,10 @@
 		<PackageReference Include="MSTest" Version="4.2.1" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.Extensions\IVSoftware.MSTest.Extensions.csproj" />
+	</ItemGroup>
+
   <ItemGroup>
 		<Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
