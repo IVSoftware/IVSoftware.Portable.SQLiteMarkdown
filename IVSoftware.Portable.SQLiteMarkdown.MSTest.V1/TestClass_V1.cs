@@ -2112,10 +2112,10 @@ IVSoftware.Portable.SQLiteMarkdown | Version=1.0.1.0"
       </ctor>
     </constructors>
     <properties>
-      <property name=""Authorities"" type=""IVSoftware.Portable.Collections.StdModelAuthority[]"" canRead=""true"" canWrite=""false"" />
       <property name=""Authorities"" type=""[external]"" canRead=""true"" canWrite=""false"" />
-      <property name=""Authority"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" canRead=""true"" canWrite=""false"" />
+      <property name=""Authorities"" type=""IVSoftware.Portable.Collections.StdModelAuthority[]"" canRead=""true"" canWrite=""false"" />
       <property name=""Authority"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Authority"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" canRead=""true"" canWrite=""false"" />
       <property name=""Count"" type=""[external]"" canRead=""true"" canWrite=""false"" />
       <property name=""IsCancelled"" type=""[external]"" canRead=""true"" canWrite=""false"" />
       <property name=""IsDisposing"" type=""[external]"" canRead=""true"" canWrite=""false"" />
