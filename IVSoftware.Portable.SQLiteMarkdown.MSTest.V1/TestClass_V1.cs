@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Exceptions;
 using IVSoftware.Portable.Common.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
@@ -168,1309 +169,1496 @@ IVSoftware.Portable.SQLiteMarkdown | Version=1.0.1.0"
         {
             string actual, expected;
 
-            XElement xpc = typeof(IModeledCollection).Assembly.ToPublicContract();
+            XElement xcontract = 
+                typeof(IModeledCollection)
+                .Assembly
+                .ToPublicContract();
 
-            actual = xpc.ToString();
+            actual = xcontract.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
 <assembly name=""IVSoftware.Portable.Xml.Linq.Collections"" version=""1.0.0.0"">
   <type name=""IVSoftware.Portable.Collections.AffinityIncrMode"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""Current"" type=""IVSoftware.Portable.Collections.AffinityIncrMode"" />
+      <field name=""Postfix"" type=""IVSoftware.Portable.Collections.AffinityIncrMode"" />
+      <field name=""Prefix"" type=""IVSoftware.Portable.Collections.AffinityIncrMode"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.AffinityTestableEpoch"">
     <interfaces />
+    <constructors />
     <properties>
-      <property name=""DefaultIncr"" type=""System.TimeSpan"" canRead=""true"" canWrite=""true"" />
-      <property name=""GuidReset"" type=""System.Guid"" canRead=""true"" canWrite=""false"" />
-      <property name=""UtcReset"" type=""System.DateTimeOffset"" canRead=""true"" canWrite=""false"" />
+      <property name=""DefaultIncr"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""GuidReset"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""UtcReset"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ResetEpoch"" returns=""System.Void"">
+      <method name=""ResetEpoch"" returns=""[external]"">
         <parameters>
-          <param name=""this"" type=""System.IDisposable"" />
+          <param name=""this"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""TestableEpoch"" returns=""System.IDisposable"">
+      <method name=""TestableEpoch"" returns=""[external]"">
         <parameters>
-          <param name=""this"" type=""System.Object"" />
+          <param name=""this"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""WithTestability"" returns=""System.Guid"">
+      <method name=""WithTestability"" returns=""[external]"">
         <parameters>
-          <param name=""this"" type=""System.Guid"" />
-          <param name=""mode"" type=""System.Nullable&lt;IVSoftware.Portable.Collections.AffinityIncrMode&gt;"" />
+          <param name=""this"" type=""[external]"" />
+          <param name=""mode"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""WithTestability"" returns=""System.DateTimeOffset"">
+      <method name=""WithTestability"" returns=""[external]"">
         <parameters>
-          <param name=""this"" type=""System.DateTimeOffset"" />
-          <param name=""incr"" type=""System.Nullable&lt;System.TimeSpan&gt;"" />
-          <param name=""mode"" type=""System.Nullable&lt;IVSoftware.Portable.Collections.AffinityIncrMode&gt;"" />
+          <param name=""this"" type=""[external]"" />
+          <param name=""incr"" type=""[external]"" />
+          <param name=""mode"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.BehaviorMode"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""InsistentNotNull"" type=""IVSoftware.Portable.Collections.BehaviorMode"" />
+      <field name=""Normal"" type=""IVSoftware.Portable.Collections.BehaviorMode"" />
+      <field name=""TolerantCreateDefaultEntry"" type=""IVSoftware.Portable.Collections.BehaviorMode"" />
+      <field name=""TolerantReturnDefault"" type=""IVSoftware.Portable.Collections.BehaviorMode"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.CollectionChangingEventingPolicy"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""Coalesce"" type=""IVSoftware.Portable.Collections.CollectionChangingEventingPolicy"" />
+      <field name=""Discrete"" type=""IVSoftware.Portable.Collections.CollectionChangingEventingPolicy"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Dictionaries.DictionaryEntryPreview"">
     <interfaces />
-    <properties>
-      <property name=""Key"" type=""System.Object"" canRead=""true"" canWrite=""true"" />
-      <property name=""Value"" type=""System.Object"" canRead=""true"" canWrite=""true"" />
-    </properties>
-    <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+    <constructors>
+      <ctor>
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""key"" type=""[external]"" />
+          <param name=""value"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Key"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""Value"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.DictionaryMode"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""Brisk"" type=""IVSoftware.Portable.Collections.DictionaryMode"" />
+      <field name=""InsistentNotNull"" type=""IVSoftware.Portable.Collections.DictionaryMode"" />
+      <field name=""Normal"" type=""IVSoftware.Portable.Collections.DictionaryMode"" />
+      <field name=""TolerantCreateDefaultEntry"" type=""IVSoftware.Portable.Collections.DictionaryMode"" />
+      <field name=""TolerantReturnDefault"" type=""IVSoftware.Portable.Collections.DictionaryMode"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.EnumHistogrammer"">
-    <interfaces>
-      <interface name=""IVSoftware.Portable.Disposable.IAuthorityEpochProvider"" />
-      <interface name=""System.ComponentModel.INotifyPropertyChanged"" />
-    </interfaces>
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""AllowRootChanges"" type=""System.Boolean"" canRead=""true"" canWrite=""true"" />
+      <property name=""AllowRootChanges"" type=""[external]"" canRead=""true"" canWrite=""true"" />
       <property name=""Authorities"" type=""IVSoftware.Portable.Collections.StdModelAuthority[]"" canRead=""true"" canWrite=""false"" />
       <property name=""Authority"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" canRead=""true"" canWrite=""false"" />
-      <property name=""FormattingDefault"" type=""System.Enum"" canRead=""true"" canWrite=""true"" />
-      <property name=""IsCancelled"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""IsDisposing"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""Model"" type=""System.Xml.Linq.XElement"" canRead=""true"" canWrite=""true"" />
+      <property name=""FormattingDefault"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""IsCancelled"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""IsDisposing"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Model"" type=""[external]"" canRead=""true"" canWrite=""true"" />
     </properties>
+    <events>
+      <event name=""BeginUsing"" type=""[external]"" />
+      <event name=""FinalDispose"" type=""[external]"" />
+      <event name=""PropertyChanged"" type=""[external]"" />
+      <event name=""XModelChanged"" type=""[external]"" />
+    </events>
+    <fields />
     <methods>
-      <method name=""CancelAuthorityEpoch"" returns=""System.Void"">
+      <method name=""CancelAuthorityEpoch"" returns=""[external]"">
         <parameters>
-          <param name=""throw"" type=""System.Boolean"" />
+          <param name=""throw"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Clear"" returns=""System.Void"">
+      <method name=""Clear"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasAuthority"" returns=""System.Boolean"">
+      <method name=""HasAuthority"" returns=""[external]"">
         <parameters>
           <param name=""authority"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
         </parameters>
       </method>
-      <method name=""HasRequestedAuthority"" returns=""System.Boolean"">
+      <method name=""HasRequestedAuthority"" returns=""[external]"">
         <parameters>
-          <param name=""authority"" type=""System.Enum"" />
+          <param name=""authority"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""IsZero"" returns=""System.Boolean"">
+      <method name=""IsZero"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""RequestAuthority"" returns=""System.IDisposable"">
+      <method name=""RequestAuthority"" returns=""[external]"">
         <parameters>
-          <param name=""authority"" type=""System.Enum"" />
+          <param name=""authority"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""RequestAuthority"" returns=""System.IDisposable"">
+      <method name=""RequestAuthority"" returns=""[external]"">
         <parameters>
           <param name=""authority"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
-          <param name=""properties"" type=""System.Collections.Generic.Dictionary&lt;System.String,System.Object&gt;"" />
+          <param name=""properties"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""RequestAuthority"" returns=""System.IDisposable"">
+      <method name=""RequestAuthority"" returns=""[external]"">
         <parameters>
-          <param name=""authority"" type=""System.Enum"" />
-          <param name=""properties"" type=""System.Collections.Generic.Dictionary&lt;System.String,System.Object&gt;"" />
+          <param name=""authority"" type=""[external]"" />
+          <param name=""properties"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""TallyModelToReconcile"" returns=""System.Nullable&lt;System.Boolean&gt;"">
+      <method name=""TallyModelToReconcile"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""formatting"" type=""Newtonsoft.Json.Formatting"" />
+          <param name=""formatting"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""formatting"" type=""System.Enum"" />
+          <param name=""formatting"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.EnumHistogrammer&lt;T&gt;"">
-    <interfaces>
-      <interface name=""IVSoftware.Portable.Disposable.IAuthorityEpochProvider"" />
-      <interface name=""IVSoftware.Portable.Disposable.IAuthorityEpochProvider&lt;IVSoftware.Portable.Collections.StdModelAuthority&gt;"" />
-      <interface name=""System.Collections.Generic.IEnumerable&lt;System.Collections.Generic.KeyValuePair&lt;T,System.Int32&gt;&gt;"" />
-      <interface name=""System.Collections.Generic.IReadOnlyCollection&lt;System.Collections.Generic.KeyValuePair&lt;T,System.Int32&gt;&gt;"" />
-      <interface name=""System.Collections.Generic.IReadOnlyDictionary&lt;T,System.Int32&gt;"" />
-      <interface name=""System.Collections.IEnumerable"" />
-      <interface name=""System.ComponentModel.INotifyPropertyChanged"" />
-    </interfaces>
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""model"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""AllowRootChanges"" type=""System.Boolean"" canRead=""true"" canWrite=""true"" />
+      <property name=""AllowRootChanges"" type=""[external]"" canRead=""true"" canWrite=""true"" />
       <property name=""Authorities"" type=""IVSoftware.Portable.Collections.StdModelAuthority[]"" canRead=""true"" canWrite=""false"" />
       <property name=""Authority"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" canRead=""true"" canWrite=""false"" />
-      <property name=""Count"" type=""System.Int32"" canRead=""true"" canWrite=""false"" />
+      <property name=""Count"" type=""[external]"" canRead=""true"" canWrite=""false"" />
       <property name=""ExplicitFalsePolicy"" type=""IVSoftware.Portable.Collections.ExplicitFalsePolicy"" canRead=""true"" canWrite=""true"" />
-      <property name=""FormattingDefault"" type=""System.Enum"" canRead=""true"" canWrite=""true"" />
+      <property name=""FormattingDefault"" type=""[external]"" canRead=""true"" canWrite=""true"" />
       <property name=""HistogramParticipationOption"" type=""IVSoftware.Portable.Collections.HistogramParticipationPolicy"" canRead=""true"" canWrite=""true"" />
-      <property name=""IsCancelled"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""IsDisposing"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""Item"" type=""System.Int32"" canRead=""true"" canWrite=""false"" />
-      <property name=""Keys"" type=""System.Collections.Generic.IEnumerable&lt;T&gt;"" canRead=""true"" canWrite=""false"" />
-      <property name=""Model"" type=""System.Xml.Linq.XElement"" canRead=""true"" canWrite=""true"" />
-      <property name=""Values"" type=""System.Collections.Generic.IEnumerable&lt;System.Int32&gt;"" canRead=""true"" canWrite=""false"" />
+      <property name=""IsCancelled"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""IsDisposing"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Item"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Keys"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Model"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""Values"" type=""[external]"" canRead=""true"" canWrite=""false"" />
       <property name=""ZeroCountPolicy"" type=""IVSoftware.Portable.Collections.ZeroCountPolicy"" canRead=""true"" canWrite=""true"" />
     </properties>
+    <events>
+      <event name=""BeginUsing"" type=""[external]"" />
+      <event name=""FinalDispose"" type=""[external]"" />
+      <event name=""PropertyChanged"" type=""[external]"" />
+      <event name=""XModelChanged"" type=""[external]"" />
+    </events>
+    <fields />
     <methods>
-      <method name=""CancelAuthorityEpoch"" returns=""System.Void"">
+      <method name=""CancelAuthorityEpoch"" returns=""[external]"">
         <parameters>
-          <param name=""throw"" type=""System.Boolean"" />
+          <param name=""throw"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Clear"" returns=""System.Void"">
+      <method name=""Clear"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ContainsKey"" returns=""System.Boolean"">
-        <parameters>
-          <param name=""key"" type=""T"" />
-        </parameters>
-      </method>
-      <method name=""Decrement"" returns=""System.Int32"">
+      <method name=""ContainsKey"" returns=""[external]"">
         <parameters>
           <param name=""key"" type=""T"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Decrement"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""key"" type=""T"" />
         </parameters>
       </method>
-      <method name=""GetEnumerator"" returns=""System.Collections.Generic.IEnumerator&lt;T&gt;"">
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetEnumerator"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasAuthority"" returns=""System.Boolean"">
+      <method name=""HasAuthority"" returns=""[external]"">
         <parameters>
           <param name=""authority"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
         </parameters>
       </method>
-      <method name=""HasRequestedAuthority"" returns=""System.Boolean"">
+      <method name=""HasRequestedAuthority"" returns=""[external]"">
         <parameters>
           <param name=""authority"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
         </parameters>
       </method>
-      <method name=""HasRequestedAuthority"" returns=""System.Boolean"">
+      <method name=""HasRequestedAuthority"" returns=""[external]"">
         <parameters>
-          <param name=""authority"" type=""System.Enum"" />
+          <param name=""authority"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Increment"" returns=""System.Int32"">
+      <method name=""Increment"" returns=""[external]"">
         <parameters>
           <param name=""key"" type=""T"" />
         </parameters>
       </method>
-      <method name=""IsZero"" returns=""System.Boolean"">
+      <method name=""IsZero"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""RequestAuthority"" returns=""System.IDisposable"">
+      <method name=""RequestAuthority"" returns=""[external]"">
         <parameters>
-          <param name=""authority"" type=""System.Enum"" />
+          <param name=""authority"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""RequestAuthority"" returns=""System.IDisposable"">
+      <method name=""RequestAuthority"" returns=""[external]"">
         <parameters>
           <param name=""authority"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
-          <param name=""properties"" type=""System.Collections.Generic.Dictionary&lt;System.String,System.Object&gt;"" />
+          <param name=""properties"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""RequestAuthority"" returns=""System.IDisposable"">
+      <method name=""RequestAuthority"" returns=""[external]"">
         <parameters>
-          <param name=""authority"" type=""System.Enum"" />
-          <param name=""properties"" type=""System.Collections.Generic.Dictionary&lt;System.String,System.Object&gt;"" />
+          <param name=""authority"" type=""[external]"" />
+          <param name=""properties"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""TallyModelToReconcile"" returns=""System.Nullable&lt;System.Boolean&gt;"">
+      <method name=""TallyModelToReconcile"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""formatting"" type=""System.Enum"" />
+          <param name=""formatting"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""formatting"" type=""Newtonsoft.Json.Formatting"" />
+          <param name=""formatting"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""TryGetValue"" returns=""System.Boolean"">
+      <method name=""TryGetValue"" returns=""[external]"">
         <parameters>
           <param name=""key"" type=""T"" />
-          <param name=""value"" type=""System.Int32&amp;"" />
+          <param name=""value"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Events.EHPropertyChangedEventArgs"">
     <interfaces />
-    <properties>
-      <property name=""Changing"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""Edge"" type=""IVSoftware.Portable.Collections.HistogramEdge"" canRead=""true"" canWrite=""false"" />
-      <property name=""Key"" type=""System.Enum"" canRead=""true"" canWrite=""false"" />
-      <property name=""KeyPrev"" type=""System.Enum"" canRead=""true"" canWrite=""false"" />
-      <property name=""ObjectChange"" type=""System.Nullable&lt;System.Xml.Linq.XObjectChange&gt;"" canRead=""true"" canWrite=""false"" />
-      <property name=""Parent"" type=""System.Xml.Linq.XElement"" canRead=""true"" canWrite=""false"" />
-      <property name=""PropertyName"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""Value"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""ValuePrev"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""XOB"" type=""System.Xml.Linq.XObject"" canRead=""true"" canWrite=""false"" />
-    </properties>
-    <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+    <constructors>
+      <ctor>
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""e"" type=""IVSoftware.Portable.Collections.Events.XModelChangeEventArgs"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""key"" type=""[external]"" />
+          <param name=""edge"" type=""IVSoftware.Portable.Collections.HistogramEdge"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Changing"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Edge"" type=""IVSoftware.Portable.Collections.HistogramEdge"" canRead=""true"" canWrite=""false"" />
+      <property name=""Key"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""KeyPrev"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""ObjectChange"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Parent"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""PropertyName"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Value"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""ValuePrev"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""XOB"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Events.ItemPropertyChangedEventArgs"">
     <interfaces />
-    <properties>
-      <property name=""Item"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
-      <property name=""PropertyName"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-    </properties>
-    <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+    <constructors>
+      <ctor>
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""propertyName"" type=""[external]"" />
+          <param name=""item"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Item"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""PropertyName"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Events.NotifyCollectionChangingEventArgs"">
-    <interfaces>
-      <interface name=""System.IEquatable&lt;IVSoftware.Portable.Collections.Events.NotifyCollectionChangingEventArgs&gt;"" />
-    </interfaces>
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""eBCL"" type=""[external]"" />
+          <param name=""reason"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeReason"" />
+          <param name=""scope"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeScope"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""ePre"" type=""IVSoftware.Portable.Collections.Events.NotifyCollectionChangingEventArgs"" />
+          <param name=""reason"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeReason"" />
+          <param name=""scope"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeScope"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""action"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeAction"" />
+          <param name=""reason"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeReason"" />
+          <param name=""scope"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeScope"" />
+          <param name=""newItems"" type=""[external]"" />
+          <param name=""oldItems"" type=""[external]"" />
+          <param name=""newStartingIndex"" type=""[external]"" />
+          <param name=""oldStartingIndex"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
       <property name=""Action"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeAction"" canRead=""true"" canWrite=""true"" />
-      <property name=""Cancel"" type=""System.Boolean"" canRead=""true"" canWrite=""true"" />
-      <property name=""IsBclCompatible"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""IsModified"" type=""System.Boolean"" canRead=""true"" canWrite=""true"" />
-      <property name=""NewItems"" type=""System.Collections.IList"" canRead=""true"" canWrite=""false"" />
-      <property name=""NewStartingIndex"" type=""System.Int32"" canRead=""true"" canWrite=""true"" />
-      <property name=""OldItems"" type=""System.Collections.IList"" canRead=""true"" canWrite=""false"" />
-      <property name=""OldStartingIndex"" type=""System.Int32"" canRead=""true"" canWrite=""true"" />
+      <property name=""Cancel"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""IsBclCompatible"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""IsModified"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""NewItems"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""NewStartingIndex"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""OldItems"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""OldStartingIndex"" type=""[external]"" canRead=""true"" canWrite=""true"" />
       <property name=""Reason"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeReason"" canRead=""true"" canWrite=""true"" />
       <property name=""Scope"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeScope"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
           <param name=""other"" type=""IVSoftware.Portable.Collections.Events.NotifyCollectionChangingEventArgs"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Events.XModelChangeEventArgs"">
     <interfaces />
-    <properties>
-      <property name=""Changing"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""Edge"" type=""IVSoftware.Portable.Collections.HistogramEdge"" canRead=""true"" canWrite=""false"" />
-      <property name=""Key"" type=""System.Enum"" canRead=""true"" canWrite=""true"" />
-      <property name=""KeyPrev"" type=""System.Enum"" canRead=""true"" canWrite=""true"" />
-      <property name=""ObjectChange"" type=""System.Xml.Linq.XObjectChange"" canRead=""true"" canWrite=""false"" />
-      <property name=""Parent"" type=""System.Xml.Linq.XElement"" canRead=""true"" canWrite=""true"" />
-      <property name=""Value"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""ValuePrev"" type=""System.String"" canRead=""true"" canWrite=""true"" />
-      <property name=""XOB"" type=""System.Xml.Linq.XObject"" canRead=""true"" canWrite=""false"" />
-    </properties>
-    <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+    <constructors>
+      <ctor>
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""sender"" type=""[external]"" />
+          <param name=""objectChange"" type=""[external]"" />
+          <param name=""changing"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Changing"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Edge"" type=""IVSoftware.Portable.Collections.HistogramEdge"" canRead=""true"" canWrite=""false"" />
+      <property name=""Key"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""KeyPrev"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""ObjectChange"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Parent"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""Value"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""ValuePrev"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""XOB"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Exceptions.ModelAccessViolation"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""ModelClearViolation"" type=""IVSoftware.Portable.Collections.Exceptions.ModelAccessViolation"" />
+      <field name=""ModelCountViolation"" type=""IVSoftware.Portable.Collections.Exceptions.ModelAccessViolation"" />
+      <field name=""ModelDatabaseAccessViolation"" type=""IVSoftware.Portable.Collections.Exceptions.ModelAccessViolation"" />
+      <field name=""ModelDecrementViolation"" type=""IVSoftware.Portable.Collections.Exceptions.ModelAccessViolation"" />
+      <field name=""ModelIncrementViolation"" type=""IVSoftware.Portable.Collections.Exceptions.ModelAccessViolation"" />
+      <field name=""ModelReadOnlyAttributeViolation"" type=""IVSoftware.Portable.Collections.Exceptions.ModelAccessViolation"" />
+      <field name=""OperationNoopWarning"" type=""IVSoftware.Portable.Collections.Exceptions.ModelAccessViolation"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Exceptions.ModelAccessViolationException"">
-    <interfaces>
-      <interface name=""System.Runtime.Serialization.ISerializable"" />
-    </interfaces>
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""message"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""Data"" type=""System.Collections.IDictionary"" canRead=""true"" canWrite=""false"" />
-      <property name=""HelpLink"" type=""System.String"" canRead=""true"" canWrite=""true"" />
-      <property name=""HResult"" type=""System.Int32"" canRead=""true"" canWrite=""true"" />
-      <property name=""InnerException"" type=""System.Exception"" canRead=""true"" canWrite=""false"" />
-      <property name=""Message"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""Source"" type=""System.String"" canRead=""true"" canWrite=""true"" />
-      <property name=""StackTrace"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""TargetSite"" type=""System.Reflection.MethodBase"" canRead=""true"" canWrite=""false"" />
+      <property name=""Data"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""HelpLink"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""HResult"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""InnerException"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Message"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Source"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""StackTrace"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""TargetSite"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetBaseException"" returns=""System.Exception"">
+      <method name=""GetBaseException"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetObjectData"" returns=""System.Void"">
+      <method name=""GetObjectData"" returns=""[external]"">
         <parameters>
-          <param name=""info"" type=""System.Runtime.Serialization.SerializationInfo"" />
-          <param name=""context"" type=""System.Runtime.Serialization.StreamingContext"" />
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
-        <parameters />
-      </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Exceptions.ModelException"">
-    <interfaces>
-      <interface name=""System.Runtime.Serialization.ISerializable"" />
-    </interfaces>
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""message"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""Data"" type=""System.Collections.IDictionary"" canRead=""true"" canWrite=""false"" />
-      <property name=""HelpLink"" type=""System.String"" canRead=""true"" canWrite=""true"" />
-      <property name=""HResult"" type=""System.Int32"" canRead=""true"" canWrite=""true"" />
-      <property name=""InnerException"" type=""System.Exception"" canRead=""true"" canWrite=""false"" />
-      <property name=""Message"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""Source"" type=""System.String"" canRead=""true"" canWrite=""true"" />
-      <property name=""StackTrace"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""TargetSite"" type=""System.Reflection.MethodBase"" canRead=""true"" canWrite=""false"" />
+      <property name=""Data"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""HelpLink"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""HResult"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""InnerException"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Message"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Source"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""StackTrace"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""TargetSite"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetBaseException"" returns=""System.Exception"">
+      <method name=""GetBaseException"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetObjectData"" returns=""System.Void"">
+      <method name=""GetObjectData"" returns=""[external]"">
         <parameters>
-          <param name=""info"" type=""System.Runtime.Serialization.SerializationInfo"" />
-          <param name=""context"" type=""System.Runtime.Serialization.StreamingContext"" />
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
-        <parameters />
-      </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Exceptions.ModelPolicyViolation"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""value__"" type=""[external]"" />
+      <field name=""XAttributeBooleanToggle"" type=""IVSoftware.Portable.Collections.Exceptions.ModelPolicyViolation"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.ExpandXKeyFormatRequestedEventArgs"">
     <interfaces />
-    <properties>
-      <property name=""ValueToFormat"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
-      <property name=""XKey"" type=""System.Xml.Linq.XElement"" canRead=""true"" canWrite=""false"" />
-    </properties>
-    <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+    <constructors>
+      <ctor>
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""xkey"" type=""[external]"" />
+          <param name=""valueToFormat"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""ValueToFormat"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""XKey"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.ExplicitFalsePolicy"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""All"" type=""IVSoftware.Portable.Collections.ExplicitFalsePolicy"" />
+      <field name=""None"" type=""IVSoftware.Portable.Collections.ExplicitFalsePolicy"" />
+      <field name=""Remove"" type=""IVSoftware.Portable.Collections.ExplicitFalsePolicy"" />
+      <field name=""ThrowHard"" type=""IVSoftware.Portable.Collections.ExplicitFalsePolicy"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Extensions"">
     <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields />
     <methods>
-      <method name=""AddAttributeFirst"" returns=""System.Xml.Linq.XElement"">
+      <method name=""AddAttributeFirst"" returns=""[external]"">
         <parameters>
-          <param name=""this"" type=""System.Xml.Linq.XElement"" />
-          <param name=""attr"" type=""System.Xml.Linq.XAttribute"" />
+          <param name=""this"" type=""[external]"" />
+          <param name=""attr"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Attribute"" returns=""System.Xml.Linq.XAttribute"">
+      <method name=""Attribute"" returns=""[external]"">
         <parameters>
-          <param name=""this"" type=""System.Xml.Linq.XElement"" />
-          <param name=""stdEnum"" type=""System.Enum"" />
-          <param name=""throw"" type=""System.Nullable&lt;IVSoftware.Portable.Common.Exceptions.ThrowOrAdvise&gt;"" />
+          <param name=""this"" type=""[external]"" />
+          <param name=""stdEnum"" type=""[external]"" />
+          <param name=""throw"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
       <method name=""GetCustomAttribute"" returns=""TAttribute"">
         <parameters>
-          <param name=""value"" type=""System.Enum"" />
+          <param name=""value"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetCustomAttribute"" returns=""System.Attribute"">
+      <method name=""GetCustomAttribute"" returns=""[external]"">
         <parameters>
-          <param name=""value"" type=""System.Enum"" />
-          <param name=""openGenericType"" type=""System.Type"" />
+          <param name=""value"" type=""[external]"" />
+          <param name=""openGenericType"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""InsertAttributeAfter"" returns=""System.Xml.Linq.XElement"">
+      <method name=""InsertAttributeAfter"" returns=""[external]"">
         <parameters>
-          <param name=""this"" type=""System.Xml.Linq.XElement"" />
-          <param name=""after"" type=""System.Enum"" />
-          <param name=""attr"" type=""System.Xml.Linq.XAttribute"" />
+          <param name=""this"" type=""[external]"" />
+          <param name=""after"" type=""[external]"" />
+          <param name=""attr"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""InsertAttributeAfter"" returns=""System.Xml.Linq.XElement"">
+      <method name=""InsertAttributeAfter"" returns=""[external]"">
         <parameters>
-          <param name=""this"" type=""System.Xml.Linq.XElement"" />
-          <param name=""after"" type=""System.String"" />
-          <param name=""attr"" type=""System.Xml.Linq.XAttribute"" />
+          <param name=""this"" type=""[external]"" />
+          <param name=""after"" type=""[external]"" />
+          <param name=""attr"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""InsertPreviewAttributeAfter"" returns=""System.Xml.Linq.XElement"">
+      <method name=""InsertPreviewAttributeAfter"" returns=""[external]"">
         <parameters>
-          <param name=""this"" type=""System.Xml.Linq.XElement"" />
-          <param name=""after"" type=""System.Enum"" />
+          <param name=""this"" type=""[external]"" />
+          <param name=""after"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""InsertPreviewAttributeAfter"" returns=""System.Xml.Linq.XElement"">
+      <method name=""InsertPreviewAttributeAfter"" returns=""[external]"">
         <parameters>
-          <param name=""this"" type=""System.Xml.Linq.XElement"" />
-          <param name=""after"" type=""System.String"" />
+          <param name=""this"" type=""[external]"" />
+          <param name=""after"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""MakeXElement"" returns=""System.Xml.Linq.XElement"">
+      <method name=""MakeXElement"" returns=""[external]"">
         <parameters>
-          <param name=""this"" type=""System.Enum"" />
+          <param name=""this"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Move"" returns=""System.Xml.Linq.XElement"">
+      <method name=""Move"" returns=""[external]"">
         <parameters>
-          <param name=""this"" type=""System.Xml.Linq.XElement"" />
-          <param name=""attr"" type=""System.Xml.Linq.XAttribute"" />
-          <param name=""index"" type=""System.Int32"" />
+          <param name=""this"" type=""[external]"" />
+          <param name=""attr"" type=""[external]"" />
+          <param name=""index"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""SetStdAttributeValue"" returns=""System.Xml.Linq.XElement"">
+      <method name=""SetStdAttributeValue"" returns=""[external]"">
         <parameters>
-          <param name=""this"" type=""System.Xml.Linq.XElement"" />
-          <param name=""stdEnum"" type=""System.Enum"" />
-          <param name=""value"" type=""System.Object"" />
-          <param name=""maxLength"" type=""System.Byte"" />
-          <param name=""padToMaxLength"" type=""System.Boolean"" />
-          <param name=""throw"" type=""System.Nullable&lt;IVSoftware.Portable.Common.Exceptions.ThrowOrAdvise&gt;"" />
+          <param name=""this"" type=""[external]"" />
+          <param name=""stdEnum"" type=""[external]"" />
+          <param name=""value"" type=""[external]"" />
+          <param name=""maxLength"" type=""[external]"" />
+          <param name=""padToMaxLength"" type=""[external]"" />
+          <param name=""throw"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""XBoundAttribute"" returns=""IVSoftware.Portable.Xml.Linq.XBoundAttribute"">
+      <method name=""XBoundAttribute"" returns=""[external]"">
         <parameters>
-          <param name=""this"" type=""System.Xml.Linq.XElement"" />
+          <param name=""this"" type=""[external]"" />
           <param name=""stdEnum"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
-          <param name=""throw"" type=""System.Nullable&lt;IVSoftware.Portable.Common.Exceptions.ThrowOrAdvise&gt;"" />
+          <param name=""throw"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.FormattingEH"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""Current"" type=""IVSoftware.Portable.Collections.FormattingEH"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.FormattingEHM"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""Matches"" type=""IVSoftware.Portable.Collections.FormattingEHM"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.FormattingOMC"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""Json"" type=""IVSoftware.Portable.Collections.FormattingOMC"" />
+      <field name=""Model"" type=""IVSoftware.Portable.Collections.FormattingOMC"" />
+      <field name=""ModelWithPreview"" type=""IVSoftware.Portable.Collections.FormattingOMC"" />
+      <field name=""StateReport"" type=""IVSoftware.Portable.Collections.FormattingOMC"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.HistogramEdge"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""AffectsSinkCount"" type=""IVSoftware.Portable.Collections.HistogramEdge"" />
+      <field name=""Decrement"" type=""IVSoftware.Portable.Collections.HistogramEdge"" />
+      <field name=""Hold"" type=""IVSoftware.Portable.Collections.HistogramEdge"" />
+      <field name=""Increment"" type=""IVSoftware.Portable.Collections.HistogramEdge"" />
+      <field name=""Rebucket"" type=""IVSoftware.Portable.Collections.HistogramEdge"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.HistogramParticipationPolicy"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""OptIn"" type=""IVSoftware.Portable.Collections.HistogramParticipationPolicy"" />
+      <field name=""OptOut"" type=""IVSoftware.Portable.Collections.HistogramParticipationPolicy"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.IBriskDictionary"">
     <interfaces>
       <interface name=""IVSoftware.Portable.Collections.IInsistent"" />
-      <interface name=""System.Collections.ICollection"" />
-      <interface name=""System.Collections.IDictionary"" />
-      <interface name=""System.Collections.IEnumerable"" />
-      <interface name=""System.Collections.Specialized.INotifyCollectionChanged"" />
     </interfaces>
+    <constructors />
     <properties>
       <property name=""Item"" type=""IVSoftware.Portable.Collections.IObservableDictionary"" canRead=""true"" canWrite=""false"" />
-      <property name=""Model"" type=""System.Xml.Linq.XElement"" canRead=""true"" canWrite=""false"" />
+      <property name=""Model"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events>
+      <event name=""ExpandXKeyFormatRequested"" type=""[external]"" />
+    </events>
+    <fields />
     <methods>
-      <method name=""ContainsKey"" returns=""System.Boolean"">
+      <method name=""ContainsKey"" returns=""[external]"">
         <parameters>
-          <param name=""key1"" type=""System.Object"" />
-          <param name=""keysN"" type=""System.Object[]"" />
+          <param name=""key1"" type=""[external]"" />
+          <param name=""keysN"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ViewExpandedModel"" returns=""System.String"">
+      <method name=""ViewExpandedModel"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.IInsistent"">
     <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields />
     <methods />
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.IInsistentDictionary"">
     <interfaces>
       <interface name=""IVSoftware.Portable.Collections.IInsistent"" />
       <interface name=""IVSoftware.Portable.Collections.INotifyCollectionChanging"" />
       <interface name=""IVSoftware.Portable.Collections.IObservableDictionary"" />
-      <interface name=""System.Collections.ICollection"" />
-      <interface name=""System.Collections.IDictionary"" />
-      <interface name=""System.Collections.IEnumerable"" />
-      <interface name=""System.Collections.Specialized.INotifyCollectionChanged"" />
     </interfaces>
+    <constructors />
     <properties>
-      <property name=""ActivationDlgt"" type=""System.Delegate"" canRead=""true"" canWrite=""true"" />
+      <property name=""ActivationDlgt"" type=""[external]"" canRead=""true"" canWrite=""true"" />
     </properties>
+    <events />
+    <fields />
     <methods />
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.IInsistentDictionary&lt;TKey,TValue&gt;"">
     <interfaces>
@@ -1479,365 +1667,408 @@ IVSoftware.Portable.SQLiteMarkdown | Version=1.0.1.0"
       <interface name=""IVSoftware.Portable.Collections.INotifyCollectionChanging"" />
       <interface name=""IVSoftware.Portable.Collections.IObservableDictionary"" />
       <interface name=""IVSoftware.Portable.Collections.IObservableDictionary&lt;TKey,TValue&gt;"" />
-      <interface name=""System.Collections.Generic.ICollection&lt;System.Collections.Generic.KeyValuePair&lt;TKey,TValue&gt;&gt;"" />
-      <interface name=""System.Collections.Generic.IDictionary&lt;TKey,TValue&gt;"" />
-      <interface name=""System.Collections.Generic.IEnumerable&lt;System.Collections.Generic.KeyValuePair&lt;TKey,TValue&gt;&gt;"" />
-      <interface name=""System.Collections.ICollection"" />
-      <interface name=""System.Collections.IDictionary"" />
-      <interface name=""System.Collections.IEnumerable"" />
-      <interface name=""System.Collections.Specialized.INotifyCollectionChanged"" />
     </interfaces>
+    <constructors />
     <properties>
-      <property name=""ActivationDlgt"" type=""System.Func&lt;TValue&gt;"" canRead=""true"" canWrite=""true"" />
+      <property name=""ActivationDlgt"" type=""[external]"" canRead=""true"" canWrite=""true"" />
     </properties>
+    <events />
+    <fields />
     <methods />
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.IModeledCollection"">
-    <interfaces>
-      <interface name=""System.Collections.ICollection"" />
-      <interface name=""System.Collections.IEnumerable"" />
-      <interface name=""System.Collections.IList"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties>
-      <property name=""AuthorityProviders"" type=""System.Collections.Generic.IDictionary&lt;System.Enum,IVSoftware.Portable.Disposable.IAuthorityEpochProvider&gt;"" canRead=""true"" canWrite=""false"" />
+      <property name=""AuthorityProviders"" type=""[external]"" canRead=""true"" canWrite=""false"" />
       <property name=""FilterQueryDatabase"" type=""IVSoftware.Portable.Collections.SQLiteQueryOnlyConnection"" canRead=""true"" canWrite=""false"" />
-      <property name=""Histo"" type=""System.Collections.Generic.IReadOnlyDictionary&lt;IVSoftware.Portable.Collections.StdModelAttribute,System.Int32&gt;"" canRead=""true"" canWrite=""false"" />
-      <property name=""Model"" type=""System.Xml.Linq.XElement"" canRead=""true"" canWrite=""false"" />
+      <property name=""Histo"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Model"" type=""[external]"" canRead=""true"" canWrite=""false"" />
       <property name=""ModelDataExchangeAuthority"" type=""IVSoftware.Portable.Collections.ModelDataExchangeAuthority"" canRead=""true"" canWrite=""false"" />
       <property name=""ModelTracking"" type=""IVSoftware.Portable.Collections.ModelTrackingFlag"" canRead=""true"" canWrite=""true"" />
-      <property name=""ObservableNetProjection"" type=""System.Collections.IList"" canRead=""true"" canWrite=""false"" />
+      <property name=""ObservableNetProjection"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""HasAuthority"" returns=""System.Boolean"">
+      <method name=""HasAuthority"" returns=""[external]"">
         <parameters>
-          <param name=""authority"" type=""System.Enum"" />
+          <param name=""authority"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""SetObservableNetProjection"" returns=""System.Void"">
+      <method name=""SetObservableNetProjection"" returns=""[external]"">
         <parameters>
           <param name=""onp"" type=""IVSoftware.Portable.Collections.INotifyPreviewCollection"" />
-          <param name=""topology"" type=""System.Nullable&lt;IVSoftware.Portable.Collections.NetProjectionTopology&gt;"" />
+          <param name=""topology"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.INotifyCollectionChanging"">
     <interfaces />
+    <constructors />
     <properties>
       <property name=""CollectionChangingEventingPolicy"" type=""IVSoftware.Portable.Collections.CollectionChangingEventingPolicy"" canRead=""true"" canWrite=""false"" />
       <property name=""EventScope"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeScope"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events>
+      <event name=""CollectionChanging"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangingEventHandler"" />
+    </events>
+    <fields />
     <methods />
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.INotifyPreviewCollection"">
     <interfaces>
       <interface name=""IVSoftware.Portable.Collections.INotifyCollectionChanging"" />
-      <interface name=""System.Collections.Specialized.INotifyCollectionChanged"" />
     </interfaces>
+    <constructors />
     <properties />
+    <events />
+    <fields />
     <methods />
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Internal.GetFullPathDelegate&lt;T&gt;"">
-    <interfaces>
-      <interface name=""System.ICloneable"" />
-      <interface name=""System.Runtime.Serialization.ISerializable"" />
-    </interfaces>
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""object"" type=""[external]"" />
+          <param name=""method"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""Method"" type=""System.Reflection.MethodInfo"" canRead=""true"" canWrite=""false"" />
-      <property name=""Target"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""Method"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Target"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""BeginInvoke"" returns=""System.IAsyncResult"">
+      <method name=""BeginInvoke"" returns=""[external]"">
         <parameters>
           <param name=""item"" type=""T"" />
-          <param name=""callback"" type=""System.AsyncCallback"" />
-          <param name=""object"" type=""System.Object"" />
+          <param name=""callback"" type=""[external]"" />
+          <param name=""object"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Clone"" returns=""System.Object"">
+      <method name=""Clone"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""DynamicInvoke"" returns=""System.Object"">
+      <method name=""DynamicInvoke"" returns=""[external]"">
         <parameters>
-          <param name=""args"" type=""System.Object[]"" />
+          <param name=""args"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""EndInvoke"" returns=""System.String"">
+      <method name=""EndInvoke"" returns=""[external]"">
         <parameters>
-          <param name=""result"" type=""System.IAsyncResult"" />
+          <param name=""result"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetInvocationList"" returns=""System.Delegate[]"">
+      <method name=""GetInvocationList"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetObjectData"" returns=""System.Void"">
+      <method name=""GetObjectData"" returns=""[external]"">
         <parameters>
-          <param name=""info"" type=""System.Runtime.Serialization.SerializationInfo"" />
-          <param name=""context"" type=""System.Runtime.Serialization.StreamingContext"" />
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Invoke"" returns=""System.String"">
+      <method name=""Invoke"" returns=""[external]"">
         <parameters>
           <param name=""item"" type=""T"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Internal.ModelPreviewDelegate"">
-    <interfaces>
-      <interface name=""System.ICloneable"" />
-      <interface name=""System.Runtime.Serialization.ISerializable"" />
-    </interfaces>
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""object"" type=""[external]"" />
+          <param name=""method"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""Method"" type=""System.Reflection.MethodInfo"" canRead=""true"" canWrite=""false"" />
-      <property name=""Target"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""Method"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Target"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""BeginInvoke"" returns=""System.IAsyncResult"">
+      <method name=""BeginInvoke"" returns=""[external]"">
         <parameters>
-          <param name=""item"" type=""System.Object"" />
-          <param name=""callback"" type=""System.AsyncCallback"" />
-          <param name=""object"" type=""System.Object"" />
+          <param name=""item"" type=""[external]"" />
+          <param name=""callback"" type=""[external]"" />
+          <param name=""object"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Clone"" returns=""System.Object"">
+      <method name=""Clone"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""DynamicInvoke"" returns=""System.Object"">
+      <method name=""DynamicInvoke"" returns=""[external]"">
         <parameters>
-          <param name=""args"" type=""System.Object[]"" />
+          <param name=""args"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""EndInvoke"" returns=""System.String"">
+      <method name=""EndInvoke"" returns=""[external]"">
         <parameters>
-          <param name=""result"" type=""System.IAsyncResult"" />
+          <param name=""result"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetInvocationList"" returns=""System.Delegate[]"">
+      <method name=""GetInvocationList"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetObjectData"" returns=""System.Void"">
+      <method name=""GetObjectData"" returns=""[external]"">
         <parameters>
-          <param name=""info"" type=""System.Runtime.Serialization.SerializationInfo"" />
-          <param name=""context"" type=""System.Runtime.Serialization.StreamingContext"" />
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Invoke"" returns=""System.String"">
+      <method name=""Invoke"" returns=""[external]"">
         <parameters>
-          <param name=""item"" type=""System.Object"" />
+          <param name=""item"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.IObservableDictionary"">
     <interfaces>
       <interface name=""IVSoftware.Portable.Collections.INotifyCollectionChanging"" />
-      <interface name=""System.Collections.ICollection"" />
-      <interface name=""System.Collections.IDictionary"" />
-      <interface name=""System.Collections.IEnumerable"" />
-      <interface name=""System.Collections.Specialized.INotifyCollectionChanged"" />
     </interfaces>
+    <constructors />
     <properties>
-      <property name=""DHostEphemeralMode"" type=""IVSoftware.Portable.Disposable.DisposableHost"" canRead=""true"" canWrite=""false"" />
+      <property name=""DHostEphemeralMode"" type=""[external]"" canRead=""true"" canWrite=""false"" />
       <property name=""Mode"" type=""IVSoftware.Portable.Collections.DictionaryMode"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""AddRange"" returns=""System.Void"">
+      <method name=""AddRange"" returns=""[external]"">
         <parameters>
-          <param name=""entries"" type=""System.Collections.Generic.IEnumerable&lt;IVSoftware.Portable.Collections.Dictionaries.DictionaryEntryPreview&gt;"" />
+          <param name=""entries"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.IObservableDictionary&lt;TKey,TValue&gt;"">
     <interfaces>
       <interface name=""IVSoftware.Portable.Collections.INotifyCollectionChanging"" />
       <interface name=""IVSoftware.Portable.Collections.IObservableDictionary"" />
-      <interface name=""System.Collections.Generic.ICollection&lt;System.Collections.Generic.KeyValuePair&lt;TKey,TValue&gt;&gt;"" />
-      <interface name=""System.Collections.Generic.IDictionary&lt;TKey,TValue&gt;"" />
-      <interface name=""System.Collections.Generic.IEnumerable&lt;System.Collections.Generic.KeyValuePair&lt;TKey,TValue&gt;&gt;"" />
-      <interface name=""System.Collections.ICollection"" />
-      <interface name=""System.Collections.IDictionary"" />
-      <interface name=""System.Collections.IEnumerable"" />
-      <interface name=""System.Collections.Specialized.INotifyCollectionChanged"" />
     </interfaces>
+    <constructors />
     <properties />
+    <events />
+    <fields />
     <methods />
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.IPathPlaceable"">
     <interfaces />
+    <constructors />
     <properties>
-      <property name=""FullPath"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""Id"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""ParentId"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""ParentPath"" type=""System.String"" canRead=""true"" canWrite=""false"" />
+      <property name=""FullPath"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Id"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""ParentId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""ParentPath"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods />
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.IPredicated"">
     <interfaces>
       <interface name=""IVSoftware.Portable.Collections.IRoutedEnumerable"" />
-      <interface name=""System.Collections.IEnumerable"" />
     </interfaces>
+    <constructors />
     <properties>
-      <property name=""ActiveFilters"" type=""System.Collections.Generic.IReadOnlyDictionary&lt;System.String,System.Enum&gt;"" canRead=""true"" canWrite=""false"" />
+      <property name=""ActiveFilters"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""ActivatePredicates"" returns=""System.Void"">
+      <method name=""ActivatePredicates"" returns=""[external]"">
         <parameters>
-          <param name=""stdPredicate"" type=""System.Enum"" />
-          <param name=""more"" type=""System.Enum[]"" />
+          <param name=""stdPredicate"" type=""[external]"" />
+          <param name=""more"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""BeginPredicateAtom"" returns=""System.IDisposable"">
+      <method name=""BeginPredicateAtom"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ClearPredicates"" returns=""System.Void"">
+      <method name=""ClearPredicates"" returns=""[external]"">
         <parameters>
-          <param name=""clearInputText"" type=""System.Boolean"" />
+          <param name=""clearInputText"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""DeactivatePredicates"" returns=""System.Void"">
+      <method name=""DeactivatePredicates"" returns=""[external]"">
         <parameters>
-          <param name=""stdPredicate"" type=""System.Enum"" />
-          <param name=""more"" type=""System.Enum[]"" />
+          <param name=""stdPredicate"" type=""[external]"" />
+          <param name=""more"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.IRangeable"">
     <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields />
     <methods>
-      <method name=""AddRange"" returns=""System.Void"">
+      <method name=""AddRange"" returns=""[external]"">
         <parameters>
-          <param name=""items"" type=""System.Collections.IEnumerable"" />
+          <param name=""items"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""AddRangeDistinct"" returns=""System.Int32"">
+      <method name=""AddRangeDistinct"" returns=""[external]"">
         <parameters>
-          <param name=""items"" type=""System.Collections.IEnumerable"" />
+          <param name=""items"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""InsertRange"" returns=""System.Void"">
+      <method name=""InsertRange"" returns=""[external]"">
         <parameters>
-          <param name=""startingIndex"" type=""System.Int32"" />
-          <param name=""items"" type=""System.Collections.IEnumerable"" />
+          <param name=""startingIndex"" type=""[external]"" />
+          <param name=""items"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""RemoveMultiple"" returns=""System.Int32"">
+      <method name=""RemoveMultiple"" returns=""[external]"">
         <parameters>
-          <param name=""items"" type=""System.Collections.IEnumerable"" />
+          <param name=""items"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""RemoveRange"" returns=""System.Void"">
+      <method name=""RemoveRange"" returns=""[external]"">
         <parameters>
-          <param name=""startingIndex"" type=""System.Int32"" />
-          <param name=""endingIndex"" type=""System.Int32"" />
+          <param name=""startingIndex"" type=""[external]"" />
+          <param name=""endingIndex"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.IRangeable&lt;T&gt;"">
     <interfaces>
       <interface name=""IVSoftware.Portable.Collections.IRangeable"" />
     </interfaces>
+    <constructors />
     <properties />
+    <events />
+    <fields />
     <methods>
-      <method name=""AddRange"" returns=""System.Void"">
+      <method name=""AddRange"" returns=""[external]"">
         <parameters>
-          <param name=""items"" type=""System.Collections.Generic.IEnumerable&lt;T&gt;"" />
+          <param name=""items"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""AddRangeDistinct"" returns=""System.Int32"">
+      <method name=""AddRangeDistinct"" returns=""[external]"">
         <parameters>
-          <param name=""items"" type=""System.Collections.Generic.IEnumerable&lt;T&gt;"" />
+          <param name=""items"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""InsertRange"" returns=""System.Void"">
+      <method name=""InsertRange"" returns=""[external]"">
         <parameters>
-          <param name=""startingIndex"" type=""System.Int32"" />
-          <param name=""newItems"" type=""System.Collections.Generic.IEnumerable&lt;T&gt;"" />
+          <param name=""startingIndex"" type=""[external]"" />
+          <param name=""newItems"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""RemoveMultiple"" returns=""System.Int32"">
+      <method name=""RemoveMultiple"" returns=""[external]"">
         <parameters>
-          <param name=""items"" type=""System.Collections.Generic.IEnumerable&lt;T&gt;"" />
+          <param name=""items"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.IRoutedEnumerable"">
-    <interfaces>
-      <interface name=""System.Collections.IEnumerable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields />
     <methods>
-      <method name=""GetCount"" returns=""System.Int32"">
+      <method name=""GetCount"" returns=""[external]"">
         <parameters>
-          <param name=""route"" type=""System.Enum"" />
+          <param name=""route"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetEnumerator"" returns=""System.Collections.IEnumerator"">
+      <method name=""GetEnumerator"" returns=""[external]"">
         <parameters>
-          <param name=""route"" type=""System.Enum"" />
+          <param name=""route"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.IRoutedEnumerable&lt;TItem,TRoute&gt;"">
     <interfaces>
       <interface name=""IVSoftware.Portable.Collections.IRoutedEnumerable"" />
-      <interface name=""System.Collections.IEnumerable"" />
     </interfaces>
+    <constructors />
     <properties />
+    <events />
+    <fields />
     <methods>
-      <method name=""GetCount"" returns=""System.Int32"">
+      <method name=""GetCount"" returns=""[external]"">
         <parameters>
           <param name=""route"" type=""TRoute"" />
         </parameters>
       </method>
-      <method name=""GetEnumerator"" returns=""System.Collections.Generic.IEnumerator&lt;TItem&gt;"">
+      <method name=""GetEnumerator"" returns=""[external]"">
         <parameters>
           <param name=""route"" type=""TRoute"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.ITolerant"">
     <interfaces />
+    <constructors />
     <properties>
-      <property name=""Item"" type=""System.Object"" canRead=""true"" canWrite=""true"" />
+      <property name=""Item"" type=""[external]"" canRead=""true"" canWrite=""true"" />
     </properties>
+    <events />
+    <fields />
     <methods />
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.ITolerantDictionary&lt;TKey,TValue&gt;"">
     <interfaces>
@@ -1845,3177 +2076,3599 @@ IVSoftware.Portable.SQLiteMarkdown | Version=1.0.1.0"
       <interface name=""IVSoftware.Portable.Collections.IObservableDictionary"" />
       <interface name=""IVSoftware.Portable.Collections.IObservableDictionary&lt;TKey,TValue&gt;"" />
       <interface name=""IVSoftware.Portable.Collections.ITolerant"" />
-      <interface name=""System.Collections.Generic.ICollection&lt;System.Collections.Generic.KeyValuePair&lt;TKey,TValue&gt;&gt;"" />
-      <interface name=""System.Collections.Generic.IDictionary&lt;TKey,TValue&gt;"" />
-      <interface name=""System.Collections.Generic.IEnumerable&lt;System.Collections.Generic.KeyValuePair&lt;TKey,TValue&gt;&gt;"" />
-      <interface name=""System.Collections.ICollection"" />
-      <interface name=""System.Collections.IDictionary"" />
-      <interface name=""System.Collections.IEnumerable"" />
-      <interface name=""System.Collections.Specialized.INotifyCollectionChanged"" />
     </interfaces>
+    <constructors />
     <properties>
       <property name=""Item"" type=""TValue"" canRead=""true"" canWrite=""true"" />
     </properties>
+    <events />
+    <fields />
     <methods />
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.IUpgradeableDictionary"">
     <interfaces>
       <interface name=""IVSoftware.Portable.Collections.INotifyCollectionChanging"" />
       <interface name=""IVSoftware.Portable.Collections.IObservableDictionary"" />
-      <interface name=""System.Collections.ICollection"" />
-      <interface name=""System.Collections.IDictionary"" />
-      <interface name=""System.Collections.IEnumerable"" />
-      <interface name=""System.Collections.Specialized.INotifyCollectionChanged"" />
     </interfaces>
+    <constructors />
     <properties />
+    <events />
+    <fields />
     <methods>
-      <method name=""TransferEvents"" returns=""System.ValueTuple&lt;System.Int32,System.Int32&gt;"">
+      <method name=""TransferEvents"" returns=""[external]"">
         <parameters>
           <param name=""to"" type=""IVSoftware.Portable.Collections.IObservableDictionary"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.ModelAuthorityEpochProvider"">
-    <interfaces>
-      <interface name=""IVSoftware.Portable.Disposable.IAuthorityEpochProvider"" />
-      <interface name=""IVSoftware.Portable.Disposable.IAuthorityEpochProvider&lt;IVSoftware.Portable.Collections.StdModelAuthority&gt;"" />
-      <interface name=""System.Collections.Generic.ICollection&lt;System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;&gt;"" />
-      <interface name=""System.Collections.Generic.IDictionary&lt;System.String,System.Object&gt;"" />
-      <interface name=""System.Collections.Generic.IEnumerable&lt;System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;&gt;"" />
-      <interface name=""System.Collections.IEnumerable"" />
-    </interfaces>
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+    </constructors>
     <properties>
       <property name=""Authorities"" type=""IVSoftware.Portable.Collections.StdModelAuthority[]"" canRead=""true"" canWrite=""false"" />
-      <property name=""Authorities"" type=""System.Enum[]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Authorities"" type=""[external]"" canRead=""true"" canWrite=""false"" />
       <property name=""Authority"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" canRead=""true"" canWrite=""false"" />
-      <property name=""Authority"" type=""System.Enum"" canRead=""true"" canWrite=""false"" />
-      <property name=""Count"" type=""System.Int32"" canRead=""true"" canWrite=""false"" />
-      <property name=""IsCancelled"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""IsDisposing"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""IsReadOnly"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""Item"" type=""System.Object"" canRead=""true"" canWrite=""true"" />
-      <property name=""Keys"" type=""System.Collections.Generic.ICollection&lt;System.String&gt;"" canRead=""true"" canWrite=""false"" />
-      <property name=""Values"" type=""System.Collections.Generic.ICollection&lt;System.Object&gt;"" canRead=""true"" canWrite=""false"" />
+      <property name=""Authority"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Count"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""IsCancelled"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""IsDisposing"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""IsReadOnly"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Item"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""Keys"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Values"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events>
+      <event name=""BeginUsing"" type=""[external]"" />
+      <event name=""CountChanged"" type=""[external]"" />
+      <event name=""FinalDispose"" type=""[external]"" />
+    </events>
+    <fields />
     <methods>
-      <method name=""Add"" returns=""System.Void"">
+      <method name=""Add"" returns=""[external]"">
         <parameters>
-          <param name=""item"" type=""System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;"" />
+          <param name=""item"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Add"" returns=""System.Void"">
+      <method name=""Add"" returns=""[external]"">
         <parameters>
-          <param name=""key"" type=""System.String"" />
-          <param name=""value"" type=""System.Object"" />
+          <param name=""key"" type=""[external]"" />
+          <param name=""value"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CancelAuthorityEpoch"" returns=""System.Void"">
+      <method name=""CancelAuthorityEpoch"" returns=""[external]"">
         <parameters>
-          <param name=""throw"" type=""System.Boolean"" />
+          <param name=""throw"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CanForwardEvent"" returns=""System.Boolean"">
+      <method name=""CanForwardEvent"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""CanForwardEvent"" returns=""System.Boolean"">
+      <method name=""CanForwardEvent"" returns=""[external]"">
         <parameters>
-          <param name=""e"" type=""System.EventArgs"" />
+          <param name=""e"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Clear"" returns=""System.Void"">
+      <method name=""Clear"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Contains"" returns=""System.Boolean"">
+      <method name=""Contains"" returns=""[external]"">
         <parameters>
-          <param name=""item"" type=""System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;"" />
+          <param name=""item"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ContainsKey"" returns=""System.Boolean"">
+      <method name=""ContainsKey"" returns=""[external]"">
         <parameters>
-          <param name=""key"" type=""System.String"" />
+          <param name=""key"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CopyTo"" returns=""System.Void"">
+      <method name=""CopyTo"" returns=""[external]"">
         <parameters>
-          <param name=""array"" type=""System.Collections.Generic.KeyValuePair`2[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]][]"" />
-          <param name=""arrayIndex"" type=""System.Int32"" />
+          <param name=""array"" type=""[external]"" />
+          <param name=""arrayIndex"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetAwaiter"" returns=""System.Runtime.CompilerServices.TaskAwaiter&lt;System.Enum&gt;"">
+      <method name=""GetAwaiter"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetEnumerator"" returns=""System.Collections.Generic.IEnumerator&lt;System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;&gt;"">
+      <method name=""GetEnumerator"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasRequestedAuthority"" returns=""System.Boolean"">
+      <method name=""HasRequestedAuthority"" returns=""[external]"">
         <parameters>
           <param name=""authority"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
         </parameters>
       </method>
-      <method name=""HasRequestedAuthority"" returns=""System.Boolean"">
+      <method name=""HasRequestedAuthority"" returns=""[external]"">
         <parameters>
-          <param name=""authority"" type=""System.Enum"" />
+          <param name=""authority"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""IsZero"" returns=""System.Boolean"">
+      <method name=""IsZero"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Remove"" returns=""System.Boolean"">
+      <method name=""Remove"" returns=""[external]"">
         <parameters>
-          <param name=""key"" type=""System.String"" />
+          <param name=""item"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Remove"" returns=""System.Boolean"">
+      <method name=""Remove"" returns=""[external]"">
         <parameters>
-          <param name=""item"" type=""System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;"" />
+          <param name=""key"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""RequestAuthority"" returns=""System.IDisposable"">
+      <method name=""RequestAuthority"" returns=""[external]"">
         <parameters>
           <param name=""authority"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
-          <param name=""properties"" type=""System.Collections.Generic.Dictionary&lt;System.String,System.Object&gt;"" />
+          <param name=""properties"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""RequestAuthority"" returns=""System.IDisposable"">
+      <method name=""RequestAuthority"" returns=""[external]"">
         <parameters>
-          <param name=""authority"" type=""System.Enum"" />
-          <param name=""properties"" type=""System.Collections.Generic.Dictionary&lt;System.String,System.Object&gt;"" />
+          <param name=""authority"" type=""[external]"" />
+          <param name=""properties"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""RequestAuthority"" returns=""System.IDisposable"">
-        <parameters>
-          <param name=""authority"" type=""System.Enum"" />
-          <param name=""properties"" type=""System.Collections.Generic.Dictionary&lt;System.String,System.Object&gt;"" />
-        </parameters>
-      </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""TryGetValue"" returns=""System.Boolean"">
+      <method name=""TryGetValue"" returns=""[external]"">
         <parameters>
-          <param name=""key"" type=""System.String"" />
-          <param name=""value"" type=""System.Object&amp;"" />
+          <param name=""key"" type=""[external]"" />
+          <param name=""value"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.ModelDataExchangeAuthority"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""Collection"" type=""IVSoftware.Portable.Collections.ModelDataExchangeAuthority"" />
+      <field name=""CollectionDeferred"" type=""IVSoftware.Portable.Collections.ModelDataExchangeAuthority"" />
+      <field name=""Model"" type=""IVSoftware.Portable.Collections.ModelDataExchangeAuthority"" />
+      <field name=""ModelDeferred"" type=""IVSoftware.Portable.Collections.ModelDataExchangeAuthority"" />
+      <field name=""NoAuthority"" type=""IVSoftware.Portable.Collections.ModelDataExchangeAuthority"" />
+      <field name=""ObservableNetCollection"" type=""IVSoftware.Portable.Collections.ModelDataExchangeAuthority"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.ModelEpochDisposeEventArgs"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""releasedSenders"" type=""[external]"" />
+          <param name=""snapshot"" type=""[external]"" />
+          <param name=""batchEventArgs"" type=""IVSoftware.Portable.Collections.Events.NotifyCollectionChangingEventArgs"" />
+          <param name=""finalList"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
       <property name=""Digest"" type=""IVSoftware.Portable.Collections.Events.NotifyCollectionChangingEventArgs"" canRead=""true"" canWrite=""false"" />
-      <property name=""FinalList"" type=""System.Collections.IList"" canRead=""true"" canWrite=""false"" />
-      <property name=""Item"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
-      <property name=""KeyCount"" type=""System.Int32"" canRead=""true"" canWrite=""false"" />
-      <property name=""Keys"" type=""System.Collections.Generic.IEnumerable&lt;System.String&gt;"" canRead=""true"" canWrite=""false"" />
-      <property name=""ReleasedSenders"" type=""System.Object[]"" canRead=""true"" canWrite=""false"" />
-      <property name=""Values"" type=""System.Collections.Generic.IEnumerable&lt;System.Object&gt;"" canRead=""true"" canWrite=""false"" />
+      <property name=""FinalList"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Item"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""KeyCount"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Keys"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""ReleasedSenders"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Values"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""ContainsKey"" returns=""System.Boolean"">
+      <method name=""ContainsKey"" returns=""[external]"">
         <parameters>
-          <param name=""key"" type=""System.String"" />
+          <param name=""key"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetEnumerator"" returns=""System.Collections.Generic.IEnumerator&lt;System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;&gt;"">
+      <method name=""GetEnumerator"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""TryGetValue"" returns=""System.Boolean"">
+      <method name=""TryGetValue"" returns=""[external]"">
         <parameters>
-          <param name=""key"" type=""System.String"" />
-          <param name=""value"" type=""System.Object&amp;"" />
+          <param name=""key"" type=""[external]"" />
+          <param name=""value"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.ModelTrackingFlag"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""ItemPropertyChanges"" type=""IVSoftware.Portable.Collections.ModelTrackingFlag"" />
+      <field name=""ItemQueries"" type=""IVSoftware.Portable.Collections.ModelTrackingFlag"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.NetProjectionTopology"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""AllowDirectChanges"" type=""IVSoftware.Portable.Collections.NetProjectionTopology"" />
+      <field name=""None"" type=""IVSoftware.Portable.Collections.NetProjectionTopology"" />
+      <field name=""ObservableOnly"" type=""IVSoftware.Portable.Collections.NetProjectionTopology"" />
+      <field name=""Routed"" type=""IVSoftware.Portable.Collections.NetProjectionTopology"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.NotifyCollectionChangeAction"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""Add"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeAction"" />
+      <field name=""Digest"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeAction"" />
+      <field name=""Move"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeAction"" />
+      <field name=""Remove"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeAction"" />
+      <field name=""Replace"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeAction"" />
+      <field name=""Reset"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeAction"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.NotifyCollectionChangeReason"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""ApplyFilter"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeReason"" />
+      <field name=""Cancel"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeReason"" />
+      <field name=""Digest"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeReason"" />
+      <field name=""Exception"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeReason"" />
+      <field name=""None"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeReason"" />
+      <field name=""RemoveFilter"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeReason"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.NotifyCollectionChangeScope"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""CancelOnly"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeScope"" />
+      <field name=""FullControl"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeScope"" />
+      <field name=""ReadOnly"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeScope"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.NotifyCollectionChangingEventHandler"">
-    <interfaces>
-      <interface name=""System.ICloneable"" />
-      <interface name=""System.Runtime.Serialization.ISerializable"" />
-    </interfaces>
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""object"" type=""[external]"" />
+          <param name=""method"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""Method"" type=""System.Reflection.MethodInfo"" canRead=""true"" canWrite=""false"" />
-      <property name=""Target"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""Method"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Target"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""BeginInvoke"" returns=""System.IAsyncResult"">
+      <method name=""BeginInvoke"" returns=""[external]"">
         <parameters>
-          <param name=""sender"" type=""System.Object"" />
+          <param name=""sender"" type=""[external]"" />
           <param name=""e"" type=""IVSoftware.Portable.Collections.Events.NotifyCollectionChangingEventArgs"" />
-          <param name=""callback"" type=""System.AsyncCallback"" />
-          <param name=""object"" type=""System.Object"" />
+          <param name=""callback"" type=""[external]"" />
+          <param name=""object"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Clone"" returns=""System.Object"">
+      <method name=""Clone"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""DynamicInvoke"" returns=""System.Object"">
+      <method name=""DynamicInvoke"" returns=""[external]"">
         <parameters>
-          <param name=""args"" type=""System.Object[]"" />
+          <param name=""args"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""EndInvoke"" returns=""System.Void"">
+      <method name=""EndInvoke"" returns=""[external]"">
         <parameters>
-          <param name=""result"" type=""System.IAsyncResult"" />
+          <param name=""result"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetInvocationList"" returns=""System.Delegate[]"">
+      <method name=""GetInvocationList"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetObjectData"" returns=""System.Void"">
+      <method name=""GetObjectData"" returns=""[external]"">
         <parameters>
-          <param name=""info"" type=""System.Runtime.Serialization.SerializationInfo"" />
-          <param name=""context"" type=""System.Runtime.Serialization.StreamingContext"" />
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Invoke"" returns=""System.Void"">
+      <method name=""Invoke"" returns=""[external]"">
         <parameters>
-          <param name=""sender"" type=""System.Object"" />
+          <param name=""sender"" type=""[external]"" />
           <param name=""e"" type=""IVSoftware.Portable.Collections.Events.NotifyCollectionChangingEventArgs"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.ObservableModeledCollection&lt;T&gt;"">
     <interfaces>
       <interface name=""IVSoftware.Portable.Collections.IModeledCollection"" />
-      <interface name=""System.Collections.Generic.ICollection&lt;T&gt;"" />
-      <interface name=""System.Collections.Generic.IEnumerable&lt;T&gt;"" />
-      <interface name=""System.Collections.Generic.IList&lt;T&gt;"" />
-      <interface name=""System.Collections.Generic.IReadOnlyCollection&lt;T&gt;"" />
-      <interface name=""System.Collections.Generic.IReadOnlyList&lt;T&gt;"" />
-      <interface name=""System.Collections.ICollection"" />
-      <interface name=""System.Collections.IEnumerable"" />
-      <interface name=""System.Collections.IList"" />
-      <interface name=""System.Collections.Specialized.INotifyCollectionChanged"" />
-      <interface name=""System.ComponentModel.INotifyPropertyChanged"" />
     </interfaces>
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""AuthorityProviders"" type=""System.Collections.Generic.IDictionary&lt;System.Enum,IVSoftware.Portable.Disposable.IAuthorityEpochProvider&gt;"" canRead=""true"" canWrite=""false"" />
-      <property name=""Count"" type=""System.Int32"" canRead=""true"" canWrite=""false"" />
+      <property name=""AuthorityProviders"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Count"" type=""[external]"" canRead=""true"" canWrite=""false"" />
       <property name=""EventScope"" type=""IVSoftware.Portable.Collections.NotifyCollectionChangeScope"" canRead=""true"" canWrite=""true"" />
       <property name=""FilterQueryDatabase"" type=""IVSoftware.Portable.Collections.SQLiteQueryOnlyConnection"" canRead=""true"" canWrite=""true"" />
-      <property name=""Histo"" type=""System.Collections.Generic.IReadOnlyDictionary&lt;IVSoftware.Portable.Collections.StdModelAttribute,System.Int32&gt;"" canRead=""true"" canWrite=""false"" />
+      <property name=""Histo"" type=""[external]"" canRead=""true"" canWrite=""false"" />
       <property name=""Item"" type=""T"" canRead=""true"" canWrite=""true"" />
-      <property name=""Model"" type=""System.Xml.Linq.XElement"" canRead=""true"" canWrite=""false"" />
+      <property name=""Model"" type=""[external]"" canRead=""true"" canWrite=""false"" />
       <property name=""ModelDataExchangeAuthority"" type=""IVSoftware.Portable.Collections.ModelDataExchangeAuthority"" canRead=""true"" canWrite=""false"" />
       <property name=""ModelTracking"" type=""IVSoftware.Portable.Collections.ModelTrackingFlag"" canRead=""true"" canWrite=""true"" />
-      <property name=""ObservableNetProjection"" type=""System.Collections.IList"" canRead=""true"" canWrite=""true"" />
+      <property name=""ObservableNetProjection"" type=""[external]"" canRead=""true"" canWrite=""true"" />
     </properties>
+    <events>
+      <event name=""CollectionChanged"" type=""[external]"" />
+      <event name=""PropertyChanged"" type=""[external]"" />
+    </events>
+    <fields />
     <methods>
-      <method name=""Add"" returns=""System.Void"">
+      <method name=""Add"" returns=""[external]"">
         <parameters>
           <param name=""item"" type=""T"" />
         </parameters>
       </method>
-      <method name=""CancelModelAuthorityEpoch"" returns=""System.Void"">
+      <method name=""CancelModelAuthorityEpoch"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Clear"" returns=""System.Void"">
+      <method name=""Clear"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Contains"" returns=""System.Boolean"">
+      <method name=""Contains"" returns=""[external]"">
         <parameters>
           <param name=""item"" type=""T"" />
         </parameters>
       </method>
-      <method name=""CopyTo"" returns=""System.Void"">
+      <method name=""CopyTo"" returns=""[external]"">
         <parameters>
           <param name=""array"" type=""T[]"" />
-          <param name=""index"" type=""System.Int32"" />
+          <param name=""index"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetEnumerator"" returns=""System.Collections.Generic.IEnumerator&lt;T&gt;"">
+      <method name=""GetEnumerator"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetEnumerator"" returns=""System.Collections.Generic.IEnumerator&lt;T&gt;"">
-        <parameters />
-      </method>
-      <method name=""GetEnumerator"" returns=""System.Collections.IEnumerator"">
+      <method name=""GetEnumerator"" returns=""[external]"">
         <parameters>
-          <param name=""route"" type=""System.Enum"" />
+          <param name=""route"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasAuthority"" returns=""System.Boolean"">
+      <method name=""HasAuthority"" returns=""[external]"">
         <parameters>
-          <param name=""authorityUnk"" type=""System.Enum"" />
+          <param name=""authorityUnk"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""IndexOf"" returns=""System.Int32"">
+      <method name=""IndexOf"" returns=""[external]"">
         <parameters>
           <param name=""item"" type=""T"" />
         </parameters>
       </method>
-      <method name=""Insert"" returns=""System.Void"">
+      <method name=""Insert"" returns=""[external]"">
         <parameters>
-          <param name=""index"" type=""System.Int32"" />
+          <param name=""index"" type=""[external]"" />
           <param name=""item"" type=""T"" />
         </parameters>
       </method>
-      <method name=""LoadCanon"" returns=""System.Void"">
+      <method name=""LoadCanon"" returns=""[external]"">
         <parameters>
-          <param name=""items"" type=""System.Collections.IList"" />
+          <param name=""items"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""LoadCanonAsync"" returns=""System.Threading.Tasks.Task"">
+      <method name=""LoadCanonAsync"" returns=""[external]"">
         <parameters>
-          <param name=""items"" type=""System.Collections.IList"" />
+          <param name=""items"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Move"" returns=""System.Void"">
+      <method name=""Move"" returns=""[external]"">
         <parameters>
-          <param name=""oldIndex"" type=""System.Int32"" />
-          <param name=""newIndex"" type=""System.Int32"" />
+          <param name=""oldIndex"" type=""[external]"" />
+          <param name=""newIndex"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Remove"" returns=""System.Boolean"">
+      <method name=""Remove"" returns=""[external]"">
         <parameters>
           <param name=""item"" type=""T"" />
         </parameters>
       </method>
-      <method name=""RemoveAt"" returns=""System.Void"">
+      <method name=""RemoveAt"" returns=""[external]"">
         <parameters>
-          <param name=""index"" type=""System.Int32"" />
+          <param name=""index"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""RequestAuthority"" returns=""System.IDisposable"">
+      <method name=""RequestAuthority"" returns=""[external]"">
         <parameters>
           <param name=""authority"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
         </parameters>
       </method>
-      <method name=""RequestAuthority"" returns=""System.IDisposable"">
+      <method name=""RequestAuthority"" returns=""[external]"">
         <parameters>
           <param name=""authority"" type=""IVSoftware.Portable.Collections.ModelDataExchangeAuthority"" />
-          <param name=""source"" type=""System.Collections.IList"" />
+          <param name=""source"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""SetObservableNetProjection"" returns=""System.Void"">
+      <method name=""SetObservableNetProjection"" returns=""[external]"">
         <parameters>
           <param name=""onp"" type=""IVSoftware.Portable.Collections.INotifyPreviewCollection"" />
-          <param name=""topology"" type=""System.Nullable&lt;IVSoftware.Portable.Collections.NetProjectionTopology&gt;"" />
+          <param name=""topology"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""SortModel"" returns=""System.Void"">
+      <method name=""SortModel"" returns=""[external]"">
         <parameters>
           <param name=""stdAttr"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
-        <parameters>
-          <param name=""formatting"" type=""IVSoftware.Portable.Collections.FormattingOMC"" />
-        </parameters>
-      </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
           <param name=""formatting"" type=""IVSoftware.Portable.Collections.FormattingEHM"" />
         </parameters>
       </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""formatting"" type=""IVSoftware.Portable.Collections.FormattingOMC"" />
+        </parameters>
+      </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.PathDiscoveryFSM"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""Description"" type=""IVSoftware.Portable.Collections.PathDiscoveryFSM"" />
+      <field name=""FullPath"" type=""IVSoftware.Portable.Collections.PathDiscoveryFSM"" />
+      <field name=""Id"" type=""IVSoftware.Portable.Collections.PathDiscoveryFSM"" />
+      <field name=""IPathPlaceable"" type=""IVSoftware.Portable.Collections.PathDiscoveryFSM"" />
+      <field name=""ModelPathAttribute"" type=""IVSoftware.Portable.Collections.PathDiscoveryFSM"" />
+      <field name=""NotFound"" type=""IVSoftware.Portable.Collections.PathDiscoveryFSM"" />
+      <field name=""Text"" type=""IVSoftware.Portable.Collections.PathDiscoveryFSM"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.ReplaceItemsEventingPolicy"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""All"" type=""IVSoftware.Portable.Collections.ReplaceItemsEventingPolicy"" />
+      <field name=""ResetOnAnyChange"" type=""IVSoftware.Portable.Collections.ReplaceItemsEventingPolicy"" />
+      <field name=""StructuralReplaceEvent"" type=""IVSoftware.Portable.Collections.ReplaceItemsEventingPolicy"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.RequestStdModelAuthorityDlgt"">
-    <interfaces>
-      <interface name=""System.ICloneable"" />
-      <interface name=""System.Runtime.Serialization.ISerializable"" />
-    </interfaces>
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""object"" type=""[external]"" />
+          <param name=""method"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""Method"" type=""System.Reflection.MethodInfo"" canRead=""true"" canWrite=""false"" />
-      <property name=""Target"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""Method"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Target"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""BeginInvoke"" returns=""System.IAsyncResult"">
+      <method name=""BeginInvoke"" returns=""[external]"">
         <parameters>
           <param name=""authority"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
-          <param name=""callback"" type=""System.AsyncCallback"" />
-          <param name=""object"" type=""System.Object"" />
+          <param name=""callback"" type=""[external]"" />
+          <param name=""object"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Clone"" returns=""System.Object"">
+      <method name=""Clone"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""DynamicInvoke"" returns=""System.Object"">
+      <method name=""DynamicInvoke"" returns=""[external]"">
         <parameters>
-          <param name=""args"" type=""System.Object[]"" />
+          <param name=""args"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""EndInvoke"" returns=""System.IDisposable"">
+      <method name=""EndInvoke"" returns=""[external]"">
         <parameters>
-          <param name=""result"" type=""System.IAsyncResult"" />
+          <param name=""result"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetInvocationList"" returns=""System.Delegate[]"">
+      <method name=""GetInvocationList"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetObjectData"" returns=""System.Void"">
+      <method name=""GetObjectData"" returns=""[external]"">
         <parameters>
-          <param name=""info"" type=""System.Runtime.Serialization.SerializationInfo"" />
-          <param name=""context"" type=""System.Runtime.Serialization.StreamingContext"" />
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Invoke"" returns=""System.IDisposable"">
+      <method name=""Invoke"" returns=""[external]"">
         <parameters>
           <param name=""authority"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.SemanticContribution"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""ExplicitFalse"" type=""IVSoftware.Portable.Collections.SemanticContribution"" />
+      <field name=""ExplicitTrue"" type=""IVSoftware.Portable.Collections.SemanticContribution"" />
+      <field name=""NonBoolean"" type=""IVSoftware.Portable.Collections.SemanticContribution"" />
+      <field name=""ReservedNull"" type=""IVSoftware.Portable.Collections.SemanticContribution"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.SQLiteAuthority"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""FullControl"" type=""IVSoftware.Portable.Collections.SQLiteAuthority"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.SQLiteConnectionMapper"">
     <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetFullPath"" returns=""System.String"">
+      <method name=""GetFullPath"" returns=""[external]"">
         <parameters>
           <param name=""this"" type=""IVSoftware.Portable.Collections.IPathPlaceable"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetId"" returns=""System.String"">
+      <method name=""GetId"" returns=""[external]"">
         <parameters>
-          <param name=""this"" type=""System.Object"" />
+          <param name=""this"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetPK"" returns=""SQLite.TableMapping+Column"">
+      <method name=""GetPK"" returns=""[external]"">
         <parameters>
-          <param name=""type"" type=""System.Type"" />
+          <param name=""type"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetSQLiteMapping"" returns=""SQLite.TableMapping"">
+      <method name=""GetSQLiteMapping"" returns=""[external]"">
         <parameters>
-          <param name=""type"" type=""System.Type"" />
-          <param name=""createFlags"" type=""SQLite.CreateFlags"" />
-          <param name=""contractType"" type=""System.Type"" />
+          <param name=""type"" type=""[external]"" />
+          <param name=""createFlags"" type=""[external]"" />
+          <param name=""contractType"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetSQLiteMapping"" returns=""SQLite.TableMapping"">
+      <method name=""GetSQLiteMapping"" returns=""[external]"">
         <parameters>
-          <param name=""type"" type=""System.Type"" />
-          <param name=""pkName"" type=""System.String&amp;"" />
-          <param name=""pkPropertyName"" type=""System.String&amp;"" />
-          <param name=""createFlags"" type=""SQLite.CreateFlags"" />
-          <param name=""contractType"" type=""System.Type"" />
+          <param name=""type"" type=""[external]"" />
+          <param name=""pkName"" type=""[external]"" />
+          <param name=""pkPropertyName"" type=""[external]"" />
+          <param name=""createFlags"" type=""[external]"" />
+          <param name=""contractType"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.SQLiteQueryOnlyConnection"">
-    <interfaces>
-      <interface name=""SQLite.ISQLiteConnection"" />
-      <interface name=""System.IDisposable"" />
-    </interfaces>
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""storeDateTimeAsTicks"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""BusyTimeout"" type=""System.TimeSpan"" canRead=""true"" canWrite=""true"" />
-      <property name=""DatabasePath"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""DateTimeStringFormat"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""Handle"" type=""SQLitePCL.sqlite3"" canRead=""true"" canWrite=""false"" />
-      <property name=""IsInTransaction"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""LibVersionNumber"" type=""System.Int32"" canRead=""true"" canWrite=""false"" />
-      <property name=""StoreDateTimeAsTicks"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""StoreTimeSpanAsTicks"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""TableMappings"" type=""System.Collections.Generic.IEnumerable&lt;SQLite.TableMapping&gt;"" canRead=""true"" canWrite=""false"" />
-      <property name=""TimeExecution"" type=""System.Boolean"" canRead=""true"" canWrite=""true"" />
-      <property name=""Trace"" type=""System.Boolean"" canRead=""true"" canWrite=""true"" />
-      <property name=""Tracer"" type=""System.Action&lt;System.String&gt;"" canRead=""true"" canWrite=""true"" />
+      <property name=""BusyTimeout"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""DatabasePath"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""DateTimeStringFormat"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Handle"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""IsInTransaction"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""LibVersionNumber"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""StoreDateTimeAsTicks"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""StoreTimeSpanAsTicks"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""TableMappings"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""TimeExecution"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""Trace"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""Tracer"" type=""[external]"" canRead=""true"" canWrite=""true"" />
     </properties>
+    <events>
+      <event name=""TableChanged"" type=""[external]"" />
+    </events>
+    <fields />
     <methods>
-      <method name=""Backup"" returns=""System.Void"">
+      <method name=""Backup"" returns=""[external]"">
         <parameters>
-          <param name=""destinationDatabasePath"" type=""System.String"" />
-          <param name=""databaseName"" type=""System.String"" />
+          <param name=""destinationDatabasePath"" type=""[external]"" />
+          <param name=""databaseName"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""BeginTransaction"" returns=""System.Void"">
+      <method name=""BeginTransaction"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Close"" returns=""System.Void"">
+      <method name=""Close"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Commit"" returns=""System.Void"">
+      <method name=""Commit"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""CreateCommand"" returns=""SQLite.SQLiteCommand"">
+      <method name=""CreateCommand"" returns=""[external]"">
         <parameters>
-          <param name=""cmdText"" type=""System.String"" />
-          <param name=""ps"" type=""System.Object[]"" />
+          <param name=""cmdText"" type=""[external]"" />
+          <param name=""args"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CreateCommand"" returns=""SQLite.SQLiteCommand"">
+      <method name=""CreateCommand"" returns=""[external]"">
         <parameters>
-          <param name=""cmdText"" type=""System.String"" />
-          <param name=""args"" type=""System.Collections.Generic.Dictionary&lt;System.String,System.Object&gt;"" />
+          <param name=""cmdText"" type=""[external]"" />
+          <param name=""ps"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CreateIndex"" returns=""System.Int32"">
+      <method name=""CreateIndex"" returns=""[external]"">
         <parameters>
-          <param name=""property"" type=""System.Linq.Expressions.Expression&lt;System.Func&lt;T,System.Object&gt;&gt;"" />
-          <param name=""unique"" type=""System.Boolean"" />
+          <param name=""property"" type=""[external]"" />
+          <param name=""unique"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CreateIndex"" returns=""System.Int32"">
+      <method name=""CreateIndex"" returns=""[external]"">
         <parameters>
-          <param name=""tableName"" type=""System.String"" />
-          <param name=""columnName"" type=""System.String"" />
-          <param name=""unique"" type=""System.Boolean"" />
+          <param name=""tableName"" type=""[external]"" />
+          <param name=""columnName"" type=""[external]"" />
+          <param name=""unique"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CreateIndex"" returns=""System.Int32"">
+      <method name=""CreateIndex"" returns=""[external]"">
         <parameters>
-          <param name=""tableName"" type=""System.String"" />
-          <param name=""columnNames"" type=""System.String[]"" />
-          <param name=""unique"" type=""System.Boolean"" />
+          <param name=""tableName"" type=""[external]"" />
+          <param name=""columnNames"" type=""[external]"" />
+          <param name=""unique"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CreateIndex"" returns=""System.Int32"">
+      <method name=""CreateIndex"" returns=""[external]"">
         <parameters>
-          <param name=""indexName"" type=""System.String"" />
-          <param name=""tableName"" type=""System.String"" />
-          <param name=""columnNames"" type=""System.String[]"" />
-          <param name=""unique"" type=""System.Boolean"" />
+          <param name=""indexName"" type=""[external]"" />
+          <param name=""tableName"" type=""[external]"" />
+          <param name=""columnName"" type=""[external]"" />
+          <param name=""unique"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CreateIndex"" returns=""System.Int32"">
+      <method name=""CreateIndex"" returns=""[external]"">
         <parameters>
-          <param name=""indexName"" type=""System.String"" />
-          <param name=""tableName"" type=""System.String"" />
-          <param name=""columnName"" type=""System.String"" />
-          <param name=""unique"" type=""System.Boolean"" />
+          <param name=""indexName"" type=""[external]"" />
+          <param name=""tableName"" type=""[external]"" />
+          <param name=""columnNames"" type=""[external]"" />
+          <param name=""unique"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CreateTable"" returns=""SQLite.CreateTableResult"">
+      <method name=""CreateTable"" returns=""[external]"">
         <parameters>
-          <param name=""createFlags"" type=""SQLite.CreateFlags"" />
+          <param name=""createFlags"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CreateTable"" returns=""SQLite.CreateTableResult"">
+      <method name=""CreateTable"" returns=""[external]"">
         <parameters>
-          <param name=""ty"" type=""System.Type"" />
-          <param name=""createFlags"" type=""SQLite.CreateFlags"" />
+          <param name=""ty"" type=""[external]"" />
+          <param name=""createFlags"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CreateTables"" returns=""SQLite.CreateTablesResult"">
+      <method name=""CreateTables"" returns=""[external]"">
         <parameters>
-          <param name=""createFlags"" type=""SQLite.CreateFlags"" />
+          <param name=""createFlags"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CreateTables"" returns=""SQLite.CreateTablesResult"">
+      <method name=""CreateTables"" returns=""[external]"">
         <parameters>
-          <param name=""createFlags"" type=""SQLite.CreateFlags"" />
+          <param name=""createFlags"" type=""[external]"" />
+          <param name=""types"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CreateTables"" returns=""SQLite.CreateTablesResult"">
+      <method name=""DeferredQuery"" returns=""[external]"">
         <parameters>
-          <param name=""createFlags"" type=""SQLite.CreateFlags"" />
+          <param name=""query"" type=""[external]"" />
+          <param name=""args"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CreateTables"" returns=""SQLite.CreateTablesResult"">
+      <method name=""DeferredQuery"" returns=""[external]"">
         <parameters>
-          <param name=""createFlags"" type=""SQLite.CreateFlags"" />
+          <param name=""map"" type=""[external]"" />
+          <param name=""query"" type=""[external]"" />
+          <param name=""args"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CreateTables"" returns=""SQLite.CreateTablesResult"">
+      <method name=""Delete"" returns=""[external]"">
         <parameters>
-          <param name=""createFlags"" type=""SQLite.CreateFlags"" />
-          <param name=""types"" type=""System.Type[]"" />
+          <param name=""objectToDelete"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""DeferredQuery"" returns=""System.Collections.Generic.IEnumerable&lt;T&gt;"">
+      <method name=""Delete"" returns=""[external]"">
         <parameters>
-          <param name=""query"" type=""System.String"" />
-          <param name=""args"" type=""System.Object[]"" />
+          <param name=""primaryKey"" type=""[external]"" />
+          <param name=""map"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""DeferredQuery"" returns=""System.Collections.Generic.IEnumerable&lt;System.Object&gt;"">
-        <parameters>
-          <param name=""map"" type=""SQLite.TableMapping"" />
-          <param name=""query"" type=""System.String"" />
-          <param name=""args"" type=""System.Object[]"" />
-        </parameters>
-      </method>
-      <method name=""Delete"" returns=""System.Int32"">
-        <parameters>
-          <param name=""objectToDelete"" type=""System.Object"" />
-        </parameters>
-      </method>
-      <method name=""Delete"" returns=""System.Int32"">
-        <parameters>
-          <param name=""primaryKey"" type=""System.Object"" />
-        </parameters>
-      </method>
-      <method name=""Delete"" returns=""System.Int32"">
-        <parameters>
-          <param name=""primaryKey"" type=""System.Object"" />
-          <param name=""map"" type=""SQLite.TableMapping"" />
-        </parameters>
-      </method>
-      <method name=""DeleteAll"" returns=""System.Int32"">
+      <method name=""DeleteAll"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""DeleteAll"" returns=""System.Int32"">
+      <method name=""DeleteAll"" returns=""[external]"">
         <parameters>
-          <param name=""map"" type=""SQLite.TableMapping"" />
+          <param name=""map"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Dispose"" returns=""System.Void"">
+      <method name=""Dispose"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""DropTable"" returns=""System.Int32"">
+      <method name=""DropTable"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""DropTable"" returns=""System.Int32"">
+      <method name=""DropTable"" returns=""[external]"">
         <parameters>
-          <param name=""map"" type=""SQLite.TableMapping"" />
+          <param name=""map"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""EnableLoadExtension"" returns=""System.Void"">
+      <method name=""EnableLoadExtension"" returns=""[external]"">
         <parameters>
-          <param name=""enabled"" type=""System.Boolean"" />
+          <param name=""enabled"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""EnableWriteAheadLogging"" returns=""System.Void"">
+      <method name=""EnableWriteAheadLogging"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Execute"" returns=""System.Int32"">
+      <method name=""Execute"" returns=""[external]"">
         <parameters>
-          <param name=""query"" type=""System.String"" />
-          <param name=""args"" type=""System.Object[]"" />
+          <param name=""query"" type=""[external]"" />
+          <param name=""args"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ExecuteScalar"" returns=""T"">
+      <method name=""ExecuteScalar"" returns=""[external]"">
         <parameters>
-          <param name=""query"" type=""System.String"" />
-          <param name=""args"" type=""System.Object[]"" />
+          <param name=""query"" type=""[external]"" />
+          <param name=""args"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Find"" returns=""T"">
+      <method name=""Find"" returns=""[external]"">
         <parameters>
-          <param name=""pk"" type=""System.Object"" />
+          <param name=""predicate"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Find"" returns=""T"">
+      <method name=""Find"" returns=""[external]"">
         <parameters>
-          <param name=""predicate"" type=""System.Linq.Expressions.Expression&lt;System.Func&lt;T,System.Boolean&gt;&gt;"" />
+          <param name=""pk"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Find"" returns=""System.Object"">
+      <method name=""Find"" returns=""[external]"">
         <parameters>
-          <param name=""pk"" type=""System.Object"" />
-          <param name=""map"" type=""SQLite.TableMapping"" />
+          <param name=""pk"" type=""[external]"" />
+          <param name=""map"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""FindWithQuery"" returns=""T"">
+      <method name=""FindWithQuery"" returns=""[external]"">
         <parameters>
-          <param name=""query"" type=""System.String"" />
-          <param name=""args"" type=""System.Object[]"" />
+          <param name=""query"" type=""[external]"" />
+          <param name=""args"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""FindWithQuery"" returns=""System.Object"">
+      <method name=""FindWithQuery"" returns=""[external]"">
         <parameters>
-          <param name=""map"" type=""SQLite.TableMapping"" />
-          <param name=""query"" type=""System.String"" />
-          <param name=""args"" type=""System.Object[]"" />
+          <param name=""map"" type=""[external]"" />
+          <param name=""query"" type=""[external]"" />
+          <param name=""args"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Get"" returns=""T"">
+      <method name=""Get"" returns=""[external]"">
         <parameters>
-          <param name=""pk"" type=""System.Object"" />
+          <param name=""predicate"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Get"" returns=""T"">
+      <method name=""Get"" returns=""[external]"">
         <parameters>
-          <param name=""predicate"" type=""System.Linq.Expressions.Expression&lt;System.Func&lt;T,System.Boolean&gt;&gt;"" />
+          <param name=""pk"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Get"" returns=""System.Object"">
+      <method name=""Get"" returns=""[external]"">
         <parameters>
-          <param name=""pk"" type=""System.Object"" />
-          <param name=""map"" type=""SQLite.TableMapping"" />
+          <param name=""pk"" type=""[external]"" />
+          <param name=""map"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetMapping"" returns=""SQLite.TableMapping"">
+      <method name=""GetMapping"" returns=""[external]"">
         <parameters>
-          <param name=""createFlags"" type=""SQLite.CreateFlags"" />
+          <param name=""createFlags"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetMapping"" returns=""SQLite.TableMapping"">
+      <method name=""GetMapping"" returns=""[external]"">
         <parameters>
-          <param name=""type"" type=""System.Type"" />
-          <param name=""createFlags"" type=""SQLite.CreateFlags"" />
+          <param name=""type"" type=""[external]"" />
+          <param name=""createFlags"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetTableInfo"" returns=""System.Collections.Generic.List&lt;SQLite.SQLiteConnection+ColumnInfo&gt;"">
+      <method name=""GetTableInfo"" returns=""[external]"">
         <parameters>
-          <param name=""tableName"" type=""System.String"" />
+          <param name=""tableName"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Insert"" returns=""System.Int32"">
+      <method name=""Insert"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Insert"" returns=""System.Int32"">
+      <method name=""Insert"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
-          <param name=""objType"" type=""System.Type"" />
+          <param name=""obj"" type=""[external]"" />
+          <param name=""extra"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Insert"" returns=""System.Int32"">
+      <method name=""Insert"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
-          <param name=""extra"" type=""System.String"" />
+          <param name=""obj"" type=""[external]"" />
+          <param name=""objType"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Insert"" returns=""System.Int32"">
+      <method name=""Insert"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
-          <param name=""extra"" type=""System.String"" />
-          <param name=""objType"" type=""System.Type"" />
+          <param name=""obj"" type=""[external]"" />
+          <param name=""extra"" type=""[external]"" />
+          <param name=""objType"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""InsertAll"" returns=""System.Int32"">
+      <method name=""InsertAll"" returns=""[external]"">
         <parameters>
-          <param name=""objects"" type=""System.Collections.IEnumerable"" />
-          <param name=""runInTransaction"" type=""System.Boolean"" />
+          <param name=""objects"" type=""[external]"" />
+          <param name=""runInTransaction"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""InsertAll"" returns=""System.Int32"">
+      <method name=""InsertAll"" returns=""[external]"">
         <parameters>
-          <param name=""objects"" type=""System.Collections.IEnumerable"" />
-          <param name=""extra"" type=""System.String"" />
-          <param name=""runInTransaction"" type=""System.Boolean"" />
+          <param name=""objects"" type=""[external]"" />
+          <param name=""extra"" type=""[external]"" />
+          <param name=""runInTransaction"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""InsertAll"" returns=""System.Int32"">
+      <method name=""InsertAll"" returns=""[external]"">
         <parameters>
-          <param name=""objects"" type=""System.Collections.IEnumerable"" />
-          <param name=""objType"" type=""System.Type"" />
-          <param name=""runInTransaction"" type=""System.Boolean"" />
+          <param name=""objects"" type=""[external]"" />
+          <param name=""objType"" type=""[external]"" />
+          <param name=""runInTransaction"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""InsertOrReplace"" returns=""System.Int32"">
+      <method name=""InsertOrReplace"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""InsertOrReplace"" returns=""System.Int32"">
+      <method name=""InsertOrReplace"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
-          <param name=""objType"" type=""System.Type"" />
+          <param name=""obj"" type=""[external]"" />
+          <param name=""objType"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Query"" returns=""System.Collections.Generic.List&lt;T&gt;"">
+      <method name=""Query"" returns=""[external]"">
         <parameters>
-          <param name=""query"" type=""System.String"" />
-          <param name=""args"" type=""System.Object[]"" />
+          <param name=""query"" type=""[external]"" />
+          <param name=""args"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Query"" returns=""System.Collections.Generic.List&lt;System.Object&gt;"">
+      <method name=""Query"" returns=""[external]"">
         <parameters>
-          <param name=""map"" type=""SQLite.TableMapping"" />
-          <param name=""query"" type=""System.String"" />
-          <param name=""args"" type=""System.Object[]"" />
+          <param name=""map"" type=""[external]"" />
+          <param name=""query"" type=""[external]"" />
+          <param name=""args"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""QueryScalars"" returns=""System.Collections.Generic.List&lt;T&gt;"">
+      <method name=""QueryScalars"" returns=""[external]"">
         <parameters>
-          <param name=""query"" type=""System.String"" />
-          <param name=""args"" type=""System.Object[]"" />
+          <param name=""query"" type=""[external]"" />
+          <param name=""args"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ReKey"" returns=""System.Void"">
+      <method name=""ReKey"" returns=""[external]"">
         <parameters>
-          <param name=""key"" type=""System.String"" />
+          <param name=""key"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ReKey"" returns=""System.Void"">
+      <method name=""ReKey"" returns=""[external]"">
         <parameters>
-          <param name=""key"" type=""System.Byte[]"" />
+          <param name=""key"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Release"" returns=""System.Void"">
+      <method name=""Release"" returns=""[external]"">
         <parameters>
-          <param name=""savepoint"" type=""System.String"" />
+          <param name=""savepoint"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""RequestAuthority"" returns=""System.IDisposable"">
+      <method name=""RequestAuthority"" returns=""[external]"">
         <parameters>
           <param name=""authority"" type=""IVSoftware.Portable.Collections.SQLiteAuthority"" />
         </parameters>
       </method>
-      <method name=""Rollback"" returns=""System.Void"">
+      <method name=""Rollback"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""RollbackTo"" returns=""System.Void"">
+      <method name=""RollbackTo"" returns=""[external]"">
         <parameters>
-          <param name=""savepoint"" type=""System.String"" />
+          <param name=""savepoint"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""RunInTransaction"" returns=""System.Void"">
+      <method name=""RunInTransaction"" returns=""[external]"">
         <parameters>
-          <param name=""action"" type=""System.Action"" />
+          <param name=""action"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""SaveTransactionPoint"" returns=""System.String"">
+      <method name=""SaveTransactionPoint"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Table"" returns=""SQLite.TableQuery&lt;T&gt;"">
+      <method name=""Table"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Update"" returns=""System.Int32"">
+      <method name=""Update"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Update"" returns=""System.Int32"">
+      <method name=""Update"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
-          <param name=""objType"" type=""System.Type"" />
+          <param name=""obj"" type=""[external]"" />
+          <param name=""objType"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""UpdateAll"" returns=""System.Int32"">
+      <method name=""UpdateAll"" returns=""[external]"">
         <parameters>
-          <param name=""objects"" type=""System.Collections.IEnumerable"" />
-          <param name=""runInTransaction"" type=""System.Boolean"" />
+          <param name=""objects"" type=""[external]"" />
+          <param name=""runInTransaction"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.StdModelAttribute"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""comparer"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""defer"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""filters"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""histo"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""isreadonly"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""live"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""match"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""mdc"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""model"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""mpath"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""omc"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""order"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""pmatch"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""predicates"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""preview"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""qmatch"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""sort"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""text"" type=""IVSoftware.Portable.Collections.StdModelAttribute"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.StdModelAuthority"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""AllowSinkChanges"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
+      <field name=""Offload"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
+      <field name=""Onboard"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
+      <field name=""Revert"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
+      <field name=""SuspendForwardAll"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
+      <field name=""SuspendForwardCollectionChange"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
+      <field name=""SuspendForwardPropertyChange"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
+      <field name=""SuspendForwardXModel"" type=""IVSoftware.Portable.Collections.StdModelAuthority"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.StdModelAuthorityKey"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""ModelDataExchangeAuthority"" type=""IVSoftware.Portable.Collections.StdModelAuthorityKey"" />
+      <field name=""StdModelAuthority"" type=""IVSoftware.Portable.Collections.StdModelAuthorityKey"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.StdModelElement"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""item"" type=""IVSoftware.Portable.Collections.StdModelElement"" />
+      <field name=""model"" type=""IVSoftware.Portable.Collections.StdModelElement"" />
+      <field name=""proxy"" type=""IVSoftware.Portable.Collections.StdModelElement"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.StdPreviewPath"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""Description"" type=""IVSoftware.Portable.Collections.StdPreviewPath"" />
+      <field name=""NotFound"" type=""IVSoftware.Portable.Collections.StdPreviewPath"" />
+      <field name=""Preview"" type=""IVSoftware.Portable.Collections.StdPreviewPath"" />
+      <field name=""PreviewAttribute"" type=""IVSoftware.Portable.Collections.StdPreviewPath"" />
+      <field name=""Text"" type=""IVSoftware.Portable.Collections.StdPreviewPath"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.StdReserved"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""ErrorIndex"" type=""IVSoftware.Portable.Collections.StdReserved"" />
+      <field name=""Indeterminate"" type=""IVSoftware.Portable.Collections.StdReserved"" />
+      <field name=""InvalidFlags"" type=""IVSoftware.Portable.Collections.StdReserved"" />
+      <field name=""MemberNotDefined"" type=""IVSoftware.Portable.Collections.StdReserved"" />
+      <field name=""Null"" type=""IVSoftware.Portable.Collections.StdReserved"" />
+      <field name=""UndefinedXAttribute"" type=""IVSoftware.Portable.Collections.StdReserved"" />
+      <field name=""UndefinedXBoundAttribute"" type=""IVSoftware.Portable.Collections.StdReserved"" />
+      <field name=""value__"" type=""[external]"" />
+      <field name=""XElementHasNoKey"" type=""IVSoftware.Portable.Collections.StdReserved"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.TolerantValue"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""ExplicitNull"" type=""IVSoftware.Portable.Collections.TolerantValue"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Tracking.StdPredicate"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""IsChecked"" type=""IVSoftware.Portable.Collections.Tracking.StdPredicate"" />
+      <field name=""IsSelected"" type=""IVSoftware.Portable.Collections.Tracking.StdPredicate"" />
+      <field name=""IsUnchecked"" type=""IVSoftware.Portable.Collections.Tracking.StdPredicate"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Tracking.TallyContext"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""Decrement"" type=""IVSoftware.Portable.Collections.Tracking.TallyContext"" />
+      <field name=""Increment"" type=""IVSoftware.Portable.Collections.Tracking.TallyContext"" />
+      <field name=""Offload"" type=""IVSoftware.Portable.Collections.Tracking.TallyContext"" />
+      <field name=""Onboard"" type=""IVSoftware.Portable.Collections.Tracking.TallyContext"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Tracking.TrackAttribute"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""mode"" type=""IVSoftware.Portable.Collections.Tracking.TrackedPropertyMode"" />
+          <param name=""condition"" type=""IVSoftware.Portable.Collections.Tracking.WherePredicate"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
       <property name=""Condition"" type=""IVSoftware.Portable.Collections.Tracking.WherePredicate"" canRead=""true"" canWrite=""false"" />
       <property name=""Mode"" type=""IVSoftware.Portable.Collections.Tracking.TrackedPropertyMode"" canRead=""true"" canWrite=""false"" />
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Tracking.TrackAttribute&lt;T&gt;"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""sink"" type=""T"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
       <property name=""Sink"" type=""T"" canRead=""true"" canWrite=""false"" />
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Tracking.TrackedPropertyMode"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""Multiple"" type=""IVSoftware.Portable.Collections.Tracking.TrackedPropertyMode"" />
+      <field name=""None"" type=""IVSoftware.Portable.Collections.Tracking.TrackedPropertyMode"" />
+      <field name=""Single"" type=""IVSoftware.Portable.Collections.Tracking.TrackedPropertyMode"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Tracking.TrackedState"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""Exclusive"" type=""IVSoftware.Portable.Collections.Tracking.TrackedState"" />
+      <field name=""Multi"" type=""IVSoftware.Portable.Collections.Tracking.TrackedState"" />
+      <field name=""None"" type=""IVSoftware.Portable.Collections.Tracking.TrackedState"" />
+      <field name=""Primary"" type=""IVSoftware.Portable.Collections.Tracking.TrackedState"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Tracking.TrackedStateEphemeral"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""NotPressed"" type=""IVSoftware.Portable.Collections.Tracking.TrackedStateEphemeral"" />
+      <field name=""Pressed"" type=""IVSoftware.Portable.Collections.Tracking.TrackedStateEphemeral"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Tracking.TrackedValueDomain"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""Binary"" type=""IVSoftware.Portable.Collections.Tracking.TrackedValueDomain"" />
+      <field name=""Contextual"" type=""IVSoftware.Portable.Collections.Tracking.TrackedValueDomain"" />
+      <field name=""Incompatible"" type=""IVSoftware.Portable.Collections.Tracking.TrackedValueDomain"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Tracking.TrackSinkAttribute"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Tracking.VisibilityPredicateAttribute"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""visibility"" type=""IVSoftware.Portable.Collections.Tracking.VisibilityPredicateFlag"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
       <property name=""Visibility"" type=""IVSoftware.Portable.Collections.Tracking.VisibilityPredicateFlag"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Tracking.VisibilityPredicateFlag"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""Always"" type=""IVSoftware.Portable.Collections.Tracking.VisibilityPredicateFlag"" />
+      <field name=""Empty"" type=""IVSoftware.Portable.Collections.Tracking.VisibilityPredicateFlag"" />
+      <field name=""Multiple"" type=""IVSoftware.Portable.Collections.Tracking.VisibilityPredicateFlag"" />
+      <field name=""Single"" type=""IVSoftware.Portable.Collections.Tracking.VisibilityPredicateFlag"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Tracking.WhereAttribute"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""propertyName"" type=""[external]"" />
+          <param name=""expr"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""stdPropertyName"" type=""[external]"" />
+          <param name=""expr"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""binding"" type=""[external]"" />
+          <param name=""wherePredicate"" type=""IVSoftware.Portable.Collections.Tracking.WherePredicate"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""stdPropertyName"" type=""[external]"" />
+          <param name=""wherePredicate"" type=""IVSoftware.Portable.Collections.Tracking.WherePredicate"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""Binding"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""Expr"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""Predicate"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""Binding"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Expr"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Predicate"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Tracking.WherePredicate"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""IsFalse"" type=""IVSoftware.Portable.Collections.Tracking.WherePredicate"" />
+      <field name=""IsGreaterThanOrEqualToZero"" type=""IVSoftware.Portable.Collections.Tracking.WherePredicate"" />
+      <field name=""IsGreaterThanZero"" type=""IVSoftware.Portable.Collections.Tracking.WherePredicate"" />
+      <field name=""IsLessThanOrEqualToZero"" type=""IVSoftware.Portable.Collections.Tracking.WherePredicate"" />
+      <field name=""IsLessThanZero"" type=""IVSoftware.Portable.Collections.Tracking.WherePredicate"" />
+      <field name=""IsNotZero"" type=""IVSoftware.Portable.Collections.Tracking.WherePredicate"" />
+      <field name=""IsTrue"" type=""IVSoftware.Portable.Collections.Tracking.WherePredicate"" />
+      <field name=""IsZero"" type=""IVSoftware.Portable.Collections.Tracking.WherePredicate"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.Tracking.WherePredicateAttribute"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""predicate"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""Predicate"" type=""System.String"" canRead=""true"" canWrite=""false"" />
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""Predicate"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.XList"">
-    <interfaces>
-      <interface name=""System.Collections.ICollection"" />
-      <interface name=""System.Collections.IEnumerable"" />
-      <interface name=""System.Collections.IList"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties>
-      <property name=""Count"" type=""System.Int32"" canRead=""true"" canWrite=""false"" />
-      <property name=""EBcl"" type=""System.Collections.Specialized.NotifyCollectionChangedEventArgs"" canRead=""true"" canWrite=""true"" />
-      <property name=""IsExplicitMatchPresent"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""IsFixedSize"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""IsReadOnly"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""IsSynchronized"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""Item"" type=""System.Object"" canRead=""true"" canWrite=""true"" />
-      <property name=""SyncRoot"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""Count"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""EBcl"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""IsExplicitMatchPresent"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""IsFixedSize"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""IsReadOnly"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""IsSynchronized"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Item"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""SyncRoot"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Add"" returns=""System.Int32"">
+      <method name=""Add"" returns=""[external]"">
         <parameters>
-          <param name=""value"" type=""System.Object"" />
+          <param name=""value"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Clear"" returns=""System.Void"">
+      <method name=""Clear"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Contains"" returns=""System.Boolean"">
+      <method name=""Contains"" returns=""[external]"">
         <parameters>
-          <param name=""value"" type=""System.Object"" />
+          <param name=""value"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""CopyTo"" returns=""System.Void"">
+      <method name=""CopyTo"" returns=""[external]"">
         <parameters>
-          <param name=""array"" type=""System.Array"" />
-          <param name=""index"" type=""System.Int32"" />
+          <param name=""array"" type=""[external]"" />
+          <param name=""index"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetEnumerator"" returns=""System.Collections.IEnumerator"">
+      <method name=""GetEnumerator"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IndexOf"" returns=""System.Int32"">
+      <method name=""IndexOf"" returns=""[external]"">
         <parameters>
-          <param name=""value"" type=""System.Object"" />
+          <param name=""value"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Insert"" returns=""System.Void"">
+      <method name=""Insert"" returns=""[external]"">
         <parameters>
-          <param name=""index"" type=""System.Int32"" />
-          <param name=""value"" type=""System.Object"" />
+          <param name=""index"" type=""[external]"" />
+          <param name=""value"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Remove"" returns=""System.Void"">
+      <method name=""Remove"" returns=""[external]"">
         <parameters>
-          <param name=""value"" type=""System.Object"" />
+          <param name=""value"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""RemoveAt"" returns=""System.Void"">
+      <method name=""RemoveAt"" returns=""[external]"">
         <parameters>
-          <param name=""index"" type=""System.Int32"" />
+          <param name=""index"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.XModelAttribute&lt;T&gt;"">
     <interfaces />
-    <properties>
-      <property name=""IsOptedIn"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
-      <property name=""StdEnum"" type=""T"" canRead=""true"" canWrite=""false"" />
-      <property name=""XAttr"" type=""System.Xml.Linq.XAttribute"" canRead=""true"" canWrite=""false"" />
-    </properties>
-    <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+    <constructors>
+      <ctor>
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""xattr"" type=""[external]"" />
+          <param name=""stdEnum"" type=""T"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""IsOptedIn"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""StdEnum"" type=""T"" canRead=""true"" canWrite=""false"" />
+      <property name=""XAttr"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Collections.ZeroCountPolicy"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""AllowNegativeTallies"" type=""IVSoftware.Portable.Collections.ZeroCountPolicy"" />
+      <field name=""DecrementNotAllowed"" type=""IVSoftware.Portable.Collections.ZeroCountPolicy"" />
+      <field name=""Preserve"" type=""IVSoftware.Portable.Collections.ZeroCountPolicy"" />
+      <field name=""Remove"" type=""IVSoftware.Portable.Collections.ZeroCountPolicy"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xlm.Linq.Attributes.Effect"">
-    <interfaces>
-      <interface name=""System.IComparable"" />
-      <interface name=""System.IConvertible"" />
-      <interface name=""System.IFormattable"" />
-      <interface name=""System.ISpanFormattable"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties />
+    <events />
+    <fields>
+      <field name=""Advisory"" type=""IVSoftware.Portable.Xlm.Linq.Attributes.Effect"" />
+      <field name=""AdvisorySink"" type=""IVSoftware.Portable.Xlm.Linq.Attributes.Effect"" />
+      <field name=""BoundTo"" type=""IVSoftware.Portable.Xlm.Linq.Attributes.Effect"" />
+      <field name=""SinkExplicitTrueOr"" type=""IVSoftware.Portable.Xlm.Linq.Attributes.Effect"" />
+      <field name=""SourceAdvisory"" type=""IVSoftware.Portable.Xlm.Linq.Attributes.Effect"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
     <methods>
-      <method name=""CompareTo"" returns=""System.Int32"">
+      <method name=""CompareTo"" returns=""[external]"">
         <parameters>
-          <param name=""target"" type=""System.Object"" />
+          <param name=""target"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetTypeCode"" returns=""System.TypeCode"">
+      <method name=""GetTypeCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""HasFlag"" returns=""System.Boolean"">
+      <method name=""HasFlag"" returns=""[external]"">
         <parameters>
-          <param name=""flag"" type=""System.Enum"" />
+          <param name=""flag"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters>
-          <param name=""format"" type=""System.String"" />
-          <param name=""provider"" type=""System.IFormatProvider"" />
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xlm.Linq.Attributes.HistogramIgnoreAttribute"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xlm.Linq.Attributes.HistogramMemberAttribute"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xlm.Linq.Attributes.HistogramMemberOptionAttribute"">
     <interfaces />
+    <constructors />
     <properties>
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xlm.Linq.Attributes.HistogrammerAttribute"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""memberOption"" type=""IVSoftware.Portable.Collections.HistogramParticipationPolicy"" />
+          <param name=""zeroCountOption"" type=""IVSoftware.Portable.Collections.ZeroCountPolicy"" />
+          <param name=""incrementFalseOption"" type=""IVSoftware.Portable.Collections.ExplicitFalsePolicy"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
       <property name=""ExplicitFalsePolicy"" type=""IVSoftware.Portable.Collections.ExplicitFalsePolicy"" canRead=""true"" canWrite=""false"" />
       <property name=""MemberOption"" type=""IVSoftware.Portable.Collections.HistogramParticipationPolicy"" canRead=""true"" canWrite=""false"" />
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
       <property name=""ZeroCountPolicy"" type=""IVSoftware.Portable.Collections.ZeroCountPolicy"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xlm.Linq.Attributes.HistogrammerCommonAttribute"">
     <interfaces />
+    <constructors />
     <properties>
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xlm.Linq.Attributes.HistogrammerFormatAttribute"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""name"" type=""[external]"" />
+          <param name=""moreNames"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""Names"" type=""System.String[]"" canRead=""true"" canWrite=""false"" />
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""Names"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xlm.Linq.Attributes.HistogrammerFormatAttribute&lt;T&gt;"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""key"" type=""T"" />
+          <param name=""moreKeys"" type=""T[]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
       <property name=""Keys"" type=""T[]"" canRead=""true"" canWrite=""false"" />
-      <property name=""Names"" type=""System.String[]"" canRead=""true"" canWrite=""false"" />
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""Names"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xlm.Linq.Attributes.HistogrammerFormatCurrentAttribute"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xlm.Linq.Attributes.ImplicitBooleanAttribute"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""value"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
-      <property name=""Value"" type=""System.Boolean"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Value"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xlm.Linq.Attributes.ImplicitValueAttribute"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""value"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
-      <property name=""Value"" type=""System.String"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Value"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xlm.Linq.Attributes.IncrementFalsePolicyAttribute"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""option"" type=""IVSoftware.Portable.Collections.ExplicitFalsePolicy"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
       <property name=""Option"" type=""IVSoftware.Portable.Collections.ExplicitFalsePolicy"" canRead=""true"" canWrite=""false"" />
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xlm.Linq.Attributes.ModelPathAttribute"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xlm.Linq.Attributes.UnilateralContractAttribute"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""activateAs"" type=""[external]"" />
+          <param name=""knownCompatibleTypes"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""activateAs"" type=""[external]"" />
+          <param name=""knownCompatibleTypes"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
-      <property name=""ActivateAsType"" type=""System.Type"" canRead=""true"" canWrite=""false"" />
-      <property name=""KnownCompatibleTypes"" type=""System.String[]"" canRead=""true"" canWrite=""false"" />
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""ActivateAsType"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""KnownCompatibleTypes"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xlm.Linq.Attributes.ZeroCountPolicyAttribute"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""option"" type=""IVSoftware.Portable.Collections.ZeroCountPolicy"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
       <property name=""Option"" type=""IVSoftware.Portable.Collections.ZeroCountPolicy"" canRead=""true"" canWrite=""false"" />
-      <property name=""TypeId"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""IsDefaultAttribute"" returns=""System.Boolean"">
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""Match"" returns=""System.Boolean"">
+      <method name=""Match"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xml.Linq.Collections.ModelDataExchangeFinalDisposeEventArgs"">
     <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""releasedSenders"" type=""[external]"" />
+          <param name=""properties"" type=""[external]"" />
+          <param name=""digest"" type=""IVSoftware.Portable.Collections.Events.NotifyCollectionChangingEventArgs"" />
+          <param name=""snapshotPre"" type=""[external]"" />
+          <param name=""snapshotPost"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
     <properties>
       <property name=""Digest"" type=""IVSoftware.Portable.Collections.Events.NotifyCollectionChangingEventArgs"" canRead=""true"" canWrite=""false"" />
-      <property name=""Item"" type=""System.Object"" canRead=""true"" canWrite=""false"" />
-      <property name=""KeyCount"" type=""System.Int32"" canRead=""true"" canWrite=""false"" />
-      <property name=""Keys"" type=""System.Collections.Generic.IEnumerable&lt;System.String&gt;"" canRead=""true"" canWrite=""false"" />
-      <property name=""ReleasedSenders"" type=""System.Object[]"" canRead=""true"" canWrite=""false"" />
-      <property name=""SnapshotPost"" type=""System.Collections.IList"" canRead=""true"" canWrite=""false"" />
-      <property name=""SnapshotPre"" type=""System.Collections.IList"" canRead=""true"" canWrite=""false"" />
-      <property name=""Values"" type=""System.Collections.Generic.IEnumerable&lt;System.Object&gt;"" canRead=""true"" canWrite=""false"" />
+      <property name=""Item"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""KeyCount"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Keys"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""ReleasedSenders"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""SnapshotPost"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""SnapshotPre"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Values"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods>
-      <method name=""ContainsKey"" returns=""System.Boolean"">
+      <method name=""ContainsKey"" returns=""[external]"">
         <parameters>
-          <param name=""key"" type=""System.String"" />
+          <param name=""key"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""Equals"" returns=""System.Boolean"">
+      <method name=""Equals"" returns=""[external]"">
         <parameters>
-          <param name=""obj"" type=""System.Object"" />
+          <param name=""obj"" type=""[external]"" />
         </parameters>
       </method>
-      <method name=""GetEnumerator"" returns=""System.Collections.Generic.IEnumerator&lt;System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;&gt;"">
+      <method name=""GetEnumerator"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetHashCode"" returns=""System.Int32"">
+      <method name=""GetHashCode"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""GetType"" returns=""System.Type"">
+      <method name=""GetType"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""ToString"" returns=""System.String"">
+      <method name=""ToString"" returns=""[external]"">
         <parameters />
       </method>
-      <method name=""TryGetValue"" returns=""System.Boolean"">
+      <method name=""TryGetValue"" returns=""[external]"">
         <parameters>
-          <param name=""key"" type=""System.String"" />
-          <param name=""value"" type=""System.Object&amp;"" />
+          <param name=""key"" type=""[external]"" />
+          <param name=""value"" type=""[external]"" />
         </parameters>
       </method>
     </methods>
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xml.Linq.Collections.Tracking.IModelAmbientBindingContext"">
     <interfaces />
+    <constructors />
     <properties>
-      <property name=""AmbientBindingContext"" type=""System.Object"" canRead=""true"" canWrite=""true"" />
+      <property name=""AmbientBindingContext"" type=""[external]"" canRead=""true"" canWrite=""true"" />
     </properties>
+    <events />
+    <fields />
     <methods />
+    <nestedTypes />
   </type>
   <type name=""IVSoftware.Portable.Xml.Linq.Collections.Tracking.ITrackContext"">
-    <interfaces>
-      <interface name=""System.ComponentModel.INotifyPropertyChanged"" />
-    </interfaces>
+    <interfaces />
+    <constructors />
     <properties>
-      <property name=""Count"" type=""System.Int32"" canRead=""true"" canWrite=""false"" />
-      <property name=""CurrentItems"" type=""System.Array"" canRead=""true"" canWrite=""false"" />
+      <property name=""Count"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""CurrentItems"" type=""[external]"" canRead=""true"" canWrite=""false"" />
     </properties>
+    <events />
+    <fields />
     <methods />
+    <nestedTypes />
   </type>
-</assembly>";
+</assembly>"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting V1 contract manifest as shown."
             );
+
+            var idempotent = typeof(IModeledCollection)
+                .Assembly
+                .ToPublicContract()
+                .ToString();
+            if(!idempotent.Equals(expected))
+            {
+                Assert.Fail("Expecting idempotent");
+            }
+
+            Assert.IsTrue(idempotent.IsContractValid(idempotent, ManifestTypePolicy.AssemblyOnly));
         }
     }
 }
