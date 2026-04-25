@@ -117,7 +117,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     {
                         Model.Attribute(StdModelAttribute.mdc)?.Remove();
                         Model.SetBoundAttributeValue(this, nameof(StdModelAttribute.mdc), "[MDC]");
-                        Model.WithSortAttributes<StdModelAttribute>(
+                        Model.WithAttributesInOrder<StdModelAttribute>(
                             reqSMA: (authority) => CanonicalSupersetProtected.RequestAuthority(authority));
                         _canonicalSupersetProtected?.PropertyChanged += PropertyChangedEventForwarder;
                     }
