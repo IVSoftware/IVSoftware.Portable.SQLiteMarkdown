@@ -51,8 +51,10 @@ Materialized Path Policy violation: Path must end with Id."
     }
 
     [TestMethod]
-    public void Test_Contract()
+    public void Test_GetBreakingChanges()
     {
+        string actual, expected;
+
         subtest_InstantiateMCC();
 
         subtest_PublicContract();
@@ -72,8 +74,170 @@ Materialized Path Policy violation: Path must end with Id."
                 var diff = 
                     string.Join(
                         Environment.NewLine,
-                        contractV1.GetBreakingChanges(contractCurrent, ManifestTypePolicy.IVSoftwareAssembliesOnly));
+                        contractV1.GetBreakingChanges(contractCurrent, ManifestTypePolicy.AssemblyOnly));
                 { }
+
+                actual = diff;
+                actual.ToClipboardExpected();
+                { }
+                // *Not* a real limit.
+                // - This is an ephemeral clipboard paste to show pathology.
+                // - This step is manual (cannot be reasonably automated).
+                expected = @" 
+<breakingChanges policy=""AssemblyOnly"">
+  <namespace name=""IVSoftware.Portable.SQLiteMarkdown"">
+    <type name=""Extensions"">
+      <method name=""ParseSqlMarkdown"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Extensions|ParseSqlMarkdown(IVSoftware.Portable.SQLiteMarkdown.MarkdownContext,[external],[external],IVSoftware.Portable.SQLiteMarkdown.QueryFilterMode,[external])-&gt;[external]"" />
+    </type>
+    <type name=""IEditableQueryFilterItem"">
+      <typeRemoved />
+    </type>
+    <type name=""MarkdownContext"">
+      <property name=""ContractType"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|ContractType|[external]|true|true"" />
+      <property name=""InputTextSettleInterval"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|InputTextSettleInterval|[external]|true|true"" />
+      <property name=""Query"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|Query|[external]|true|true"" />
+      <property name=""RouteToFullRecordset"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|RouteToFullRecordset|[external]|true|false"" />
+    </type>
+    <type name=""MarkdownContext&lt;T&gt;"">
+      <property name=""ContractType"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext&lt;T&gt;|ContractType|[external]|true|true"" />
+      <property name=""InputTextSettleInterval"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext&lt;T&gt;|InputTextSettleInterval|[external]|true|true"" />
+      <property name=""ProxyType"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext&lt;T&gt;|ProxyType|[external]|true|false"" />
+      <property name=""RouteToFullRecordset"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext&lt;T&gt;|RouteToFullRecordset|[external]|true|false"" />
+    </type>
+  </namespace>
+  <namespace name=""IVSoftware.Portable.SQLiteMarkdown.Collections"">
+    <type name=""NotifyQueryFilterCollectionChangedEventArgs"">
+      <property name=""Action"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|Action|[external]|true|false"" />
+      <property name=""NewItems"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|NewItems|[external]|true|false"" />
+      <property name=""NewStartingIndex"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|NewStartingIndex|[external]|true|false"" />
+      <property name=""OldItems"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|OldItems|[external]|true|false"" />
+      <property name=""OldStartingIndex"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|OldStartingIndex|[external]|true|false"" />
+    </type>
+    <type name=""ObservableQueryFilterSource&lt;T&gt;"">
+      <method name=""Clear"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|Clear([external])-&gt;[external]"" />
+      <property name=""ContractType"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|ContractType|[external]|true|true"" />
+      <property name=""InputTextSettleInterval"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|InputTextSettleInterval|[external]|true|true"" />
+      <property name=""Item"" type=""T"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|Item|T|true|true"" />
+      <property name=""MarkdownContextOR"" type=""IVSoftware.Portable.SQLiteMarkdown.MarkdownContextOR"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|MarkdownContextOR|IVSoftware.Portable.SQLiteMarkdown.MarkdownContextOR|true|false"" />
+      <property name=""Placeholder"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|Placeholder|[external]|true|false"" />
+      <property name=""ProxyType"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|ProxyType|[external]|true|false"" />
+      <property name=""RouteToFullRecordset"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|RouteToFullRecordset|[external]|true|false"" />
+      <property name=""UnfilteredItems"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|UnfilteredItems|[external]|true|false"" />
+    </type>
+  </namespace>
+  <namespace name=""IVSoftware.Portable.SQLiteMarkdown.Events"">
+    <type name=""ItemPropertyChangedEventArgs"">
+      <constructor signature=""C:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs([external],[external])"" />
+      <method name=""Equals"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|Equals([external])-&gt;[external]"" />
+      <method name=""GetHashCode"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|GetHashCode()-&gt;[external]"" />
+      <method name=""GetType"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|GetType()-&gt;[external]"" />
+      <method name=""ToString"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|ToString()-&gt;[external]"" />
+      <property name=""Item"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|Item|[external]|true|false"" />
+      <property name=""PropertyName"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|PropertyName|[external]|true|false"" />
+      <typeRemoved />
+    </type>
+  </namespace>
+</breakingChanges>"
+                ;
+#if false && PASS_0
+                expected = @" 
+<breakingChanges policy=""IVSoftwareAssembliesOnly"">
+  <namespace name=""IVSoftware.Portable.SQLiteMarkdown"">
+    <type name=""Extensions"">
+      <method name=""ParseSqlMarkdown"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Extensions|ParseSqlMarkdown(IVSoftware.Portable.SQLiteMarkdown.MarkdownContext,[external],[external],IVSoftware.Portable.SQLiteMarkdown.QueryFilterMode,[external])-&gt;[external]"" />
+    </type>
+    <type name=""IEditableQueryFilterItem"">
+      <typeRemoved />
+    </type>
+    <type name=""MarkdownContext"">
+      <property name=""ContractType"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|ContractType|[external]|true|true"" />
+      <property name=""InputTextSettleInterval"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|InputTextSettleInterval|[external]|true|true"" />
+      <property name=""Query"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|Query|[external]|true|true"" />
+      <property name=""RouteToFullRecordset"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|RouteToFullRecordset|[external]|true|false"" />
+    </type>
+    <type name=""MarkdownContext&lt;T&gt;"">
+      <property name=""ContractType"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext&lt;T&gt;|ContractType|[external]|true|true"" />
+      <property name=""InputTextSettleInterval"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext&lt;T&gt;|InputTextSettleInterval|[external]|true|true"" />
+      <property name=""ProxyType"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext&lt;T&gt;|ProxyType|[external]|true|false"" />
+      <property name=""RouteToFullRecordset"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext&lt;T&gt;|RouteToFullRecordset|[external]|true|false"" />
+    </type>
+  </namespace>
+  <namespace name=""IVSoftware.Portable.SQLiteMarkdown.Collections"">
+    <type name=""NotifyQueryFilterCollectionChangedAction"">
+      <field name=""Add"" type=""IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" signature=""F:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|Add|IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" />
+      <field name=""ApplyFilter"" type=""IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" signature=""F:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|ApplyFilter|IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" />
+      <field name=""Move"" type=""IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" signature=""F:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|Move|IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" />
+      <field name=""QueryResult"" type=""IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" signature=""F:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|QueryResult|IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" />
+      <field name=""Remove"" type=""IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" signature=""F:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|Remove|IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" />
+      <field name=""RemoveFilter"" type=""IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" signature=""F:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|RemoveFilter|IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" />
+      <field name=""Replace"" type=""IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" signature=""F:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|Replace|IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" />
+      <field name=""Reset"" type=""IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" signature=""F:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|Reset|IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" />
+      <field name=""value__"" type=""[external]"" signature=""F:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|value__|[external]"" />
+      <method name=""CompareTo"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|CompareTo([external])-&gt;[external]"" />
+      <method name=""Equals"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|Equals([external])-&gt;[external]"" />
+      <method name=""GetHashCode"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|GetHashCode()-&gt;[external]"" />
+      <method name=""GetType"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|GetType()-&gt;[external]"" />
+      <method name=""GetTypeCode"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|GetTypeCode()-&gt;[external]"" />
+      <method name=""HasFlag"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|HasFlag([external])-&gt;[external]"" />
+      <method name=""ToString"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|ToString()-&gt;[external]"" />
+      <method name=""ToString"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|ToString([external],[external])-&gt;[external]"" />
+      <method name=""ToString"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|ToString([external])-&gt;[external]"" />
+      <typeRemoved />
+    </type>
+    <type name=""NotifyQueryFilterCollectionChangedEventArgs"">
+      <constructor signature=""C:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs(IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction,[external])"" />
+      <method name=""Equals"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|Equals([external])-&gt;[external]"" />
+      <method name=""GetHashCode"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|GetHashCode()-&gt;[external]"" />
+      <method name=""GetType"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|GetType()-&gt;[external]"" />
+      <method name=""ToString"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|ToString()-&gt;[external]"" />
+      <property name=""Action"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|Action|[external]|true|false"" />
+      <property name=""Action"" type=""IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|Action|IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedAction|true|false"" />
+      <property name=""NewItems"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|NewItems|[external]|true|false"" />
+      <property name=""NewStartingIndex"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|NewStartingIndex|[external]|true|false"" />
+      <property name=""OldItems"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|OldItems|[external]|true|false"" />
+      <property name=""OldStartingIndex"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|OldStartingIndex|[external]|true|false"" />
+      <typeRemoved />
+    </type>
+    <type name=""ObservableQueryFilterSource"">
+      <method name=""Equals"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource|Equals([external])-&gt;[external]"" />
+      <method name=""GetHashCode"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource|GetHashCode()-&gt;[external]"" />
+      <method name=""GetType"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource|GetType()-&gt;[external]"" />
+      <method name=""ToString"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource|ToString()-&gt;[external]"" />
+      <typeRemoved />
+    </type>
+    <type name=""ObservableQueryFilterSource&lt;T&gt;"">
+      <method name=""Clear"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|Clear([external])-&gt;[external]"" />
+      <property name=""ContractType"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|ContractType|[external]|true|true"" />
+      <property name=""InputTextSettleInterval"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|InputTextSettleInterval|[external]|true|true"" />
+      <property name=""Item"" type=""T"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|Item|T|true|true"" />
+      <property name=""MarkdownContextOR"" type=""IVSoftware.Portable.SQLiteMarkdown.MarkdownContextOR"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|MarkdownContextOR|IVSoftware.Portable.SQLiteMarkdown.MarkdownContextOR|true|false"" />
+      <property name=""Placeholder"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|Placeholder|[external]|true|false"" />
+      <property name=""ProxyType"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|ProxyType|[external]|true|false"" />
+      <property name=""RouteToFullRecordset"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|RouteToFullRecordset|[external]|true|false"" />
+      <property name=""UnfilteredItems"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|UnfilteredItems|[external]|true|false"" />
+    </type>
+  </namespace>
+  <namespace name=""IVSoftware.Portable.SQLiteMarkdown.Events"">
+    <type name=""ItemPropertyChangedEventArgs"">
+      <constructor signature=""C:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs([external],[external])"" />
+      <method name=""Equals"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|Equals([external])-&gt;[external]"" />
+      <method name=""GetHashCode"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|GetHashCode()-&gt;[external]"" />
+      <method name=""GetType"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|GetType()-&gt;[external]"" />
+      <method name=""ToString"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|ToString()-&gt;[external]"" />
+      <property name=""Item"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|Item|[external]|true|false"" />
+      <property name=""PropertyName"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|PropertyName|[external]|true|false"" />
+      <typeRemoved />
+    </type>
+  </namespace>
+</breakingChanges>";
+#endif
+
+                // DO NOT ASSERT THIS LIMIT! IT IS INFORMATIONAL ONLY AND REPRESENTS A CURRENT PATHOLOGICAL STATE
+                // Assert.AreEqual(
+                //    expected.NormalizeResult(),
+                //    actual.NormalizeResult(),
+                //    "Expecting result to match."
+                //);
             }
         }
 

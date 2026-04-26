@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
+namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
     /// <summary>
     /// The non-generic "plug-and-play" class in version 1.0.0 had the unintended
