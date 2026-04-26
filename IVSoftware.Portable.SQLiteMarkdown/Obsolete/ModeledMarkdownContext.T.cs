@@ -24,9 +24,11 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using ItemPropertyChangedEventArgs = IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
+    [Probationary, Obsolete("...and soon to be removed."), PublishedContract("Never")]
     public partial class ModeledMarkdownContext<T>
         : MarkdownContext<T>
         , IModeledMarkdownContext<T>

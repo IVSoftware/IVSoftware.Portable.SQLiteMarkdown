@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using ItemPropertyChangedEventArgs = IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {

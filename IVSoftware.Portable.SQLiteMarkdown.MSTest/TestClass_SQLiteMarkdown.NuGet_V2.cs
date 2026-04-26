@@ -77,12 +77,14 @@ Materialized Path Policy violation: Path must end with Id."
                         contractV1.GetBreakingChanges(contractCurrent, ManifestTypePolicy.AssemblyOnly));
                 { }
 
+                // CODEX: DO NOT ASSERT OR PRESERVE THIS EXPECTED VALUE.
+                // CODEX: Treat as advisory pathology snapshot only.
+                // - Manual clipboard capture
+                // - Diagnostic only
+                // - Used to observe reduction/change in breakage shape
                 actual = diff;
                 actual.ToClipboardExpected();
                 { }
-                // *Not* a real limit.
-                // - This is an ephemeral clipboard paste to show pathology.
-                // - This step is manual (cannot be reasonably automated).
                 expected = @" 
 <breakingChanges policy=""AssemblyOnly"">
   <namespace name=""IVSoftware.Portable.SQLiteMarkdown"">
@@ -107,10 +109,7 @@ Materialized Path Policy violation: Path must end with Id."
   </namespace>
   <namespace name=""IVSoftware.Portable.SQLiteMarkdown.Collections"">
     <type name=""NotifyQueryFilterCollectionChangedEventArgs"">
-      <property name=""Action"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|Action|[external]|true|false"" />
-      <property name=""NewItems"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|NewItems|[external]|true|false"" />
       <property name=""NewStartingIndex"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|NewStartingIndex|[external]|true|false"" />
-      <property name=""OldItems"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|OldItems|[external]|true|false"" />
       <property name=""OldStartingIndex"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|OldStartingIndex|[external]|true|false"" />
     </type>
     <type name=""ObservableQueryFilterSource&lt;T&gt;"">
@@ -125,20 +124,9 @@ Materialized Path Policy violation: Path must end with Id."
       <property name=""UnfilteredItems"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|UnfilteredItems|[external]|true|false"" />
     </type>
   </namespace>
-  <namespace name=""IVSoftware.Portable.SQLiteMarkdown.Events"">
-    <type name=""ItemPropertyChangedEventArgs"">
-      <constructor signature=""C:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs([external],[external])"" />
-      <method name=""Equals"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|Equals([external])-&gt;[external]"" />
-      <method name=""GetHashCode"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|GetHashCode()-&gt;[external]"" />
-      <method name=""GetType"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|GetType()-&gt;[external]"" />
-      <method name=""ToString"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|ToString()-&gt;[external]"" />
-      <property name=""Item"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|Item|[external]|true|false"" />
-      <property name=""PropertyName"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs|PropertyName|[external]|true|false"" />
-      <typeRemoved />
-    </type>
-  </namespace>
 </breakingChanges>"
                 ;
+
 #if false && PASS_0
                 expected = @" 
 <breakingChanges policy=""IVSoftwareAssembliesOnly"">
