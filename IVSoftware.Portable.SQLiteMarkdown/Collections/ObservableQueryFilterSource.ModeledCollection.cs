@@ -283,13 +283,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public object SyncRoot => ((ICollection)CanonicalSuperset).SyncRoot;
 
-        T IList<T>.this[int index] 
-        { 
+        public T this[int index]
+        {
             get => CanonicalSupersetProtected[index];
             set => CanonicalSupersetProtected[index] = value;
         }
-        public object this[int index] 
-        { 
+
+        object IList.this[int index]
+        {
             get => ((IList)CanonicalSuperset)[index];
             set => CanonicalSupersetProtected[index] = (T)value;
         }

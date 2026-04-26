@@ -123,6 +123,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 qfMode,             // Not to be confused with QueryFilterConfig. The MDC can parse as-though filtering regardless.
                 out xast);
 
+        [Obsolete("Use for backward test compatibility only.")]
+        public static MarkdownContextOR ParseSqlMarkdown<T>(
+            this string expr,
+            ref ValidationState validationState,
+            Predicate<string> validationPredicate = null!)
+            => ExtensionsOR.ParseSqlMarkdown<T>(expr, ref validationState, validationPredicate);
+
+        [Obsolete("Use for backward test compatibility only.")]
+        public static MarkdownContextOR ParseSqlMarkdown<T>(
+            this string expr,
+            ref SearchEntryState searchEntryState)
+            => ExtensionsOR.ParseSqlMarkdown<T>(expr, ref searchEntryState);
+
 
         /// <summary>
         /// Performs SQL parsing only using a custom validation predicate.

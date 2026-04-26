@@ -1153,6 +1153,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             get
             {
+                if (_queryCompatibilityOverride is { } compatibilityQuery)
+                {
+                    return compatibilityQuery;
+                }
                 var builder = new List<string> { Preamble };
                 if (!string.IsNullOrWhiteSpace(WherePredicate))
                 {
@@ -1169,7 +1173,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 var preview = string.Join(Environment.NewLine, builder);
                 return preview;
             }
+            set
+            {
+                if (_queryCompatibilityOverride != value)
+                {
+                    _queryCompatibilityOverride = value;
+                    OnPropertyChanged();
+                }
+            }
         }
+        string? _queryCompatibilityOverride = null;
 
         /// <summary>
         /// The SQL WHERE clause preamble, e.g. "SELECT * FROM tablename WHERE".

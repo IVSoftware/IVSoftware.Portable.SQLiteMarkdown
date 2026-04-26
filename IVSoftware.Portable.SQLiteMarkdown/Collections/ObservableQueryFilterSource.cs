@@ -12,6 +12,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
+using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
@@ -102,7 +103,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         [Obsolete("Retained for backward compatibility")]
-        public bool RouteToFullRecordset { get; protected set; }
+        public override bool RouteToFullRecordset { get; protected set; }
+
+        [Obsolete("Use CanonicalSuperset for precise semantics.")]
+        public IReadOnlyList<T> UnfilteredItems => CanonicalSupersetProtected;
+
+        [Obsolete("Legacy unit test support only.")]
+        public MarkdownContextOR MarkdownContextOR
+        {
+            get
+            {
+                var searchEntryState = SearchEntryState;
+                return Extensions.ParseSqlMarkdown<T>(InputText, ref searchEntryState);
+            }
+        }
+
+        [Obsolete("Backward compatibility only.")]
+        public new Type ProxyType => base.ProxyType;
+
+        [Obsolete("Backward compatibility only.")]
+        public new string Query => base.Query;
 
         /// <summary>
         /// Not on interface.

@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Collections.Events;
+using IVSoftware.Portable.Common.Attributes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,8 +22,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     /// <see cref="QueryResult"/>, <see cref="ApplyFilter"/>, and
     /// <see cref="RemoveFilter"/>.
     /// </remarks>
-    [Flags]
+    [PublishedContract("1.x")]
     [Obsolete($"Backward compatibility only; use {nameof(IVSoftware.Portable.Collections.NotifyCollectionChangeAction)}")]
+    [Flags]
     public enum NotifyQueryFilterCollectionChangedAction
     {
         Add = NotifyCollectionChangedAction.Add,
@@ -51,10 +53,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     /// Compatibility shim retaining the legacy SQLiteMarkdown type identity.
     /// </summary>
     /// <remarks>
-    /// Strategy 3: the implementation now lives in the shared collections
-    /// dependency, while this wrapper preserves the historical namespace and
-    /// manifest-facing surface for compatibility checks and existing callers.
+    /// - Implementation has been pushed down to shared Collections dependency.
+    /// - This wrapper preserves the historical namespace for compatibility checks 
+    ///   and existing callers.
     /// </remarks>
+    [PublishedContract("1.x")]
+    [Careful($"Casting to the base class exposes setters for {nameof(NewStartingIndex)} and {nameof(OldStartingIndex)}")]
     public class NotifyQueryFilterCollectionChangedEventArgs : IVSoftware.Portable.Collections.Events.NotifyCollectionChangingEventArgs
     {
         public NotifyQueryFilterCollectionChangedEventArgs(
@@ -85,6 +89,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public new NotifyQueryFilterCollectionChangedAction Action =>
             localToLegacyAction(base.Action, Reason);
+
+        public new int NewStartingIndex => base.NewStartingIndex;
+
+        public new int OldStartingIndex => base.OldStartingIndex;
 
         static NotifyCollectionChangeAction localToCanonicalAction(
             NotifyQueryFilterCollectionChangedAction action)

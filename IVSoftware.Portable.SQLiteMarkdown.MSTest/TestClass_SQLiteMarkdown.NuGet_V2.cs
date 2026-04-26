@@ -91,37 +91,18 @@ Materialized Path Policy violation: Path must end with Id."
     <type name=""Extensions"">
       <method name=""ParseSqlMarkdown"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Extensions|ParseSqlMarkdown(IVSoftware.Portable.SQLiteMarkdown.MarkdownContext,[external],[external],IVSoftware.Portable.SQLiteMarkdown.QueryFilterMode,[external])-&gt;[external]"" />
     </type>
-    <type name=""IEditableQueryFilterItem"">
-      <typeRemoved />
-    </type>
     <type name=""MarkdownContext"">
-      <property name=""ContractType"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|ContractType|[external]|true|true"" />
-      <property name=""InputTextSettleInterval"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|InputTextSettleInterval|[external]|true|true"" />
-      <property name=""Query"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|Query|[external]|true|true"" />
       <property name=""RouteToFullRecordset"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|RouteToFullRecordset|[external]|true|false"" />
     </type>
     <type name=""MarkdownContext&lt;T&gt;"">
-      <property name=""ContractType"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext&lt;T&gt;|ContractType|[external]|true|true"" />
-      <property name=""InputTextSettleInterval"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext&lt;T&gt;|InputTextSettleInterval|[external]|true|true"" />
-      <property name=""ProxyType"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext&lt;T&gt;|ProxyType|[external]|true|false"" />
       <property name=""RouteToFullRecordset"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext&lt;T&gt;|RouteToFullRecordset|[external]|true|false"" />
     </type>
   </namespace>
   <namespace name=""IVSoftware.Portable.SQLiteMarkdown.Collections"">
-    <type name=""NotifyQueryFilterCollectionChangedEventArgs"">
-      <property name=""NewStartingIndex"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|NewStartingIndex|[external]|true|false"" />
-      <property name=""OldStartingIndex"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.NotifyQueryFilterCollectionChangedEventArgs|OldStartingIndex|[external]|true|false"" />
-    </type>
     <type name=""ObservableQueryFilterSource&lt;T&gt;"">
       <method name=""Clear"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|Clear([external])-&gt;[external]"" />
-      <property name=""ContractType"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|ContractType|[external]|true|true"" />
-      <property name=""InputTextSettleInterval"" type=""[external]"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|InputTextSettleInterval|[external]|true|true"" />
-      <property name=""Item"" type=""T"" canRead=""true"" canWrite=""true"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|Item|T|true|true"" />
-      <property name=""MarkdownContextOR"" type=""IVSoftware.Portable.SQLiteMarkdown.MarkdownContextOR"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|MarkdownContextOR|IVSoftware.Portable.SQLiteMarkdown.MarkdownContextOR|true|false"" />
       <property name=""Placeholder"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|Placeholder|[external]|true|false"" />
-      <property name=""ProxyType"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|ProxyType|[external]|true|false"" />
       <property name=""RouteToFullRecordset"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|RouteToFullRecordset|[external]|true|false"" />
-      <property name=""UnfilteredItems"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|UnfilteredItems|[external]|true|false"" />
     </type>
   </namespace>
 </breakingChanges>"

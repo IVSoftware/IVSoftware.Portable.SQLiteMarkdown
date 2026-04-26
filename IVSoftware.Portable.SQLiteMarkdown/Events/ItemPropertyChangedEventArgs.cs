@@ -4,10 +4,10 @@
     /// Compatibility shim retaining the legacy SQLiteMarkdown type identity.
     /// </summary>
     /// <remarks>
-    /// Strategy 3: the implementation now lives in the shared collections
-    /// dependency, while this wrapper preserves the historical namespace and
-    /// constructor surface for manifest compatibility.
+    /// - Implementation has been pushed down to shared Collections dependency.
+    /// - This wrapper preserves the historical namespace for compatibility checks and existing callers.
     /// </remarks>
+    [PublishedContract("1.x")]
     public class ItemPropertyChangedEventArgs :
         IVSoftware.Portable.Collections.Events.ItemPropertyChangedEventArgs
     {

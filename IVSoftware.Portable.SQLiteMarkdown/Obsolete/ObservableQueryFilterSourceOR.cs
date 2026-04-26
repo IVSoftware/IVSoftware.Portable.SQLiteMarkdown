@@ -418,7 +418,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
             get
             {
                 var searchEntryState = SearchEntryState;
-                return InputText.ParseSqlMarkdown<T>(ref searchEntryState);
+                return Extensions.ParseSqlMarkdown<T>(InputText, ref searchEntryState);
             }
         }
 

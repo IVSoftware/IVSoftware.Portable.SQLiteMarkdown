@@ -124,6 +124,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
+    /// Legacy marker interface preserved for v1 contract compatibility.
+    /// </summary>
+    [Obsolete("Backward compatibility only.")]
+    public interface IEditableQueryFilterItem { }
+
+    /// <summary>
     /// Specifies the selection state of an item in a CollectionView. 
     /// This enumeration supports bitwise operations to allow combinations of selection states.
     /// </summary>

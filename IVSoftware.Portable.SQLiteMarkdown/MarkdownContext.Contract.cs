@@ -37,7 +37,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// The canonical contract type that defines the authoritative table shape for this context.
         /// </summary>
-        public Type ContractType { get; }
+        public Type ContractType
+        {
+            get => _contractType;
+            set
+            {
+                if (value is null)
+                {
+                    this.ThrowHard<NullReferenceException>(("Contract type cannot be null."));
+                }
+                else if (!Equals(_contractType, value))
+                {
+                    _contractType = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        Type _contractType = null!;
 
         /// <summary>
         /// The type whose attributes define the parsing behavior.
@@ -188,6 +204,16 @@ Rationale     : The contract database must be held stable for this inheritance t
         private readonly object _warnLock = new();
 
         public ContractErrorLevel ContractErrorLevel { get; set; } = ContractErrorLevel.ThrowSoft;
+
+        [Obsolete("Version 2.0+ prefers InputTextSettlingTime/Interval terminology.")]
+        public TimeSpan InputTextSettleInterval
+        {
+            get => Interval;
+            set => Interval = value;
+        }
+
+        [Obsolete("Backward compatibility only.")]
+        public virtual bool RouteToFullRecordset { get; protected set; }
 
         protected sealed class SQLiteConnectionMapper
         {

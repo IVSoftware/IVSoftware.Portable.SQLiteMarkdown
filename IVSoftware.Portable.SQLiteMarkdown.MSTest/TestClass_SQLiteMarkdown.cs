@@ -363,7 +363,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                             {
                                 Description = split[1],
                                 Expr = split[0],
-                                Expected = split[0].ParseSqlMarkdown<SelfIndexedItem>(ref state),
+                                Expected = IVSoftware.Portable.SQLiteMarkdown.Extensions.ParseSqlMarkdown<SelfIndexedItem>(split[0], ref state),
                                 ExpectedValidationState = state,
                             };
                         }
@@ -996,7 +996,7 @@ InputText"
                 var validationState = ValidationState.Empty;
 
                 // Parse the expression and update the validation state
-                var context = eut.Expr.ParseSqlMarkdown<SelfIndexedItem>(ref validationState);
+                var context = IVSoftware.Portable.SQLiteMarkdown.Extensions.ParseSqlMarkdown<SelfIndexedItem>(eut.Expr, ref validationState);
                 // Implicit cast to string
                 actual = context;
 
