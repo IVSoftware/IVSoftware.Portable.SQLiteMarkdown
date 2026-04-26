@@ -53,10 +53,38 @@ Materialized Path Policy violation: Path must end with Id."
     [TestMethod]
     public void Test_Contract()
     {
-        string actual, expected;
+        subtest_InstantiateMCC();
 
-        MarkdownContext mdc = new(typeof(SelectableQFModel));
-        Assert.IsNotNull(mdc.ContractType);
+        subtest_PublicContract();
+        void subtest_PublicContract()
+        {
+            string 
+                contractV1 =
+                    "IVSoftware.Portable.SQLiteMarkdown.MSTest.Contracts.Version=1.0.1.xml"
+                    .ReadManifestResourceFile<TestClass_SQLiteMarkdown>(ThrowOrAdvise.ThrowSoft),
+                contractCurrent =
+                    typeof(MarkdownContext)
+                    .Assembly
+                    .ToPublicContract()
+                    .ToString();
+            if(!contractV1.IsContractValid(contractCurrent, ManifestTypePolicy.IVSoftwareAssembliesOnly))
+            {
+                var diff = 
+                    string.Join(
+                        Environment.NewLine,
+                        contractV1.GetBreakingChanges(contractCurrent, ManifestTypePolicy.IVSoftwareAssembliesOnly));
+                { }
+            }
+        }
+
+        #region S U B T E S T S
+        void subtest_InstantiateMCC()
+        {
+            // Instantiate MDC
+            MarkdownContext mdc = new(typeof(SelectableQFModel));
+            Assert.IsNotNull(mdc.ContractType);
+        }
+        #endregion S U B T E S T S
     }
 
     [TestMethod]
@@ -64,8 +92,16 @@ Materialized Path Policy violation: Path must end with Id."
     {
         string actual, expected;
 
-        ModeledMarkdownContext<SelectableQFModel> mdc = new();
-        Assert.IsNotNull(mdc.ContractType);
+        subtest_InstantiateMCC();
+
+        #region S U B T E S T S
+        void subtest_InstantiateMCC()
+        {
+            // Instantiate MMDC
+            MarkdownContext mdc = new(typeof(SelectableQFModel));
+            Assert.IsNotNull(mdc.ContractType);
+        }
+        #endregion S U B T E S T S
     }
 
     /// <summary>

@@ -14,6 +14,15 @@
 		<SignAssembly>True</SignAssembly>
 	</PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Contracts\Version.1.0.1.xml" />
+    <None Remove="Contracts\Version=1.0.1.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Contracts\Version=1.0.1.xml" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="coverlet.collector" Version="6.0.0" />
 		<PackageReference Include="IVSoftware.Portable.Threading" Version="2.0.0-beta" />
