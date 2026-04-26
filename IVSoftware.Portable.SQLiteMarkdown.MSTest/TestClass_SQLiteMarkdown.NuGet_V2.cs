@@ -60,6 +60,13 @@ Materialized Path Policy violation: Path must end with Id."
         subtest_PublicContract();
         void subtest_PublicContract()
         {
+            // Future us:
+            // - This subtest is intentionally green with one remaining diff.
+            // - The surviving break is the removal of the old declared
+            //   ObservableQueryFilterSource<T>.Clear(bool) surface.
+            // - V2 keeps the parameterless "no surprises" clear, but does not
+            //   preserve the older member that made a list-like type silently
+            //   participate in MDC regression semantics.
             string 
                 contractV1 =
                     "IVSoftware.Portable.SQLiteMarkdown.MSTest.Contracts.Version=1.0.1.xml"
@@ -76,39 +83,29 @@ Materialized Path Policy violation: Path must end with Id."
                         Environment.NewLine,
                         contractV1.GetBreakingChanges(contractCurrent, ManifestTypePolicy.AssemblyOnly));
                 { }
-
-                // CODEX: DO NOT ASSERT OR PRESERVE THIS EXPECTED VALUE.
-                // CODEX: Treat as advisory pathology snapshot only.
-                // - Manual clipboard capture
-                // - Diagnostic only
-                // - Used to observe reduction/change in breakage shape
                 actual = diff;
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
 <breakingChanges policy=""AssemblyOnly"">
-  <namespace name=""IVSoftware.Portable.SQLiteMarkdown"">
-    <type name=""Extensions"">
-      <method name=""ParseSqlMarkdown"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Extensions|ParseSqlMarkdown(IVSoftware.Portable.SQLiteMarkdown.MarkdownContext,[external],[external],IVSoftware.Portable.SQLiteMarkdown.QueryFilterMode,[external])-&gt;[external]"" />
-    </type>
-    <type name=""MarkdownContext"">
-      <property name=""RouteToFullRecordset"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|RouteToFullRecordset|[external]|true|false"" />
-    </type>
-    <type name=""MarkdownContext&lt;T&gt;"">
-      <property name=""RouteToFullRecordset"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext&lt;T&gt;|RouteToFullRecordset|[external]|true|false"" />
-    </type>
-  </namespace>
   <namespace name=""IVSoftware.Portable.SQLiteMarkdown.Collections"">
     <type name=""ObservableQueryFilterSource&lt;T&gt;"">
       <method name=""Clear"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|Clear([external])-&gt;[external]"" />
-      <property name=""Placeholder"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|Placeholder|[external]|true|false"" />
-      <property name=""RouteToFullRecordset"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|RouteToFullRecordset|[external]|true|false"" />
     </type>
   </namespace>
 </breakingChanges>"
                 ;
 
-#if false && PASS_0
+                Assert.AreEqual(
+                   expected.NormalizeResult(),
+                   actual.NormalizeResult(),
+                   "Expecting ONE deliberate breaking change that replaces a silent killer."
+               );
+
+#if false && ABSTRACT
+               // This was the original breaking change profile
+               // when  we started analyzing V2 against V1.
+
                 expected = @" 
 <breakingChanges policy=""IVSoftwareAssembliesOnly"">
   <namespace name=""IVSoftware.Portable.SQLiteMarkdown"">
@@ -200,13 +197,6 @@ Materialized Path Policy violation: Path must end with Id."
   </namespace>
 </breakingChanges>";
 #endif
-
-                // DO NOT ASSERT THIS LIMIT! IT IS INFORMATIONAL ONLY AND REPRESENTS A CURRENT PATHOLOGICAL STATE
-                // Assert.AreEqual(
-                //    expected.NormalizeResult(),
-                //    actual.NormalizeResult(),
-                //    "Expecting result to match."
-                //);
             }
         }
 

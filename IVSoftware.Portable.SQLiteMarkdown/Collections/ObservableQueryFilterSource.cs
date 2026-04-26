@@ -51,11 +51,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         : IObservableQueryFilterSource
         , IObservableQueryFilterSource<T>
     {
-        public string Placeholder
-        {
-            get;
-            protected set;
-        } = string.Empty;
+        public string Placeholder =>
+            IsFiltering
+            ? $"Filter {Title}"
+            : $"Search {Title}";
 
         public string Title
         {
@@ -103,7 +102,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         [Obsolete("Retained for backward compatibility")]
-        public override bool RouteToFullRecordset { get; protected set; }
+        public override bool RouteToFullRecordset
+        {
+            get
+            {
+                switch (FilteringState)
+                {
+                    case FilteringState.Ineligible:
+                    case FilteringState.Armed:
+                        return true;
+                    case FilteringState.Active:
+                        if (0 == CanonicalSupersetProtected.Histo[StdModelAttribute.match])
+                        {
+                            return Equals(Settings[StdMarkdownContextSetting.UseAdaptiveShowAll], true);
+                        }
+                        else return false;
+                    default:
+                        this.ThrowFramework<NotSupportedException>(
+                            $"The {FilteringState.ToFullKey()} case is not supported.");
+                        return true;
+                }
+            }
+        }
 
         [Obsolete("Use CanonicalSuperset for precise semantics.")]
         public IReadOnlyList<T> UnfilteredItems => CanonicalSupersetProtected;

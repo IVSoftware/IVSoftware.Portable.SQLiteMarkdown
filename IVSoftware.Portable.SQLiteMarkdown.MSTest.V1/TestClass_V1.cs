@@ -194,10 +194,12 @@ IVSoftware.Portable.SQLiteMarkdown | Version=1.0.1.0"
                 contractRedux.NormalizeResult(),
                 "Expecting idempotent.");
 
-#if false
+#if false && SAVE
             // EmbeddedResource
             File.WriteAllText(@"Version=1.0.1.xml", contractOrig);
 #endif
+            var mdc = new MarkdownContext<SelectableQFModel>();
+            mdc.Clear(); // Illegal in V2! See "no surprises" semantics.
         }
     }
 }

@@ -136,6 +136,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             ref SearchEntryState searchEntryState)
             => ExtensionsOR.ParseSqlMarkdown<T>(expr, ref searchEntryState);
 
+        [Obsolete("Backward compatibility only.")]
+        public static string ParseSqlMarkdown(
+            this MarkdownContext @this,
+            string expr,
+            Type proxyType,
+            QueryFilterMode qfMode,
+            out XElement xast)
+            => @this.ParseSqlMarkdown(expr, proxyType, qfMode, out xast);
+
 
         /// <summary>
         /// Performs SQL parsing only using a custom validation predicate.

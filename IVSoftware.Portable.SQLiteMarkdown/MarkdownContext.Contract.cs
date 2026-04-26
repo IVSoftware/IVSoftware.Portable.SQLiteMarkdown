@@ -213,7 +213,7 @@ Rationale     : The contract database must be held stable for this inheritance t
         }
 
         [Obsolete("Backward compatibility only.")]
-        public virtual bool RouteToFullRecordset { get; protected set; }
+        public virtual bool RouteToFullRecordset => false;
 
         protected sealed class SQLiteConnectionMapper
         {
