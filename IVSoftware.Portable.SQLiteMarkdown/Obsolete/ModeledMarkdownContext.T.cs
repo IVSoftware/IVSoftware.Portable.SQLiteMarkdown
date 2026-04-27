@@ -982,7 +982,7 @@ SELECT * FROM items WHERE
                         xel.SetBoundAttributeValue(
                             tag: item,
                             name: nameof(StdModelAttribute.model));
-                        xel.SetAttributeValue(nameof(StdModelAttribute.order), indexForAdd);
+                        xel.SetAttributeValue(nameof(StdModelAttribute.index), indexForAdd);
                         break;
                     default:
                         this.ThrowFramework<NotSupportedException>(

@@ -277,7 +277,7 @@ namespace IVSoftware.Portable.Collections
                             xel.SetBoundAttributeValue(
                                 tag: item,
                                 name: nameof(StdModelAttribute.model));
-                            xel.SetAttributeValue(nameof(StdModelAttribute.order), itemCount++);
+                            xel.SetAttributeValue(nameof(StdModelAttribute.index), itemCount++);
                             if (previewDlgt?.Invoke(item) is string preview)
                             {
                                 xel.InsertPreviewAttributeAfter(StdModelAttribute.model);

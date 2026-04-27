@@ -52,7 +52,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     }))
                 {
                     // No error for int?
-                    _ = model.GetStdAttributeValue<int?>(StdModelAttribute.order);
+                    _ = model.GetStdAttributeValue<int?>(StdModelAttribute.index);
                     Assert.AreEqual(0, builderThrow.Count);
 
                     // Error expected for int (non-nullable)
@@ -96,10 +96,10 @@ The string provided 'banana' is not numeric.";
             void subtest_ObjectUnconstrained()
             {
                 object? @object;
-                @object = model.GetStdAttributeValue<object?>(StdModelAttribute.order);
+                @object = model.GetStdAttributeValue<object?>(StdModelAttribute.index);
                 Assert.IsNull(@object);
 
-                @object = model.GetStdAttributeValue<object?>(StdModelAttribute.order, @default: 0);
+                @object = model.GetStdAttributeValue<object?>(StdModelAttribute.index, @default: 0);
                 Assert.AreEqual(0, @object);
             }
 
@@ -111,7 +111,7 @@ The string provided 'banana' is not numeric.";
 
             void subtest_IntFromDefaultArg()
             {
-                @int = model.GetStdAttributeValue<int>(StdModelAttribute.order, 7);
+                @int = model.GetStdAttributeValue<int>(StdModelAttribute.index, 7);
                 Assert.AreEqual(7, @int);
             }
 
@@ -135,8 +135,8 @@ The string provided 'banana' is not numeric.";
 
             void subtest_AttributeSimplyPresent()
             {
-                model.SetAttributeValue(nameof(StdModelAttribute.order), "42");
-                int value = model.GetStdAttributeValue<int>(StdModelAttribute.order);
+                model.SetAttributeValue(nameof(StdModelAttribute.index), "42");
+                int value = model.GetStdAttributeValue<int>(StdModelAttribute.index);
                 Assert.AreEqual(42, value);
             }
             #endregion S U B T E S T S

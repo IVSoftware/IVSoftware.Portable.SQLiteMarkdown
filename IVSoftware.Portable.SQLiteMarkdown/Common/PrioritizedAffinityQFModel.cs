@@ -219,12 +219,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         [Ephemeral]
         public long? PriorityOverride
         {
-            get => Model.GetStdAttributeValue<long?>(StdModelAttribute.order);
+            get => Model.GetStdAttributeValue<long?>(StdModelAttribute.index);
             set
             {
                 if (!Equals(PriorityOverride, value))
                 {
-                    Model.SetStdAttributeValue(StdModelAttribute.order, value);
+                    Model.SetStdAttributeValue(StdModelAttribute.index, value);
                     OnPropertyChanged();
                 }
             }
