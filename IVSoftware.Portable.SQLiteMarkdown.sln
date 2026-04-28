@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.Xml.Lin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.MSTest.Extensions", "..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.Extensions\IVSoftware.MSTest.Extensions.csproj", "{8A8ED005-8125-21DF-4156-1C6D559EC3CF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.Xml.Linq.XBoundObject", "..\IVSoftware.Portable.Xml.Linq.XBoundObject\IVSoftware.Portable.Xml.Linq.XBoundObject\IVSoftware.Portable.Xml.Linq.XBoundObject.csproj", "{F11B47B9-9796-E286-19CD-6BF62081FECA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{8A8ED005-8125-21DF-4156-1C6D559EC3CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A8ED005-8125-21DF-4156-1C6D559EC3CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A8ED005-8125-21DF-4156-1C6D559EC3CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F11B47B9-9796-E286-19CD-6BF62081FECA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F11B47B9-9796-E286-19CD-6BF62081FECA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F11B47B9-9796-E286-19CD-6BF62081FECA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F11B47B9-9796-E286-19CD-6BF62081FECA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
