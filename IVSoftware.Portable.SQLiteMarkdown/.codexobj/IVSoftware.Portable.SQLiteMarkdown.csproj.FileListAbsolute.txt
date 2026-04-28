@@ -1,0 +1,12 @@
+D:\Codex\IVSoftware\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown\bin\Debug\netstandard2.0\IVSoftware.Portable.SQLiteMarkdown.deps.json
+D:\Codex\IVSoftware\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown\bin\Debug\netstandard2.0\IVSoftware.Portable.SQLiteMarkdown.dll
+D:\Codex\IVSoftware\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown\bin\Debug\netstandard2.0\IVSoftware.Portable.Xml.Linq.Collections.dll
+D:\Codex\IVSoftware\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown\bin\Debug\netstandard2.0\IVSoftware.Portable.Xml.Linq.XBoundObject.dll
+D:\Codex\IVSoftware\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown\.codexobj\IVSoftware.Portable.SQLiteMarkdown.csproj.AssemblyReference.cache
+D:\Codex\IVSoftware\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown\.codexobj\IVSoftware.Portable.SQLiteMarkdown.GeneratedMSBuildEditorConfig.editorconfig
+D:\Codex\IVSoftware\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown\.codexobj\IVSoftware.Portable.SQLiteMarkdown.AssemblyInfoInputs.cache
+D:\Codex\IVSoftware\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown\.codexobj\IVSoftware.Portable.SQLiteMarkdown.AssemblyInfo.cs
+D:\Codex\IVSoftware\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown\.codexobj\IVSoftware.Portable.SQLiteMarkdown.csproj.CoreCompileInputs.cache
+D:\Codex\IVSoftware\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown\.codexobj\IVSoftware.Portable.SQLiteMarkdown.sourcelink.json
+D:\Codex\IVSoftware\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown\.codexobj\IVSoftwa.5027312C.Up2Date
+D:\Codex\IVSoftware\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown\.codexobj\IVSoftware.Portable.SQLiteMarkdown.dll
