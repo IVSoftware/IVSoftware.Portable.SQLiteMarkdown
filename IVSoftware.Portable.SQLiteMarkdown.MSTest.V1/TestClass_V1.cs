@@ -1,11 +1,9 @@
 ﻿using IVSoftware.Portable.Collections;
-using IVSoftware.Portable.Collections.Exceptions;
 using IVSoftware.Portable.Common.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.Reflection;
-using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.V1
 {
