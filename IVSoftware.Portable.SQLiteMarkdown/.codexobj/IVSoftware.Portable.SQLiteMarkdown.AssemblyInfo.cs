@@ -18,7 +18,7 @@ using System.Reflection;
     "th in-memory filtering powered by SQLite. Features atomic quoted phrases and tag" +
     "-based terms."))]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("2.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("2.0.0-alpha31+294791d3b3fb3d3f3a34aa9ecd4857fd75a95204")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("2.0.0-alpha31+6e0e5ce5824d2b6f89d346bab2867fef8f464257")]
 [assembly: System.Reflection.AssemblyProductAttribute("IVSoftware.Portable.SQLiteMarkdown")]
 [assembly: System.Reflection.AssemblyTitleAttribute("IVSoftware.Portable.SQLiteMarkdown")]
 [assembly: System.Reflection.AssemblyVersionAttribute("2.0.0.0")]
