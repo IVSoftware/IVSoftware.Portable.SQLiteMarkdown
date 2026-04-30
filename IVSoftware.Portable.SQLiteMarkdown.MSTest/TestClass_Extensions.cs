@@ -1,12 +1,11 @@
+using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.LocalEnums;
-using IVSoftware.Portable.Xml.Linq;
-using IVSoftware.Portable.Collections;
-using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.ComponentModel;
 using System.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {

@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using IVSoftware.Portable.Collections.Tracking;
 using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
 {

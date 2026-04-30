@@ -11,6 +11,7 @@ using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using System.Collections;
 using System.Xml.Linq;
+using IVSoftware.Portable.Disposable;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 

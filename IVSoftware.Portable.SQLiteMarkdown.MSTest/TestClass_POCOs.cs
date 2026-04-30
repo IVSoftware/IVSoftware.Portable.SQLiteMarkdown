@@ -3,6 +3,7 @@ using IVSoftware.Portable.Collections;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.Collections.ObjectModel;
 using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
+using IVSoftware.Portable.Disposable;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {

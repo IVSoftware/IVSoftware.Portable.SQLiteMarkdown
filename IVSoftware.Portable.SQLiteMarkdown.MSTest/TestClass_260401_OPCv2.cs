@@ -6,6 +6,7 @@ using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using System.Xml.Linq;
 using System.Diagnostics;
+using IVSoftware.Portable.Disposable;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
