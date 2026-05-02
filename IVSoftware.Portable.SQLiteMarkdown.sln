@@ -13,8 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.SQLiteM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.Xml.Linq.Collections", "..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.csproj", "{7E6C1EF3-C30A-2264-4A0C-BCB02512F0EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.Xml.Linq.XBoundObject", "..\IVSoftware.Portable.Xml.Linq.XBoundObject\IVSoftware.Portable.Xml.Linq.XBoundObject\IVSoftware.Portable.Xml.Linq.XBoundObject.csproj", "{F11B47B9-9796-E286-19CD-6BF62081FECA}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.MSTest.Extensions", "..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.MSTest.Extensions\IVSoftware.MSTest.Extensions.csproj", "{A71806B4-EA89-2594-7FF7-0BDBFC05FEF6}"
 EndProject
 Global
@@ -43,10 +41,6 @@ Global
 		{7E6C1EF3-C30A-2264-4A0C-BCB02512F0EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E6C1EF3-C30A-2264-4A0C-BCB02512F0EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E6C1EF3-C30A-2264-4A0C-BCB02512F0EC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F11B47B9-9796-E286-19CD-6BF62081FECA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F11B47B9-9796-E286-19CD-6BF62081FECA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F11B47B9-9796-E286-19CD-6BF62081FECA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F11B47B9-9796-E286-19CD-6BF62081FECA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A71806B4-EA89-2594-7FF7-0BDBFC05FEF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A71806B4-EA89-2594-7FF7-0BDBFC05FEF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A71806B4-EA89-2594-7FF7-0BDBFC05FEF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
