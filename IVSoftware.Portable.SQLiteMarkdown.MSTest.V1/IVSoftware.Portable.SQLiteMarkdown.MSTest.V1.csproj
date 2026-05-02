@@ -9,14 +9,20 @@
 		<!-- Win32 and STA threading is now enabled for this test project -->
 	</PropertyGroup>
 
-	<ItemGroup>
-		<!--Do not change version- this is the whole point.-->
+	<ItemGroup>		
+		<!--1.0.1 - Do not change version - this is the whole point.-->
 		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="1.0.1" />
-		<PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="1.0.8" />
+		<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+	</ItemGroup>
+
+	<ItemGroup>		
+		<PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="*" />
+		<PackageReference Include="IVSoftware.Portable.Common" Version="*" />
 		<PackageReference Include="MSTest" Version="4.2.1" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.MSTest.Extensions\IVSoftware.MSTest.Extensions.csproj" />
 	  <ProjectReference Include="..\..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.Extensions\IVSoftware.MSTest.Extensions.csproj" />
 	</ItemGroup>
 

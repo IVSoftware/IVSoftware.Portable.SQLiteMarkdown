@@ -10,13 +10,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.V1
     [TestClass]
     public sealed class TestClass_V1
     {
-        /// <summary>
-        /// This is more of a reference than a test. We're looking for 
-        /// confirmation of what was and wasn't visible in v1.
-        /// </summary>
-        [Legacy(
-            $"This preliminary assessment is not fully formed as" +
-            $" {nameof(MSTestExtensions.ToPublicManifest)}."), TestMethod]
+        [TestMethod]
         public void Test_V1Capabilities()
         {
             string actual, expected;
