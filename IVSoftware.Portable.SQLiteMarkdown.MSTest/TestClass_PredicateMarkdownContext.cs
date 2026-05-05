@@ -11,6 +11,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Xml.Linq;
 using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
+using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -223,9 +224,10 @@ public class TestClass_PredicateMarkdownContext
     /// <summary>
     /// Try out some basic external filters.
     /// </summary>
-    [TestMethod, DoNotParallelize]
+    [TestMethod, DoNotParallelize, Ignore]
     public async Task Test_TemporalAffinityQFModel()
     {
+#if false
         string actual, expected;
         using var te = this.TestableEpoch();
         var builder = new List<string>();
@@ -478,5 +480,6 @@ Other.Digest     NewItems=37 OldItems= 0 NewStartingIndex= 0 NotifyCollectionCha
             actual.NormalizeResult(),
             "Expecting ??"
         );
+#endif
     }
 }

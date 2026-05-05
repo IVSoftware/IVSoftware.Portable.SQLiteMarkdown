@@ -71,10 +71,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             {
                 ProjectionTopology = NetProjectionTopology.AllowDirectChanges;
             }
+
+            public NetProjectionTopology ProjectionTopology { get; }
+
             public virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
             {
                 CollectionChanged?.Invoke(this, e);
             }
+
+            public IEnumerator<T> GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
             public event NotifyCollectionChangedEventHandler? CollectionChanged;
         }
     }

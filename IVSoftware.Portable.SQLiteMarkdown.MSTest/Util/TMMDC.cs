@@ -16,5 +16,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Util
         {
             SetObservableNetProjection(onp, option);
         }
+
+        private void SetObservableNetProjection(ObservableCollection<SelectableQFModel> onp, NetProjectionTopology? option)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
