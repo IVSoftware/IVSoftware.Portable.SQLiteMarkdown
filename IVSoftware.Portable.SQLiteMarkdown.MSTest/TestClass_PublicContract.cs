@@ -431,7 +431,7 @@ hello~world!~standard~greeting~[intro]~[101]"
     {
         string actual, expected, sql;
 
-        var mdc = new ModeledMarkdownContext<SelectableQFModel>();
+        var mdc = new MarkdownContext<SelectableQFModel>();
 
         using (var cnx = new SQLiteConnection(":memory:"))
         {
@@ -567,7 +567,7 @@ SELECT * FROM items WHERE
                 Throw.BeginThrowOrAdvise -= localOnEvent;
             });
 
-        ModeledMarkdownContext<SelectableQFModel> mdc;
+        MarkdownContext<SelectableQFModel> mdc;
 
         subtest_AssertCtorNoFQD();
 
@@ -645,7 +645,7 @@ Clearing histogram while model-bound rebuilds (not clears) counts from current m
         void subtest_IsWeakProxy()
         {
             // PREREQUISITE FOR ANY PROXY
-            var mdc = new ModeledMarkdownContext<SelectableQFModel>();
+            var mdc = new MarkdownContext<SelectableQFModel>();
 
             // Because ItemCardModel is a subclass of SelectableQFModel
             // it *is* a weak proxy by inheritance. But it's still a
@@ -670,7 +670,7 @@ Clearing histogram while model-bound rebuilds (not clears) counts from current m
         void subtest_IsTrueProxy()
         {
             // PREREQUISITE FOR ANY PROXY
-            var mdc = new ModeledMarkdownContext<SelectableQFModel>();
+            var mdc = new MarkdownContext<SelectableQFModel>();
 
             // Because ItemCardModel is a subclass of SelectableQFModel
             // it *is* a weak proxy by inheritance. But it's still a
@@ -695,7 +695,7 @@ Clearing histogram while model-bound rebuilds (not clears) counts from current m
         void subtest_IsTrueProxyWithExtendSchema()
         {
             // PREREQUISITE FOR ANY PROXY
-            var mdc = new ModeledMarkdownContext<SelectableQFModel>();
+            var mdc = new MarkdownContext<SelectableQFModel>();
 
             // Because ItemCardModel is a subclass of SelectableQFModel
             // it *is* a weak proxy by inheritance. But it's still a
@@ -738,7 +738,7 @@ Clearing histogram while model-bound rebuilds (not clears) counts from current m
             #endregion L o c a l F x
 
             // PREREQUISITE FOR ANY PROXY
-            var mdc = new ModeledMarkdownContext<SelectableQFModel>();
+            var mdc = new MarkdownContext<SelectableQFModel>();
 
             // Because ItemCardModel is a subclass of SelectableQFModel
             // it *is* a weak proxy by inheritance. But it's still a

@@ -27,12 +27,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             }
             void subtest_InheritMMDC_ObservableOnly()
             {
-                var oqf = new InheritModeledMarkdownContext.ObservableOnly.OBQFC<SelectableQFModel>();
+                var oqf = new InheritMarkdownContext.ObservableOnly.OBQFC<SelectableQFModel>();
             }
 
             void subtest_InheritMMDC_AllowDirectChanges()
             {
-                var oqf = new InheritModeledMarkdownContext.AllowDirectUpdates.OBQFC<SelectableQFModel>();
+                var oqf = new InheritMarkdownContext.AllowDirectUpdates.OBQFC<SelectableQFModel>();
             }
             
 
@@ -55,14 +55,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 base.OnCollectionChanged(e);
             }
 
-            ModeledMarkdownContext<T> _mmdc = new ModeledMarkdownContext<T>();
+            MarkdownContext<T> _mmdc = new MarkdownContext<T>();
         }
     }
 
-    namespace InheritModeledMarkdownContext.ObservableOnly
+    namespace InheritMarkdownContext.ObservableOnly
     {
         class OBQFC<T>
-            : ModeledMarkdownContext<T>
+            : MarkdownContext<T>
             , IEnumerable<T>
             , INotifyCollectionChanged
             where T : new()
@@ -79,10 +79,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         }
     }
 
-    namespace InheritModeledMarkdownContext.AllowDirectUpdates
+    namespace InheritMarkdownContext.AllowDirectUpdates
     {
         class OBQFC<T>
-            : ModeledMarkdownContext<T>
+            : MarkdownContext<T>
             , INotifyCollectionChanged
             where T : new()
         {

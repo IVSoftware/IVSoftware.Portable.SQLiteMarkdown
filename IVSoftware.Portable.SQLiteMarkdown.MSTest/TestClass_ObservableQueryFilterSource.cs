@@ -568,7 +568,7 @@ Properties     =""{
                 testLiteralQuery;
 
             #region P R O L O G U E 
-            var mdc = new ModeledMarkdownContext<SelectableQFModelLTOQO>();
+            var mdc = new MarkdownContext<SelectableQFModelLTOQO>();
             mdc.InputText = @"animal\""";
             await mdc;
             sql = mdc.ParseSqlMarkdown();

@@ -61,7 +61,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 //    onpc.ProjectionTopology,
                 //    "Expecting COMPOSITION as assigned in CTor.");
 
-                var mmdc = onpc.Model.To < ModeledMarkdownContext<SelectableQFModel>>();
+                var mmdc = onpc.Model.To < MarkdownContext<SelectableQFModel>>();
 
                 mmdc.SetObservableNetProjection(null);
                 //Assert.AreEqual(
@@ -368,7 +368,7 @@ MarkdownContext Clear(all=True)";
                 //    ProjectionTopology.Composition,
                 //    onp.ProjectionTopology,
                 //    "Expecting ABSENCE OF INHERITANCE is detectable from the start as 'COMPOSITION'.");
-                var mdcc = onp.Model.To<ModeledMarkdownContext<SelectableQFModel>>();
+                var mdcc = onp.Model.To<MarkdownContext<SelectableQFModel>>();
                 mdcc.SetObservableNetProjection(null);
                 //Assert.AreEqual(
                 //    ProjectionTopology.Composition,
@@ -384,159 +384,19 @@ MarkdownContext Clear(all=True)";
         /// <summary>
         /// Uses routing for the net projection.
         /// </summary>
-        class ObservableNetProjectionInheritsMDC<T>
-            : ModeledMarkdownContext<T>
-            , INotifyCollectionChanged
-            where T : new()
+        class ObservableNetProjectionInheritsMDC<T> where T : new()
         {
-            public event NotifyCollectionChangedEventHandler? CollectionChanged;
-
-            // Expose for test.
-            public new SQLiteConnection FilterQueryDatabase => base.FilterQueryDatabase;
         }
 
         /// <summary>
         /// Extension and general housekeeping.
         /// </summary>
-        partial class ObservableNetProjectionWithComposition<T>
-            : ObservableCollection<T>
+        partial class ObservableNetProjectionWithComposition<T> : ObservableModeledCollection<T>
         {
-            public ObservableNetProjectionWithComposition()
-            {
-                _mdc.SetObservableNetProjection(this, NetProjectionTopology.ObservableOnly);
-                ModelSettled += (sender, e) =>
-                {
-                    switch (Authority)
-                    {
-                        case CollectionChangeAuthority.Reset:
-                            break;
-                        case CollectionChangeAuthority.Settle:
-                            break;
-                        default:
-                            this.ThrowFramework<NotSupportedException>($"The {Authority.ToFullKey()} case is not supported.");
-                            break;
-                    }
-                };
-
-                base.PropertyChanged += (sender, e) =>
-                {
-                    Debug.WriteLine($"260303 BC PropertyChange '{e.PropertyName}' is advisory only.");
-                };
-                _mdc.PropertyChanged += (sender, e) => OnPropertyChanged(e.PropertyName);
-            }
         }
 
-        partial class ObservableNetProjectionWithComposition<T> 
-            : IMarkdownContext  // But we wouldn't really want to expose this.
-            where T : new()
+        partial class ObservableNetProjectionWithComposition<T> where T : new()
         {
-            private readonly ModeledMarkdownContext<T> _mdc = new ModeledMarkdownContext<T>();
-
-            public XElement Model => ((IModeledMarkdownContext)_mdc).Model;
-
-            public uint DefaultLimit
-            {
-                get => ((IMarkdownContext)_mdc).DefaultLimit;
-                set => ((IMarkdownContext)_mdc).DefaultLimit = value;
-            }
-
-            public bool IsFiltering => ((IMarkdownContext)_mdc).IsFiltering;
-
-            public FilteringState FilteringState => ((IMarkdownContext)_mdc).FilteringState;
-
-            public string InputText
-            {
-                get => ((IMarkdownContext)_mdc).InputText;
-                set => ((IMarkdownContext)_mdc).InputText = value;
-            }
-
-            public QueryFilterConfig QueryFilterConfig
-            {
-                get => ((IMarkdownContext)_mdc).QueryFilterConfig;
-                set => ((IMarkdownContext)_mdc).QueryFilterConfig = value;
-            }
-
-            public SearchEntryState SearchEntryState => ((IMarkdownContext)_mdc).SearchEntryState;
-
-            public int CanonicalCount => ((IMarkdownContext)_mdc).CanonicalCount;
-
-            public event EventHandler? InputTextSettled
-            {
-                add => ((IMarkdownContext)_mdc).InputTextSettled += value;
-                remove => ((IMarkdownContext)_mdc).InputTextSettled -= value;
-            }
-
-            public event EventHandler ModelSettled
-            {
-                add => ((IModeledMarkdownContext)_mdc).ModelSettled += value;
-                remove => ((IModeledMarkdownContext)_mdc).ModelSettled -= value;
-            }
-
-            public IDisposable BeginCollectionChangeAuthority(CollectionChangeAuthority authority)
-                => ((IModeledMarkdownContext)_mdc).BeginCollectionChangeAuthority(authority);
-
-            public FilteringState Clear(bool all)
-                => ((IMarkdownContext)_mdc).Clear(all);
-
-            public Task LoadCanonAsync(IEnumerable? recordset)
-                => ((IModeledMarkdownContext)_mdc).LoadCanonAsync(recordset);
-
-            public string ParseSqlMarkdown()
-                => ((IMarkdownContext)_mdc).ParseSqlMarkdown();
-
-            public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
-                => ((IMarkdownContext)_mdc).ParseSqlMarkdown(expr, proxyType, qfMode, out xast);
-
-            public string ParseSqlMarkdown<T1>()
-                => ((IMarkdownContext)_mdc).ParseSqlMarkdown<T1>();
-
-            public string ParseSqlMarkdown<T1>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
-                => ((IMarkdownContext)_mdc).ParseSqlMarkdown<T1>(expr, qfMode);
-
-            public IList? ObservableNetProjection => _mdc.ObservableNetProjection;
-
-            public int PredicateMatchCount => ((IMarkdownContext)_mdc).PredicateMatchCount;
-
-            public NetProjectionTopology? ProjectionTopology => ((IModeledMarkdownContext)_mdc).ProjectionTopology;
-
-            public ReplaceItemsEventingPolicy ReplaceItemsEventingPolicy
-            {
-                get => ((IModeledMarkdownContext)_mdc).ReplaceItemsEventingPolicy;
-                set => ((IModeledMarkdownContext)_mdc).ReplaceItemsEventingPolicy = value;
-            }
-
-            public CollectionChangeAuthority Authority => ((IModeledMarkdownContext)_mdc).Authority;
-
-            public bool Busy => ((IMarkdownContext)_mdc).Busy;
-
-            public TimeSpan InputTextSettlingTime
-            {
-                get => ((IMarkdownContext)_mdc).InputTextSettlingTime;
-                set => ((IMarkdownContext)_mdc).InputTextSettlingTime = value;
-            }
-
-            public Type ContractType => ((IMarkdownContext)_mdc).ContractType;
-
-            public Type ProxyType => ((IMarkdownContext)_mdc).ProxyType;
-
-            INotifyCollectionChanged? _observableNetProjection = default;
-
-            protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-                => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-            public void LoadCanon(IEnumerable? recordset)
-                => ((IModeledMarkdownContext)_mdc).LoadCanon(recordset);
-
-            public string[] GetTableNames()
-                => ((IMarkdownContext)_mdc).GetTableNames();
-
-            public IDisposable BeginBusy()
-                => ((IMarkdownContext)_mdc).BeginBusy();
-
-            public void Commit()
-                => ((IMarkdownContext)_mdc).Commit();
-
-            public new event PropertyChangedEventHandler? PropertyChanged;
         }
     }
 }

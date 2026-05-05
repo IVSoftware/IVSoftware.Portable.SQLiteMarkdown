@@ -1042,7 +1042,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
     /// <summary>
     /// Exposes FilteringState as public for test.
     /// </summary>
-    private class MMDC : ModeledMarkdownContext<SelectableQFModel>
+    private class MMDC : MarkdownContext<SelectableQFModel>
     {
         public new FilteringState FilteringState
         {
@@ -1051,6 +1051,11 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             {
                 FilteringState = value;
             }
+        }
+
+        internal void SetObservableNetProjection(ObservableCollectionWithInternalMMDC observableCollectionWithInternalMMDC)
+        {
+            throw new NotImplementedException();
         }
     }
     #endregion L o c a l C l a s s e s
