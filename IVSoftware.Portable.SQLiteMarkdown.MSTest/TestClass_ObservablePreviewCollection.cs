@@ -608,13 +608,14 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingInd
 
             actual = opc.ToString(out XElement _);
             actual.ToClipboardExpected();
+            { }
             expected = @" 
 <model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" index=""0"" preview=""Item01    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" index=""1"" preview=""Item02    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" index=""2"" preview=""Item03    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" index=""3"" preview=""Item04    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" index=""4"" preview=""Item05    "" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""4"" />
 </model>"
             ;
 
@@ -645,12 +646,13 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" index=""0"" preview=""Item01    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" index=""1"" preview=""Item02    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" index=""2"" preview=""Item03    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" index=""3"" preview=""Item04    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" index=""4"" preview=""Item05    "" />
-</model>";
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""4"" />
+</model>"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -675,14 +677,15 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" index=""0"" preview=""Item01    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" index=""1"" preview=""Item02    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" index=""2"" preview=""Item03    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" index=""3"" preview=""Item04    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" index=""4"" preview=""Item05    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""5"" preview=""Distinct01"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""6"" preview=""Distinct02"" />
-</model>";
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Distinct01"" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""6"" />
+</model>"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -698,14 +701,15 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" index=""0"" preview=""Item01    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" index=""1"" preview=""Item02    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" index=""2"" preview=""Item03    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" index=""3"" preview=""Item04    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" index=""4"" preview=""Item05    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""5"" preview=""Distinct01"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""6"" preview=""Distinct02"" />
-</model>";
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Distinct01"" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""6"" />
+</model>"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -727,18 +731,18 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" index=""0"" preview=""Item01    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" index=""1"" preview=""Item02    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" preview=""Insert01  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" index=""3"" preview=""Insert02  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""4"" preview=""Insert03  "" />
-  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" index=""5"" preview=""Insert04  "" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""6"" preview=""Insert05  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" index=""7"" preview=""Item03    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" index=""8"" preview=""Item04    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" index=""9"" preview=""Item05    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""10"" preview=""Distinct01"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""11"" preview=""Distinct02"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""Insert01  "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Insert02  "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Insert03  "" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Insert04  "" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Insert05  "" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""9"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Distinct01"" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""11"" />
 </model>"
             ;
 
@@ -756,18 +760,18 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" index=""0"" preview=""Item01    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" index=""1"" preview=""Item02    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" preview=""Insert01  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" index=""3"" preview=""Insert02  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""4"" preview=""Insert03  "" />
-  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" index=""5"" preview=""Insert04  "" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""6"" preview=""Insert05  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" index=""7"" preview=""Item03    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" index=""8"" preview=""Item04    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" index=""9"" preview=""Item05    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""10"" preview=""Distinct01"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""11"" preview=""Distinct02"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""Insert01  "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Insert02  "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Insert03  "" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Insert04  "" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Insert05  "" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""9"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Distinct01"" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""11"" />
 </model>"
             ;
 
@@ -784,15 +788,15 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" index=""0"" preview=""Item01    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" index=""1"" preview=""Item02    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" preview=""Insert01  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" index=""3"" preview=""Insert02  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""4"" preview=""Insert03  "" />
-  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" index=""5"" preview=""Insert04  "" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""6"" preview=""Insert05  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""7"" preview=""Distinct01"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""8"" preview=""Distinct02"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""Insert01  "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Insert02  "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Insert03  "" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Insert04  "" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Insert05  "" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Distinct01"" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""8"" />
 </model>"
             ;
 
@@ -810,15 +814,15 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" index=""0"" preview=""Item01    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" index=""1"" preview=""Item02    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" preview=""Insert01  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" index=""3"" preview=""Insert02  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""4"" preview=""Insert03  "" />
-  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" index=""5"" preview=""Insert04  "" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""6"" preview=""Insert05  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""7"" preview=""Distinct01"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""8"" preview=""Distinct02"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""Insert01  "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Insert02  "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Insert03  "" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Insert04  "" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Insert05  "" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Distinct01"" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""8"" />
 </model>"
             ;
             Assert.AreEqual(
@@ -834,12 +838,12 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" index=""0"" preview=""Item02    "" />
-  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" index=""1"" preview=""Insert02  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""2"" preview=""Insert03  "" />
-  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" index=""3"" preview=""Insert04  "" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""4"" preview=""Insert05  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""5"" preview=""Distinct02"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Insert02  "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Insert03  "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Insert04  "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Insert05  "" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""5"" />
 </model>"
             ;
             Assert.AreEqual(
@@ -856,9 +860,9 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             { }
             expected = @" 
 <model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""0"" preview=""Insert03  "" />
-  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" index=""1"" preview=""Insert04  "" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""2"" preview=""Insert05  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Insert03  "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Insert04  "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Insert05  "" index=""2"" />
 </model>"
             ;
             Assert.AreEqual(
