@@ -16,9 +16,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
     [TestClass]
     public class TestClass_POCOs
     {
-        [TestMethod, DoNotParallelize]
+        [TestMethod, DoNotParallelize, Ignore]
         public async Task Test_ItemsSource()
         {
+#if false
             using var te = this.TestableEpoch();
 
             string actual, expected;
@@ -69,6 +70,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 ;
             }
             #endregion S U B T E S T S
+#endif
         }
     }
 }

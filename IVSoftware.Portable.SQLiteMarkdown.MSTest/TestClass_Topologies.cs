@@ -48,14 +48,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         {
             public OBQFC()
             {
-                _mmdc.SetObservableNetProjection(this, NetProjectionTopology.AllowDirectChanges);
             }
             protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
             {
                 base.OnCollectionChanged(e);
             }
 
-            MarkdownContext<T> _mmdc = new MarkdownContext<T>();
         }
     }
 
@@ -104,6 +102,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             {
                 ProjectionTopology = NetProjectionTopology.AllowDirectChanges;
             }
+            
+            public NetProjectionTopology ProjectionTopology { get; }
+
             public virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
             {
                 CollectionChanged?.Invoke(this, e);

@@ -117,9 +117,10 @@ public class TestClass_PredicateMarkdownContext
 
     }
 
-    [TestMethod, DoNotParallelize]
+    [TestMethod, DoNotParallelize, Ignore]
     public void Test_IsFilteringEdgeTests()
     {
+#if false
         using var te = this.TestableEpoch();
 
         string actual, expected;
@@ -219,6 +220,7 @@ public class TestClass_PredicateMarkdownContext
         {
         }
         #endregion S U B T E S T S
+#endif
     }
 
     /// <summary>

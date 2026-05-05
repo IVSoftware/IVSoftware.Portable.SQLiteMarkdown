@@ -210,7 +210,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             return string.Join(", ", builder);
         }
 
-        public static string TopologyReport(this IMarkdownContext @this)
+        public static string TopologyReport(this ITopology @this)
         {
             var builder = new List<string>();
             builder.Add($"{@this.ProjectionTopology.ToFullKey()}");

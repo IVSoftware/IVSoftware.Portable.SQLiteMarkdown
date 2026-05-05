@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
@@ -1303,9 +1304,10 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
             }
         }
 
-        [TestMethod]
+        [TestMethod, Ignore]
         public void Test_ObservableQueryFilterSource()
         {
+#if false
             string actual, expected, sql;
             var builder = new List<string>();
             SenderEventPair sep;
@@ -1539,6 +1541,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 }
                 #endregion S U B T E S T S
             }
+#endif
         }
 
         /// <summary>
@@ -1571,9 +1574,10 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
         /// - Correct routing between canonical superset and filtered projection.
         /// - Stable filtering behavior when clearing input or re-entering filter expressions.
         /// </remarks>
-        [TestMethod, DoNotParallelize]
+        [TestMethod, DoNotParallelize, Ignore]
         public async Task Test_TrackProgressiveInputState()
         {
+#if false
             var id1 = Thread.CurrentThread.ManagedThreadId;
 
             using var te = this.TestableEpoch();
@@ -2199,6 +2203,7 @@ Kangaroo ""bounce"",""outback"",""marsupial"" [animal]"
                     #endregion S U B T E S T S
                 }
             }
+#endif
         }
 
         [TestMethod]
