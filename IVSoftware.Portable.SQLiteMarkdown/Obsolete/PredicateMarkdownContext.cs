@@ -14,7 +14,7 @@ using IVSoftware.Portable.Xml.Linq.XBoundObject;
 namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
 {
     public class PredicateMarkdownContext<T> 
-        : ModeledMarkdownContext<T>
+        : MarkdownContext<T>
         , IPredicateMarkdownContext
         where T : new()
     {
