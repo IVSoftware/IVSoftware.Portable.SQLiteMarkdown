@@ -173,13 +173,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 0 => throw new InvalidOperationException("Queue is empty."),
                 1 => queue.Dequeue(),
                 _ => throw new InvalidOperationException("Multiple items in queue."),
-            };
+            };      
 
-      
-
-        public static string StateReport(this MarkdownContext @this)
+        public static string StateReport(this IModeledCollection @this)
         {
             var builder = new List<string>();
+
+            if(@this.Model.To<MarkdownContext>() is { } mdc)
+            {
+                return localReportWithMDC();
+            }
+            else
+            {
+                return localReportIMCOnly();
+            }
+
+#if false && CLOSED_FOR_REMODELING
             builder.Add($"[IME Len: {@this.InputText.Length}");
             builder.Add($"IsFiltering: {@this.IsFiltering}]");
             if(@this is IModeledCollection omc)
@@ -197,7 +206,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             builder.Add($"PMC: {@this.PredicateMatchCount}]");
             builder.Add($"[{@this.QueryFilterConfig}: {@this.SearchEntryState.ToFullKey()}");
             builder.Add($"{@this.FilteringState.ToFullKey()}]");
-            return string.Join(", ", builder);
+#endif
+            #region L o c a l F x
+            string localReportIMCOnly()
+            {
+                return string.Join(", ", builder);
+            }
+            string localReportWithMDC()
+            {
+                return string.Join(", ", builder);
+            }
+            #endregion L o c a l F x
         }
 
         public static string TopologyReport(this IObservableQueryFilterSource @this)

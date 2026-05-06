@@ -930,7 +930,7 @@ InputText"
             string actual, expected;
 
             var extQueryHandle = default(List<SelectableQFModel>).PopulateForDemo(2);
-
+            ObservableModeledCollection<SelectableQFModel> omc = new();
             MarkdownContext<SelectableQFModel> mdc;
 
             subtest_ConfigureThenLoad();
@@ -941,7 +941,7 @@ InputText"
             void subtest_ConfigureThenLoad()
             {
                 mdc = new() { QueryFilterConfig = QueryFilterConfig.Filter };
-                actual = mdc.StateReport();
+                actual = omc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -958,7 +958,7 @@ InputText"
             void subtest_LoadThenConfigure()
             {
                 mdc = new();
-                actual = mdc.StateReport();
+                actual = omc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -972,7 +972,7 @@ InputText"
                 );
 
                 mdc.QueryFilterConfig = QueryFilterConfig.Filter;
-                actual = mdc.StateReport();
+                actual = omc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -1862,9 +1862,10 @@ SELECT * FROM items WHERE
         public async Task Test_Detect_QueryENB_or_QueryEN_when_IsFiltering()
         {
             string actual, expected;
+            ObservableModeledCollection<SelectableQFModel> omc = new();
             var mdc = new MarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Filter };
 
-            actual = mdc.StateReport();
+            actual = omc.StateReport();
             expected = @" 
 [IME Len: 0, IsFiltering: True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
             ;
@@ -1873,7 +1874,7 @@ SELECT * FROM items WHERE
             mdc.InputText = "a";
             await mdc; // YBYA you need this in filter mode.
 
-            actual = mdc.StateReport();
+            actual = omc.StateReport();
             expected = @" 
 [IME Len: 1, IsFiltering: True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
             ;
@@ -1882,7 +1883,7 @@ SELECT * FROM items WHERE
             // Reset to empty IME. Do not violate minimum SES.
             mdc.Clear();
 
-            actual = mdc.StateReport();
+            actual = omc.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
