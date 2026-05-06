@@ -12,7 +12,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
-using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
+using PublishedContractAttribute = IVSoftware.Portable.Common.Attributes.PublishedContractAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {

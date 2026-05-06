@@ -11,10 +11,11 @@ using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using ItemPropertyChangedEventArgs = IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs;
+using IVSoftware.Portable.Common.Attributes;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    partial class MarkdownContext : IMarkdownContext
+    partial class MarkdownContext
     {
         protected virtual void OnItemPropertyChanged(object item, PropertyChangedEventArgs e)
         {

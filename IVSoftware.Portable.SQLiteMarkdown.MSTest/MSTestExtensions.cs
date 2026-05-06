@@ -188,12 +188,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 return localReportIMCOnly();
             }
 
-#if false && CLOSED_FOR_REMODELING
-            builder.Add($"[IME Len: {@this.InputText.Length}");
-            builder.Add($"IsFiltering: {@this.IsFiltering}]");
-            if(@this is IModeledCollection omc)
+            #region L o c a l F x
+            string localReportIMCOnly()
             {
-                if(omc.ObservableNetProjection is IList list)
+                if(@this.ObservableNetProjection is IList list)
                 {
                     builder.Add($"[Net: {list.Count}");
                 }
@@ -201,19 +199,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 {
                     builder.Add($"[Net: null");
                 }
-            }
-            builder.Add($"CC: {@this.CanonicalCount}");
-            builder.Add($"PMC: {@this.PredicateMatchCount}]");
-            builder.Add($"[{@this.QueryFilterConfig}: {@this.SearchEntryState.ToFullKey()}");
-            builder.Add($"{@this.FilteringState.ToFullKey()}]");
-#endif
-            #region L o c a l F x
-            string localReportIMCOnly()
-            {
                 return string.Join(", ", builder);
             }
             string localReportWithMDC()
             {
+                builder.Add($"[IME Len: {mdc.InputText.Length}");
+                builder.Add($"IsFiltering: {mdc.IsFiltering}]");
+                if (@this.ObservableNetProjection is IList list)
+                {
+                    builder.Add($"[Net: {list.Count}");
+                }
+                else
+                {
+                    builder.Add($"[Net: null");
+                }
+                builder.Add($"CC: {mdc.CanonicalCount}");
+                builder.Add($"PMC: {mdc.PredicateMatchCount}]");
+                builder.Add($"[{mdc.QueryFilterConfig}: {mdc.SearchEntryState.ToFullKey()}");
+                builder.Add($"{mdc.FilteringState.ToFullKey()}]");
                 return string.Join(", ", builder);
             }
             #endregion L o c a l F x

@@ -109,7 +109,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="IVSoftware.Portable.Common" Version="*" />
+		<PackageReference Include="IVSoftware.Portable.Common" Version="*-*" />
 		<PackageReference Include="IVSoftware.Portable.Threading" Version="2.0.0-beta" />
 		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="2.0.0-rc" />
 		<PackageReference Include="IVSoftware.Portable.Disposable" Version="2.0.0" />

@@ -73,7 +73,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Semantic clarity for Interval, which comes from inheriting WatchDogTimer.
         /// </summary>
-        TimeSpan IMarkdownContext.InputTextSettlingTime
+        public TimeSpan InputTextSettlingTime
         {
             get => Interval;
             set => Interval = value;

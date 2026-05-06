@@ -1,4 +1,6 @@
-﻿namespace IVSoftware.Portable.SQLiteMarkdown.Events
+﻿using IVSoftware.Portable.Common.Attributes;
+
+namespace IVSoftware.Portable.SQLiteMarkdown.Events
 {
     /// <summary>
     /// Compatibility shim retaining the legacy SQLiteMarkdown type identity.

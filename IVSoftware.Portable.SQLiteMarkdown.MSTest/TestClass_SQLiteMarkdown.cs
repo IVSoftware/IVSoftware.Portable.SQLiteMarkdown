@@ -930,8 +930,13 @@ InputText"
             string actual, expected;
 
             var extQueryHandle = default(List<SelectableQFModel>).PopulateForDemo(2);
-            ObservableModeledCollection<SelectableQFModel> omc = new();
+
             MarkdownContext<SelectableQFModel> mdc;
+            var omc = new ObservableModeledCollection<SelectableQFModel> 
+            { 
+                ModelTracking = ModelTrackingFlag.ItemQueries 
+            };
+            Assert.IsNotNull(mdc = omc.Model.To<MarkdownContext<SelectableQFModel>>());
 
             subtest_ConfigureThenLoad();
 

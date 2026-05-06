@@ -133,29 +133,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// Advisory for signatures that look like they need refactoring
-    /// but are part of a published contract. Basically, DON'T DO IT!
-    /// </summary>
-    [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
-    internal class PublishedContractAttribute : Attribute
-    {
-        // Do Not Change signature, return type, or argument names.
-        // Do Not Obsolete (if you can help it).
-        public PublishedContractAttribute(
-            string? version = null,
-            Type? type = null,
-            string? assembly = null)
-        {
-            Version = version;
-            Type = type;
-            Assembly = assembly;
-        }
-        public string? Version { get; }
-        public string? Assembly { get; }
-        public Type? Type { get; }
-    }
-
-    /// <summary>
     /// Declares the authority under which to run a named enum FSM.
     /// </summary>
     /// <remarks>
