@@ -2058,6 +2058,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             var sql = ParseSqlMarkdown();
             var qmatches = FilterQueryDatabase.Query(ContractTableMapping, sql);
             { }
+            if(this is IModeledCollection mc)
+            {
+
+            }
 
             Debug.Assert(DateTime.Now.Date == new DateTime(2026, 5, 7).Date, "Don't forget disabled");
         }
