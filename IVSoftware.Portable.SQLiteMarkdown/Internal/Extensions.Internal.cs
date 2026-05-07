@@ -30,6 +30,53 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
     /// </remarks>
     internal static partial class Extensions
     {
+        public static string StateReport(this IModeledCollection @this)
+        {
+            var builder = new List<string>();
+
+            if (@this.Model.To<MarkdownContext>() is { } mdc)
+            {
+                return localReportWithMDC();
+            }
+            else
+            {
+                return localReportIMCOnly();
+            }
+
+            #region L o c a l F x
+            string localReportIMCOnly()
+            {
+                if (@this.ObservableNetProjection is IList list)
+                {
+                    builder.Add($"[Net: {list.Count}");
+                }
+                else
+                {
+                    builder.Add($"[Net: null");
+                }
+                return string.Join(", ", builder);
+            }
+            string localReportWithMDC()
+            {
+                builder.Add($"[IME Len: {mdc.InputText.Length}");
+                builder.Add($"IsFiltering: {mdc.IsFiltering}]");
+                if (@this.ObservableNetProjection is IList list)
+                {
+                    builder.Add($"[Net: {list.Count}");
+                }
+                else
+                {
+                    builder.Add($"[Net: null");
+                }
+                builder.Add($"CC: {mdc.CanonicalCount}");
+                builder.Add($"PMC: {mdc.PredicateMatchCount}]");
+                builder.Add($"[{mdc.QueryFilterConfig}: {mdc.SearchEntryState.ToFullKey()}");
+                builder.Add($"{mdc.FilteringState.ToFullKey()}]");
+                return string.Join(", ", builder);
+            }
+            #endregion L o c a l F x
+        }
+
 
         #region P R E V I E W
         /// <summary>
