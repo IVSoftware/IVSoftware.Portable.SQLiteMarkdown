@@ -1,9 +1,10 @@
 ﻿using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq;
-using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
@@ -29,6 +30,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
     /// </remarks>
     internal static partial class Extensions
     {
+
         #region P R E V I E W
         /// <summary>
         /// Returns the <see cref="XBoundAttribute"/> for the specified <see cref="StdModelAttribute"/>.
