@@ -1991,7 +1991,34 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         SearchEntryState _searchEntryState = default;
 
-        protected virtual void OnSearchEntryStateChanged() { }
+        /// <summary>
+        /// Override for full control of criteria for advance to Armed, e.g., recordset length.
+        /// </summary>
+        protected virtual void OnSearchEntryStateChanged()
+        {
+            switch (QueryFilterConfig)
+            {
+                case QueryFilterConfig.Query:
+                    FilteringState = FilteringState.Ineligible;
+                    break;
+                case QueryFilterConfig.Filter:
+                    FilteringState = FilteringState.Armed;
+                    break;
+                case QueryFilterConfig.QueryAndFilter:
+                    if(SearchEntryState == SearchEntryState.QueryCompleteWithResults)
+                    {
+                        FilteringState = FilteringState.Armed;
+                    }
+                    else
+                    {
+                        FilteringState = FilteringState.Ineligible;
+                    }
+                    break;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {QueryFilterConfig.ToFullKey()} case is not supported.");
+                    break;
+            }
+        }
 
 #if DEBUG
         protected SemaphoreSlimWithTrace _ready { get; } = new SemaphoreSlimWithTrace(1, 1);

@@ -3170,7 +3170,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 {
                     Debug.Fail($@"ADVISORY - First Time.");
                 }
-                eventQueue.Enqueue((sender, e));
+                eventQueue.Enqueue((sender!, e));
                 builder.Add(e.ToString(ReferenceEquals(sender, items)));
 
                 // G T K

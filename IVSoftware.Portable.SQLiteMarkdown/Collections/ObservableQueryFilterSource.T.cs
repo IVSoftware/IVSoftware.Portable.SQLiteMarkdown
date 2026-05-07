@@ -42,9 +42,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         protected override void OnCommit(RecordsetRequestEventArgs e)
         {
             base.OnCommit(e);
-            if (e.Handled)
+            if (!e.Handled)
             {
-                ReplaceItems(MemoryDatabase.Query<T>(e.SQL));
+                var recordset = MemoryDatabase.Query<T>(e.SQL);
+                if( recordset.Count == 0
+                    && Settings[StdMarkdownContextSetting.AllowPluralize] is bool allow && allow)
+                {
+                    recordset = MemoryDatabase.Query<T>(e.SQL.ToFuzzyQuery());
+                }
+                ReplaceItems(recordset);
                 if(CanonicalSuperset.Count == 0)
                 {
                     SearchEntryState = SearchEntryState.QueryCompleteNoResults;
@@ -53,6 +59,31 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 {
                     SearchEntryState = SearchEntryState.QueryCompleteWithResults;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Override for full control of criteria for 
+        /// advance to Armed, e.g., recordset length.
+        /// </summary>
+        protected override void OnSearchEntryStateChanged()
+        {
+            switch (QueryFilterConfig)
+            {
+                case QueryFilterConfig.QueryAndFilter:
+                    if (SearchEntryState == SearchEntryState.QueryCompleteWithResults
+                        && CanonicalSuperset.Count > 2)
+                    {
+                        FilteringState = FilteringState.Armed;
+                    }
+                    else
+                    {
+                        FilteringState = FilteringState.Ineligible;
+                    }
+                    break;
+                default:
+                    base.OnSearchEntryStateChanged();
+                    break;
             }
         }
     }
