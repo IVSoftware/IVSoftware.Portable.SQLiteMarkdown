@@ -88,20 +88,38 @@ Materialized Path Policy violation: Path must end with Id."
                 { }
                 expected = @" 
 <breakingChanges policy=""AssemblyOnly"">
-  <namespace name=""IVSoftware.Portable.SQLiteMarkdown.Collections"">
-    <type name=""ObservableQueryFilterSource&lt;T&gt;"">
-      <method name=""Clear"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|Clear([external])-&gt;[external]"" />
-    </type>
-  </namespace>
+    <namespace name=""IVSoftware.Portable.SQLiteMarkdown.Collections"">
+        <type name=""ObservableQueryFilterSource&lt;T&gt;"">
+            <method name=""Clear"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|Clear([external])-&gt;[external]"" />
+        </type>
+    </namespace>
 </breakingChanges>"
                 ;
 
                 Assert.AreEqual(
-                   expected.NormalizeResult(),
-                   actual.NormalizeResult(),
-                   "Expecting ONE deliberate breaking change that replaces a silent killer."
-               );
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting ONE deliberate breaking change that replaces a silent killer."
+                );
 
+                actual = string.Join(
+                    Environment.NewLine,
+                    typeof(IObservableQueryFilterSource<object>).GetInterfaces().Select(_ => _.Name));
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+IObservableQueryFilterSource
+IList
+ICollection
+IEnumerable
+INotifyCollectionChanged
+INotifyPropertyChanged";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting result to match."
+                );
 #if false && ABSTRACT
                // This was the original breaking change profile
                // when  we started analyzing V2 against V1.

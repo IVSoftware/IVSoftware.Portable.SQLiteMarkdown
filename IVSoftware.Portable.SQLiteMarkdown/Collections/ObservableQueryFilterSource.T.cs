@@ -157,7 +157,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 case FormattingOMC.StateReport:
                     return this.StateReport();
-                    break;
                 case FormattingEHM.Matches:
                     return CanonicalSupersetProtected.ToString(FormattingEHM.Matches);
                 default:

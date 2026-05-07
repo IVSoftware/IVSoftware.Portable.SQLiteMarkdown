@@ -426,8 +426,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     return ((IEnumerable<T>)this).GetEnumerator();
 
                 case RoutingOQFS.PredicateMatchSubset:
-                    // TODO: Routing
-                    return ((IEnumerable<T>)this).GetEnumerator();
+                    return  
+                        Model
+                        .Descendants()
+                        .Where(_ => 
+                            bool.TryParse(_.Attribute(StdModelAttribute.match)?.Value, out var @bool) && @bool)
+                        .Select(_=>_.To<T>())
+                        .Where(_=>_ is not null)
+                        .GetEnumerator();
 
                 default:
                     this.ThrowFramework<NotSupportedException>(

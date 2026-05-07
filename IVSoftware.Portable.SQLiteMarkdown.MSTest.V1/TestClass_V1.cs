@@ -154,6 +154,25 @@ IVSoftware.Portable.SQLiteMarkdown | Version=1.0.1.0"
             Assert.IsTrue(
                 opc is IObservableQueryFilterSource<SelectableQFModel>,
                 @"Asserting the claim: [Canonical(""Contract published in v1"")]");
+
+            actual = string.Join(
+                Environment.NewLine,
+                typeof(IObservableQueryFilterSource<object>).GetInterfaces().Select(_=>_.Name));
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+IObservableQueryFilterSource
+IList
+ICollection
+IEnumerable
+INotifyCollectionChanged
+INotifyPropertyChanged";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
         }
 
         [TestMethod]

@@ -63,6 +63,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 @this.Clear();
             }
 
+            #region L o c a l F x
             void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
             {
                 var itemT = @this.AddDynamic<TItem>(description, tags, isChecked, keywords);
@@ -71,6 +72,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     isChecked = rando.Next(2) == 1;
                 }
             }
+            #endregion L o c a l F x
 
             Add("Brown Dog", "[canine][color]", false, new() { "loyal", "friend", "furry" });
             Add("Green Apple", "[fruit][color]", false, new() { "tart", "snack", "healthy" });
@@ -150,6 +152,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                         isChecked: options?.HasFlag(PopulateOptions.RandomChecks) == true && rando.Next(2) == 1);
                 }
 
+                #region L o c a l F x
                 void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
                 {
                     var instance = new TItem();
@@ -163,6 +166,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     }
                     @this.Add(instance);
                 }
+                #endregion L o c a l F x
             }
             return @this;
         }

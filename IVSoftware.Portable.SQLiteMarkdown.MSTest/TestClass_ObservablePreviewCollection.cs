@@ -957,7 +957,8 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEve
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 5, CC: 5, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]";
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 5, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -968,6 +969,8 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEve
 
         void subtest_PopulateWithRange()
         {
+            Assert.IsTrue(oqfs is IRangeable);
+
             te.ResetEpoch();
             builder.Clear();
 
@@ -976,15 +979,15 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEve
             actual = oqfs.Model.ToString();
             actual.ToClipboardExpected();
             { }
-
             expected = @" 
-<model mdc=""[MDC]"" histo=""[model:5 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:5 match:0 qmatch:0 pmatch:0 live:0]"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" index=""1"" />
   <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" index=""2"" />
   <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" index=""3"" />
   <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" index=""4"" />
-</model>";
+</model>"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
