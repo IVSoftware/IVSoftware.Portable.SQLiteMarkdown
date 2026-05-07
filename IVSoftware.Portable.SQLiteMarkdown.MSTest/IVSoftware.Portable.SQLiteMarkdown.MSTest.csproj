@@ -60,7 +60,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.MSTest.Extensions\IVSoftware.MSTest.Extensions.csproj" />
-    <ProjectReference Include="..\..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.Extensions\IVSoftware.MSTest.Extensions.csproj" />
     <ProjectReference Include="..\..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.csproj" />
   </ItemGroup>
 

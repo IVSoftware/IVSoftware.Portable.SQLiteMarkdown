@@ -30,9 +30,10 @@
   </ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="IVSoftware.Portable.Common" Version="*-*" />
 		<PackageReference Include="IVSoftware.GlyphProvider.Winforms" Version="*" GeneratePathProperty="true" />
 		<PackageReference Include="IVSoftware.Portable.Threading" Version="2.0.0-beta" />
-		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="*" />
+		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="2.1.0-rc" />
 		<PackageReference Include="Newtonsoft.Json" Version="*" />
 		<PackageReference Include="sqlite-net-pcl" Version="*" />
 		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="2.0.0-rc" />
