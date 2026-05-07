@@ -99,9 +99,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         IReadOnlyCollection<T>? _canonicalSuperset = null;
 
-        /// <summary>
-        /// Fo
-        /// </summary>
         [Probationary("When ObservablePreviewRangeCollection<T> becomes a public type, we will upgrade.")]
         public ObservableModeledCollection<T> CanonicalSupersetProtected
         {
@@ -316,8 +313,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             return CanonicalSupersetProtected.IndexOf(valueT);
         }
 
+        /// <summary>
+        /// No Surprises IList.Clear
+        /// </summary>
         public void Clear()
         {
+            Clear(all: true);
             CanonicalSupersetProtected.Clear();
         }
 

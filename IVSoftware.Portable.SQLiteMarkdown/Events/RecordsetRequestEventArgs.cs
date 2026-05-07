@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
+using System;
 using System.Collections;
 using System.ComponentModel;
 
@@ -11,6 +12,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
             SQL = sql;
         }
         public string SQL { get;  }
-        public ICollection? Items { get; set; } = null;
+        public int? RecordsetCount { get; set; }
     }
 }

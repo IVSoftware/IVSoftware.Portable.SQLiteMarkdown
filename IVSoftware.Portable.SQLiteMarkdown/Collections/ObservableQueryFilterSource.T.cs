@@ -44,19 +44,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             base.OnCommit(e);
             if (e.Handled)
             {
-                Debug.Fail($@"ADVISORY - First Time.");
-                if (e.Items is null)
+                ReplaceItems(MemoryDatabase.Query<T>(e.SQL));
+                if(CanonicalSuperset.Count == 0)
                 {
-                    Clear();
+                    SearchEntryState = SearchEntryState.QueryCompleteNoResults;
                 }
                 else
                 {
-                    ReplaceItems(e.Items.OfType<T>());
+                    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
                 }
-            }
-            else
-            {
-                ReplaceItems(MemoryDatabase.Query<T>(e.SQL));
             }
         }
     }
@@ -87,7 +83,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         public void ReplaceItems(IEnumerable<T> items)
-            => CanonicalSupersetProtected.LoadCanon((IList)items);
+        {
+            CanonicalSupersetProtected.LoadCanon((IList)items);
+        }
 
         public async Task ReplaceItemsAsync(IEnumerable<T> items)
         {
