@@ -9,6 +9,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -897,7 +898,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
         string actual, expected;
         using var te = this.TestableEpoch();
         var builder = new List<string>();
-        ObservableModeledCollection<SelectableQFModel> opc = new ();
+        ObservableQueryFilterSource<SelectableQFModel> opc = new ();
 
         #region E V E N T S
         // Differentiate between the itemsSource being driven by
@@ -920,16 +921,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model histo=""[model:5 match:0 qmatch:0 pmatch:0 live:0]"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" index=""0"" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" index=""1"" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" index=""2"" />
-  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" index=""3"" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" index=""4"" />
-</model>"
-            ;
-            expected = @" 
-<model mdc=""[MDC]"" histo=""[model:5 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:5 match:0 qmatch:0 pmatch:0 live:0]"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" index=""1"" />
   <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" index=""2"" />
