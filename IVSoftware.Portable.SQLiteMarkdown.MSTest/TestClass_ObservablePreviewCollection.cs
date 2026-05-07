@@ -940,6 +940,14 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             actual.ToClipboardExpected();
             { }
             expected = @" 
+Other.Reset   NotifyCollectionChangedEventArgs           
+Other.Add     NewItems= 1 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           
+Other.Add     NewItems= 1 NewStartingIndex= 1 NotifyCollectionChangedEventArgs           
+Other.Add     NewItems= 1 NewStartingIndex= 2 NotifyCollectionChangedEventArgs           
+Other.Add     NewItems= 1 NewStartingIndex= 3 NotifyCollectionChangedEventArgs           
+Other.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEventArgs           "
+            ;
+            expected = @" 
 NetProjection.Reset   NotifyCollectionChangedEventArgs           
 NetProjection.Add     NewItems= 1 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           
 NetProjection.Add     NewItems= 1 NewStartingIndex= 1 NotifyCollectionChangedEventArgs           

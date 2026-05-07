@@ -73,7 +73,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         public event NotifyCollectionChangingEventHandler? CollectionChanging;
-        public event NotifyCollectionChangedEventHandler? CollectionChanged;
+        public event NotifyCollectionChangedEventHandler? CollectionChanged
+        {
+            add => CanonicalSupersetProtected.CollectionChanged += value;
+            remove => CanonicalSupersetProtected.CollectionChanged -= value;
+        }
         public event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
     }
 
