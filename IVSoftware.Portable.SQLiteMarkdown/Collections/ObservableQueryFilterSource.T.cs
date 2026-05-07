@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
 using PublishedContractAttribute = IVSoftware.Portable.Common.Attributes.PublishedContractAttribute;
@@ -153,6 +154,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             switch (formatting)
             {
+                case FormattingOMC.StateReport:
+                    return this.StateReport();
+                    break;
                 case FormattingEHM.Matches:
                     return CanonicalSupersetProtected.ToString(FormattingEHM.Matches);
                 default:

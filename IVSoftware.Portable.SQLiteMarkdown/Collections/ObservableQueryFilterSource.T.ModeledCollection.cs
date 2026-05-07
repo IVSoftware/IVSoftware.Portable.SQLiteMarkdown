@@ -73,11 +73,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         public event NotifyCollectionChangingEventHandler? CollectionChanging;
-        public event NotifyCollectionChangedEventHandler? CollectionChanged
-        {
-            add => CanonicalSupersetProtected.CollectionChanged += value;
-            remove => CanonicalSupersetProtected.CollectionChanged -= value;
-        }
+        public event NotifyCollectionChangedEventHandler? CollectionChanged;
         public event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
     }
 
@@ -115,6 +111,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 {
                     if (!Equals(_canonicalSupersetProtected, value))
                     {
+                        _canonicalSupersetProtected?.CollectionChanged -= CollectionChangedEventForwarder;
                         _canonicalSupersetProtected?.PropertyChanged -= PropertyChangedEventForwarder;
                         _canonicalSupersetProtected = value;
                         localInitModel();
@@ -126,11 +123,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         Model.SetBoundAttributeValue(this, nameof(StdModelAttribute.mdc), "[MDC]");
                         Model.WithAttributesInOrder<StdModelAttribute>(
                             reqSMA: (authority) => CanonicalSupersetProtected.RequestAuthority(authority));
+                        _canonicalSupersetProtected?.CollectionChanged += CollectionChangedEventForwarder;
                         _canonicalSupersetProtected?.PropertyChanged += PropertyChangedEventForwarder;
                     }
                 }
             }
         }
+
+        private void CollectionChangedEventForwarder(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            // Bubble the event up to ONP, unless ONP is the authority to begin with.
+            if (CanonicalSupersetProtected.ModelDataExchangeAuthority 
+                != ModelDataExchangeAuthority.ObservableNetCollection)
+            {
+                OnCollectionChanged(e);
+            }
+        }
+
         ObservableModeledCollection<T> _canonicalSupersetProtected = default;
 
         /// <summary>
@@ -142,6 +151,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         private void PropertyChangedEventForwarder(object sender, PropertyChangedEventArgs eUnk)
         {
             OnPropertyChanged(eUnk);
+        }
+
+        public virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            CollectionChanged?.Invoke(this, e);
         }
 
 #if false

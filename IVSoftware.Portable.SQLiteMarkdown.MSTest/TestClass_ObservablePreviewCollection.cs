@@ -890,22 +890,22 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
 
 
     /// <summary>
-    /// Instantiates a Modeled OPC that inherits ObservableCollection and binds itself to MMDC.
+    /// Instantiates a Modeled OQFS that inherits ObservableModeledCollection.
     /// </summary>
     [TestMethod, DoNotParallelize]
-    public void Test_BasicModeledOPC()
+    public void Test_BasicModeledOQFS()
     {
         string actual, expected;
         using var te = this.TestableEpoch();
         var builder = new List<string>();
-        ObservableQueryFilterSource<SelectableQFModel> opc = new ();
+        ObservableQueryFilterSource<SelectableQFModel> oqfs = new ();
 
         #region E V E N T S
         // Differentiate between the itemsSource being driven by
         // the simView and the simView being driven by itemsSource.
-        opc.CollectionChanged += (sender, e) =>
+        oqfs.CollectionChanged += (sender, e) =>
         {
-            builder.Add(e.ToString(ReferenceEquals(sender, opc)));
+            builder.Add(e.ToString(ReferenceEquals(sender, oqfs)));
         };
         #endregion E V E N T S
 
@@ -915,9 +915,9 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
         #region S U B T E S T S
         void subtest_PopulateWithDiscreteEvents()
         {
-            opc.PopulateForDemo(5);
+            oqfs.PopulateForDemo(5);
 
-            actual = opc.Model.ToString();
+            actual = oqfs.Model.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -940,14 +940,6 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Other.Reset   NotifyCollectionChangedEventArgs           
-Other.Add     NewItems= 1 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           
-Other.Add     NewItems= 1 NewStartingIndex= 1 NotifyCollectionChangedEventArgs           
-Other.Add     NewItems= 1 NewStartingIndex= 2 NotifyCollectionChangedEventArgs           
-Other.Add     NewItems= 1 NewStartingIndex= 3 NotifyCollectionChangedEventArgs           
-Other.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEventArgs           "
-            ;
-            expected = @" 
 NetProjection.Reset   NotifyCollectionChangedEventArgs           
 NetProjection.Add     NewItems= 1 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           
 NetProjection.Add     NewItems= 1 NewStartingIndex= 1 NotifyCollectionChangedEventArgs           
@@ -961,7 +953,7 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEve
                 "Expecting model has emitted discrete events."
             );
 
-            actual = opc.ToString(FormattingOMC.StateReport);
+            actual = oqfs.ToString(FormattingOMC.StateReport);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -979,9 +971,9 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEve
             te.ResetEpoch();
             builder.Clear();
 
-            opc.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
+            oqfs.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
 
-            actual = opc.Model.ToString();
+            actual = oqfs.Model.ToString();
             actual.ToClipboardExpected();
             { }
 
@@ -1013,7 +1005,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
                 "Expecting model has emitted discrete events."
             );
 
-            actual = opc.ToString(FormattingOMC.StateReport);
+            actual = oqfs.ToString(FormattingOMC.StateReport);
             actual.ToClipboardExpected();
             { }
             expected = @" 

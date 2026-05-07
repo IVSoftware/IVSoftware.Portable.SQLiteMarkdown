@@ -1,19 +1,26 @@
 ﻿using IVSoftware.Portable.Collections.Events;
+using IVSoftware.Portable.Common.Attributes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
+    /// <summary>
+    /// POC as a separate-but-equal generic IList impl, but not a BC so far.
+    /// </summary>
+    [Canonical("CTor partial")]
     public partial class ObservableQueryFilterSource
         : MarkdownContext<object>
         , IObservableQueryFilterSource<object>
         , IList
         , IList<object>
     {
+        [Canonical("Parameterless CTor is the only CTor.")]
+        public ObservableQueryFilterSource() { }
+
         public object this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public string Placeholder => throw new NotImplementedException();
@@ -33,7 +40,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public object SyncRoot => throw new NotImplementedException();
 
         public event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
+        public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
         public int Add(object value)
         {
