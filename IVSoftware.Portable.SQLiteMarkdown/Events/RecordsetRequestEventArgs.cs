@@ -11,15 +11,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Events
             SQL = sql;
         }
         public string SQL { get;  }
-
-        /// <summary>
-        /// Optional recordset supplied by the handler for this request.
-        /// </summary>
-        /// <remarks>
-        /// Null indicates no recordset was provided. 
-        /// An empty collection indicates a successful query with no results.
-        /// </remarks>
-        [Careful("Null is not the same as Empty.")]
-        public IList? CanonicalSuperset { get; internal set; }
+        public ICollection? Items { get; set; } = null;
     }
 }

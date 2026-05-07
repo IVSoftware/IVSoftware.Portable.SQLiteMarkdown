@@ -3241,7 +3241,7 @@ NetProjection.Add     NewItems=12 NewStartingIndex= 0 NotifyCollectionChangedEve
                 { }
                 // [Careful("What?")] No 'preview' attribute? THAT'S BECAUSE THIS IS SelectableQFModel and *not* IAffinityModel.
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:12 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 match:0 qmatch:0 pmatch:0 live:0]"">
   <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""1"" />
   <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" />

@@ -1,5 +1,6 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Collections;
+﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
 using System;
@@ -212,7 +213,7 @@ Rationale     : The contract database must be held stable for this inheritance t
             set => Interval = value;
         }
 
-        [Obsolete("Backward compatibility only.")]
+        [PublishedContract("1.x")]
         public virtual bool RouteToFullRecordset => false;
 
         protected sealed class SQLiteConnectionMapper

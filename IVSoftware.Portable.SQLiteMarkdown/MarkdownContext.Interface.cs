@@ -182,10 +182,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
-                var e = new RecordsetRequestEventArgs(sql: ParseSqlMarkdown());
                 using (BeginBusy())
                 {
-                    OnCommit(e);
+                    OnCommit(new RecordsetRequestEventArgs(sql: ParseSqlMarkdown()));
                 }
             }
         }

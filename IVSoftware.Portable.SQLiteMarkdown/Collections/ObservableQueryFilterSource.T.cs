@@ -1,18 +1,15 @@
 ﻿using IVSoftware.Portable.Collections;
-using IVSoftware.Portable.Collections.Events;
-using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
-using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Runtime;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
 using PublishedContractAttribute = IVSoftware.Portable.Common.Attributes.PublishedContractAttribute;
 
@@ -30,7 +27,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     /// Filtering is driven by attribute-decorated model properties and is internally debounced, 
     /// tracked, and stateful, exposing both query and filter readiness for external observation.
     /// </summary>
-    [PublishedContract("1.0.0")]
+    [PublishedContract("1.x")]
     [DebuggerDisplay("Count={Count}")]
     public partial class ObservableQueryFilterSource<T>
         : MarkdownContext<T>
@@ -40,9 +37,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         where T : new()
     {
         [Canonical("The parameterless CTor is the only CTor")]
-        public ObservableQueryFilterSource() 
+        public ObservableQueryFilterSource() { }
+
+        protected override void OnCommit(RecordsetRequestEventArgs e)
         {
-            CanonicalSupersetProtected = new();
+            base.OnCommit(e);
+            if (e.Handled)
+            {
+                Debug.Fail($@"ADVISORY - First Time.");
+                if (e.Items is null)
+                {
+                    Clear();
+                }
+                else
+                {
+                    ReplaceItems(e.Items.OfType<T>());
+                }
+            }
+            else
+            {
+                ReplaceItems(MemoryDatabase.Query<T>(e.SQL));
+            }
         }
     }
 
@@ -103,7 +118,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             this.RethrowFramework(new NotSupportedException());
         }
 
-        [Obsolete("Retained for backward compatibility")]
+        [PublishedContract("1.x")]
         public override bool RouteToFullRecordset
         {
             get
@@ -145,11 +160,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         [Obsolete("Backward compatibility only.")]
         public new string Query => base.Query;
-
-        /// <summary>
-        /// Not on interface.
-        /// </summary>
-        public NetProjectionTopology ProjectionTopology { get; }
 
         public override string ToString(Enum formatting)
         {

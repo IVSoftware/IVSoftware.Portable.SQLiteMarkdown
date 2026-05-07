@@ -1012,7 +1012,8 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 5, CC: 5, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]";
+[IME Len: 0, IsFiltering: False], [Net: null, CC: 5, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),

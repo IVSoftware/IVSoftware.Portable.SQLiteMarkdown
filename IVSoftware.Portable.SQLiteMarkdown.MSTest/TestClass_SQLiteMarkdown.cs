@@ -1,6 +1,7 @@
 using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
@@ -807,17 +808,16 @@ InputText"
 #endif
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public async Task Test_QueryOnlyFSMs()
         {
-#if false
             string actual, expected;
                 
             const int COUNT = 2;
             var extQueryHandle = default(List<SelectableQFModel>);
 
-            var mmdc = new MarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
-            actual = mmdc.StateReport();
+            var oqfs = new ObservableQueryFilterSource<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -825,8 +825,8 @@ InputText"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-            mmdc.InputText = "a";
-            actual = mmdc.StateReport();
+            oqfs.InputText = "a";
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -835,18 +835,18 @@ InputText"
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
             // Backspace
-            mmdc.InputText = string.Empty;
-            actual = mmdc.StateReport();
+            oqfs.InputText = string.Empty;
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
 [IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
-            Assert.AreEqual(SearchEntryState.Cleared, mmdc.SearchEntryState);
+            Assert.AreEqual(SearchEntryState.Cleared, oqfs.SearchEntryState);
 
-            mmdc.InputText = "a";
-            actual = mmdc.StateReport();
+            oqfs.InputText = "a";
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -854,8 +854,8 @@ InputText"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-            mmdc.InputText = "an";
-            actual = mmdc.StateReport();
+            oqfs.InputText = "an";
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -863,8 +863,8 @@ InputText"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-            mmdc.InputText = "ani";
-            actual = mmdc.StateReport();
+            oqfs.InputText = "ani";
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -874,14 +874,17 @@ InputText"
 
             // Commit and load the new recordset.
             // [Remember] IsFilter is DISABLED.
-            mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
-            actual = mmdc.StateReport();
+            oqfs.ReplaceItems(extQueryHandle.PopulateForDemo(COUNT));
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
+            expected = @" 
+[IME Len: 3, IsFiltering: False], [Net: null, CC: 2, PMC: 0], [Query: SearchEntryState.QueryEN, FilteringState.Ineligible]"
+            ;
+
             // [Remember]
             // The *absence* of any ismatch attributes makes
             // each and every node a perceived match.
-
             expected = @" 
 [IME Len: 3, IsFiltering: False], [Net: null, CC: 2, PMC: 0], [Query: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
             ;
@@ -889,8 +892,8 @@ InputText"
 
             // Clear the IME, *not* the recordset.
             // [Remember] Clear on MMDC resolves to Clear(bool).
-            mmdc.Clear();
-            actual = mmdc.StateReport();
+            oqfs.Clear();
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -898,19 +901,18 @@ InputText"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-            Assert.IsTrue(mmdc.RouteToFullRecordset, "ROUTE TO CANONICAL");
+            Assert.IsTrue(oqfs.RouteToFullRecordset, "ROUTE TO CANONICAL");
 
             // Empty IME + Regressive Clear = TerminalClear.
             // [Remember] Clear on MMDC resolves to Clear(bool).
-            mmdc.Clear();
-            actual = mmdc.StateReport();
+            oqfs.Clear();
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
 [IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
-#endif
         }
 
         /// <summary>
@@ -931,13 +933,7 @@ InputText"
 
             var extQueryHandle = default(List<SelectableQFModel>).PopulateForDemo(2);
 
-            MarkdownContext<SelectableQFModel> mdc;
-            var omc = new ObservableModeledCollection<SelectableQFModel> 
-            { 
-                ModelTracking = ModelTrackingFlag.ItemQueries 
-            };
-            Assert.IsNotNull(mdc = omc.Model.To<MarkdownContext<SelectableQFModel>>());
-
+            ObservableQueryFilterSource<SelectableQFModel> oqfs;
             subtest_ConfigureThenLoad();
 
             subtest_LoadThenConfigure();
@@ -945,8 +941,9 @@ InputText"
             #region S U B T E S T S
             void subtest_ConfigureThenLoad()
             {
-                mdc = new() { QueryFilterConfig = QueryFilterConfig.Filter };
-                actual = omc.StateReport();
+                oqfs = new() { QueryFilterConfig = QueryFilterConfig.Filter };
+
+                actual = oqfs.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -962,8 +959,8 @@ InputText"
 
             void subtest_LoadThenConfigure()
             {
-                mdc = new();
-                actual = omc.StateReport();
+                oqfs = new();
+                actual = oqfs.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -976,8 +973,8 @@ InputText"
                     "Expecting QUERY AND FILTER."
                 );
 
-                mdc.QueryFilterConfig = QueryFilterConfig.Filter;
-                actual = omc.StateReport();
+                oqfs.QueryFilterConfig = QueryFilterConfig.Filter;
+                actual = oqfs.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 

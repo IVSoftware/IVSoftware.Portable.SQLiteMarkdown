@@ -1,8 +1,10 @@
 ﻿using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Collections.Events;
 using IVSoftware.Portable.Collections.Internal;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
@@ -97,38 +99,34 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         IReadOnlyCollection<T>? _canonicalSuperset = null;
 
+        /// <summary>
+        /// Fo
+        /// </summary>
+        [Probationary("When ObservablePreviewRangeCollection<T> becomes a public type, we will upgrade.")]
         public ObservableModeledCollection<T> CanonicalSupersetProtected
         {
-            get => _canonicalSupersetProtected;
-            set
+            get
             {
-                if (value is null)
+                if (_canonicalSupersetProtected is null)
                 {
-                    this.ThrowHard<InvalidOperationException>(
-                        $"{nameof(CanonicalSupersetProtected)} cannot be null. This path is intended for interface upgrades.");
+                    _canonicalSupersetProtected = new ObservablePreviewRangeCollection<T>();
+
+                    Model.Attribute(StdModelAttribute.mdc)?.Remove();
+                    _ = 
+                    Model
+                    .WithBoundAttributeValue(this, nameof(StdModelAttribute.mdc), "[MDC]")
+                    .WithAttributesInOrder<StdModelAttribute>(
+                        reqSMA: (authority) => CanonicalSupersetProtected.RequestAuthority(authority));
+
+                    _canonicalSupersetProtected?.CollectionChanged += CollectionChangedEventForwarder;
+                    _canonicalSupersetProtected?.PropertyChanged += PropertyChangedEventForwarder;
+                    OnPropertyChanged();
                 }
-                else if (!ReferenceEquals(value, _canonicalSupersetProtected))
-                {
-                    if (!Equals(_canonicalSupersetProtected, value))
-                    {
-                        _canonicalSupersetProtected?.CollectionChanged -= CollectionChangedEventForwarder;
-                        _canonicalSupersetProtected?.PropertyChanged -= PropertyChangedEventForwarder;
-                        _canonicalSupersetProtected = value;
-                        localInitModel();
-                        OnPropertyChanged();
-                    }
-                    void localInitModel()
-                    {
-                        Model.Attribute(StdModelAttribute.mdc)?.Remove();
-                        Model.SetBoundAttributeValue(this, nameof(StdModelAttribute.mdc), "[MDC]");
-                        Model.WithAttributesInOrder<StdModelAttribute>(
-                            reqSMA: (authority) => CanonicalSupersetProtected.RequestAuthority(authority));
-                        _canonicalSupersetProtected?.CollectionChanged += CollectionChangedEventForwarder;
-                        _canonicalSupersetProtected?.PropertyChanged += PropertyChangedEventForwarder;
-                    }
-                }
+                return _canonicalSupersetProtected!;
             }
         }
+
+        ObservableModeledCollection<T> _canonicalSupersetProtected = null;
 
         private void CollectionChangedEventForwarder(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -139,8 +137,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 OnCollectionChanged(e);
             }
         }
-
-        ObservableModeledCollection<T> _canonicalSupersetProtected = default;
 
         /// <summary>
         /// FORWARDER FOR:
