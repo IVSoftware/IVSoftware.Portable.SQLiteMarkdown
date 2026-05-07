@@ -897,14 +897,14 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
         string actual, expected;
         using var te = this.TestableEpoch();
         var builder = new List<string>();
-        ObservableCollectionWithInternalMMDC onp = new ();
+        ObservableModeledCollection<SelectableQFModel> opc = new ();
 
         #region E V E N T S
         // Differentiate between the itemsSource being driven by
         // the simView and the simView being driven by itemsSource.
-        onp.CollectionChanged += (sender, e) =>
+        opc.CollectionChanged += (sender, e) =>
         {
-            builder.Add(e.ToString(ReferenceEquals(sender, onp)));
+            builder.Add(e.ToString(ReferenceEquals(sender, opc)));
         };
         #endregion E V E N T S
 
@@ -914,9 +914,9 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
         #region S U B T E S T S
         void subtest_PopulateWithDiscreteEvents()
         {
-            onp.PopulateForDemo(5);
+            opc.PopulateForDemo(5);
 
-            actual = onp.Model.ToString();
+            actual = opc.Model.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -961,7 +961,7 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEve
                 "Expecting model has emitted discrete events."
             );
 
-            actual = onp.ToString(FormattingOMC.StateReport);
+            actual = opc.ToString(FormattingOMC.StateReport);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -979,9 +979,9 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEve
             te.ResetEpoch();
             builder.Clear();
 
-            onp.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
+            opc.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
 
-            actual = onp.Model.ToString();
+            actual = opc.Model.ToString();
             actual.ToClipboardExpected();
             { }
 
@@ -1013,7 +1013,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
                 "Expecting model has emitted discrete events."
             );
 
-            actual = onp.ToString(FormattingOMC.StateReport);
+            actual = opc.ToString(FormattingOMC.StateReport);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -1027,36 +1027,4 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
         }
         #endregion S U B T E S T S
     }
-
-    #region L o c a l C l a s s e s
-    private class ObservableCollectionWithInternalMMDC : ObservableRangeCollection<SelectableQFModel>
-    {
-        public ObservableCollectionWithInternalMMDC()
-        {
-            MMDC = new();
-            MMDC.SetObservableNetProjection(this);
-        }
-        private MMDC MMDC { get; }
-    }
-
-    /// <summary>
-    /// Exposes FilteringState as public for test.
-    /// </summary>
-    private class MMDC : MarkdownContext<SelectableQFModel>
-    {
-        public new FilteringState FilteringState
-        {
-            get => FilteringState;
-            set
-            {
-                FilteringState = value;
-            }
-        }
-
-        internal void SetObservableNetProjection(ObservableCollectionWithInternalMMDC observableCollectionWithInternalMMDC)
-        {
-            throw new NotImplementedException();
-        }
-    }
-    #endregion L o c a l C l a s s e s
 }
