@@ -3142,7 +3142,8 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
 
             var items = new ObservableQueryFilterSource<SelectableQFModel>
             {
-                MemoryDatabase = InitializeInMemoryDatabase()
+                ModelTracking = ModelTrackingFlag.ItemQueries,
+                MemoryDatabase = InitializeInMemoryDatabase(),
             };
             NavSearchBar nsb = new NavSearchBar
             {

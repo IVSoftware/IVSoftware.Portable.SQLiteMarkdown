@@ -1991,9 +1991,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         SearchEntryState _searchEntryState = default;
 
-        /// <summary>
-        /// Override for full control of criteria for advance to Armed, e.g., recordset length.
-        /// </summary>
         protected virtual void OnSearchEntryStateChanged()
         {
             switch (QueryFilterConfig)
@@ -2005,7 +2002,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     FilteringState = FilteringState.Armed;
                     break;
                 case QueryFilterConfig.QueryAndFilter:
-                    if(SearchEntryState == SearchEntryState.QueryCompleteWithResults)
+                    bool arm = SearchEntryState == SearchEntryState.QueryCompleteWithResults;
+                    if(this is IModeledCollection mc)
+                    {
+
+                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 5, 7).Date, "Don't forget disabled");
+                    }
+                    if(arm)
                     {
                         FilteringState = FilteringState.Armed;
                     }
@@ -2050,7 +2053,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         public event EventHandler? InputTextSettled;
-        protected virtual async Task ApplyFilter() { }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected virtual async Task ApplyFilter()
+        {
+            var sql = ParseSqlMarkdown();
+            var qmatches = FilterQueryDatabase.Query(ProxyTypeTableMapping, sql);
+            { }
+        }
 
         /// <summary>
         /// Apply priorities where temporality may be involved.

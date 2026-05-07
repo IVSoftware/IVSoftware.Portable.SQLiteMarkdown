@@ -61,31 +61,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
             }
         }
-
-        /// <summary>
-        /// Override for full control of criteria for 
-        /// advance to Armed, e.g., recordset length.
-        /// </summary>
-        protected override void OnSearchEntryStateChanged()
-        {
-            switch (QueryFilterConfig)
-            {
-                case QueryFilterConfig.QueryAndFilter:
-                    if (SearchEntryState == SearchEntryState.QueryCompleteWithResults
-                        && CanonicalSuperset.Count > 2)
-                    {
-                        FilteringState = FilteringState.Armed;
-                    }
-                    else
-                    {
-                        FilteringState = FilteringState.Ineligible;
-                    }
-                    break;
-                default:
-                    base.OnSearchEntryStateChanged();
-                    break;
-            }
-        }
     }
 
     /// <summary>
