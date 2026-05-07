@@ -2002,12 +2002,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     FilteringState = FilteringState.Armed;
                     break;
                 case QueryFilterConfig.QueryAndFilter:
-                    bool arm = SearchEntryState == SearchEntryState.QueryCompleteWithResults;
-                    if(this is IModeledCollection mc)
-                    {
-
-                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 5, 7).Date, "Don't forget disabled");
-                    }
+                    bool arm =
+                        this is IModeledCollection mc
+                        ? SearchEntryState == SearchEntryState.QueryCompleteWithResults
+                          && mc.Count > 1
+                        : SearchEntryState == SearchEntryState.QueryCompleteWithResults;
                     if(arm)
                     {
                         FilteringState = FilteringState.Armed;
@@ -2054,14 +2053,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         public event EventHandler? InputTextSettled;
 
-        /// <summary>
-        /// 
-        /// </summary>
         protected virtual async Task ApplyFilter()
         {
             var sql = ParseSqlMarkdown();
-            var qmatches = FilterQueryDatabase.Query(ProxyTypeTableMapping, sql);
+            var qmatches = FilterQueryDatabase.Query(ContractTableMapping, sql);
             { }
+
+            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 5, 7).Date, "Don't forget disabled");
         }
 
         /// <summary>

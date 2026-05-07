@@ -50,11 +50,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 else if (!Equals(_contractType, value))
                 {
                     _contractType = value;
+                    ContractTableMapping = ContractType.GetSQLiteMapping();
                     OnPropertyChanged();
                 }
             }
         }
         Type _contractType = null!;
+
+        public TableMapping ContractTableMapping { get; private set; }
+
+
 
         /// <summary>
         /// The type whose attributes define the parsing behavior.
