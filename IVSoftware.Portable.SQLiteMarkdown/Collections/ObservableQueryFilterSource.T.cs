@@ -122,6 +122,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             this.RethrowFramework(new NotSupportedException());
         }
 
+        /// <summary>
+        /// True when InputText is empty regardless of IsFiltering.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model:
+        /// "If the input text is empty, just swap the handle instead of recalculating."
+        /// Functional Behavior:
+        /// - External predicate filters must still run even if IME doesn't contribute.
+        /// - This is the purview of the subclass. Override for full control.
+        /// </remarks>
         [PublishedContract("1.x")]
         public override bool RouteToFullRecordset
         {
