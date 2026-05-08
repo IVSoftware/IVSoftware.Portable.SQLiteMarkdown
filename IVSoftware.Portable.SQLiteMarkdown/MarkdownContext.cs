@@ -3,13 +3,10 @@ using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
-using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
-using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;
 using SQLite;
 using System;
@@ -55,6 +52,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 XElement(nameof(StdAstNode.ast))
                 .WithBoundAttributeValue(this);
             ContractType = type;
+            ContractTableMapping = ContractType.GetSQLiteMapping();
         }
 
         public MarkdownContextSettings Settings { get; } = new()
@@ -2072,11 +2070,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             using (DHostBusy.GetToken())
             {
-#if false
-                await _sslimAF.WaitAsync();
-                await base.ApplyFilter();
                 try
                 {
+#if false
                     using (RequestModelEpochAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
                     {
                         string sql;
@@ -2167,6 +2163,7 @@ SELECT * FROM items WHERE
                         }
                         #endregion L o c a l F x
                     }
+#endif
                 }
                 catch (Exception ex)
                 {
@@ -2176,7 +2173,6 @@ SELECT * FROM items WHERE
                 {
                     _sslimAF.Release();
                 }
-#endif
             }
         }
         SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);

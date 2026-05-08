@@ -34,10 +34,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         , IObservableQueryFilterSource<T>
         , IList
         , IList<T>
+        , IModelAuthorityContext
         where T : new()
     {
         [Canonical("The parameterless CTor is the only CTor")]
         public ObservableQueryFilterSource() { }
+
+        public RequestStdModelAuthorityDlgt RequestStdModelAuthority => (authority) => CanonicalSupersetProtected.RequestAuthority(authority);
 
         protected override void OnCommit(RecordsetRequestEventArgs e)
         {

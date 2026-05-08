@@ -38,28 +38,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// The canonical contract type that defines the authoritative table shape for this context.
         /// </summary>
-        public Type ContractType
-        {
-            get => _contractType;
-            set
-            {
-                if (value is null)
-                {
-                    this.ThrowHard<NullReferenceException>(("Contract type cannot be null."));
-                }
-                else if (!Equals(_contractType, value))
-                {
-                    _contractType = value;
-                    ContractTableMapping = ContractType.GetSQLiteMapping();
-                    OnPropertyChanged();
-                }
-            }
-        }
-        Type _contractType = null!;
+        public Type ContractType { get; }
 
-        public TableMapping ContractTableMapping { get; private set; }
-
-
+        public TableMapping ContractTableMapping { get; }
 
         /// <summary>
         /// The type whose attributes define the parsing behavior.
