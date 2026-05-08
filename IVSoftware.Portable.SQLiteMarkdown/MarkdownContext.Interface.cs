@@ -12,6 +12,10 @@ using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using ItemPropertyChangedEventArgs = IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs;
 using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using IVSoftware.Portable.Xml.Linq;
+using System.Collections.Generic;
+using System.Collections;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -120,6 +124,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             get
             {
+                if (ModelAuthorityContext?.Model.To<IReadOnlyDictionary<StdModelAttribute, int>>() is { } histo)
+                {
+                    return histo[StdModelAttribute.model];
+                }
                 // Do not call this base class method.
                 this.ThrowHard<ModelException>($"{nameof(CanonicalCount)} requires override in derived type.");
                 // Reachable only if Throw is handled.
@@ -127,10 +135,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
+        /// <summary>
+        /// Returns count in the broad sense of qmatch & pmatch.
+        /// </summary>
         public virtual int PredicateMatchCount
         {
             get
             {
+                if (ModelAuthorityContext?.Model.To<IReadOnlyDictionary<StdModelAttribute, int>>() is { } histo)
+                {
+                    return histo[StdModelAttribute.match];
+                }
                 // Do not call this base class method.
                 this.ThrowHard<ModelException>($"{nameof(PredicateMatchCount)} requires override in derived type.");
                 // Reachable only if Throw is handled.

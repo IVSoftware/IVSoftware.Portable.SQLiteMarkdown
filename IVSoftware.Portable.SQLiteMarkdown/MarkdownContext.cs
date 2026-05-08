@@ -7,6 +7,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;
 using SQLite;
 using System;
@@ -54,6 +55,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             ContractType = type;
             ContractTableMapping = ContractType.GetSQLiteMapping();
         }
+
+        [PublishedContract("2.x")]
+        public IModelAuthorityContext? ModelAuthorityContext
+        {
+            get => _modelAuthorityContext ?? this as IModelAuthorityContext;
+            set
+            {
+                if (!Equals(_modelAuthorityContext, value))
+                {
+                    _modelAuthorityContext = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        IModelAuthorityContext? _modelAuthorityContext = default;
 
         public MarkdownContextSettings Settings { get; } = new()
         {
@@ -2052,41 +2068,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         public event EventHandler? InputTextSettled;
 
-        protected virtual async Task ApplyFilterZ()
-        {
-            var sql = ParseSqlMarkdown();
-            var qmatches = FilterQueryDatabase.Query(ContractTableMapping, sql);
-            { }
-            if(this is IModeledCollection mc)
-            {
-
-            }
-
-            Debug.Assert(DateTime.Now.Date == new DateTime(2026, 5, 7).Date, "Don't forget disabled");
-        }
-
         // REF: 260409.B-remove-mdc-model-sematics
         protected virtual async Task ApplyFilter()
         {
-            using (DHostBusy.GetToken())
+            if (ModelAuthorityContext is { } mac)
             {
+                await _sslimAF.WaitAsync();
                 try
                 {
-#if false
-                    using (RequestModelEpochAuthority(ModelDataExchangeAuthority.ModelDeferred, Read))
+                    using (DHostBusy.GetToken())
                     {
                         string sql;
                         IList matches = Array.Empty<object>();
-                        string[] matchPaths;
+                        string[] matchPaths = [];
 
-                        await Task.Run(async () =>
+                        await Task.Run(() =>
                         {
-                            PredicateMatchSubsetProtected.Clear();
-                            Model.RemoveDescendantAttributes(
+                            // PredicateMatchSubsetProtected.Clear();
+                            mac.Model.RemoveDescendantAttributes(
                                 [
                                     StdModelAttribute.match,
-                                StdModelAttribute.pmatch,
-                                StdModelAttribute.qmatch,
+                                    StdModelAttribute.pmatch,
+                                    StdModelAttribute.qmatch,
                                 ]);
 
                             #region F I L T E R    Q U E R Y
@@ -2115,29 +2118,28 @@ SELECT * FROM items WHERE
                             #endregion F I L T E R    Q U E R Y
 
                             matchPaths = localGetPaths();
-
-                            foreach (var path in matchPaths)
-                            {
-                                switch (Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
-                                {
-                                    case PlacerResult.Exists:
-                                        // IFTTT - the XObject.Change will add this to PMSS.
-                                        xaf.SetAttributeValue(nameof(StdModelAttribute.qmatch), bool.TrueString);
-                                        break;
-                                    case PlacerResult.Created:
-                                        this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-                            if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
-                            {
-                                await ApplyAffinities(matches);
-                            }
                         });
-                        #region L o c a l F x
 
+                        foreach (var path in matchPaths)
+                        {
+                            switch (mac.Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
+                            {
+                                case PlacerResult.Exists:
+                                    // IFTTT - the XObject.Change will add this to PMSS.
+                                    xaf.SetAttributeValue(nameof(StdModelAttribute.qmatch), bool.TrueString);
+                                    break;
+                                case PlacerResult.Created:
+                                    this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                        {
+                            await ApplyAffinities(matches);
+                        }
+                        #region L o c a l F x
                         /// <summary>
                         /// Resolves the path identifiers for the matched recordset. When the proxy
                         /// implements <c>IPrioritizedAffinity</c>, paths are taken directly from
@@ -2163,7 +2165,6 @@ SELECT * FROM items WHERE
                         }
                         #endregion L o c a l F x
                     }
-#endif
                 }
                 catch (Exception ex)
                 {
@@ -2171,7 +2172,10 @@ SELECT * FROM items WHERE
                 }
                 finally
                 {
-                    _sslimAF.Release();
+                    if (_sslimAF.CurrentCount == 0)
+                    {
+                        _sslimAF.Release();
+                    }
                 }
             }
         }

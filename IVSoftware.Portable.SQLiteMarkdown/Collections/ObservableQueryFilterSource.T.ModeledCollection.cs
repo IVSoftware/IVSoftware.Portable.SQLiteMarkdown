@@ -448,13 +448,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 yield return e.Current!;
             }
         }
-
-        #region L E G A C Y    H O O K S
-        public override int CanonicalCount
-            => GetCount(RoutingOQFS.CanonicalSuperset);
-
-        public override int PredicateMatchCount
-            => GetCount(RoutingOQFS.PredicateMatchSubset);
-        #endregion
     }
 }
