@@ -2120,13 +2120,13 @@ SELECT * FROM items WHERE
                             matchPaths = localGetPaths();
                         });
 
+                        List<XElement> xpreview = new();
                         foreach (var path in matchPaths)
                         {
-                            switch (mac.Model.Place(path, out var xaf, PlacerMode.FindOrPartial))
+                            switch (mac.Model.Place(path, out var xqmatch, PlacerMode.FindOrPartial))
                             {
                                 case PlacerResult.Exists:
-                                    // IFTTT - the XObject.Change will add this to PMSS.
-                                    xaf.SetAttributeValue(nameof(StdModelAttribute.qmatch), bool.TrueString);
+                                    xpreview.Add(xqmatch);
                                     break;
                                 case PlacerResult.Created:
                                     this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
@@ -2135,9 +2135,22 @@ SELECT * FROM items WHERE
                                     break;
                             }
                         }
-                        if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                        if (xpreview.Count == CanonicalCount)
+                        {   /* G T K - N O O P */
+                            // Detected 1:1 so route to canonical.
+                        }
+                        else
                         {
-                            await ApplyAffinities(matches);
+                            foreach (var xqmatch in xpreview)
+                            {
+                                // IFTTT - the XObject.Change will add this to PMSS.
+                                xqmatch.SetAttributeValue(nameof(StdModelAttribute.qmatch), bool.TrueString);
+                            }
+
+                            if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                            {
+                                await ApplyAffinities(matches);
+                            }
                         }
                         #region L o c a l F x
                         /// <summary>

@@ -1,4 +1,5 @@
 using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
@@ -3480,9 +3481,25 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 items.InputText += "c";
                 await items;
 
-                actual = items.Model.ToString();
+                actual = items.Model.CloneWithXBindings(10).ToString();
                 actual.ToClipboardExpected();
                 { }
+                expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 match:9 qmatch:9 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" match=""True"" qmatch=""True"" preview=""Black Cat "" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""1"" match=""True"" qmatch=""True"" preview=""Orange Fox"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" match=""True"" qmatch=""True"" preview=""White Rabb"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""3"" match=""True"" qmatch=""True"" preview=""Gray Wolf "" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""4"" match=""True"" qmatch=""True"" preview=""Golden Lio"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" index=""5"" match=""True"" qmatch=""True"" preview=""Brown Bear"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" index=""6"" match=""True"" qmatch=""True"" preview=""Black Pant"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" index=""7"" preview=""Elephant  "" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" index=""8"" preview=""Giraffe   "" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" index=""9"" match=""True"" qmatch=""True"" preview=""Kangaroo  "" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" index=""10"" preview=""Turtle    "" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" index=""11"" match=""True"" qmatch=""True"" preview=""Should NOT"" />
+</model>"
+                ;
                 expected = @" 
 <model mdc=""[MDC]"" histo=""[model:12 match:9 qmatch:9 pmatch:0 live:0]"" filters=""[No Active Filters]"">
   <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" qmatch=""True"" match=""True"" />
