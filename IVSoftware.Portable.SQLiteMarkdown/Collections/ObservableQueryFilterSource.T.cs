@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
@@ -179,6 +180,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public new string Query => base.Query;
 
         public override string ToString(Enum formatting)
+            => ToString(formatting, []);
+        public virtual string ToString(Enum formatting, object[] args)
         {
             switch (formatting)
             {
@@ -186,6 +189,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     return this.StateReport();
                 case FormattingEHM.Matches:
                     return CanonicalSupersetProtected.ToString(FormattingEHM.Matches);
+                case FormattingOMC.ModelWithPreview:
+                    if (args.FirstOrDefault() is int previewLength)
+                    {
+                        return Model.CloneWithXBindings(previewLength).ToString();
+                    }
+                    else
+                    {
+                        return Model.CloneWithXBindings(previewLength: 10).ToString();
+                    }
                 default:
                     return base.ToString();
             }

@@ -2087,7 +2087,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             // PredicateMatchSubsetProtected.Clear();
                             mac.Model.RemoveDescendantAttributes(
                                 [
-                                    StdModelAttribute.match,
                                     StdModelAttribute.pmatch,
                                     StdModelAttribute.qmatch,
                                 ]);

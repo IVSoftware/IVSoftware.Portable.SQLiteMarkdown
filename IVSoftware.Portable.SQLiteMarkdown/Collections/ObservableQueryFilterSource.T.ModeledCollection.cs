@@ -32,9 +32,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             set => ((IModeledCollection)CanonicalSupersetProtected).ModelTracking = value;
         }
 
-        public IList? ObservableNetProjection => 
-            ((IModeledCollection)CanonicalSupersetProtected).ObservableNetProjection;
-
         public ModelDataExchangeAuthority ModelDataExchangeAuthority => 
             ((IModeledCollection)CanonicalSupersetProtected).ModelDataExchangeAuthority;
 
@@ -51,9 +48,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             return ((IModeledCollection)CanonicalSupersetProtected).HasAuthority(authority);
         }
-
-        public void SetObservableNetProjection(INotifyPreviewCollection? onp, NetProjectionTopology? topology = null) =>
-            ((IModeledCollection)CanonicalSupersetProtected).SetObservableNetProjection(onp, topology);
     }
 
     /// <summary>
@@ -397,8 +391,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     /// 4 of 4 interfaces in this file.
     /// </summary>
     partial class ObservableQueryFilterSource<T>
-    : IRoutedEnumerable<T, RoutingOQFS>
+    : IRoutedEnumerable
     {
+        public IDictionary<Enum, Func<IEnumerable>> Routes => ((IRoutedEnumerable)CanonicalSupersetProtected).Routes;
+
+        public Enum? RouteKey 
+        { 
+            get => ((IRoutedEnumerable)CanonicalSupersetProtected).RouteKey; 
+            set => ((IRoutedEnumerable)CanonicalSupersetProtected).RouteKey = value;
+        }
+
         public int GetCount(RoutingOQFS route)
         {
             var e = GetEnumerator(route);

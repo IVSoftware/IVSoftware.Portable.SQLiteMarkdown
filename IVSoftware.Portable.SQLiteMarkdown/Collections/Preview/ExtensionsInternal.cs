@@ -243,7 +243,7 @@ namespace IVSoftware.Portable.Collections
         /// - Optionally applies preview via resolved delegate.
         /// - Throws if path or placement result is invalid.
         /// </remarks>
-        public static string ToString(this IList @this, out XElement model)
+        public static string ToString(this IList @this, out XElement model, int previewLength = 10)
         {
             var itemType = @this.GetItemType();
             var previewDlgt = itemType?.GetDescriptionPreviewDlgt();
@@ -278,7 +278,7 @@ namespace IVSoftware.Portable.Collections
                                 tag: item,
                                 name: nameof(StdModelAttribute.model));
                             xel.SetAttributeValue(nameof(StdModelAttribute.index), itemCount++);
-                            if (previewDlgt?.Invoke(item) is string preview)
+                            if (previewLength > 0 && previewDlgt?.Invoke(item, previewLength) is string preview)
                             {
                                 xel.InsertPreviewAttributeAfter(StdModelAttribute.model);
                             }

@@ -46,7 +46,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             #region L o c a l F x
             string localReportIMCOnly()
             {
-                if (@this.ObservableNetProjection is IList list)
+                if (@this is IList list)
                 {
                     builder.Add($"[Net: {list.Count}");
                 }
@@ -60,7 +60,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             {
                 builder.Add($"[IME Len: {mdc.InputText.Length}");
                 builder.Add($"IsFiltering: {mdc.IsFiltering}]");
-                if (@this.ObservableNetProjection is IList list)
+                if (@this is IList list)
                 {
                     builder.Add($"[Net: {list.Count}");
                 }

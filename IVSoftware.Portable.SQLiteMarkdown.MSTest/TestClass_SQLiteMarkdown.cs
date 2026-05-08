@@ -408,7 +408,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting MDC Defaults.");
 
@@ -434,7 +434,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteNoResults, FilteringState.Ineligible]";
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteNoResults, FilteringState.Ineligible]";
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -479,7 +479,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 1, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 1, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
                 ;
 
                 Assert.AreEqual(
@@ -557,7 +557,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 62, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 62, IsFiltering: True], [Net: 0, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(
                     expected.NormalizeResult(), 
@@ -599,7 +599,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 6, IsFiltering: True], [Net: null, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 6, IsFiltering: True], [Net: 0, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                 ;
 
                 Assert.AreEqual(
@@ -614,7 +614,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
 
                 Assert.AreEqual(
@@ -635,7 +635,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                 Assert.IsTrue(mmdc.CanonicalCount == 2);
@@ -647,7 +647,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
             }
@@ -673,7 +673,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 11, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 11, IsFiltering: True], [Net: 0, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(
                     expected.NormalizeResult(), 
@@ -693,7 +693,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -704,7 +704,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -721,7 +721,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
             }
@@ -735,7 +735,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 11, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryEN, FilteringState.Ineligible]"
+[IME Len: 11, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryEN, FilteringState.Ineligible]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -746,7 +746,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 11, IsFiltering: True], [Net: null, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 11, IsFiltering: True], [Net: 0, CC: 2, PMC: 2], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -773,7 +773,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 6, IsFiltering: True], [Net: null, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 6, IsFiltering: True], [Net: 0, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                 ;
 
                 // #1 [X]
@@ -821,7 +821,7 @@ InputText"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -830,7 +830,7 @@ InputText"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 1, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+[IME Len: 1, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [Query: SearchEntryState.QueryENB, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -840,7 +840,7 @@ InputText"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
             Assert.AreEqual(SearchEntryState.Cleared, oqfs.SearchEntryState);
@@ -850,7 +850,7 @@ InputText"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 1, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+[IME Len: 1, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [Query: SearchEntryState.QueryENB, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -859,7 +859,7 @@ InputText"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 2, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+[IME Len: 2, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [Query: SearchEntryState.QueryENB, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -868,7 +868,7 @@ InputText"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 3, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.QueryEN, FilteringState.Ineligible]"
+[IME Len: 3, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [Query: SearchEntryState.QueryEN, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -879,14 +879,14 @@ InputText"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 3, IsFiltering: False], [Net: null, CC: 2, PMC: 0], [Query: SearchEntryState.QueryEN, FilteringState.Ineligible]"
+[IME Len: 3, IsFiltering: False], [Net: 0, CC: 2, PMC: 0], [Query: SearchEntryState.QueryEN, FilteringState.Ineligible]"
             ;
 
             // [Remember]
             // The *absence* of any ismatch attributes makes
             // each and every node a perceived match.
             expected = @" 
-[IME Len: 3, IsFiltering: False], [Net: null, CC: 2, PMC: 0], [Query: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
+[IME Len: 3, IsFiltering: False], [Net: 0, CC: 2, PMC: 0], [Query: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting Filtering shows DISABLED.");
 
@@ -897,7 +897,7 @@ InputText"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 0], [Query: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 2, PMC: 0], [Query: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -910,7 +910,7 @@ InputText"
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
         }
@@ -947,7 +947,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
                 ;
 
                 Assert.AreEqual(
@@ -964,7 +964,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                 ;
 
                 Assert.AreEqual(
@@ -978,7 +978,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
                 ;
 
                 Assert.AreEqual(
@@ -1869,7 +1869,7 @@ SELECT * FROM items WHERE
 
             actual = omc.StateReport();
             expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -1878,7 +1878,7 @@ SELECT * FROM items WHERE
 
             actual = omc.StateReport();
             expected = @" 
-[IME Len: 1, IsFiltering: True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+[IME Len: 1, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "STILL ARMED due to NO ITEMS IN PROJECTION");
 
@@ -1889,7 +1889,7 @@ SELECT * FROM items WHERE
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
         }

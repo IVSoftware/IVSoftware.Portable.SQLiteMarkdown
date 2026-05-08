@@ -1345,7 +1345,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1384,7 +1384,7 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1448,7 +1448,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1476,7 +1476,7 @@ NetProjection.Reset   ModelSettledEventArgs           "
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1687,7 +1687,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
@@ -1727,7 +1727,7 @@ InputText"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 1, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+[IME Len: 1, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                     }
@@ -1738,7 +1738,7 @@ InputText"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 1, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+[IME Len: 1, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting starting state is ENB.");
 
@@ -1749,7 +1749,7 @@ InputText"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                         eventQueue.Clear();
@@ -1761,7 +1761,7 @@ InputText"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting coming in at Cleared.");
 
@@ -1952,7 +1952,7 @@ Busy"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 6, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 6, IsFiltering: True], [Net: 0, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
                         Assert.AreEqual(
                             expected.NormalizeResult(), 
@@ -1969,7 +1969,7 @@ Busy"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(
                             expected.NormalizeResult(), 
@@ -2010,7 +2010,7 @@ SearchEntryState";
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
                         Assert.AreEqual(
                             expected.NormalizeResult(),
@@ -2141,7 +2141,7 @@ SELECT * FROM items WHERE
                         { }
 
                         expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
 
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
@@ -2169,7 +2169,7 @@ NetProjectionTopology.Routed, ReplaceItemsEventingPolicy.StructuralReplaceEvent"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 1, IsFiltering: True], [Net: null, CC: 12, PMC: 5], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 1, IsFiltering: True], [Net: 0, CC: 12, PMC: 5], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                         ;
                         Assert.AreEqual(
                             expected.NormalizeResult(), 
@@ -3168,10 +3168,6 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
             };
             items.CollectionChanged += (sender, e) =>
             {
-                if (ReferenceEquals(sender, items.ObservableNetProjection))
-                {
-                    Debug.Fail($@"ADVISORY - First Time.");
-                }
                 eventQueue.Enqueue((sender!, e));
                 builder.Add(e.ToString(ReferenceEquals(sender, items)));
 
@@ -3210,9 +3206,8 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
             async Task subtestQueryInitial()
             {
                 actual = items.StateReport();
-                Assert.IsNull(items.ObservableNetProjection);
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting initial StateReport to match.");
 
@@ -3340,7 +3335,7 @@ Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portabl
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 7, IsFiltering: True], [Net: null, CC: 3, PMC: 3], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 7, IsFiltering: True], [Net: 0, CC: 3, PMC: 3], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting State Report to match.");
 
@@ -3417,7 +3412,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]";
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]";
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -3437,7 +3432,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 7, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteNoResults, FilteringState.Ineligible]"
+[IME Len: 7, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteNoResults, FilteringState.Ineligible]"
                 ;
 
                 Assert.AreEqual(
@@ -3453,7 +3448,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 7, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 7, IsFiltering: True], [Net: 0, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
 
                 Assert.AreEqual(
@@ -3469,7 +3464,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 8, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 8, IsFiltering: True], [Net: 0, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                 ;
 
                 Assert.AreEqual(
@@ -3486,34 +3481,18 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 { }
                 expected = @" 
 <model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 match:9 qmatch:9 pmatch:0 live:0]"">
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" match=""True"" qmatch=""True"" preview=""Black Cat "" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""1"" match=""True"" qmatch=""True"" preview=""Orange Fox"" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" match=""True"" qmatch=""True"" preview=""White Rabb"" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""3"" match=""True"" qmatch=""True"" preview=""Gray Wolf "" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""4"" match=""True"" qmatch=""True"" preview=""Golden Lio"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" index=""5"" match=""True"" qmatch=""True"" preview=""Brown Bear"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" index=""6"" match=""True"" qmatch=""True"" preview=""Black Pant"" />
-  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" index=""7"" preview=""Elephant  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" index=""8"" preview=""Giraffe   "" />
-  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" index=""9"" match=""True"" qmatch=""True"" preview=""Kangaroo  "" />
-  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" index=""10"" preview=""Turtle    "" />
-  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" index=""11"" match=""True"" qmatch=""True"" preview=""Should NOT"" />
-</model>"
-                ;
-                expected = @" 
-<model mdc=""[MDC]"" histo=""[model:12 match:9 qmatch:9 pmatch:0 live:0]"" filters=""[No Active Filters]"">
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" qmatch=""True"" match=""True"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""1"" qmatch=""True"" match=""True"" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" qmatch=""True"" match=""True"" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""3"" qmatch=""True"" match=""True"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""4"" qmatch=""True"" match=""True"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" index=""5"" qmatch=""True"" match=""True"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" index=""6"" qmatch=""True"" match=""True"" />
-  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" index=""7"" />
-  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" index=""8"" />
-  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" index=""9"" qmatch=""True"" match=""True"" />
-  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" index=""10"" />
-  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" index=""11"" qmatch=""True"" match=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""1"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""2"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""3"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Golden Lio"" index=""4"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Brown Bear"" index=""5"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" preview=""Black Pant"" index=""6"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" preview=""Elephant  "" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" preview=""Giraffe   "" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" preview=""Kangaroo  "" index=""9"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" preview=""Turtle    "" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" preview=""Should NOT"" index=""11"" match=""True"" qmatch=""True"" />
 </model>"
                 ;
 
@@ -3527,7 +3506,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 9, IsFiltering: True], [Net: null, CC: 12, PMC: 9], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 9, IsFiltering: True], [Net: 0, CC: 12, PMC: 9], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                 ;
 
                 Assert.AreEqual(
@@ -3540,29 +3519,38 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 items.InputText += "a";
                 await items;
 
+                actual = items.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 10, IsFiltering: True], [Net: 0, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+                ;
+
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting result to match."
+                    "Expecting ONE match."
                 );
+                Assert.IsFalse(items.RouteToFullRecordset);
+                Assert.HasCount(1, items, $"This has to do with the enumerator properly switching.");
 
                 actual = items.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" qmatch=""True"" match=""True"" preview=""Black Cat "" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""1"" preview=""Orange Fox"" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" preview=""White Rabb"" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""3"" preview=""Gray Wolf "" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""4"" preview=""Golden Lio"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" index=""5"" preview=""Brown Bear"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" index=""6"" preview=""Black Pant"" />
-  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" index=""7"" preview=""Elephant  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" index=""8"" preview=""Giraffe   "" />
-  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" index=""9"" preview=""Kangaroo  "" />
-  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" index=""10"" preview=""Turtle    "" />
-  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" index=""11"" preview=""Should NOT"" />
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Golden Lio"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Brown Bear"" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" preview=""Black Pant"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" preview=""Elephant  "" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" preview=""Giraffe   "" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" preview=""Kangaroo  "" index=""9"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" preview=""Turtle    "" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" preview=""Should NOT"" index=""11"" />
 </model>"
                 ;
 
@@ -3576,8 +3564,6 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 // Extension : Model the Model (with active filter) from the OUTSIDE LOOKING IN.
                 // ☆☆☆☆☆
                 actual = items.ToString(out XElement _);
-                actual.ToClipboardExpected();
-                { }
                 expected = @" 
 <model mpath=""Id"">
   <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" preview=""Black Cat "" />
@@ -3593,7 +3579,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 9, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 9, IsFiltering: True], [Net: 0, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                 ;
 
                 Assert.IsFalse(items.RouteToFullRecordset);
@@ -3654,7 +3640,7 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -3717,7 +3703,7 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 10, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 10, IsFiltering: True], [Net: 0, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                 ;
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -3741,7 +3727,7 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -3775,7 +3761,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(
                     expected.NormalizeResult(),
