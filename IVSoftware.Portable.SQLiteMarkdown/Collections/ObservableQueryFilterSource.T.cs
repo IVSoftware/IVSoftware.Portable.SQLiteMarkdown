@@ -68,7 +68,70 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         protected override void OnFilteringStateChanged()
         {
             base.OnFilteringStateChanged();
+            if(Histo is null)
+            {
+                PredicateFilteringState = PredicateFilteringState.NotAvailable;
+            }
+            else
+            {
+                if (Histo[StdModelAttribute.model] == 0)
+                {
+                    PredicateFilteringState = PredicateFilteringState.Empty;
+                }
+                else
+                {
+                    if(Histo[StdModelAttribute.qmatch] != 0 ^ Histo[StdModelAttribute.pmatch] != 0)
+                    {
+                        PredicateFilteringState =
+                            Histo[StdModelAttribute.qmatch] != 0
+                            ? PredicateFilteringState.QMatch
+                            : PredicateFilteringState.PMatch;
+                    }
+                    else
+                    {
+                        if (Histo[StdModelAttribute.qmatch] == 0)
+                        {
+                            // Then they both are
+                        }
+                        else
+                        {
+
+                        }
+                    }
+                }
+            }
         }
+        protected ObservableCollection<object> ActiveFilters
+        {
+            get
+            {
+                if (_activeFilters is null)
+                {
+                    _activeFilters = new ObservableCollection<object>();
+                }
+                return _activeFilters;
+            }
+        }
+        ObservableCollection<object>? _activeFilters = null;
+
+        public PredicateFilteringState PredicateFilteringState
+        {
+            get
+            {
+                return ActiveFilters.Count == 0
+                    ? _predicateFilteringState
+                    : _predicateFilteringState | PredicateFilteringState.ActiveFilter;
+            }
+            set
+            {
+                if (!Equals(_predicateFilteringState, value))
+                {
+                    _predicateFilteringState = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        PredicateFilteringState _predicateFilteringState = PredicateFilteringState.NotAvailable;
     }
 
     /// <summary>

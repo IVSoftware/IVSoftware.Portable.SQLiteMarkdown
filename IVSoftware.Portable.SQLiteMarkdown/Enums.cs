@@ -127,6 +127,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         NotAvailable = int.MinValue,
 
         /// <summary>
+        /// StdModelAttribute.model count is 0
+        /// </summary>
+        Empty = 0x0,
+
+        /// <summary>
         /// StdModelAttribute.model count is non-0
         /// </summary>
         Model = 0x1,
