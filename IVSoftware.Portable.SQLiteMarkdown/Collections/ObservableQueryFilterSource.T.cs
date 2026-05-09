@@ -66,13 +66,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        [Probationary("This override is NOOP - already baked.")]
+        /// <summary>
+        /// Redirect BC to CSS
+        /// </summary>
         protected override void OnRouteKeyChanged()
         {
             base.OnRouteKeyChanged();
-
-            // Raise reset - UI will track the new routing key.
-            // OnCollectionChanged(new NotifyQueryFilterCollectionChangedEventArgs(NotifyCollectionChangeAction.Reset));
+            CanonicalSupersetProtected.RouteKey = base.RouteKey;
         }
     }
 

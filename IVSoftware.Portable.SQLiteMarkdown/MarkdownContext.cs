@@ -1761,7 +1761,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        [Probationary]
+        [Probationary("Z")]
         private async void Z()
         {
             if (Histo is null)

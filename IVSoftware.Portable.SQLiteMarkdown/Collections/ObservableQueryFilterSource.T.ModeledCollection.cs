@@ -415,54 +415,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        public int GetCount(RoutingOQFS route)
-        {
-            var e = GetEnumerator(route);
+        public int GetCount(Enum? route)
+            => CanonicalSupersetProtected.GetCount(route);
 
-            int count = 0;
-            while (e.MoveNext())
-            {
-                count++;
-            }
-            return count;
-        }
-
-        public int GetCount(Enum route)
-            => GetCount((RoutingOQFS)route);
-
-        public IEnumerator<T> GetEnumerator(RoutingOQFS route)
-        {
-            switch (route)
-            {
-                case RoutingOQFS.CanonicalSuperset:
-                    // TODO: Routing
-                    return ((IEnumerable<T>)this).GetEnumerator();
-
-                case RoutingOQFS.PredicateMatchSubset:
-                    return  
-                        Model
-                        .Descendants()
-                        .Where(_ => 
-                            bool.TryParse(_.Attribute(StdModelAttribute.match)?.Value, out var @bool) && @bool)
-                        .Select(_=>_.To<T>())
-                        .Where(_=>_ is not null)
-                        .GetEnumerator();
-
-                default:
-                    this.ThrowFramework<NotSupportedException>(
-                        $"The {route.ToFullKey()} case is not supported.");
-                    return ((IEnumerable<T>)this).GetEnumerator();
-            }
-        }
-
-        public IEnumerator GetEnumerator(Enum route)
-        {
-            var e = GetEnumerator((RoutingOQFS)route);
-
-            while (e.MoveNext())
-            {
-                yield return e.Current!;
-            }
-        }
+        public IEnumerator<T> GetEnumerator(Enum? route)
+            => (IEnumerator<T>)CanonicalSupersetProtected.GetEnumerator(route);
     }
 }
