@@ -66,52 +66,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        protected override void OnFilteringStateChanged()
+        [Probationary("This override is NOOP - already baked.")]
+        protected override void OnRouteKeyChanged()
         {
-            base.OnFilteringStateChanged();
-            if( FilteringState == FilteringState.Ineligible 
-                || Histo is null)
-            {
-                RoutingKey = null;
-            }
-            else
-            {
-                if (Histo[StdModelAttribute.model] == 0)
-                {
-                    RoutingKey = StdModelRouting.Empty;
-                }
-                else
-                {
-                    if (Histo[StdModelAttribute.qmatch] != 0 ^ Histo[StdModelAttribute.pmatch] != 0)
-                    {
-                        // Unambiguous matches are present.
-                        RoutingKey = Histo[StdModelAttribute.qmatch] != 0
-                        ? StdModelRouting.QMatch
-                        : StdModelRouting.PMatch;
-                    }
-                    else
-                    {
-                        if (Histo[StdModelAttribute.qmatch] == 0)
-                        {
-                            // Then they *both are 0* while model *is not 0*.
-                            if (Settings[StdMarkdownContextSetting.UseAdaptiveShowAll] is bool useAdaptive && useAdaptive)
-                            {
-                                RoutingKey = null;
-                            }
-                            else
-                            {
-                                // Models are present, but all are filtered out.
-                                RoutingKey = StdModelRouting.Empty;
-                            }
-                        }
-                        else
-                        {
-                            // Then they *both* are not 0.
-                            RoutingKey = StdModelRouting.AND;
-                        }
-                    }
-                }
-            }
+            base.OnRouteKeyChanged();
+
+            // Raise reset - UI will track the new routing key.
+            // OnCollectionChanged(new NotifyQueryFilterCollectionChangedEventArgs(NotifyCollectionChangeAction.Reset));
         }
     }
 

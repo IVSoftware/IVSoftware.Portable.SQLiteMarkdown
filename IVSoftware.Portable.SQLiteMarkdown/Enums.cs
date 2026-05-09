@@ -119,7 +119,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </summary>
     [PublishedContract("2.x")]
     [NotFlags]
-    public enum StdModelRouting
+    public enum StdRouteKey
     {
         /// <summary>
         /// Routing for Count is 0.

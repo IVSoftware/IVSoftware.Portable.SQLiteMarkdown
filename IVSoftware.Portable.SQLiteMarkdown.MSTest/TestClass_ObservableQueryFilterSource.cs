@@ -3475,6 +3475,11 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
 
                 items.InputText += "c";
                 await items;
+                Assert.AreEqual(
+                    StdRouteKey.QMatch,
+                    items.RouteKey,
+                    $"Expecting settled collection routing is {StdRouteKey.QMatch.ToFullKey()}"
+                );
 
                 actual = items.Model.CloneWithXBindings(10).ToString();
                 actual.ToClipboardExpected();

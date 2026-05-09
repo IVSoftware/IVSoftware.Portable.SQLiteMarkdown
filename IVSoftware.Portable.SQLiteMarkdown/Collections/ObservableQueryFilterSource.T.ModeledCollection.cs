@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -397,10 +398,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public IDictionary<Enum, Func<IEnumerable>> Routes => ((IRoutedEnumerable)CanonicalSupersetProtected).Routes;
 
-        public Enum? RouteKey 
+        public new Enum? RouteKey 
         { 
-            get => ((IRoutedEnumerable)CanonicalSupersetProtected).RouteKey; 
-            set => ((IRoutedEnumerable)CanonicalSupersetProtected).RouteKey = value;
+            get => base.RouteKey;
+            set
+            {
+                if (value is StdRouteKey stdRoute)
+                {
+                    ((IRoutedEnumerable)CanonicalSupersetProtected).RouteKey = value;
+                }
+                else
+                {
+                    this.ThrowHard<InvalidCastException>(
+                        $"For {nameof(ObservableQueryFilterSource)} specifically, the RoutKey must be {nameof(StdRouteKey)}");
+                }
+            }
         }
 
         public int GetCount(RoutingOQFS route)
