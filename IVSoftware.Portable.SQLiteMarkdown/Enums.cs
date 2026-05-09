@@ -168,6 +168,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         #endregion C O M P O S I T E S
     }
 
+    [PublishedContract("2.x")]
+    [NotFlags]
+    public enum StdModelRouting
+    {
+        /// <summary>
+        /// Routing for Query-Only Config, IME Empty, Not Filtering, AdaptiveShowAll
+        /// </summary>
+        FullRecordset,
+
+        /// <summary>
+        /// Routing for Histo[qmatch] is {Count: > 0 } && Histo[pmatch] is not {Count: > 0 }
+        /// </summary>
+        QMatch,
+
+        /// <summary>
+        /// Routing for Histo[pmatch] is {Count: > 0 } && Histo[qmatch] is not {Count: > 0 }
+        /// </summary>
+        PMatch,
+
+        /// <summary>
+        /// Routing for Histo[pmatch] is {Count: > 0 } && Histo[qmatch] is {Count: > 0 }
+        /// </summary>
+        AND,
+    }
+
+
     /// <summary>
     /// IME flat state machine. Takes on directionality in conjunction with FilteringState.
     /// </summary>
