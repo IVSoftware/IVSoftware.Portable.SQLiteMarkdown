@@ -83,6 +83,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// State machine whose specific behavior depends on QueryFilterConfig
     /// </summary>
+    [NotFlags]
     public enum FilteringState
     {
         /// <summary>
@@ -111,6 +112,55 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - The FilteredItems collection (e.g. 'visible items') matched the canonical UnfilteredItems collection.
         /// </remarks>
         Active,
+    }
+
+    /// <summary>
+    /// Precision filtering status - requires resolution of Histo on ModelAuthorityContext.
+    /// </summary>
+    [PublishedContract("2.x")]
+    [Flags]
+    public enum PredicateFilteringState
+    {
+        /// <summary>
+        /// Cannot resolve Histo.
+        /// </summary>
+        NotAvailable = int.MinValue,
+
+        /// <summary>
+        /// StdModelAttribute.model count is non-0
+        /// </summary>
+        Model = 0x1,
+
+        /// <summary>
+        /// StdModelAttribute.qmatch count is non-zero.
+        /// </summary>
+        QMatch = Model << 1,
+
+        /// <summary>
+        /// StdModelAttribute.pmatch count is non-zero.
+        /// </summary>
+        PMatch = QMatch << 1,
+
+        /// <summary>
+        /// One or more predicate filters are active.
+        /// </summary>
+        ActiveFilter = PMatch << 1,
+
+        #region C O M P O S I T E S
+
+        /// <summary>
+        /// When both QMatch and PMatch are present, Match requires AND.
+        /// </summary>
+        /// <remarks>
+        /// When *only* QMatch OR PMatch is present, Match requires OR
+        /// </remarks>
+        AND = QMatch | PMatch, 
+
+        /// <summary>
+        /// Indicates that models exist and filters exist, but no matches exist.
+        /// </summary>
+        AdaptiveShowAll = ActiveFilter | Model,
+        #endregion C O M P O S I T E S
     }
 
     /// <summary>

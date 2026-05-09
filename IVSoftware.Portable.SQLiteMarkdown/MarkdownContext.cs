@@ -59,51 +59,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [PublishedContract("2.x")]
         public IModelAuthorityContext? ModelAuthorityContext
         {
-            get 
-            {
-                if (_modelAuthorityContext is null)
-                {
-                    if (this is IModelAuthorityContext self)
-                    {
-                        _modelAuthorityContext = self;
-                        OnModelAuthorityContextChanged(null, self);
-                    }
-                }
-                return _modelAuthorityContext; 
-            }
+            get => _modelAuthorityContext ?? this as IModelAuthorityContext;
             set
             {
-                IModelAuthorityContext? oldValue = _modelAuthorityContext;
                 if (!Equals(_modelAuthorityContext, value))
                 {
                     _modelAuthorityContext = value;
-                    OnModelAuthorityContextChanged(oldValue, _modelAuthorityContext);
                     OnPropertyChanged();
                 }
             }
         }
         IModelAuthorityContext? _modelAuthorityContext = default;
 
-        protected IDictionary<StdModelAttribute, int>? Histo
-        {
-            get => _histo;
-            private set
-            {
-                if (!Equals(_histo, value))
-                {
-                    _histo = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        IDictionary<StdModelAttribute, int>? _histo = default;
-
-        protected virtual void OnModelAuthorityContextChanged(
-            IModelAuthorityContext? oldValue, 
-            IModelAuthorityContext? newValue)
-        {
-
-        }
+        protected IReadOnlyDictionary<StdModelAttribute, int>? Histo
+            => ModelAuthorityContext?.Model?.To<IReadOnlyDictionary<StdModelAttribute, int>>();
 
         public MarkdownContextSettings Settings { get; } = new()
         {
