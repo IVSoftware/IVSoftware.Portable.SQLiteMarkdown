@@ -13,6 +13,7 @@ using SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -71,7 +72,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         IModelAuthorityContext? _modelAuthorityContext = default;
 
-        protected IReadOnlyDictionary<StdModelAttribute, int>? Histo
+        public IReadOnlyDictionary<StdModelAttribute, int>? Histo
             => ModelAuthorityContext?.Model?.To<IReadOnlyDictionary<StdModelAttribute, int>>();
 
         public MarkdownContextSettings Settings { get; } = new()
@@ -1759,6 +1760,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     break;
             }
         }
+        protected ObservableCollection<object> ActiveFilters
+        {
+            get
+            {
+                if (_activeFilters is null)
+                {
+                    _activeFilters = new ObservableCollection<object>();
+                }
+                return _activeFilters;
+            }
+        }
+        ObservableCollection<object>? _activeFilters = null;
+
+        /// <summary>
+        /// Available routing based on discoverable Histo.
+        /// </summary>
+        public StdModelRouting? RoutingKey
+        {
+            get => _routingKey;
+            set
+            {
+                if (!Equals(_routingKey, value))
+                {
+                    _routingKey = value;
+                    OnRoutingKeyChanged();
+                    OnPropertyChanged();
+                }
+            }
+        }
+        StdModelRouting? _routingKey = default;
+
+        protected virtual void OnRoutingKeyChanged() { }
 
         public string InputText
         {

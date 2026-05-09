@@ -113,38 +113,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
             }
         }
-        protected ObservableCollection<object> ActiveFilters
-        {
-            get
-            {
-                if (_activeFilters is null)
-                {
-                    _activeFilters = new ObservableCollection<object>();
-                }
-                return _activeFilters;
-            }
-        }
-        ObservableCollection<object>? _activeFilters = null;
-
-        /// <summary>
-        /// Available routing based on discoverable Histo.
-        /// </summary>
-        public StdModelRouting? RoutingKey
-        {
-            get => _routingKey;
-            set
-            {
-                if (!Equals(_routingKey, value))
-                {
-                    _routingKey = value;
-                    OnRoutingKeyChanged();
-                    OnPropertyChanged();
-                }
-            }
-        }
-        StdModelRouting? _routingKey = default;
-
-        protected virtual void OnRoutingKeyChanged() { }
     }
 
     /// <summary>

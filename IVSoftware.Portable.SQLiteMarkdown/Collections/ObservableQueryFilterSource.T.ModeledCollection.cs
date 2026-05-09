@@ -35,8 +35,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public ModelDataExchangeAuthority ModelDataExchangeAuthority => 
             ((IModeledCollection)CanonicalSupersetProtected).ModelDataExchangeAuthority;
 
-        public IReadOnlyDictionary<StdModelAttribute, int> Histo => 
-            ((IModeledCollection)CanonicalSupersetProtected).Histo;
+        /// <summary>
+        /// Histo is guaranteed not null in this subclass; null is forgiven.
+        /// </summary>
+        public new IReadOnlyDictionary<StdModelAttribute, int> Histo => base.Histo!;
 
         public IDictionary<Enum, IAuthorityEpochProvider> AuthorityProviders => 
             ((IModeledCollection)CanonicalSupersetProtected).AuthorityProviders;
