@@ -115,67 +115,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// Precision filtering status - requires resolution of Histo on ModelAuthorityContext.
+    /// Standard keys for the IRoutedEnumerable dictionary.
     /// </summary>
-    [PublishedContract("2.x")]
-    [Flags]
-    public enum PredicateFilteringState
-    {
-        /// <summary>
-        /// Cannot resolve Histo.
-        /// </summary>
-        NotAvailable = int.MinValue,
-
-        /// <summary>
-        /// StdModelAttribute.model count is 0
-        /// </summary>
-        Empty = 0x0,
-
-        /// <summary>
-        /// StdModelAttribute.model count is non-0
-        /// </summary>
-        Model = 0x1,
-
-        /// <summary>
-        /// StdModelAttribute.qmatch count is non-zero.
-        /// </summary>
-        QMatch = Model << 1,
-
-        /// <summary>
-        /// StdModelAttribute.pmatch count is non-zero.
-        /// </summary>
-        PMatch = QMatch << 1,
-
-        /// <summary>
-        /// One or more predicate filters are active.
-        /// </summary>
-        ActiveFilter = PMatch << 1,
-
-        #region C O M P O S I T E S
-
-        /// <summary>
-        /// When both QMatch and PMatch are present, Match requires AND.
-        /// </summary>
-        /// <remarks>
-        /// When *only* QMatch OR PMatch is present, Match requires OR
-        /// </remarks>
-        AND = QMatch | PMatch, 
-
-        /// <summary>
-        /// Indicates that models exist and filters exist, but no matches exist.
-        /// </summary>
-        AdaptiveShowAll = ActiveFilter | Model,
-        #endregion C O M P O S I T E S
-    }
-
     [PublishedContract("2.x")]
     [NotFlags]
     public enum StdModelRouting
     {
         /// <summary>
+        /// Routing for Count is 0.
+        /// </summary>
+        Empty,
+
+        /// <summary>
         /// Routing for Query-Only Config, IME Empty, Not Filtering, AdaptiveShowAll
         /// </summary>
-        FullRecordset,
+        /// <remarks>
+        /// - When the RoutingKey property is null, the collection uses its 
+        ///   canonical base class enumerator, ignoring Routing entirely.
+        /// - In contrast, this value iterates the model, effectively returning 
+        ///   all of the items, but extracting them from the model.
+        /// - For efficiency, use *null* to produce this result. But for testing,
+        ///   this forms a basis for comparison.
+        /// </remarks>
+        CanonicalRecordset,
 
         /// <summary>
         /// Routing for Histo[qmatch] is {Count: > 0 } && Histo[pmatch] is not {Count: > 0 }
@@ -190,6 +152,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Routing for Histo[pmatch] is {Count: > 0 } && Histo[qmatch] is {Count: > 0 }
         /// </summary>
+        /// <remarks>
+        /// The item should yield only if both qmatch *and* pmatch are explicit true.
+        /// </remarks>
         AND,
     }
 

@@ -65,64 +65,49 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
             }
         }
+
         protected override void OnFilteringStateChanged()
         {
             base.OnFilteringStateChanged();
-            if(Histo is null)
+            if( FilteringState == FilteringState.Ineligible 
+                || Histo is null)
             {
-                PredicateFilteringState = PredicateFilteringState.NotAvailable;
+                RoutingKey = null;
             }
             else
             {
                 if (Histo[StdModelAttribute.model] == 0)
                 {
-                    PredicateFilteringState = PredicateFilteringState.Empty;
+                    RoutingKey = StdModelRouting.Empty;
                 }
                 else
                 {
-                    if (ActiveFilters.Count == 0)
+                    if (Histo[StdModelAttribute.qmatch] != 0 ^ Histo[StdModelAttribute.pmatch] != 0)
                     {
-                        if (Histo[StdModelAttribute.qmatch] != 0)
-                        {
-                            PredicateFilteringState = PredicateFilteringState.Model | PredicateFilteringState.QMatch;
-                        }
-                        else
-                        {
-                            PredicateFilteringState = PredicateFilteringState.Model;
-                        }
+                        // Unambiguous matches are present.
+                        RoutingKey = Histo[StdModelAttribute.qmatch] != 0
+                        ? StdModelRouting.QMatch
+                        : StdModelRouting.PMatch;
                     }
                     else
                     {
-                        if (Histo[StdModelAttribute.qmatch] != 0 ^ Histo[StdModelAttribute.pmatch] != 0)
+                        if (Histo[StdModelAttribute.qmatch] == 0)
                         {
-                            PredicateFilteringState =
-                                Histo[StdModelAttribute.qmatch] != 0
-                                ? 
-                                    PredicateFilteringState.Model 
-                                    | PredicateFilteringState.ActiveFilter
-                                    | PredicateFilteringState.QMatch
-                                : 
-                                    PredicateFilteringState.Model 
-                                    | PredicateFilteringState.ActiveFilter
-                                    | PredicateFilteringState.PMatch;
-                        }
-                        else
-                        {
-                            if (Histo[StdModelAttribute.qmatch] == 0)
+                            // Then they *both are 0* while model *is not 0*.
+                            if (Settings[StdMarkdownContextSetting.UseAdaptiveShowAll] is bool useAdaptive && useAdaptive)
                             {
-                                // Then they both are
-                                PredicateFilteringState = 
-                                    PredicateFilteringState.Model
-                                    | PredicateFilteringState.ActiveFilter;
+                                RoutingKey = null;
                             }
                             else
                             {
-                                PredicateFilteringState = 
-                                    PredicateFilteringState.Model 
-                                    | PredicateFilteringState.ActiveFilter
-                                    | PredicateFilteringState.QMatch 
-                                    | PredicateFilteringState.PMatch;
+                                // Models are present, but all are filtered out.
+                                RoutingKey = StdModelRouting.Empty;
                             }
+                        }
+                        else
+                        {
+                            // Then they *both* are not 0.
+                            RoutingKey = StdModelRouting.AND;
                         }
                     }
                 }
@@ -141,19 +126,25 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         ObservableCollection<object>? _activeFilters = null;
 
-        public PredicateFilteringState PredicateFilteringState
+        /// <summary>
+        /// Available routing based on discoverable Histo.
+        /// </summary>
+        public StdModelRouting? RoutingKey
         {
-            get => _predicateFilteringState;
+            get => _routingKey;
             set
             {
-                if (!Equals(_predicateFilteringState, value))
+                if (!Equals(_routingKey, value))
                 {
-                    _predicateFilteringState = value;
+                    _routingKey = value;
+                    OnRoutingKeyChanged();
                     OnPropertyChanged();
                 }
             }
         }
-        PredicateFilteringState _predicateFilteringState = PredicateFilteringState.NotAvailable;
+        StdModelRouting? _routingKey = default;
+
+        protected virtual void OnRoutingKeyChanged() { }
     }
 
     /// <summary>
