@@ -80,22 +80,49 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
                 else
                 {
-                    if(Histo[StdModelAttribute.qmatch] != 0 ^ Histo[StdModelAttribute.pmatch] != 0)
+                    if (ActiveFilters.Count == 0)
                     {
-                        PredicateFilteringState =
-                            Histo[StdModelAttribute.qmatch] != 0
-                            ? PredicateFilteringState.QMatch
-                            : PredicateFilteringState.PMatch;
-                    }
-                    else
-                    {
-                        if (Histo[StdModelAttribute.qmatch] == 0)
+                        if (Histo[StdModelAttribute.qmatch] != 0)
                         {
-                            // Then they both are
+                            PredicateFilteringState = PredicateFilteringState.Model | PredicateFilteringState.QMatch;
                         }
                         else
                         {
-
+                            PredicateFilteringState = PredicateFilteringState.Model;
+                        }
+                    }
+                    else
+                    {
+                        if (Histo[StdModelAttribute.qmatch] != 0 ^ Histo[StdModelAttribute.pmatch] != 0)
+                        {
+                            PredicateFilteringState =
+                                Histo[StdModelAttribute.qmatch] != 0
+                                ? 
+                                    PredicateFilteringState.Model 
+                                    | PredicateFilteringState.ActiveFilter
+                                    | PredicateFilteringState.QMatch
+                                : 
+                                    PredicateFilteringState.Model 
+                                    | PredicateFilteringState.ActiveFilter
+                                    | PredicateFilteringState.PMatch;
+                        }
+                        else
+                        {
+                            if (Histo[StdModelAttribute.qmatch] == 0)
+                            {
+                                // Then they both are
+                                PredicateFilteringState = 
+                                    PredicateFilteringState.Model
+                                    | PredicateFilteringState.ActiveFilter;
+                            }
+                            else
+                            {
+                                PredicateFilteringState = 
+                                    PredicateFilteringState.Model 
+                                    | PredicateFilteringState.ActiveFilter
+                                    | PredicateFilteringState.QMatch 
+                                    | PredicateFilteringState.PMatch;
+                            }
                         }
                     }
                 }
@@ -116,12 +143,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public PredicateFilteringState PredicateFilteringState
         {
-            get
-            {
-                return ActiveFilters.Count == 0
-                    ? _predicateFilteringState
-                    : _predicateFilteringState | PredicateFilteringState.ActiveFilter;
-            }
+            get => _predicateFilteringState;
             set
             {
                 if (!Equals(_predicateFilteringState, value))
