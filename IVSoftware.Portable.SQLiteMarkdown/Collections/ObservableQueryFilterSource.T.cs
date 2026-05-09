@@ -65,6 +65,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
             }
         }
+        protected override void OnFilteringStateChanged()
+        {
+            base.OnFilteringStateChanged();
+        }
     }
 
     /// <summary>
@@ -124,40 +128,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             NetProjectionTopology? topology = null)
         {
             this.RethrowFramework(new NotSupportedException());
-        }
-
-        /// <summary>
-        /// True when InputText is empty regardless of IsFiltering.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model:
-        /// "If the input text is empty, just swap the handle instead of recalculating."
-        /// Functional Behavior:
-        /// - External predicate filters must still run even if IME doesn't contribute.
-        /// - This is the purview of the subclass. Override for full control.
-        /// </remarks>
-        [PublishedContract("1.x")]
-        public override bool RouteToFullRecordset
-        {
-            get
-            {
-                switch (FilteringState)
-                {
-                    case FilteringState.Ineligible:
-                    case FilteringState.Armed:
-                        return true;
-                    case FilteringState.Active:
-                        if (0 == CanonicalSupersetProtected.Histo[StdModelAttribute.match])
-                        {
-                            return Equals(Settings[StdMarkdownContextSetting.UseAdaptiveShowAll], true);
-                        }
-                        else return false;
-                    default:
-                        this.ThrowFramework<NotSupportedException>(
-                            $"The {FilteringState.ToFullKey()} case is not supported.");
-                        return true;
-                }
-            }
         }
 
         [Obsolete("Use CanonicalSuperset for precise semantics.")]

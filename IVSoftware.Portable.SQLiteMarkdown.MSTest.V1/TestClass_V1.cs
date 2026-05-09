@@ -87,8 +87,6 @@ Title: String"
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
-            { } // <- FIRST TIME ONLY: Adjust the message.
-            actual.ToClipboardAssert("Expecting builder content to match.");
             { }
             expected = @" 
 Raw: String

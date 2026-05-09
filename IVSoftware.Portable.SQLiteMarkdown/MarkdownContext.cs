@@ -59,17 +59,51 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [PublishedContract("2.x")]
         public IModelAuthorityContext? ModelAuthorityContext
         {
-            get => _modelAuthorityContext ?? this as IModelAuthorityContext;
+            get 
+            {
+                if (_modelAuthorityContext is null)
+                {
+                    if (this is IModelAuthorityContext self)
+                    {
+                        _modelAuthorityContext = self;
+                        OnModelAuthorityContextChanged(null, self);
+                    }
+                }
+                return _modelAuthorityContext; 
+            }
             set
             {
+                IModelAuthorityContext? oldValue = _modelAuthorityContext;
                 if (!Equals(_modelAuthorityContext, value))
                 {
                     _modelAuthorityContext = value;
+                    OnModelAuthorityContextChanged(oldValue, _modelAuthorityContext);
                     OnPropertyChanged();
                 }
             }
         }
         IModelAuthorityContext? _modelAuthorityContext = default;
+
+        protected IDictionary<StdModelAttribute, int>? Histo
+        {
+            get => _histo;
+            private set
+            {
+                if (!Equals(_histo, value))
+                {
+                    _histo = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        IDictionary<StdModelAttribute, int>? _histo = default;
+
+        protected virtual void OnModelAuthorityContextChanged(
+            IModelAuthorityContext? oldValue, 
+            IModelAuthorityContext? newValue)
+        {
+
+        }
 
         public MarkdownContextSettings Settings { get; } = new()
         {
@@ -1515,12 +1549,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 switch (QueryFilterConfig)
                 {
                     case QueryFilterConfig.Query:
+                        // [Gravity]
                         if(value > FilteringState.Ineligible)
                         {
                             value = FilteringState.Ineligible;
                         }
                         break;
                     case QueryFilterConfig.Filter:
+                        // [Gravity]
                         if (value < FilteringState.Armed)
                         {
                             value = FilteringState.Armed;
@@ -1577,20 +1613,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        /// <summary>
-        /// Returns true when the canonical recordset contains 2 or more items.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model: "Choose placeholder text (and the icon, too) - 'Search' or 'Filter'"
-        /// </remarks>
-        public bool IsFiltering => _isFiltering;
-
-        // Different!
-        // Protected because it's in play inside OnFilteringStateChanged.
-        // This needs to be sequenced in a certain way.
-        // {5B1BD636-9189-493C-83B6-F77EB0321925}
-        protected bool _isFiltering = false;
-
         public void Sort(IComparer? comparer)
         {
             if(comparer is null)
@@ -1616,10 +1638,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         bool _isEphemeralSort = false;
 
-        /// <summary>
-        /// Catch and release heuristic for canonical ObservableNetProjection entering and leaving IsFiltered state.
-        /// </summary>
-        protected virtual void OnIsFilteringChanged() { }
+
+        protected virtual void OnIsFilteringChanged()
+        {
+            // Mostly, this is just a proxy.
+            // However, RTFR responds *immediately* to
+            // empty text without having to settle.
+            RouteToFullRecordset = IsFiltering;
+        }
 
         /// <summary>
         /// Comprehensive system-level clear that includes InputText in its purview.
@@ -1793,6 +1819,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 localApplyQuerySemantics();
             }
 
+            // Empty means *immediate* RouteToFullDataset.
+            // [Careful]
+            // Do this : Use is "really empty" as the sentinel.
+            // Not this: InputText.IsSemanticallyEmpty();
+            IsInputTextEmpty = InputText.Length == 0;
+
             #region L o c a l F x
             void localApplyFilterSemantics()
             {
@@ -1858,6 +1890,90 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             #endregion L o c a l F x
         }
+
+        /// <summary>
+        /// Returns true when the canonical recordset contains 2 or more items.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "Choose placeholder text (and the icon, too) - 'Search' or 'Filter'"
+        /// </remarks>
+        [PublishedContract("1.x")]
+        public bool IsFiltering => _isFiltering;
+
+        // Different!
+        // Protected because it's in play inside OnFilteringStateChanged.
+        // This needs to be sequenced in a certain way.
+        // {5B1BD636-9189-493C-83B6-F77EB0321925}
+        protected bool _isFiltering = false;
+
+        /// <summary>
+        /// Proxy for IsFiltering, but with *immediate* response for empty text.
+        /// </summary>
+        /// <remarks>
+        /// External predicate filters must still run even if IME doesn't contribute.
+        /// Mental Model: "If the input text is empty, just swap the handle instead of recalculating."
+        /// </remarks>
+        [PublishedContract("1.x")]
+        public bool RouteToFullRecordset
+        {
+            get => _routeToFullRecordset;
+            set
+            {
+                if (!Equals(_routeToFullRecordset, value))
+                {
+                    _routeToFullRecordset = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        bool _routeToFullRecordset = false;
+
+        public bool IsInputTextEmpty
+        {
+            get => _isInputTextEmpty;
+            set
+            {
+                if (!Equals(_isInputTextEmpty, value))
+                {
+                    _isInputTextEmpty = value;
+
+                    // [Gravity]
+                    if(_isInputTextEmpty)
+                    {
+                        RouteToFullRecordset = true;
+                    }
+
+                    OnPropertyChanged();
+                }
+            }
+        }
+        bool _isInputTextEmpty = false;
+
+
+#if false
+        public virtual bool RouteToFullRecordset
+        {
+            get
+            {
+                switch (FilteringState)
+                {
+                    case FilteringState.Ineligible:
+                    case FilteringState.Armed:
+                        return true;
+                    case FilteringState.Active:
+                        if (0 == CanonicalSupersetProtected.Histo[StdModelAttribute.match])
+                        {
+                            return Equals(Settings[StdMarkdownContextSetting.UseAdaptiveShowAll], true);
+                        }
+                        else return false;
+                    default:
+                        this.ThrowFramework<NotSupportedException>(
+                            $"The {FilteringState.ToFullKey()} case is not supported.");
+                        return true;
+                }
+            }
+        }
+#endif
 
         [Careful("Trimming or modifying the raw InputText is not allowed.")]
         protected virtual void OnInputTextChangedOR()

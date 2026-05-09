@@ -199,8 +199,6 @@ Rationale     : The contract database must be held stable for this inheritance t
             set => Interval = value;
         }
 
-        [PublishedContract("1.x")]
-        public virtual bool RouteToFullRecordset => false;
 
         protected sealed class SQLiteConnectionMapper
         {
