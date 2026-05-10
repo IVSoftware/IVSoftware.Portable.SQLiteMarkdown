@@ -72,7 +72,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public Type ProxyType
         {
             get => _proxyType;
-            set
+            protected set
             {
                 if (value is null)
                 {

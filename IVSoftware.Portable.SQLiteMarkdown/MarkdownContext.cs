@@ -1203,7 +1203,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 var preview = string.Join(Environment.NewLine, builder);
                 return preview;
             }
-            set
+            protected set
             {
                 if (_queryCompatibilityOverride != value)
                 {

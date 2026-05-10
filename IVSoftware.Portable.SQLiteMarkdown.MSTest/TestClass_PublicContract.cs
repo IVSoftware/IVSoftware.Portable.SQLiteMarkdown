@@ -91,26 +91,12 @@ Materialized Path Policy violation: Path must end with Id."
                 _ = mdc.ContractType;
                 _ = mdcT.ContractType;
                 _ = mdcT.RouteToFullRecordset;
+                _ = mdc.ProxyType;
 #endif
 
                 actual = diff;
                 actual.ToClipboardExpected();
                 { }
-                expected = @" 
-<breakingChanges policy=""AssemblyOnly"">
-  <namespace name=""IVSoftware.Portable.SQLiteMarkdown"">
-    <type name=""MarkdownContext"">
-      <property name=""ProxyType"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|ProxyType|[external]|true|false"" />
-      <property name=""Query"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|Query|[external]|true|false"" />
-    </type>
-  </namespace>
-  <namespace name=""IVSoftware.Portable.SQLiteMarkdown.Collections"">
-    <type name=""ObservableQueryFilterSource&lt;T&gt;"">
-      <method name=""Clear"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|Clear([external])-&gt;[external]"" />
-    </type>
-  </namespace>
-</breakingChanges>"
-                ;
                 expected = @" 
 <breakingChanges policy=""AssemblyOnly"">
     <namespace name=""IVSoftware.Portable.SQLiteMarkdown.Collections"">
