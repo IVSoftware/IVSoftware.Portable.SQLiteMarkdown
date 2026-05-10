@@ -119,7 +119,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 return _canonicalSupersetProtected!;
             }
         }
-
         ObservableModeledCollection<T> _canonicalSupersetProtected = null;
 
         private void CollectionChangedEventForwarder(object sender, NotifyCollectionChangedEventArgs e)
