@@ -100,7 +100,8 @@ Materialized Path Policy violation: Path must end with Id."
 <breakingChanges policy=""AssemblyOnly"">
   <namespace name=""IVSoftware.Portable.SQLiteMarkdown"">
     <type name=""MarkdownContext"">
-      <property name=""RouteToFullRecordset"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|RouteToFullRecordset|[external]|true|false"" />
+      <property name=""ProxyType"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|ProxyType|[external]|true|false"" />
+      <property name=""Query"" type=""[external]"" canRead=""true"" canWrite=""false"" signature=""P:IVSoftware.Portable.SQLiteMarkdown.MarkdownContext|Query|[external]|true|false"" />
     </type>
   </namespace>
   <namespace name=""IVSoftware.Portable.SQLiteMarkdown.Collections"">

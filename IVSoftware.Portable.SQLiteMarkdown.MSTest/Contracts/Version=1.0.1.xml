@@ -407,7 +407,7 @@
       <property name="Count" type="[external]" canRead="true" canWrite="false" />
       <property name="DHostBusy" type="[external]" canRead="true" canWrite="false" />
       <property name="DHostSelfIndexing" type="[external]" canRead="true" canWrite="false" />
-      <property name="FilteringState" type="IVSoftware.Portable.SQLiteMarkdown.FilteringState" canRead="true" canWrite="true" />
+      <property name="FilteringState" type="IVSoftware.Portable.SQLiteMarkdown.FilteringState" canRead="true" canWrite="false" />
       <property name="FilteringStateForTest" type="IVSoftware.Portable.SQLiteMarkdown.FilteringState" canRead="true" canWrite="true" />
       <property name="FilterTerm" type="[external]" canRead="true" canWrite="false" />
       <property name="InputText" type="[external]" canRead="true" canWrite="true" />
@@ -423,18 +423,18 @@
       <property name="Placeholder" type="[external]" canRead="true" canWrite="false" />
       <property name="PositionalArgs" type="[external]" canRead="true" canWrite="false" />
       <property name="PositionalQuery" type="[external]" canRead="true" canWrite="false" />
-      <property name="Preamble" type="[external]" canRead="true" canWrite="true" />
+      <property name="Preamble" type="[external]" canRead="true" canWrite="false" />
       <property name="ProxyType" type="[external]" canRead="true" canWrite="false" />
       <property name="Query" type="[external]" canRead="true" canWrite="false" />
       <property name="QueryFilterConfig" type="IVSoftware.Portable.SQLiteMarkdown.QueryFilterConfig" canRead="true" canWrite="true" />
       <property name="QueryTerm" type="[external]" canRead="true" canWrite="false" />
       <property name="Raw" type="[external]" canRead="true" canWrite="false" />
       <property name="RouteToFullRecordset" type="[external]" canRead="true" canWrite="false" />
-      <property name="SearchEntryState" type="IVSoftware.Portable.SQLiteMarkdown.SearchEntryState" canRead="true" canWrite="true" />
+      <property name="SearchEntryState" type="IVSoftware.Portable.SQLiteMarkdown.SearchEntryState" canRead="true" canWrite="false" />
       <property name="SQL" type="[external]" canRead="true" canWrite="false" />
       <property name="TagMatchTerm" type="[external]" canRead="true" canWrite="false" />
       <property name="Title" type="[external]" canRead="true" canWrite="true" />
-      <property name="Transform" type="[external]" canRead="true" canWrite="true" />
+      <property name="Transform" type="[external]" canRead="true" canWrite="false" />
       <property name="UnfilteredItems" type="System.Collections.Generic.IReadOnlyList&lt;T&gt;" canRead="true" canWrite="false" />
       <property name="ValidationPredicate" type="[external]" canRead="true" canWrite="true" />
       <property name="XAST" type="[external]" canRead="true" canWrite="false" />
@@ -1325,11 +1325,11 @@
     </constructors>
     <properties>
       <property name="Atomics" type="[external]" canRead="true" canWrite="false" />
-      <property name="Busy" type="[external]" canRead="true" canWrite="true" />
+      <property name="Busy" type="[external]" canRead="true" canWrite="false" />
       <property name="ContractType" type="[external]" canRead="true" canWrite="true" />
       <property name="DHostBusy" type="[external]" canRead="true" canWrite="false" />
       <property name="DHostSelfIndexing" type="[external]" canRead="true" canWrite="false" />
-      <property name="FilteringState" type="IVSoftware.Portable.SQLiteMarkdown.FilteringState" canRead="true" canWrite="true" />
+      <property name="FilteringState" type="IVSoftware.Portable.SQLiteMarkdown.FilteringState" canRead="true" canWrite="false" />
       <property name="FilteringStateForTest" type="IVSoftware.Portable.SQLiteMarkdown.FilteringState" canRead="true" canWrite="true" />
       <property name="FilterTerm" type="[external]" canRead="true" canWrite="false" />
       <property name="InputText" type="[external]" canRead="true" canWrite="true" />
@@ -1340,16 +1340,16 @@
       <property name="NamedQuery" type="[external]" canRead="true" canWrite="false" />
       <property name="PositionalArgs" type="[external]" canRead="true" canWrite="false" />
       <property name="PositionalQuery" type="[external]" canRead="true" canWrite="false" />
-      <property name="Preamble" type="[external]" canRead="true" canWrite="true" />
-      <property name="ProxyType" type="[external]" canRead="true" canWrite="true" />
-      <property name="Query" type="[external]" canRead="true" canWrite="true" />
+      <property name="Preamble" type="[external]" canRead="true" canWrite="false" />
+      <property name="ProxyType" type="[external]" canRead="true" canWrite="false" />
+      <property name="Query" type="[external]" canRead="true" canWrite="false" />
       <property name="QueryFilterConfig" type="IVSoftware.Portable.SQLiteMarkdown.QueryFilterConfig" canRead="true" canWrite="true" />
       <property name="QueryTerm" type="[external]" canRead="true" canWrite="false" />
-      <property name="Raw" type="[external]" canRead="true" canWrite="true" />
+      <property name="Raw" type="[external]" canRead="true" canWrite="false" />
       <property name="RouteToFullRecordset" type="[external]" canRead="true" canWrite="false" />
-      <property name="SearchEntryState" type="IVSoftware.Portable.SQLiteMarkdown.SearchEntryState" canRead="true" canWrite="true" />
+      <property name="SearchEntryState" type="IVSoftware.Portable.SQLiteMarkdown.SearchEntryState" canRead="true" canWrite="false" />
       <property name="TagMatchTerm" type="[external]" canRead="true" canWrite="false" />
-      <property name="Transform" type="[external]" canRead="true" canWrite="true" />
+      <property name="Transform" type="[external]" canRead="true" canWrite="false" />
       <property name="ValidationPredicate" type="[external]" canRead="true" canWrite="true" />
       <property name="XAST" type="[external]" canRead="true" canWrite="false" />
     </properties>
@@ -1421,7 +1421,7 @@
       <property name="ContractType" type="[external]" canRead="true" canWrite="true" />
       <property name="DHostBusy" type="[external]" canRead="true" canWrite="false" />
       <property name="DHostSelfIndexing" type="[external]" canRead="true" canWrite="false" />
-      <property name="FilteringState" type="IVSoftware.Portable.SQLiteMarkdown.FilteringState" canRead="true" canWrite="true" />
+      <property name="FilteringState" type="IVSoftware.Portable.SQLiteMarkdown.FilteringState" canRead="true" canWrite="false" />
       <property name="FilteringStateForTest" type="IVSoftware.Portable.SQLiteMarkdown.FilteringState" canRead="true" canWrite="true" />
       <property name="FilterTerm" type="[external]" canRead="true" canWrite="false" />
       <property name="InputText" type="[external]" canRead="true" canWrite="true" />
@@ -1432,16 +1432,16 @@
       <property name="NamedQuery" type="[external]" canRead="true" canWrite="false" />
       <property name="PositionalArgs" type="[external]" canRead="true" canWrite="false" />
       <property name="PositionalQuery" type="[external]" canRead="true" canWrite="false" />
-      <property name="Preamble" type="[external]" canRead="true" canWrite="true" />
+      <property name="Preamble" type="[external]" canRead="true" canWrite="false" />
       <property name="ProxyType" type="[external]" canRead="true" canWrite="false" />
       <property name="Query" type="[external]" canRead="true" canWrite="false" />
       <property name="QueryFilterConfig" type="IVSoftware.Portable.SQLiteMarkdown.QueryFilterConfig" canRead="true" canWrite="true" />
       <property name="QueryTerm" type="[external]" canRead="true" canWrite="false" />
       <property name="Raw" type="[external]" canRead="true" canWrite="false" />
       <property name="RouteToFullRecordset" type="[external]" canRead="true" canWrite="false" />
-      <property name="SearchEntryState" type="IVSoftware.Portable.SQLiteMarkdown.SearchEntryState" canRead="true" canWrite="true" />
+      <property name="SearchEntryState" type="IVSoftware.Portable.SQLiteMarkdown.SearchEntryState" canRead="true" canWrite="false" />
       <property name="TagMatchTerm" type="[external]" canRead="true" canWrite="false" />
-      <property name="Transform" type="[external]" canRead="true" canWrite="true" />
+      <property name="Transform" type="[external]" canRead="true" canWrite="false" />
       <property name="ValidationPredicate" type="[external]" canRead="true" canWrite="true" />
       <property name="XAST" type="[external]" canRead="true" canWrite="false" />
     </properties>
@@ -2073,7 +2073,7 @@
       </ctor>
     </constructors>
     <properties>
-      <property name="IndexingMode" type="IVSoftware.Portable.SQLiteMarkdown.IndexingMode" canRead="true" canWrite="true" />
+      <property name="IndexingMode" type="IVSoftware.Portable.SQLiteMarkdown.IndexingMode" canRead="true" canWrite="false" />
       <property name="PersistenceMode" type="IVSoftware.Portable.SQLiteMarkdown.PersistenceMode" canRead="true" canWrite="false" />
       <property name="TypeId" type="[external]" canRead="true" canWrite="false" />
     </properties>

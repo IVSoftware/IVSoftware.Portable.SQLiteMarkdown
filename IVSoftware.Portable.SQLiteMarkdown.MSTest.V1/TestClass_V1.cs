@@ -174,6 +174,8 @@ INotifyPropertyChanged";
                 actual.NormalizeResult(),
                 "Expecting result to match."
             );
+
+            mdc.Clear(); // Illegal in V2! See "no surprises" semantics.
         }
 
         [TestMethod]
@@ -206,12 +208,10 @@ INotifyPropertyChanged";
                 contractRedux.NormalizeResult(),
                 "Expecting idempotent.");
 
-#if false && SAVE
+#if false || SAVE
             // EmbeddedResource
             File.WriteAllText(@"Version=1.0.1.xml", contractOrig);
 #endif
-            var mdc = new MarkdownContext<SelectableQFModel>();
-            mdc.Clear(); // Illegal in V2! See "no surprises" semantics.
         }
     }
 }

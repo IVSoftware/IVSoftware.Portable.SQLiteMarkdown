@@ -16,7 +16,7 @@
 	</ItemGroup>
 
 	<ItemGroup>		
-		<PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="*" />
+		<PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="*-*" />
 		<PackageReference Include="IVSoftware.Portable.Common" Version="*-*" />
 		<PackageReference Include="MSTest" Version="4.2.1" />
 	</ItemGroup>
