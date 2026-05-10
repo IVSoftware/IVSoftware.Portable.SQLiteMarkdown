@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
 using System;
@@ -38,7 +39,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// The canonical contract type that defines the authoritative table shape for this context.
         /// </summary>
-        public Type ContractType { get; }
+        public Type ContractType
+        {
+            get => _contractType;
+            [PublishedContract("1.x")]
+            set
+            {
+                if (!Equals(_contractType, value))
+                {
+                    this.ThrowPolicyException(
+                        MarkdownContextPolicy.ImmutableContractType);
+                    _contractType = value;
+                }
+            }
+        }
+        Type _contractType = null!;
+
 
         public TableMapping ContractTableMapping { get; }
 

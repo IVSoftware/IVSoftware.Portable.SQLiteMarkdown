@@ -1,21 +1,17 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.SQLiteMarkdown.Events;
-using IVSoftware.Portable.Collections;
-using IVSoftware.Portable.Collections.Events;
+﻿using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Collections.Exceptions;
+using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
+using IVSoftware.Portable.Threading;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
-using IVSoftware.Portable.Threading;
-using IVSoftware.Portable.SQLiteMarkdown.Common;
 using ItemPropertyChangedEventArgs = IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs;
-using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
-using IVSoftware.Portable.Xml.Linq;
-using System.Collections.Generic;
-using System.Collections;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -56,7 +52,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                     {
-                        this.ThrowPolicyException(MarkdownContextPolicyViolation.FilterEngineUnavailable);
+                        this.ThrowPolicyException(MarkdownContextPolicy.FilterEngineUnavailable);
                         // Unreachable unless Throw is handled.
                         // Opting to continue creates a benign condition where a DB
                         // that might not really be necessary is instantiated regardless.
@@ -77,7 +73,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     // The user must be given the benefit of the doubt if they are explicitly
                     // injecting a connection to be used for internal filter queries. This will
                     // silently upgrade the configuration unless escalated in the Throw handler.
-                    this.ThrowPolicyException(MarkdownContextPolicyViolation.ConfigurationModifiedByDatabaseAssignment);
+                    this.ThrowPolicyException(MarkdownContextPolicy.ConfigurationModifiedByDatabaseAssignment);
                     QueryFilterConfig |= QueryFilterConfig.Filter;
                 }
 

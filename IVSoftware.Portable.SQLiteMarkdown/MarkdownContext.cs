@@ -164,7 +164,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             if (IsFiltering && expr.IsSemanticallyEmpty())
             {
-                this.ThrowPolicyException(MarkdownContextPolicyViolation.EmptyFilterString);
+                this.ThrowPolicyException(MarkdownContextPolicy.EmptyFilterString);
                 xast = null!; // We warned you.
                 return string.Empty;
             }
@@ -1881,7 +1881,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 localApplyQuerySemantics();
             }
 
-            // Empty means *immediate* RouteToFullDataset.
+            // Empty means *immediate* RouteToFullRecordset.
             // [Careful]
             // Do this : Use is "really empty" as the sentinel.
             // Not this: InputText.IsSemanticallyEmpty();
@@ -1979,7 +1979,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public bool RouteToFullRecordset
         {
             get => _routeToFullRecordset;
-            set
+            protected set
             {
                 if (!Equals(_routeToFullRecordset, value))
                 {

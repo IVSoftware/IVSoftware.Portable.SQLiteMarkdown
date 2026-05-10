@@ -146,7 +146,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 { }
                 expected = @" 
 Advisory Clear | Clearing histogram while model-bound rebuilds (not clears) counts from current model.
-Throw MarkdownContextPolicyViolation.ExplicitClearAdvisory | ExplicitClearAdvisory Policy advisory:
+Throw MarkdownContextPolicy.ExplicitClearAdvisory | ExplicitClearAdvisory Policy advisory:
 - Inherited MarkdownContext detected, but no parameterless Clear() was found.
 - Clear(bool all = false) participates in the MDC filtering state machine and may not
   immediately empty the collection. 
