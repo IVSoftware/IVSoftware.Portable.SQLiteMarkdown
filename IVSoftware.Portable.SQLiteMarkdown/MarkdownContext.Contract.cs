@@ -43,7 +43,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public TableMapping ContractTableMapping { get; }
 
         /// <summary>
-        /// The type whose attributes define the parsing behavior.
+        /// The type whose attributes define ad hoc parsing behavior.
         /// </summary>
         /// <remarks>
         /// Must be a non-interface type. Abstract types are permitted.
@@ -52,6 +52,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Multiple proxy types may target the same table schema, each providing a different
         /// attribute-driven interpretation for parsing and filtering.
         /// </remarks>
+        [PublishedContract("1.x")]
         public Type ProxyType
         {
             get => _proxyType;

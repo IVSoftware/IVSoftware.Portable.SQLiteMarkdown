@@ -30,6 +30,17 @@ IVSoftware.Portable.SQLiteMarkdown, Version=1.0.1.0, Culture=neutral, PublicKeyT
             );
 
             MarkdownContext<SelectableQFModel> mdc = new();
+            // In V1, this *should be*, but *is not* constrained: where T :class, new()
+            // Notwithstanding, don't use something like int or object here!
+            // WE'RE LOOKING FOR THE EXISTENCE OF THE CONTRACT ONLY.
+            var oqfs = new ObservableQueryFilterSource<SelectableQFModel>();
+            Assert.IsTrue(
+                oqfs is IObservableQueryFilterSource<SelectableQFModel>,
+                @"Asserting the claim: [Canonical(""Contract published in v1"")]");
+
+            // published
+            _ = mdc.ProxyType;
+            _ = oqfs.ProxyType;
             
             var cnx = mdc.MemoryDatabase;
 
@@ -144,14 +155,6 @@ IVSoftware.Portable.SQLiteMarkdown | Version=1.0.1.0"
                 actual.NormalizeResult(),
                 "Expecting Version=1.0.1.0"
             );
-
-            // In V1, this *should be*, but *is not* constrained: where T :class, new()
-            // Notwithstanding, don't use something like int or object here!
-            // WE'RE LOOKING FOR THE EXISTENCE OF THE CONTRACT ONLY.
-            var oqfs = new ObservableQueryFilterSource<SelectableQFModel>();
-            Assert.IsTrue(
-                oqfs is IObservableQueryFilterSource<SelectableQFModel>,
-                @"Asserting the claim: [Canonical(""Contract published in v1"")]");
 
             actual = string.Join(
                 Environment.NewLine,

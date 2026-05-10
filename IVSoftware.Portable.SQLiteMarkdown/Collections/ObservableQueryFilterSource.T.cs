@@ -148,10 +148,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        [Obsolete("Backward compatibility only.")]
+        [PublishedContract("1.x")]
         public new Type ProxyType => base.ProxyType;
 
-        [Obsolete("Backward compatibility only.")]
+        [PublishedContract("1.x")]
         public new string Query => base.Query;
 
         public override string ToString(Enum formatting)

@@ -21,11 +21,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// read-only view and does not need to enforce the type at runtime.
         /// </remarks>
         public MarkdownContext() : base(typeof(T)) { }
-
-        [Obsolete("Backward compatibility only.")]
-        public new Type ProxyType => base.ProxyType;
-
-        [Obsolete("Backward compatibility only.")]
-        public new string Query => base.Query;
     }
 }
