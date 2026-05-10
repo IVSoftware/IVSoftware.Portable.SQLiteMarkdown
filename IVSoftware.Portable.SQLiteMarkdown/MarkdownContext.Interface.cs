@@ -65,9 +65,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     // HYBRID - factory getter.
                     if (_filterQueryDatabase is null)
                     {
-                        _filterQueryDatabase = new SQLiteQueryOnlyConnection();
-                        // ContractType is set at construction and cannot be null.
-                        _filterQueryDatabase.CreateTable(ContractType);
+                        _filterQueryDatabase = new SQLiteQueryOnlyConnection(ContractType);
                     }
                     return _filterQueryDatabase;
                 }

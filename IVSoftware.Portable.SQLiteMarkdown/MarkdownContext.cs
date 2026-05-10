@@ -180,7 +180,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
                 && _proxyType.GetCustomAttribute<ExtendMappingAttribute>() is not null)
             {
-                FilterQueryDatabase.CreateTable(ProxyType);
+                if (FilterQueryDatabase is SQLiteQueryOnlyConnection cnxprot)
+                {
+                    using (cnxprot.RequestAuthority(SQLiteAuthority.FullControl))
+                    {
+                        FilterQueryDatabase.CreateTable(ProxyType);
+                    }
+                }
+                else
+                {
+                    FilterQueryDatabase.CreateTable(ProxyType);
+                }
             }
 
             // Always clear the previous pass.
