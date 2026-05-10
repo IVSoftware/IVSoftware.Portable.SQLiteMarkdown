@@ -2,7 +2,6 @@
 using IVSoftware.Portable.Collections.Events;
 using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -12,8 +11,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
 using System.Xml.Linq;
 
 
@@ -282,7 +279,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public bool IsReadOnly => ((IList)CanonicalSuperset).IsReadOnly;
 
-        public int Count => ((ICollection)CanonicalSuperset).Count;
+        [Careful("ROUTED: Do *not* cast. Not to IList. Not to ICollection.")]
+        public int Count => CanonicalSupersetProtected.Count;
 
         public bool IsSynchronized => ((ICollection)CanonicalSuperset).IsSynchronized;
 
@@ -346,9 +344,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             ((ICollection)CanonicalSuperset).CopyTo(array, index);
         }
 
+
+        [Careful("ROUTED: Do *not* cast. Not to ICollection. Not to IList.")]
         public IEnumerator GetEnumerator()
         {
-            return ((IEnumerable)CanonicalSuperset).GetEnumerator();
+            return CanonicalSupersetProtected.GetEnumerator();
         }
 
         public int IndexOf(T item)

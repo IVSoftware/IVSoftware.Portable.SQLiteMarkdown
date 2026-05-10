@@ -115,51 +115,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// Standard keys for the IRoutedEnumerable dictionary.
-    /// </summary>
-    [PublishedContract("2.x")]
-    [NotFlags]
-    public enum StdRouteKey
-    {
-        /// <summary>
-        /// Routing for Count is 0.
-        /// </summary>
-        Empty,
-
-        /// <summary>
-        /// Routing for Query-Only Config, IME Empty, Not Filtering, AdaptiveShowAll
-        /// </summary>
-        /// <remarks>
-        /// - When the RoutingKey property is null, the collection uses its 
-        ///   canonical base class enumerator, ignoring Routing entirely.
-        /// - In contrast, this value iterates the model, effectively returning 
-        ///   all of the items, but extracting them from the model.
-        /// - For efficiency, use *null* to produce this result. But for testing,
-        ///   this forms a basis for comparison.
-        /// </remarks>
-        CanonicalRecordset,
-
-        /// <summary>
-        /// Routing for Histo[qmatch] is {Count: > 0 } && Histo[pmatch] is not {Count: > 0 }
-        /// </summary>
-        QMatch,
-
-        /// <summary>
-        /// Routing for Histo[pmatch] is {Count: > 0 } && Histo[qmatch] is not {Count: > 0 }
-        /// </summary>
-        PMatch,
-
-        /// <summary>
-        /// Routing for Histo[pmatch] is {Count: > 0 } && Histo[qmatch] is {Count: > 0 }
-        /// </summary>
-        /// <remarks>
-        /// The item should yield only if both qmatch *and* pmatch are explicit true.
-        /// </remarks>
-        AND,
-    }
-
-
-    /// <summary>
     /// IME flat state machine. Takes on directionality in conjunction with FilteringState.
     /// </summary>
     public enum SearchEntryState

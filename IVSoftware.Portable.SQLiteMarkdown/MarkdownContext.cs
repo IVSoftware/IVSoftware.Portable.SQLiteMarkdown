@@ -1771,55 +1771,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        [Probationary("Z")]
-        private async void Z()
-        {
-            if (Histo is null)
-            {
-                RouteKey = null;
-            }
-            else
-            {
-                await this;
-                if (Histo[StdModelAttribute.model] == 0)
-                {
-                    RouteKey = StdRouteKey.Empty;
-                }
-                else
-                {
-                    if (Histo[StdModelAttribute.qmatch] != 0 ^ Histo[StdModelAttribute.pmatch] != 0)
-                    {
-                        // Unambiguous matches are present.
-                        RouteKey = Histo[StdModelAttribute.qmatch] != 0
-                        ? StdRouteKey.QMatch
-                        : StdRouteKey.PMatch;
-                    }
-                    else
-                    {
-                        if (Histo[StdModelAttribute.qmatch] == 0)
-                        {
-                            // Then they *both are 0* while model *is not 0*.
-                            if (Settings[StdMarkdownContextSetting.UseAdaptiveShowAll] is bool useAdaptive && useAdaptive)
-                            {
-                                RouteKey = null;
-                            }
-                            else
-                            {
-                                // Models are present, but all are filtered out.
-                                RouteKey = StdRouteKey.Empty;
-                            }
-                        }
-                        else
-                        {
-                            // Then they *both* are not 0.
-                            RouteKey = StdRouteKey.AND;
-                        }
-                    }
-                }
-            }
-
-        }
-
         protected ObservableCollection<object> ActiveFilters
         {
             get
@@ -2366,11 +2317,57 @@ SELECT * FROM items WHERE
                     {
                         _sslimAF.Release();
                     }
-                    Z();
+                    OnUpdateRouting();
                 }
             }
         }
         SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
+
+        protected void OnUpdateRouting()
+        {
+            if (Histo is null)
+            {
+                RouteKey = null;
+            }
+            else
+            {
+                if (Histo[StdModelAttribute.model] == 0)
+                {
+                    RouteKey = StdRouteKey.Empty;
+                }
+                else
+                {
+                    if (Histo[StdModelAttribute.qmatch] != 0 ^ Histo[StdModelAttribute.pmatch] != 0)
+                    {
+                        // Unambiguous matches are present.
+                        RouteKey = Histo[StdModelAttribute.qmatch] != 0
+                        ? StdRouteKey.QMatch
+                        : StdRouteKey.PMatch;
+                    }
+                    else
+                    {
+                        if (Histo[StdModelAttribute.qmatch] == 0)
+                        {
+                            // Then they *both are 0* while model *is not 0*.
+                            if (Settings[StdMarkdownContextSetting.UseAdaptiveShowAll] is bool useAdaptive && useAdaptive)
+                            {
+                                RouteKey = null;
+                            }
+                            else
+                            {
+                                // Models are present, but all are filtered out.
+                                RouteKey = StdRouteKey.Empty;
+                            }
+                        }
+                        else
+                        {
+                            // Then they *both* are not 0.
+                            RouteKey = StdRouteKey.AND;
+                        }
+                    }
+                }
+            }
+        }
 
 
         /// <summary>
