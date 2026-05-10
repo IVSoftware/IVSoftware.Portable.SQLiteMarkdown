@@ -148,7 +148,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             CollectionChanged?.Invoke(this, e);
         }
 
-#if false
+#if false && SAVE_FOR_NOW
         protected ObservableModeledCollection<T> CanonicalSupersetProtected
         {
             get
@@ -278,7 +278,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     $"Expecting INPC senders will be {typeof(T).Name} at all times.");
             }
         }
-
 #endif
 
         public bool IsFixedSize => ((IList)CanonicalSuperset).IsFixedSize;
@@ -388,37 +387,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             return CanonicalSupersetProtected.GetEnumerator();
         }
-    }
-
-    /// <summary>
-    /// 4 of 4 interfaces in this file.
-    /// </summary>
-    partial class ObservableQueryFilterSource<T>
-    : IRoutedEnumerable
-    {
-        public IDictionary<Enum, Func<IEnumerable>> Routes => ((IRoutedEnumerable)CanonicalSupersetProtected).Routes;
-
-        public new Enum? RouteKey 
-        { 
-            get => base.RouteKey;
-            set
-            {
-                if (value is StdRouteKey stdRoute)
-                {
-                    ((IRoutedEnumerable)CanonicalSupersetProtected).RouteKey = value;
-                }
-                else
-                {
-                    this.ThrowHard<InvalidCastException>(
-                        $"For {nameof(ObservableQueryFilterSource)} specifically, the RoutKey must be {nameof(StdRouteKey)}");
-                }
-            }
-        }
-
-        public int GetCount(Enum? route)
-            => CanonicalSupersetProtected.GetCount(route);
-
-        public IEnumerator<T> GetEnumerator(Enum? route)
-            => (IEnumerator<T>)CanonicalSupersetProtected.GetEnumerator(route);
     }
 }

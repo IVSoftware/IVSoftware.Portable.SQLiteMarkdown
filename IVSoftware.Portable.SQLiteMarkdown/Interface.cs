@@ -18,7 +18,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     public interface IModelAuthorityContext
     {
         XElement Model { get; }
-        RequestStdModelAuthorityDlgt RequestStdModelAuthority { get;  }
+        IDisposable RequestAuthority(ModelDataExchangeAuthority authority);
+
+        ModelDataExchangeAuthority ModelAuthority { get; }
     }
 
     /// <summary>
