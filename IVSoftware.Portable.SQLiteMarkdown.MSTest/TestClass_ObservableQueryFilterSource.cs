@@ -3152,7 +3152,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 // to switch out sources many times.
                 ItemsSource = items,
             };
-            items.InputTextSettled += async (sender, e) =>
+            items.InputTextSettled += (sender, e) =>
             {
                 switch (items.FilteringState)
                 {
@@ -3205,9 +3205,11 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
             /// </remarks>
             async Task subtestQueryInitial()
             {
-                actual = items.StateReport();
+                actual = items.StateReport(includeRK: true);
+                actual.ToClipboardExpected();
+                { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible, null]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting initial StateReport to match.");
 
@@ -3408,11 +3410,12 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                     "Expecting RESET event."
                 );
 
-                actual = items.StateReport();
+                actual = items.StateReport(includeRK: true);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]";
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible, null]"
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -3428,11 +3431,11 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 items.InputText = "animals";
                 items.Commit();
 
-                actual = items.StateReport();
+                actual = items.StateReport(includeRK: true);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 7, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteNoResults, FilteringState.Ineligible]"
+[IME Len: 7, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteNoResults, FilteringState.Ineligible, null]"
                 ;
 
                 Assert.AreEqual(
@@ -3444,11 +3447,11 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 items.Settings[StdMarkdownContextSetting.AllowPluralize] = true;
                 items.Commit();
 
-                actual = items.StateReport();
+                actual = items.StateReport(includeRK: true);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 7, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 7, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed, null]"
                 ;
 
                 Assert.AreEqual(
@@ -3460,7 +3463,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 items.InputText += " ";
                 await items;
 
-                actual = items.StateReport();
+                actual = items.StateReport(includeRK:true);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 

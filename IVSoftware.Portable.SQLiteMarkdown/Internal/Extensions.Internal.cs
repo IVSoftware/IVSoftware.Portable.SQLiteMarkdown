@@ -30,7 +30,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
     /// </remarks>
     internal static partial class Extensions
     {
-        public static string StateReport(this IModeledCollection @this)
+        public static string StateReport(this IModeledCollection @this, bool includeRK = false)
         {
             var builder = new List<string>();
 
@@ -71,7 +71,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
                 builder.Add($"CC: {mdc.CanonicalCount}");
                 builder.Add($"PMC: {mdc.PredicateMatchCount}]");
                 builder.Add($"[{mdc.QueryFilterConfig}: {mdc.SearchEntryState.ToFullKey()}");
-                builder.Add($"{mdc.FilteringState.ToFullKey()}]");
+                if (includeRK && @this.GetType().GetProperty("RouteKey") is { } pi)
+                {
+                    builder.Add($"{mdc.FilteringState.ToFullKey()}");
+                    builder.Add($"{(((Enum)pi.GetValue(@this))?.ToFullKey() ?? "null")}]");
+                }
+                else
+                {
+                    builder.Add($"{mdc.FilteringState.ToFullKey()}]");
+                }
                 return string.Join(", ", builder);
             }
             #endregion L o c a l F x

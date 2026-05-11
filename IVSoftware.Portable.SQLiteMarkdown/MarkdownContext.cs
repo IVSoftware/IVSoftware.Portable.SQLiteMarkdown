@@ -1753,7 +1753,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// This is the only place that _isFiltering is allowed to change. 
         /// INPC sequencing is delicate and so the backing store defers the notification.
         /// </remarks>
-        protected virtual void OnFilteringStateChanged()
+        protected virtual async void OnFilteringStateChanged()
         {
             switch (QueryFilterConfig)
             {
@@ -1767,6 +1767,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     _isFiltering = FilteringState != FilteringState.Ineligible;
                     break;
                 default:
+                    break;
+            }
+            switch (FilteringState)
+            {
+                case FilteringState.Ineligible:
+                case FilteringState.Armed:
+                    RouteKey = null;
+                    break;
+                case FilteringState.Active:
+                    break;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {FilteringState.ToFullKey()} case is not supported.");
                     break;
             }
         }
@@ -2141,9 +2153,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 case QueryFilterConfig.Query:
                     FilteringState = FilteringState.Ineligible;
+                    RouteKey = null;
                     break;
                 case QueryFilterConfig.Filter:
                     FilteringState = FilteringState.Armed;
+                    RouteKey = null;
                     break;
                 case QueryFilterConfig.QueryAndFilter:
                     bool arm =

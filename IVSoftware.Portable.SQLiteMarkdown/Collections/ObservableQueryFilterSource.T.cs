@@ -55,11 +55,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             if (!e.Handled)
             {
                 var recordset = MemoryDatabase.Query<T>(e.SQL);
-                if( recordset.Count == 0
+
+                // ☆ Pluralize Option ☆
+                if ( recordset.Count == 0
                     && Settings[StdMarkdownContextSetting.AllowPluralize] is bool allow && allow)
                 {
                     recordset = MemoryDatabase.Query<T>(e.SQL.ToFuzzyQuery());
                 }
+
                 ReplaceItems(recordset);
                 if(CanonicalSuperset.Count == 0)
                 {
