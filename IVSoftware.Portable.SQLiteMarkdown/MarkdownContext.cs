@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -1670,6 +1671,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         protected virtual void OnClear(bool all)
         {
+            ModelAuthorityContext?
+                .Model
+                .RemoveDescendantAttributes(StdModelAttribute.qmatch);
             if (all)
             {
                 InputText = string.Empty;
@@ -1736,7 +1740,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     //        SearchEntryState = SearchEntryState.Cleared;
                     //        break;
                     //}
-
 
                     switch (FilteringState)
                     {
@@ -1827,7 +1830,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         StdRouteKey? _routeKey = null;
 
-        protected virtual void OnRouteKeyChanged() { }
+        protected virtual void OnRouteKeyChanged()
+        {
+            RouteToFullRecordset = RouteKey is null;
+        }
 
         public string InputText
         {
@@ -1975,13 +1981,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (!Equals(_isInputTextEmpty, value))
                 {
                     _isInputTextEmpty = value;
-
-                    // [Gravity]
-                    if(_isInputTextEmpty)
-                    {
-                        RouteToFullRecordset = true;
-                    }
-
                     OnPropertyChanged();
                 }
             }
@@ -2166,10 +2165,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         await Task.Run(() =>
                         {
                             // PredicateMatchSubsetProtected.Clear();
-                            mac.Model.RemoveDescendantAttributes(
-                                [
-                                    StdModelAttribute.qmatch,
-                                ]);
+                            mac.Model.RemoveDescendantAttributes(StdModelAttribute.qmatch);
 
                             #region F I L T E R    Q U E R Y
                             sql = ParseSqlMarkdown();

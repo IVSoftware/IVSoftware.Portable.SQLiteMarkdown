@@ -3428,6 +3428,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                     items.Settings[StdMarkdownContextSetting.AllowPluralize], 
                     "Expecting object? that is a bool set to false.");
 
+                // IME
                 items.InputText = "animals";
                 items.Commit();
 
@@ -3460,6 +3461,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                     "Expecting CC: 12 due to fuzzy query enabled by setting."
                 );
 
+                // IME
                 items.InputText += " ";
                 await items;
 
@@ -3476,6 +3478,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                     "Expecting -> FilteringState.ARMED after APPEND SPACE CHARACTER because all items are still accounted for in filter."
                 );
 
+                // IME
                 items.InputText += "c";
                 await items;
                 Assert.AreEqual(
@@ -3488,13 +3491,14 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 9, IsFiltering: True], [Net: 9, CC: 12, PMC: 9], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed, StdRouteKey.QMatch]"
+[IME Len: 9, IsFiltering: True], [Net: 9, CC: 12, PMC: 9], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active, StdRouteKey.QMatch]"
                 ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting -> FilteringState.ACTIVE after APPEND SPACE CHARACTER."
+                    "Expecting -> FilteringState.ACTIVE after APPEND 'c'. " +
+                    "Expecting NINE matches. This only works if using FUZZY QUERY because of the 'animals' term -> 'animal'."
                 );
 
                 actual = items.Model.CloneWithXBindings(10).ToString();
@@ -3523,19 +3527,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                     "Expecting that APPLY FILTER will have identified matches."
                 );
 
-                actual = items.StateReport();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-[IME Len: 9, IsFiltering: True], [Net: 0, CC: 12, PMC: 9], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting NINE matches. This only works if using FUZZY QUERY because of the 'animals' term -> 'animal'."
-                );
-
+                // IME
                 // Input text = animals ca
                 items.InputText += "a";
                 await items;
@@ -3544,7 +3536,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 10, IsFiltering: True], [Net: 0, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 10, IsFiltering: True], [Net: 1, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                 ;
 
                 Assert.AreEqual(
@@ -3585,9 +3577,11 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 // Extension : Model the Model (with active filter) from the OUTSIDE LOOKING IN.
                 // ☆☆☆☆☆
                 actual = items.ToString(out XElement _);
+                actual.ToClipboardExpected();
+                { }
                 expected = @" 
 <model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" preview=""Black Cat "" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" />
 </model>"
                 ;
                 Assert.AreEqual(
@@ -3600,7 +3594,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 9, IsFiltering: True], [Net: 0, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 9, IsFiltering: True], [Net: 1, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                 ;
 
                 Assert.IsFalse(items.RouteToFullRecordset);
@@ -3609,11 +3603,47 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                     items.Count,
                     "Expecting FILTERED.");
 
+                // IME
                 // And now, a BUGIRL.
                 // This is supposed to show all the items once again.
+                // ...
                 builder.Clear();
                 items.Clear(false);
 
+                actual = items.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+                ;
+
+                actual = items.Model.ToString();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 match:0 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" index=""9"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" index=""11"" />
+</model>"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting all items."
+                );
+
+                // ...
                 // The BUGIRL is that there was no Reset or Change event.
                 actual = string.Join(Environment.NewLine, builder);
                 actual.ToClipboardExpected();
@@ -3629,6 +3659,14 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
 NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
                 ;
 
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting ADD." +
+                    "- This is because the PMC item is the first on the list." +
+                    " ∴ when we take a DIFF, the delta is contiguous IN THIS CASE."
+                );
+
                 // ☆☆☆☆☆
                 // Extension : Model (with cleared filter) from the OUTSIDE LOOKING IN.
                 // ☆☆☆☆☆
@@ -3637,18 +3675,18 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 { }
                 expected = @" 
 <model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" preview=""Black Cat "" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""1"" preview=""Orange Fox"" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" preview=""White Rabb"" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""3"" preview=""Gray Wolf "" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""4"" preview=""Golden Lio"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" index=""5"" preview=""Brown Bear"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" index=""6"" preview=""Black Pant"" />
-  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" index=""7"" preview=""Elephant  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" index=""8"" preview=""Giraffe   "" />
-  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" index=""9"" preview=""Kangaroo  "" />
-  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" index=""10"" preview=""Turtle    "" />
-  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" index=""11"" preview=""Should NOT"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Golden Lio"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Brown Bear"" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" preview=""Black Pant"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" preview=""Elephant  "" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" preview=""Giraffe   "" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" preview=""Kangaroo  "" index=""9"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" preview=""Turtle    "" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" preview=""Should NOT"" index=""11"" />
 </model>"
                 ;
                 Assert.AreEqual(
@@ -3657,28 +3695,8 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                     "Expecting that EXTENSION USES THE ROUTED ITERATOR."
                 );
 
-                actual = items.StateReport();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 0, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
-                ;
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting full list shown after IME CLEAR but still PMC: 1 because there's no new apply filter."
-                );
-
                 Assert.IsTrue(items.RouteToFullRecordset);
                 Assert.AreEqual(12, items.Count, "Expecting routing to track via the internal Read property.");
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting ADD." +
-                    "- This is because the PMC item is the first on the list." +
-                    " ∴ when we take a DIFF, the delta is contiguous IN THIS CASE."
-                );
 
                 // Now force an change event that is not contiguous.
                 items.InputText = "brown&bear";
