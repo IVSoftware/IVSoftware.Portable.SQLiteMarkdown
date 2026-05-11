@@ -2161,6 +2161,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         string sql;
                         IList qmatches = Array.Empty<object>();
                         string[] matchPaths = [];
+                        int ccount = CanonicalCount;
 
                         await Task.Run(() =>
                         {
@@ -2214,7 +2215,7 @@ SELECT * FROM items WHERE
                                     break;
                             }
                         }
-                        if (xqVisited.Count == CanonicalCount)
+                        if (xqVisited.Count == ccount)
                         {   /* G T K - N O O P */
                             // Detected 1:1 so route to canonical.
                         }
@@ -2271,13 +2272,20 @@ SELECT * FROM items WHERE
                                     == SemanticContribution.ExplicitTrue);
                             if (pcount == 0)
                             {
-                                switch (qmatches.Count)
+                                switch (ccount)
                                 {
                                     case 0:
+                                        Debug.Fail($@"ADVISORY - Unexpected {nameof(ApplyFilter)} on empty list.");
+                                        FilteringState = FilteringState.Ineligible;
+                                        RouteKey = null;    // Canonical enumerator for empty list.
                                         break;
                                     case 1:
+                                        FilteringState = FilteringState.Ineligible;
+                                        RouteKey = null;    // Canonical enumerator for list with one item.
                                         break;
                                     default:
+                                        FilteringState = FilteringState.Active;
+                                        RouteKey = StdRouteKey.QMatch;
                                         break;
                                 }
                             }
