@@ -3467,13 +3467,13 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 8, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 8, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed, null]"
                 ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting -> FilteringState.ACTIVE after APPEND SPACE CHARACTER."
+                    "Expecting -> FilteringState.ARMED after APPEND SPACE CHARACTER because all items are still accounted for in filter."
                 );
 
                 items.InputText += "c";
@@ -3482,6 +3482,19 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                     StdRouteKey.QMatch,
                     items.RouteKey,
                     $"Expecting settled collection routing is {StdRouteKey.QMatch.ToFullKey()}"
+                );
+
+                actual = items.StateReport(includeRK: true);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 9, IsFiltering: True], [Net: 9, CC: 12, PMC: 9], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed, StdRouteKey.QMatch]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting -> FilteringState.ACTIVE after APPEND SPACE CHARACTER."
                 );
 
                 actual = items.Model.CloneWithXBindings(10).ToString();

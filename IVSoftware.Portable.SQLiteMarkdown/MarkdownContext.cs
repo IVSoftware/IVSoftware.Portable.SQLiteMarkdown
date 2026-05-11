@@ -1866,7 +1866,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         case FilteringState.Armed:
                             if (!InputText.IsSemanticallyEmpty())
                             {
-                                FilteringState = FilteringState.Active;
+                                // 260511 - do this as a settled concern instead.
+                                // FilteringState = FilteringState.Active;
                             }
                             break;
                         case FilteringState.Active:
