@@ -1659,7 +1659,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 all = true;
             }
-            OnClear(all);
+            if(ModelAuthorityContext is null)
+            {
+                OnClear(all);
+            }
+            else
+            {
+                using (ModelAuthorityContext.RequestAuthority(ModelDataExchangeAuthority.Model))
+                {
+                    if (ModelAuthorityContext.ModelAuthority == ModelDataExchangeAuthority.Model)
+                    {
+                        OnClear(all);
+                    }
+                }
+            }
 
             // Avoid leaking the object itself as the awaited sender.
             nameof(MarkdownContext).OnAwaited(new AwaitedEventArgs(caller: nameof(Clear))
