@@ -108,6 +108,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     .WithBoundAttributeValue(this, nameof(StdModelAttribute.mdc), "[MDC]")
                     .WithAttributesInOrder<StdModelAttribute>();
 
+                    if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                    {
+                        _canonicalSupersetProtected.ModelTracking |= ModelTrackingFlag.ItemQueries;
+                    }
+
                     _canonicalSupersetProtected?.CollectionChanged += CollectionChangedEventForwarder;
                     _canonicalSupersetProtected?.PropertyChanged += PropertyChangedEventForwarder;
                     OnPropertyChanged();

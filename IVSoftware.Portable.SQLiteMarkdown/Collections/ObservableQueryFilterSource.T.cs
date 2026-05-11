@@ -75,6 +75,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
+        protected override void OnClear(bool all)
+        {
+            base.OnClear(all);
+            if(all)
+            {
+                CanonicalSupersetProtected.Clear();
+            }
+        }
+
         /// <summary>
         /// Redirect BC to CSS
         /// </summary>
