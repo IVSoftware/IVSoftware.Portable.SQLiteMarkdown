@@ -10,6 +10,7 @@ using SQLite;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using ItemPropertyChangedEventArgs = IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs;
 
@@ -118,14 +119,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         {
             get
             {
-                if (ModelAuthorityContext?.Model.To<IReadOnlyDictionary<StdModelAttribute, int>>() is { } histo)
+                int? count;
+                count = Histo?[StdModelAttribute.model];
+                if(count is not null)
                 {
-                    return histo[StdModelAttribute.model];
+                    return count.Value;
                 }
-                // Do not call this base class method.
-                this.ThrowHard<ModelException>($"{nameof(CanonicalCount)} requires override in derived type.");
-                // Reachable only if Throw is handled.
-                return 0;
+                else
+                {
+                    count = 
+                        ModelAuthorityContext
+                        ?.Model
+                         .Descendants()
+                         .Count(_=>_.Attribute(StdModelAttribute.model) is not null);
+                    if (count is not null)
+                    {
+                        return count.Value;
+                    }
+                    else
+                    {
+                        // Do not call this base class method.
+                        this.ThrowHard<ModelException>($"{nameof(CanonicalCount)} requires override in derived type.");
+
+                        // Reachable only if Throw is handled.
+                        return 0;
+                    }
+                }
             }
         }
 

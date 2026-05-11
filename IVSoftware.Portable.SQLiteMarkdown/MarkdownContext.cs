@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
@@ -1547,6 +1548,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                 if (!Equals(_filteringState, value))
                 {
+                    if(value == FilteringState.Active)
+                    {
+                        if (_sslimAF.CurrentCount == 0)
+                        {   /* G T K */
+                        }
+                        else
+                        {
+                            this.ThrowFramework<InvalidOperationException>(
+                                $"{FilteringState.Active.ToFullKey()} must be set from {nameof(ApplyFilter)} only.");
+                        }
+                    }
+
                     FilteringStatePrev = _filteringState;
                     _filteringState = value;
 
@@ -1976,83 +1989,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         bool _isInputTextEmpty = false;
 
 
-#if false
-        public virtual bool RouteToFullRecordset
-        {
-            get
-            {
-                switch (FilteringState)
-                {
-                    case FilteringState.Ineligible:
-                    case FilteringState.Armed:
-                        return true;
-                    case FilteringState.Active:
-                        if (0 == CanonicalSupersetProtected.Histo[StdModelAttribute.match])
-                        {
-                            return Equals(Settings[StdMarkdownContextSetting.UseAdaptiveShowAll], true);
-                        }
-                        else return false;
-                    default:
-                        this.ThrowFramework<NotSupportedException>(
-                            $"The {FilteringState.ToFullKey()} case is not supported.");
-                        return true;
-                }
-            }
-        }
-#endif
-
-        [Careful("Trimming or modifying the raw InputText is not allowed.")]
-        protected virtual void OnInputTextChangedOR()
-        {
-            switch (FilteringState)
-            {
-                case FilteringState.Ineligible:
-                    if (InputText.IsSemanticallyEmpty())
-                    {
-                        SearchEntryState = SearchEntryState.QueryEmpty;
-                    }
-                    else if (InputText.TrimEndTransients().Length < 3)
-                    {
-                        SearchEntryState = SearchEntryState.QueryENB;
-                    }
-                    else
-                    {
-                        SearchEntryState = SearchEntryState.QueryEN;
-                    }
-                    break;
-                case FilteringState.Armed:
-                    if (!InputText.IsSemanticallyEmpty())
-                    {
-                        FilteringState = FilteringState.Active;
-                    }
-                    break;
-                case FilteringState.Active:
-                    if (InputText.IsSemanticallyEmpty())
-                    {
-                        // Downgrade but stay armed.
-                        FilteringState = FilteringState.Armed;
-                    }
-                    break;
-                default:
-                    throw new NotImplementedException($"Bad case: {FilteringState}");
-            }
-
-            // #{AC826718-2B0C-4846-9F85-B028BAD3CC10}
-            // Please *do not move* (as has been done many times before).
-            // HERE'S THE THING:
-            // In query mode, the ui *typically* awaits Commit, not Settle,
-            // and this is epistemic because the primary database "could be
-            // anything" and take a year to return a query for all we know.
-            // NEVERTHELESS:
-            // The awaiter, and the process of settling text, is a separate concern.
-            // MENTAL MODEL (CORRECTED):
-            // Check the filtering state in OnInputTextSettled instead, and
-            // gate the 'apply filter' there, not here.
-            RestartIfSemanticInputChanged();
-        }
-
-
-
         /// <summary>
         /// Returns true when the normalized semantic input contains no effective terms.
         /// </summary>
@@ -2223,7 +2159,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     using (DHostBusy.GetToken())
                     {
                         string sql;
-                        IList matches = Array.Empty<object>();
+                        IList qmatches = Array.Empty<object>();
                         string[] matchPaths = [];
 
                         await Task.Run(() =>
@@ -2231,7 +2167,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             // PredicateMatchSubsetProtected.Clear();
                             mac.Model.RemoveDescendantAttributes(
                                 [
-                                    StdModelAttribute.pmatch,
                                     StdModelAttribute.qmatch,
                                 ]);
 
@@ -2251,25 +2186,26 @@ SELECT * FROM items WHERE
                             // satisfy the predicate. These proxy instances are not inserted into the
                             // projection; instead their paths are resolved back to the original model
                             // objects bound in the AST.
-                            matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
+                            qmatches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
 
-                            if (matches.Count == 0 && Equals(Settings[StdMarkdownContextSetting.AllowPluralize], true))
+                            if (qmatches.Count == 0 && Equals(Settings[StdMarkdownContextSetting.AllowPluralize], true))
                             {
                                 sql = sql.ToFuzzyQuery();
-                                matches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
+                                qmatches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
                             }
                             #endregion F I L T E R    Q U E R Y
 
                             matchPaths = localGetPaths();
                         });
 
-                        List<XElement> xpreview = new();
+                        // Not ordered, and doesn't need to be.
+                        HashSet<XElement> xqVisited = new();
                         foreach (var path in matchPaths)
                         {
-                            switch (mac.Model.Place(path, out var xqmatch, PlacerMode.FindOrPartial))
+                            switch (mac.Model.Place(path, out var qmatchX, PlacerMode.FindOrPartial))
                             {
                                 case PlacerResult.Exists:
-                                    xpreview.Add(xqmatch);
+                                    xqVisited.Add(qmatchX);
                                     break;
                                 case PlacerResult.Created:
                                     this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
@@ -2278,23 +2214,24 @@ SELECT * FROM items WHERE
                                     break;
                             }
                         }
-                        if (xpreview.Count == CanonicalCount)
+                        if (xqVisited.Count == CanonicalCount)
                         {   /* G T K - N O O P */
                             // Detected 1:1 so route to canonical.
                         }
                         else
                         {
-                            foreach (var xqmatch in xpreview)
+                            foreach (var xqmatch in xqVisited)
                             {
-                                // IFTTT - the XObject.Change will add this to PMSS.
                                 xqmatch.SetAttributeValue(nameof(StdModelAttribute.qmatch), bool.TrueString);
                             }
 
                             if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
                             {
-                                await ApplyAffinities(matches);
+                                await ApplyAffinities(qmatches);
                             }
+                            localOnUpdateRouting();
                         }
+
                         #region L o c a l F x
                         /// <summary>
                         /// Resolves the path identifiers for the matched recordset. When the proxy
@@ -2306,18 +2243,98 @@ SELECT * FROM items WHERE
                         {
                             if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
                             {
-                                return matches.Cast<IPrioritizedAffinity>().Select(_ => _.FullPath).ToArray();
+                                return qmatches.Cast<IPrioritizedAffinity>().Select(_ => _.FullPath).ToArray();
                             }
                             else
                             {
                                 if (ProxyType.GetSQLiteMapping().PK?.PropertyInfo is PropertyInfo pi)
                                 {
-                                    return matches.Cast<object>().Select(_ => (string)pi.GetValue(_)).ToArray();
+                                    return qmatches.Cast<object>().Select(_ => (string)pi.GetValue(_)).ToArray();
                                 }
                                 // Error fall-through.
                                 this.ThrowHard<InvalidOperationException>();
                                 return [];
                             }
+                        }
+
+                        void localOnUpdateRouting()
+                        {
+                            var pcount =
+                                Histo?[StdModelAttribute.pmatch]
+                                ?? 
+                                ModelAuthorityContext
+                                .Model
+                                .Descendants()
+                                .Count(_ => 
+                                    _
+                                    .Attribute(StdModelAttribute.pmatch)?.Value.GetSemanticContribution() 
+                                    == SemanticContribution.ExplicitTrue);
+                            if (pcount == 0)
+                            {
+                                switch (qmatches.Count)
+                                {
+                                    case 0:
+                                        break;
+                                    case 1:
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                if (qmatches.Count < 2)
+                                {
+                                }
+                                else
+                                {
+                                    FilteringState = FilteringState.Armed;
+                                }
+                            }
+#if false
+                            if (Histo is null)
+                            {
+                                RouteKey = null;
+                            }
+                            else
+                            {
+                                if (Histo[StdModelAttribute.model] == 0)
+                                {
+                                    RouteKey = StdRouteKey.Empty;
+                                }
+                                else
+                                {
+                                    if (Histo[StdModelAttribute.qmatch] != 0 ^ Histo[StdModelAttribute.pmatch] != 0)
+                                    {
+                                        // Unambiguous matches are present.
+                                        RouteKey = Histo[StdModelAttribute.qmatch] != 0
+                                        ? StdRouteKey.QMatch
+                                        : StdRouteKey.PMatch;
+                                    }
+                                    else
+                                    {
+                                        if (Histo[StdModelAttribute.qmatch] == 0)
+                                        {
+                                            // Then they *both are 0* while model *is not 0*.
+                                            if (Settings[StdMarkdownContextSetting.UseAdaptiveShowAll] is bool useAdaptive && useAdaptive)
+                                            {
+                                                RouteKey = null;
+                                            }
+                                            else
+                                            {
+                                                // Models are present, but all are filtered out.
+                                                RouteKey = StdRouteKey.Empty;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // Then they *both* are not 0.
+                                            RouteKey = StdRouteKey.AND;
+                                        }
+                                    }
+                                }
+                            }
+#endif
                         }
                         #endregion L o c a l F x
                     }
@@ -2332,57 +2349,10 @@ SELECT * FROM items WHERE
                     {
                         _sslimAF.Release();
                     }
-                    OnUpdateRouting();
                 }
             }
         }
         SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
-
-        protected void OnUpdateRouting()
-        {
-            if (Histo is null)
-            {
-                RouteKey = null;
-            }
-            else
-            {
-                if (Histo[StdModelAttribute.model] == 0)
-                {
-                    RouteKey = StdRouteKey.Empty;
-                }
-                else
-                {
-                    if (Histo[StdModelAttribute.qmatch] != 0 ^ Histo[StdModelAttribute.pmatch] != 0)
-                    {
-                        // Unambiguous matches are present.
-                        RouteKey = Histo[StdModelAttribute.qmatch] != 0
-                        ? StdRouteKey.QMatch
-                        : StdRouteKey.PMatch;
-                    }
-                    else
-                    {
-                        if (Histo[StdModelAttribute.qmatch] == 0)
-                        {
-                            // Then they *both are 0* while model *is not 0*.
-                            if (Settings[StdMarkdownContextSetting.UseAdaptiveShowAll] is bool useAdaptive && useAdaptive)
-                            {
-                                RouteKey = null;
-                            }
-                            else
-                            {
-                                // Models are present, but all are filtered out.
-                                RouteKey = StdRouteKey.Empty;
-                            }
-                        }
-                        else
-                        {
-                            // Then they *both* are not 0.
-                            RouteKey = StdRouteKey.AND;
-                        }
-                    }
-                }
-            }
-        }
 
 
         /// <summary>
