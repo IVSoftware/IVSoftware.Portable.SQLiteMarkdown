@@ -88,7 +88,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         /// <summary>
         /// One of:
-        /// - Filtering is either globally disabled.
+        /// - Filtering is globally disabled.
         /// - The minimum item count of 2 UNFILTERED items is not present.
         /// </summary>
         Ineligible,
@@ -99,7 +99,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// - Settled text changes now invoke internal filter queries.
         /// - This epoch cannot fall below Armed without a Clear.
-        /// - Specifically, empty IME alone does not make this happen.
+        /// - Specifically, empty IME alone does not make filter ineligible.
+        /// - Conditionally routes to full recordset in the absence of sql-based or property-based predicates.
         /// </remarks>
         Armed,
 
