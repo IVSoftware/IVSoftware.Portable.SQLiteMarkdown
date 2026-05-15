@@ -124,12 +124,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         private void CollectionChangedEventForwarder(object sender, NotifyCollectionChangedEventArgs e)
         {
-            // Bubble the event up to ONP, unless ONP is the authority to begin with.
-            if (CanonicalSupersetProtected.ModelDataExchangeAuthority 
-                != ModelDataExchangeAuthority.ObservableNetCollection)
-            {
-                OnCollectionChanged(e);
-            }
         }
 
         /// <summary>
