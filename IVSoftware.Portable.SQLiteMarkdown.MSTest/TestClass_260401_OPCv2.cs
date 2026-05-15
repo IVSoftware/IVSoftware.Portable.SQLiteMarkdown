@@ -276,7 +276,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 "Expecting result to match."
             );
 
-            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 omc.RemoveAt(1);                // Remove Item02
                 Assert.AreEqual(5, omc.Count);
@@ -304,7 +304,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             te.ResetEpoch();
             omc.PopulateForDemo(5);
 
-            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 omc.RemoveAt(1);
                 Assert.AreEqual(5, omc.Count);
@@ -333,7 +333,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             omc.PopulateForDemo(5);
 
             int liveCount = omc.Count;
-            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 omc.RemoveAt(1);                        // Remove Item02 (middle)
                 liveCount--;
@@ -381,7 +381,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
             );
 
             // P R E V I E W
-            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 omc.Add(i1);
                 omc.Add(i2);
@@ -420,7 +420,7 @@ NetProjection.Add     NewItems= 3 NewStartingIndex= 0 NotifyCollectionChangedEve
 
             // - This *looks* contiguous but it isn't.
             // ∴We should get a Reset not a BCL-compatible event
-            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 omc.Remove(i1);         // Remove Item01 from index 0      
                 omc.RemoveAt(1);        // Remove item03 from index 1
@@ -459,7 +459,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             // is the (only) one that should remain
             Assert.AreSame(omc[0], i2);
 
-            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 omc.PopulateForDemo(5);
             }
@@ -478,7 +478,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
             );
 
             // WHAT HAPPENS IN MODEL WITH IDENTICAL KEYS ???
-            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 for (int i = 1; i < omc.Count; i++)
                 {
@@ -519,7 +519,7 @@ NetProjection.Replace NewItems= 4 OldItems= 4 NewStartingIndex= 0 OldStartingInd
             );
 
             // P R E V I E W
-            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 omc.Clear();
                 Assert.AreEqual(5, omc.Count);  // Remember! We're projecting a different reality.
@@ -542,7 +542,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
                 "Expecting 1x jagged reset."
             );
 
-            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 omc.PopulateForDemo(5);
             }
@@ -559,7 +559,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
                 "Expecting 1x jagged Reset."
             );
 
-            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, omc))
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 // C O N T I G U O U S !
                 // - Move is *not* a qualifying ranged operation.

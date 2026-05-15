@@ -40,7 +40,7 @@ namespace IVSoftware.Portable.Collections.Preview
             else
             {
                 int changed = 0;
-                using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
+                using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
                 {
                     int newStartingIndex = Count;
                     foreach (var item in items)
@@ -80,7 +80,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
         public void InsertRange(int startingIndex, IEnumerable items)
         {
-            using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
+            using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
                 foreach (var item in items)
                 {
@@ -143,7 +143,7 @@ namespace IVSoftware.Portable.Collections.Preview
 
             if (itemsT.Count == count)
             {
-                using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
+                using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
                 {
                     foreach (var item in itemsT)
                     {
@@ -168,7 +168,7 @@ namespace IVSoftware.Portable.Collections.Preview
                         return 0;
                     }
                 }
-                using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
+                using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
                 {
                     foreach (var removeAt in indexes.OrderByDescending(_ => _))
                     {
@@ -205,7 +205,7 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             else
             {
-                using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred, this))
+                using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
                 {
                     var count = (endingIndex - startingIndex) + 1;
                     while (count > 0)

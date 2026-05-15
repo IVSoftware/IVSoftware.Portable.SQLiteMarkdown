@@ -45,7 +45,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// Delegate for RequestStdModelAuthority
         /// </summary>
         public IDisposable RequestAuthority(ModelDataExchangeAuthority authority)
-            => CanonicalSupersetProtected.RequestAuthority(authority, CanonicalSupersetProtected);
+            => CanonicalSupersetProtected.RequestAuthority(authority);
 
         public ModelDataExchangeAuthority ModelAuthority => CanonicalSupersetProtected.ModelDataExchangeAuthority;
 
