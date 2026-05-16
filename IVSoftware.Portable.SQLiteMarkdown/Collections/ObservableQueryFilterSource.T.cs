@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -36,19 +37,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         , IObservableQueryFilterSource<T>
         , IList
         , IList<T>
-        , IModelAuthorityContext
         where T : new()
     {
         [Canonical("The parameterless CTor is the only CTor")]
         public ObservableQueryFilterSource() { }
 
-        /// <summary>
-        /// Delegate for RequestStdModelAuthority
-        /// </summary>
-        public IDisposable RequestAuthority(ModelDataExchangeAuthority authority)
-            => CanonicalSupersetProtected.RequestAuthority(authority);
-
-        public ModelDataExchangeAuthority ModelAuthority { get; } = new ModelDataExchangeAuthority();
+        protected IAuthorityEpochProvider<ModelDataExchangeAuthority> ModelDataExchangeAuthorityProvider { get; }
 
         protected override void OnCommit(RecordsetRequestEventArgs e)
         {
@@ -99,7 +93,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             switch (SearchEntryState)
             {
                 case SearchEntryState.Cleared:
-                    using (CanonicalSupersetProtected.RequestAuthority(ModelDataExchangeAuthority.Model))
+                    //using (ModelAuthority RequestAuthority(ModelDataExchangeAuthority.Model))
                     {
                         CanonicalSupersetProtected.Clear();
                     }
