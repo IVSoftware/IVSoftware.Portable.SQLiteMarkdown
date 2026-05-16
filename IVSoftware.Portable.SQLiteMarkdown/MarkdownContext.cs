@@ -2182,7 +2182,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 try
                 {
                     using (DHostBusy.GetToken())
-                    // using(mac.RequestAuthority(ModelDataExchangeAuthority.ModelDeferred))
+                    using(mac.RequestAuthority(ModelDataExchangeAuthority.ModelDeferred))
                     {
                         string sql;
                         IList qmatches = Array.Empty<object>();
