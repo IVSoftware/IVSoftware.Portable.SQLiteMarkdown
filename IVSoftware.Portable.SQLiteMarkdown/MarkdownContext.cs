@@ -1669,7 +1669,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 using (ModelAuthorityContext.RequestAuthority(ModelDataExchangeAuthority.Model))
                 {
-                    if (ModelAuthorityContext.ModelAuthority == ModelDataExchangeAuthority.Model)
+                    if (ModelAuthorityContext.ModelDataExchangeAuthority == ModelDataExchangeAuthority.Model)
                     {
                         OnClear(all);
                     }

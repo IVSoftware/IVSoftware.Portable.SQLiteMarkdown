@@ -73,7 +73,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             base.OnClear(all);
             if(all)
             {
-                CanonicalSupersetProtected.Clear();
+                Debug.Assert(
+                    CanonicalSupersetProtected.RouteKey is null,
+                    $"Expecting the collection route is nullified.");
+                Debug.Assert(
+                    CanonicalSuperset.Count == 0,
+                    $"Expecting the collection route to read as empty.");
             }
         }
 

@@ -42,10 +42,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public IDictionary<Enum, IAuthorityEpochProvider> AuthorityProviders => 
             ((IModeledCollection)CanonicalSupersetProtected).AuthorityProviders;
 
-        public ModelDataExchangeAuthority ModelAuthority => throw new NotImplementedException();
-
-        SQLiteQueryOnlyConnection? IModeledCollection.FilterQueryDatabase => 
-            ((IModeledCollection)CanonicalSupersetProtected).FilterQueryDatabase;
+        SQLiteQueryOnlyConnection? IModeledCollection.FilterQueryDatabase
+            => CanonicalSupersetProtected.FilterQueryDatabase;
 
         public bool HasAuthority(Enum authority)
             => CanonicalSupersetProtected.HasAuthority(authority);
