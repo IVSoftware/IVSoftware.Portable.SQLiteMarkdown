@@ -2322,50 +2322,6 @@ SELECT * FROM items WHERE
                                     FilteringState = FilteringState.Armed;
                                 }
                             }
-#if false
-                            if (Histo is null)
-                            {
-                                RouteKey = null;
-                            }
-                            else
-                            {
-                                if (Histo[StdModelAttribute.model] == 0)
-                                {
-                                    RouteKey = StdRouteKey.Empty;
-                                }
-                                else
-                                {
-                                    if (Histo[StdModelAttribute.qmatch] != 0 ^ Histo[StdModelAttribute.pmatch] != 0)
-                                    {
-                                        // Unambiguous matches are present.
-                                        RouteKey = Histo[StdModelAttribute.qmatch] != 0
-                                        ? StdRouteKey.QMatch
-                                        : StdRouteKey.PMatch;
-                                    }
-                                    else
-                                    {
-                                        if (Histo[StdModelAttribute.qmatch] == 0)
-                                        {
-                                            // Then they *both are 0* while model *is not 0*.
-                                            if (Settings[StdMarkdownContextSetting.UseAdaptiveShowAll] is bool useAdaptive && useAdaptive)
-                                            {
-                                                RouteKey = null;
-                                            }
-                                            else
-                                            {
-                                                // Models are present, but all are filtered out.
-                                                RouteKey = StdRouteKey.Empty;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            // Then they *both* are not 0.
-                                            RouteKey = StdRouteKey.AND;
-                                        }
-                                    }
-                                }
-                            }
-#endif
                         }
                         #endregion L o c a l F x
                     }
