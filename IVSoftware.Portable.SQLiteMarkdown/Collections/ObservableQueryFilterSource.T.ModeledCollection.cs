@@ -21,6 +21,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     /// </summary>
     partial class ObservableQueryFilterSource<T> 
         : IModeledCollection
+        , IModelAuthorityContext // Allows delegation of MAC to CSS, to be consumed by MDC.
     {
         public XElement Model => CanonicalSupersetProtected.Model;
 
@@ -41,13 +42,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public IDictionary<Enum, IAuthorityEpochProvider> AuthorityProviders => 
             ((IModeledCollection)CanonicalSupersetProtected).AuthorityProviders;
 
+        public ModelDataExchangeAuthority ModelAuthority => throw new NotImplementedException();
+
         SQLiteQueryOnlyConnection? IModeledCollection.FilterQueryDatabase => 
             ((IModeledCollection)CanonicalSupersetProtected).FilterQueryDatabase;
 
         public bool HasAuthority(Enum authority)
-        {
-            return ((IModeledCollection)CanonicalSupersetProtected).HasAuthority(authority);
-        }
+            => CanonicalSupersetProtected.HasAuthority(authority);
+
+        public IDisposable RequestAuthority(ModelDataExchangeAuthority authority) 
+            => CanonicalSupersetProtected.RequestAuthority(authority);
     }
 
     /// <summary>
@@ -123,8 +127,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         ObservableModeledCollection<T> _canonicalSupersetProtected = null;
 
         private void CollectionChangedEventForwarder(object sender, NotifyCollectionChangedEventArgs e)
-        {
-        }
+            => OnCollectionChanged(e);
 
         /// <summary>
         /// FORWARDER FOR:
@@ -133,9 +136,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// - ItemPropertyChangedEventArgs
         /// </summary>
         private void PropertyChangedEventForwarder(object sender, PropertyChangedEventArgs eUnk)
-        {
-            OnPropertyChanged(eUnk);
-        }
+            => OnPropertyChanged(eUnk);
 
         public virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {

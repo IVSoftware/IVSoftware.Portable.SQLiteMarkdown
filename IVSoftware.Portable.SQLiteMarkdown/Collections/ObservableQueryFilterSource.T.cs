@@ -42,8 +42,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Canonical("The parameterless CTor is the only CTor")]
         public ObservableQueryFilterSource() { }
 
-        protected IAuthorityEpochProvider<ModelDataExchangeAuthority> ModelDataExchangeAuthorityProvider { get; }
-
         protected override void OnCommit(RecordsetRequestEventArgs e)
         {
             base.OnCommit(e);

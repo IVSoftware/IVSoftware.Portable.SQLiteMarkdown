@@ -62,7 +62,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [PublishedContract("2.x")]
         public IModelAuthorityContext? ModelAuthorityContext
         {
-            get => _modelAuthorityContext ?? this as IModelAuthorityContext;
+            get => 
+                _modelAuthorityContext 
+                ?? this as IModelAuthorityContext; // Default - rely on inheritance if available.
             set
             {
                 if (!Equals(_modelAuthorityContext, value))
