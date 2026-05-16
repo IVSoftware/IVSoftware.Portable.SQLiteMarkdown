@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using PublishedContractAttribute = IVSoftware.Portable.Common.Attributes.PublishedContractAttribute;
 
@@ -47,7 +48,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public IDisposable RequestAuthority(ModelDataExchangeAuthority authority)
             => CanonicalSupersetProtected.RequestAuthority(authority);
 
-        public ModelDataExchangeAuthority ModelAuthority => CanonicalSupersetProtected.ModelDataExchangeAuthority;
+        public ModelDataExchangeAuthority ModelAuthority { get; } = new ModelDataExchangeAuthority();
 
         protected override void OnCommit(RecordsetRequestEventArgs e)
         {
@@ -91,6 +92,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             base.OnRouteKeyChanged();
             CanonicalSupersetProtected.RouteKey = base.RouteKey;
+        }
+        protected override void OnSearchEntryStateChanged()
+        {
+            base.OnSearchEntryStateChanged();
+            switch (SearchEntryState)
+            {
+                case SearchEntryState.Cleared:
+                    using (CanonicalSupersetProtected.RequestAuthority(ModelDataExchangeAuthority.Model))
+                    {
+                        CanonicalSupersetProtected.Clear();
+                    }
+                    break;
+                default:
+                    // TBD
+                    break;
+            }
         }
     }
 

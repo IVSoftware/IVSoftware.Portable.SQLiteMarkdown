@@ -310,7 +310,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public void Clear()
         {
             Clear(all: true);
-            CanonicalSupersetProtected.Clear();
         }
 
         public bool Contains(object value)
