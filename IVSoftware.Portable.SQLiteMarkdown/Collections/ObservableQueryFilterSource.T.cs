@@ -96,10 +96,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             switch (SearchEntryState)
             {
                 case SearchEntryState.Cleared:
-                    //using (ModelAuthority RequestAuthority(ModelDataExchangeAuthority.Model))
-                    {
-                        CanonicalSupersetProtected.Clear();
-                    }
+                    Debug.Assert(ModelDataExchangeAuthority == ModelDataExchangeAuthority.Model);
+                    CanonicalSupersetProtected.Clear();
                     break;
                 default:
                     // TBD

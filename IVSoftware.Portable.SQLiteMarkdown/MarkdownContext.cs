@@ -1686,9 +1686,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         protected virtual void OnClear(bool all)
         {
-            ModelAuthorityContext?
-                .Model
-                .RemoveDescendantAttributes(StdModelAttribute.qmatch);
+            if (ModelAuthorityContext?.Model is { } model)
+            {
+                model.RemoveDescendantAttributes(StdModelAttribute.qmatch);
+                if (model.To<IRoutedCollection>() is { } route)
+                {
+                    // This does not rely on the 'all' argument.
+                    route.RouteKey = null;
+                }
+            }
             if (all)
             {
                 InputText = string.Empty;
@@ -1805,6 +1811,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 case FilteringState.Ineligible:
                 case FilteringState.Armed:
                     RouteKey = null;
+#if DEBUG
+                    // Detect direction
+                    if(FilteringStatePrev == FilteringState.Active)
+                    { }
+#endif
                     break;
                 case FilteringState.Active:
                     break;
@@ -2171,6 +2182,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 try
                 {
                     using (DHostBusy.GetToken())
+                    // using(mac.RequestAuthority(ModelDataExchangeAuthority.ModelDeferred))
                     {
                         string sql;
                         IList qmatches = Array.Empty<object>();

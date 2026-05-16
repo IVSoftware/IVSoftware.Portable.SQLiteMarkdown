@@ -3217,7 +3217,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
 
                 // Nothing requires await here.
                 nsb.InputText = "animal";   // Synchronous because IsFiltering is False.
-                oqfs.Commit();             // Query on a synchronous memory connection => ReplaceItems() => LoadCanon().
+                oqfs.Commit();              // Query on a synchronous memory connection => ReplaceItems() => LoadCanon().
 
                 // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
                 // Limit touched 260404
@@ -3266,7 +3266,6 @@ NetProjection.Add     NewItems=12 NewStartingIndex= 0 NotifyCollectionChangedEve
                 // is representative of what we'd see in the visible list.
                 actual = string.Join(Environment.NewLine, newItems.Cast<object>().Select(_ => _.ToString()));
                 actual.ToClipboardExpected();
-                actual.ToClipboardExpected();
                 { }
                 var newItemsPayload = @" 
 Black Cat  [animal] [color]
@@ -3292,107 +3291,81 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 oqfs.InputText += " ca";
                 await oqfs;
                 { }
-            }
 
-            /// <summary>
-            /// Verifies that appending new records and requerying transitions into filtering mode.
-            /// </summary>
-            /// <remarks>
-            /// - Clearing and repopulating the dataset establishes a new canonical 
-            ///   baseline and enters Armed filtering state with correct results.
-            /// - Confirms that attempting Commit while IsFiltering is true produces a
-            ///   soft advisory without mutating state. 
-            /// - After awaiting stabilization, the filtered projection reflects the expected narrowed resultset.
-            /// </remarks>
-            async Task subtestAppendDatabaseAndRequery()
-            {
-                oqfs.Clear(all: true);
-                // Live-demo specific.
-                localAddToDatabase("Appetizer Plate", "[dish]", false, new() { "starter", "appealing", "snack" });
-                localAddToDatabase("Errata", "[notes]", false, new() { "crunchy", "green", "appended" });
-                localAddToDatabase("Happy Camper", "[phrase]", false, new() { "joyful", "camp", "approach-west" });
-                localAddToDatabase("Great example - Markdown Demo", "[app] [portable]", false, new() { "digital", "mobile", "software" });
-                localAddToDatabase("Application Form", "[document]", false, new() { "paperwork", "apply" });
-                localAddToDatabase("App Store", "[app]", false, new() { "digital", "mobile", "software" });
-
-                nsb.InputText = "app gre";
-                oqfs.Commit();
-                await oqfs;
-
-                actual = string.Join(Environment.NewLine, oqfs.Select(_ => _.ToString()));
-                expected = @" 
-Green Apple ""tart"",""snack"",""healthy"" [fruit] [color]
-Errata ""crunchy"",""green"",""appended"" [notes]
-Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portable]"
-                ;
-
-                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, oqfs.SearchEntryState);
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting items to match"
-                );
-
-                actual = oqfs.StateReport();
+                actual = oqfs.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 7, IsFiltering: True], [Net: 0, CC: 3, PMC: 3], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
-                ;
-                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting State Report to match.");
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Golden Lio"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Brown Bear"" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" preview=""Black Pant"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" preview=""Elephant  "" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" preview=""Giraffe   "" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" preview=""Kangaroo  "" index=""9"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" preview=""Turtle    "" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" preview=""Should NOT"" index=""11"" />
+</model>";
 
-                // Perform a filter
-                nsb.InputText = "[app] gre";
-
-                #region L o c a l F x
-                var builderThrow = new List<string>();
-                void localOnBeginThrowOrAdvise(object? sender, Throw e)
-                {
-                    builderThrow.Add($"{e.Mode}: {e.Message}");
-                    e.Handled = true;
-                }
-                #endregion L o c a l F x
-                using (this.WithOnDispose(
-                    onInit: (sender, e) =>
-                    {
-                        Throw.BeginThrowOrAdvise += localOnBeginThrowOrAdvise;
-                    },
-                    onDispose: (sender, e) =>
-                    {
-                        Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
-                    }))
-                {
-                    oqfs.Commit();
-
-                    actual = string.Join(Environment.NewLine, builderThrow);
-                    actual.ToClipboardExpected();
-                    { }
-                    expected = @" 
-ThrowSoft: Commit cannot execute while IsFiltering is true. Caller must ensure filtering is not active before invoking Commit.";
-
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting soft throw."
-                    );
-                }
-                await oqfs;
-
-                actual = string.Join(Environment.NewLine, oqfs.Select(_ => _.ToString()));
-                actual.ToClipboardExpected();
-                expected = @" 
-Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portable]"
-                ;
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting items to match"
+                    "Expecting a SINGLE match."
+                );
+
+                // Enumerator BUGIRLs
+                var array = oqfs.ToArray();
+                Assert.HasCount(1, oqfs);
+                Assert.HasCount(1, oqfs.ToArray());
+                Assert.HasCount(1, (IEnumerable)oqfs);
+                Assert.HasCount(1, (IEnumerable<object>)oqfs);
+                Assert.HasCount(1, (IEnumerable<SelectableQFModel>)oqfs);
+                Assert.AreEqual(1, oqfs.Count);
+                Assert.AreEqual(1, ((ICollection)oqfs).Count);
+                Assert.AreEqual(1, ((ICollection<SelectableQFModel>)oqfs).Count);
+                Assert.AreEqual(1, ((IList)oqfs).Count);
+                Assert.AreEqual(1, ((IList<SelectableQFModel>)oqfs).Count);
+                Assert.AreEqual(1, oqfs.PredicateMatchCount);
+                Assert.AreEqual(12, oqfs.CanonicalCount);
+                { }
+
+                actual = JsonConvert.SerializeObject(array, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000005"",
+    ""Description"": ""Black Cat"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[animal] [color]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000005"",
+    ""QueryTerm"": ""black~cat~[animal]~[color]"",
+    ""FilterTerm"": ""black~cat~[animal]~[color]"",
+    ""TagMatchTerm"": ""[animal] [color]"",
+    ""Properties"": ""{\r\n  \""Description\"": \""Black Cat\"",\r\n  \""Tags\"": \""[animal] [color]\""\r\n}""
+  }
+]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting ONE array member."
                 );
             }
 
             async Task subtest_Animals()
             {
                 Assert.AreNotEqual(0, oqfs.CanonicalCount, "Expecting carry-over from previous subtest.");
+
                 // No surprises.
                 builder.Clear();
                 oqfs.Clear();
@@ -3817,6 +3790,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 oqfs.InputText = "rabbit|wolf";
                 await oqfs;
 
+                // Extension - outside looking in.
                 actual = oqfs.ToString(out XElement _);
                 actual.ToClipboardExpected();
                 { }
@@ -3826,6 +3800,109 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
   <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""1"" preview=""Gray Wolf "" />
 </model>"
                 ;
+
+
+                actual = oqfs.Model.ToString();
+                actual.ToClipboardExpected();
+                { } // <- FIRST TIME ONLY: Adjust the message.
+                actual.ToClipboardAssert("Expecting result to match.");
+                { }
+            }
+
+            /// <summary>
+            /// Verifies that appending new records and requerying transitions into filtering mode.
+            /// </summary>
+            /// <remarks>
+            /// - Clearing and repopulating the dataset establishes a new canonical 
+            ///   baseline and enters Armed filtering state with correct results.
+            /// - Confirms that attempting Commit while IsFiltering is true produces a
+            ///   soft advisory without mutating state. 
+            /// - After awaiting stabilization, the filtered projection reflects the expected narrowed resultset.
+            /// </remarks>
+            async Task subtestAppendDatabaseAndRequery()
+            {
+                oqfs.Clear(all: true);
+                // Live-demo specific.
+                localAddToDatabase("Appetizer Plate", "[dish]", false, new() { "starter", "appealing", "snack" });
+                localAddToDatabase("Errata", "[notes]", false, new() { "crunchy", "green", "appended" });
+                localAddToDatabase("Happy Camper", "[phrase]", false, new() { "joyful", "camp", "approach-west" });
+                localAddToDatabase("Great example - Markdown Demo", "[app] [portable]", false, new() { "digital", "mobile", "software" });
+                localAddToDatabase("Application Form", "[document]", false, new() { "paperwork", "apply" });
+                localAddToDatabase("App Store", "[app]", false, new() { "digital", "mobile", "software" });
+
+                nsb.InputText = "app gre";
+                oqfs.Commit();
+                await oqfs;
+
+                actual = string.Join(Environment.NewLine, oqfs.Select(_ => _.ToString()));
+                expected = @" 
+Green Apple ""tart"",""snack"",""healthy"" [fruit] [color]
+Errata ""crunchy"",""green"",""appended"" [notes]
+Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portable]"
+                ;
+
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, oqfs.SearchEntryState);
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting items to match"
+                );
+
+                actual = oqfs.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 7, IsFiltering: True], [Net: 0, CC: 3, PMC: 3], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting State Report to match.");
+
+                // Perform a filter
+                nsb.InputText = "[app] gre";
+
+                #region L o c a l F x
+                var builderThrow = new List<string>();
+                void localOnBeginThrowOrAdvise(object? sender, Throw e)
+                {
+                    builderThrow.Add($"{e.Mode}: {e.Message}");
+                    e.Handled = true;
+                }
+                #endregion L o c a l F x
+                using (this.WithOnDispose(
+                    onInit: (sender, e) =>
+                    {
+                        Throw.BeginThrowOrAdvise += localOnBeginThrowOrAdvise;
+                    },
+                    onDispose: (sender, e) =>
+                    {
+                        Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
+                    }))
+                {
+                    oqfs.Commit();
+
+                    actual = string.Join(Environment.NewLine, builderThrow);
+                    actual.ToClipboardExpected();
+                    { }
+                    expected = @" 
+ThrowSoft: Commit cannot execute while IsFiltering is true. Caller must ensure filtering is not active before invoking Commit.";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting soft throw."
+                    );
+                }
+                await oqfs;
+
+                actual = string.Join(Environment.NewLine, oqfs.Select(_ => _.ToString()));
+                actual.ToClipboardExpected();
+                expected = @" 
+Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portable]"
+                ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting items to match"
+                );
             }
             #endregion S U B T E S T S
 
