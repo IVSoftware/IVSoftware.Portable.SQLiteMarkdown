@@ -3394,7 +3394,6 @@ NetProjection.Remove  OldItems=11 OldStartingIndex= 0 NotifyCollectionChangedEve
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           
 NetProjection.Remove  OldItems= 1 OldStartingIndex= 0 NotifyCollectionChangedEventArgs           "
                 ;
 
