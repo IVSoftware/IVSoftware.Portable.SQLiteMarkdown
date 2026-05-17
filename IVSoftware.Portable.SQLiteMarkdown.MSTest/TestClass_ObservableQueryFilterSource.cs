@@ -3221,7 +3221,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
 
                 // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
                 // Limit touched 260404
-                actual = string.Join(Environment.NewLine, builder);
+                actual = string.Join(Environment.NewLine, builder); builder.Clear();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -3232,7 +3232,7 @@ NetProjection.Add     NewItems=12 NewStartingIndex= 0 NotifyCollectionChangedEve
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting the Commit method has an add component (first) and a reset component (last)."
+                    "Expecting the Commit method has a reset component (first) and an add component(last)."
                 );
 
                 actual = oqfs.Model.ToString();
@@ -3317,6 +3317,13 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     "Expecting a SINGLE match."
                 );
 
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+NetProjection.Remove  OldItems=11 OldStartingIndex= 0 NotifyCollectionChangedEventArgs           "
+                ;
+
                 // Enumerator BUGIRLs
                 var array = oqfs.ToArray();
                 Assert.HasCount(1, oqfs);
@@ -3360,6 +3367,19 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     actual.NormalizeResult(),
                     "Expecting ONE array member."
                 );
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+NetProjection.Remove  OldItems=11 OldStartingIndex= 0 NotifyCollectionChangedEventArgs           "
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting the Commit method has an add component (first) and a reset component (last)."
+                );
             }
 
             async Task subtest_Animals()
@@ -3374,7 +3394,8 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           "
+NetProjection.Reset   NotifyCollectionChangedEventArgs           
+NetProjection.Remove  OldItems= 1 OldStartingIndex= 0 NotifyCollectionChangedEventArgs           "
                 ;
 
                 Assert.AreEqual(
