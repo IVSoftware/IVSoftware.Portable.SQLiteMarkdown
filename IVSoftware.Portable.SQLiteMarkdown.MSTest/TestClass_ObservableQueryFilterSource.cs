@@ -3611,6 +3611,30 @@ NetProjection.Remove  OldItems= 1 OldStartingIndex= 0 NotifyCollectionChangedEve
 [IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
 
+                // ...
+                // The BUGIRL is that there was no Reset or Change event.
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+
+                // IN THE PROCESS OF FIXING THAT BUG, WE ACCIDENTALLY PROVED SOMETHING COOL
+                // - The expectation was for a Reset.
+                // - IT WILL ALMOST ALWAYS BE A RESET.
+                // - But just as a rando thing, IN THIS CORNER CASE the Diff turned out to be BCL compatible.
+                // - The reason: The single PM is at index ZERO.
+                // And the thing is, it worked exactly how we designed it.
+                expected = @" 
+NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting ADD." +
+                    "- This is because the PMC item is the first on the list." +
+                    " ∴ when we take a DIFF, the delta is contiguous IN THIS CASE."
+                );
+
                 actual = oqfs.Model.ToString();
                 actual.ToClipboardExpected();
                 { }
@@ -3635,30 +3659,6 @@ NetProjection.Remove  OldItems= 1 OldStartingIndex= 0 NotifyCollectionChangedEve
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Expecting all items."
-                );
-
-                // ...
-                // The BUGIRL is that there was no Reset or Change event.
-                actual = string.Join(Environment.NewLine, builder);
-                actual.ToClipboardExpected();
-                { }
-
-                // IN THE PROCESS OF FIXING THAT BUG, WE ACCIDENTALLY PROVED SOMETHING COOL
-                // - The expectation was for a Reset.
-                // - IT WILL ALMOST ALWAYS BE A RESET.
-                // - But just as a rando thing, IN THIS CORNER CASE the Diff turned out to be BCL compatible.
-                // - The reason: The single PM is at index ZERO.
-                // And the thing is, it worked exactly how we designed it.
-                expected = @" 
-NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting ADD." +
-                    "- This is because the PMC item is the first on the list." +
-                    " ∴ when we take a DIFF, the delta is contiguous IN THIS CASE."
                 );
 
                 // ☆☆☆☆☆
@@ -3705,24 +3705,23 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
 </model>"
                 ;
 
-
                 actual = oqfs.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" preview=""Black Cat "" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""1"" preview=""Orange Fox"" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" preview=""White Rabb"" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""3"" preview=""Gray Wolf "" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""4"" preview=""Golden Lio"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" index=""5"" qmatch=""True"" match=""True"" preview=""Brown Bear"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" index=""6"" preview=""Black Pant"" />
-  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" index=""7"" preview=""Elephant  "" />
-  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" index=""8"" preview=""Giraffe   "" />
-  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" index=""9"" preview=""Kangaroo  "" />
-  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" index=""10"" preview=""Turtle    "" />
-  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" index=""11"" preview=""Should NOT"" />
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Golden Lio"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Brown Bear"" index=""5"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" preview=""Black Pant"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" preview=""Elephant  "" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" preview=""Giraffe   "" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" preview=""Kangaroo  "" index=""9"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" preview=""Turtle    "" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" preview=""Should NOT"" index=""11"" />
 </model>"
                 ;
 
@@ -3736,8 +3735,9 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 10, IsFiltering: True], [Net: 0, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 10, IsFiltering: True], [Net: 1, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                 ;
+
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
@@ -3760,12 +3760,13 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 0, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
+
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting full list shown after IME CLEAR but still PMC: 1 because there's no new apply filter."
+                    "Expecting full list shown after IME CLEAR and all qmatches clear."
                 );
 
                 Assert.IsTrue(oqfs.RouteToFullRecordset);
@@ -3790,18 +3791,6 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                     "Expecting RESET (because it's a mixed message)."
                 );
 
-                actual = oqfs.StateReport();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 0, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
-                ;
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting full list shown after IME CLEAR but still PMC: 1 because there's no new apply filter."
-                );
-
                 Assert.IsTrue(oqfs.RouteToFullRecordset);
                 Assert.AreEqual(
                     12, 
@@ -3817,8 +3806,8 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 { }
                 expected = @" 
 <model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""0"" preview=""White Rabb"" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""1"" preview=""Gray Wolf "" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""1"" />
 </model>"
                 ;
 
@@ -3828,6 +3817,27 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 { } // <- FIRST TIME ONLY: Adjust the message.
                 actual.ToClipboardAssert("Expecting result to match.");
                 { }
+                expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 match:2 qmatch:2 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""3"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" index=""9"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" index=""11"" />
+</model>";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting TWO MATCHES ∴ RESET not STRUCTURAL event."
+                );
             }
 
             /// <summary>
@@ -3873,9 +3883,12 @@ Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portabl
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 7, IsFiltering: True], [Net: 0, CC: 3, PMC: 3], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 7, IsFiltering: True], [Net: 3, CC: 3, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
-                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting State Report to match.");
+                Assert.AreEqual(
+                    expected.NormalizeResult(), 
+                    actual.NormalizeResult(),
+                    "Expecting THREE ITEMS CANON after Commit + ARMED.");
 
                 // Perform a filter
                 nsb.InputText = "[app] gre";
