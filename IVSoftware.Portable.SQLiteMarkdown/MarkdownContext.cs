@@ -1699,7 +1699,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 InputText = string.Empty;
                 FilteringState = FilteringState.Ineligible;
-                SearchEntryState = SearchEntryState.Cleared;
+                if (SearchEntryState == SearchEntryState.Cleared)
+                {
+                    OnSearchEntryStateChanged();
+                    OnPropertyChanged(nameof(SearchEntryState));
+                }
+                else
+                {
+                    SearchEntryState = SearchEntryState.Cleared;
+                }
             }
             else
             {

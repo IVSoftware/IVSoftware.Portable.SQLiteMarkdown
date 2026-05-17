@@ -71,15 +71,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         protected override void OnClear(bool all)
         {
             base.OnClear(all);
-            if(all)
+#if DEBUG
+            if (CanonicalSupersetProtected.RouteKey is not null)
             {
-                Debug.Assert(
-                    Equals(CanonicalSupersetProtected.RouteKey, StdRouteKey.Empty),
-                    $"Expecting the collection route is nullified.");
-                Debug.Assert(
-                    CanonicalSuperset.Count == 0,
-                    $"Expecting the collection route to read as empty.");
+                if (all)
+                {
+                    Debug.Assert(
+                        Equals(CanonicalSupersetProtected.RouteKey, StdRouteKey.Empty),
+                        $"Expecting the collection route is nullified.");
+                    Debug.Assert(
+                        CanonicalSuperset.Count == 0,
+                        $"Expecting the collection route to read as empty.");
+                }
             }
+#endif
         }
 
         /// <summary>

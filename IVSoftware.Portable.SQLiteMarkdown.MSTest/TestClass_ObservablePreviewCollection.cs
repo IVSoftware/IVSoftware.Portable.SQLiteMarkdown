@@ -893,11 +893,14 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
     /// Instantiates a Modeled OQFS that inherits ObservableModeledCollection.
     /// </summary>
     [TestMethod, DoNotParallelize]
+    [Obsolete("ModeledMarkdownContext no longer exists")]
     public void Test_BasicModeledOQFS()
     {
         string actual, expected;
         using var te = this.TestableEpoch();
         var builder = new List<string>();
+
+        // Transitional - tests should all function with OQFS
         ObservableQueryFilterSource<SelectableQFModel> oqfs = new ();
 
         #region E V E N T S
@@ -971,6 +974,15 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEve
         {
             Assert.IsTrue(oqfs is IRangeable);
 
+            oqfs.Clear();
+
+            actual = oqfs.ToString(FormattingOMC.StateReport);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: 5, CC: 5, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+            ;
+
             te.ResetEpoch();
             builder.Clear();
 
@@ -995,7 +1007,7 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEve
                 "Expecting model has tracked."
             );
 
-            actual = string.Join(Environment.NewLine, builder);
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -1005,7 +1017,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting model has emitted discrete events."
+                "Expecting LoadCanon signature."
             );
 
             actual = oqfs.ToString(FormattingOMC.StateReport);
