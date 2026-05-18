@@ -132,6 +132,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public new void Clear()
         {
             Clear(all: true);
+            using (RequestAuthority(StdModelAuthority.SuspendForwardPropertyChange))
+            {
+                InputText = string.Empty;
+            }
         }
         void IList.Clear() => Clear();
 

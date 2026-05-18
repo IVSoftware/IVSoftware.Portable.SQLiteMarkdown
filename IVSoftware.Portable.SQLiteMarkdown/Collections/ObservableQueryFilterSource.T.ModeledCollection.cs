@@ -51,6 +51,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public IDisposable RequestAuthority(ModelDataExchangeAuthority authority) 
             => CanonicalSupersetProtected.RequestAuthority(authority);
+
+        public IDisposable RequestAuthority(StdModelAuthority authority) 
+            => CanonicalSupersetProtected.RequestAuthority(authority);
     }
 
     /// <summary>
@@ -318,8 +321,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         public void Clear()
         {
-            InputText = string.Empty;
             Clear(all: true);
+            using (RequestAuthority(StdModelAuthority.SuspendForwardPropertyChange))
+            {
+                InputText = string.Empty;
+            }
         }
         void IList.Clear() => Clear();
         void ICollection<T>.Clear() => Clear();

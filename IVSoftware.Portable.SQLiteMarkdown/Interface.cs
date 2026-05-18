@@ -19,7 +19,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         XElement Model { get; }
         IDisposable RequestAuthority(ModelDataExchangeAuthority authority);
-
+        IDisposable RequestAuthority(StdModelAuthority authority);
         ModelDataExchangeAuthority ModelDataExchangeAuthority { get; }
     }
 
