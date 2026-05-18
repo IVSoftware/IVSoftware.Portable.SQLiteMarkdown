@@ -8,6 +8,7 @@ using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
 using SQLite;
 using IVSoftware.Portable.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -570,10 +571,18 @@ SELECT * FROM items WHERE
             onDispose: (sender, e) => IVSoftware.Portable.Threading.Extensions.Awaited -= localOnAwaited);
         void localOnAwaited(object? sender, AwaitedEventArgs e)
         {
-            builder.Add(e.Caller);
+            switch (e.Caller)
+            {
+                case nameof(IModeledCollection.FilterQueryDatabase):
+                    builder.Add(e.Caller);
+                    break;
+                default:
+                    break;
+            }
         }
         #endregion L o c a l F x
         subtest_AssertCtorNoFQD();
+        subtest_OQFS();
         subtest_StringExtensionNoFQD();
 
         #region S U B T E S T S 
@@ -581,12 +590,28 @@ SELECT * FROM items WHERE
         void subtest_AssertCtorNoFQD()
         {
             MarkdownContext<SelectableQFModel> mdc = new();
+            Assert.HasCount(0, builder, $"Expecting no pings on FilterQueryDatabase Awaited.");
+        }
+
+        void subtest_OQFS()
+        {
+            ObservableQueryFilterSource<SelectableQFModel> oqfs = new();
+            if(oqfs.AsInterface<ITestableMDC>() is { } tmdc)
+            {
+                if (tmdc.HasFQDB)
+                {   /* G T K */
+                }
+                else
+                {   /* G T K */
+                }
+            }
         }
 
         // Captures 'absence of' OnAwaited event.
         void subtest_StringExtensionNoFQD()
         {
             "carrot".ParseSqlMarkdown<SelectableQFModel>();
+            Assert.HasCount(0, builder, $"Expecting no pings on FilterQueryDatabase Awaited.");
         }
         #endregion S U B T E S T S
     }

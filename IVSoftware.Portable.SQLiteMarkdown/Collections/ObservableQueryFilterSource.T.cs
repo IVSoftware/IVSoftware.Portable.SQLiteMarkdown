@@ -10,6 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -174,6 +175,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public IReadOnlyList<T> UnfilteredItems => CanonicalSupersetProtected;
 
         [Obsolete("Legacy unit test support only.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public MarkdownContextOR MarkdownContextOR
         {
             get

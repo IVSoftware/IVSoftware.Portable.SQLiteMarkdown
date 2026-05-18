@@ -28,7 +28,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 this.@this = @this;
             }
             MarkdownContext @this;
-            public bool HasFQDB => @this._filterQueryDatabase is SQLiteConnection;
+            public bool HasFQDB => @this.FilterQueryDatabase is SQLiteConnection;
         }
     }
 }

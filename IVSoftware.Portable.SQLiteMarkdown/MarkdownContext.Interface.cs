@@ -33,6 +33,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///   provide an advisory stream should this be called upon to service more
         ///   than the implicit single table for the collection.
         /// </remarks>
+        [PublishedContract("1.x")]
         protected virtual SQLiteConnection FilterQueryDatabase
         {
             get
@@ -41,7 +42,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     if (omc.ModelTracking.HasFlag(ModelTrackingFlag.ItemQueries))
                     {
-                        return omc.FilterQueryDatabase!;
+                        var omcdb = omc.FilterQueryDatabase;
+                        if(!ReferenceEquals(omcdb, _filterQueryDatabase))
+                        {
+                            _filterQueryDatabase = omcdb;
+                            this.OnAwaited();
+                        }
+                        return _filterQueryDatabase!;
                     }
                     else
                     {
