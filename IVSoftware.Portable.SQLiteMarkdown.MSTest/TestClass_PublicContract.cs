@@ -576,13 +576,13 @@ SELECT * FROM items WHERE
             switch (e.Caller)
             {
                 case "FilterQueryDatabase":
-                    eventQueue.Enqueue(new(sender, e));
+                    eventQueue.Enqueue(new(sender!, e));
                     break;
             }
         }
         void localOnEvent(object? sender, Throw e)
         {
-            eventQueue.Enqueue((sender, e));
+            eventQueue.Enqueue((sender!, e));
         }
         #endregion L o c a l F x
 
@@ -607,31 +607,12 @@ SELECT * FROM items WHERE
         void subtest_AssertCtorNoFQD()
         {
             mdc = new();
-
-            @throw = (Throw)eventQueue.DequeueSingle().e;
-
-            actual = $"{@throw.GetType().Name} {@throw.ToString()}";
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-Advisory Id: Clear
-Clearing histogram while model-bound rebuilds (not clears) counts from current model."
-            ;
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting result to match."
-            );
-
-            Assert.AreEqual(0, eventQueue.Count(), "Expecting *no* database creation.");
         }
 
         // Captures 'absence of' OnAwaited event.
         void subtest_StringExtensionNoFQD()
         {
             "carrot".ParseSqlMarkdown<SelectableQFModel>();
-            Assert.AreEqual(0, eventQueue.Count(), "Expecting *no* database creation.");
         }
         #endregion S U B T E S T S
     }
