@@ -48,11 +48,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
             {
                 if (@this is IList list)
                 {
-                    builder.Add($"[Net: {list.Count}");
+                    builder.Add($"[Net: {list.Count}]");
                 }
                 else
                 {
-                    builder.Add($"[Net: null");
+                    builder.Add($"[Net: null]");
                 }
                 return string.Join(", ", builder);
             }
