@@ -592,12 +592,14 @@ SELECT * FROM items WHERE
         // Captures 'absence of' OnAwaited event.
         void subtest_AssertCtorNoFQD()
         {
+            builder.Clear();
             MarkdownContext<SelectableQFModel> mdc = new();
             Assert.HasCount(0, builder, $"Expecting no pings on FilterQueryDatabase Awaited.");
         }
 
         void subtest_OQFS()
         {
+            builder.Clear();
             ObservableQueryFilterSource<SelectableQFModel> oqfs = new();
             if(oqfs.AsInterface<ITestableMDC>() is { } tmdc)
             {
@@ -619,6 +621,7 @@ SELECT * FROM items WHERE
         // Captures 'absence of' OnAwaited event.
         void subtest_StringExtensionNoFQD()
         {
+            builder.Clear();
             "carrot".ParseSqlMarkdown<SelectableQFModel>();
             Assert.HasCount(0, builder, $"Expecting no pings on FilterQueryDatabase Awaited.");
         }
