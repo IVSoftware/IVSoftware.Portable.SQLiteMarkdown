@@ -1864,28 +1864,30 @@ SELECT * FROM items WHERE
         public async Task Test_Detect_QueryENB_or_QueryEN_when_IsFiltering()
         {
             string actual, expected;
-            ObservableModeledCollection<SelectableQFModel> omc = new();
-            var mdc = new MarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Filter };
+            ObservableQueryFilterCollection<SelectableQFModel> oqfc = new() 
+            {
+                QueryFilterConfig = QueryFilterConfig.Filter
+            };
 
-            actual = omc.StateReport();
+            actual = oqfc.StateReport();
             expected = @" 
 [IME Len: 0, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-            mdc.InputText = "a";
-            await mdc; // YBYA you need this in filter mode.
+            oqfc.InputText = "a";
+            await oqfc; // YBYA you need this in filter mode.
 
-            actual = omc.StateReport();
+            actual = oqfc.StateReport();
             expected = @" 
 [IME Len: 1, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "STILL ARMED due to NO ITEMS IN PROJECTION");
 
             // Reset to empty IME. Do not violate minimum SES.
-            mdc.Clear();
+            oqfc.Clear();
 
-            actual = omc.StateReport();
+            actual = oqfc.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 

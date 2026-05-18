@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Collections.Events;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -18,11 +19,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         : ObservableModeledCollection<T>
         , IObservableQueryFilterSource<T>
     {
-        class _MarkdownContextImpl_ : MarkdownContext<T> , IMarkdownContext
+        public ObservableQueryFilterCollection()
         {
-            public new DisposableHost DHostBusy => base.DHostBusy;
+            Model.SetBoundAttributeValue(
+                MarkdownContext = new MarkdownContext<T>(),
+                StdModelAttribute.mdc,
+                "[MDC]");
         }
-        protected MarkdownContext MarkdownContext { get; } = new _MarkdownContextImpl_();
+
+        protected MarkdownContext<T> MarkdownContext { get; }
 
         public Type ContractType
             => MarkdownContext.ContractType;
@@ -159,7 +164,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public void InitializeFilterOnlyMode(IEnumerable<T> items)
         {
-            throw new NotImplementedException();
+            QueryFilterConfig = QueryFilterConfig.Filter;
+            LoadCanon(items.ToList());
         }
 
         public void ReplaceItems(IEnumerable<T> items) => LoadCanon(items.ToList());
@@ -168,5 +174,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
                 OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
+
+        public TaskAwaiter<TaskStatus> GetAwaiter() => MarkdownContext.GetAwaiter();
     }
 }
