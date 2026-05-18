@@ -13,7 +13,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             bool predicateCalled = false;
             Predicate<string> predicate = term => { predicateCalled = true; return false; };
 
-            var context = "dog".ParseSqlMarkdown<SelfIndexedItem>(ref state, predicate);
+            var context = Extensions.ParseSqlMarkdown<SelfIndexedItem>("dog", ref state, predicate);
 
             Assert.AreEqual(ValidationState.Valid, state, "Expression should parse as valid.");
             Assert.IsFalse(predicateCalled, "Validation predicate is not expected to be invoked.");
