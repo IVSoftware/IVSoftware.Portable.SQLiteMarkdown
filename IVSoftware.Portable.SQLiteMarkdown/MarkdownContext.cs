@@ -40,7 +40,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         , INotifyPropertyChanged
     {
         [Careful("The ContractType type must be known and captured regardless of GF mode.")]
-        private MarkdownContext() => 
+        private MarkdownContext() =>
             throw new NotSupportedException("The ContractType type must be known and captured regardless of GF mode.");
 
         /// <summary>
@@ -68,8 +68,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         [PublishedContract("2.x")]
         public IModelAuthorityContext? ModelAuthorityContext
         {
-            get => 
-                _modelAuthorityContext 
+            get =>
+                _modelAuthorityContext
                 ?? this as IModelAuthorityContext; // Default - rely on inheritance if available.
             set
             {
@@ -216,7 +216,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // and are *not* bound to the ContractType.
             Raw = expr;
             Transform = Raw;
-            if(proxyType.GetSQLiteMapping(contractType: ContractType)?.TableName is { } tableName)
+            if (proxyType.GetSQLiteMapping(contractType: ContractType)?.TableName is { } tableName)
             {
                 TableName = tableName;
             }
@@ -1382,7 +1382,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 return _validationPredicate ?? (expr =>
                 {
-                    if(IsFiltering)
+                    if (IsFiltering)
                     {
                         return true;
                     }
@@ -1459,7 +1459,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             break;
                         case QueryFilterConfig.Filter:
                             // Advance to minimum states for Filter mode.
-                            if(FilteringState == FilteringState.Ineligible)
+                            if (FilteringState == FilteringState.Ineligible)
                             {
                                 FilteringState = FilteringState.Armed;
                                 Debug.Assert(IsFiltering);
@@ -1540,7 +1540,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     case QueryFilterConfig.Query:
                         // [Gravity]
-                        if(value > FilteringState.Ineligible)
+                        if (value > FilteringState.Ineligible)
                         {
                             value = FilteringState.Ineligible;
                         }
@@ -1557,7 +1557,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                 if (!Equals(_filteringState, value))
                 {
-                    if(value == FilteringState.Active)
+                    if (value == FilteringState.Active)
                     {
                         if (_sslimAF.CurrentCount == 0)
                         {   /* G T K */
@@ -1578,7 +1578,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     OnFilteringStateChanged();
                     OnPropertyChanged();
 
-                    if(_isFiltering != isFilteringB4)
+                    if (_isFiltering != isFilteringB4)
                     {
                         OnIsFilteringChanged();
                         OnPropertyChanged(nameof(IsFiltering));
@@ -1617,7 +1617,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         public void Sort(IComparer? comparer)
         {
-            if(comparer is null)
+            if (comparer is null)
             {
                 throw new NotImplementedException("ToDo");
             }
@@ -1667,7 +1667,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 all = true;
             }
-            if(ModelAuthorityContext is null)
+            if (ModelAuthorityContext is null)
             {
                 OnClear(all);
             }
@@ -1827,7 +1827,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     RouteKey = null;
 #if DEBUG
                     // Detect direction
-                    if(FilteringStatePrev == FilteringState.Active)
+                    if (FilteringStatePrev == FilteringState.Active)
                     { }
 #endif
                     break;
@@ -2141,7 +2141,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         ? SearchEntryState == SearchEntryState.QueryCompleteWithResults
                           && mc.Count > 1
                         : SearchEntryState == SearchEntryState.QueryCompleteWithResults;
-                    if(arm)
+                    if (arm)
                     {
                         FilteringState = FilteringState.Armed;
                     }
@@ -2166,7 +2166,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected virtual async Task OnInputTextSettled(CancelEventArgs e)
         {
             InputTextSettled?.Invoke(this, e);
-            if(!e.Cancel)
+            if (!e.Cancel)
             {
                 // [Remember]
                 // - The distinction of 'Ineligible' is that
@@ -2196,7 +2196,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 try
                 {
                     using (DHostBusy.GetToken())
-                    using(mac.RequestAuthority(ModelDataExchangeAuthority.ModelDeferred))
+                    using (mac.RequestAuthority(ModelDataExchangeAuthority.ModelDeferred))
                     {
                         string sql;
                         IList qmatches = Array.Empty<object>();
@@ -2299,13 +2299,13 @@ SELECT * FROM items WHERE
                         {
                             var pcount =
                                 Histo?[StdModelAttribute.pmatch]
-                                ?? 
+                                ??
                                 ModelAuthorityContext
                                 .Model
                                 .Descendants()
-                                .Count(_ => 
+                                .Count(_ =>
                                     _
-                                    .Attribute(StdModelAttribute.pmatch)?.Value.GetSemanticContribution() 
+                                    .Attribute(StdModelAttribute.pmatch)?.Value.GetSemanticContribution()
                                     == SemanticContribution.ExplicitTrue);
                             if (pcount == 0)
                             {
@@ -2378,6 +2378,21 @@ SELECT * FROM items WHERE
         /// <summary>
         /// Produce a IN clause with negative polarity that applies the specified PKs.
         /// </summary>
-        public HashSet<object> DisallowedPrimaryKeys { get; } = new();        
+        public HashSet<object> DisallowedPrimaryKeys { get; } = new();
+
+
+
+        /// <summary>
+        /// Returns a 'hidden' interface implementation if available.
+        /// </summary>
+        /// <remarks>
+        /// Intended for a call site that employs pattern matching.
+        /// </remarks>
+        public TInterface? AsInterface<TInterface>() where TInterface : class =>
+            typeof(TInterface) switch
+            {
+                Type t when t == typeof(ITestableMDC) => (TInterface)TestableMDCImpl,
+                _ => default,
+            };
     }
 }

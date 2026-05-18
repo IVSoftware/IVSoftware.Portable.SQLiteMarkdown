@@ -560,56 +560,27 @@ SELECT * FROM items WHERE
     /// The MDC will raise OnAwaited if/when the FilterQueryDatabase is instantiated. 
     /// Success in this test relies on the absence of any such events.
     /// </summary>
-    [TestMethod]
+    [TestMethod, DoNotParallelize]
     public void Test_NoSpuriousFilterQueryDatabaseInstantiation()
     {
-        string actual, expected;
-
-        var friend = (new MarkdownContext<SelectableQFModel>()).ToStrongNamedFriendAssembly();
-
-        Queue<SenderEventPair> eventQueue = new();
-        Throw @throw;
-
+        var builder = new List<string>();
         #region L o c a l F x 
-        using var awaited = this.WithOnDispose(
-            onInit: (sender, e) => Threading.Extensions.Awaited += localOnAwaited,
-            onDispose: (sender, e) => Threading.Extensions.Awaited -= localOnAwaited);
+        using var local = this.WithOnDispose(
+            onInit: (sender, e) => IVSoftware.Portable.Threading.Extensions.Awaited += localOnAwaited,
+            onDispose: (sender, e) => IVSoftware.Portable.Threading.Extensions.Awaited -= localOnAwaited);
         void localOnAwaited(object? sender, AwaitedEventArgs e)
         {
-            switch (e.Caller)
-            {
-                case "FilterQueryDatabase":
-                    eventQueue.Enqueue(new(sender!, e));
-                    break;
-            }
-        }
-        void localOnEvent(object? sender, Throw e)
-        {
-            eventQueue.Enqueue((sender!, e));
+            builder.Add(e.Caller);
         }
         #endregion L o c a l F x
-
-        using var local = this.WithOnDispose(
-            onInit: (sender, e) =>
-            {
-                Throw.BeginThrowOrAdvise += localOnEvent;
-            },
-            onDispose: (sender, e) =>
-            {
-                Throw.BeginThrowOrAdvise -= localOnEvent;
-            });
-
-        MarkdownContext<SelectableQFModel> mdc;
-
         subtest_AssertCtorNoFQD();
-
         subtest_StringExtensionNoFQD();
 
         #region S U B T E S T S 
         // Captures 'absence of' OnAwaited event.
         void subtest_AssertCtorNoFQD()
         {
-            mdc = new();
+            MarkdownContext<SelectableQFModel> mdc = new();
         }
 
         // Captures 'absence of' OnAwaited event.

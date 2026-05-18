@@ -95,13 +95,14 @@
 			Diagnostics:
 			- Advisory stream subscribable via IVSoftware.Portable.Common.Exceptions.BeginThrowOrAdvise.
 		</PackageReleaseNotes>
-
-		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+	
+	<PropertyGroup>
+		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<SignAssembly>True</SignAssembly>
 	</PropertyGroup>
+	
 	<ItemGroup>
 	  <Compile Remove="Collections\Modeled\**" />
 	  <EmbeddedResource Remove="Collections\Modeled\**" />
