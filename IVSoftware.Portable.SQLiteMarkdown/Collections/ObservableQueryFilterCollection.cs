@@ -5,7 +5,9 @@ using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using SQLite;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -16,95 +18,143 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         : ObservableModeledCollection<T>
         , IObservableQueryFilterSource<T>
     {
-        protected MarkdownContext MarkdownContext { get; } = new MarkdownContext<T>();
+        class _MarkdownContextImpl_ : MarkdownContext<T> , IMarkdownContext
+        {
+            public new DisposableHost DHostBusy => base.DHostBusy;
+        }
+        protected MarkdownContext MarkdownContext { get; } = new _MarkdownContextImpl_();
 
-        public Type ContractType => ((IMarkdownContext)MarkdownContext).ContractType;
+        public Type ContractType
+            => MarkdownContext.ContractType;
 
-        public Type ProxyType => ((IMarkdownContext)MarkdownContext).ProxyType;
+        public Type ProxyType 
+            => MarkdownContext.ProxyType;
 
-        public string InputText { get => ((IMarkdownContext)MarkdownContext).InputText; set => ((IMarkdownContext)MarkdownContext).InputText = value; }
+        public string InputText 
+        { 
+            get => MarkdownContext.InputText;
+            set => MarkdownContext.InputText = value;
+        }
 
-        public bool IsFiltering => ((IMarkdownContext)MarkdownContext).IsFiltering;
+        public bool IsFiltering 
+            => MarkdownContext.IsFiltering;
 
-        public FilteringState FilteringState => ((IMarkdownContext)MarkdownContext).FilteringState;
+        public FilteringState FilteringState
+            => MarkdownContext.FilteringState;
 
-        public SearchEntryState SearchEntryState => ((IMarkdownContext)MarkdownContext).SearchEntryState;
+        public SearchEntryState SearchEntryState
+            => MarkdownContext.SearchEntryState;
 
-        public QueryFilterConfig QueryFilterConfig { get => ((IMarkdownContext)MarkdownContext).QueryFilterConfig; set => ((IMarkdownContext)MarkdownContext).QueryFilterConfig = value; }
-        public uint DefaultLimit { get => ((IMarkdownContext)MarkdownContext).DefaultLimit; set => ((IMarkdownContext)MarkdownContext).DefaultLimit = value; }
-        public TimeSpan InputTextSettlingTime { get => ((IMarkdownContext)MarkdownContext).InputTextSettlingTime; set => ((IMarkdownContext)MarkdownContext).InputTextSettlingTime = value; }
+        public QueryFilterConfig QueryFilterConfig
+        { 
+            get => MarkdownContext.QueryFilterConfig;
+            set => MarkdownContext.QueryFilterConfig = value;
+        }
+        public uint DefaultLimit
+        {
+            get => MarkdownContext.DefaultLimit; 
+            set => MarkdownContext.DefaultLimit = value; 
+        }
 
-        public bool Busy => ((IMarkdownContext)MarkdownContext).Busy;
+        public TimeSpan InputTextSettlingTime
+        {
+            get => MarkdownContext.InputTextSettlingTime; 
+            set => MarkdownContext.InputTextSettlingTime = value;
+        }
 
-        public int CanonicalCount => ((IMarkdownContext)MarkdownContext).CanonicalCount;
+        public bool Busy => MarkdownContext.Busy;
 
-        public int PredicateMatchCount => ((IMarkdownContext)MarkdownContext).PredicateMatchCount;
+        public int CanonicalCount => MarkdownContext.CanonicalCount;
 
-        public IModelAuthorityContext ModelAuthorityContext => ((IMarkdownContext)MarkdownContext).ModelAuthorityContext;
+        public int PredicateMatchCount => MarkdownContext.PredicateMatchCount;
 
-        public DisposableHost DHostBusy => throw new NotImplementedException();
+        public IModelAuthorityContext? ModelAuthorityContext => MarkdownContext.ModelAuthorityContext;
 
-        public string Placeholder => throw new NotImplementedException();
+        public DisposableHost DHostBusy => MarkdownContext.DHostBusy;
 
-        public string Title { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string Placeholder
+        {
+            get => _placeholder;
+            set
+            {
+                if (!Equals(_placeholder, value))
+                {
+                    _placeholder = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        string _placeholder = string.Empty;
 
-        public string SQL => throw new NotImplementedException();
+        public string Title
+        {
+            get => _title;
+            set
+            {
+                if (!Equals(_title, value))
+                {
+                    _title = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        string _title = string.Empty;
 
-        public SQLiteConnection MemoryDatabase { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string SQL => MarkdownContext.Query;
+
+        public SQLiteConnection MemoryDatabase 
+        { 
+            get => MarkdownContext.MemoryDatabase;
+            set => MarkdownContext.MemoryDatabase = value; 
+        }
 
         public event EventHandler? InputTextSettled
         {
-            add
-            {
-                ((IMarkdownContext)MarkdownContext).InputTextSettled += value;
-            }
+            add => MarkdownContext.InputTextSettled += value;
 
-            remove
-            {
-                ((IMarkdownContext)MarkdownContext).InputTextSettled -= value;
-            }
+            remove => MarkdownContext.InputTextSettled -= value;
         }
 
         public event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
 
         public string ParseSqlMarkdown()
         {
-            return ((IMarkdownContext)MarkdownContext).ParseSqlMarkdown();
+            return MarkdownContext.ParseSqlMarkdown();
         }
 
         public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
         {
-            return ((IMarkdownContext)MarkdownContext).ParseSqlMarkdown(expr, proxyType, qfMode, out xast);
+            return MarkdownContext.ParseSqlMarkdown(expr, proxyType, qfMode, out xast);
         }
 
         public string ParseSqlMarkdown<T1>()
         {
-            return ((IMarkdownContext)MarkdownContext).ParseSqlMarkdown<T1>();
+            return MarkdownContext.ParseSqlMarkdown<T1>();
         }
 
         public string ParseSqlMarkdown<T1>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
         {
-            return ((IMarkdownContext)MarkdownContext).ParseSqlMarkdown<T1>(expr, qfMode);
+            return MarkdownContext.ParseSqlMarkdown<T1>(expr, qfMode);
         }
 
         public void Commit()
         {
-            ((IMarkdownContext)MarkdownContext).Commit();
+            MarkdownContext.Commit();
         }
 
         public FilteringState Clear(bool all)
         {
-            return ((IMarkdownContext)MarkdownContext).Clear(all);
+            return MarkdownContext.Clear(all);
         }
 
         public IDisposable BeginBusy()
         {
-            return ((IMarkdownContext)MarkdownContext).BeginBusy();
+            return MarkdownContext.BeginBusy();
         }
 
         public string[] GetTableNames()
         {
-            return ((IMarkdownContext)MarkdownContext).GetTableNames();
+            return MarkdownContext.GetTableNames();
         }
 
         public void InitializeFilterOnlyMode(IEnumerable<T> items)
@@ -115,5 +165,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public void ReplaceItems(IEnumerable<T> items) => LoadCanon(items.ToList());
 
         public Task ReplaceItemsAsync(IEnumerable<T> items) => LoadCanonAsync(items.ToList());
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
+                OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
     }
 }

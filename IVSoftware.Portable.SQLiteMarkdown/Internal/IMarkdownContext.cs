@@ -150,6 +150,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
         /// </summary>
         string[] GetTableNames();
 
-        IModelAuthorityContext ModelAuthorityContext { get; }
+        /// <summary>
+        /// Handle of a linked collection, when available.
+        /// </summary>
+        IModelAuthorityContext? ModelAuthorityContext { get; }
     }
 }
