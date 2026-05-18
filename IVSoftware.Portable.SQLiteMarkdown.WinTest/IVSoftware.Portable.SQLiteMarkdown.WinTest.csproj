@@ -8,6 +8,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+	<PropertyGroup>
+		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
+		<SignAssembly>true</SignAssembly>
+	</PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Migrate\**" />
     <EmbeddedResource Remove="Migrate\**" />

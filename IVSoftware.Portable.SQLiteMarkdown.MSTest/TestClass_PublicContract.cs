@@ -7,6 +7,7 @@ using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
 using SQLite;
+using IVSoftware.Portable.Common;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -563,6 +564,8 @@ SELECT * FROM items WHERE
     public void Test_NoSpuriousFilterQueryDatabaseInstantiation()
     {
         string actual, expected;
+
+        var friend = (new MarkdownContext<SelectableQFModel>()).ToStrongNamedFriendAssembly();
 
         Queue<SenderEventPair> eventQueue = new();
         Throw @throw;

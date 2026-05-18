@@ -9,6 +9,11 @@
 		<!-- Win32 and STA threading is now enabled for this test project -->
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
+		<SignAssembly>true</SignAssembly>
+	</PropertyGroup>
+
 	<ItemGroup>		
 		<!--1.0.1 - Do not change version - this is the whole point.-->
 		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="1.0.1" />

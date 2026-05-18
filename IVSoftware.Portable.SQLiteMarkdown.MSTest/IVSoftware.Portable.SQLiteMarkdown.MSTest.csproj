@@ -10,8 +10,11 @@
 		<IsTestProject>true</IsTestProject>
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
+	</PropertyGroup>
+
+	<PropertyGroup>
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
-		<SignAssembly>True</SignAssembly>
+		<SignAssembly>true</SignAssembly>
 	</PropertyGroup>
 
   <ItemGroup>
