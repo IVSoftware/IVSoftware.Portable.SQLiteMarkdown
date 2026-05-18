@@ -22,7 +22,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             => ParseSqlMarkdownOR<T>(expr, ref validationState, validationPredicate, 3, IndexingMode.All);
 
         [Obsolete("Use for backward test compatibility only.")]
-        public static MarkdownContextOR ParseSqlMarkdownOR<T>(
+        public static MarkdownContextOR ParseSqlMarkdown<T>(
             this string expr,
             ref SearchEntryState searchEntryState)
         {

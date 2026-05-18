@@ -134,7 +134,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public static MarkdownContextOR ParseSqlMarkdown<T>(
             this string expr,
             ref SearchEntryState searchEntryState)
-            => expr.ParseSqlMarkdownOR<T>(ref searchEntryState);
+            => ExtensionsOR.ParseSqlMarkdown<T>(expr, ref searchEntryState);
 
         [Obsolete("Backward compatibility only.")]
         public static string ParseSqlMarkdown(
