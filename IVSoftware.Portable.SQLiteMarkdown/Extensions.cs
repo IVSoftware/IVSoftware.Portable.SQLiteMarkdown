@@ -128,13 +128,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             this string expr,
             ref ValidationState validationState,
             Predicate<string> validationPredicate = null!)
-            => ExtensionsOR.ParseSqlMarkdown<T>(expr, ref validationState, validationPredicate);
+            => expr.ParseSqlMarkdownOR<T>(ref validationState, validationPredicate);
 
         [Obsolete("Use for backward test compatibility only.")]
         public static MarkdownContextOR ParseSqlMarkdown<T>(
             this string expr,
             ref SearchEntryState searchEntryState)
-            => ExtensionsOR.ParseSqlMarkdown<T>(expr, ref searchEntryState);
+            => expr.ParseSqlMarkdownOR<T>(ref searchEntryState);
 
         [Obsolete("Backward compatibility only.")]
         public static string ParseSqlMarkdown(

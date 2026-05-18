@@ -15,14 +15,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     {
         #region V E R S I O N    O R
         [Obsolete("Use for backward test compatibility only.")]
-        public static MarkdownContextOR ParseSqlMarkdown<T>(
+        public static MarkdownContextOR ParseSqlMarkdownOR<T>(
             this string expr,
             ref ValidationState validationState,
             Predicate<string> validationPredicate = null!)
             => ParseSqlMarkdownOR<T>(expr, ref validationState, validationPredicate, 3, IndexingMode.All);
 
         [Obsolete("Use for backward test compatibility only.")]
-        public static MarkdownContextOR ParseSqlMarkdown<T>(
+        public static MarkdownContextOR ParseSqlMarkdownOR<T>(
             this string expr,
             ref SearchEntryState searchEntryState)
         {
