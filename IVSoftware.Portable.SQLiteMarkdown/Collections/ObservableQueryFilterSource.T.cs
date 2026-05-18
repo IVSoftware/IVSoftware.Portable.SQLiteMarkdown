@@ -3,6 +3,7 @@ using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -43,7 +44,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Canonical("The parameterless CTor is the only CTor")]
         public ObservableQueryFilterSource() 
         {
-
+            CanonicalSupersetProtected = new ObservablePreviewRangeCollection<T>();
         }
 
         protected override void OnCommit(RecordsetRequestEventArgs e)
