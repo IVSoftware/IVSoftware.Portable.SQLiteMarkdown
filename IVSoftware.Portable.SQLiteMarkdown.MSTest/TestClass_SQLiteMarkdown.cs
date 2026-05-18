@@ -1864,36 +1864,84 @@ SELECT * FROM items WHERE
         public async Task Test_Detect_QueryENB_or_QueryEN_when_IsFiltering()
         {
             string actual, expected;
-            ObservableQueryFilterCollection<SelectableQFModel> oqfc = new() 
+
+            await subtest_OQFC();
+            await subtest_OQFS();
+
+            #region S U B T E S T S
+            async Task subtest_OQFS()
             {
-                QueryFilterConfig = QueryFilterConfig.Filter
-            };
+                ObservableQueryFilterSource<SelectableQFModel> oqfs = new()
+                {
+                    QueryFilterConfig = QueryFilterConfig.Filter
+                };
 
-            actual = oqfc.StateReport();
-            expected = @" 
+                actual = oqfs.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
 [IME Len: 0, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
-            ;
-            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-            oqfc.InputText = "a";
-            await oqfc; // YBYA you need this in filter mode.
+                oqfs.InputText = "a";
+                await oqfs; // YBYA you need this in filter mode.
 
-            actual = oqfc.StateReport();
-            expected = @" 
+                actual = oqfs.StateReport();
+                expected = @" 
 [IME Len: 1, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
-            ;
-            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "STILL ARMED due to NO ITEMS IN PROJECTION");
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "STILL ARMED due to NO ITEMS IN PROJECTION");
 
-            // Reset to empty IME. Do not violate minimum SES.
-            oqfc.Clear();
+                // Reset to empty IME. Do not violate minimum SES.
+                oqfs.Clear();
 
-            actual = oqfc.StateReport();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
+                actual = oqfs.StateReport();
+                actual.ToClipboardExpected();
+                { }
+
+                expected = @" 
 [IME Len: 0, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
-            ;
-            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+            }
+            async Task subtest_OQFC()
+            {
+                ObservableQueryFilterCollection<SelectableQFModel> oqfc = new()
+                {
+                    QueryFilterConfig = QueryFilterConfig.Filter
+                };
+
+                actual = oqfc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+
+                oqfc.InputText = "a";
+                await oqfc; // YBYA you need this in filter mode.
+
+                actual = oqfc.StateReport();
+                expected = @" 
+[IME Len: 1, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "STILL ARMED due to NO ITEMS IN PROJECTION");
+
+                // Reset to empty IME. Do not violate minimum SES.
+                oqfc.Clear();
+
+                actual = oqfc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+            }
+            #endregion S U B T E S T S
         }
     }
 }

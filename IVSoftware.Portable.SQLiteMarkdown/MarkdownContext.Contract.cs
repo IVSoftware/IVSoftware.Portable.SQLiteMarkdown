@@ -53,7 +53,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-        Type _contractType = null!;
+        Type _contractType;
 
 
         public TableMapping ContractTableMapping { get; }

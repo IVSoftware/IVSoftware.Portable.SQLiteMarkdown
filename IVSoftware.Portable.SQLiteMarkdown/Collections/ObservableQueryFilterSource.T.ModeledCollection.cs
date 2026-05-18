@@ -308,8 +308,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         public void Clear()
         {
+            InputText = string.Empty;
             Clear(all: true);
         }
+        void IList.Clear() => Clear();
+        void ICollection<T>.Clear() => Clear();
 
         public bool Contains(object value)
         {

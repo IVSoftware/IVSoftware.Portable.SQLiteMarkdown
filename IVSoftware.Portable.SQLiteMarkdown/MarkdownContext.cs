@@ -55,7 +55,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             XAST = new
                 XElement(nameof(StdAstNode.ast))
                 .WithBoundAttributeValue(this);
-            ContractType = type;
+
+            // [Careful]
+            // - In 2.x and greater, the ContractType property is immutable
+            //   and the ContractType.set is wired to throw.
+            // ∴ Use the backing store directly
+            _contractType = type;
+
             ContractTableMapping = ContractType.GetSQLiteMapping();
         }
 

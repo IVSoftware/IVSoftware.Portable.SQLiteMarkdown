@@ -5,6 +5,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -18,6 +19,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     class ObservableQueryFilterCollection<T>
         : ObservableModeledCollection<T>
         , IObservableQueryFilterSource<T>
+        , IModelAuthorityContext
     {
         public ObservableQueryFilterCollection()
         {
@@ -25,6 +27,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 MarkdownContext = new MarkdownContext<T>(),
                 StdModelAttribute.mdc,
                 "[MDC]");
+            MarkdownContext.ModelAuthorityContext = this;
+            Model.SortAttributes<StdModelAttribute>();
         }
 
         protected MarkdownContext<T> MarkdownContext { get; }
@@ -121,6 +125,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         public event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
+
+        /// <summary>
+        /// No Surprises IList.Clear
+        /// </summary>
+        public new void Clear()
+        {
+            Clear(all: true);
+        }
+        void IList.Clear() => Clear();
 
         public string ParseSqlMarkdown()
         {
