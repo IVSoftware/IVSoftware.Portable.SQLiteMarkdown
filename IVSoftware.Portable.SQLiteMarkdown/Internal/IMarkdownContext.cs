@@ -19,8 +19,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Internal
     /// </remarks>
     [Probationary("Maintain as Internal until stable.")]
     [Careful("Must *never* implement INotifyCollectionChanged - this is reserved to detect inheritance.")]
-    [PublishedContract("2.0.0-alpha31", typeof(IMarkdownContext))]
-    internal interface IMarkdownContext : INotifyPropertyChanged
+    [PublishedContract("2.x", typeof(IMarkdownContext))]
+    public interface IMarkdownContext : INotifyPropertyChanged
     {
         #region P A R S E
         /// <summary>
