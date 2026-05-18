@@ -177,6 +177,9 @@ INotifyPropertyChanged";
             );
 
             mdc.Clear(); // Illegal in V2! See "no surprises" semantics.
+
+            // NOPE
+            // oqfs.SetObservableNetProjection();
         }
 
         [TestMethod]

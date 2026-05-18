@@ -14,12 +14,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Util
     {
         public TMMDC(ObservableCollection<SelectableQFModel> onp, NetProjectionTopology? option = null)
         {
-            SetObservableNetProjection(onp, option);
-        }
-
-        private void SetObservableNetProjection(ObservableCollection<SelectableQFModel> onp, NetProjectionTopology? option)
-        {
-            throw new NotImplementedException();
         }
     }
 }

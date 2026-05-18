@@ -41,7 +41,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         where T : new()
     {
         [Canonical("The parameterless CTor is the only CTor")]
-        public ObservableQueryFilterSource() { }
+        public ObservableQueryFilterSource() 
+        {
+
+        }
 
         protected override void OnCommit(RecordsetRequestEventArgs e)
         {
@@ -164,15 +167,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         protected virtual Task OnReplaceItemsAsync(IEnumerable<T> items)
             => Task.Run(() => ReplaceItems(items));
 
-        public void SetObservableNetProjection(
-            ObservableCollection<T>? onp,
-            NetProjectionTopology? topology = null)
-        {
-            this.RethrowFramework(new NotSupportedException());
-        }
 
         [Obsolete("Use CanonicalSuperset for precise semantics.")]
-        public IReadOnlyList<T> UnfilteredItems => CanonicalSupersetProtected;
+        public IReadOnlyList<T> UnfilteredItems => CanonicalSuperset;
 
         [Obsolete("Legacy unit test support only.")]
         [EditorBrowsable(EditorBrowsableState.Never)]

@@ -9,6 +9,7 @@ using IVSoftware.WinOS.MSTest.Extensions;
 using SQLite;
 using IVSoftware.Portable.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using Microsoft.ApplicationInsights.Metrics.Extensibility;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -564,6 +565,8 @@ SELECT * FROM items WHERE
     [TestMethod, DoNotParallelize]
     public void Test_NoSpuriousFilterQueryDatabaseInstantiation()
     {
+        string actual, expected;
+
         var builder = new List<string>();
         #region L o c a l F x 
         using var local = this.WithOnDispose(
@@ -598,6 +601,12 @@ SELECT * FROM items WHERE
             ObservableQueryFilterSource<SelectableQFModel> oqfs = new();
             if(oqfs.AsInterface<ITestableMDC>() is { } tmdc)
             {
+
+                actual = string.Join(Environment.NewLine, builder); builder.Clear();
+                actual.ToClipboardExpected();
+                { } // <- FIRST TIME ONLY: Adjust the message.
+                actual.ToClipboardAssert("Expecting builder content to match.");
+                { }
                 if (tmdc.HasFQDB)
                 {   /* G T K */
                 }

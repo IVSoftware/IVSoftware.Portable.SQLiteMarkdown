@@ -82,7 +82,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         : IList
         , IList<T>
     {
-        public IReadOnlyCollection<T> CanonicalSuperset
+        public IReadOnlyList<T> CanonicalSuperset
         {
             get
             {
@@ -93,9 +93,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 return _canonicalSuperset;
             }
         }
-        IReadOnlyCollection<T>? _canonicalSuperset = null;
+        IReadOnlyList<T>? _canonicalSuperset = null;
 
-        [Probationary("When ObservablePreviewRangeCollection<T> becomes a public type, we will upgrade.")]
         public ObservableModeledCollection<T> CanonicalSupersetProtected
         {
             get
@@ -120,6 +119,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     OnPropertyChanged();
                 }
                 return _canonicalSupersetProtected!;
+            }
+            protected set
+            {
+
             }
         }
         ObservableModeledCollection<T> _canonicalSupersetProtected = null;
