@@ -2150,18 +2150,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     RouteKey = null;
                     break;
                 case QueryFilterConfig.QueryAndFilter:
-                    bool arm =
-                        this is IModeledCollection mc
-                        ? SearchEntryState == SearchEntryState.QueryCompleteWithResults
-                          && mc.Count > 1
-                        : SearchEntryState == SearchEntryState.QueryCompleteWithResults;
-                    if (arm)
+
+                    ICollection? omc =
+                        ModelAuthorityContext
+                        ?.Model
+                        ?.Attribute(StdModelAttribute.omc) is XBoundAttribute xba
+                        ? xba.Tag as ICollection
+                        : null;
+
+                    if(SearchEntryState == SearchEntryState.QueryCompleteWithResults)
                     {
-                        FilteringState = FilteringState.Armed;
-                    }
-                    else
-                    {
-                        FilteringState = FilteringState.Ineligible;
+                        FilteringState = 
+                            omc is null || omc.Count > 1
+                            ? FilteringState.Armed
+                            : FilteringState.Ineligible;
                     }
                     break;
                 default:
