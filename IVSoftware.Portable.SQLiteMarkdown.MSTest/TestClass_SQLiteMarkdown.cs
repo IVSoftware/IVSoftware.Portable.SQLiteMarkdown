@@ -452,7 +452,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0 live:0]"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" index=""0"" />
 </model>"
                 ;

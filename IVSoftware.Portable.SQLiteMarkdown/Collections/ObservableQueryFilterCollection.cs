@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Collections.Events;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -201,5 +202,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
 
         public TaskAwaiter<TaskStatus> GetAwaiter() => MarkdownContext.GetAwaiter();
+        public new void LoadCanon(IList<T> items)
+        {
+            base.LoadCanon(items);
+            MarkdownContext.SearchEntryState =
+                Count == 0
+                ? SearchEntryState.QueryCompleteNoResults
+                : SearchEntryState.QueryCompleteWithResults;
+        }
+
+        public new async Task LoadCanonAsync(IList<T> items)
+        {
+            this.ThrowHard<NotSupportedException>();
+        }
     }
 }
