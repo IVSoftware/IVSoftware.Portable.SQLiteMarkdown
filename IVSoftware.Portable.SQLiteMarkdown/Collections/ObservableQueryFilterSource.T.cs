@@ -166,7 +166,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </remarks>
         public void ReplaceItems(IEnumerable<T> items)
         {
-            CanonicalSupersetProtected.LoadCanon((IList)items);
+            CanonicalSupersetProtected.LoadCanon(items.ToList());
             SearchEntryState =
                 CanonicalSuperset.Count == 0
                 ? SearchEntryState.QueryCompleteNoResults

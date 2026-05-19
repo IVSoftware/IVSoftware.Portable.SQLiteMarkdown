@@ -9,6 +9,7 @@ using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using SQLite;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
@@ -387,10 +388,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         /// <remarks>
         /// State machine failed to return to Cleared after consecutive [X].
         /// </remarks>
-        [TestMethod, DoNotParallelize, Ignore]
+        [TestMethod, DoNotParallelize]
         public async Task Test_QueryFilterFSMs()
         {
-#if false
             using var te = this.TestableEpoch();
 
             // MSTest internal consideration. This is about tests that hang.
@@ -401,10 +401,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             var extQueryHandle = default(List<PrioritizedAffinityQFModel>);
             int COUNT;
 
-            var mmdc = new MarkdownContext<PrioritizedAffinityQFModel>();
-            var histo = mmdc.Model.To<EnumHistogrammer<StdModelAttribute>>();
+            var oqfc = new ObservableQueryFilterCollection<PrioritizedAffinityQFModel>();
+            var histo = oqfc.Model.To<EnumHistogrammer<StdModelAttribute>>();
 
-            actual = mmdc.StateReport();
+            actual = oqfc.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -429,8 +429,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             async Task subtestExtQueryNoResult()
             {
                 COUNT = 0;  // The 'query' has returned no matches.
-                mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
-                actual = mmdc.StateReport();
+                oqfc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -446,9 +446,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             async Task subtestExtQueryOneResult()
             {
                 COUNT = 1;
-                mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
+                oqfc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
 
-                actual = mmdc.ToString(FormattingOMC.ModelWithPreview);
+                actual = oqfc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -475,7 +475,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     "Expecting load canon pattern."
                 );
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -488,10 +488,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     "Expecting DOES NOT FILTER. There is only one item so FilteringState is Ineligible"
                 );
 
-                Assert.AreEqual(COUNT, mmdc.CanonicalCount);
-                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mmdc.SearchEntryState);
-                Assert.AreEqual(FilteringState.Ineligible, mmdc.FilteringState);
-                Assert.IsFalse(mmdc.IsFiltering);
+                Assert.AreEqual(COUNT, oqfc.CanonicalCount);
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, oqfc.SearchEntryState);
+                Assert.AreEqual(FilteringState.Ineligible, oqfc.FilteringState);
+                Assert.IsFalse(oqfc.IsFiltering);
             }
 
             async Task subtestExtQueryTwoResults()
@@ -503,17 +503,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 using var local = this.WithOnDispose(
                     onInit: (sender, e) =>
                     {
-                        mmdc.PropertyChanged += localMDC_PropertyChanged;
+                        oqfc.PropertyChanged += localMDC_PropertyChanged;
                     },
                     onDispose: (sender, e) =>
                     {
-                        mmdc.PropertyChanged -= localMDC_PropertyChanged;
+                        oqfc.PropertyChanged -= localMDC_PropertyChanged;
                     });
 
                 COUNT = 2;
                 builder.Clear();
 
-                mmdc.InputText = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                oqfc.InputText = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
                 // The point of this is that there should *not* be any need to settle!
                 // We're giving a window for Running to go true - which it *should not* do!
@@ -532,12 +532,12 @@ InputText"
                     "Expecting *no* changes to Running."
                 );
 
-                Assert.AreEqual(SearchEntryState.QueryEN, mmdc.SearchEntryState, "Expecting mdc perceives a valid query.");
+                Assert.AreEqual(SearchEntryState.QueryEN, oqfc.SearchEntryState, "Expecting mdc perceives a valid query.");
 
                 // SIMULATE - Now perform the external QUERY.
-                mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
+                oqfc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
 
-                actual = mmdc.ToString(FormattingOMC.ModelWithPreview);
+                actual = oqfc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -553,7 +553,7 @@ InputText"
                     $"Expecting model shows {COUNT} item."
                 );
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -565,16 +565,27 @@ InputText"
                     "PMC is 0 and THIS IS CORRECT because Filtering state is armed not active.");
 
                 // ROUTING - We should be projecting the full dataset.
-                Assert.IsTrue(
-                    mmdc.RouteToFullRecordset,
-                    "This should 'probably' be following FilteringState.Armed"
-                );
+                switch (oqfc.RouteKey)
+                {
+                    case null:
+                    case StdRouteKey.Empty:
+                    case StdRouteKey.CanonicalRecordset:
+                        break;
+                    case StdRouteKey.QMatch:
+                    case StdRouteKey.PMatch:
+                    case StdRouteKey.AND:
+                    default:
+                        Assert.Fail(
+                            "Expecting FILTERED SUBSET."
+                        );
+                        break;
+                }
 
                 // SIMULATE - Now filter to one match.
-                mmdc.InputText = "Item01";
-                await mmdc;
+                oqfc.InputText = "Item01";
+                await oqfc;
 
-                actual = mmdc.ToString(FormattingOMC.ModelWithPreview);
+                actual = oqfc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -590,12 +601,23 @@ InputText"
                 );
 
                 // ROUTING - We should be projecting the filtered dataset.
-                Assert.IsFalse(
-                    mmdc.RouteToFullRecordset,
-                    "Expecting FILTERED SUBSET."
-                );
+                switch (oqfc.RouteKey)
+                {
+                    case null:
+                    case StdRouteKey.Empty:
+                    case StdRouteKey.CanonicalRecordset:
+                    case StdRouteKey.PMatch:
+                    case StdRouteKey.AND:
+                    default:
+                        Assert.Fail(
+                            "Expecting FILTERED SUBSET."
+                        );
+                        break;
+                    case StdRouteKey.QMatch:
+                        break;
+                }
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -609,8 +631,8 @@ InputText"
 
                 // This will clear the IME ONLY.
                 // IsFiltering=TRUE. Don't dip below SearchEntryState.QueryCompleteWithResults.
-                mmdc.Clear(false);
-                actual = mmdc.StateReport();
+                oqfc.Clear(false);
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -623,27 +645,38 @@ InputText"
                     "Expecting IME CLEAR ONLY ∴ FilteringState.Active -> FilteringState.Armed");
 
                 // ROUTING - We should be projecting the full dataset.
-                Assert.IsTrue(
-                    mmdc.RouteToFullRecordset,
-                    "Expecting FULL RECORDSET."
-                );
+                switch (oqfc.RouteKey)
+                {
+                    case null:
+                    case StdRouteKey.Empty:
+                    case StdRouteKey.CanonicalRecordset:
+                        break;
+                    case StdRouteKey.QMatch:
+                    case StdRouteKey.PMatch:
+                    case StdRouteKey.AND:
+                    default:
+                        Assert.Fail(
+                            "Expecting FILTERED SUBSET."
+                        );
+                        break;
+                }
 
                 // This will exit filter mode leaving list intact.
-                mmdc.Clear(false);
+                oqfc.Clear(false);
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
 [IME Len: 0, IsFiltering: False], [Net: 0, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
-                Assert.IsTrue(mmdc.CanonicalCount == 2);
+                Assert.IsTrue(oqfc.CanonicalCount == 2);
 
                 // This is (organically, i.e. still 'false') the terminal state and will clear the projection.
-                mmdc.Clear(false);
+                oqfc.Clear(false);
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -653,23 +686,23 @@ InputText"
             }
             async Task subtestClearAwaiterOnly()
             {
-                mmdc.Clear(all: true);
-                await mmdc;
-                mmdc.Clear(all: true);
-                await mmdc;
+                oqfc.Clear(all: true);
+                await oqfc;
+                oqfc.Clear(all: true);
+                await oqfc;
             };
             async Task subtestQueryWithResultsClearSequence()
             {
-                mmdc.Clear(all: true);
-                mmdc.InputText = "valid query";
+                oqfc.Clear(all: true);
+                oqfc.InputText = "valid query";
 
-                Assert.AreEqual(SearchEntryState.QueryEN, mmdc.SearchEntryState, "Expecting initial state.");
-                Assert.AreEqual(FilteringState.Ineligible, mmdc.FilteringState, "Expecting initial state.");
+                Assert.AreEqual(SearchEntryState.QueryEN, oqfc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Ineligible, oqfc.FilteringState, "Expecting initial state.");
 
                 // Query occurs.
-                mmdc.LoadCanon(extQueryHandle.PopulateForDemo(2));
+                oqfc.LoadCanon(extQueryHandle.PopulateForDemo(2));
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -680,16 +713,16 @@ InputText"
                     actual.NormalizeResult(), 
                     "Expecting PMC is empty until some filtering activity takes place..");
 
-                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mmdc.SearchEntryState, "Expecting initial state.");
-                Assert.AreEqual(FilteringState.Armed, mmdc.FilteringState, "Expecting initial state.");
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, oqfc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Armed, oqfc.FilteringState, "Expecting initial state.");
 
                 // #1 [X]
                 // User clears the input text, but *not* the recordset.
                 // FilteringState remains Armed because the transition is from non-empty input text to empty.
                 // IsFiltering
-                mmdc.Clear();
+                oqfc.Clear();
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -699,8 +732,8 @@ InputText"
 
                 // #2 [X]
                 // User returns to Query without emptying the list.
-                mmdc.Clear();
-                actual = mmdc.StateReport();
+                oqfc.Clear();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -708,16 +741,16 @@ InputText"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-                Assert.AreEqual(SearchEntryState.QueryEmpty, mmdc.SearchEntryState, "Expecting initial state.");
-                Assert.AreEqual(FilteringState.Ineligible, mmdc.FilteringState, "Expecting initial state.");
+                Assert.AreEqual(SearchEntryState.QueryEmpty, oqfc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Ineligible, oqfc.FilteringState, "Expecting initial state.");
 
                 // #3 [X]
                 // The MCD can clear its own state heuristically, rather than epistemically.
                 // Even without knowledge of the list contents, these combined states are the signal:
                 // - FilteringState.Ineligible | SearchEntryState.QueryCompleteWithResults
                 // THIS IS THE ACTION THAT WAS FAILING IN PRODUCTION and REPLICATED before fixing.
-                mmdc.Clear();
-                actual = mmdc.StateReport();
+                oqfc.Clear();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -727,11 +760,11 @@ InputText"
             }
             async Task subtestQueryWithFilteredResultsClearSequence()
             {
-                mmdc.Clear(all: true);
-                await mmdc;
-                mmdc.InputText = "valid query";
+                oqfc.Clear(all: true);
+                await oqfc;
+                oqfc.InputText = "valid query";
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -740,9 +773,9 @@ InputText"
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
                 // Query occurs.
-                mmdc.LoadCanon(extQueryHandle.PopulateForDemo(2));
+                oqfc.LoadCanon(extQueryHandle.PopulateForDemo(2));
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -751,10 +784,10 @@ InputText"
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
                 // Filtering occurs
-                mmdc.InputText = "item 2";
-                await mmdc;
+                oqfc.InputText = "item 2";
+                await oqfc;
 
-                actual = mmdc.Model.ToString();
+                actual = oqfc.Model.ToString();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -769,7 +802,7 @@ InputText"
                     actual.NormalizeResult(),
                     "Expecting result to match."
                 );
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -780,32 +813,31 @@ InputText"
                 // User clears the input text.
                 // In this case FilteringState should remain Armed.
                 // because the transition is from non-empty input text to empty.
-                mmdc.Clear();
-                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mmdc.SearchEntryState, "Expecting initial state.");
-                Assert.AreEqual(FilteringState.Armed, mmdc.FilteringState, "Expecting initial state.");
+                oqfc.Clear();
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, oqfc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Armed, oqfc.FilteringState, "Expecting initial state.");
 
                 // #2 [X]
                 // User returns to Query without emptying the list.
-                mmdc.Clear();
+                oqfc.Clear();
                 Assert.AreEqual(
                     SearchEntryState.QueryEmpty, // TOUCHED this limit on 260304 - QueryEmpty is the correct value
-                    mmdc.SearchEntryState, "Expecting initial state.");
+                    oqfc.SearchEntryState, "Expecting initial state.");
 
                 Assert.AreEqual(
                     FilteringState.Ineligible,
-                    mmdc.FilteringState, "Expecting initial state.");
+                    oqfc.FilteringState, "Expecting initial state.");
 
                 // #3 [X]
                 // The MCD can clear its own state heuristically, rather than epistemically.
                 // Even without knowledge of the list contents, these combined states are the signal:
                 // - FilteringState.Ineligible | SearchEntryState.QueryCompleteWithResults
                 // THIS IS THE ACTION THAT WAS FAILING IN PRODUCTION and REPLICATED before fixing.
-                mmdc.Clear();
-                Assert.AreEqual(SearchEntryState.Cleared, mmdc.SearchEntryState, "Expecting initial state.");
-                Assert.AreEqual(FilteringState.Ineligible, mmdc.FilteringState, "Expecting initial state.");
+                oqfc.Clear();
+                Assert.AreEqual(SearchEntryState.Cleared, oqfc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Ineligible, oqfc.FilteringState, "Expecting initial state.");
             }
             #endregion S U B T E S T S
-#endif
         }
 
         [TestMethod]
