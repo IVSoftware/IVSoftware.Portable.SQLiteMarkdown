@@ -1876,7 +1876,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual void OnRouteKeyChanged()
         {
-            RouteToFullRecordset = RouteKey is null;
+            switch (RouteKey)
+            {
+                case null:
+                case StdRouteKey.Empty:
+                case StdRouteKey.CanonicalRecordset:
+                    RouteToFullRecordset = true;
+                    break;
+                default:
+                    RouteToFullRecordset = false;
+                    break;
+            }
         }
 
         public string InputText
@@ -2015,7 +2025,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-        bool _routeToFullRecordset = false;
+        bool _routeToFullRecordset = true;
 
         public bool IsInputTextEmpty
         {

@@ -816,7 +816,10 @@ InputText"
             const int COUNT = 2;
             var extQueryHandle = default(List<SelectableQFModel>);
 
-            var oqfs = new ObservableQueryFilterSource<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
+            var oqfs = new ObservableQueryFilterSource<SelectableQFModel> 
+            {
+                QueryFilterConfig = QueryFilterConfig.Query, 
+            };
             actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
@@ -873,31 +876,24 @@ InputText"
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
             // Commit and load the new recordset.
-            // [Remember] IsFilter is DISABLED.
+            // [Remember] Config is Query only; IsFilter is DISABLED.
             oqfs.ReplaceItems(extQueryHandle.PopulateForDemo(COUNT));
             actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 3, IsFiltering: False], [Net: 0, CC: 2, PMC: 0], [Query: SearchEntryState.QueryEN, FilteringState.Ineligible]"
-            ;
-
-            // [Remember]
-            // The *absence* of any ismatch attributes makes
-            // each and every node a perceived match.
-            expected = @" 
-[IME Len: 3, IsFiltering: False], [Net: 0, CC: 2, PMC: 0], [Query: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
+[IME Len: 3, IsFiltering: False], [Net: 2, CC: 2, PMC: 0], [Query: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting Filtering shows DISABLED.");
 
             // Clear the IME, *not* the recordset.
             // [Remember] Clear on MMDC resolves to Clear(bool).
-            oqfs.Clear();
+            oqfs.Clear(all: false);
             actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 0, CC: 2, PMC: 0], [Query: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 2, CC: 2, PMC: 0], [Query: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 

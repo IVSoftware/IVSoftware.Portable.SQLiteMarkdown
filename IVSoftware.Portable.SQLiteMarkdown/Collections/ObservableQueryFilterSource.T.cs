@@ -64,15 +64,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     recordset = MemoryDatabase.Query<T>(e.SQL.ToFuzzyQuery());
                 }
 
+                // SeachEntryState is determined in this method in order
+                // to accomodate sites that call ReplaceItems directly.
                 ReplaceItems(recordset);
-                if(CanonicalSuperset.Count == 0)
-                {
-                    SearchEntryState = SearchEntryState.QueryCompleteNoResults;
-                }
-                else
-                {
-                    SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                }
             }
         }
 
@@ -113,7 +107,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             switch (SearchEntryState)
             {
                 case SearchEntryState.Cleared:
-                    Debug.Assert(ModelDataExchangeAuthority == ModelDataExchangeAuthority.Model);
+                    // Authority DNC: "May or may not" have token.
                     CanonicalSupersetProtected.Clear();
                     break;
                 default:
@@ -164,9 +158,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             this.RethrowFramework(new NotSupportedException());
         }
 
+        /// <summary>
+        /// Forward to the more accurately named LoadCanon of the CSP.
+        /// </summary>
+        /// <remarks>
+        /// Call it what you will - this is typically a Recordset push.
+        /// </remarks>
         public void ReplaceItems(IEnumerable<T> items)
         {
             CanonicalSupersetProtected.LoadCanon((IList)items);
+            SearchEntryState =
+                CanonicalSuperset.Count == 0
+                ? SearchEntryState.QueryCompleteNoResults
+                : SearchEntryState.QueryCompleteWithResults;
         }
 
         public async Task ReplaceItemsAsync(IEnumerable<T> items)
