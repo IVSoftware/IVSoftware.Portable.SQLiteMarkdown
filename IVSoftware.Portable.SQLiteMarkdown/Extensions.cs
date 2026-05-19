@@ -557,9 +557,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// respective IList is non-null. Empty collections are reported with a
         /// count of zero; null lists are omitted entirely.
         /// </remarks>
-        public static string ToString(
+        public static string ToStringWithItems(
             this EventArgs e,
-            bool isProjection)
+            params object[] _)
         {
             var sb = new System.Text.StringBuilder();
             if (e.TryNormalizeTargets(
@@ -570,9 +570,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 out var OldItems,
                 out var OldStartingIndex))
             {
-
-                sb.Append($"{(isProjection ? "NetProjection" : "Other")}.{Action.ToString().PadRight(7)} ");
-
                 if (NewItems is { } newItems)
                 {
                     sb.Append($"NewItems={newItems.Count.ToString().PadLeft(2)} ");

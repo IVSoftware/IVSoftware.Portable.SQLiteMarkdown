@@ -33,7 +33,7 @@ public class TestClass_260401_OPCv2
         #region E V E N T S
         omc.CollectionChanged += (sender, e) =>
         {
-            builder.Add(e.ToString(ReferenceEquals(sender, omc)));
+            builder.Add(e.ToStringWithItems());
         };
         #endregion E V E N T S
 

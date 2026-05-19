@@ -44,7 +44,7 @@ public class TestClass_260328_INPC
 
         items.CollectionChanged += (sender, e) =>
         {
-            builderINCC.Add(e.ToString(true));
+            builderINCC.Add(e.ToStringWithItems());
         };
 
         // NEW 260412
@@ -226,11 +226,11 @@ IsChecked: Brown Dog "
         #region E V E N T S
         itemsSource.CollectionChanged += (sender, e) =>
         {
-            builder.Add(e.ToString(ReferenceEquals(sender, itemsSource)));
+            builder.Add(e.ToStringWithItems());
         };
         itemsSource.CollectionChanging += (sender, e) =>
         {
-            builder.Add(e.ToString(ReferenceEquals(sender, itemsSource)));
+            builder.Add(e.ToStringWithItems());
         };
         #endregion E V E N T S
 

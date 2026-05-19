@@ -113,7 +113,7 @@ public class TestClass_ObservablePreviewCollection
 
         opc.CollectionChanged += (sender, e) =>
         {
-            builder.Add(e.ToString(ReferenceEquals(sender, opc)));
+            builder.Add(e.ToStringWithItems());
         };
 
         subtest_BasicAddRemoveWithCancellation();
@@ -591,7 +591,7 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingInd
         #region E V E N T S
         opc.CollectionChanged += (sender, e) =>
         {
-            builder.Add(e.ToString(ReferenceEquals(sender, opc)));
+            builder.Add(e.ToStringWithItems());
         };
         #endregion E V E N T S
 
@@ -908,7 +908,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
         // the simView and the simView being driven by itemsSource.
         oqfs.CollectionChanged += (sender, e) =>
         {
-            builder.Add(e.ToString(ReferenceEquals(sender, oqfs)));
+            builder.Add(e.ToStringWithItems());
         };
         #endregion E V E N T S
 

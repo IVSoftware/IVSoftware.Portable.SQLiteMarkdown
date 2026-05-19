@@ -46,37 +46,4 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
 
         void ClearPredicates(bool clearInputText = true);
     }
-    public interface ITopology
-    {
-        #region C O N F I G U R A T I O N    P R O P E R T I E S
-        /// <summary>
-        /// OPT-IN that allows MarkdownContext to modify the ObservableNetCollection directly.
-        /// </summary>
-        NetProjectionTopology ProjectionTopology { get; }
-
-        /// <summary>
-        /// Determines whether filter update events are provided as structural changes
-        /// with old-new item semantics, alternatively as a bulk reset, or both.
-        /// </summary>
-        /// <remarks>
-        /// Some UI platforms respond more efficiently to a raw reset.
-        /// </remarks>
-
-        [Careful("Not to be conflated with CollectionChangingEventingPolicy")]
-        ReplaceItemsEventingPolicy ReplaceItemsEventingPolicy { get; set; }
-        #endregion C O N F I G U R A T I O N    P R O P E R T I E S
-
-        #region P R O J E C T I O N
-        /// <summary>
-        /// Represents a bindable and observable collection representing 'net visible' filtered items.
-        /// </summary>
-        IList? ObservableNetProjection { get; }
-
-        public IList CanonicalSuperset { get; }
-
-        public IList PredicateMatchSubset { get; }
-        #endregion  P R O J E C T I O N
-
-        public int Count { get; }
-    }
 }

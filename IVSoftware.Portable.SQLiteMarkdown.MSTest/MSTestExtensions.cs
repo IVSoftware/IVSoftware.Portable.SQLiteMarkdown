@@ -178,23 +178,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 1 => queue.Dequeue(),
                 _ => throw new InvalidOperationException("Multiple items in queue."),
             };
-
-        public static string TopologyReport(this IObservableQueryFilterSource @this)
-        {
-            var builder = new List<string>();
-#if false
-            builder.Add($"{@this.ProjectionTopology.ToFullKey()}");
-            builder.Add($"{@this.ReplaceItemsEventingPolicy.ToFullKey()}");
-#endif
-            return string.Join(", ", builder);
-        }
-
-        public static string TopologyReport(this ITopology @this)
-        {
-            var builder = new List<string>();
-            builder.Add($"{@this.ProjectionTopology.ToFullKey()}");
-            builder.Add($"{@this.ReplaceItemsEventingPolicy.ToFullKey()}");
-            return string.Join(", ", builder);
-        }
     }
 }

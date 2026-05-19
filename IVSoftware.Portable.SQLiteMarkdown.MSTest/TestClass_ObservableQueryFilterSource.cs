@@ -1311,7 +1311,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
             NotifyCollectionChangedEventArgs ecc;
             Queue<SenderEventPair> eventQueue = new();
             List<SelectableQFModelLTOQO> results;
-            var itemsSource = new ObservableQueryFilterSource<SelectableQFModelLTOQO>();
+            var oqfs = new ObservableQueryFilterSource<SelectableQFModelLTOQO>();
             using (var cnx = InitializeInMemoryDatabase())
             {
                 subtestBasicQueryAnimal();
@@ -1320,23 +1320,25 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 #region S U B T E S T S
                 void subtestBasicQueryAnimal()
                 {
+                    #region L o c a l F x
                     // This subtest only. For real do not hoist or generalize this.
                     using var local = this.WithOnDispose(
                         onInit: (sender, e) =>
                         {
-                            itemsSource.CollectionChanged += localOnCollectionChanged;
+                            oqfs.CollectionChanged += localOnCollectionChanged;
                         },
                         onDispose: (sender, e) =>
                         {
-                            itemsSource.CollectionChanged -= localOnCollectionChanged;
+                            oqfs.CollectionChanged -= localOnCollectionChanged;
                         });
                     void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
                     {
-                        builder.Add(e.ToString(ReferenceEquals(sender, itemsSource)));
+                        builder.Add(e.ToStringWithItems());
                     }
+                    #endregion L o c a l F x
 
                     // 260311.A RETROFIT - StateReport came online later. Let's see if it agrees.
-                    actual = itemsSource.StateReport();
+                    actual = oqfs.StateReport();
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
@@ -1351,21 +1353,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     sql = "animal".ParseSqlMarkdown<SelectableQFModelLTOQO>();
                     results = cnx.Query<SelectableQFModelLTOQO>(sql);
 
-                    // NEW 260311
-                    actual = itemsSource.TopologyReport();
-                    actual.ToClipboardExpected();
-                    { }
-                    expected = @" 
-NetProjectionTopology.Routed, ReplaceItemsEventingPolicy.StructuralReplaceEvent"
-                    ;
-
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting topology disvcovery to match."
-                    );
-
-                    itemsSource.ReplaceItems(results);
+                    oqfs.ReplaceItems(results);
 
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
@@ -1375,7 +1363,7 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                     ;
 
                     // 260311.B RETROFIT - StateReport came online later. Let's see if it agrees.
-                    actual = itemsSource.StateReport();
+                    actual = oqfs.StateReport();
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
@@ -1394,7 +1382,7 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                         "."
                     );
 
-                    actual = string.Join(Environment.NewLine, itemsSource.Select(_ => _.ToString()));
+                    actual = string.Join(Environment.NewLine, oqfs.Select(_ => _.ToString()));
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
@@ -1425,21 +1413,21 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     using var local = this.WithOnDispose(
                         onInit: (sender, e) =>
                         {
-                            itemsSource.CollectionChanged += localOnCollectionChanged;
+                            oqfs.CollectionChanged += localOnCollectionChanged;
                         },
                         onDispose: (sender, e) =>
                         {
-                            itemsSource.CollectionChanged -= localOnCollectionChanged;
+                            oqfs.CollectionChanged -= localOnCollectionChanged;
                         });
                     void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
                     {
                         eventQueue.Enqueue((sender, e));
-                        builder.Add(e.ToString(ReferenceEquals(sender, itemsSource)));
+                        builder.Add(e.ToStringWithItems());
                     }
                     #endregion L o c a l F x
 
                     // 260311.C RETROFIT - StateReport came online later. Let's see if it agrees.
-                    actual = itemsSource.StateReport();
+                    actual = oqfs.StateReport();
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
@@ -1451,12 +1439,12 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                         "Expecting StateReport shows RESUME WITH CURRENT STATE."
                     );
 
-                    Assert.AreEqual(string.Empty, itemsSource.InputText, "Confirm before clear.");
+                    Assert.AreEqual(string.Empty, oqfs.InputText, "Confirm before clear.");
 
                     // Expecting "no surprises" here.
                     builder.Clear();
                     eventQueue.Clear();
-                    itemsSource.Clear();
+                    oqfs.Clear();
 
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
@@ -1466,7 +1454,7 @@ NetProjection.Reset   ModelSettledEventArgs           "
                     ;
 
                     // 260311.D RETROFIT - StateReport came online later. Let's see if it agrees.
-                    actual = itemsSource.StateReport();
+                    actual = oqfs.StateReport();
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
@@ -1488,7 +1476,7 @@ NetProjection.Reset   ModelSettledEventArgs           "
                     sql = "animal".ParseSqlMarkdown<SelectableQFModelLTOQO>();
                     results = cnx.Query<SelectableQFModelLTOQO>(sql);
 
-                    itemsSource.ReplaceItems(results);
+                    oqfs.ReplaceItems(results);
 
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
@@ -3162,7 +3150,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
             oqfs.CollectionChanged += (sender, e) =>
             {
                 eventQueue.Enqueue((sender!, e));
-                builder.Add(e.ToString(ReferenceEquals(sender, oqfs)));
+                builder.Add(e.ToStringWithItems());
 
                 // G T K
                 switch (e.Action)
