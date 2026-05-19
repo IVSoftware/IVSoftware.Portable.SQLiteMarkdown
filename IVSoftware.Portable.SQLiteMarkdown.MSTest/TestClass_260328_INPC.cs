@@ -253,27 +253,14 @@ IsChecked: Brown Dog "
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Reset   NewItems= 0 OldItems= 0 NotifyCollectionChangingEventArgs          
-NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 0 NotifyCollectionChangingEventArgs          
-NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 1 NotifyCollectionChangingEventArgs          
-NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 2 NotifyCollectionChangingEventArgs          
-NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 3 NotifyCollectionChangingEventArgs          
-NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 4 NotifyCollectionChangingEventArgs          
-NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
+Reset  NewItems=0 OldItems=0 NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add    NewItems=1 OldItems=0 NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add    NewItems=1 OldItems=0 NewStartingIndex= 1 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add    NewItems=1 OldItems=0 NewStartingIndex= 2 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add    NewItems=1 OldItems=0 NewStartingIndex= 3 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add    NewItems=1 OldItems=0 NewStartingIndex= 4 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add    NewItems=5 OldItems=* NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
-
-#if false && SAVE
-            expected = @" 
-NetProjection.Reset   NewItems= 0 OldItems= 0 NotifyCollectionChangingEventArgs          
-NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 0 NotifyCollectionChangingEventArgs          
-NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 1 NotifyCollectionChangingEventArgs          
-NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 2 NotifyCollectionChangingEventArgs          
-NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 3 NotifyCollectionChangingEventArgs          
-NetProjection.Add     NewItems= 1 OldItems= 0 NewStartingIndex= 4 NotifyCollectionChangingEventArgs          
-NetProjection.Add     NewItems= 5 OldItems= 0 NewStartingIndex= 0 NotifyCollectionChangeReason.Digest        NotifyCollectionChangingEventArgs          
-NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
-            ;
-#endif
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -329,8 +316,8 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Digest  NewItems= 4 OldItems= 0 NewStartingIndex= 0 NotifyCollectionChangeReason.Digest        NotifyCollectionChangingEventArgs          
-NetProjection.Reset   NotifyCollectionChangedEventArgs           "
+Digest NewItems=4 OldItems=0 NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangeReason.Digest        NotifyCollectionChangingEventArgs
+Reset  NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(

@@ -570,42 +570,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 out var OldItems,
                 out var OldStartingIndex))
             {
-                if (NewItems is { } newItems)
-                {
-                    sb.Append($"NewItems={newItems.Count.ToString().PadLeft(2)} ");
-                }
-
-                if (OldItems is { } oldItems)
-                {
-                    sb.Append($"OldItems={oldItems.Count.ToString().PadLeft(2)} ");
-                }
-
-                if (NewStartingIndex != -1)
-                {
-                    sb.Append($"NewStartingIndex={NewStartingIndex.ToString().PadLeft(2)} ");
-                }
-
-                if (OldStartingIndex != -1)
-                {
-                    sb.Append($"OldStartingIndex={OldStartingIndex.ToString().PadLeft(2)} ");
-                }
+                sb.Append(Action.ToString().PadRight(8));
+                sb.Append($"NewItems={(NewItems?.Count.ToString() ?? "*")} ");
+                sb.Append($"OldItems={(OldItems?.Count.ToString() ?? "*")} ");
+                sb.Append($"NewStartingIndex={NewStartingIndex.ToString().PadLeft(2)} ");
+                sb.Append($"OldStartingIndex={OldStartingIndex.ToString().PadLeft(2)} ");
+                sb.Append(e.GetType().Name.PadRight(33));
 
                 switch (e)
                 {
                     case NotifyCollectionChangingEventArgs ePre:
                         if (ePre.Reason != NotifyCollectionChangeReason.None)
                         {
-                            sb.Append(ePre.Reason.ToFullKey().PadRight(43));
+                            sb.Append(ePre.Reason.ToFullKey());
                         }
                         break;
-                    //case ModelSettledEventArgs ems:
-                    //    if(ems.Reason != NotifyCollectionChangeReason.None)
-                    //    {
-                    //        sb.Append(ems.Reason.ToFullKey().PadRight(43));
-                    //    }
-                    //    break;
                 }
-                sb.Append(e.GetType().Name.PadRight(43));
             }
             return sb.ToString();
         }
