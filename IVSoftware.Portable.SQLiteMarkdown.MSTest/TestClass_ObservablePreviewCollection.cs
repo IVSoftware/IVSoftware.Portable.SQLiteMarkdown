@@ -113,7 +113,7 @@ public class TestClass_ObservablePreviewCollection
 
         opc.CollectionChanged += (sender, e) =>
         {
-            builder.Add(e.ToStringWithItems());
+            builder.Add(e.ToStringEx());
         };
 
         subtest_BasicAddRemoveWithCancellation();
@@ -591,7 +591,7 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingInd
         #region E V E N T S
         opc.CollectionChanged += (sender, e) =>
         {
-            builder.Add(e.ToStringWithItems());
+            builder.Add(e.ToStringEx());
         };
         #endregion E V E N T S
 
@@ -631,7 +631,8 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingInd
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           ";
+Add     NewItems=5 OldItems=* NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -908,7 +909,7 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
         // the simView and the simView being driven by itemsSource.
         oqfs.CollectionChanged += (sender, e) =>
         {
-            builder.Add(e.ToStringWithItems());
+            builder.Add(e.ToStringEx());
         };
         #endregion E V E N T S
 
@@ -943,12 +944,13 @@ NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEve
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewStartingIndex= 1 NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewStartingIndex= 2 NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewStartingIndex= 3 NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEventArgs           ";
+Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=1 OldItems=* NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=1 OldItems=* NewStartingIndex= 1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=1 OldItems=* NewStartingIndex= 2 OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=1 OldItems=* NewStartingIndex= 3 OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=1 OldItems=* NewStartingIndex= 4 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -1011,8 +1013,9 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 4 NotifyCollectionChangedEve
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 5 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           ";
+Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=5 OldItems=* NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),

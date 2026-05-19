@@ -434,7 +434,7 @@ public class TestClass_260328_Model
 
         void localOnCollectionChanging(object? sender, NotifyCollectionChangingEventArgs e)
         {
-            builderChanging.Add(e.ToStringWithItems());
+            builderChanging.Add(e.ToStringEx());
         }
         void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {

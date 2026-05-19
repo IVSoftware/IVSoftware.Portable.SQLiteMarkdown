@@ -44,7 +44,7 @@ public class TestClass_260328_INPC
 
         items.CollectionChanged += (sender, e) =>
         {
-            builderINCC.Add(e.ToStringWithItems());
+            builderINCC.Add(e.ToStringEx());
         };
 
         // NEW 260412
@@ -226,11 +226,11 @@ IsChecked: Brown Dog "
         #region E V E N T S
         itemsSource.CollectionChanged += (sender, e) =>
         {
-            builder.Add(e.ToStringWithItems());
+            builder.Add(e.ToStringEx());
         };
         itemsSource.CollectionChanging += (sender, e) =>
         {
-            builder.Add(e.ToStringWithItems());
+            builder.Add(e.ToStringEx());
         };
         #endregion E V E N T S
 
@@ -253,13 +253,13 @@ IsChecked: Brown Dog "
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Reset  NewItems=0 OldItems=0 NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add    NewItems=1 OldItems=0 NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add    NewItems=1 OldItems=0 NewStartingIndex= 1 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add    NewItems=1 OldItems=0 NewStartingIndex= 2 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add    NewItems=1 OldItems=0 NewStartingIndex= 3 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add    NewItems=1 OldItems=0 NewStartingIndex= 4 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add    NewItems=5 OldItems=* NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+Reset   NewItems=0 OldItems=0 NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1 OldItems=0 NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1 OldItems=0 NewStartingIndex= 1 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1 OldItems=0 NewStartingIndex= 2 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1 OldItems=0 NewStartingIndex= 3 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1 OldItems=0 NewStartingIndex= 4 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=5 OldItems=* NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -316,8 +316,8 @@ Add    NewItems=5 OldItems=* NewStartingIndex= 0 OldStartingIndex=-1 NotifyColle
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Digest NewItems=4 OldItems=0 NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangeReason.Digest        NotifyCollectionChangingEventArgs
-Reset  NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+Digest  NewItems=4 OldItems=0 NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangingEventArgs NotifyCollectionChangeReason.Digest
+Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(

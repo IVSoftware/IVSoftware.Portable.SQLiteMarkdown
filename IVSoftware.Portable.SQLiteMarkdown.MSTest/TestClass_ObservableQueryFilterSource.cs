@@ -1333,7 +1333,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                         });
                     void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
                     {
-                        builder.Add(e.ToStringWithItems());
+                        builder.Add(e.ToStringEx());
                     }
                     #endregion L o c a l F x
 
@@ -1359,7 +1359,8 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
+Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=12 OldItems=* NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
                     ;
 
                     // 260311.B RETROFIT - StateReport came online later. Let's see if it agrees.
@@ -1367,7 +1368,7 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 0, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1422,7 +1423,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
                     {
                         eventQueue.Enqueue((sender, e));
-                        builder.Add(e.ToStringWithItems());
+                        builder.Add(e.ToStringEx());
                     }
                     #endregion L o c a l F x
 
@@ -1431,7 +1432,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 0, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1449,8 +1450,8 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
                     { }
-                    expected = @"     
-NetProjection.Reset   ModelSettledEventArgs           "
+                    expected = @" 
+Remove  NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex= 0 NotifyCollectionChangedEventArgs "
                     ;
 
                     // 260311.D RETROFIT - StateReport came online later. Let's see if it agrees.
@@ -3150,7 +3151,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
             oqfs.CollectionChanged += (sender, e) =>
             {
                 eventQueue.Enqueue((sender!, e));
-                builder.Add(e.ToStringWithItems());
+                builder.Add(e.ToStringEx());
 
                 // G T K
                 switch (e.Action)

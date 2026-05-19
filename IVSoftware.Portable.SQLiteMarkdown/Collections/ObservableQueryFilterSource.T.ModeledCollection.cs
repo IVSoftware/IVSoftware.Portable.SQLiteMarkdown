@@ -189,10 +189,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         public void Clear()
         {
-            Clear(all: true);
-            using (RequestAuthority(StdModelAuthority.SuspendForwardPropertyChange))
+            using (RequestAuthority(StdModelAuthority.TerminalClear))
             {
-                InputText = string.Empty;
+                Clear(all: true);
+                using (RequestAuthority(StdModelAuthority.SuspendForwardPropertyChange))
+                {
+                    InputText = string.Empty;
+                }
             }
         }
         void IList.Clear() => Clear();

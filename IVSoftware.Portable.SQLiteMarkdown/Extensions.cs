@@ -557,7 +557,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// respective IList is non-null. Empty collections are reported with a
         /// count of zero; null lists are omitted entirely.
         /// </remarks>
-        public static string ToStringWithItems(
+        public static string ToStringEx(
             this EventArgs e,
             params object[] _)
         {
@@ -582,7 +582,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     case NotifyCollectionChangingEventArgs ePre:
                         if (ePre.Reason != NotifyCollectionChangeReason.None)
                         {
-                            sb.Append(ePre.Reason.ToFullKey());
+                            sb.Append($" {ePre.Reason.ToFullKey()}");
                         }
                         break;
                 }
