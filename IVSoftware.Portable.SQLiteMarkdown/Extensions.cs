@@ -571,10 +571,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 out var OldStartingIndex))
             {
                 sb.Append(Action.ToString().PadRight(8));
-                sb.Append($"NewItems={(NewItems?.Count.ToString() ?? "*")} ");
-                sb.Append($"OldItems={(OldItems?.Count.ToString() ?? "*")} ");
-                sb.Append($"NewStartingIndex={NewStartingIndex.ToString().PadLeft(2)} ");
-                sb.Append($"OldStartingIndex={OldStartingIndex.ToString().PadLeft(2)} ");
+                sb.Append($"NewItems={(NewItems?.Count.ToString() ?? "*").PadRight(2)} ");
+                sb.Append($"OldItems={(OldItems?.Count.ToString() ?? "*").PadRight(2)} ");
+                sb.Append($"NewStartingIndex={NewStartingIndex.ToString().PadRight(2)} ");
+                sb.Append($"OldStartingIndex={OldStartingIndex.ToString().PadRight(2)} ");
                 sb.Append(e.GetType().Name.PadRight(33));
 
                 switch (e)

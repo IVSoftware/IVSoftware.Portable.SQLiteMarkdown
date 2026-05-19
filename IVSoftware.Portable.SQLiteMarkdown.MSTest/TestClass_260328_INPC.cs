@@ -253,13 +253,13 @@ IsChecked: Brown Dog "
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Reset   NewItems=0 OldItems=0 NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=1 OldItems=0 NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=1 OldItems=0 NewStartingIndex= 1 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=1 OldItems=0 NewStartingIndex= 2 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=1 OldItems=0 NewStartingIndex= 3 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=1 OldItems=0 NewStartingIndex= 4 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=5 OldItems=* NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+Reset   NewItems=0  OldItems=0  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=1  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=2  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=3  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=4  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -312,12 +312,14 @@ Add     NewItems=5 OldItems=* NewStartingIndex= 0 OldStartingIndex=-1 NotifyColl
                 actual.NormalizeResult(),
                 "Expecting result to match."
             );
+
+            // Get Events
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Digest  NewItems=4 OldItems=0 NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangingEventArgs NotifyCollectionChangeReason.Digest
-Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+Digest  NewItems=4  OldItems=0  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangingEventArgs NotifyCollectionChangeReason.Digest
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(

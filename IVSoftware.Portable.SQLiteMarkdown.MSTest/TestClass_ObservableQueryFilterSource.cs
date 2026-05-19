@@ -1451,7 +1451,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-Remove  NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex= 0 NotifyCollectionChangedEventArgs "
+Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
                     ;
 
                     // 260311.D RETROFIT - StateReport came online later. Let's see if it agrees.
@@ -1483,8 +1483,8 @@ Remove  NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex= 0 NotifyColl
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems=12 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=12 OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -3207,8 +3207,8 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems=12 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=12 OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
                 ;
 
                 Assert.AreEqual(
@@ -3303,7 +3303,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-NetProjection.Remove  OldItems=11 OldStartingIndex= 0 NotifyCollectionChangedEventArgs           "
+Remove  NewItems=*  OldItems=11 NewStartingIndex=-1 OldStartingIndex=0  NotifyCollectionChangedEventArgs "
                 ;
 
                 // Enumerator BUGIRLs
@@ -3354,7 +3354,7 @@ NetProjection.Remove  OldItems=11 OldStartingIndex= 0 NotifyCollectionChangedEve
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-NetProjection.Remove  OldItems=11 OldStartingIndex= 0 NotifyCollectionChangedEventArgs           "
+Remove  NewItems=*  OldItems=11 NewStartingIndex=-1 OldStartingIndex=0  NotifyCollectionChangedEventArgs "
                 ;
 
                 Assert.AreEqual(
@@ -3376,7 +3376,7 @@ NetProjection.Remove  OldItems=11 OldStartingIndex= 0 NotifyCollectionChangedEve
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-NetProjection.Remove  OldItems= 1 OldStartingIndex= 0 NotifyCollectionChangedEventArgs           "
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
                 ;
 
                 Assert.AreEqual(
@@ -3605,7 +3605,7 @@ NetProjection.Remove  OldItems= 1 OldStartingIndex= 0 NotifyCollectionChangedEve
                 // - The reason: The single PM is at index ZERO.
                 // And the thing is, it worked exactly how we designed it.
                 expected = @" 
-NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
+Add     NewItems=11 OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
                 ;
 
                 Assert.AreEqual(
@@ -3763,7 +3763,7 @@ NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEve
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           "
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
                 ;
 
                 Assert.AreEqual(

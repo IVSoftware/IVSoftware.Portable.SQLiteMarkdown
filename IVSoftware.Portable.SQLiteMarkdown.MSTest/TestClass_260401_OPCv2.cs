@@ -54,10 +54,9 @@ public class TestClass_260401_OPCv2
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Add     NewItems=1 OldItems=* NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
-Add     NewItems=1 OldItems=* NewStartingIndex= 1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
-Add     NewItems=1 OldItems=* NewStartingIndex= 2 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
-            ;
+Add     NewItems=1  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=1  OldItems=*  NewStartingIndex=1  OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=1  OldItems=*  NewStartingIndex=2  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -106,7 +105,7 @@ Add     NewItems=1 OldItems=* NewStartingIndex= 2 OldStartingIndex=-1 NotifyColl
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Remove  NewItems=* OldItems=1 NewStartingIndex=-1 OldStartingIndex= 2 NotifyCollectionChangedEventArgs "
+Remove  NewItems=*  OldItems=1  NewStartingIndex=-1 OldStartingIndex=2  NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -138,7 +137,7 @@ Remove  NewItems=* OldItems=1 NewStartingIndex=-1 OldStartingIndex= 2 NotifyColl
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Replace NewItems=1 OldItems=1 NewStartingIndex= 1 OldStartingIndex= 1 NotifyCollectionChangedEventArgs "
+Replace NewItems=1  OldItems=1  NewStartingIndex=1  OldStartingIndex=1  NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -169,7 +168,7 @@ Replace NewItems=1 OldItems=1 NewStartingIndex= 1 OldStartingIndex= 1 NotifyColl
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Move    NewItems=1 OldItems=1 NewStartingIndex= 0 OldStartingIndex= 1 NotifyCollectionChangedEventArgs "
+Move    NewItems=1  OldItems=1  NewStartingIndex=0  OldStartingIndex=1  NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -244,7 +243,7 @@ Move    NewItems=1 OldItems=1 NewStartingIndex= 0 OldStartingIndex= 1 NotifyColl
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -395,7 +394,7 @@ Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyColl
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Add     NewItems=3 OldItems=* NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+Add     NewItems=3  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -448,7 +447,7 @@ Add     NewItems=3 OldItems=* NewStartingIndex= 0 OldStartingIndex=-1 NotifyColl
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -471,7 +470,7 @@ Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyColl
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -513,7 +512,7 @@ Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyColl
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Replace NewItems=4 OldItems=4 NewStartingIndex= 0 OldStartingIndex= 0 NotifyCollectionChangedEventArgs "
+Replace NewItems=4  OldItems=4  NewStartingIndex=0  OldStartingIndex=0  NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -538,7 +537,7 @@ Replace NewItems=4 OldItems=4 NewStartingIndex= 0 OldStartingIndex= 0 NotifyColl
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -556,7 +555,7 @@ Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyColl
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -600,7 +599,7 @@ Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyColl
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Replace NewItems=5 OldItems=5 NewStartingIndex= 0 OldStartingIndex= 0 NotifyCollectionChangedEventArgs "
+Replace NewItems=5  OldItems=5  NewStartingIndex=0  OldStartingIndex=0  NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
