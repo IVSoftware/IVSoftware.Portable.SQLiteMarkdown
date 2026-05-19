@@ -1859,7 +1859,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Available routing based on discoverable Histo.
         /// </summary>
-        public StdRouteKey? RouteKey
+        public StdRouteKey RouteKey
         {
             get => _routeKey;
             set
@@ -1872,14 +1872,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-        StdRouteKey? _routeKey = null;
+        StdRouteKey _routeKey = StdRouteKey.CanonicalRecordset;
 
         protected virtual void OnRouteKeyChanged()
         {
             switch (RouteKey)
             {
-                case null:
-                case StdRouteKey.Empty:
                 case StdRouteKey.CanonicalRecordset:
                     RouteToFullRecordset = true;
                     break;

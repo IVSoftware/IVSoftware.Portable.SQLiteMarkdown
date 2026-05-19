@@ -79,7 +79,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 if (all)
                 {
                     Debug.Assert(
-                        Equals(CanonicalSupersetProtected.RouteKey, StdRouteKey.Empty),
+                        Equals(CanonicalSupersetProtected.RouteKey, StdRouteKey.CanonicalRecordset),
                         $"Expecting the collection route is nullified.");
                     Debug.Assert(
                         CanonicalSuperset.Count == 0,
