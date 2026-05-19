@@ -603,18 +603,26 @@ SELECT * FROM items WHERE
             ObservableQueryFilterSource<SelectableQFModel> oqfs = new();
             if(oqfs.AsInterface<ITestableMDC>() is { } tmdc)
             {
-
                 actual = string.Join(Environment.NewLine, builder); builder.Clear();
                 actual.ToClipboardExpected();
                 { } // <- FIRST TIME ONLY: Adjust the message.
                 actual.ToClipboardAssert("Expecting builder content to match.");
                 { }
+                expected = @" 
+";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
                 if (tmdc.HasFQDB)
                 {   /* G T K */
                 }
                 else
                 {   /* G T K */
                 }
+                throw new NotImplementedException("ToDo");
             }
         }
 

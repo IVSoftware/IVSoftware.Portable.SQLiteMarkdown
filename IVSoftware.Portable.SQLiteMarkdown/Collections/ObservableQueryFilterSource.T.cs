@@ -44,7 +44,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Canonical("The parameterless CTor is the only CTor")]
         public ObservableQueryFilterSource() 
         {
-            CanonicalSupersetProtected = new ObservablePreviewRangeCollection<T>();
+            CanonicalSupersetProtected = new ObservablePreviewRangeCollection<T>
+            {
+                ModelTracking = ModelTrackingFlag.ItemPropertyChanges | ModelTrackingFlag.ItemQueries
+            };
         }
 
         protected override void OnCommit(RecordsetRequestEventArgs e)
@@ -210,6 +213,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     }
                 default:
                     return base.ToString();
+            }
+        }
+        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+            switch (e.PropertyName)
+            {
+                case nameof(CanonicalSupersetProtected):
+                    if(CanonicalSupersetProtected.FilterQueryDatabase is { } fqdb)
+                    { }
+                    break;
+                default:
+                    break;
             }
         }
     }
