@@ -479,7 +479,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 0, CC: 1, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 1, CC: 1, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
                 ;
 
                 Assert.AreEqual(
