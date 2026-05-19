@@ -24,14 +24,26 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     {
         public ObservableQueryFilterCollection()
         {
+            MarkdownContext = new()
+            { 
+                ModelAuthorityContext = this
+            };
+            // Property changed forwarder
+            MarkdownContext.PropertyChanged += MDCPropertyChangedForwarder;
+
             Model.SetBoundAttributeValue(
-                MarkdownContext = new()
-                { ModelAuthorityContext = this },
+                MarkdownContext,
                 StdModelAttribute.mdc,
                 "[MDC]");
 
             Model.SortAttributes<StdModelAttribute>();
         }
+
+        private void MDCPropertyChangedForwarder(object sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(e);
+        }
+
         protected class MarkdownContextProtected : MarkdownContext<T>
         {
             public new SearchEntryState SearchEntryState
