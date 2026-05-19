@@ -43,16 +43,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if (omc.ModelTracking.HasFlag(ModelTrackingFlag.ItemQueries))
                     {
                         var omcdb = omc.FilterQueryDatabase;
-                        if(!ReferenceEquals(omcdb, _filterQueryDatabase))
+                        if(ReferenceEquals(omcdb, _filterQueryDatabase))
+                        {
+                            this.OnAwaited(new()
+                            {
+                                { nameof(SQLiteConnection), $"get.{nameof(IModeledCollection)}.Exists" }
+                            });
+                        }
+                        else
                         {
                             _filterQueryDatabase = omcdb;
-                            this.OnAwaited();
+                            this.OnAwaited(new()
+                            {
+                                { nameof(SQLiteConnection), $"get.{nameof(IModeledCollection)}.Assigned" }
+                            });
                         }
                         return _filterQueryDatabase!;
                     }
                     else
                     {
                         // Allowable and consistent with the IModeledCollection contract;
+                        this.OnAwaited(new() 
+                        { 
+                            { nameof(SQLiteConnection), $"get.{nameof(IModeledCollection)}.Null" } 
+                        });
                         return null!;
                     }
                 }
@@ -70,6 +84,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if (_filterQueryDatabase is null)
                     {
                         _filterQueryDatabase = new SQLiteQueryOnlyConnection(ContractType);
+                        this.OnAwaited(new()
+                        {
+                            { nameof(SQLiteConnection), $"get.{nameof(MarkdownContext)}.Created" }
+                        });
+                    }
+                    else
+                    {
+                        this.OnAwaited(new()
+                        {
+                            { nameof(SQLiteConnection), $"get.{nameof(MarkdownContext)}.Exists" }
+                        });
                     }
                     return _filterQueryDatabase;
                 }
@@ -93,7 +118,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         _filterQueryDatabase.CreateTable(ContractType);
                     }
                     OnPropertyChanged();
-                    this.OnAwaited();
+                    this.OnAwaited(caller: $"{nameof(FilterQueryDatabase)}.get.{nameof(IModeledCollection)}.Null");
                 }
             }
         }

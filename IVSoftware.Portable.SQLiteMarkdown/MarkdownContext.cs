@@ -1474,10 +1474,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             Clear(all: true);
                             break;
                     }
+                    OnQueryFilterConfigChanged();
                     OnPropertyChanged();
                 }
             }
         }
+
+        protected virtual void OnQueryFilterConfigChanged() { }
+
         QueryFilterConfig _queryFilterConfig = QueryFilterConfig.QueryAndFilter;
 
         /// <summary>

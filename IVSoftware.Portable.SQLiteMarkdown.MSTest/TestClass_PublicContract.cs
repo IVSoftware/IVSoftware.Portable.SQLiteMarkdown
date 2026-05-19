@@ -577,7 +577,7 @@ SELECT * FROM items WHERE
             switch (e.Caller)
             {
                 case nameof(IModeledCollection.FilterQueryDatabase):
-                    builder.Add(e.Caller);
+                    builder.Add(e[nameof(SQLiteConnection)]?.ToString() ?? "Missing");
                     break;
                 default:
                     break;
@@ -599,30 +599,58 @@ SELECT * FROM items WHERE
 
         void subtest_OQFS()
         {
-            builder.Clear();
-            ObservableQueryFilterSource<SelectableQFModel> oqfs = new();
+            // Test the translation from QueryFilterConfig to OMC.ModelTracking
+            ObservableQueryFilterSource<SelectableQFModel> oqfs = new()
+            {
+                QueryFilterConfig = QueryFilterConfig.Query,
+            };
+
+            // It should not be possible to pull FQDB from
+            // anywhere, even though this is a "hybrid factory".
             if(oqfs.AsInterface<ITestableMDC>() is { } tmdc)
             {
+                builder.Clear();
+
+                // Tug on the factory getter down in the MDC.
+                Assert.IsFalse(tmdc.HasFQDB);
+
                 actual = string.Join(Environment.NewLine, builder); builder.Clear();
                 actual.ToClipboardExpected();
-                { } // <- FIRST TIME ONLY: Adjust the message.
-                actual.ToClipboardAssert("Expecting builder content to match.");
                 { }
                 expected = @" 
-";
+get.IModeledCollection.Null";
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting builder content to match."
+                    "Expecting descriptor indicates Null with expected path."
                 );
-                if (tmdc.HasFQDB)
-                {   /* G T K */
-                }
-                else
-                {   /* G T K */
-                }
-                throw new NotImplementedException("ToDo");
+
+                // QueryFilterConfig must track ModelTracking.
+                Assert.IsFalse(oqfs.ModelTracking.HasFlag(ModelTrackingFlag.ItemQueries));
+                oqfs.QueryFilterConfig = QueryFilterConfig.QueryAndFilter;
+                Assert.IsTrue(oqfs.ModelTracking.HasFlag(ModelTrackingFlag.ItemQueries));
+
+                // Tug on the factory getter down in the MDC.
+                Assert.IsTrue(tmdc.HasFQDB);
+
+                actual = string.Join(Environment.NewLine, builder); builder.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+get.IModeledCollection.Assigned"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting descriptor indicates Assigned from IModeledCollection."
+                );
+
+                // ModelTracking must track QueryFilterConfig.
+                Assert.IsTrue(oqfs.QueryFilterConfig.HasFlag(QueryFilterConfig.Filter));
+                oqfs.ModelTracking &= ~ModelTrackingFlag.ItemQueries;
+                Assert.IsFalse(oqfs.QueryFilterConfig.HasFlag(QueryFilterConfig.Filter));
             }
         }
 

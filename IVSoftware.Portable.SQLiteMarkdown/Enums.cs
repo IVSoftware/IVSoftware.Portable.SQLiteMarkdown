@@ -29,6 +29,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Semicolon,
         Tilde,
     }
+
+    [NotFlags]
     public enum PersistenceMode
     {
         /// <summary>

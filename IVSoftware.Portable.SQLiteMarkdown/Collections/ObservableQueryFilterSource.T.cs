@@ -96,13 +96,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         /// <summary>
-        /// Redirect BC to CSS
+        /// Routing is a wrapper on CSP.
         /// </summary>
         protected override void OnRouteKeyChanged()
         {
             base.OnRouteKeyChanged();
             CanonicalSupersetProtected.RouteKey = base.RouteKey;
         }
+
+        /// <summary>
+        /// Maps affirmative state change to CSP Clear.
+        /// </summary>
         protected override void OnSearchEntryStateChanged()
         {
             base.OnSearchEntryStateChanged();
@@ -115,6 +119,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 default:
                     // TBD
                     break;
+            }
+        }
+
+        /// <summary>
+        /// Maps config to CSP.ModelTracking.
+        /// </summary>
+        protected override void OnQueryFilterConfigChanged()
+        {
+            base.OnQueryFilterConfigChanged();
+            if(QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+            { 
+                CanonicalSupersetProtected.ModelTracking |= ModelTrackingFlag.ItemQueries;
+            }
+            else 
+            { 
+                CanonicalSupersetProtected.ModelTracking &= ~ModelTrackingFlag.ItemQueries;
             }
         }
     }
@@ -220,11 +240,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             base.OnPropertyChanged(e);
             switch (e.PropertyName)
             {
-                case nameof(CanonicalSupersetProtected):
-                    if(CanonicalSupersetProtected.FilterQueryDatabase is { } fqdb)
-                    { }
-                    break;
-                default:
+                case nameof(ModelTracking):
+                    // Raised by CSP not the base class.
+                    // ∴ Wire it here.
+                    if(ModelTracking.HasFlag(ModelTrackingFlag.ItemQueries))
+                    {
+                        QueryFilterConfig |= QueryFilterConfig.Filter;
+                    }
+                    else 
+                    {
+                        QueryFilterConfig &= ~QueryFilterConfig.Filter;
+                    }
                     break;
             }
         }
