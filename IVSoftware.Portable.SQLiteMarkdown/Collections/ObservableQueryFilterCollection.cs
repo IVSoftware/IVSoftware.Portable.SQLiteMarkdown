@@ -24,14 +24,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public ObservableQueryFilterCollection()
         {
             Model.SetBoundAttributeValue(
-                MarkdownContext = new MarkdownContext<T>(),
+                MarkdownContext = new()
+                { ModelAuthorityContext = this },
                 StdModelAttribute.mdc,
                 "[MDC]");
-            MarkdownContext.ModelAuthorityContext = this;
+
             Model.SortAttributes<StdModelAttribute>();
         }
-
-        protected MarkdownContext<T> MarkdownContext { get; }
+        protected class MarkdownContextProtected : MarkdownContext<T>
+        {
+            public new SearchEntryState SearchEntryState
+            {
+                get => base.SearchEntryState;
+                set => base.SearchEntryState = value;
+            }
+        }
+        protected MarkdownContextProtected MarkdownContext { get; }
 
         public Type ContractType
             => MarkdownContext.ContractType;
