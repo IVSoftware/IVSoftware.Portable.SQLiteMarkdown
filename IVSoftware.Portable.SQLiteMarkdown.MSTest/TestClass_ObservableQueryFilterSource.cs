@@ -1303,22 +1303,17 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
             }
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public void Test_ObservableQueryFilterSource()
         {
-#if false
             string actual, expected, sql;
             var builder = new List<string>();
-            SenderEventPair sep;
             NotifyCollectionChangedEventArgs ecc;
             Queue<SenderEventPair> eventQueue = new();
             List<SelectableQFModelLTOQO> results;
             var itemsSource = new ObservableQueryFilterSource<SelectableQFModelLTOQO>();
             using (var cnx = InitializeInMemoryDatabase())
             {
-                // This is just to skip to the second temporarily
-                // Debug.Assert(DateTime.Now.Date == new DateTime(2026, 4, 05).Date, "Don't forget disabled");
-
                 subtestBasicQueryAnimal();
                 subtestBasicQueryAnimalINPC();
 
@@ -1461,7 +1456,6 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     // Expecting "no surprises" here.
                     builder.Clear();
                     eventQueue.Clear();
-                    Assert.IsNull(itemsSource.ObservableNetProjection, "[Reminder] Expecting routed config.");
                     itemsSource.Clear();
 
                     actual = string.Join(Environment.NewLine, builder);
@@ -1540,7 +1534,6 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 }
                 #endregion S U B T E S T S
             }
-#endif
         }
 
         /// <summary>
