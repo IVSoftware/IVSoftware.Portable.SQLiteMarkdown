@@ -1702,7 +1702,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (model.To<IRoutedCollection>() is { } route)
                 {
                     // This does not rely on the 'all' argument.
-                    route.RouteKey = null;
+                    route.RouteKey = StdRouteKey.CanonicalRecordset;
                 }
             }
             if (all)
@@ -1827,8 +1827,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             switch (FilteringState)
             {
                 case FilteringState.Ineligible:
-                case FilteringState.Armed:
-                    RouteKey = null;
+                case FilteringState.Armed:                    
+                    RouteKey = StdRouteKey.CanonicalRecordset;
 #if DEBUG
                     // Detect direction
                     if (FilteringStatePrev == FilteringState.Active)
@@ -2141,11 +2141,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 case QueryFilterConfig.Query:
                     FilteringState = FilteringState.Ineligible;
-                    RouteKey = null;
+                    RouteKey = StdRouteKey.CanonicalRecordset;
                     break;
                 case QueryFilterConfig.Filter:
                     FilteringState = FilteringState.Armed;
-                    RouteKey = null;
+                    RouteKey = StdRouteKey.CanonicalRecordset;
                     break;
                 case QueryFilterConfig.QueryAndFilter:
 
@@ -2328,11 +2328,11 @@ SELECT * FROM items WHERE
                                     case 0:
                                         Debug.Fail($@"ADVISORY - Unexpected {nameof(ApplyFilter)} on empty list.");
                                         FilteringState = FilteringState.Ineligible;
-                                        RouteKey = null;    // Canonical enumerator for empty list.
+                                        RouteKey = StdRouteKey.CanonicalRecordset;    // Canonical enumerator for empty list.
                                         break;
                                     case 1:
                                         FilteringState = FilteringState.Ineligible;
-                                        RouteKey = null;    // Canonical enumerator for list with one item.
+                                        RouteKey = StdRouteKey.CanonicalRecordset;    // Canonical enumerator for list with one item.
                                         break;
                                     default:
                                         FilteringState = FilteringState.Active;
