@@ -521,6 +521,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 await Task.Delay(250);
 
                 actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
                 expected = @" 
 SearchEntryState
 InputText"
