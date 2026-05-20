@@ -55,18 +55,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             base.OnCommit(e);
             if (!e.Handled)
             {
-                var recordset = MemoryDatabase.Query<T>(e.SQL);
-
-                // ☆ Pluralize Option ☆
-                if ( recordset.Count == 0
-                    && Settings[StdMarkdownContextSetting.AllowPluralize] is bool allow && allow)
+                if (MemoryDatabase is null)
                 {
-                    recordset = MemoryDatabase.Query<T>(e.SQL.ToFuzzyQuery());
+                    this.ThrowHard<InvalidOperationException>(
+                        $"{nameof(Commit)} requires either a handled {nameof(RecordsetRequest)} " +
+                        $"or a non-null {nameof(MemoryDatabase)}.");
                 }
+                else
+                {
+                    var recordset = MemoryDatabase.Query<T>(e.SQL);
 
-                // SeachEntryState is determined in this method in order
-                // to accomodate sites that call ReplaceItems directly.
-                ReplaceItems(recordset);
+                    // ☆ Pluralize Option ☆
+                    if (recordset.Count == 0
+                        && Settings[StdMarkdownContextSetting.AllowPluralize] is bool allow && allow)
+                    {
+                        recordset = MemoryDatabase.Query<T>(e.SQL.ToFuzzyQuery());
+                    }
+
+                    // SeachEntryState is determined in this method in order
+                    // to accomodate sites that call ReplaceItems directly.
+                    ReplaceItems(recordset);
+                }
             }
         }
 
