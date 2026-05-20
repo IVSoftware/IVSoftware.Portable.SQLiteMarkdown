@@ -63,6 +63,63 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             _contractType = type;
 
             ContractTableMapping = ContractType.GetSQLiteMapping();
+
+            localValidateClearTopology();
+
+            #region L o c a l F x
+            void localValidateClearTopology()
+            {
+                var runtimeType = GetType();
+
+                // Base MDC itself is not the target. This guard is for inherited
+                // types that choose to present a clearable collection surface.
+                if (runtimeType == typeof(MarkdownContext))
+                {
+                    return;
+                }
+
+                bool hasClearableSurface =
+                    this is ICollection ||
+                    runtimeType
+                        .GetInterfaces()
+                        .Any(_ => _.IsGenericType && _.GetGenericTypeDefinition() == typeof(ICollection<>));
+
+                if (!hasClearableSurface)
+                {
+                    return;
+                }
+
+                // Require both explicit meanings on the runtime type itself:
+                // 1. Clear() for terminal, no-surprises collection emptying.
+                // 2. Clear(bool) for intentional access to MDC's stateful regression.
+                var clearMethod = runtimeType.GetMethod(
+                    nameof(Clear),
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly,
+                    binder: null,
+                    types: Type.EmptyTypes,
+                    modifiers: null);
+
+                var clearBoolMethod = runtimeType.GetMethod(
+                    nameof(Clear),
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly,
+                    binder: null,
+                    types: [typeof(bool)],
+                    modifiers: null);
+
+#if false && HAS_LANGUAGE_SUPPORT
+                bool hasExplicitDualClear =
+                    clearMethod is not null &&
+                    clearBoolMethod is not null &&
+                    clearBoolMethod.ReturnType == typeof(FilteringState) &&
+                    clearBoolMethod.GetParameters() is [{ IsOptional: false }];
+
+                if (!hasExplicitDualClear)
+                {
+                    this.ThrowPolicyException(MarkdownContextPolicy.ExplicitClearAdvisory);
+                }
+#endif
+            }
+            #endregion L o c a l F x
         }
 
         [PublishedContract("2.x")]

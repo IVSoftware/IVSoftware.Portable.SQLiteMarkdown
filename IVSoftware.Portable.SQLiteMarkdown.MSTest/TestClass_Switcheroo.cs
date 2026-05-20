@@ -1,21 +1,4 @@
-using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown.Common;
-using IVSoftware.Portable.SQLiteMarkdown.MSTest.Switcheroo;
-using IVSoftware.Portable.Threading;
-using IVSoftware.Portable.Collections;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
-using IVSoftware.WinOS.MSTest.Extensions;
-using Newtonsoft.Json;
-using SQLite;
 using System.Collections;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
-using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
 using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
 
@@ -386,32 +369,67 @@ MarkdownContext Clear(all=True)";
         }
     }
 
-    namespace Switcheroo
+    /// <summary>
+    /// Uses routing for the net projection.
+    /// </summary>
+    class InheritMDCwithIList<T>
+        : MarkdownContext<T>
+        , IList<T>
+        where T : new()
     {
-        /// <summary>
-        /// Uses routing for the net projection.
-        /// </summary>
-        class ObservableNetProjectionInheritsMDC<T>
-            : MarkdownContext<T>
-            where T : new()
-        {
-            public XElement Model { get; set; } = StdModelElement.model.MakeXElement();
+        List<T> @base = new();
 
-            public void LoadCanon(IList<SelectableQFModel> localCanon)
-            {
-                throw new NotImplementedException();
-            }
+        public T this[int index] { get => ((IList<T>)@base)[index]; set => ((IList<T>)@base)[index] = value; }
+
+        public int Count => ((ICollection<T>)@base).Count;
+
+        public bool IsReadOnly => ((ICollection<T>)@base).IsReadOnly;
+
+        public void Add(T item)
+        {
+            ((ICollection<T>)@base).Add(item);
         }
 
-        /// <summary>
-        /// Extension and general housekeeping.
-        /// </summary>
-        partial class ObservableNetProjectionWithComposition<T> : ObservableModeledCollection<T>
+        public bool Contains(T item)
         {
+            return ((ICollection<T>)@base).Contains(item);
         }
 
-        partial class ObservableNetProjectionWithComposition<T> where T : new()
+        public void CopyTo(T[] array, int arrayIndex)
         {
+            ((ICollection<T>)@base).CopyTo(array, arrayIndex);
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return ((IEnumerable<T>)@base).GetEnumerator();
+        }
+
+        public int IndexOf(T item)
+        {
+            return ((IList<T>)@base).IndexOf(item);
+        }
+
+        public void Insert(int index, T item)
+        {
+            ((IList<T>)@base).Insert(index, item);
+        }
+
+        public bool Remove(T item)
+        {
+            return ((ICollection<T>)@base).Remove(item);
+        }
+
+        public void RemoveAt(int index)
+        {
+            ((IList<T>)@base).RemoveAt(index);
+        }
+
+        void ICollection<T>.Clear() => @base.Clear();
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)@base).GetEnumerator();
         }
     }
 }
