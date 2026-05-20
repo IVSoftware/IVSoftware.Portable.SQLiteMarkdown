@@ -1980,12 +1980,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 localApplyQuerySemantics();
             }
 
-            // Empty means *immediate* RouteToFullRecordset.
-            // [Careful]
-            // Do this : Use is "really empty" as the sentinel.
-            // Not this: InputText.IsSemanticallyEmpty();
-            IsInputTextEmpty = InputText.Length == 0;
-
             #region L o c a l F x
             void localApplyFilterSemantics()
             {
@@ -2089,21 +2083,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         bool _routeToFullRecordset = true;
-
-        public bool IsInputTextEmpty
-        {
-            get => _isInputTextEmpty;
-            set
-            {
-                if (!Equals(_isInputTextEmpty, value))
-                {
-                    _isInputTextEmpty = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        bool _isInputTextEmpty = false;
-
 
         /// <summary>
         /// Returns true when the normalized semantic input contains no effective terms.

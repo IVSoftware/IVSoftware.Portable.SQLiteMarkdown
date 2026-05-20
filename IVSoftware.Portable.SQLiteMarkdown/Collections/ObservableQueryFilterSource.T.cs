@@ -11,6 +11,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -104,7 +105,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         protected override void OnRouteKeyChanged()
         {
             base.OnRouteKeyChanged();
-            CanonicalSupersetProtected.RouteKey = base.RouteKey;
+
+            switch (RouteKey)
+            {
+                case StdRouteKey.CanonicalRecordset:
+                    using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
+                    {
+                        CanonicalSupersetProtected.RouteKey = base.RouteKey;
+                        // OnCollectionChanged(new(action: NotifyCollectionChangedAction.Reset));
+                    }
+                    break;
+                default:
+                    CanonicalSupersetProtected.RouteKey = base.RouteKey;
+                    break;
+            }
         }
 
         /// <summary>
