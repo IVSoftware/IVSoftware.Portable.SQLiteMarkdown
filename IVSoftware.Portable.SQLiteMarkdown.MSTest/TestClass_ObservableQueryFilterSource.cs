@@ -3191,7 +3191,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible, null]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible, StdRouteKey.CanonicalRecordset]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting initial StateReport to match.");
 
@@ -3389,7 +3389,7 @@ Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCo
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible, null]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible, StdRouteKey.CanonicalRecordset]"
                 ;
 
                 Assert.AreEqual(
@@ -3411,7 +3411,7 @@ Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCo
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 7, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteNoResults, FilteringState.Ineligible, null]"
+[IME Len: 7, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteNoResults, FilteringState.Ineligible, StdRouteKey.CanonicalRecordset]"
                 ;
 
                 Assert.AreEqual(
@@ -3427,7 +3427,7 @@ Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCo
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 7, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed, null]"
+[IME Len: 7, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed, StdRouteKey.CanonicalRecordset]"
                 ;
 
                 Assert.AreEqual(
@@ -3444,7 +3444,7 @@ Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCo
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 8, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed, null]"
+[IME Len: 8, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed, StdRouteKey.CanonicalRecordset]"
                 ;
 
                 Assert.AreEqual(
