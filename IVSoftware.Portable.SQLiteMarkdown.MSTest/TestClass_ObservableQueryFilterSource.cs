@@ -5,10 +5,12 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.DemoDB;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB;
+using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.QFTemplates;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
@@ -1555,12 +1557,9 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
         /// - Correct routing between canonical superset and filtered projection.
         /// - Stable filtering behavior when clearing input or re-entering filter expressions.
         /// </remarks>
-        [TestMethod, DoNotParallelize, Ignore]
+        [TestMethod, DoNotParallelize]
         public async Task Test_TrackProgressiveInputState()
         {
-#if false
-            var id1 = Thread.CurrentThread.ManagedThreadId;
-
             using var te = this.TestableEpoch();
 
             var builder = new List<string>();
@@ -1580,8 +1579,9 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 @"\& \| \! \( \) \[ \] \' \"" \\".ParseSqlMarkdown<PetProfileN>();
                 Queue<SenderEventPair> eventQueue = new();
                 List<T> recordset;
-                var items = new ObservableQueryFilterSource<T>();
+                var oqfs = new ObservableQueryFilterSource<T>();
 
+#if false && USE_LEGACY_ONP
                 Assert.IsNull(
                     items.ObservableNetProjection,
                     "Expecting raw, portable list with no ONP.");
@@ -1589,11 +1589,12 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     NetProjectionTopology.Routed, 
                     items.ProjectionTopology,
                     "Expecting detection of INotifyCollectionChanged in CTor.");
+#endif
 
                 string caller = string.Empty;
 
 
-                items.InputTextSettled += async (sender, e) =>
+                oqfs.InputTextSettled += async (sender, e) =>
                 {
                     if (e is CancelEventArgs eCancel)
                     {
@@ -1609,18 +1610,18 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 };
 
                 // P R O P E R T Y   E V E N T    Q U E U E
-                items.PropertyChanged += (sender, e) =>
+                oqfs.PropertyChanged += (sender, e) =>
                 {
                     switch (e.PropertyName)
                     {
-                        case nameof(items.Busy):
+                        case nameof(oqfs.Busy):
                             break;
                         case nameof(SearchEntryState):
                             if (caller == "subtestCommit")
                             {
 
                             }
-                            builder.Add($"{e.PropertyName}='{items.SearchEntryState}'");
+                            builder.Add($"{e.PropertyName}='{oqfs.SearchEntryState}'");
                             break;
                         case nameof(FilteringState):
                             if (caller == "subtestCommit")
@@ -1628,13 +1629,13 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
 
                             }
                             break;
-                        case nameof(items.RouteToFullRecordset):
+                        case nameof(oqfs.RouteToFullRecordset):
                             if (caller == "subtestCommit")
                             {
 
                             }
                             break;
-                        case nameof(items.ProxyType):
+                        case nameof(oqfs.ProxyType):
                             break;
                     }
                     eventQueue.Enqueue((sender, e));
@@ -1665,7 +1666,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
 
                     void subtestClearedToFirstChar()
                     {
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
@@ -1676,10 +1677,10 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
 
                         Assert.AreEqual(
                             "Search Items",
-                            items.Placeholder);
+                            oqfs.Placeholder);
 
                         // "a"
-                        items.InputText += 'a';
+                        oqfs.InputText += 'a';
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1688,7 +1689,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
 
                         // Limits touched 260304
                         // First, make sure we're testing QueryAndFilter
-                        Assert.AreEqual(QueryFilterConfig.QueryAndFilter, items.QueryFilterConfig);
+                        Assert.AreEqual(QueryFilterConfig.QueryAndFilter, oqfs.QueryFilterConfig);
                         // Now, this *did* have a Running change showing up but we don't want that.
                         expected = @" 
 SearchEntryState
@@ -1705,7 +1706,7 @@ InputText"
                         eventQueue.Clear();
 
 
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
@@ -1716,7 +1717,7 @@ InputText"
 
                     void subtestFirstCharToEmpty()
                     {
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
@@ -1725,9 +1726,9 @@ InputText"
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting starting state is ENB.");
 
                         // Backspace
-                        items.InputText = string.Empty;
+                        oqfs.InputText = string.Empty;
 
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
@@ -1739,7 +1740,7 @@ InputText"
 
                     void subtestEmptyToFirstChar()
                     {
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
@@ -1749,9 +1750,9 @@ InputText"
 
                         Assert.AreEqual(
                             "Search Items",
-                            items.Placeholder);
+                            oqfs.Placeholder);
                         // "a"
-                        items.InputText += 'a';
+                        oqfs.InputText += 'a';
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1769,7 +1770,7 @@ InputText";
                         );
                         Assert.AreEqual(
                             SearchEntryState.QueryENB,
-                            items.SearchEntryState,
+                            oqfs.SearchEntryState,
                             "Expecting ending state is ENB."
                         );
                         eventQueue.Clear();
@@ -1779,12 +1780,12 @@ InputText";
                     {
                         Assert.AreEqual(
                             SearchEntryState.QueryENB,
-                            items.SearchEntryState,
+                            oqfs.SearchEntryState,
                             "Expecting starting state is ENB."
                         );
 
                         // "an"
-                        items.InputText += 'n';
+                        oqfs.InputText += 'n';
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1801,7 +1802,7 @@ InputText";
                         );
                         Assert.AreEqual(
                             SearchEntryState.QueryENB,
-                            items.SearchEntryState,
+                            oqfs.SearchEntryState,
                             "Expecting ending state is 'still' ENB."
                         );
                         eventQueue.Clear();
@@ -1811,12 +1812,12 @@ InputText";
                     {
                         Assert.AreEqual(
                             SearchEntryState.QueryENB,
-                            items.SearchEntryState,
+                            oqfs.SearchEntryState,
                             "Expecting starting state is ENB."
                         );
 
                         // "ani"
-                        items.InputText += 'i';
+                        oqfs.InputText += 'i';
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1836,7 +1837,7 @@ InputText";
 
                         Assert.AreEqual(
                             SearchEntryState.QueryEN,
-                            items.SearchEntryState,
+                            oqfs.SearchEntryState,
                             "Expecting specific state has now CHANGED."
                         );
                     }
@@ -1844,14 +1845,15 @@ InputText";
                     async Task subtestCommit()
                     {
                         // "animal"
-                        items.InputText += "mal";
+                        oqfs.InputText += "mal";
                         Assert.AreEqual(
                             SearchEntryState.QueryEN,
-                            items.SearchEntryState,
+                            oqfs.SearchEntryState,
                             "Expecting specific state UNCHANGED."
                         );
-                        Assert.IsFalse(items.IsFiltering, "Expecting NO NEED TO AWAIT HERE.");
+                        Assert.IsFalse(oqfs.IsFiltering, "Expecting NO NEED TO AWAIT HERE.");
 
+#if false && USE_LEGACY_TOPOLOGY
                         actual = items.TopologyReport();
                         actual.ToClipboardExpected();
                         { }
@@ -1863,6 +1865,7 @@ NetProjectionTopology.Routed, ReplaceItemsEventingPolicy.StructuralReplaceEvent"
                             actual.NormalizeResult(),
                             "Expecting routed topology."
                         );
+#endif
 
                         #region C O M M I T
                         // This section wraps the RECORDSET REQUEST EVENT as a
@@ -1882,22 +1885,22 @@ SELECT * FROM items WHERE
                                 actual.NormalizeResult(),
                                 "Expecting propertly formed query on 'items'."
                             );
-                            e.CanonicalSuperset = cnx.Query<T>(e.SQL);
+                            var recordset = cnx.Query<T>(e.SQL);
                         }
                         #endregion L o c a l F x
-                        using (items.WithOnDispose(
+                        using (oqfs.WithOnDispose(
                             onInit: (sender, e) =>
                             {
-                                items.RecordsetRequest += localOnRecordsetRequestA;
+                                oqfs.RecordsetRequest += localOnRecordsetRequestA;
                             },
                             onDispose: (sender, e) =>
                             {
-                                items.RecordsetRequest -= localOnRecordsetRequestA;
+                                oqfs.RecordsetRequest -= localOnRecordsetRequestA;
                             }))
                         {
                             // ☆☆☆☆☆
                             // C O M M I T
-                            ((MarkdownContext)items).Commit();
+                            ((MarkdownContext)oqfs).Commit();
                             // ☆☆☆☆☆
                         }
                         #endregion C O M M I T
@@ -1930,7 +1933,7 @@ Busy"
                             "Expecting specific property changes."
                         );
 
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
@@ -1945,9 +1948,9 @@ Busy"
                         eventQueue.Clear();
 
                         // T E R M I N A L    C L E A R
-                        items.Clear();
+                        oqfs.Clear();
 
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
@@ -1981,14 +1984,14 @@ SearchEntryState";
                         eventQueue.Clear();
 
                         // I N J E C T    I N S T E A D
-                        Assert.AreEqual(string.Empty, items.InputText, "[Remember] - We did a terminal clear.");
+                        Assert.AreEqual(string.Empty, oqfs.InputText, "[Remember] - We did a terminal clear.");
                         sql = "animal".ParseSqlMarkdown<T>();
                         recordset = cnx.Query<T>(sql);
 
                         // DIFFERENT - Async version
-                        await items.ReplaceItemsAsync(recordset);
+                        await oqfs.ReplaceItemsAsync(recordset);
 
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
@@ -2014,12 +2017,12 @@ IsFiltering"
 
                         eventQueue.Clear();
 
-                        Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, items.SearchEntryState);
-                        Assert.AreEqual(FilteringState.Armed, items.FilteringState);
+                        Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, oqfs.SearchEntryState);
+                        Assert.AreEqual(FilteringState.Armed, oqfs.FilteringState);
                         Assert.AreNotEqual(0, recordset.Count);
-                        Assert.AreNotEqual(0, items.Count);
+                        Assert.AreNotEqual(0, oqfs.Count);
 
-                        actual = string.Join(Environment.NewLine, items.OfType<object>().Select(_ => _.ToString()));
+                        actual = string.Join(Environment.NewLine, oqfs.OfType<object>().Select(_ => _.ToString()));
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
@@ -2044,12 +2047,11 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                         );
 
                         // T E R M I N A L    C L E A R
-                        items.Clear();
+                        oqfs.Clear();
 
-                        Assert.IsNull(items.MemoryDatabase, "Expecting this hasn't been set up yet for this test.");
-                        items.MemoryDatabase = cnx;
-                        items.InputText = "animal";
-
+                        Assert.IsNull(oqfs.MemoryDatabase, "Expecting this hasn't been set up yet for this test.");
+                        oqfs.MemoryDatabase = cnx;
+                        oqfs.InputText = "animal";
 
 
                         #region L o c a l F x
@@ -2071,17 +2073,17 @@ SELECT * FROM items WHERE
                             // SKIP: e.CanonicalSuperset = cnx.Query<T>(e.SQL);
                         }
                         #endregion L o c a l F x
-                        using (items.WithOnDispose(
+                        using (oqfs.WithOnDispose(
                             onInit: (sender, e) =>
                             {
-                                items.RecordsetRequest += localOnRecordsetRequestB;
+                                oqfs.RecordsetRequest += localOnRecordsetRequestB;
                             },
                             onDispose: (sender, e) =>
                             {
-                                items.RecordsetRequest -= localOnRecordsetRequestB;
+                                oqfs.RecordsetRequest -= localOnRecordsetRequestB;
                             }))
                         {
-                            ((MarkdownContext)items).Commit();
+                            ((MarkdownContext)oqfs).Commit();
                         }
 
                         // Now clear
@@ -2095,13 +2097,13 @@ SELECT * FROM items WHERE
 
                         Assert.AreEqual(
                             FilteringState.Armed,
-                            items.Clear(all: false),     // <- EXECUTES THE CLEAR
+                            oqfs.Clear(all: false),     // <- EXECUTES THE CLEAR
                             "Expecting EMPTY input text WITHOUT regressing to Query. THIS MEANS ALL 12 ITEMS ARE SHOWN!"
                         );
 
                         Assert.AreEqual(
                             string.Empty,
-                            items.InputText,
+                            oqfs.InputText,
                             "Expecting empty input text."
                         );
 
@@ -2118,7 +2120,7 @@ SELECT * FROM items WHERE
 #endif
 
                         // Before
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
 
@@ -2128,6 +2130,8 @@ SELECT * FROM items WHERE
 
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
+
+#if false && USE_LEGACY_TOPOLOGY
                         actual = items.TopologyReport();
                         actual.ToClipboardExpected();
                         { }
@@ -2136,18 +2140,19 @@ NetProjectionTopology.Routed, ReplaceItemsEventingPolicy.StructuralReplaceEvent"
                         ;
 
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+#endif
 
                         // PLEASE: Do not remove.
-                        Assert.IsTrue(items.ValidationPredicate("b"), "This was a BUGIRL for the test itself.");
+                        Assert.IsTrue(oqfs.ValidationPredicate("b"), "This was a BUGIRL for the test itself.");
 
                         // animal.b
                         // Expecting Filter mode and an internal query.
                         // See also: {24048258-8BE4-40C4-BF85-8863E98BED51}
-                        items.InputText += "b";
-                        await items;
+                        oqfs.InputText += "b";
+                        await oqfs;
 
                         // After
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
@@ -2159,7 +2164,7 @@ NetProjectionTopology.Routed, ReplaceItemsEventingPolicy.StructuralReplaceEvent"
                             "Expecting the PMC is routed to the ONP. BOTH SHOULD SHOW 5.");
 
 
-                        actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
+                        actual = string.Join(Environment.NewLine, oqfs.Select(_ => _.ToString()));
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
@@ -2178,13 +2183,12 @@ Kangaroo ""bounce"",""outback"",""marsupial"" [animal]"
 
                         // [Careful("This polarity was wrong, and has been fixed.")]
                         // Limit touched 260301
-                        Assert.IsFalse(items.RouteToFullRecordset);
+                        Assert.IsFalse(oqfs.RouteToFullRecordset);
                         { }
                     }
-                    #endregion S U B T E S T S
+#endregion S U B T E S T S
                 }
             }
-#endif
         }
 
         [TestMethod]
