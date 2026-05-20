@@ -1580,7 +1580,8 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 Queue<SenderEventPair> eventQueue = new();
                 List<T> recordset;
 
-
+                // Placeholder is composed from Title, so set it explicitly prior
+                // to asserting strings like "Search Items" and "Filter Items".
                 var oqfs = new ObservableQueryFilterSource<T>
                 {
                     Title = "Items",
