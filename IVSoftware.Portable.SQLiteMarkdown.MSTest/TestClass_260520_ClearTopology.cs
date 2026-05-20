@@ -1,6 +1,7 @@
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.WinOS.MSTest.Extensions;
 using System.Collections;
 using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
@@ -13,9 +14,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         [TestMethod, DoNotParallelize] // * because of static Throw
         public void TestMethod_ClearTopologyGuard()
         {
-            List<string>
-                builder = new(),
-                builderThrow = new();
+            string actual, expected;
+            List<string> builderThrow = new();
 
             #region L o c a l F x
             using var local = this.WithOnDispose(
@@ -27,7 +27,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 {
                     Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
                 });
-            var localCanon = default(List<SelectableQFModel>).PopulateForDemo(2);
             void localOnBeginThrowOrAdvise(object? sender, Throw e)
             {
                 var msg = $"{e.GetType().Name} {e.FormattedMessage}";
@@ -35,6 +34,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 e.Handled = true;
             }
             #endregion L o c a l F x
+
+            _ = new InheritMDCwithIList<SelectableQFModel>();
+
+            actual = string.Join(Environment.NewLine, builderThrow);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Throw MarkdownContextPolicy.ExplicitClearAdvisory | ExplicitClearAdvisory Policy advisory:
+- Inherited MarkdownContext detected, but no parameterless Clear() was found.
+- Clear(bool all = false) participates in the MDC filtering state machine and may not
+  immediately empty the collection. 
+- If your callers expect IList-style behavior, consider implementing Clear() => Clear(true)
+  to provide a deterministic terminal clear. You may also expose Clear(bool all) without a 
+  default parameter to make the stateful semantics explicit."
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                $"Expecting {nameof(InheritMDCwithIList<SelectableQFModel>)} advises on missing explicit dual-clear surface."
+            );
 #if false
             using var te = this.TestableEpoch();
             string actual, expected;
