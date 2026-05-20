@@ -103,21 +103,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     nameof(Clear),
                     BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly,
                     binder: null,
-                    types: [typeof(bool)],
+                    types: new[] { typeof(bool) },
                     modifiers: null);
 
-#if false && HAS_LANGUAGE_SUPPORT
                 bool hasExplicitDualClear =
                     clearMethod is not null &&
                     clearBoolMethod is not null &&
-                    clearBoolMethod.ReturnType == typeof(FilteringState) &&
-                    clearBoolMethod.GetParameters() is [{ IsOptional: false }];
+                    clearBoolMethod.ReturnType == typeof(FilteringState);
+
+                if (hasExplicitDualClear)
+                {
+                    if (clearBoolMethod?.GetParameters() is { } parameters)
+                    {
+                        hasExplicitDualClear =
+                            parameters.Length == 1 &&
+                            parameters[0].ParameterType == typeof(bool) &&
+                            !parameters[0].IsOptional;
+                    }
+                }
 
                 if (!hasExplicitDualClear)
                 {
                     this.ThrowPolicyException(MarkdownContextPolicy.ExplicitClearAdvisory);
                 }
-#endif
             }
             #endregion L o c a l F x
         }
