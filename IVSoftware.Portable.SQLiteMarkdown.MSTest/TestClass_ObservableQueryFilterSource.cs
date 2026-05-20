@@ -1579,7 +1579,12 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 @"\& \| \! \( \) \[ \] \' \"" \\".ParseSqlMarkdown<PetProfileN>();
                 Queue<SenderEventPair> eventQueue = new();
                 List<T> recordset;
-                var oqfs = new ObservableQueryFilterSource<T>();
+
+
+                var oqfs = new ObservableQueryFilterSource<T>
+                {
+                    Title = "Items",
+                };
 
 #if false && USE_LEGACY_ONP
                 Assert.IsNull(
