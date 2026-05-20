@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Collections.Events;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
@@ -22,6 +23,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         , IObservableQueryFilterSource<T>
         , IModelAuthorityContext
     {
+        [Canonical("The parameterless CTor is the only CTor.")]
         public ObservableQueryFilterCollection()
         {
             MarkdownContext = new()

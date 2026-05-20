@@ -1757,6 +1757,7 @@ InputText"
                         Assert.AreEqual(
                             "Search Items",
                             oqfs.Placeholder);
+
                         // "a"
                         oqfs.InputText += 'a';
                         actual =
@@ -1764,7 +1765,13 @@ InputText"
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
                             .OfType<PropertyChangedEventArgs>()
                             .Select(_ => _.PropertyName));
-
+                        actual.ToClipboardExpected();
+                        { }
+                        expected = @" 
+SearchEntryState
+IsInputTextEmpty
+InputText"
+                        ;
                         expected = @"
 SearchEntryState
 InputText";
