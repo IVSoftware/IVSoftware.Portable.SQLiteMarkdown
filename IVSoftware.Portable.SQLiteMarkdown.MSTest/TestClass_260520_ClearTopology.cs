@@ -1,3 +1,6 @@
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 using System.Collections;
 using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
@@ -5,20 +8,16 @@ using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttri
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
     [TestClass]
-    public class TestClass_Switcheroo
+    public class TestClass_260520_ClearTopology
     {
-        [TestMethod, Ignore]
-        public void Test_DetectTopology()
+        [TestMethod, DoNotParallelize] // * because of static Throw
+        public void TestMethod_ClearTopologyGuard()
         {
-#if false
+            List<string>
+                builder = new(),
+                builderThrow = new();
+
             #region L o c a l F x
-            var builderThrow = new List<string>();
-            void localOnBeginThrowOrAdvise(object? sender, Throw e)
-            {
-                builderThrow.Add(e.Message);
-                e.Handled = true;
-            }
-            #endregion L o c a l F x
             using var local = this.WithOnDispose(
                 onInit: (sender, e) =>
                 {
@@ -28,75 +27,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 {
                     Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
                 });
-
-            subtest_Inheritor();
-            subtest_Compositor();
-
-            #region S U B T E S T S
-            void subtest_Inheritor()
-            {
-                var mdci = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
-            }
-
-            void subtest_Compositor()
-            {
-                var onpc = new ObservableNetProjectionWithComposition<SelectableQFModel>();
-                //Assert.AreEqual(
-                //    ProjectionTopology.Composition,
-                //    onpc.ProjectionTopology,
-                //    "Expecting COMPOSITION as assigned in CTor.");
-
-                var mmdc = onpc.Model.To < MarkdownContext<SelectableQFModel>>();
-
-                mmdc.SetObservableNetProjection(null);
-                //Assert.AreEqual(
-                //    ProjectionTopology.Composition,
-                //    onpc.ProjectionTopology,
-                //    "Expecting NONE is the epistemic default.");
-
-                var oc = new ObservableCollection<SelectableQFModel>();
-                mmdc.SetObservableNetProjection(oc);
-
-                //Assert.AreEqual(
-                //    ProjectionTopology.Composition,
-                //    onpc.ProjectionTopology,
-                //    "Expecting promotion to COMPOSITION now that assignment has been made.");
-            }
-            #endregion S U B T E S T S
-#endif
-        }
-
-        /// <summary>
-        /// Verifies the ability of the MDC to self-identify its <see cref="ProjectionTopology"/>.
-        /// </summary>
-        /// <remarks>
-        /// Mental Model: "Am I (the MDC) inherited by the projection class? Or does the projection class include me as a composed object?"
-        ///
-        /// The test instantiates a projection type that inherits <see cref="MarkdownContext"/>,
-        /// allowing the MDC to infer its topology without configuration. The first assertion
-        /// verifies that <see cref="ProjectionTopology.Inheritance"/> is detected immediately.
-        ///
-        /// An observable collection is then assigned and populated. The test confirms that the
-        /// MDC routes structure through its canonical model and backing database by verifying:
-        /// - the observable source contents,
-        /// - the generated canonical XML model,
-        /// - synchronized counts across canonical store, predicate matches, and database.
-        ///
-        /// Clearing the observable source confirms that routed structural changes propagate
-        /// back through the canonical store and database.
-        /// </remarks>
-        [TestMethod, DoNotParallelize, Ignore]
-        public void TestMethod_RouteInheritance()
-        {
-#if false
-            using var te = this.TestableEpoch();
-            string actual, expected;
-            int nResult;
-
-            #region L o c a l F x
-            List<string>
-                builder = new(),
-                builderThrow = new();
             var localCanon = default(List<SelectableQFModel>).PopulateForDemo(2);
             void localOnBeginThrowOrAdvise(object? sender, Throw e)
             {
@@ -105,15 +35,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 e.Handled = true;
             }
             #endregion L o c a l F x
-            using var local = this.WithOnDispose(
-                onInit: (sender, e) =>
-                {
-                    Throw.BeginThrowOrAdvise += localOnBeginThrowOrAdvise;
-                },
-                onDispose: (sender, e) =>
-                {
-                    Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
-                });
+#if false
+            using var te = this.TestableEpoch();
+            string actual, expected;
+            int nResult;
 
             var inherited = new ObservableNetProjectionInheritsMDC<SelectableQFModel>();
 
@@ -334,35 +259,6 @@ MarkdownContext Clear(all=True)";
             void subtest_FilterTracking()
             {
                 inherited.QueryFilterConfig = QueryFilterConfig.Filter;
-            }
-            #endregion S U B T E S T S
-#endif
-        }
-
-        [TestMethod, Ignore]
-        public void Test_ResetAndCopy()
-        {
-#if false
-            string actual, expected;
-            List<string> builder = new();
-            ObservableNetProjectionWithComposition<SelectableQFModel> onp;
-
-            subtest_DetectTopology();
-
-            #region S U B T E S T S
-            void subtest_DetectTopology()
-            {
-                onp = new ObservableNetProjectionWithComposition<SelectableQFModel>();
-                //Assert.AreEqual(
-                //    ProjectionTopology.Composition,
-                //    onp.ProjectionTopology,
-                //    "Expecting ABSENCE OF INHERITANCE is detectable from the start as 'COMPOSITION'.");
-                var mdcc = onp.Model.To<MarkdownContext<SelectableQFModel>>();
-                mdcc.SetObservableNetProjection(null);
-                //Assert.AreEqual(
-                //    ProjectionTopology.Composition,
-                //    onp.ProjectionTopology,
-                //    "Expecting NONE.");
             }
             #endregion S U B T E S T S
 #endif
