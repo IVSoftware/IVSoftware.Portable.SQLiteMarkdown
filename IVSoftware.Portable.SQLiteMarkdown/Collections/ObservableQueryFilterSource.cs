@@ -1,10 +1,125 @@
-﻿using System;
+﻿using IVSoftware.Portable.Collections.Events;
+using IVSoftware.Portable.Common.Attributes;
+using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.Collections.Specialized;
+using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
-    public class ObservableQueryFilterSource
+    /// <summary>
+    /// POC as a separate-but-equal generic IList impl, but not a BC so far.
+    /// </summary>
+    [Canonical("CTor partial")]
+    public partial class ObservableQueryFilterSource
+        : MarkdownContext<object>
+        , IObservableQueryFilterSource<object>
+        , IList
+        , IList<object>
     {
+        [Canonical("Parameterless CTor is the only CTor.")]
+        public ObservableQueryFilterSource() { }
+
+        public object this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public string Placeholder => throw new NotImplementedException();
+
+        public string Title { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public string SQL => throw new NotImplementedException();
+
+        public bool IsFixedSize => throw new NotImplementedException();
+
+        public bool IsReadOnly => throw new NotImplementedException();
+
+        public int Count => throw new NotImplementedException();
+
+        public bool IsSynchronized => throw new NotImplementedException();
+
+        public object SyncRoot => throw new NotImplementedException();
+
+        public event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
+        public event NotifyCollectionChangedEventHandler? CollectionChanged;
+
+        public int Add(object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Clear()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Contains(object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CopyTo(Array array, int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CopyTo(object[] array, int arrayIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        public int IndexOf(object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void InitializeFilterOnlyMode(IEnumerable<object> items)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Insert(int index, object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Remove(object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveAt(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ReplaceItems(IEnumerable<object> items)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task ReplaceItemsAsync(IEnumerable<object> items)
+        {
+            throw new NotImplementedException();
+        }
+
+        void ICollection<object>.Add(object item)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator<object> IEnumerable<object>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        bool ICollection<object>.Remove(object item)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
