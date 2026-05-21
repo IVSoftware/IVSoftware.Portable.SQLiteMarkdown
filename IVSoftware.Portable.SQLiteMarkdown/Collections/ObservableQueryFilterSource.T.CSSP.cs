@@ -113,26 +113,36 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     if (!ReferenceEquals(_canonicalSuperset, value))
                     {
                         #region P R E
-                        _canonicalSupersetProtected?.CollectionChanged -= CollectionChangedEventForwarder;
-                        _canonicalSupersetProtected?.PropertyChanged -= PropertyChangedEventForwarder;
-                        Model.Attribute(StdModelAttribute.mdc)?.Remove();
-                        FilterQueryDatabase = null!;
+                        if (_canonicalSupersetProtected is not null)
+                        {
+                            _canonicalSupersetProtected?.CollectionChanged -= CollectionChangedEventForwarder;
+                            _canonicalSupersetProtected?.PropertyChanged -= PropertyChangedEventForwarder;
+                            Model.Attribute(StdModelAttribute.mdc)?.Remove();
+                            FilterQueryDatabase = null!;
+                        }
                         #endregion P R E
 
                         _canonicalSupersetProtected = value;
 
                         #region P O S T
-                        _ =
-                        Model
-                        .WithBoundAttributeValue(this, nameof(StdModelAttribute.mdc), "[MDC]")
-                        .WithAttributesInOrder<StdModelAttribute>();
-
-                        if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                        if (_canonicalSupersetProtected is not null)
                         {
-                            _canonicalSupersetProtected!.ModelTracking |= ModelTrackingFlag.ItemQueries;
+                            _ =
+                            Model
+                            .WithBoundAttributeValue(this, nameof(StdModelAttribute.mdc), "[MDC]")
+                            .WithAttributesInOrder<StdModelAttribute>();
+
+                            if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                            {
+                                _canonicalSupersetProtected!.ModelTracking |= ModelTrackingFlag.ItemQueries;
+                            }
+                            _canonicalSupersetProtected.CollectionChanged += CollectionChangedEventForwarder;
+                            _canonicalSupersetProtected.PropertyChanged += PropertyChangedEventForwarder;
+
+                            // Might be null, or not.
+                            // Then, we bind FQDB changes (based on ModelTracking) to keep in sync.
+                            FilterQueryDatabase = _canonicalSupersetProtected.FilterQueryDatabase!;
                         }
-                        _canonicalSupersetProtected?.CollectionChanged += CollectionChangedEventForwarder;
-                        _canonicalSupersetProtected?.PropertyChanged += PropertyChangedEventForwarder;
                         OnPropertyChanged();
                         #endregion P O S T
                     }
@@ -151,7 +161,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// - ItemPropertyChangedEventArgs
         /// </summary>
         private void PropertyChangedEventForwarder(object sender, PropertyChangedEventArgs eUnk)
-            => OnPropertyChanged(eUnk);
+        {
+
+            switch (eUnk.PropertyName)
+            {
+                case nameof(FilterQueryDatabase):
+                    // Invariant binding
+                    FilterQueryDatabase = CanonicalSupersetProtected.FilterQueryDatabase!;
+                    break;
+            }
+            OnPropertyChanged(eUnk);
+        }
 
         public virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
