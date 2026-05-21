@@ -140,11 +140,46 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 if (!Equals(_modelAuthorityContext, value))
                 {
+                    IModeledCollection? imc;
+                    INotifyPropertyChanged? inpc;
+
+                    if((imc = _modelAuthorityContext as IModeledCollection) is not null)
+                    {
+                        if((inpc = imc as INotifyPropertyChanged) is not null)
+                        {
+                            inpc.PropertyChanged -= localOnPropertyChangedMC;
+                        }
+                    }
                     _modelAuthorityContext = value;
+
+                    if ((imc = _modelAuthorityContext as IModeledCollection) is not null)
+                    {
+                        _filterQueryDatabase = imc.FilterQueryDatabase;
+                        if ((inpc = imc as INotifyPropertyChanged) is not null)
+                        {
+                            inpc.PropertyChanged += localOnPropertyChangedMC;
+                        }
+                    }
                     OnPropertyChanged();
+
+                    #region L o c a l F x
+                    void localOnPropertyChangedMC(object sender, PropertyChangedEventArgs e)
+                    {
+                        switch (e.PropertyName)
+                        {
+                            case nameof(FilterQueryDatabase):
+                                if (sender is IModeledCollection imc)
+                                {
+                                    _filterQueryDatabase = imc.FilterQueryDatabase;
+                                }
+                                break;
+                        }
+                    }
+                    #endregion L o c a l F x
                 }
             }
         }
+
         IModelAuthorityContext? _modelAuthorityContext = default;
 
         public IReadOnlyDictionary<StdModelAttribute, int>? Histo
@@ -2263,12 +2298,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             #region F I L T E R    Q U E R Y
                             sql = ParseSqlMarkdown();
 #if DEBUG
-                            if (InputText == "b")
+                            switch (InputText)
                             {
-                                Debug.Assert(sql == @"
+                                case "b":
+                                    Debug.Assert(sql == @"
 SELECT * FROM items WHERE
 (FilterTerm LIKE '%b%')".TrimStart(),
-                                "PROBABLY *NOT* BUGIRL - SCREENING FOR A SPURIOUS FAIL");
+                                    "PROBABLY *NOT* BUGIRL - SCREENING FOR A SPURIOUS FAIL");
+                                    break;
+                                case "Item01":
+                                    var dbCount = FilterQueryDatabase.Table<PrioritizedAffinityQFModel>().Count();
+                                    { }
+                                    break;
                             }
 #endif
                             // Execute the filter query against the proxy table. The returned rows are

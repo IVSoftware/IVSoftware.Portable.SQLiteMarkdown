@@ -554,12 +554,13 @@ InputText"
                     Environment.NewLine,
                     oqfc.FilterQueryDatabase
                     !.Table<PrioritizedAffinityQFModel>()
-                     .Select(_ => $"{_.Id} {_.Description}")); 
+                     .Select(_ => $"{_.Id} {_.Description} {_.FilterTerm}")); 
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-312d1c21-0000-0000-0000-000000000001 Item01
-312d1c21-0000-0000-0000-000000000002 Item02";
+312d1c21-0000-0000-0000-000000000001 Item01 item01
+312d1c21-0000-0000-0000-000000000002 Item02 item02"
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
