@@ -112,12 +112,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 {
                     if (!ReferenceEquals(_canonicalSuperset, value))
                     {
+                        #region P R E
                         _canonicalSupersetProtected?.CollectionChanged -= CollectionChangedEventForwarder;
                         _canonicalSupersetProtected?.PropertyChanged -= PropertyChangedEventForwarder;
+                        Model.Attribute(StdModelAttribute.mdc)?.Remove();
+                        FilterQueryDatabase = null!;
+                        #endregion P R E
 
                         _canonicalSupersetProtected = value;
 
-                        Model.Attribute(StdModelAttribute.mdc)?.Remove();
+                        #region P O S T
                         _ =
                         Model
                         .WithBoundAttributeValue(this, nameof(StdModelAttribute.mdc), "[MDC]")
@@ -127,10 +131,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         {
                             _canonicalSupersetProtected!.ModelTracking |= ModelTrackingFlag.ItemQueries;
                         }
-
                         _canonicalSupersetProtected?.CollectionChanged += CollectionChangedEventForwarder;
                         _canonicalSupersetProtected?.PropertyChanged += PropertyChangedEventForwarder;
                         OnPropertyChanged();
+                        #endregion P O S T
                     }
                 }
             }

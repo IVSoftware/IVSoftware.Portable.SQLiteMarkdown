@@ -24,7 +24,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         [PublishedContract("1.x")]
-        protected virtual SQLiteConnection FilterQueryDatabase { get; set; }
+        protected virtual SQLiteConnection FilterQueryDatabase { get; set; } = null;
 #if false
         /// <summary>
         /// The ephemeral backing store for this collection's contract filtering.
