@@ -388,7 +388,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         /// <remarks>
         /// State machine failed to return to Cleared after consecutive [X].
         /// </remarks>
-        [TestMethod, DoNotParallelize, Ignore]
+        [TestMethod, DoNotParallelize]
         public async Task Test_QueryFilterFSMs()
         {
             using var te = this.TestableEpoch();
@@ -399,9 +399,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             string actual, expected;
             var builder = new List<string>();
             var extQueryHandle = default(List<PrioritizedAffinityQFModel>);
-            int COUNT;
+            int COUNT;      // Uniform (but not really constant) input for populate methods and the clauses that test them.
+            int? dbCount;   // Readback from db?.Table().Count()
 
-            var oqfc = new ObservableQueryFilterCollection<PrioritizedAffinityQFModel>();
+            var oqfc = new ObservableQueryFilterCollection<PrioritizedAffinityQFModel>
+            {
+                ModelTracking = ModelTrackingFlag.ItemQueries
+            };
             var histo = oqfc.Model.To<EnumHistogrammer<StdModelAttribute>>();
 
             actual = oqfc.StateReport();
@@ -536,8 +540,41 @@ InputText"
 
                 Assert.AreEqual(SearchEntryState.QueryEN, oqfc.SearchEntryState, "Expecting mdc perceives a valid query.");
 
+
+                dbCount = oqfc.FilterQueryDatabase?.Table<PrioritizedAffinityQFModel>().Count();
+                Assert.AreEqual(
+                    1, 
+                    dbCount,
+                    $"Expecting carry forward from prev test.");
+
                 // SIMULATE - Now perform the external QUERY.
                 oqfc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
+
+                actual = string.Join(
+                    Environment.NewLine,
+                    oqfc.FilterQueryDatabase
+                    !.Table<PrioritizedAffinityQFModel>()
+                     .Select(_ => $"{_.Id} {_.Description}")); 
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+312d1c21-0000-0000-0000-000000000001 Item01
+312d1c21-0000-0000-0000-000000000002 Item02";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting TWO items + Item1 holds the second ID of the epoch not the first.."
+                );
+
+                dbCount = oqfc.FilterQueryDatabase?.Table<PrioritizedAffinityQFModel>().Count();
+                Assert.AreEqual(
+                    2,
+                    dbCount,
+                    $"Expecting db tracking of Clear. " +
+                    $"∴ Contents entirely replaced by 2 items (not 3)."
+                );
+
 
                 actual = oqfc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
@@ -581,12 +618,18 @@ InputText"
                         break;
                 }
 
+                // 260521 ADDED
+                // - This is the FIRST filter attempt.
+                // ∴ Sanity check to ensure DB is set up and tracking.
+                Assert.IsTrue(oqfc.ModelTracking.HasFlag(ModelTrackingFlag.ItemQueries));
+
                 // SIMULATE - Now filter to one match.
                 oqfc.InputText = "Item01";
                 await oqfc;
 
                 actual = oqfc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
+                { }
                 expected = @" 
 <model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0 live:0]"">
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" index=""0"" qmatch=""True"" match=""True"" />

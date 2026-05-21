@@ -26,13 +26,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         [Canonical("The parameterless CTor is the only CTor.")]
         public ObservableQueryFilterCollection()
         {
-            MarkdownContext = new()
-            { 
-                ModelAuthorityContext = this
-            };
-            // Property changed forwarder
-            MarkdownContext.PropertyChanged += MDCPropertyChangedForwarder;
-
             Model.SetBoundAttributeValue(
                 MarkdownContext,
                 StdModelAttribute.mdc,
@@ -54,7 +47,23 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 set => base.SearchEntryState = value;
             }
         }
-        protected MarkdownContextProtected MarkdownContext { get; }
+        protected MarkdownContextProtected MarkdownContext
+        {
+            get
+            {
+                if (_markdownContext is null)
+                {
+                    _markdownContext = new()
+                    {
+                        ModelAuthorityContext = this
+                    };
+                    // Property changed forwarder
+                    MarkdownContext.PropertyChanged += MDCPropertyChangedForwarder;
+                }
+                return _markdownContext;
+            }
+        }
+        MarkdownContextProtected? _markdownContext = null;
 
         public Type ContractType
             => MarkdownContext.ContractType;
