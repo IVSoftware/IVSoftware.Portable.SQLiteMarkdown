@@ -102,6 +102,22 @@ Materialized Path Policy violation: Path must end with Id."
                 { }
                 expected = @" 
 <breakingChanges policy=""AssemblyOnly"">
+  <namespace name=""IVSoftware.Portable.SQLiteMarkdown.Collections"">
+    <type name=""ObservableQueryFilterSource"">
+      <method name=""Equals"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource|Equals([external])-&gt;[external]"" />
+      <method name=""GetHashCode"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource|GetHashCode()-&gt;[external]"" />
+      <method name=""GetType"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource|GetType()-&gt;[external]"" />
+      <method name=""ToString"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource|ToString()-&gt;[external]"" />
+      <typeRemoved />
+    </type>
+    <type name=""ObservableQueryFilterSource&lt;T&gt;"">
+      <method name=""Clear"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|Clear([external])-&gt;[external]"" />
+    </type>
+  </namespace>
+</breakingChanges>"
+                ;
+                expected = @" 
+<breakingChanges policy=""AssemblyOnly"">
     <namespace name=""IVSoftware.Portable.SQLiteMarkdown.Collections"">
         <type name=""ObservableQueryFilterSource&lt;T&gt;"">
             <method name=""Clear"" signature=""M:IVSoftware.Portable.SQLiteMarkdown.Collections.ObservableQueryFilterSource&lt;T&gt;|Clear([external])-&gt;[external]"" />

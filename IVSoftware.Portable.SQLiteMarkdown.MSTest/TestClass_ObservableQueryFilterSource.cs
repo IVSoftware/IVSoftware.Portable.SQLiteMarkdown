@@ -1874,20 +1874,6 @@ InputText";
                         );
                         Assert.IsFalse(oqfs.IsFiltering, "Expecting NO NEED TO AWAIT HERE.");
 
-#if false && USE_LEGACY_TOPOLOGY
-                        actual = items.TopologyReport();
-                        actual.ToClipboardExpected();
-                        { }
-                        expected = @" 
-NetProjectionTopology.Routed, ReplaceItemsEventingPolicy.StructuralReplaceEvent";
-
-                        Assert.AreEqual(
-                            expected.NormalizeResult(),
-                            actual.NormalizeResult(),
-                            "Expecting routed topology."
-                        );
-#endif
-
                         #region C O M M I T
                         // This section wraps the RECORDSET REQUEST EVENT as a
                         // sim then calls the Commit method;
@@ -2017,7 +2003,7 @@ SearchEntryState";
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 0, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
                         Assert.AreEqual(
                             expected.NormalizeResult(),
@@ -2031,10 +2017,10 @@ SearchEntryState";
                             .Select(_ => _.PropertyName));
                         actual.ToClipboardExpected();
                         { }
-                        expected = @" 
-SearchEntryState
+                        expected = @"
 FilteringState
-IsFiltering"
+IsFiltering 
+SearchEntryState"
                         ;
 
                         eventQueue.Clear();
@@ -2147,22 +2133,10 @@ SELECT * FROM items WHERE
                         { }
 
                         expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 0, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
 
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
-
-
-#if false && USE_LEGACY_TOPOLOGY
-                        actual = items.TopologyReport();
-                        actual.ToClipboardExpected();
-                        { }
-                        expected = @" 
-NetProjectionTopology.Routed, ReplaceItemsEventingPolicy.StructuralReplaceEvent"
-                        ;
-
-                        Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
-#endif
 
                         // PLEASE: Do not remove.
                         Assert.IsTrue(oqfs.ValidationPredicate("b"), "This was a BUGIRL for the test itself.");
@@ -2178,7 +2152,7 @@ NetProjectionTopology.Routed, ReplaceItemsEventingPolicy.StructuralReplaceEvent"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 1, IsFiltering: True], [Net: 0, CC: 12, PMC: 5], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 1, IsFiltering: True], [Net: 5, CC: 12, PMC: 5], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                         ;
                         Assert.AreEqual(
                             expected.NormalizeResult(), 

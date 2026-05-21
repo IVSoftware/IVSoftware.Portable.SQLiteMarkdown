@@ -1710,13 +1710,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         bool _isEphemeralSort = false;
 
 
-        protected virtual void OnIsFilteringChanged()
-        {
-            // Mostly, this is just a proxy.
-            // However, RTFR responds *immediately* to
-            // empty text without having to settle.
-            RouteToFullRecordset = !IsFiltering;
-        }
+        protected virtual void OnIsFilteringChanged() { }
 
         /// <summary>
         /// Comprehensive system-level clear that includes InputText in its purview.
