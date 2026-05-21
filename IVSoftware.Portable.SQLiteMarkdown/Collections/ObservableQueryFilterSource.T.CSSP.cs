@@ -162,14 +162,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         private void PropertyChangedEventForwarder(object sender, PropertyChangedEventArgs eUnk)
         {
-
-            switch (eUnk.PropertyName)
-            {
-                case nameof(FilterQueryDatabase):
-                    // Invariant binding
-                    FilterQueryDatabase = CanonicalSupersetProtected.FilterQueryDatabase!;
-                    break;
-            }
             OnPropertyChanged(eUnk);
         }
 
