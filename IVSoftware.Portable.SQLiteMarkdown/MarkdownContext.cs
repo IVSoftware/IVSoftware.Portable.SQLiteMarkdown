@@ -154,7 +154,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
                     if ((imc = _modelAuthorityContext as IModeledCollection) is not null)
                     {
-                        _filterQueryDatabase = imc.FilterQueryDatabase;
+                        FilterQueryDatabase = imc.FilterQueryDatabase;
                         if ((inpc = imc as INotifyPropertyChanged) is not null)
                         {
                             inpc.PropertyChanged += localOnPropertyChangedMC;
@@ -170,7 +170,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                             case nameof(FilterQueryDatabase):
                                 if (sender is IModeledCollection imc)
                                 {
-                                    _filterQueryDatabase = imc.FilterQueryDatabase;
+                                    FilterQueryDatabase = imc.FilterQueryDatabase;
                                 }
                                 break;
                         }
@@ -286,20 +286,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return string.Empty;
             }
             ProxyType = proxyType;
-            if (ProxyType != ContractType
-                && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
-                && _proxyType.GetCustomAttribute<ExtendMappingAttribute>() is not null)
+
+            if (FilterQueryDatabase is not null)
             {
-                if (FilterQueryDatabase is SQLiteQueryOnlyConnection cnxprot)
+                if (ProxyType != ContractType
+                    && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
+                    && _proxyType.GetCustomAttribute<ExtendMappingAttribute>() is not null)
                 {
-                    using (cnxprot.RequestAuthority(SQLiteAuthority.FullControl))
+                    if (FilterQueryDatabase is SQLiteQueryOnlyConnection cnxprot)
+                    {
+                        using (cnxprot.RequestAuthority(SQLiteAuthority.FullControl))
+                        {
+                            FilterQueryDatabase.CreateTable(ProxyType);
+                        }
+                    }
+                    else
                     {
                         FilterQueryDatabase.CreateTable(ProxyType);
                     }
-                }
-                else
-                {
-                    FilterQueryDatabase.CreateTable(ProxyType);
                 }
             }
 
@@ -2252,22 +2256,29 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 
         protected virtual async Task OnInputTextSettled(CancelEventArgs e)
         {
+            // External response via handler.
             InputTextSettled?.Invoke(this, e);
-            if (!e.Cancel)
+
+            // Internal response possible when FQDB is injected, including
+            // but not limited to IObservableQueryFilterSource implementations.
+            if (FilterQueryDatabase is not null)
             {
-                // [Remember]
-                // - The distinction of 'Ineligible' is that
-                //   there aren't enough items to filter.
-                // - It's got nothing to do with InputText length.
-                if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
-                    && FilteringState != FilteringState.Ineligible)
+                if (!e.Cancel)
                 {
-                    if (InputText.IsSemanticallyEmpty())
-                    {   /* G T K - N O O P */
-                    }
-                    else
+                    // [Remember]
+                    // - The distinction of 'Ineligible' is that
+                    //   there aren't enough items to filter.
+                    // - It's got nothing to do with InputText length.
+                    if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
+                        && FilteringState != FilteringState.Ineligible)
                     {
-                        await ApplyFilter();
+                        if (InputText.IsSemanticallyEmpty())
+                        {   /* G T K - N O O P */
+                        }
+                        else
+                        {
+                            await ApplyFilter();
+                        }
                     }
                 }
             }
@@ -2277,171 +2288,181 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         // REF: 260409.B-remove-mdc-model-sematics
         protected virtual async Task ApplyFilter()
         {
-            if (ModelAuthorityContext is { } mac)
+            if (FilterQueryDatabase is null)
             {
-                await _sslimAF.WaitAsync();
-                try
+                this.ThrowHard<InvalidOperationException>(
+                    $"{nameof(ApplyFilter)} requires a non-null {nameof(FilterQueryDatabase)}. " +
+                    $"Compose the {nameof(MarkdownContext)} through a modeled collection or " +
+                    $"inject the database before calling this method.");
+            }
+            else
+            {
+                if (ModelAuthorityContext is { } mac)
                 {
-                    using (DHostBusy.GetToken())
-                    using (mac.RequestAuthority(ModelDataExchangeAuthority.ModelDeferred))
+                    await _sslimAF.WaitAsync();
+                    try
                     {
-                        string sql;
-                        IList qmatches = Array.Empty<object>();
-                        string[] matchPaths = [];
-                        int ccount = CanonicalCount;
-
-                        await Task.Run(() =>
+                        using (DHostBusy.GetToken())
+                        using (mac.RequestAuthority(ModelDataExchangeAuthority.ModelDeferred))
                         {
-                            // PredicateMatchSubsetProtected.Clear();
-                            mac.Model.RemoveDescendantAttributes(StdModelAttribute.qmatch);
+                            string sql;
+                            IList qmatches = Array.Empty<object>();
+                            string[] matchPaths = [];
+                            int ccount = CanonicalCount;
 
-                            #region F I L T E R    Q U E R Y
-                            sql = ParseSqlMarkdown();
-#if DEBUG
-                            switch (InputText)
+                            await Task.Run(() =>
                             {
-                                case "b":
-                                    Debug.Assert(sql == @"
+                                // PredicateMatchSubsetProtected.Clear();
+                                mac.Model.RemoveDescendantAttributes(StdModelAttribute.qmatch);
+
+                                #region F I L T E R    Q U E R Y
+                                sql = ParseSqlMarkdown();
+#if DEBUG
+                                switch (InputText)
+                                {
+                                    case "b":
+                                        Debug.Assert(sql == @"
 SELECT * FROM items WHERE
 (FilterTerm LIKE '%b%')".TrimStart(),
-                                    "PROBABLY *NOT* BUGIRL - SCREENING FOR A SPURIOUS FAIL");
-                                    break;
-                                case "Item01":
-                                    var dbCount = FilterQueryDatabase.Table<PrioritizedAffinityQFModel>().Count();
-                                    { }
-                                    break;
-                            }
-#endif
-                            // Execute the filter query against the proxy table. The returned rows are
-                            // lightweight proxy records used only to discover which canonical models
-                            // satisfy the predicate. These proxy instances are not inserted into the
-                            // projection; instead their paths are resolved back to the original model
-                            // objects bound in the AST.
-                            qmatches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
-
-                            if (qmatches.Count == 0 && Equals(Settings[StdMarkdownContextSetting.AllowPluralize], true))
-                            {
-                                sql = sql.ToFuzzyQuery();
-                                qmatches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
-                            }
-                            #endregion F I L T E R    Q U E R Y
-
-                            matchPaths = localGetPaths();
-                        });
-
-                        // Not ordered, and doesn't need to be.
-                        HashSet<XElement> xqVisited = new();
-                        foreach (var path in matchPaths)
-                        {
-                            switch (mac.Model.Place(path, out var qmatchX, PlacerMode.FindOrPartial))
-                            {
-                                case PlacerResult.Exists:
-                                    xqVisited.Add(qmatchX);
-                                    break;
-                                case PlacerResult.Created:
-                                    this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                        if (xqVisited.Count == ccount)
-                        {   /* G T K - N O O P */
-                            // Detected 1:1 so route to canonical.
-                        }
-                        else
-                        {
-                            foreach (var xqmatch in xqVisited)
-                            {
-                                xqmatch.SetAttributeValue(nameof(StdModelAttribute.qmatch), bool.TrueString);
-                            }
-
-                            if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
-                            {
-                                await ApplyAffinities(qmatches);
-                            }
-                            localOnUpdateRouting();
-                        }
-
-                        #region L o c a l F x
-                        /// <summary>
-                        /// Resolves the path identifiers for the matched recordset. When the proxy
-                        /// implements <c>IPrioritizedAffinity</c>, paths are taken directly from
-                        /// <c>FullPath</c>; otherwise the value of the mapped SQLite primary key is
-                        /// used. A missing primary key mapping is treated as a framework error.
-                        /// </summary>
-                        string[] localGetPaths()
-                        {
-                            if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
-                            {
-                                return qmatches.Cast<IPrioritizedAffinity>().Select(_ => _.FullPath).ToArray();
-                            }
-                            else
-                            {
-                                if (ProxyType.GetSQLiteMapping().PK?.PropertyInfo is PropertyInfo pi)
-                                {
-                                    return qmatches.Cast<object>().Select(_ => (string)pi.GetValue(_)).ToArray();
-                                }
-                                // Error fall-through.
-                                this.ThrowHard<InvalidOperationException>();
-                                return [];
-                            }
-                        }
-
-                        void localOnUpdateRouting()
-                        {
-                            var pcount =
-                                Histo?[StdModelAttribute.pmatch]
-                                ??
-                                ModelAuthorityContext
-                                .Model
-                                .Descendants()
-                                .Count(_ =>
-                                    _
-                                    .Attribute(StdModelAttribute.pmatch)?.Value.GetSemanticContribution()
-                                    == SemanticContribution.ExplicitTrue);
-                            if (pcount == 0)
-                            {
-                                switch (ccount)
-                                {
-                                    case 0:
-                                        Debug.Fail($@"ADVISORY - Unexpected {nameof(ApplyFilter)} on empty list.");
-                                        FilteringState = FilteringState.Ineligible;
-                                        RouteKey = StdRouteKey.CanonicalRecordset;    // Canonical enumerator for empty list.
+                                        "PROBABLY *NOT* BUGIRL - SCREENING FOR A SPURIOUS FAIL");
                                         break;
-                                    case 1:
-                                        FilteringState = FilteringState.Ineligible;
-                                        RouteKey = StdRouteKey.CanonicalRecordset;    // Canonical enumerator for list with one item.
+                                    case "Item01":
+                                        var dbCount = FilterQueryDatabase.Table<PrioritizedAffinityQFModel>().Count();
+                                        { }
+                                        break;
+                                }
+#endif
+                                // Execute the filter query against the proxy table. The returned rows are
+                                // lightweight proxy records used only to discover which canonical models
+                                // satisfy the predicate. These proxy instances are not inserted into the
+                                // projection; instead their paths are resolved back to the original model
+                                // objects bound in the AST.
+                                qmatches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
+
+                                if (qmatches.Count == 0 && Equals(Settings[StdMarkdownContextSetting.AllowPluralize], true))
+                                {
+                                    sql = sql.ToFuzzyQuery();
+                                    qmatches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
+                                }
+                                #endregion F I L T E R    Q U E R Y
+
+                                matchPaths = localGetPaths();
+                            });
+
+                            // Not ordered, and doesn't need to be.
+                            HashSet<XElement> xqVisited = new();
+                            foreach (var path in matchPaths)
+                            {
+                                switch (mac.Model.Place(path, out var qmatchX, PlacerMode.FindOrPartial))
+                                {
+                                    case PlacerResult.Exists:
+                                        xqVisited.Add(qmatchX);
+                                        break;
+                                    case PlacerResult.Created:
+                                        this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
                                         break;
                                     default:
-                                        FilteringState = FilteringState.Active;
-                                        RouteKey = StdRouteKey.QMatch;
                                         break;
                                 }
                             }
+                            if (xqVisited.Count == ccount)
+                            {   /* G T K - N O O P */
+                                // Detected 1:1 so route to canonical.
+                            }
                             else
                             {
-                                if (qmatches.Count < 2)
+                                foreach (var xqmatch in xqVisited)
                                 {
+                                    xqmatch.SetAttributeValue(nameof(StdModelAttribute.qmatch), bool.TrueString);
+                                }
+
+                                if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                                {
+                                    await ApplyAffinities(qmatches);
+                                }
+                                localOnUpdateRouting();
+                            }
+
+                            #region L o c a l F x
+                            /// <summary>
+                            /// Resolves the path identifiers for the matched recordset. When the proxy
+                            /// implements <c>IPrioritizedAffinity</c>, paths are taken directly from
+                            /// <c>FullPath</c>; otherwise the value of the mapped SQLite primary key is
+                            /// used. A missing primary key mapping is treated as a framework error.
+                            /// </summary>
+                            string[] localGetPaths()
+                            {
+                                if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                                {
+                                    return qmatches.Cast<IPrioritizedAffinity>().Select(_ => _.FullPath).ToArray();
                                 }
                                 else
                                 {
-                                    FilteringState = FilteringState.Armed;
+                                    if (ProxyType.GetSQLiteMapping().PK?.PropertyInfo is PropertyInfo pi)
+                                    {
+                                        return qmatches.Cast<object>().Select(_ => (string)pi.GetValue(_)).ToArray();
+                                    }
+                                    // Error fall-through.
+                                    this.ThrowHard<InvalidOperationException>();
+                                    return [];
                                 }
                             }
+
+                            void localOnUpdateRouting()
+                            {
+                                var pcount =
+                                    Histo?[StdModelAttribute.pmatch]
+                                    ??
+                                    ModelAuthorityContext
+                                    .Model
+                                    .Descendants()
+                                    .Count(_ =>
+                                        _
+                                        .Attribute(StdModelAttribute.pmatch)?.Value.GetSemanticContribution()
+                                        == SemanticContribution.ExplicitTrue);
+                                if (pcount == 0)
+                                {
+                                    switch (ccount)
+                                    {
+                                        case 0:
+                                            Debug.Fail($@"ADVISORY - Unexpected {nameof(ApplyFilter)} on empty list.");
+                                            FilteringState = FilteringState.Ineligible;
+                                            RouteKey = StdRouteKey.CanonicalRecordset;    // Canonical enumerator for empty list.
+                                            break;
+                                        case 1:
+                                            FilteringState = FilteringState.Ineligible;
+                                            RouteKey = StdRouteKey.CanonicalRecordset;    // Canonical enumerator for list with one item.
+                                            break;
+                                        default:
+                                            FilteringState = FilteringState.Active;
+                                            RouteKey = StdRouteKey.QMatch;
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    if (qmatches.Count < 2)
+                                    {
+                                    }
+                                    else
+                                    {
+                                        FilteringState = FilteringState.Armed;
+                                    }
+                                }
+                            }
+                            #endregion L o c a l F x
                         }
-                        #endregion L o c a l F x
                     }
-                }
-                catch (Exception ex)
-                {
-                    this.RethrowHard(ex);
-                }
-                finally
-                {
-                    if (_sslimAF.CurrentCount == 0)
+                    catch (Exception ex)
                     {
-                        _sslimAF.Release();
+                        this.RethrowHard(ex);
+                    }
+                    finally
+                    {
+                        if (_sslimAF.CurrentCount == 0)
+                        {
+                            _sslimAF.Release();
+                        }
                     }
                 }
             }

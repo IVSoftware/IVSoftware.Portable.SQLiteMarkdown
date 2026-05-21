@@ -23,6 +23,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             OnPropertyChanged(new ItemPropertyChangedEventArgs(e.PropertyName, item));
         }
 
+        [PublishedContract("1.x")]
+        protected virtual SQLiteConnection FilterQueryDatabase { get; set; }
+#if false
         /// <summary>
         /// The ephemeral backing store for this collection's contract filtering.
         /// </summary>
@@ -123,6 +126,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
         SQLiteConnection? _filterQueryDatabase = default;
+#endif
 
 
         [Obsolete("Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount.")]
