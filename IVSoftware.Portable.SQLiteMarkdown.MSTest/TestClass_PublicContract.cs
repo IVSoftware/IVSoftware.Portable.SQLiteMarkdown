@@ -605,8 +605,8 @@ SELECT * FROM items WHERE
                 QueryFilterConfig = QueryFilterConfig.Query,
             };
 
-            // It should not be possible to pull FQDB from
-            // anywhere, even though this is a "hybrid factory".
+            // It should not be possible to pull FQDB from anywhere.
+            // NOTE: The idea of a "hybrid factory" is no more.
             if(oqfs.AsInterface<ITestableMDC>() is { } tmdc)
             {
                 builder.Clear();
