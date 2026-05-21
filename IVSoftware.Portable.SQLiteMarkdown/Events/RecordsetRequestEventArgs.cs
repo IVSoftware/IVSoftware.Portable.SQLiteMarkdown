@@ -1,17 +1,15 @@
-﻿using IVSoftware.Portable.Common.Attributes;
-using System;
-using System.Collections;
-using System.ComponentModel;
+﻿using System.Collections;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Events
 {
-    public class RecordsetRequestEventArgs : HandledEventArgs
+    public class RecordsetRequestEventArgs
     {
         public RecordsetRequestEventArgs(string sql)
         {
             SQL = sql;
         }
-        public string SQL { get;  }
-        public int? RecordsetCount { get; set; }
+        public string SQL { get; }
+
+        public IList? Recordset { get; set; }
     }
 }

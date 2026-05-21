@@ -54,30 +54,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         protected override void OnCommit(RecordsetRequestEventArgs e)
         {
             base.OnCommit(e);
-            if (!e.Handled)
+            if (e.Recordset is null)
             {
                 if (MemoryDatabase is null)
                 {
                     this.ThrowHard<InvalidOperationException>(
-                        $"{nameof(Commit)} requires either a handled {nameof(RecordsetRequest)} " +
+                        $"{nameof(Commit)} requires either a poulated {nameof(RecordsetRequest)} " +
                         $"or a non-null {nameof(MemoryDatabase)}.");
+                    // Reachable only when Throw pattern is handled.
+                    return;
                 }
                 else
                 {
-                    var recordset = MemoryDatabase.Query<T>(e.SQL);
+                    e.Recordset = MemoryDatabase.Query<T>(e.SQL);
 
                     // ☆ Pluralize Option ☆
-                    if (recordset.Count == 0
+                    if (e.Recordset.Count == 0
                         && Settings[StdMarkdownContextSetting.AllowPluralize] is bool allow && allow)
                     {
-                        recordset = MemoryDatabase.Query<T>(e.SQL.ToFuzzyQuery());
+                        e.Recordset = MemoryDatabase.Query<T>(e.SQL.ToFuzzyQuery());
                     }
-
-                    // SeachEntryState is determined in this method in order
-                    // to accomodate sites that call ReplaceItems directly.
-                    ReplaceItems(recordset);
                 }
             }
+
+            // SeachEntryState is determined in this method in order
+            // to accomodate sites that call ReplaceItems directly.
+            ReplaceItems(e.Recordset.OfType<T>());
         }
 
         protected override void OnClear(bool all)
@@ -112,7 +114,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
                     {
                         CanonicalSupersetProtected.RouteKey = base.RouteKey;
-                        // OnCollectionChanged(new(action: NotifyCollectionChangedAction.Reset));
                     }
                     break;
                 default:
@@ -262,10 +263,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     return base.ToString();
             }
         }
-        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        protected override void OnPropertyChanged(PropertyChangedEventArgs eUnk)
         {
-            base.OnPropertyChanged(e);
-            switch (e.PropertyName)
+            base.OnPropertyChanged(eUnk);
+            switch (eUnk.PropertyName)
             {
                 case nameof(ModelTracking):
                     // Raised by CSP not the base class.

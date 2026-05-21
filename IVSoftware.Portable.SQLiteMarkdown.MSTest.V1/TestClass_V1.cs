@@ -180,6 +180,13 @@ INotifyPropertyChanged";
 
             // NOPE
             // oqfs.SetObservableNetProjection();
+
+            // NOPE
+            //var requestEventContract =
+            //        typeof(IVSoftware.Portable.SQLiteMarkdown.Events.RecordsetRequestEventArgs)
+            //        .Assembly
+            //        .ToPublicContract()
+            //        .ToString();
         }
 
         [TestMethod]

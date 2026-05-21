@@ -1715,7 +1715,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // Mostly, this is just a proxy.
             // However, RTFR responds *immediately* to
             // empty text without having to settle.
-            RouteToFullRecordset = IsFiltering;
+            RouteToFullRecordset = !IsFiltering;
         }
 
         /// <summary>

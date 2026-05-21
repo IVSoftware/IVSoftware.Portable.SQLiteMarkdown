@@ -1,125 +1,23 @@
-﻿using IVSoftware.Portable.Collections.Events;
-using IVSoftware.Portable.Common.Attributes;
-using System;
+﻿using IVSoftware.Portable.Collections;
 using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Threading.Tasks;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
-    /// <summary>
-    /// POC as a separate-but-equal generic IList impl, but not a BC so far.
-    /// </summary>
-    [Canonical("CTor partial")]
-    public partial class ObservableQueryFilterSource
-        : MarkdownContext<object>
-        , IObservableQueryFilterSource<object>
-        , IList
-        , IList<object>
+    partial class ObservableQueryFilterSource<T> : IRangeable
     {
-        [Canonical("Parameterless CTor is the only CTor.")]
-        public ObservableQueryFilterSource() { }
+        public void AddRange(IEnumerable items)
+        => ((IRangeable)CanonicalSupersetProtected).AddRange(items);
 
-        public object this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public int AddRangeDistinct(IEnumerable items)
+            => ((IRangeable)CanonicalSupersetProtected).AddRangeDistinct(items);
 
-        public string Placeholder => throw new NotImplementedException();
+        public void InsertRange(int startingIndex, IEnumerable items)
+            => ((IRangeable)CanonicalSupersetProtected).InsertRange(startingIndex, items);
 
-        public string Title { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public int RemoveMultiple(IEnumerable items)
+            => ((IRangeable)CanonicalSupersetProtected).RemoveMultiple(items);
 
-        public string SQL => throw new NotImplementedException();
-
-        public bool IsFixedSize => throw new NotImplementedException();
-
-        public bool IsReadOnly => throw new NotImplementedException();
-
-        public int Count => throw new NotImplementedException();
-
-        public bool IsSynchronized => throw new NotImplementedException();
-
-        public object SyncRoot => throw new NotImplementedException();
-
-        public event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
-        public event NotifyCollectionChangedEventHandler? CollectionChanged;
-
-        public int Add(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Contains(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void CopyTo(Array array, int index)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void CopyTo(object[] array, int arrayIndex)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerator GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        public int IndexOf(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void InitializeFilterOnlyMode(IEnumerable<object> items)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Insert(int index, object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Remove(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void RemoveAt(int index)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void ReplaceItems(IEnumerable<object> items)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ReplaceItemsAsync(IEnumerable<object> items)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ICollection<object>.Add(object item)
-        {
-            throw new NotImplementedException();
-        }
-
-        IEnumerator<object> IEnumerable<object>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        bool ICollection<object>.Remove(object item)
-        {
-            throw new NotImplementedException();
-        }
+        public void RemoveRange(int startingIndex, int endingIndex)
+            => ((IRangeable)CanonicalSupersetProtected).RemoveRange(startingIndex, endingIndex);
     }
 }

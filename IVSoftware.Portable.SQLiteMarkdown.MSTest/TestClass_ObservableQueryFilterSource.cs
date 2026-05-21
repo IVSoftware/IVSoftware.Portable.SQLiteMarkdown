@@ -1,4 +1,5 @@
 using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Events;
 using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
@@ -22,6 +23,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Transactions;
 using System.Xml.Linq;
 using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
@@ -1616,9 +1618,17 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 };
 
                 // P R O P E R T Y   E V E N T    Q U E U E
-                oqfs.PropertyChanged += (sender, e) =>
+                oqfs.PropertyChanged += (sender, eUnk) =>
                 {
-                    switch (e.PropertyName)
+                    switch (eUnk)
+                    {
+                        case EHPropertyChangedEventArgs:
+                            // Do not show
+                            return;
+                        default:
+                            break;
+                    }
+                    switch (eUnk.PropertyName)
                     {
                         case nameof(oqfs.Busy):
                             break;
@@ -1627,7 +1637,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                             {
 
                             }
-                            builder.Add($"{e.PropertyName}='{oqfs.SearchEntryState}'");
+                            builder.Add($"{eUnk.PropertyName}='{oqfs.SearchEntryState}'");
                             break;
                         case nameof(FilteringState):
                             if (caller == "subtestCommit")
@@ -1643,8 +1653,12 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                             break;
                         case nameof(oqfs.ProxyType):
                             break;
+
+                        case nameof(oqfs.Count):
+                        case "Items[]":
+                            throw new InvalidOperationException("Unexpected notifications; the PropertyChanged event is 'new'.");
                     }
-                    eventQueue.Enqueue((sender, e));
+                    eventQueue.Enqueue((sender!, eUnk));
                 };
 
                 using (var cnx = InitializeInMemoryDatabase())
@@ -1679,7 +1693,6 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
 [IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
-
 
                         Assert.AreEqual(
                             "Search Items",
@@ -1767,11 +1780,6 @@ InputText"
                             .Select(_ => _.PropertyName));
                         actual.ToClipboardExpected();
                         { }
-                        expected = @" 
-SearchEntryState
-IsInputTextEmpty
-InputText"
-                        ;
                         expected = @"
 SearchEntryState
 InputText";
@@ -1898,7 +1906,7 @@ SELECT * FROM items WHERE
                                 actual.NormalizeResult(),
                                 "Expecting propertly formed query on 'items'."
                             );
-                            var recordset = cnx.Query<T>(e.SQL);
+                            e.Recordset = cnx.Query<T>(e.SQL);
                         }
                         #endregion L o c a l F x
                         using (oqfs.WithOnDispose(
@@ -1913,7 +1921,7 @@ SELECT * FROM items WHERE
                         {
                             // ☆☆☆☆☆
                             // C O M M I T
-                            ((MarkdownContext)oqfs).Commit();
+                            oqfs.Commit();
                             // ☆☆☆☆☆
                         }
                         #endregion C O M M I T
@@ -1931,12 +1939,13 @@ SELECT * FROM items WHERE
                         // ADDED: What we see now is a cradle-to-grave Commit epoch.
                         expected = @" 
 InputText
+Busy
 ProxyType
 TableName
-Busy
-SearchEntryState
+RouteKey
 FilteringState
 IsFiltering
+SearchEntryState
 Busy"
                         ;
 
@@ -1950,7 +1959,7 @@ Busy"
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 6, IsFiltering: True], [Net: 0, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 6, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
                         Assert.AreEqual(
                             expected.NormalizeResult(), 
