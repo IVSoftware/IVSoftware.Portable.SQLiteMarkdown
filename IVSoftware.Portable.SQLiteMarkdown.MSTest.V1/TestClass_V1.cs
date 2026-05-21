@@ -4,6 +4,7 @@ using IVSoftware.Portable.Common.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.WinOS.MSTest.Extensions;
+using SQLite;
 using System.Reflection;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.V1
@@ -182,11 +183,30 @@ INotifyPropertyChanged";
             // oqfs.SetObservableNetProjection();
 
             // NOPE
-            //var requestEventContract =
+            // var requestEventContract =
             //        typeof(IVSoftware.Portable.SQLiteMarkdown.Events.RecordsetRequestEventArgs)
             //        .Assembly
             //        .ToPublicContract()
             //        .ToString();
+
+            // Nope
+            // _ = mdc.FilterQueryDatabase.
+            // mdc.ApplyFilter()
+        }
+
+        private abstract class SubclassMDC : MarkdownContext
+        {
+            public SubclassMDC(Type type) : base(type)
+            {
+                // NOPE
+                // _ = SetObservableNetProjection();
+                // ApplyFilter()
+            }
+            protected override SQLiteConnection FilterQueryDatabase 
+            { 
+                get => base.FilterQueryDatabase;
+                set => base.FilterQueryDatabase = value;
+            }
         }
 
         [TestMethod]
