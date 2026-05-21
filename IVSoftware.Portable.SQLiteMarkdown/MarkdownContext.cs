@@ -2459,8 +2459,6 @@ SELECT * FROM items WHERE
         /// </summary>
         public HashSet<object> DisallowedPrimaryKeys { get; } = new();
 
-
-
         /// <summary>
         /// Returns a 'hidden' interface implementation if available.
         /// </summary>

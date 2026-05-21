@@ -607,24 +607,14 @@ SELECT * FROM items WHERE
 
             // It should not be possible to pull FQDB from anywhere.
             // NOTE: The idea of a "hybrid factory" is no more.
-            if(oqfs.AsInterface<ITestableMDC>() is { } tmdc)
+            if( oqfs.AsInterface<ITestableOMC>() is { } tomc
+                && oqfs.AsInterface<ITestableMDC>() is { } tmdc)
             {
                 builder.Clear();
 
-                // Tug on the factory getter down in the MDC.
+                // Tug on the MDC directly.
+                Assert.IsFalse(tomc.HasFQDB);
                 Assert.IsFalse(tmdc.HasFQDB);
-
-                actual = string.Join(Environment.NewLine, builder); builder.Clear();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-get.IModeledCollection.Null";
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting descriptor indicates Null with expected path."
-                );
 
                 // QueryFilterConfig must track ModelTracking.
                 Assert.IsFalse(oqfs.ModelTracking.HasFlag(ModelTrackingFlag.ItemQueries));
@@ -632,20 +622,8 @@ get.IModeledCollection.Null";
                 Assert.IsTrue(oqfs.ModelTracking.HasFlag(ModelTrackingFlag.ItemQueries));
 
                 // Tug on the factory getter down in the MDC.
+                Assert.IsTrue(tomc.HasFQDB);
                 Assert.IsTrue(tmdc.HasFQDB);
-
-                actual = string.Join(Environment.NewLine, builder); builder.Clear();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-get.IModeledCollection.Assigned"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting descriptor indicates Assigned from IModeledCollection."
-                );
 
                 // ModelTracking must track QueryFilterConfig.
                 Assert.IsTrue(oqfs.QueryFilterConfig.HasFlag(QueryFilterConfig.Filter));
