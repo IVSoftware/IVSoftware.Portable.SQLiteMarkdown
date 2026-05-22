@@ -1950,6 +1950,8 @@ SELECT * FROM items WHERE
                     "Expecting 'items' table under a VERY EXPLICIT POLICY #{69046F5E-879C-46E1-8E35-D7EC3B52150B}."
                 );
 
+                Assert.HasCount(0, builderThrow, "Expecting this not exceptional.");
+
                 actual = JsonConvert.SerializeObject(mdc.GetTableNames(), Formatting.Indented);
                 actual.ToClipboardExpected();
                 { }
@@ -1975,26 +1977,23 @@ SELECT * FROM items WHERE
                 {
                     FilterQueryDatabase = new(":memory:")
                 };
+
+                Assert.HasCount(0, builderThrow, "Expecting empty exception queue.");
                 actual = mdc.ParseSqlMarkdown<SelectableQFModel>("hello");
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-"
-                ;
-
-                actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-Proxy type resolves to a different table 'items' and is not permitted to bypass the single-table contract for 'itemsA'.
-Proxy type cannot resolve to the contract table."
+SELECT * FROM itemsA WHERE
+(QueryTerm LIKE '%hello%')"
                 ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting Exception."
+                    "Expecting two-way inheritance allows mapping to ContractType - even though it's a subclass of proxy."
                 );
+
+                Assert.HasCount(0, builderThrow, "Expecting this not exceptional.");
 
                 actual = JsonConvert.SerializeObject(mdc.GetTableNames(), Formatting.Indented);
                 actual.ToClipboardExpected();

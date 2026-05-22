@@ -251,47 +251,50 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 return string.Empty;
             }
             ProxyType = proxyType;
+            // Set provisional table name.
+            TableName = ContractTableMapping.TableName;
 
-            if (FilterQueryDatabase is not null)
+            // Check for divergent table name
+            if (FilterQueryDatabase is not null
+                && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
             {
-                if (ProxyType != ContractType
-                    && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                if (ProxyType != ContractType)
                 {
                     // [Careful]
-                    // - Intentionally use raw SQLite mapping here; do *not* supply the
-                    //   contractType argument.
-                    // - Contract-aware conflict resolution is handled by this method's policy
-                    //   branch, not by GetSQLiteMapping (which will Throw on such conflicts).
-                    TableMapping tmProxy = ProxyType.GetSQLiteMapping(); 
+                    // Use the @throw argument to validate by null pattern matching, not exception.
+                    TableMapping tmProxy = ProxyType.GetSQLiteMapping(contractType: ContractType);
 
-                    if(tmProxy.TableName != ContractTableMapping.TableName)
+                    if (tmProxy?.TableName == ContractTableMapping.TableName
+                        || ContractType.IsAssignableFrom(ProxyType)
+                        || ProxyType.IsAssignableFrom(ContractType))
                     {
-                        if (ContractType.IsAssignableFrom(ProxyType))
-                        {   /* G T K - N O O P */
-                            // [Policy #{69046F5E-879C-46E1-8E35-D7EC3B52150B}]
-                        }
-                        else
+                        TableName = ContractTableMapping.TableName;
+                    }
+                    else
+                    {
+                        if (_proxyType.GetCustomAttribute<EnforceSingleTableAttribute>()?.Enforce == false)
                         {
-                            if (_proxyType.GetCustomAttribute<EnforceSingleTableAttribute>()?.Enforce == false)
+                            if (FilterQueryDatabase is SQLiteQueryOnlyConnection cnxprot)
                             {
-                                if (FilterQueryDatabase is SQLiteQueryOnlyConnection cnxprot)
-                                {
-                                    using (cnxprot.RequestAuthority(SQLiteAuthority.FullControl))
-                                    {
-                                        FilterQueryDatabase.CreateTable(ProxyType);
-                                    }
-                                }
-                                else
+                                using (cnxprot.RequestAuthority(SQLiteAuthority.FullControl))
                                 {
                                     FilterQueryDatabase.CreateTable(ProxyType);
                                 }
                             }
                             else
                             {
-                                this.ThrowHard<InvalidOperationException>(
-                                    $"Proxy type resolves to a different table '{tmProxy.TableName}' and is " +
-                                    $"not permitted to bypass the single-table contract for '{ContractTableMapping.TableName}'.");
+                                FilterQueryDatabase.CreateTable(ProxyType);
                             }
+                            TableName = tmProxy.TableName;
+                        }
+                        else
+                        {
+                            this.ThrowHard<InvalidOperationException>(
+                                $"Proxy type resolves to a different table '{tmProxy.TableName}' and is " +
+                                $"not permitted to bypass the single-table contract for '{ContractTableMapping.TableName}'.");
+                            // Unreachable unless Throw pattern is handled.
+                            xast = null!;
+                            return "Proxy Error";
                         }
                     }
                 }
@@ -310,16 +313,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // and are *not* bound to the ContractType.
             Raw = expr;
             Transform = Raw;
-            if (proxyType.GetSQLiteMapping(contractType: ContractType)?.TableName is { } tableName)
-            {
-                TableName = tableName;
-            }
-            else
-            {
-                // Throw has already occured.
-                xast = null!; // We warned you.
-                return string.Empty;
-            }
             Preamble = $"SELECT * FROM {TableName} WHERE";
 
             xast = XAST;
