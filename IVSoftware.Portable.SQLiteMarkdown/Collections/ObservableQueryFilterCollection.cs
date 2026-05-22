@@ -59,18 +59,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 get => base.SearchEntryState;
                 set => base.SearchEntryState = value;
             }
-            protected override void OnSearchEntryStateChanged()
+            protected override void OnClear(bool all)
             {
-                base.OnSearchEntryStateChanged();
-                switch (SearchEntryState)
+                base.OnClear(all);
+                if(all)
                 {
-                    case SearchEntryState.Cleared:
-                        // Authority DNC: "May or may not" have token.
-                        @this.Clear();
-                        break;
-                    default:
-                        // TBD
-                        break;
+                    @this.ClearItems();
                 }
             }
             public new SQLiteConnection FilterQueryDatabase
@@ -203,10 +197,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         public new void Clear()
         {
-            Clear(all: true);
-            using (RequestAuthority(StdModelAuthority.SuspendForwardPropertyChange))
+            if(ModelDataExchangeAuthority == ModelDataExchangeAuthority.NoAuthority)
             {
-                InputText = string.Empty;
+                Clear(all: true);
+            }
+            using(RequestAuthority(ModelDataExchangeAuthority.Collection))
+            {
+                using (RequestAuthority(StdModelAuthority.SuspendForwardPropertyChange))
+                {
+                    InputText = string.Empty;
+                }
+            }
+        }
+
+        public FilteringState Clear(bool all)
+        {
+            var isModelAuthority =
+                HasAuthority(ModelDataExchangeAuthority.Model) ||
+                HasAuthority(ModelDataExchangeAuthority.ModelDeferred);
+
+            if (isModelAuthority)
+            {
+                return FilteringState;
+            }
+            else
+            {
+                return MarkdownContext.Clear(all);
             }
         }
         void IList.Clear() => Clear();
@@ -234,11 +250,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public void Commit()
         {
             MarkdownContext.Commit();
-        }
-
-        public FilteringState Clear(bool all)
-        {
-            return MarkdownContext.Clear(all);
         }
 
         public IDisposable BeginBusy()
