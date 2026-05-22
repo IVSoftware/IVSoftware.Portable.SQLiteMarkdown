@@ -1752,26 +1752,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 all = true;
             }
-            if (ModelAuthorityContext is null)
-            {
-                OnClear(all);
-            }
-            else
-            {
-                if(all)
-                {
-                    using(ModelAuthorityContext.RequestAuthority(StdModelAuthority.TerminalClear))
-                    using (ModelAuthorityContext.RequestAuthority(ModelDataExchangeAuthority.Model))
-                    OnClear(true);
-                }
-                else
-                {
-                    using (ModelAuthorityContext.RequestAuthority(ModelDataExchangeAuthority.Model))
-                    {
-                        OnClear(false);
-                    }
-                }
-            }
+            OnClear(all);
 
             // Avoid leaking the object itself as the awaited sender.
             nameof(MarkdownContext).OnAwaited(new AwaitedEventArgs(caller: nameof(Clear))
@@ -1783,15 +1764,142 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         protected virtual void OnClear(bool all)
         {
-            if (ModelAuthorityContext?.Model is { } model)
+            XElement? model = ModelAuthorityContext?.Model;
+            if(model is null)
             {
-                model.RemoveDescendantAttributes(StdModelAttribute.qmatch);
-                if (model.To<IRoutedCollection>() is { } route)
+                localClearWithoutModel();
+            }
+            else
+            {
+                localClearWithModel();
+            }
+            #region L o c a l F x
+            void localClearWithoutModel()
+            {
+                if(all)
                 {
-                    // This does not rely on the 'all' argument.
-                    route.RouteKey = StdRouteKey.CanonicalRecordset;
+                    throw new NotImplementedException("ToDo");
+                }
+                else
+                { 
+                    throw new NotImplementedException("ToDo");
                 }
             }
+            void localClearWithModel()
+            {
+                if (ModelAuthorityContext!.HasAuthority(ModelDataExchangeAuthority.Model))
+                {   /* G T K - N O O P */
+                    // Circularity ends here.
+                }
+                else
+                {
+                    if (all)
+                    {
+                        foreach (var xel in model.Descendants().Reverse().ToArray())
+                        {
+                            xel.Remove();
+                        }
+                    }
+                    else
+                    {
+                        model.RemoveDescendantAttributes(StdModelAttribute.qmatch);
+                        if (model.To<IRoutedCollection>() is { } route)
+                        {
+                            // This does not rely on the 'all' argument.
+                            route.RouteKey = StdRouteKey.CanonicalRecordset;
+                        }
+                        if (InputText.Length == 0)
+                        {
+                            localExecuteWithEmptyIME();
+                        }
+                        else
+                        {
+                            localExecuteWithNonEmptyIME();
+                        }
+                    }
+                }
+            }
+
+            void localExecuteWithEmptyIME()
+            {
+                // EMPTY
+                switch (FilteringState)
+                {
+                    case FilteringState.Ineligible:
+                        // RELEASE 1.0.2 bug fixed by adding this clause.
+                        // RELEASE 2.0.0 fixes the nosocomial.
+                        switch (SearchEntryState)
+                        {
+                            case SearchEntryState.QueryCompleteWithResults:
+                                /* G T K - N O O P */
+                                break;
+                            // There were never any projected items to clear.
+                            // No intermediate step is needed.
+                            case SearchEntryState.QueryCompleteNoResults:
+                            case SearchEntryState.QueryEmpty:
+                                SearchEntryState = SearchEntryState.Cleared;
+                                break;
+                        }
+                        break;
+                    case FilteringState.Armed:
+                    case FilteringState.Active:
+                        // Text is already empty and clear is invoked (clicked) again - this is a hard reset.
+                        FilteringState = FilteringState.Ineligible;
+                        if (SearchEntryState > SearchEntryState.QueryEmpty)
+                        {
+                            SearchEntryState = SearchEntryState.QueryEmpty;
+                        }
+                        break;
+                    default:
+                        throw new NotImplementedException($"Bad case: {FilteringState}");
+                }
+            }
+
+            void localExecuteWithNonEmptyIME()
+            {
+                // NOT EMPTY
+                // UpgradeToFilter : FilteringState == FilteringState.Ineligible;
+                // DowngradeToQuery: FilteringState != FilteringState.Ineligible;
+                // DowngradeToClear: DowngradeToQuery + SearchEntryState is not showing a query result.
+                InputText = string.Empty;
+
+                // Not Here
+                // SES is the purview of OnInputTextChanged as far as EMPTY is concerned.
+                // RATIONALE: The IME can become empty in ways other than Clear().
+
+                //switch (SearchEntryState)
+                //{
+                //    case SearchEntryState.QueryCompleteWithResults:
+                //        // Text has become empty, but don't clear the list in this intermediate step.
+                //        SearchEntryState = SearchEntryState.QueryEmpty;
+                //        break;
+                //    case SearchEntryState.QueryCompleteNoResults:   // Expected
+                //    case SearchEntryState.QueryEmpty:               // Unexpected but benign.
+                //        // Text has become empty, and there are no items to clear.
+                //        SearchEntryState = SearchEntryState.Cleared;
+                //        break;
+                //}
+
+                switch (FilteringState)
+                {
+                    case FilteringState.Ineligible:
+                        break;
+                    case FilteringState.Armed:
+                        // Basically, if there is entry text but the filtering
+                        // is still only armed not active, that indicates that
+                        // what we're seeing in the list is the result of a full
+                        // db query that just occurred. So now, when we CLEAR that
+                        // text, it's assumed to be in the interest of filtering
+                        // that query result, so filtering stays Armed in this case.
+                        break;
+                    case FilteringState.Active:
+                        break;
+                    default:
+                        throw new NotImplementedException($"Bad case: {FilteringState}");
+                }
+            }
+            #endregion L o c a l F x
+#if false
             if (all)
             {
                 InputText = string.Empty;
@@ -1808,6 +1916,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
+                if (ModelAuthorityContext?.Model is { } model)
+                {
+                    model.RemoveDescendantAttributes(StdModelAttribute.qmatch);
+                    if (model.To<IRoutedCollection>() is { } route)
+                    {
+                        // This does not rely on the 'all' argument.
+                        route.RouteKey = StdRouteKey.CanonicalRecordset;
+                    }
+                }
                 if (InputText.Length == 0)
                 {
                     // EMPTY
@@ -1886,6 +2003,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     }
                 }
             }
+#endif
         }
 
         /// <summary>

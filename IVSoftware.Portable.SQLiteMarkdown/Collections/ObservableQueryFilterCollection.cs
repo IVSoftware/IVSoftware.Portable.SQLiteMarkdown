@@ -64,7 +64,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 base.OnClear(all);
                 if(all)
                 {
-                    @this.ClearItems();
+                    @this.Clear();
                 }
             }
             public new SQLiteConnection FilterQueryDatabase
@@ -195,34 +195,34 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <summary>
         /// No Surprises IList.Clear
         /// </summary>
-        public new void Clear()
-        {
-            if(ModelDataExchangeAuthority == ModelDataExchangeAuthority.NoAuthority)
-            {
-                Clear(all: true);
-            }
-            using(RequestAuthority(ModelDataExchangeAuthority.Collection))
-            {
-                using (RequestAuthority(StdModelAuthority.SuspendForwardPropertyChange))
-                {
-                    InputText = string.Empty;
-                }
-            }
-        }
+        /// <remarks>
+        /// Hand off to canonical
+        /// </remarks>
+        public new void Clear() => Clear(all: true);
 
+        [Canonical("Authoritative clear mechanism for OQFC.")]
         public FilteringState Clear(bool all)
         {
-            var isModelAuthority =
-                HasAuthority(ModelDataExchangeAuthority.Model) ||
-                HasAuthority(ModelDataExchangeAuthority.ModelDeferred);
-
-            if (isModelAuthority)
+            if(all)
             {
+                if (HasAuthority(ModelDataExchangeAuthority.Collection))
+                {   /* G T K - N O O P */
+                    // Circularity ends here
+                }
+                else
+                {
+                    using (RequestAuthority(StdModelAuthority.TerminalClear))
+                    using (RequestAuthority(ModelDataExchangeAuthority.Collection))
+                    {
+                        ClearItems();
+                        return MarkdownContext.Clear(true);
+                    }
+                }
                 return FilteringState;
             }
             else
             {
-                return MarkdownContext.Clear(all);
+                return MarkdownContext.Clear(false);
             }
         }
         void IList.Clear() => Clear();
