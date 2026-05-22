@@ -257,27 +257,41 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (ProxyType != ContractType
                     && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                 {
-                    TableMapping tm = ProxyType.GetSQLiteMapping();
-                    if(tm.TableName != ContractTableMapping.TableName)
+                    // [Careful]
+                    // - Intentionally use raw SQLite mapping here; do *not* supply the
+                    //   contractType argument.
+                    // - Contract-aware conflict resolution is handled by this method's policy
+                    //   branch, not by GetSQLiteMapping (which will Throw on such conflicts).
+                    TableMapping tmProxy = ProxyType.GetSQLiteMapping(); 
+
+                    if(tmProxy.TableName != ContractTableMapping.TableName)
                     {
-                        if( _proxyType.GetCustomAttribute<ExtendMappingAttribute>() is not null)
+                        if (ContractType.IsAssignableFrom(ProxyType))
+                        {   /* G T K - N O O P */
+                            // [Policy #{69046F5E-879C-46E1-8E35-D7EC3B52150B}]
+                        }
+                        else
                         {
-                            if (FilterQueryDatabase is SQLiteQueryOnlyConnection cnxprot)
+                            if (_proxyType.GetCustomAttribute<EnforceSingleTableAttribute>()?.Enforce == false)
                             {
-                                using (cnxprot.RequestAuthority(SQLiteAuthority.FullControl))
+                                if (FilterQueryDatabase is SQLiteQueryOnlyConnection cnxprot)
+                                {
+                                    using (cnxprot.RequestAuthority(SQLiteAuthority.FullControl))
+                                    {
+                                        FilterQueryDatabase.CreateTable(ProxyType);
+                                    }
+                                }
+                                else
                                 {
                                     FilterQueryDatabase.CreateTable(ProxyType);
                                 }
                             }
                             else
                             {
-                                FilterQueryDatabase.CreateTable(ProxyType);
+                                this.ThrowHard<InvalidOperationException>(
+                                    $"Proxy type resolves to a different table '{tmProxy.TableName}' and is " +
+                                    $"not permitted to bypass the single-table contract for '{ContractTableMapping.TableName}'.");
                             }
-                        }
-                        else 
-                        {
-                            // [Policy #{69046F5E-879C-46E1-8E35-D7EC3B52150B}]
-                            this.ThrowHard<InvalidOperationException>("Proxy type cannot resolve to the contract table.");
                         }
                     }
                 }

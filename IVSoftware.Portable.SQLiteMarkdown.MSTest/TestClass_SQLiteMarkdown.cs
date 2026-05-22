@@ -1986,7 +1986,9 @@ SELECT * FROM items WHERE
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-Proxy type cannot resolve to the contract table.";
+Proxy type resolves to a different table 'items' and is not permitted to bypass the single-table contract for 'itemsA'.
+Proxy type cannot resolve to the contract table."
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),

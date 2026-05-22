@@ -71,7 +71,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     /// <summary>
     /// 260309 NEW!
     /// </summary>
-    [Table("items"), ExtendMapping]
+    [Table("items"), EnforceSingleTableAttribute]
     class TrueProxyWithExtendSchema : SelfIndexed
     {
         public bool SchemaExtended { get; set; } = true;

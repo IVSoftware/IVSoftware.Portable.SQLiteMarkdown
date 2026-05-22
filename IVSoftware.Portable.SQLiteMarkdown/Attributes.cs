@@ -124,12 +124,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     }
 
     /// <summary>
-    /// For a proxy types or subclasses, specifies whether to call CreateTable and possibly extend the schema.
+    /// For a proxy types or subclasses, specifies whether to call CreateTable.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-    public class ExtendMappingAttribute : Attribute
+    public class EnforceSingleTableAttribute : Attribute
     {
-        public bool Allow { get; set; } = true;
+        public EnforceSingleTableAttribute(bool enforce = true)
+        {
+            Enforce = enforce;
+        }
+        public bool Enforce { get; } = true;  
     }
 
     /// <summary>
