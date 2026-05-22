@@ -65,7 +65,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             if(HasAuthority(StdModelAuthority.TerminalClear))
             {
-
+                // #TNT
             }
             base.OnMDEXFinalizing(eUnk);
         }

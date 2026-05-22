@@ -20,7 +20,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         XElement Model { get; }
         IDisposable RequestAuthority(ModelDataExchangeAuthority authority);
         IDisposable RequestAuthority(StdModelAuthority authority);
+
+        /// <summary>
+        /// Dedicated primary authority.
+        /// </summary>
+        /// <remarks>
+        /// Unlike StdModelAuthority which is always checked with HasAuthority.
+        /// </remarks>
         ModelDataExchangeAuthority ModelDataExchangeAuthority { get; }
+
+        bool HasAuthority(Enum authority);
     }
 
     /// <summary>

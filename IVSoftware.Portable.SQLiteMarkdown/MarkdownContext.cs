@@ -1740,11 +1740,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
-                using (ModelAuthorityContext.RequestAuthority(ModelDataExchangeAuthority.Model))
+                if(all)
                 {
-                    if (ModelAuthorityContext.ModelDataExchangeAuthority == ModelDataExchangeAuthority.Model)
+                    using(ModelAuthorityContext.RequestAuthority(StdModelAuthority.TerminalClear))
+                    using (ModelAuthorityContext.RequestAuthority(ModelDataExchangeAuthority.Model))
+                    OnClear(true);
+                }
+                else
+                {
+                    using (ModelAuthorityContext.RequestAuthority(ModelDataExchangeAuthority.Model))
                     {
-                        OnClear(all);
+                        OnClear(false);
                     }
                 }
             }
