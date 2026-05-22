@@ -255,19 +255,30 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             if (FilterQueryDatabase is not null)
             {
                 if (ProxyType != ContractType
-                    && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
-                    && _proxyType.GetCustomAttribute<ExtendMappingAttribute>() is not null)
+                    && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                 {
-                    if (FilterQueryDatabase is SQLiteQueryOnlyConnection cnxprot)
+                    TableMapping tm = ProxyType.GetSQLiteMapping();
+                    if(tm.TableName != ContractTableMapping.TableName)
                     {
-                        using (cnxprot.RequestAuthority(SQLiteAuthority.FullControl))
+                        if( _proxyType.GetCustomAttribute<ExtendMappingAttribute>() is not null)
                         {
-                            FilterQueryDatabase.CreateTable(ProxyType);
+                            if (FilterQueryDatabase is SQLiteQueryOnlyConnection cnxprot)
+                            {
+                                using (cnxprot.RequestAuthority(SQLiteAuthority.FullControl))
+                                {
+                                    FilterQueryDatabase.CreateTable(ProxyType);
+                                }
+                            }
+                            else
+                            {
+                                FilterQueryDatabase.CreateTable(ProxyType);
+                            }
                         }
-                    }
-                    else
-                    {
-                        FilterQueryDatabase.CreateTable(ProxyType);
+                        else 
+                        {
+                            // [Policy #{69046F5E-879C-46E1-8E35-D7EC3B52150B}]
+                            this.ThrowHard<InvalidOperationException>("Proxy type cannot resolve to the contract table.");
+                        }
                     }
                 }
             }

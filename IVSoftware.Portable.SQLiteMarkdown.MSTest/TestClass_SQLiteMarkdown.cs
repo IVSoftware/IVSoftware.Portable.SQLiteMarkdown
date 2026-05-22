@@ -1931,7 +1931,6 @@ SELECT * FROM itemsA WHERE
                 );
             }
 
-            [Probationary("NEED REVIEW OF LIMITS FOR TABLES AND EXCEPTIONS")]
             void subtest_SubOnSuperTableConflict()
             {
                 mdc = new TestableMarkdownContext<SelectableQFModel>
@@ -1948,7 +1947,7 @@ SELECT * FROM items WHERE
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting 'items' table."
+                    "Expecting 'items' table under a VERY EXPLICIT POLICY #{69046F5E-879C-46E1-8E35-D7EC3B52150B}."
                 );
 
                 actual = JsonConvert.SerializeObject(mdc.GetTableNames(), Formatting.Indented);
