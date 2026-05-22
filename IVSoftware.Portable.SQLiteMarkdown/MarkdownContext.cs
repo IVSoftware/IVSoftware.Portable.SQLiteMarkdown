@@ -1773,15 +1773,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 localClearWithModel();
             }
+
             #region L o c a l F x
             void localClearWithoutModel()
             {
                 if(all)
                 {
-                    throw new NotImplementedException("ToDo");
+                    SearchEntryState = SearchEntryState.Cleared;
+                    FilteringState = FilteringState.Ineligible;
+                    InputText = string.Empty;
                 }
                 else
-                { 
+                {
                     throw new NotImplementedException("ToDo");
                 }
             }
@@ -1793,28 +1796,33 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
                 else
                 {
-                    if (all)
+                    using (ModelAuthorityContext.RequestAuthority(StdModelAuthority.TerminalClear))
+                    using (ModelAuthorityContext.RequestAuthority(ModelDataExchangeAuthority.Model))
                     {
-                        foreach (var xel in model.Descendants().Reverse().ToArray())
+                        if (all)
                         {
-                            xel.Remove();
-                        }
-                    }
-                    else
-                    {
-                        model.RemoveDescendantAttributes(StdModelAttribute.qmatch);
-                        if (model.To<IRoutedCollection>() is { } route)
-                        {
-                            // This does not rely on the 'all' argument.
-                            route.RouteKey = StdRouteKey.CanonicalRecordset;
-                        }
-                        if (InputText.Length == 0)
-                        {
-                            localExecuteWithEmptyIME();
+                            foreach (var xel in model.Descendants().Reverse().ToArray())
+                            {
+                                xel.Remove();
+                            }
+                            InputText = string.Empty;
                         }
                         else
                         {
-                            localExecuteWithNonEmptyIME();
+                            model.RemoveDescendantAttributes(StdModelAttribute.qmatch);
+                            if (model.To<IRoutedCollection>() is { } route)
+                            {
+                                // This does not rely on the 'all' argument.
+                                route.RouteKey = StdRouteKey.CanonicalRecordset;
+                            }
+                            if (InputText.Length == 0)
+                            {
+                                localExecuteWithEmptyIME();
+                            }
+                            else
+                            {
+                                localExecuteWithNonEmptyIME();
+                            }
                         }
                     }
                 }
@@ -1846,6 +1854,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         // Text is already empty and clear is invoked (clicked) again - this is a hard reset.
                         FilteringState = FilteringState.Ineligible;
                         if (SearchEntryState > SearchEntryState.QueryEmpty)
+                        {
+                            SearchEntryState = SearchEntryState.QueryEmpty;
+                        }
+                        else
                         {
                             SearchEntryState = SearchEntryState.QueryEmpty;
                         }
@@ -2101,8 +2113,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (!Equals(_inputText, value))
                 {
                     _inputText = value;
-                    OnInputTextChanged();
-                    OnPropertyChanged();
+
+                    if (ModelAuthorityContext?.HasAuthority(StdModelAuthority.TerminalClear) == true)
+                    {   /* G T K - N O O P */
+                        // No events on this change.
+                    }
+                    else
+                    {
+                        OnInputTextChanged();
+                        OnPropertyChanged();
+                    }
                 }
             }
         }
