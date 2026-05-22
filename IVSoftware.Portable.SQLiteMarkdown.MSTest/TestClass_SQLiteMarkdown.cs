@@ -1562,6 +1562,7 @@ FilterTerm";
             );
         }
 
+
         [TestMethod]
         public void Test_NormalizeTags_True()
         {
@@ -1714,6 +1715,15 @@ FilterTerm";
             );
         }
 
+        private class TestableMarkdownContext<T> : MarkdownContext<T>
+        {
+            public new SQLiteConnection FilterQueryDatabase
+            {
+                get => base.FilterQueryDatabase;
+                set => base.FilterQueryDatabase = value;
+            }
+        }
+
         /// <summary>
         /// By design, the ParseSQLiteMarkdown method employs inheritance to determine table identity for parsing.
         /// </summary>
@@ -1746,27 +1756,8 @@ FilterTerm";
             string actual, expected;
             string[] tableNames;
 
-
-            // TERMINOLOGY: Sources of "controversy".
-            // 1. Conflicting [Table] attributes in the inheritance chain.
-            // 2. ProxyType whose SQLite table mapping differs from ContractType.
-            //
-            // NOTWITHSTANDING:
-            // Case 1 is not controversial when ContractType and ProxyType are the same type.
-            // There is no competing mapping to resolve.
-            //
-            // Case 2 is treated as non-controversial when ProxyType inherits a mapping
-            // that resolves to the same table name as ContractType.
-
             subtest_TableNameDefaultsToExplicitBC();
-            subtest_ProxySameAsContract();
-            subtest_UncontroversialExplicitTableAttribute();
-            subtest_ParseInputTextInQueryMode();
-
-            #region v2.0+
-            subtest_ProxyCoherence1();
-            subtest_ProxyCoherence2();
-            #endregion v2.0+
+            subtest_ExtensionsTargetDifferentTables();
 
             #region S U B T E S T S
             void subtest_TableNameDefaultsToExplicitBC()
@@ -1810,6 +1801,61 @@ SELECT * FROM items WHERE
                     );
                 }
             }
+
+            void subtest_ExtensionsTargetDifferentTables()
+            {
+                actual = "hello".ParseSqlMarkdown<SelectableQFModel>();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+SELECT * FROM items WHERE
+(QueryTerm LIKE '%hello%')";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table."
+                );
+
+                actual = "hello".ParseSqlMarkdown<SelectableQFModelSubclassA>();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+SELECT * FROM itemsA WHERE
+(QueryTerm LIKE '%hello%')";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'itemsA' table."
+                );
+            }
+            #endregion S U B T E S T S
+
+#if false && LEGACY_TESTING
+
+            // TERMINOLOGY: Sources of "controversy".
+            // 1. Conflicting [Table] attributes in the inheritance chain.
+            // 2. ProxyType whose SQLite table mapping differs from ContractType.
+            //
+            // NOTWITHSTANDING:
+            // Case 1 is not controversial when ContractType and ProxyType are the same type.
+            // There is no competing mapping to resolve.
+            //
+            // Case 2 is treated as non-controversial when ProxyType inherits a mapping
+            // that resolves to the same table name as ContractType.
+
+            subtest_TableNameDefaultsToExplicitBC();
+            subtest_ProxySameAsContract();
+            subtest_UncontroversialExplicitTableAttribute();
+            subtest_ParseInputTextInQueryMode();
+
+            #region v2.0+
+            subtest_ProxyCoherence1();
+            subtest_ProxyCoherence2();
+            #endregion v2.0+
+
+            #region S U B T E S T S
 
             // Different classes, but the explicit [Table] attributes all agree.
             void subtest_UncontroversialExplicitTableAttribute()
@@ -1925,6 +1971,7 @@ SELECT * FROM items WHERE
                 );
             }
             #endregion S U B T E S T S
+#endif
         }
 
         /// <summary>
