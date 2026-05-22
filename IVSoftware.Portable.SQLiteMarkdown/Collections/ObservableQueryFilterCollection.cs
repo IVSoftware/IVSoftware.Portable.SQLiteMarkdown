@@ -39,6 +39,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             OnPropertyChanged(e);
         }
 
+        protected override void OnModelTrackingChanged()
+        {
+            base.OnModelTrackingChanged();
+            MarkdownContext.FilterQueryDatabase = FilterQueryDatabase!;
+        }
+
+        /// <summary>
+        /// Protected class with public properties.
+        /// </summary>
         protected class MarkdownContextProtected : MarkdownContext<T>
         {
             public new SearchEntryState SearchEntryState
@@ -46,6 +55,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 get => base.SearchEntryState;
                 set => base.SearchEntryState = value;
             }
+            public new SQLiteConnection FilterQueryDatabase
+            {
+                get => base.FilterQueryDatabase;
+                set => base.FilterQueryDatabase = value;
+            }
+        }
+        protected override void OnMDEXFinalizing(FinalDisposeEventArgs eUnk)
+        {
+            if(HasAuthority(StdModelAuthority.TerminalClear))
+            {
+
+            }
+            base.OnMDEXFinalizing(eUnk);
         }
         protected MarkdownContextProtected MarkdownContext
         {
@@ -221,9 +243,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public Task ReplaceItemsAsync(IEnumerable<T> items) => LoadCanonAsync(items.ToList());
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
-                OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
-
         public TaskAwaiter<TaskStatus> GetAwaiter() => MarkdownContext.GetAwaiter();
         public new void LoadCanon(IList<T> items)
         {
@@ -237,6 +256,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public new async Task LoadCanonAsync(IList<T> items)
         {
             this.ThrowHard<NotSupportedException>();
+        }
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
+                OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
+
+        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);            
         }
     }
 }

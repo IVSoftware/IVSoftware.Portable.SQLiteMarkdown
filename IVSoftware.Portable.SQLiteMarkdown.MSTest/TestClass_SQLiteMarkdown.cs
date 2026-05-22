@@ -632,8 +632,8 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0 live:0]"">
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" index=""0"" qmatch=""True"" match=""True"" />
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:2 match:1 qmatch:1 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" index=""0"" match=""True"" qmatch=""True"" />
   <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" index=""1"" />
 </model>"
                 ;
@@ -662,7 +662,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 6, IsFiltering: True], [Net: 0, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 6, IsFiltering: True], [Net: 1, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                 ;
 
                 Assert.AreEqual(
@@ -677,7 +677,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 0, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 2, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
 
                 Assert.AreEqual(
@@ -707,7 +707,7 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: 0, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 2, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                 Assert.IsTrue(oqfc.CanonicalCount == 2);
@@ -721,7 +721,10 @@ InputText"
                 expected = @" 
 [IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                 ;
-                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting Clear has decomposed all the way to TERMINAL CLEAR.");
             }
             async Task subtestClearAwaiterOnly()
             {
