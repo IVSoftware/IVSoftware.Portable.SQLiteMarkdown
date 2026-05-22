@@ -50,10 +50,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         protected class MarkdownContextProtected : MarkdownContext<T>
         {
+            ObservableQueryFilterCollection<T> @this => (ObservableQueryFilterCollection<T>)ModelAuthorityContext!;
+            /// <summary>
+            /// Used by LoadCanon to attribute recordset count.
+            /// </summary>
             public new SearchEntryState SearchEntryState
             {
                 get => base.SearchEntryState;
                 set => base.SearchEntryState = value;
+            }
+            protected override void OnSearchEntryStateChanged()
+            {
+                base.OnSearchEntryStateChanged();
+                switch (SearchEntryState)
+                {
+                    case SearchEntryState.Cleared:
+                        // Authority DNC: "May or may not" have token.
+                        @this.Clear();
+                        break;
+                    default:
+                        // TBD
+                        break;
+                }
             }
             public new SQLiteConnection FilterQueryDatabase
             {

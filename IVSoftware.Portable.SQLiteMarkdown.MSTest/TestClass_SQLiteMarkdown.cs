@@ -1,4 +1,5 @@
 using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
@@ -1720,7 +1721,11 @@ FilterTerm";
             public new SQLiteConnection FilterQueryDatabase
             {
                 get => base.FilterQueryDatabase;
-                set => base.FilterQueryDatabase = value;
+                set
+                {
+                    base.FilterQueryDatabase = value;
+                    base.FilterQueryDatabase?.CreateTable<T>();
+                }
             }
         }
 
@@ -1755,9 +1760,13 @@ FilterTerm";
 
             string actual, expected;
             string[] tableNames;
+            MarkdownContext mdc;
 
             subtest_TableNameDefaultsToExplicitBC();
-            subtest_ExtensionsTargetDifferentTables();
+            subtest_ExtensionsResolveEffectiveTable();
+            subtest_MemberFxResolveEffectiveTable();
+            subtest_SubOnSuperTableConflict();
+            subtest_SuperOnSubTableConflict();
 
             #region S U B T E S T S
             void subtest_TableNameDefaultsToExplicitBC()
@@ -1802,7 +1811,16 @@ SELECT * FROM items WHERE
                 }
             }
 
-            void subtest_ExtensionsTargetDifferentTables()
+            /// <summary>
+            /// Verifies that parse-only string extension calls resolve SQL against the
+            /// effective table for the requested generic type.
+            /// </summary>
+            /// <remarks>
+            /// This is not an instance-level ContractType/ProxyType controversy test.
+            /// It only confirms that the extension surface honors the requested type's
+            /// effective mapping in generated SQL.
+            /// </remarks>
+            void subtest_ExtensionsResolveEffectiveTable()
             {
                 actual = "hello".ParseSqlMarkdown<SelectableQFModel>();
                 actual.ToClipboardExpected();
@@ -1817,6 +1835,12 @@ SELECT * FROM items WHERE
                     "Expecting 'items' table."
                 );
 
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting that SQLite will create table named after the subclass when no [Table] is declared."
+                );
+
                 actual = "hello".ParseSqlMarkdown<SelectableQFModelSubclassA>();
                 actual.ToClipboardExpected();
                 { }
@@ -1828,6 +1852,162 @@ SELECT * FROM itemsA WHERE
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Expecting 'itemsA' table."
+                );
+            }
+
+            /// <summary>
+            /// Verifies that member-based parsing resolves SQL against the effective
+            /// contract table when the context owns an injected filter database.
+            /// </summary>
+            /// <remarks>
+            /// This covers the instance surface, where ContractType and ProxyType can
+            /// be reasoned about explicitly. The test setup treats the contract table
+            /// as the invariant and confirms that generated SQL remains aligned to it.
+            /// </remarks>
+            void subtest_MemberFxResolveEffectiveTable()
+            {
+                mdc = new TestableMarkdownContext<SelectableQFModel>
+                {
+                    FilterQueryDatabase = new (":memory:")
+                };
+                actual = mdc.ParseSqlMarkdown<SelectableQFModel>("hello");
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+SELECT * FROM items WHERE
+(QueryTerm LIKE '%hello%')";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table."
+                );
+
+                actual = JsonConvert.SerializeObject(mdc.GetTableNames(), Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  ""items""
+]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table creation is owned by subclass."
+                );
+
+
+                mdc = new TestableMarkdownContext<SelectableQFModelSubclassA>
+                {
+                    FilterQueryDatabase = new (":memory:")
+                };
+                actual = mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+SELECT * FROM itemsA WHERE
+(QueryTerm LIKE '%hello%')";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'itemsA' table."
+                );
+
+                actual = JsonConvert.SerializeObject(mdc.GetTableNames(), Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  ""itemsA""
+]"
+                ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'itemsA' table creation is owned by subclass."
+                );
+            }
+
+            [Probationary("NEED REVIEW OF LIMITS FOR TABLES AND EXCEPTIONS")]
+            void subtest_SubOnSuperTableConflict()
+            {
+                mdc = new TestableMarkdownContext<SelectableQFModel>
+                {
+                    FilterQueryDatabase = new(":memory:")
+                };
+                actual = mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
+                actual.ToClipboardExpected();
+                expected = @" 
+SELECT * FROM items WHERE
+(QueryTerm LIKE '%hello%')"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table."
+                );
+
+                actual = JsonConvert.SerializeObject(mdc.GetTableNames(), Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  ""items""
+]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table creation is owned by subclass."
+                );
+            }
+
+            [Probationary("NEED REVIEW OF LIMITS FOR TABLES AND EXCEPTIONS")]
+            void subtest_SuperOnSubTableConflict()
+            {
+                MarkdownContext mdc;
+
+                mdc = new TestableMarkdownContext<SelectableQFModelSubclassA>
+                {
+                    FilterQueryDatabase = new(":memory:")
+                };
+                actual = mdc.ParseSqlMarkdown<SelectableQFModel>("hello");
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+"
+                ;
+
+                actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+Proxy type cannot resolve to the contract table.";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting Exception."
+                );
+
+                actual = JsonConvert.SerializeObject(mdc.GetTableNames(), Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  ""itemsA""
+]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table creation is owned by subclass."
                 );
             }
             #endregion S U B T E S T S
