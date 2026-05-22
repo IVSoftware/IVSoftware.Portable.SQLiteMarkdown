@@ -255,47 +255,47 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             TableName = ContractTableMapping.TableName;
 
             // Check for divergent table name
-            if (FilterQueryDatabase is not null
-                && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+            if (ProxyType != ContractType)
             {
-                if (ProxyType != ContractType)
-                {
-                    // [Careful]
-                    // Use the @throw argument to validate by null pattern matching, not exception.
-                    TableMapping tmProxy = ProxyType.GetSQLiteMapping(contractType: ContractType);
+                // [Careful]
+                // Use the @throw argument to validate by null pattern matching, not exception.
+                TableMapping tmProxy =
+                    ProxyType
+                    .GetSQLiteMapping(
+                        contractType: ContractType,
+                        @throw: false);
 
-                    if (tmProxy?.TableName == ContractTableMapping.TableName
-                        || ContractType.IsAssignableFrom(ProxyType)
-                        || ProxyType.IsAssignableFrom(ContractType))
+                if (tmProxy?.TableName == ContractTableMapping.TableName
+                    || ContractType.IsAssignableFrom(ProxyType)
+                    || ProxyType.IsAssignableFrom(ContractType))
+                {
+                    TableName = ContractTableMapping.TableName;
+                }
+                else
+                {
+                    TableName = ProxyType.GetSQLiteMapping().TableName;
+                    if (_proxyType.GetCustomAttribute<EnforceSingleTableAttribute>()?.Enforce == false)
                     {
-                        TableName = ContractTableMapping.TableName;
-                    }
-                    else
-                    {
-                        if (_proxyType.GetCustomAttribute<EnforceSingleTableAttribute>()?.Enforce == false)
+                        if (FilterQueryDatabase is SQLiteQueryOnlyConnection cnxprot)
                         {
-                            if (FilterQueryDatabase is SQLiteQueryOnlyConnection cnxprot)
-                            {
-                                using (cnxprot.RequestAuthority(SQLiteAuthority.FullControl))
-                                {
-                                    FilterQueryDatabase.CreateTable(ProxyType);
-                                }
-                            }
-                            else
+                            using (cnxprot.RequestAuthority(SQLiteAuthority.FullControl))
                             {
                                 FilterQueryDatabase.CreateTable(ProxyType);
                             }
-                            TableName = tmProxy.TableName;
                         }
                         else
                         {
-                            this.ThrowHard<InvalidOperationException>(
-                                $"Proxy type resolves to a different table '{tmProxy.TableName}' and is " +
-                                $"not permitted to bypass the single-table contract for '{ContractTableMapping.TableName}'.");
-                            // Unreachable unless Throw pattern is handled.
-                            xast = null!;
-                            return "Proxy Error";
+                            FilterQueryDatabase.CreateTable(ProxyType);
                         }
+                    }
+                    else
+                    {
+                        this.ThrowHard<InvalidOperationException>(
+                            $"Proxy type resolves to a different table '{TableName}' and is " +
+                            $"not permitted to bypass the single-table contract for '{ContractTableMapping.TableName}'.");
+                        // Unreachable unless Throw pattern is handled.
+                        xast = null!;
+                        return string.Empty;
                     }
                 }
             }

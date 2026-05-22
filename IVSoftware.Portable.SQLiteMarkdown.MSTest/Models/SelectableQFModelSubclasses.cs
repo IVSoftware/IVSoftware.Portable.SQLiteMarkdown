@@ -71,7 +71,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     /// <summary>
     /// 260309 NEW!
     /// </summary>
-    [Table("items"), EnforceSingleTableAttribute]
+    [Table("items"), EnforceSingleTable]
     class TrueProxyWithExtendSchema : SelfIndexed
     {
         public bool SchemaExtended { get; set; } = true;
@@ -82,6 +82,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     /// </summary>
     [Table("containers")]
     class NonCoherentProxy : SelfIndexed
+    {
+        public bool SchemaExtended { get; set; } = true;
+    }
+
+    [Table("sxs")]
+    [EnforceSingleTable(true)] // This is the default
+    class EnforcedProxy : SelfIndexed
+    {
+        public bool SchemaExtended { get; set; } = true;
+    }
+
+    [Table("sxs")]
+    [EnforceSingleTable(false)] // This permits new table creation side by side
+    class SxSProxy : SelfIndexed
     {
         public bool SchemaExtended { get; set; } = true;
     }

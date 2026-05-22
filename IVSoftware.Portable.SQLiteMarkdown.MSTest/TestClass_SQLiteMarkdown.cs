@@ -1767,6 +1767,8 @@ FilterTerm";
             subtest_MemberFxResolveEffectiveTable();
             subtest_SubOnSuperTableConflict();
             subtest_SuperOnSubTableConflict();
+            subtest_EnforceSingleIsFalse();
+            subtest_EnforceSingleIsTrue();
 
             #region S U B T E S T S
             void subtest_TableNameDefaultsToExplicitBC()
@@ -2008,6 +2010,100 @@ SELECT * FROM itemsA WHERE
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Expecting 'items' table creation is owned by subclass."
+                );
+            }
+
+            void subtest_EnforceSingleIsFalse()
+            {
+                MarkdownContext mdc;
+
+                mdc = new TestableMarkdownContext<SelectableQFModel>
+                {
+                    FilterQueryDatabase = new(":memory:")
+                };
+
+                Assert.HasCount(0, builderThrow, "Expecting empty exception queue.");
+                actual = mdc.ParseSqlMarkdown<SxSProxy>("hello");
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+SELECT * FROM sxs WHERE
+(QueryTerm LIKE '%hello%')"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting a new dedicated table."
+                );
+
+                Assert.HasCount(0, builderThrow, "Expecting this not exceptional.");
+
+                actual = JsonConvert.SerializeObject(mdc.GetTableNames(), Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  ""items"",
+  ""sxs""
+]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table creation is owned by subclass."
+                );
+            }
+            void subtest_EnforceSingleIsTrue()
+            {
+                MarkdownContext mdc;
+
+                mdc = new TestableMarkdownContext<SelectableQFModel>
+                {
+                    FilterQueryDatabase = new(":memory:")
+                };
+
+                Assert.HasCount(0, builderThrow, "Expecting empty exception queue.");
+                actual = mdc.ParseSqlMarkdown<EnforcedProxy>("hello");
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting proxy failure with empty return."
+                );
+
+
+                actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+Proxy type resolves to a different table 'sxs' and is not permitted to bypass the single-table contract for 'items'.";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting proxy error exception message."
+                );
+
+                actual = JsonConvert.SerializeObject(mdc.GetTableNames(), Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  ""items""
+]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting new sxs table is NOT ALLOWED."
                 );
             }
             #endregion S U B T E S T S
