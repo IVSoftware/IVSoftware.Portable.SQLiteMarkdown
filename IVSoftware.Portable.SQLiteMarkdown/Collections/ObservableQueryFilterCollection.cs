@@ -64,7 +64,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 base.OnClear(all);
                 if(all)
                 {
-                    @this.Clear();
+                    // The one-and-only clear authority,
+                    @this.ClearItems();
                 }
             }
             public new SQLiteConnection FilterQueryDatabase
@@ -203,10 +204,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 using (RequestAuthority(StdModelAuthority.TerminalClear))
                 using (RequestAuthority(ModelDataExchangeAuthority.Collection))
                 {
-                    if (all)
-                    {
-                        Items.Clear();
-                    }
                     if (!HasAuthority(ModelDataExchangeAuthority.Model))
                     {
                         return MarkdownContext.Clear(all);
