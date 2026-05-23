@@ -925,12 +925,12 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:5 match:0 qmatch:0 pmatch:0 live:0]"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" index=""0"" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" index=""1"" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" index=""2"" />
-  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" index=""3"" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" index=""4"" />
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:5 qmatch:0 pmatch:0 live:5]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" live=""True"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" live=""True"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" live=""True"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" live=""True"" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" live=""True"" index=""4"" />
 </model>"
             ;
 
@@ -994,7 +994,7 @@ Add     NewItems=1  OldItems=*  NewStartingIndex=4  OldStartingIndex=-1 NotifyCo
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:5 match:0 qmatch:0 pmatch:0 live:0]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:5 qmatch:0 pmatch:0 live:0]"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" index=""1"" />
   <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" index=""2"" />
