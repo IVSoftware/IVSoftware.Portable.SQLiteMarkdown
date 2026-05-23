@@ -64,7 +64,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 base.OnClear(all);
                 if(all)
                 {
-                    @this.ClearItems();
+                    @this.Clear();
                 }
             }
             public new SQLiteConnection FilterQueryDatabase
@@ -197,15 +197,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         public new void Clear()
         {
-            if(ModelDataExchangeAuthority == ModelDataExchangeAuthority.NoAuthority)
-            {
-                Clear(all: true);
-            }
-            using(RequestAuthority(ModelDataExchangeAuthority.Collection))
-            {
-                using (RequestAuthority(StdModelAuthority.SuspendForwardPropertyChange))
+            if (!HasAuthority(ModelDataExchangeAuthority.Collection))
+            { 
+                using (RequestAuthority(ModelDataExchangeAuthority.Collection))
                 {
-                    InputText = string.Empty;
+                    Items.Clear();
+                    if (!HasAuthority(ModelDataExchangeAuthority.Model))
+                    {
+                        MarkdownContext.Clear(true);
+                    }
                 }
             }
         }
