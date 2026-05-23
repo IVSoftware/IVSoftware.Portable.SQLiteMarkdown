@@ -3222,7 +3222,7 @@ Add     NewItems=12 OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                 { }
                 // [Careful("What?")] No 'preview' attribute? THAT'S BECAUSE THIS IS SelectableQFModel and *not* IAffinityModel.
                 expected = @" 
-<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 match:0 qmatch:0 pmatch:0 live:0]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 qmatch:0 pmatch:0 live:0]"">
   <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""1"" />
   <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" />
@@ -3278,8 +3278,8 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0 live:0]"">
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" match=""True"" qmatch=""True"" />
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 qmatch:1 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" qmatch=""True"" />
   <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""1"" />
   <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""2"" />
   <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""3"" />
@@ -3480,19 +3480,19 @@ Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCo
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 match:9 qmatch:9 pmatch:0 live:0]"">
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" match=""True"" qmatch=""True"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""1"" match=""True"" qmatch=""True"" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""2"" match=""True"" qmatch=""True"" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""3"" match=""True"" qmatch=""True"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Golden Lio"" index=""4"" match=""True"" qmatch=""True"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Brown Bear"" index=""5"" match=""True"" qmatch=""True"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" preview=""Black Pant"" index=""6"" match=""True"" qmatch=""True"" />
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 qmatch:9 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""1"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""2"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""3"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Golden Lio"" index=""4"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Brown Bear"" index=""5"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" preview=""Black Pant"" index=""6"" qmatch=""True"" />
   <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" preview=""Elephant  "" index=""7"" />
   <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" preview=""Giraffe   "" index=""8"" />
-  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" preview=""Kangaroo  "" index=""9"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" preview=""Kangaroo  "" index=""9"" qmatch=""True"" />
   <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" preview=""Turtle    "" index=""10"" />
-  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" preview=""Should NOT"" index=""11"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" preview=""Should NOT"" index=""11"" qmatch=""True"" />
 </model>"
                 ;
 
@@ -3526,8 +3526,8 @@ Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCo
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0 live:0]"">
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" match=""True"" qmatch=""True"" />
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 qmatch:1 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" qmatch=""True"" />
   <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""1"" />
   <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""2"" />
   <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""3"" />
@@ -3620,7 +3620,7 @@ Add     NewItems=11 OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 match:0 qmatch:0 pmatch:0 live:0]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 qmatch:0 pmatch:0 live:0]"">
   <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""1"" />
   <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" />
@@ -3690,13 +3690,13 @@ Add     NewItems=11 OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0 live:0]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 qmatch:1 pmatch:0 live:0]"">
   <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""1"" />
   <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""2"" />
   <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""3"" />
   <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Golden Lio"" index=""4"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Brown Bear"" index=""5"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Brown Bear"" index=""5"" qmatch=""True"" />
   <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" preview=""Black Pant"" index=""6"" />
   <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" preview=""Elephant  "" index=""7"" />
   <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" preview=""Giraffe   "" index=""8"" />
@@ -3799,11 +3799,11 @@ Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCo
                 actual.ToClipboardAssert("Expecting result to match.");
                 { }
                 expected = @" 
-<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 match:2 qmatch:2 pmatch:0 live:0]"">
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 qmatch:2 pmatch:0 live:0]"">
   <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""1"" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" match=""True"" qmatch=""True"" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""3"" match=""True"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""3"" qmatch=""True"" />
   <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""4"" />
   <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" index=""5"" />
   <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" index=""6"" />

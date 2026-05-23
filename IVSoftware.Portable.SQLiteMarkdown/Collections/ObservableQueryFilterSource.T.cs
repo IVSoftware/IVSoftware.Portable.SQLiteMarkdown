@@ -156,6 +156,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 CanonicalSupersetProtected.ModelTracking &= ~ModelTrackingFlag.ItemQueries;
             }
         }
+        public override int PredicateMatchCount =>
+            Equals(RouteKey, StdRouteKey.CanonicalRecordset)
+            ? 0
+            : Count;    // Routed
     }
 
     /// <summary>
