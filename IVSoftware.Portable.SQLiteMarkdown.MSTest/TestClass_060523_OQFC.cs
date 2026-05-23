@@ -39,12 +39,31 @@ public class TestClass_060523_OQFC
                 oqfs.QueryFilterConfig, 
                 "Expecting valid cast to IOQFS and default config.");
 
-            omc.PopulateForDemo(10);
+            omc.PopulateForDemo(5);
+
+            actual = omc.Model.ToString(); ;
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:5 match:5 qmatch:0 pmatch:0 live:5]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" match=""True"" live=""True"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" match=""True"" live=""True"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" match=""True"" live=""True"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" match=""True"" live=""True"" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" match=""True"" live=""True"" index=""4"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Looking for 'live' in all the right places."
+            );
+
             actual = omc.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 10, CC: 10, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]";
+[IME Len: 0, IsFiltering: True], [Net: 5, CC: 5, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]";
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -57,7 +76,7 @@ public class TestClass_060523_OQFC
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 10, CC: 10, PMC: 0], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 5, CC: 5, PMC: 0], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
             ;
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -94,7 +113,7 @@ public class TestClass_060523_OQFC
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 10, CC: 10, PMC: 0], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 5, CC: 5, PMC: 0], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
             ;
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -131,7 +150,7 @@ public class TestClass_060523_OQFC
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: 10, CC: 10, PMC: 0], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 5, CC: 5, PMC: 0], [Filter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
             ;
             Assert.AreEqual(
                 expected.NormalizeResult(),

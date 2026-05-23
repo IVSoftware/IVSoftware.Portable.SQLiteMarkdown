@@ -100,8 +100,8 @@ public class TestClass_260328_INPC
         // FSOL: This pattern [model:1 match:0 qmatch:0 pmatch:0 live:0] is 'one' indication to show all items.
         // ☆☆☆☆☆
         expected = @" 
-<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0 live:0]"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" index=""0"" />
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:1 match:1 qmatch:0 pmatch:0 live:1]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" match=""True"" live=""True"" index=""0"" />
 </model>"
         ;
 
