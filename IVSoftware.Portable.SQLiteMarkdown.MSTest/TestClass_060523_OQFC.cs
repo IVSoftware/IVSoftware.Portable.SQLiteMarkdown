@@ -45,12 +45,12 @@ public class TestClass_060523_OQFC
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:5 match:5 qmatch:0 pmatch:0 live:5]"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" match=""True"" live=""True"" index=""0"" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" match=""True"" live=""True"" index=""1"" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" match=""True"" live=""True"" index=""2"" />
-  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" match=""True"" live=""True"" index=""3"" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" match=""True"" live=""True"" index=""4"" />
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:5 qmatch:0 pmatch:0 live:5]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]""  live=""True"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]""  live=""True"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]""  live=""True"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]""  live=""True"" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]""  live=""True"" index=""4"" />
 </model>";
 
             Assert.AreEqual(
