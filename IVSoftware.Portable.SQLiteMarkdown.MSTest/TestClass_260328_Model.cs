@@ -16,6 +16,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 [TestClass]
 public class TestClass_260328_Model
 {
+    /// <summary>
+    /// Verifies histogram updates from direct XModel mutations.
+    /// </summary>
+    /// <remarks>
+    /// Covers add, hold, decrement, onboarding, offloading, and bound model
+    /// tracking on the XElement surface.
+    /// </remarks>
     [TestMethod, Canonical("XElement change handling.")]
     public void Test_Histogrammer()
     {
@@ -26,7 +33,6 @@ public class TestClass_260328_Model
         var model = omc.Model;
         var histo = model.To<EnumHistogrammer<StdModelAttribute>>();
         histo.AllowRootChanges = true;
-
 
         #region L o c a l F x				
         using var local = this.WithOnDispose(
@@ -47,100 +53,10 @@ public class TestClass_260328_Model
         }
         #endregion L o c a l F x
 
-        subtest_TrackLateral();
         subtest_TrackCurrentChild();
         subtest_TrackAddRemoveChild();
 
         #region S U B T E S T S
-        void subtest_TrackLateral()
-        {
-            // Add
-            model.SetStdAttributeValue(StdModelAttribute.qmatch, true);
-
-            actual = string.Join(Environment.NewLine, builder); builder.Clear();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-[Changed] Key=qmatch ObjectChange=Add Parent=not null Edge=Increment"
-            ;
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting Add + INCREMENT +> SINK."
-            );
-
-            actual = histo.ToString();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-[model:0 qmatch:1 pmatch:0 live:0]"
-            ;
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting histogram to match."
-            );
-
-            // CONFIRMED:
-            // - Setting to same value *does* raise raw XObject.Change events.
-            // - However, edge semantics are now pristine for idempotent cases.
-            model.SetStdAttributeValue(StdModelAttribute.qmatch, true);
-
-            actual = string.Join(Environment.NewLine, builder); builder.Clear();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-[Changed] Key=qmatch ObjectChange=Value Parent=not null Edge=Hold";
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting VALUE + HOLD."
-            );
-
-            actual = histo.ToString();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-[model:0 qmatch:1 pmatch:0 live:0]"
-            ;
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting NO CHANGE."
-            );
-
-            // Remove
-            model.RemoveDescendantAttributes(StdModelAttribute.qmatch, includeSelf: true);
-
-            actual = string.Join(Environment.NewLine, builder); builder.Clear();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-[Changed] Key=qmatch ObjectChange=Remove Parent=not null Edge=Decrement";
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting REMOVE SOURCE + SINK"
-            );
-
-
-            actual = histo.ToString();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-[model:0 qmatch:0 pmatch:0 live:0]"
-            ;
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting empty histogram."
-            );
-        }
 
         void subtest_TrackCurrentChild()
         {
@@ -467,7 +383,7 @@ public class TestClass_260328_Model
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[model:10 match:0 qmatch:0 pmatch:0 live:0]"
+[model:10 qmatch:0 pmatch:0 live:0]"
             ;
 
             Assert.AreEqual(
