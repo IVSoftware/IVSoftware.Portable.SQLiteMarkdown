@@ -296,21 +296,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         protected override void OnPropertyChanged(PropertyChangedEventArgs eUnk)
         {
             base.OnPropertyChanged(eUnk);
-            switch (eUnk)
-            {
-                case EHPropertyChangedEventArgs e:
-                    if(Equals(e.Key, StdModelAttribute.live))
-                    {
-                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 5, 23).Date, "Don't forget TnT");
-                        // 260523
-                        // One way push UI interactive entry as a virtual recordset result.
-                        if (Histo[StdModelAttribute.live] > 0)
-                        {
-                            MarkdownContext.SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                        }
-                    }
-                    break;
-            }
         }
     }
 }
