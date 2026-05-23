@@ -187,20 +187,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// Returns count in the broad sense of qmatch & pmatch.
         /// </summary>
-        public virtual int PredicateMatchCount
-        {
-            get
-            {
-                if (ModelAuthorityContext?.Model.To<IReadOnlyDictionary<StdModelAttribute, int>>() is { } histo)
-                {
-                    return histo[StdModelAttribute.match];
-                }
-                // Do not call this base class method.
-                this.ThrowHard<ModelException>($"{nameof(PredicateMatchCount)} requires override in derived type.");
-                // Reachable only if Throw is handled.
-                return 0;
-            }
-        }
+        public virtual int PredicateMatchCount => 0;
         #endregion L E G A C Y    H O O K S
 
         /// <summary>

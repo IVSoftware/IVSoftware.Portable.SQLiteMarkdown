@@ -75,6 +75,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 get => base.FilterQueryDatabase;
                 set => base.FilterQueryDatabase = value;
             }
+            public override int PredicateMatchCount =>
+                Equals(RouteKey, StdRouteKey.CanonicalRecordset)
+                ? 0
+                : @this.Count;
         }
         protected override void OnMDEXFinalizing(FinalDisposeEventArgs eUnk)
         {
@@ -144,7 +148,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public int CanonicalCount => MarkdownContext.CanonicalCount;
 
-        public int PredicateMatchCount => MarkdownContext.PredicateMatchCount;
+        public int PredicateMatchCount =>
+            Equals(RouteKey, StdRouteKey.CanonicalRecordset)
+            ? 0
+            : Count;
 
         public IModelAuthorityContext? ModelAuthorityContext => MarkdownContext.ModelAuthorityContext;
 
