@@ -1754,6 +1754,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             if (ModelAuthorityContext is null)
             {
+                // 1.x contract
                 OnClear(all);
             }
             else

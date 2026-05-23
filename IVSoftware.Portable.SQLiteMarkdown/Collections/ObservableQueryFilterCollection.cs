@@ -186,7 +186,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public event EventHandler? InputTextSettled
         {
             add => MarkdownContext.InputTextSettled += value;
-
             remove => MarkdownContext.InputTextSettled -= value;
         }
 
@@ -201,9 +200,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             if (!HasAuthority(ModelDataExchangeAuthority.Collection))
             {
+                using (RequestAuthority(StdModelAuthority.TerminalClear))
                 using (RequestAuthority(ModelDataExchangeAuthority.Collection))
                 {
-                    Items.Clear();
+                    if (all)
+                    {
+                        Items.Clear();
+                    }
                     if (!HasAuthority(ModelDataExchangeAuthority.Model))
                     {
                         return MarkdownContext.Clear(all);
