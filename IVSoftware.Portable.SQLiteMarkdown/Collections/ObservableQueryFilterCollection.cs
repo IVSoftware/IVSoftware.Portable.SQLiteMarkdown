@@ -195,35 +195,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <summary>
         /// No Surprises IList.Clear
         /// </summary>
-        public new void Clear()
+        public new void Clear() => Clear(true);
+
+        public FilteringState Clear(bool all)
         {
             if (!HasAuthority(ModelDataExchangeAuthority.Collection))
-            { 
+            {
                 using (RequestAuthority(ModelDataExchangeAuthority.Collection))
                 {
                     Items.Clear();
                     if (!HasAuthority(ModelDataExchangeAuthority.Model))
                     {
-                        MarkdownContext.Clear(true);
+                        return MarkdownContext.Clear(all);
                     }
                 }
             }
-        }
-
-        public FilteringState Clear(bool all)
-        {
-            var isModelAuthority =
-                HasAuthority(ModelDataExchangeAuthority.Model) ||
-                HasAuthority(ModelDataExchangeAuthority.ModelDeferred);
-
-            if (isModelAuthority)
-            {
-                return FilteringState;
-            }
-            else
-            {
-                return MarkdownContext.Clear(all);
-            }
+            return FilteringState;
         }
         void IList.Clear() => Clear();
 
