@@ -1790,8 +1790,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 {
                     IDisposable[] tokens =
                         all
-                        ? [mac.RequestAuthority(StdModelAuthority.TerminalClear)]
-                        : [mac.RequestAuthority(StdModelAuthority.TerminalClear), mac.RequestAuthority(ModelDataExchangeAuthority.Model)];
+                        ? [mac.RequestAuthority(StdModelAuthority.TerminalClear), mac.RequestAuthority(ModelDataExchangeAuthority.Model)]
+                        : [mac.RequestAuthority(ModelDataExchangeAuthority.Model)];
                     using (new TokenDisposer(tokens))
                     {
                         if (!mac.HasAuthority(ModelDataExchangeAuthority.Model))

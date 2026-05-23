@@ -19,7 +19,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     /// This class is typically used with a single <c>using</c> declaration to create a
     /// composite lifetime boundary around an operation such as FSM execution.
     /// </remarks>
-    sealed class TokenDisposer : IDisposable
+    internal sealed class TokenDisposer : IDisposable
     {
         readonly IDisposable[] _tokens;
         bool _disposed;

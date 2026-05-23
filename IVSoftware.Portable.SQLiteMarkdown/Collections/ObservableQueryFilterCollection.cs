@@ -3,6 +3,7 @@ using IVSoftware.Portable.Collections.Events;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
@@ -12,6 +13,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -201,8 +203,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             if (!HasAuthority(ModelDataExchangeAuthority.Collection))
             {
-                using (RequestAuthority(StdModelAuthority.TerminalClear))
-                using (RequestAuthority(ModelDataExchangeAuthority.Collection))
+                IDisposable[] tokens =
+                    all
+                    ? [RequestAuthority(StdModelAuthority.TerminalClear), RequestAuthority(ModelDataExchangeAuthority.Collection)]
+                    : [RequestAuthority(ModelDataExchangeAuthority.Model)];
+                using (new TokenDisposer(tokens))
                 {
                     if (!HasAuthority(ModelDataExchangeAuthority.Model))
                     {
