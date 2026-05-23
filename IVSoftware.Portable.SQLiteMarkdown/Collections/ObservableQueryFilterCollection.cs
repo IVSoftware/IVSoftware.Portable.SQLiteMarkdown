@@ -292,9 +292,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
                 OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
 
-        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        protected override void OnPropertyChanged(PropertyChangedEventArgs eUnk)
         {
-            base.OnPropertyChanged(e);            
+            base.OnPropertyChanged(eUnk);
+            switch (eUnk)
+            {
+                case EHPropertyChangedEventArgs e:
+                    if(Equals(e.Key, StdModelAttribute.live))
+                    {
+                        // #TNT
+                        // 260523
+                        // One way push UI interactive entry as a virtual recordset result.
+                        if (Histo[StdModelAttribute.live] > 0)
+                        {
+                            MarkdownContext.SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                        }
+                    }
+                    break;
+            }
         }
     }
 }
