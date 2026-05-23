@@ -199,6 +199,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         public new void Clear() => Clear(true);
 
+        /// <summary>
+        /// This is *not* where the au
+        /// </summary>
         public FilteringState Clear(bool all)
         {
             if (!HasAuthority(ModelDataExchangeAuthority.Collection))
@@ -206,7 +209,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 IDisposable[] tokens =
                     all
                     ? [RequestAuthority(StdModelAuthority.TerminalClear), RequestAuthority(ModelDataExchangeAuthority.Collection)]
-                    : [RequestAuthority(ModelDataExchangeAuthority.Model)];
+                    : [RequestAuthority(ModelDataExchangeAuthority.Collection)];
                 using (new TokenDisposer(tokens))
                 {
                     if (!HasAuthority(ModelDataExchangeAuthority.Model))

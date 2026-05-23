@@ -762,8 +762,9 @@ InputText"
                 // #1 [X]
                 // User clears the input text, but *not* the recordset.
                 // FilteringState remains Armed because the transition is from non-empty input text to empty.
-                // IsFiltering
-                oqfc.Clear();
+                // [Careful]
+                // This was set to Clear() before from testing 1.x and that doesn't work for this anymore.
+                oqfc.Clear(all: false);
 
                 actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
@@ -775,7 +776,9 @@ InputText"
 
                 // #2 [X]
                 // User returns to Query without emptying the list.
-                oqfc.Clear();
+                // [Careful]
+                // This was set to Clear() before from testing 1.x and that doesn't work for this anymore.
+                oqfc.Clear(all: false);
                 actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
@@ -788,11 +791,13 @@ InputText"
                 Assert.AreEqual(FilteringState.Ineligible, oqfc.FilteringState, "Expecting initial state.");
 
                 // #3 [X]
-                // The MCD can clear its own state heuristically, rather than epistemically.
+                // The MCD through discovery can clear its own state.
                 // Even without knowledge of the list contents, these combined states are the signal:
                 // - FilteringState.Ineligible | SearchEntryState.QueryCompleteWithResults
                 // THIS IS THE ACTION THAT WAS FAILING IN PRODUCTION and REPLICATED before fixing.
-                oqfc.Clear();
+                // [Careful]
+                // This was set to Clear() before from testing 1.x and that doesn't work for this anymore.
+                oqfc.Clear(all: false);
                 actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
@@ -834,9 +839,9 @@ InputText"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:2 match:1 qmatch:1 pmatch:0 live:0]"" filters=""[No Active Filters]"">
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" index=""0"" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" index=""1"" qmatch=""True"" match=""True"" />
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:2 match:1 qmatch:1 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[PrioritizedAffinityQFModel]"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[PrioritizedAffinityQFModel]"" index=""1"" match=""True"" qmatch=""True"" />
 </model>"
                 ;
 
@@ -856,13 +861,17 @@ InputText"
                 // User clears the input text.
                 // In this case FilteringState should remain Armed.
                 // because the transition is from non-empty input text to empty.
-                oqfc.Clear();
+                // [Careful]
+                // This was set to Clear() before from testing 1.x and that doesn't work for this anymore.
+                oqfc.Clear(all: false);
                 Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, oqfc.SearchEntryState, "Expecting initial state.");
                 Assert.AreEqual(FilteringState.Armed, oqfc.FilteringState, "Expecting initial state.");
 
                 // #2 [X]
                 // User returns to Query without emptying the list.
-                oqfc.Clear();
+                // [Careful]
+                // This was set to Clear() before from testing 1.x and that doesn't work for this anymore.
+                oqfc.Clear(all: false);
                 Assert.AreEqual(
                     SearchEntryState.QueryEmpty, // TOUCHED this limit on 260304 - QueryEmpty is the correct value
                     oqfc.SearchEntryState, "Expecting initial state.");
@@ -876,7 +885,9 @@ InputText"
                 // Even without knowledge of the list contents, these combined states are the signal:
                 // - FilteringState.Ineligible | SearchEntryState.QueryCompleteWithResults
                 // THIS IS THE ACTION THAT WAS FAILING IN PRODUCTION and REPLICATED before fixing.
-                oqfc.Clear();
+                // [Careful]
+                // This was set to Clear() before from testing 1.x and that doesn't work for this anymore.
+                oqfc.Clear(all: false);
                 Assert.AreEqual(SearchEntryState.Cleared, oqfc.SearchEntryState, "Expecting initial state.");
                 Assert.AreEqual(FilteringState.Ineligible, oqfc.FilteringState, "Expecting initial state.");
             }
