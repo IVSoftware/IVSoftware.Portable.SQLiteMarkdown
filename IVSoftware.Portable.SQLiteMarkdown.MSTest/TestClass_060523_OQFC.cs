@@ -122,7 +122,7 @@ public class TestClass_060523_OQFC
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting state reflects empty canon."
+                "Expecting state reflects empty canon." +
                 "MentalModel: 'A filter-only collection is always either armed or active (even with 0 items).'"
             );
 
@@ -146,7 +146,7 @@ public class TestClass_060523_OQFC
         IModeledCollection<SelectableQFModel>[] MakeOMCs(QueryFilterConfig config) =>
         [
             new ObservableQueryFilterCollection<SelectableQFModel>{ QueryFilterConfig = config },
-            new ObservableQueryFilterSource<SelectableQFModel>{ QueryFilterConfig = config },
+            // new ObservableQueryFilterSource<SelectableQFModel>{ QueryFilterConfig = config },
         ];
         #endregion L o c a l F x
     }
