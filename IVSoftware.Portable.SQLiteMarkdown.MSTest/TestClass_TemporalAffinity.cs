@@ -1,24 +1,16 @@
-using IVSoftware.Portable.Collections.Preview;
-using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
-using IVSoftware.Portable.Collections;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
 using SQLite;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Xml.Linq;
-using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
 using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
 [TestClass]
-public class TestClass_PredicateMarkdownContext
+public class TestClass_TemporalAffinity
 {
-
     [TestMethod, DoNotParallelize]
     public async Task Test_5_Items()
     {
@@ -114,122 +106,14 @@ public class TestClass_PredicateMarkdownContext
         }
 
         #endregion S U B T E S T S
-
-    }
-
-    [TestMethod, DoNotParallelize, Ignore]
-    public void Test_IsFilteringEdgeTests()
-    {
-        using var te = this.TestableEpoch();
-
-        string actual, expected;
-        List<string> builder = new();
-        ObservableCollection<SelectableQFModel> pooc = new();
-        pooc.PopulateForDemo(10);
-
-#if false
-        subtest_TriggerBy_ProjectionBeforeState();
-        subtest_TriggerBy_StateBeforeProjection();
-        subtest_TriggerBy_FilteringState();
-        subtest_TriggerBy_RecordsetProperty();
-
-        #region S U B T E S T S
-        void subtest_TriggerBy_ProjectionBeforeState()
-        {
-            var mdc = new MarkdownContext<SelectableQFModel>();
-            mdc.SetObservableNetProjection(pooc);
-
-            // In this test, the items are already populated
-            // before switching into filter mode.
-            mdc.QueryFilterConfig = QueryFilterConfig.Filter;
-            Assert.IsTrue(mdc.IsFiltering, "Expecting ALWAYS TRUE in Filter mode.");
-
-            actual = mdc.Model.ToString();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-<model mdc=""[MDC]"" histo=""[model:10 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" index=""0"" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" index=""1"" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" index=""2"" />
-  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" index=""3"" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" index=""4"" />
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""5"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""6"" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""7"" />
-  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" index=""8"" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""9"" />
-</model>"
-            ;
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting 10 examples of UNKNOWN ITEM WITH PRIMARY KEY."
-            );
-        }
-        void subtest_TriggerBy_StateBeforeProjection()
-        {
-            var mdc = new MarkdownContext<SelectableQFModel>
-            {
-                QueryFilterConfig = QueryFilterConfig.Filter,
-            };
-            Assert.IsTrue(mdc.IsFiltering, "Expecting ALWAYS TRUE in Filter mode.");
-            actual = mdc.Model.ToString();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-<model mdc=""[MDC]"" histo=""[HISTO]"" filters=""[No Active Filters]"" />"
-            ;
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting EMPTY because ONP is not assigned yet."
-            );
-
-            mdc.SetObservableNetProjection(pooc);
-
-            actual = mdc.Model.ToString();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-<model mdc=""[MDC]"" histo=""[model:10 match:0 qmatch:0 pmatch:0 live:0]"" filters=""[No Active Filters]"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" index=""0"" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" index=""1"" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" index=""2"" />
-  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" index=""3"" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" index=""4"" />
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""5"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""6"" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""7"" />
-  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" index=""8"" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""9"" />
-</model>"
-            ;
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting 10 examples of UNKNOWN ITEM WITH PRIMARY KEY.");
-        }
-        void subtest_TriggerBy_FilteringState()
-        {
-        }
-        void subtest_TriggerBy_RecordsetProperty()
-        {
-        }
-        #endregion S U B T E S T S
-#endif
     }
 
     /// <summary>
     /// Try out some basic external filters.
     /// </summary>
-    [TestMethod, DoNotParallelize, Ignore]
+    [TestMethod, DoNotParallelize]
     public async Task Test_TemporalAffinityQFModel()
     {
-#if false
         string actual, expected;
         using var te = this.TestableEpoch();
         var builder = new List<string>();
@@ -244,6 +128,9 @@ public class TestClass_PredicateMarkdownContext
             COUNT,  // Is conditional so check.
             opc.PopulateForDemo(includeLiveDemo: true).Count,
             "Expecting initial population.");
+
+        { }
+#if false
 
         // Filter-only MDC: Wakes up loaded with opc as canon.
         var pmdc = new PredicateMarkdownContext<TemporalAffinityQFModel>

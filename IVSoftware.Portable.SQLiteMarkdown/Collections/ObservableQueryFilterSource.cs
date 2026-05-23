@@ -1,10 +1,13 @@
-﻿using IVSoftware.Portable.Collections.Events;
+﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Events;
 using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Disposable;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
@@ -15,19 +18,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     public partial class ObservableQueryFilterSource
         : MarkdownContext<object>
         , IObservableQueryFilterSource<object>
+        , IModeledCollection
         , IList
         , IList<object>
     {
-        [Canonical("Parameterless CTor is the only CTor.")]
-        public ObservableQueryFilterSource() { }
-
         public object this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        public string Placeholder => throw new NotImplementedException();
+        public XElement Model => throw new NotImplementedException();
+        public new IReadOnlyDictionary<StdModelAttribute, int> Histo => throw new NotImplementedException();
 
-        public string Title { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public ModelTrackingFlag ModelTracking { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        public string SQL => throw new NotImplementedException();
+        public IDictionary<Enum, IAuthorityEpochProvider> AuthorityProviders => throw new NotImplementedException();
+
+        public ModelDataExchangeAuthority ModelDataExchangeAuthority => throw new NotImplementedException();
 
         public bool IsFixedSize => throw new NotImplementedException();
 
@@ -38,6 +42,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public bool IsSynchronized => throw new NotImplementedException();
 
         public object SyncRoot => throw new NotImplementedException();
+
+        public string Placeholder => throw new NotImplementedException();
+
+        public string Title { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public string SQL => throw new NotImplementedException();
+
+        SQLiteQueryOnlyConnection? IModeledCollection.FilterQueryDatabase => throw new NotImplementedException();
 
         public event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
@@ -68,6 +80,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         public IEnumerator GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool HasAuthority(Enum authority)
         {
             throw new NotImplementedException();
         }

@@ -38,6 +38,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     public partial class ObservableQueryFilterSource<T>
         : MarkdownContext<T>
         , IObservableQueryFilterSource<T>
+        , IModeledCollection<T>
         , IList
         , IList<T>
         where T : new()
