@@ -11,6 +11,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -300,7 +301,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 case EHPropertyChangedEventArgs e:
                     if(Equals(e.Key, StdModelAttribute.live))
                     {
-                        // #TNT
+                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 5, 23).Date, "Don't forget TnT");
                         // 260523
                         // One way push UI interactive entry as a virtual recordset result.
                         if (Histo[StdModelAttribute.live] > 0)
