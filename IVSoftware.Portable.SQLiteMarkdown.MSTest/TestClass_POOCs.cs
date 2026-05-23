@@ -8,13 +8,10 @@ using IVSoftware.Portable.Disposable;
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
     /// <summary>
-    /// Test class for Plain Old Collection Objects (POCO).
+    /// Test class for Plain Old Observable Collection (POOC).
     /// </summary>
-    /// <remarks>
-    /// Thanks to Plain Old CLR Objects (POCO) for loaning us their acronym.
-    /// </remarks>
     [TestClass]
-    public class TestClass_POCOs
+    public class TestClass_POOCs
     {
         [TestMethod, DoNotParallelize, Ignore]
         public async Task Test_ItemsSource()

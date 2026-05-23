@@ -120,14 +120,14 @@ public class TestClass_PredicateMarkdownContext
     [TestMethod, DoNotParallelize, Ignore]
     public void Test_IsFilteringEdgeTests()
     {
-#if false
         using var te = this.TestableEpoch();
 
         string actual, expected;
         List<string> builder = new();
-        ObservableCollection<SelectableQFModel> opc = new();
-        opc.PopulateForDemo(10);
+        ObservableCollection<SelectableQFModel> pooc = new();
+        pooc.PopulateForDemo(10);
 
+#if false
         subtest_TriggerBy_ProjectionBeforeState();
         subtest_TriggerBy_StateBeforeProjection();
         subtest_TriggerBy_FilteringState();
@@ -137,7 +137,7 @@ public class TestClass_PredicateMarkdownContext
         void subtest_TriggerBy_ProjectionBeforeState()
         {
             var mdc = new MarkdownContext<SelectableQFModel>();
-            mdc.SetObservableNetProjection(opc);
+            mdc.SetObservableNetProjection(pooc);
 
             // In this test, the items are already populated
             // before switching into filter mode.
@@ -188,7 +188,7 @@ public class TestClass_PredicateMarkdownContext
                 "Expecting EMPTY because ONP is not assigned yet."
             );
 
-            mdc.SetObservableNetProjection(opc);
+            mdc.SetObservableNetProjection(pooc);
 
             actual = mdc.Model.ToString();
             actual.ToClipboardExpected();
