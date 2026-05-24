@@ -129,15 +129,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
             {
                 int
                     firstRow = FirstDisplayedScrollingRowIndex,
-                    visibleCount = Math.Max(DisplayedRowCount(true), 0);
-
+                    visibleCount = Math.Max(DisplayedRowCount(true), 0),
+                    rowIndex,
+                    mod,
+                    offset;
+                View? view;
                 if (firstRow >= 0)
                 {
-                    for (int offset = 0; offset < _templateCount; offset++)
+                    for (rowIndex = 0; rowIndex < firstRow; rowIndex++)
                     {
-                        int
-                            rowIndex = firstRow + offset,
-                            key = rowIndex % _templateCount;
+                        mod = rowIndex % _templateCount;
+                        if (_recycledViews.TryGetValue(mod, out view))
+                        {
+                            view.Visible = false;
+                        }
+                    }
+                    for (
+                        offset = 0; 
+                        offset < _templateCount && offset < visibleCount;
+                        offset++)
+                    {
+                        rowIndex = firstRow + offset;
+                        mod = rowIndex % _templateCount;
                         object?
                             model;
                         if (rowIndex >= 0
@@ -145,18 +158,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                         {
                             model = ItemsSource[rowIndex];
 
-                            if (RecycledViews.TryGetValue(key, out var view))
+                            if (!_recycledViews.TryGetValue(mod, out view))
                             {
-                                if(!ReferenceEquals(view.DataContext, model))
-                                {
-                                    view.DataContext = model;
-                                    view.Invalidate();
-                                }
+                                view = (View)Activator.CreateInstance(DataTemplate.Type)!;
+                                _recycledViews[mod] = view;
+                                Controls.Add(view);
                             }
-                            else
+                            if (!ReferenceEquals(view.DataContext, model))
                             {
-                                Debug.WriteLine(
-                                    $"[CV] offset={offset} row={rowIndex} key={key} rv=<missing>");
+                                view.DataContext = model;
+                                view.Invalidate();
                             }
                         }
                     }
