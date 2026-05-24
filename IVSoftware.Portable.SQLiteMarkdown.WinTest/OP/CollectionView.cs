@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using View = System.Windows.Forms.Control;
@@ -104,11 +105,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
             };
             Scroll += (sender, e) =>
             {
-                WDTScroll.StartOrRestart(e);
+                AuditViewportIndexes();
+                // WDTScroll.StartOrRestart(e);
             };
             Layout += (sender, e) =>
             {
-                WDTScroll.StartOrRestart(e);
+                AuditViewportIndexes();
+                // WDTScroll.StartOrRestart(e);
             };
             MouseDoubleClick += (sender, e) =>
             {
@@ -118,6 +121,38 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                     Invalidate();
                 }
             };
+        }
+
+        private void AuditViewportIndexes()
+        {
+            if (ItemsSource is not null)
+            {
+                int
+                    firstRow = FirstDisplayedScrollingRowIndex,
+                    visibleCount = Math.Max(DisplayedRowCount(true), 0);
+
+                for (int offset = 0; offset < _templateCount; offset++)
+                {
+                    int
+                        rowIndex = firstRow + offset,
+                        key = rowIndex % _templateCount;
+                    object?
+                        card;
+                    if (rowIndex >= 0 && rowIndex < ItemsSource.Count)
+                    {
+                        card = ItemsSource[rowIndex];
+                    }
+
+                    if (RecycledViews.TryGetValue(key, out var view))
+                    {
+                    }
+                    else
+                    {
+                        Debug.WriteLine(
+                            $"[CV] offset={offset} row={rowIndex} key={key} rv=<missing>");
+                    }
+                }
+            }
         }
 
 
