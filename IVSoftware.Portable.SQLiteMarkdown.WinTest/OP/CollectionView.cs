@@ -104,12 +104,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
             };
             Scroll += (sender, e) =>
             {
-                Vacuum();
                 WDTScroll.StartOrRestart(e);
             };
             Layout += (sender, e) =>
             {
-                Vacuum();
+                WDTScroll.StartOrRestart(e);
             };
             MouseDoubleClick += (sender, e) =>
             {
@@ -302,6 +301,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
             {
                 if (_wdtScroll is null)
                 {
+                    // [Careful]Invalidate calls Vacuum indirectly
                     _wdtScroll = new WatchdogTimer(
                         defaultInitialAction: () =>
                         {
@@ -319,6 +319,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
             }
         }
         WatchdogTimer? _wdtScroll = null;
+
         int _templateCount = 10;
 
         private void Vacuum()
