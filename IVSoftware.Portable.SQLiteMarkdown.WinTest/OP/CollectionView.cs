@@ -125,52 +125,58 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
 
         private void AuditViewportIndexes()
         {
-            if (ItemsSource is not null)
+            if (ItemsSource is null)
             {
-                int
-                    firstRow = FirstDisplayedScrollingRowIndex,
-                    visibleCount = Math.Max(DisplayedRowCount(true), 0),
-                    rowIndex,
-                    mod,
-                    offset;
-                View? view;
-                if (firstRow >= 0)
+                foreach (var recycled in _recycledViews.Values)
                 {
-                    for (rowIndex = 0; rowIndex < firstRow; rowIndex++)
-                    {
-                        mod = rowIndex % _templateCount;
-                        if (_recycledViews.TryGetValue(mod, out view))
-                        {
-                            view.Visible = false;
-                        }
-                    }
-                    for (
-                        offset = 0; 
-                        offset < _templateCount && offset < visibleCount;
-                        offset++)
-                    {
-                        rowIndex = firstRow + offset;
-                        mod = rowIndex % _templateCount;
-                        object?
-                            model;
-                        if (rowIndex >= 0
-                            && rowIndex < ItemsSource.Count)
-                        {
-                            model = ItemsSource[rowIndex];
+                    recycled.Visible = false;
+                }
+                return;
+            }
 
-                            if (!_recycledViews.TryGetValue(mod, out view))
-                            {
-                                view = (View)Activator.CreateInstance(DataTemplate.Type)!;
-                                _recycledViews[mod] = view;
-                                Controls.Add(view);
-                            }
-                            if (!ReferenceEquals(view.DataContext, model))
-                            {
-                                view.DataContext = model;
-                                view.Invalidate();
-                            }
-                        }
-                    }
+            int firstRow = FirstDisplayedScrollingRowIndex;
+            if (firstRow < 0)
+            {
+                foreach (var recycled in _recycledViews.Values)
+                {
+                    recycled.Visible = false;
+                }
+                return;
+            }
+
+            int visibleCount = Math.Max(DisplayedRowCount(true), 0);
+            int activeCount = Math.Min(Math.Min(visibleCount, _templateCount), ItemsSource.Count - firstRow);
+            var activeMods = new HashSet<int>();
+
+            for (int offset = 0; offset < activeCount; offset++)
+            {
+                int rowIndex = firstRow + offset;
+                int mod = rowIndex % _templateCount;
+                object? model = ItemsSource[rowIndex];
+
+                activeMods.Add(mod);
+
+                if (!_recycledViews.TryGetValue(mod, out var view))
+                {
+                    view = (View)Activator.CreateInstance(DataTemplate.Type)!;
+                    _recycledViews[mod] = view;
+                    Controls.Add(view);
+                }
+
+                if (!ReferenceEquals(view.DataContext, model))
+                {
+                    view.DataContext = model;
+                    view.Invalidate();
+                }
+
+                view.Visible = true;
+            }
+
+            foreach (var kvp in _recycledViews)
+            {
+                if (!activeMods.Contains(kvp.Key))
+                {
+                    kvp.Value.Visible = false;
                 }
             }
         }
