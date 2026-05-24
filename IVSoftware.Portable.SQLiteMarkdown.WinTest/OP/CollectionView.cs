@@ -131,25 +131,34 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                     firstRow = FirstDisplayedScrollingRowIndex,
                     visibleCount = Math.Max(DisplayedRowCount(true), 0);
 
-                for (int offset = 0; offset < _templateCount; offset++)
+                if (firstRow >= 0)
                 {
-                    int
-                        rowIndex = firstRow + offset,
-                        key = rowIndex % _templateCount;
-                    object?
-                        card;
-                    if (rowIndex >= 0 && rowIndex < ItemsSource.Count)
+                    for (int offset = 0; offset < _templateCount; offset++)
                     {
-                        card = ItemsSource[rowIndex];
-                    }
+                        int
+                            rowIndex = firstRow + offset,
+                            key = rowIndex % _templateCount;
+                        object?
+                            model;
+                        if (rowIndex >= 0
+                            && rowIndex < ItemsSource.Count)
+                        {
+                            model = ItemsSource[rowIndex];
 
-                    if (RecycledViews.TryGetValue(key, out var view))
-                    {
-                    }
-                    else
-                    {
-                        Debug.WriteLine(
-                            $"[CV] offset={offset} row={rowIndex} key={key} rv=<missing>");
+                            if (RecycledViews.TryGetValue(key, out var view))
+                            {
+                                if(!ReferenceEquals(view.DataContext, model))
+                                {
+                                    view.DataContext = model;
+                                    view.Invalidate();
+                                }
+                            }
+                            else
+                            {
+                                Debug.WriteLine(
+                                    $"[CV] offset={offset} row={rowIndex} key={key} rv=<missing>");
+                            }
+                        }
                     }
                 }
             }
