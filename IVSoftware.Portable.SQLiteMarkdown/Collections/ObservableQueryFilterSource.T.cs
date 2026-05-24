@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Events;
 using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
@@ -6,6 +7,7 @@ using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
+using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using System;
 using System.Collections;
@@ -271,21 +273,72 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         protected override void OnPropertyChanged(PropertyChangedEventArgs eUnk)
         {
             base.OnPropertyChanged(eUnk);
-            switch (eUnk.PropertyName)
+            switch (eUnk)
             {
-                case nameof(ModelTracking):
-                    // Raised by CSP not the base class.
-                    // ∴ Wire it here.
-                    if(ModelTracking.HasFlag(ModelTrackingFlag.ItemQueries))
-                    {
-                        QueryFilterConfig |= QueryFilterConfig.Filter;
-                    }
-                    else 
-                    {
-                        QueryFilterConfig &= ~QueryFilterConfig.Filter;
-                    }
+                case EHPropertyChangedEventArgs e:
+                    localOnEHPropertyChanged(e);
+                    break;
+                default:
+                    localOnDefaultPropertyChanged(eUnk);
                     break;
             }
+            #region L o c a l F x
+            void localOnEHPropertyChanged(EHPropertyChangedEventArgs e)
+            {
+                switch (e.Key)
+                {
+                    case StdModelAttribute.model:
+                        // Look for a combination of 'model' + 'Increment' + '!Canon'
+                        if (!Equals(e.PropertyName, nameof(HistogramEdge.Increment))
+                            && !HasAuthority(StdModelAuthority.Canon))
+                        {
+                            // Designated out-of-band match until a new canonical recordset becomes available.
+                            if (e.XOB is XBoundAttribute xba
+                                && xba.Name.LocalName == nameof(StdModelAttribute.model))
+                            {
+                                xba.Parent?.SetStdAttributeValue(StdModelAttribute.oob, bool.TrueString);
+                            }
+                        }
+                        break;
+                    case StdModelAttribute.oob:
+                        {   /* G T K - N O O P */
+                            // - This affects the (protected) SearchQueryState and FilteringState of an MDC.
+                            // - However, we have no way to get to those properties; even if we could discover an
+                            //   MDC instance or interface, the SearchQueryState and FilteringState are protected.
+                        }
+                        break;
+                }
+
+                //if (Equals(e.Key, StdModelAttribute.live))
+                //{
+                //    Debug.Assert(DateTime.Now.Date == new DateTime(2026, 5, 23).Date, "Don't forget TnT");
+                //    // 260523
+                //    // One way push UI interactive entry as a virtual recordset result.
+                //    if (Histo[StdModelAttribute.live] > 0)
+                //    {
+                //        MarkdownContext.SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                //    }
+                //}
+            }
+            void localOnDefaultPropertyChanged(PropertyChangedEventArgs e)
+            {
+                switch (e.PropertyName)
+                {
+                    case nameof(ModelTracking):
+                        // Raised by CSP not the base class.
+                        // ∴ Wire it here.
+                        if (ModelTracking.HasFlag(ModelTrackingFlag.ItemQueries))
+                        {
+                            QueryFilterConfig |= QueryFilterConfig.Filter;
+                        }
+                        else
+                        {
+                            QueryFilterConfig &= ~QueryFilterConfig.Filter;
+                        }
+                        break;
+                }
+            }
+            #endregion L o c a l F x
         }
     }
 }
