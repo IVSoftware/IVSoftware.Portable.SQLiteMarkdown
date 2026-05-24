@@ -288,42 +288,54 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 switch (e.Key)
                 {
                     case StdModelAttribute.model:
-                        // Look for a combination of:
-                        // model
-                        // + Increment
-                        // + Filter flag
-                        // + !Canon
-                        if( Equals(e.PropertyName, nameof(HistogramEdge.Increment))
-                            && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
-                            && !HasAuthority(StdModelAuthority.Canon))
+                        if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                         {
-                            // Designated out-of-band match until a new canonical recordset becomes available.
-                            if (e.XOB is XBoundAttribute xba
-                                && xba.Name.LocalName == nameof(StdModelAttribute.model))
+                            // Look for a combination of:
+                            // model
+                            // + Filter flag
+                            // + Increment
+                            // + !Canon
+                            if (!HasAuthority(StdModelAuthority.Canon))
                             {
-                                xba.Parent?.SetStdAttributeValue(StdModelAttribute.live, bool.TrueString);
+                                // Canonical collection is being modified out-of-band.
+                                if (Equals(e.PropertyName, nameof(HistogramEdge.Increment)))
+                                {
+                                    // Designated out-of-band match until a new canonical recordset becomes available.
+                                    if (e.XOB is XBoundAttribute xba
+                                        && xba.Name.LocalName == nameof(StdModelAttribute.model))
+                                    {
+                                        xba.Parent?.SetStdAttributeValue(StdModelAttribute.live, bool.TrueString);
+                                    }
+                                }
+                                int itemCount = Histo[StdModelAttribute.model];
+                                switch (itemCount)
+                                {
+                                    case 0:
+                                        SearchEntryState = SearchEntryState.QueryCompleteNoResults;
+                                        FilteringState = FilteringState.Ineligible;
+                                        break;
+                                    case 1:
+                                    default:
+                                        SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                                        if (itemCount == 1)
+                                        {
+                                            FilteringState = FilteringState.Ineligible;
+                                        }
+                                        else
+                                        {
+                                            // [Probationary]
+                                            // Does this need to sync up with IME state?
+                                            FilteringState = FilteringState.Armed;
+                                        }
+                                        break;
+                                }
                             }
                         }
                         break;
                     case StdModelAttribute.live:
-                        {   /* G T K - N O O P */
-                            // - This affects the (protected) SearchQueryState and FilteringState of an MDC.
-                            // - However, we have no way to get to those properties; even if we could discover an
-                            //   MDC instance or interface, the SearchQueryState and FilteringState are protected.
-                        }
+                        /* G T K */
                         break;
                 }
-
-                //if (Equals(e.Key, StdModelAttribute.live))
-                //{
-                //    Debug.Assert(DateTime.Now.Date == new DateTime(2026, 5, 23).Date, "Don't forget TnT");
-                //    // 260523
-                //    // One way push UI interactive entry as a virtual recordset result.
-                //    if (Histo[StdModelAttribute.live] > 0)
-                //    {
-                //        MarkdownContext.SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                //    }
-                //}
             }
             void localOnDefaultPropertyChanged(PropertyChangedEventArgs e)
             {

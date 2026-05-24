@@ -361,24 +361,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                             }
                             break;
                         case StdModelAttribute.live:
-                            {   /* G T K - N O O P */
-                                // - This affects the (protected) SearchQueryState and FilteringState of an MDC.
-                                // - However, we have no way to get to those properties; even if we could discover an
-                                //   MDC instance or interface, the SearchQueryState and FilteringState are protected.
-                            }
+                            /* G T K */
                             break;
                     }
-
-                    //if (Equals(e.Key, StdModelAttribute.live))
-                    //{
-                    //    Debug.Assert(DateTime.Now.Date == new DateTime(2026, 5, 23).Date, "Don't forget TnT");
-                    //    // 260523
-                    //    // One way push UI interactive entry as a virtual recordset result.
-                    //    if (Histo[StdModelAttribute.live] > 0)
-                    //    {
-                    //        MarkdownContext.SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                    //    }
-                    //}
                     break;
             }
         }

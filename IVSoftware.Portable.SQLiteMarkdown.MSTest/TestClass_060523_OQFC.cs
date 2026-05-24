@@ -19,14 +19,17 @@ public class TestClass_060523_OQFC
         List<string> builder = new();
         foreach (var omc in MakeOMCs(QueryFilterConfig.QueryAndFilter))
         {
+            te.ResetEpoch();
             subtest_PopulateBeforeFilter(omc);
         }
         foreach (var omc in MakeOMCs(QueryFilterConfig.Filter))
         {
+            te.ResetEpoch();
             subtest_FilterBeforePopulate(omc);
         }
         foreach (var omc in MakeOMCs(QueryFilterConfig.Filter))
         {
+            te.ResetEpoch();
             subtest_FilterBeforeReplace(omc);
         }
         #region S U B T E S T S
@@ -155,7 +158,7 @@ public class TestClass_060523_OQFC
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting 10 items presented as canonical filter source." +
+                "Expecting 5 items presented as canonical filter source." +
                 "MentalModel: 'New keystrokes will filter the visible collection'."
             );
         }
