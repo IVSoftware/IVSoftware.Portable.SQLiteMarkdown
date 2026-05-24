@@ -63,6 +63,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 get => base.SearchEntryState;
                 set => base.SearchEntryState = value;
             }
+            public new FilteringState FilteringState
+            {
+                get => base.FilteringState;
+                set => base.FilteringState = value;
+            }
             protected override void OnClear(bool all)
             {
                 base.OnClear(all);
@@ -311,20 +316,47 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     switch (e.Key)
                     {
                         case StdModelAttribute.model:
-                            // Look for a combination of:
-                            // model
-                            // + Increment
-                            // + Filter flag
-                            // + !Canon
-                            if (Equals(e.PropertyName, nameof(HistogramEdge.Increment))
-                                && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
-                                && !HasAuthority(StdModelAuthority.Canon))
+                            if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
                             {
-                                // Designated out-of-band match until a new canonical recordset becomes available.
-                                if (e.XOB is XBoundAttribute xba
-                                    && xba.Name.LocalName == nameof(StdModelAttribute.model))
+                                // Look for a combination of:
+                                // model
+                                // + Filter flag
+                                // + !Canon
+                                // + Increment
+                                if (!HasAuthority(StdModelAuthority.Canon))
                                 {
-                                    xba.Parent?.SetStdAttributeValue(StdModelAttribute.live, bool.TrueString);
+                                    // Canonical collection is being modified out-of-band.
+                                    if (Equals(e.PropertyName, nameof(HistogramEdge.Increment)))
+                                    {
+                                        // Designated out-of-band match until a new canonical recordset becomes available.
+                                        if (e.XOB is XBoundAttribute xba
+                                            && xba.Name.LocalName == nameof(StdModelAttribute.model))
+                                        {
+                                            xba.Parent?.SetStdAttributeValue(StdModelAttribute.live, bool.TrueString);
+                                        }
+                                    }
+                                    int itemCount = Histo[StdModelAttribute.model];
+                                    switch (itemCount)
+                                    {
+                                        case 0:
+                                            MarkdownContext.SearchEntryState = SearchEntryState.QueryCompleteNoResults;
+                                            MarkdownContext.FilteringState = FilteringState.Ineligible;
+                                            break;
+                                        case 1:
+                                        default:
+                                            MarkdownContext.SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                                            if(itemCount == 1)
+                                            {
+                                                MarkdownContext.FilteringState = FilteringState.Ineligible;
+                                            }
+                                            else
+                                            {
+                                                // [Probationary]
+                                                // Does this need to sync up with IME state?
+                                                MarkdownContext.FilteringState = FilteringState.Armed;
+                                            }
+                                            break;
+                                    }
                                 }
                             }
                             break;
