@@ -3175,6 +3175,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
             await subtestQueryInitial();
             await subtest_Animals();
             await subtestAppendDatabaseAndRequery();
+            await subtest_BUGIRL_color_d();
 
             #region S U B T E S T S
             /// <summary>
@@ -3917,6 +3918,101 @@ Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portabl
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Expecting items to match"
+                );
+            }
+
+            /// <summary>
+            /// Debugging routine for WinDemo misalignment
+            /// </summary>
+            async Task subtest_BUGIRL_color_d()
+            {
+                oqfs.Clear();
+
+                actual = oqfs.Model.ToString();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:0 qmatch:0 pmatch:0 live:0]"" />";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting terminal clear."
+                );
+
+                oqfs.InputText = "color";
+                oqfs.Commit();
+
+                actual = oqfs.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 5, IsFiltering: True], [Net: 19, CC: 19, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting result to match."
+                );
+
+                oqfs.InputText += " d";
+                await oqfs;
+
+                actual = oqfs.ToString(FormattingOMC.ModelWithPreview);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:19 qmatch:9 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Brown Dog "" index=""0"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Green Appl"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Yellow Ban"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Blue Bird "" index=""3"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Red Cherry"" index=""4"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Purple Gra"" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""9"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Pink Flami"" index=""10"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Golden Lio"" index=""11"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Brown Bear"" index=""12"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000d"" model=""[SelectableQFModel]"" preview=""Green Pear"" index=""13"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000e"" model=""[SelectableQFModel]"" preview=""Red Strawb"" index=""14"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" preview=""Black Pant"" index=""15"" />
+  <item text=""312d1c21-0000-0000-0000-000000000010"" model=""[SelectableQFModel]"" preview=""Yellow Lem"" index=""16"" />
+  <item text=""312d1c21-0000-0000-0000-000000000011"" model=""[SelectableQFModel]"" preview=""White Swan"" index=""17"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000012"" model=""[SelectableQFModel]"" preview=""Purple Plu"" index=""18"" />
+</model>"
+                ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting accurate filtering."
+                );
+
+                actual = JsonConvert.SerializeObject(oqfs.Select(_ => _.FilterTerm), Formatting.Indented);
+                actual.ToClipboardExpected();
+                { } // <- FIRST TIME ONLY: Adjust the message.
+                actual.ToClipboardAssert("Expecting json serialization to match.");
+                { }
+                expected = @" 
+[
+  ""brown~dog~loyal~friend~furry~[canine]~[color]"",
+  ""blue~bird~sky~feathered~song~[bird]~[color]"",
+  ""red~cherry~sweet~summer~dessert~[fruit]~[color]"",
+  ""gray~wolf~pack~howl~wild~[animal]~[color]"",
+  ""pink~flamingo~[bird]~[color]"",
+  ""golden~lion~[animal]~[color]"",
+  ""brown~bear~strong~wild~forest~[animal]~[color]"",
+  ""red~strawberry~[fruit]~[color]"",
+  ""white~swan~[bird]~[color]""
+]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting json serialization to match."
                 );
             }
             #endregion S U B T E S T S
