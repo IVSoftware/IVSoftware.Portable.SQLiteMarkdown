@@ -68,7 +68,7 @@ public class TestClass_060523_OQFC
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting 10 items presented as query result." +
+                "Expecting 5 items presented as query result." +
                 "MentalModel: 'New keystrokes will filter the visible collection'."
             );
             oqfs.QueryFilterConfig = QueryFilterConfig.Filter;
@@ -108,7 +108,7 @@ public class TestClass_060523_OQFC
                 "MentalModel: 'A filter-only collection is always either armed or active (even with 0 items).'"
             );
 
-            omc.PopulateForDemo(10);
+            omc.PopulateForDemo(5);
             actual = omc.StateReport();
             actual.ToClipboardExpected();
             { }
@@ -118,7 +118,7 @@ public class TestClass_060523_OQFC
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting 10 items presented as canonical filter source."
+                "Expecting 5 items presented as canonical filter source."
             );
         }
 
@@ -145,7 +145,7 @@ public class TestClass_060523_OQFC
                 "MentalModel: 'A filter-only collection is always either armed or active (even with 0 items).'"
             );
 
-            oqfs.ReplaceItems(default (IList<SelectableQFModel>).PopulateForDemo(10));
+            oqfs.ReplaceItems(default (IList<SelectableQFModel>).PopulateForDemo(5));
             actual = omc.StateReport();
             actual.ToClipboardExpected();
             { }
@@ -165,7 +165,7 @@ public class TestClass_060523_OQFC
         IModeledCollection<SelectableQFModel>[] MakeOMCs(QueryFilterConfig config) =>
         [
             new ObservableQueryFilterCollection<SelectableQFModel>{ QueryFilterConfig = config },
-            // new ObservableQueryFilterSource<SelectableQFModel>{ QueryFilterConfig = config },
+            new ObservableQueryFilterSource<SelectableQFModel>{ QueryFilterConfig = config },
         ];
         #endregion L o c a l F x
     }

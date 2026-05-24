@@ -321,8 +321,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                 // Look for a combination of:
                                 // model
                                 // + Filter flag
-                                // + !Canon
                                 // + Increment
+                                // + !Canon
                                 if (!HasAuthority(StdModelAuthority.Canon))
                                 {
                                     // Canonical collection is being modified out-of-band.
