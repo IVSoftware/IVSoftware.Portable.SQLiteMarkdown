@@ -238,6 +238,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                     {   /* B T K */
                         Debug.Fail($@"AUDIT FAILURE.");
                     }
+                    index++;
                 }
 
 #endif
