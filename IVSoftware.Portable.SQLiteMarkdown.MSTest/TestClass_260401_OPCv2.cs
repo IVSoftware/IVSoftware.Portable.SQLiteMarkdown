@@ -69,17 +69,17 @@ Add     NewItems=1  OldItems=*  NewStartingIndex=2  OldStartingIndex=-1 NotifyCo
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model omc=""[OMC]"" histo=""[model:3 qmatch:0 pmatch:0 live:3]"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" live=""True"" index=""0"" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" live=""True"" index=""1"" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" live=""True"" index=""2"" />
+<model omc=""[OMC]"" histo=""[model:3 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""2"" />
 </model>"
             ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting THREE items."
+                "Expecting THREE items + OMC does not know about 'live'."
             );
 
             builder.Clear();
@@ -89,9 +89,9 @@ Add     NewItems=1  OldItems=*  NewStartingIndex=2  OldStartingIndex=-1 NotifyCo
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model omc=""[OMC]"" histo=""[model:2 qmatch:0 pmatch:0 live:2]"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" live=""True"" index=""0"" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" live=""True"" index=""1"" />
+<model omc=""[OMC]"" histo=""[model:2 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
 </model>"
             ;
 
@@ -118,9 +118,9 @@ Remove  NewItems=*  OldItems=1  NewStartingIndex=-1 OldStartingIndex=2  NotifyCo
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model omc=""[OMC]"" histo=""[model:2 qmatch:0 pmatch:0 live:2]"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" live=""True"" index=""0"" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" live=""True"" index=""1"" />
+<model omc=""[OMC]"" histo=""[model:2 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
 </model>"
             ;
 
@@ -150,9 +150,9 @@ Replace NewItems=1  OldItems=1  NewStartingIndex=1  OldStartingIndex=1  NotifyCo
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model omc=""[OMC]"" histo=""[model:2 qmatch:0 pmatch:0 live:2]"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" live=""True"" index=""0"" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" live=""True"" index=""1"" />
+<model omc=""[OMC]"" histo=""[model:2 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""1"" />
 </model>"
             ;
             Assert.AreEqual(
@@ -181,9 +181,9 @@ Move    NewItems=1  OldItems=1  NewStartingIndex=0  OldStartingIndex=1  NotifyCo
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model omc=""[OMC]"" histo=""[model:2 qmatch:0 pmatch:0 live:2]"">
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" live=""True"" index=""0"" />
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" live=""True"" index=""1"" />
+<model omc=""[OMC]"" histo=""[model:2 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""1"" />
 </model>"
             ;
             Assert.AreEqual(
