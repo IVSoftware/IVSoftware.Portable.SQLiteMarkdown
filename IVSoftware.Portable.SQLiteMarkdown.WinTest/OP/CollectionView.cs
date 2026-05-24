@@ -178,7 +178,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                     kvp.Value.Visible = false;
                 }
             }
-            string items, cards, expected1, expected2;
+            string items, cards, actual1, actual2;
             if (ItemsSource is IObservableQueryFilterSource<SelectableQFModel> oqfs)
             {
                 switch (oqfs.InputText)
@@ -191,7 +191,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                                 ?.OfType<SelectableQFModel>()
                                  .Select(_ => _.Description), Formatting.Indented);
                         { }
-                        expected1 = @"[
+                        actual1 = @"[
   ""Brown Dog"",
   ""Blue Bird"",
   ""Red Cherry"",
@@ -211,7 +211,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                              .OfType<SelectableQFModel>()
                               .Select(_ => _.Description), Formatting.Indented);
                         { }
-                        expected2 = @"[
+                        actual2 = @"[
   ""Brown Dog"",
   ""Green Apple"",
   ""Yellow Banana"",
