@@ -5,6 +5,7 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
+using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
 using System;
@@ -297,22 +298,50 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
                 OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
 
+
+        /// <summary>
+        /// Capture MDC semantics based on EH changes.
+        /// </summary>
         protected override void OnPropertyChanged(PropertyChangedEventArgs eUnk)
         {
             base.OnPropertyChanged(eUnk);
             switch (eUnk)
             {
                 case EHPropertyChangedEventArgs e:
-                    if(Equals(e.Key, StdModelAttribute.live))
+                    switch (e.Key)
                     {
-                        Debug.Assert(DateTime.Now.Date == new DateTime(2026, 5, 23).Date, "Don't forget TnT");
-                        // 260523
-                        // One way push UI interactive entry as a virtual recordset result.
-                        if (Histo[StdModelAttribute.live] > 0)
-                        {
-                            MarkdownContext.SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                        }
+                        case StdModelAttribute.model:
+                            // Look for a combination of 'model' + 'Increment' + '!Canon'
+                            if (!Equals(e.PropertyName, nameof(HistogramEdge.Increment))
+                                && !HasAuthority(StdModelAuthority.Canon))
+                            {
+                                // Designated out-of-band match until a new canonical recordset becomes available.
+                                if (e.XOB is XBoundAttribute xba
+                                    && xba.Name.LocalName == nameof(StdModelAttribute.model))
+                                {
+                                    xba.Parent?.SetStdAttributeValue(StdModelAttribute.oob, bool.TrueString);
+                                }
+                            }
+                            break;
+                        case StdModelAttribute.oob:
+                            {   /* G T K - N O O P */
+                                // - This affects the (protected) SearchQueryState and FilteringState of an MDC.
+                                // - However, we have no way to get to those properties; even if we could discover an
+                                //   MDC instance or interface, the SearchQueryState and FilteringState are protected.
+                            }
+                            break;
                     }
+
+                    //if (Equals(e.Key, StdModelAttribute.live))
+                    //{
+                    //    Debug.Assert(DateTime.Now.Date == new DateTime(2026, 5, 23).Date, "Don't forget TnT");
+                    //    // 260523
+                    //    // One way push UI interactive entry as a virtual recordset result.
+                    //    if (Histo[StdModelAttribute.live] > 0)
+                    //    {
+                    //        MarkdownContext.SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+                    //    }
+                    //}
                     break;
             }
         }
