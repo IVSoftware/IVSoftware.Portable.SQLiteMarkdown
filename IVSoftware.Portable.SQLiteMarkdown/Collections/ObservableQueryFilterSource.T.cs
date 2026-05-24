@@ -288,19 +288,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 switch (e.Key)
                 {
                     case StdModelAttribute.model:
-                        // Look for a combination of 'model' + 'Increment' + '!Canon'
-                        if (!Equals(e.PropertyName, nameof(HistogramEdge.Increment))
+                        // Look for a combination of:
+                        // model
+                        // + Increment
+                        // + Filter flag
+                        // + !Canon
+                        if( Equals(e.PropertyName, nameof(HistogramEdge.Increment))
+                            && QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
                             && !HasAuthority(StdModelAuthority.Canon))
                         {
                             // Designated out-of-band match until a new canonical recordset becomes available.
                             if (e.XOB is XBoundAttribute xba
                                 && xba.Name.LocalName == nameof(StdModelAttribute.model))
                             {
-                                xba.Parent?.SetStdAttributeValue(StdModelAttribute.oob, bool.TrueString);
+                                xba.Parent?.SetStdAttributeValue(StdModelAttribute.live, bool.TrueString);
                             }
                         }
                         break;
-                    case StdModelAttribute.oob:
+                    case StdModelAttribute.live:
                         {   /* G T K - N O O P */
                             // - This affects the (protected) SearchQueryState and FilteringState of an MDC.
                             // - However, we have no way to get to those properties; even if we could discover an
