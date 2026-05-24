@@ -287,7 +287,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public new async Task LoadCanonAsync(IList<T> items)
         {
-            this.ThrowHard<NotSupportedException>();
+            await base.LoadCanonAsync(items);
+            MarkdownContext.SearchEntryState =
+                Count == 0
+                ? SearchEntryState.QueryCompleteNoResults
+                : SearchEntryState.QueryCompleteWithResults;
         }
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
