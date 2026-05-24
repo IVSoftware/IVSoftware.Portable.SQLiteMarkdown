@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -322,6 +323,147 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
 
         private void Vacuum()
         {
+#if DEBUG
+            var json = JsonConvert.SerializeObject(this.ItemsSource, Formatting.Indented);
+            { }
+            var color_d = @"[
+  {
+    ""Id"": ""dc6dd161-e303-4b33-9ea8-0a1c2258073f"",
+    ""Description"": ""Brown Dog"",
+    ""Keywords"": ""[\""loyal\"",\""friend\"",\""furry\""]"",
+    ""KeywordsDisplay"": ""\""loyal\"",\""friend\"",\""furry\"""",
+    ""Tags"": ""[canine] [color]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""dc6dd161-e303-4b33-9ea8-0a1c2258073f"",
+    ""QueryTerm"": ""brown~dog~loyal~friend~furry~[canine]~[color]"",
+    ""FilterTerm"": ""brown~dog~loyal~friend~furry~[canine]~[color]"",
+    ""TagMatchTerm"": ""[canine] [color]"",
+    ""Properties"": ""{\r\n  \""Description\"": \""Brown Dog\"",\r\n  \""Tags\"": \""[canine] [color]\"",\r\n  \""Keywords\"": \""[\\\""loyal\\\"",\\\""friend\\\"",\\\""furry\\\""]\""\r\n}""
+  },
+  {
+    ""Id"": ""f468cf12-40eb-4d73-930c-e2b09aaa3734"",
+    ""Description"": ""Blue Bird"",
+    ""Keywords"": ""[\""sky\"",\""feathered\"",\""song\""]"",
+    ""KeywordsDisplay"": ""\""sky\"",\""feathered\"",\""song\"""",
+    ""Tags"": ""[bird] [color]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""f468cf12-40eb-4d73-930c-e2b09aaa3734"",
+    ""QueryTerm"": ""blue~bird~sky~feathered~song~[bird]~[color]"",
+    ""FilterTerm"": ""blue~bird~sky~feathered~song~[bird]~[color]"",
+    ""TagMatchTerm"": ""[bird] [color]"",
+    ""Properties"": ""{\r\n  \""Description\"": \""Blue Bird\"",\r\n  \""Tags\"": \""[bird] [color]\"",\r\n  \""Keywords\"": \""[\\\""sky\\\"",\\\""feathered\\\"",\\\""song\\\""]\""\r\n}""
+  },
+  {
+    ""Id"": ""7cf12ce5-1f31-4b9c-9b3a-b75e18002b85"",
+    ""Description"": ""Red Cherry"",
+    ""Keywords"": ""[\""sweet\"",\""summer\"",\""dessert\""]"",
+    ""KeywordsDisplay"": ""\""sweet\"",\""summer\"",\""dessert\"""",
+    ""Tags"": ""[fruit] [color]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""7cf12ce5-1f31-4b9c-9b3a-b75e18002b85"",
+    ""QueryTerm"": ""red~cherry~sweet~summer~dessert~[fruit]~[color]"",
+    ""FilterTerm"": ""red~cherry~sweet~summer~dessert~[fruit]~[color]"",
+    ""TagMatchTerm"": ""[fruit] [color]"",
+    ""Properties"": ""{\r\n  \""Description\"": \""Red Cherry\"",\r\n  \""Tags\"": \""[fruit] [color]\"",\r\n  \""Keywords\"": \""[\\\""sweet\\\"",\\\""summer\\\"",\\\""dessert\\\""]\""\r\n}""
+  },
+  {
+    ""Id"": ""3ad3abbe-f346-44a6-a22e-3f38bb487f43"",
+    ""Description"": ""Gray Wolf"",
+    ""Keywords"": ""[\""pack\"",\""howl\"",\""wild\""]"",
+    ""KeywordsDisplay"": ""\""pack\"",\""howl\"",\""wild\"""",
+    ""Tags"": ""[animal] [color]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""3ad3abbe-f346-44a6-a22e-3f38bb487f43"",
+    ""QueryTerm"": ""gray~wolf~pack~howl~wild~[animal]~[color]"",
+    ""FilterTerm"": ""gray~wolf~pack~howl~wild~[animal]~[color]"",
+    ""TagMatchTerm"": ""[animal] [color]"",
+    ""Properties"": ""{\r\n  \""Description\"": \""Gray Wolf\"",\r\n  \""Tags\"": \""[animal] [color]\"",\r\n  \""Keywords\"": \""[\\\""pack\\\"",\\\""howl\\\"",\\\""wild\\\""]\""\r\n}""
+  },
+  {
+    ""Id"": ""cc47bc75-a8c3-4de1-b315-0939c3e5d65e"",
+    ""Description"": ""Pink Flamingo"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[bird] [color]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""cc47bc75-a8c3-4de1-b315-0939c3e5d65e"",
+    ""QueryTerm"": ""pink~flamingo~[bird]~[color]"",
+    ""FilterTerm"": ""pink~flamingo~[bird]~[color]"",
+    ""TagMatchTerm"": ""[bird] [color]"",
+    ""Properties"": ""{\r\n  \""Description\"": \""Pink Flamingo\"",\r\n  \""Tags\"": \""[bird] [color]\""\r\n}""
+  },
+  {
+    ""Id"": ""5ea573d9-ca67-4a98-9a1e-2918c8b89ae9"",
+    ""Description"": ""Golden Lion"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[animal] [color]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""5ea573d9-ca67-4a98-9a1e-2918c8b89ae9"",
+    ""QueryTerm"": ""golden~lion~[animal]~[color]"",
+    ""FilterTerm"": ""golden~lion~[animal]~[color]"",
+    ""TagMatchTerm"": ""[animal] [color]"",
+    ""Properties"": ""{\r\n  \""Description\"": \""Golden Lion\"",\r\n  \""Tags\"": \""[animal] [color]\""\r\n}""
+  },
+  {
+    ""Id"": ""690db759-e4f6-4f38-b5ea-3fb1e2718aaf"",
+    ""Description"": ""Brown Bear"",
+    ""Keywords"": ""[\""strong\"",\""wild\"",\""forest\""]"",
+    ""KeywordsDisplay"": ""\""strong\"",\""wild\"",\""forest\"""",
+    ""Tags"": ""[animal] [color]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""690db759-e4f6-4f38-b5ea-3fb1e2718aaf"",
+    ""QueryTerm"": ""brown~bear~strong~wild~forest~[animal]~[color]"",
+    ""FilterTerm"": ""brown~bear~strong~wild~forest~[animal]~[color]"",
+    ""TagMatchTerm"": ""[animal] [color]"",
+    ""Properties"": ""{\r\n  \""Description\"": \""Brown Bear\"",\r\n  \""Tags\"": \""[animal] [color]\"",\r\n  \""Keywords\"": \""[\\\""strong\\\"",\\\""wild\\\"",\\\""forest\\\""]\""\r\n}""
+  },
+  {
+    ""Id"": ""2abbf113-5c1b-41d2-820f-c5a1192ba4c1"",
+    ""Description"": ""Red Strawberry"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[fruit] [color]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""2abbf113-5c1b-41d2-820f-c5a1192ba4c1"",
+    ""QueryTerm"": ""red~strawberry~[fruit]~[color]"",
+    ""FilterTerm"": ""red~strawberry~[fruit]~[color]"",
+    ""TagMatchTerm"": ""[fruit] [color]"",
+    ""Properties"": ""{\r\n  \""Description\"": \""Red Strawberry\"",\r\n  \""Tags\"": \""[fruit] [color]\""\r\n}""
+  },
+  {
+    ""Id"": ""70bfb26f-9814-4556-ae82-322ba4c50e55"",
+    ""Description"": ""White Swan"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[bird] [color]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""70bfb26f-9814-4556-ae82-322ba4c50e55"",
+    ""QueryTerm"": ""white~swan~[bird]~[color]"",
+    ""FilterTerm"": ""white~swan~[bird]~[color]"",
+    ""TagMatchTerm"": ""[bird] [color]"",
+    ""Properties"": ""{\r\n  \""Description\"": \""White Swan\"",\r\n  \""Tags\"": \""[bird] [color]\""\r\n}""
+  }
+]";
+#endif
             int first = Math.Max(FirstDisplayedScrollingRowIndex, 0);
             int last = first + DisplayedRowCount(true);
             _templateCount = Math.Max(_templateCount, (last - first) + 1);
