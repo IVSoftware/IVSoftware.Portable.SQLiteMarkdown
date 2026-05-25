@@ -106,11 +106,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
             };
             Scroll += (sender, e) =>
             {
-                AuditViewportIndexes();
+                Vacuum();
             };
             Layout += (sender, e) =>
             {
-                AuditViewportIndexes();
+                Vacuum();
             };
             MouseDoubleClick += (sender, e) =>
             {
@@ -122,7 +122,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
             };
         }
 
-        private void AuditViewportIndexes()
+        /// <summary>
+        /// Reclaims inactive views, compacting the current viewport presentation.
+        /// </summary>
+        /// <remarks>
+        /// Performs a mathematically efficient reconciliation between recycled
+        /// cards and their current data contexts for the visible row range.
+        /// </remarks>
+        private void Vacuum()
         {
             if (ItemsSource is null)
             {
@@ -506,7 +513,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                         {
                             RowCount = items.Count;
                         }
-                        AuditViewportIndexes();
+                        Vacuum();
                     }
                     #endregion L o c a l F x
                 }

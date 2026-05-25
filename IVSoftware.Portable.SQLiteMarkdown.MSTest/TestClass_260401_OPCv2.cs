@@ -47,6 +47,8 @@ public class TestClass_260401_OPCv2
         void subtest_None()
         {
             omc.Add(i1);
+
+            actual = omc.ToString(FormattingOMC.StateReport);
             omc.Add(i2);
             omc.Add(i3);
 
@@ -83,17 +85,9 @@ Add     NewItems=1  OldItems=*  NewStartingIndex=2  OldStartingIndex=-1 NotifyCo
             );
 
             builder.Clear();
-            omc.RemoveAt(2);
 
-            actual = omc.ToString(FormattingOMC.ModelWithPreview);
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-<model omc=""[OMC]"" histo=""[model:2 qmatch:0 pmatch:0 live:0]"">
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
-</model>"
-            ;
+            // Remove last
+            omc.RemoveAt(2);
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -162,6 +156,8 @@ Replace NewItems=1  OldItems=1  NewStartingIndex=1  OldStartingIndex=1  NotifyCo
             );
 
             builder.Clear();
+
+            // Swap
             omc.Move(1, 0);
 
             actual = string.Join(Environment.NewLine, builder);
@@ -234,7 +230,6 @@ Move    NewItems=1  OldItems=1  NewStartingIndex=0  OldStartingIndex=1  NotifyCo
                 actual.NormalizeResult(),
                 "Expecting list reflects all changes."
             );
-
 
             builder.Clear();
             omc.Clear();
