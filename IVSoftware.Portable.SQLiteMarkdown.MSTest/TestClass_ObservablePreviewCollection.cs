@@ -860,6 +860,22 @@ Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCo
             var itemsT = opc.Where(_ => _.Description.Contains("01")).ToArray();
             opc.RemoveMultiple(itemsT);
 
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=0  NotifyCollectionChangingEventArgs
+Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=1  NotifyCollectionChangingEventArgs
+Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=5  NotifyCollectionChangingEventArgs
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting a eventing in order."
+            );
+
             actual = opc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
