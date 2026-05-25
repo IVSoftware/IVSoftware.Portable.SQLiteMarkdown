@@ -1814,7 +1814,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     if (model.To<IRoutedCollection>() is { } route)
                     {
                         // This does not rely on the 'all' argument.
-                        route.RouteKey = StdRouteKey.CanonicalRecordset;
+                        route.RouteKey = StdRouteKey.CanonicalRoute;
                     }
                 }
                 if (all)
@@ -1941,7 +1941,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 case FilteringState.Ineligible:
                 case FilteringState.Armed:                    
-                    RouteKey = StdRouteKey.CanonicalRecordset;
+                    RouteKey = StdRouteKey.CanonicalRoute;
 #if DEBUG
                     // Detect direction
                     if (FilteringStatePrev == FilteringState.Active)
@@ -1985,13 +1985,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 }
             }
         }
-        StdRouteKey _routeKey = StdRouteKey.CanonicalRecordset;
+        StdRouteKey _routeKey = StdRouteKey.CanonicalRoute;
 
         protected virtual void OnRouteKeyChanged()
         {
             switch (RouteKey)
             {
-                case StdRouteKey.CanonicalRecordset:
+                case StdRouteKey.CanonicalRoute:
                     RouteToFullRecordset = true;
                     break;
                 default:
@@ -2233,11 +2233,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 case QueryFilterConfig.Query:
                     FilteringState = FilteringState.Ineligible;
-                    RouteKey = StdRouteKey.CanonicalRecordset;
+                    RouteKey = StdRouteKey.CanonicalRoute;
                     break;
                 case QueryFilterConfig.Filter:
                     FilteringState = FilteringState.Armed;
-                    RouteKey = StdRouteKey.CanonicalRecordset;
+                    RouteKey = StdRouteKey.CanonicalRoute;
                     break;
                 case QueryFilterConfig.QueryAndFilter:
 
@@ -2442,11 +2442,11 @@ SELECT * FROM items WHERE
                                         case 0:
                                             Debug.Fail($@"ADVISORY - Unexpected {nameof(ApplyFilter)} on empty list.");
                                             FilteringState = FilteringState.Ineligible;
-                                            RouteKey = StdRouteKey.CanonicalRecordset;    // Canonical enumerator for empty list.
+                                            RouteKey = StdRouteKey.CanonicalRoute;    // Canonical enumerator for empty list.
                                             break;
                                         case 1:
                                             FilteringState = FilteringState.Ineligible;
-                                            RouteKey = StdRouteKey.CanonicalRecordset;    // Canonical enumerator for list with one item.
+                                            RouteKey = StdRouteKey.CanonicalRoute;    // Canonical enumerator for list with one item.
                                             break;
                                         default:
                                             FilteringState = FilteringState.Active;

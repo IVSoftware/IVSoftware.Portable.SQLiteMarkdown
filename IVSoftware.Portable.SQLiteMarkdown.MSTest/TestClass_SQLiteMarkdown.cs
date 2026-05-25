@@ -608,7 +608,7 @@ InputText"
                 // ROUTING - We should be projecting the full dataset.
                 switch (oqfc.RouteKey)
                 {
-                    case StdRouteKey.CanonicalRecordset:
+                    case StdRouteKey.CanonicalRoute:
                         break;
                     case StdRouteKey.QMatch:
                     case StdRouteKey.PMatch:
@@ -647,7 +647,7 @@ InputText"
                 // ROUTING - We should be projecting the filtered dataset.
                 switch (oqfc.RouteKey)
                 {
-                    case StdRouteKey.CanonicalRecordset:
+                    case StdRouteKey.CanonicalRoute:
                     case StdRouteKey.PMatch:
                     case StdRouteKey.AND:
                     default:
@@ -689,7 +689,7 @@ InputText"
                 // ROUTING - We should be projecting the full dataset.
                 switch (oqfc.RouteKey)
                 {
-                    case StdRouteKey.CanonicalRecordset:
+                    case StdRouteKey.CanonicalRoute:
                         break;
                     case StdRouteKey.QMatch:
                     case StdRouteKey.PMatch:

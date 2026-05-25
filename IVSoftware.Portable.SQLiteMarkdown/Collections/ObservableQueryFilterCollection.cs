@@ -83,7 +83,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 set => base.FilterQueryDatabase = value;
             }
             public override int PredicateMatchCount =>
-                Equals(RouteKey, StdRouteKey.CanonicalRecordset)
+                Equals(RouteKey, StdRouteKey.CanonicalRoute)
                 ? 0
                 : @this.Count;
         }
@@ -156,7 +156,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public int CanonicalCount => MarkdownContext.CanonicalCount;
 
         public int PredicateMatchCount =>
-            Equals(RouteKey, StdRouteKey.CanonicalRecordset)
+            Equals(RouteKey, StdRouteKey.CanonicalRoute)
             ? 0
             : Count;
 

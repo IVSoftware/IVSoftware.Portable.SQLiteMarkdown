@@ -90,7 +90,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 if (all)
                 {
                     Debug.Assert(
-                        Equals(CanonicalSupersetProtected.RouteKey, StdRouteKey.CanonicalRecordset),
+                        Equals(CanonicalSupersetProtected.RouteKey, StdRouteKey.CanonicalRoute),
                         $"Expecting the collection route is nullified.");
                     Debug.Assert(
                         CanonicalSuperset.Count == 0,
@@ -109,7 +109,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
             switch (RouteKey)
             {
-                case StdRouteKey.CanonicalRecordset:
+                case StdRouteKey.CanonicalRoute:
                     using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
                     {
                         CanonicalSupersetProtected.RouteKey = base.RouteKey;
@@ -155,7 +155,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
         public override int PredicateMatchCount =>
-            Equals(RouteKey, StdRouteKey.CanonicalRecordset)
+            Equals(RouteKey, StdRouteKey.CanonicalRoute)
             ? 0
             : Count;    // Routed
     }
