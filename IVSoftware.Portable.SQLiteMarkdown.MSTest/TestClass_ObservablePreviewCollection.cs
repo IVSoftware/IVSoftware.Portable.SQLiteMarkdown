@@ -1140,11 +1140,11 @@ Add     NewItems=1  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
 <model mpath=""Id"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""2"" />
-  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Insert02  "" index=""3"" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""4"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Insert04  "" index=""5"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Insert05  "" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Insert02  "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Insert04  "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Insert05  "" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""6"" />
   <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""7"" />
 </model>"
             ;
@@ -1160,10 +1160,10 @@ Add     NewItems=1  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
             { }
             expected = @" 
 Add     NewItems=1  OldItems=0  NewStartingIndex=2  OldStartingIndex=-1 NotifyCollectionChangingEventArgs CANCELLED
+Add     NewItems=1  OldItems=0  NewStartingIndex=2  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=3  OldStartingIndex=-1 NotifyCollectionChangingEventArgs CANCELLED
 Add     NewItems=1  OldItems=0  NewStartingIndex=3  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=1  OldItems=0  NewStartingIndex=4  OldStartingIndex=-1 NotifyCollectionChangingEventArgs CANCELLED
-Add     NewItems=1  OldItems=0  NewStartingIndex=5  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=1  OldItems=0  NewStartingIndex=6  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=4  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
 Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
 
@@ -1184,16 +1184,12 @@ Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCo
 <model mpath=""Id"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""Insert01  "" index=""2"" />
-  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Insert02  "" index=""3"" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Insert03  "" index=""4"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Insert04  "" index=""5"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Insert05  "" index=""6"" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""7"" />
-  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" index=""8"" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""9"" />
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Distinct01"" index=""10"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""11"" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Insert02  "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Insert04  "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Insert05  "" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""7"" />
 </model>"
             ;
 
@@ -1203,23 +1199,7 @@ Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCo
                 "Expecting carry over from previous subtest."
             );
 
-            opc.RemoveRange(7, 9);
-
-            actual = string.Join(Environment.NewLine, builder); builder.Clear();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=7  NotifyCollectionChangingEventArgs
-Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=7  NotifyCollectionChangingEventArgs
-Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=7  NotifyCollectionChangingEventArgs
-Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
-            ;
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting a eventing in order."
-            );
+            opc.RemoveRange(2, 5);
 
             actual = opc.ToString(out XElement _);
             actual.ToClipboardExpected();
@@ -1228,20 +1208,33 @@ Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCo
 <model mpath=""Id"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""Insert01  "" index=""2"" />
-  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Insert02  "" index=""3"" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Insert03  "" index=""4"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Insert04  "" index=""5"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Insert05  "" index=""6"" />
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Distinct01"" index=""7"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""4"" />
 </model>"
             ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting Item 03-05 removed at indexes 7, 8, 9 and ordering is updated."
+                "Expecting TBD."
+            );
+
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=2  NotifyCollectionChangingEventArgs
+Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=2  NotifyCollectionChangingEventArgs
+Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=2  NotifyCollectionChangingEventArgs
+Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=2  NotifyCollectionChangingEventArgs CANCELLED
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting a eventing in order."
             );
         }
 
@@ -1254,30 +1247,44 @@ Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCo
 <model mpath=""Id"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""Insert01  "" index=""2"" />
-  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Insert02  "" index=""3"" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Insert03  "" index=""4"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Insert04  "" index=""5"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Insert05  "" index=""6"" />
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Distinct01"" index=""7"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""4"" />
 </model>"
             ;
+
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting carry over from previous subtest."
             );
-            var itemsT = opc.Where(_ => _.Description.Contains("01")).ToArray();
+            var itemsT = opc.Where(_ => _.Description.Contains("02")).ToArray();
             opc.RemoveMultiple(itemsT);
+
+            actual = opc.ToString(out XElement _);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model mpath=""Id"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""3"" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting TBD"
+            );
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=0  NotifyCollectionChangingEventArgs
 Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=1  NotifyCollectionChangingEventArgs
-Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=5  NotifyCollectionChangingEventArgs
+Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=3  NotifyCollectionChangingEventArgs CANCELLED
 Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
 
@@ -1287,26 +1294,7 @@ Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCo
                 "Expecting a eventing in order."
             );
 
-            actual = opc.ToString(out XElement _);
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-<model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""0"" />
-  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Insert02  "" index=""1"" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Insert03  "" index=""2"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Insert04  "" index=""3"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Insert05  "" index=""4"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""5"" />
-</model>"
-            ;
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting that items matches to '01' have been discontiguously removed"
-            );
-
-            var indexes = new[] { 1, 0, 5 };
+            var indexes = new[] { 3, 0 };
             opc.RemoveMultiple(indexes);
 
             actual = opc.ToString(out XElement _);
@@ -1314,9 +1302,8 @@ Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCo
             { }
             expected = @" 
 <model mpath=""Id"">
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Insert03  "" index=""0"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Insert04  "" index=""1"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Insert05  "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""1"" />
 </model>"
             ;
             Assert.AreEqual(
