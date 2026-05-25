@@ -641,9 +641,6 @@ Add     NewItems=1  OldItems=0  NewStartingIndex=3  OldStartingIndex=-1 NotifyCo
 Add     NewItems=1  OldItems=0  NewStartingIndex=4  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
 Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
-            expected = @" 
-Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
-            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -768,6 +765,7 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
 
         void subtest_RemoveRange()
         {
+            builder.Clear();
             actual = opc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
@@ -795,6 +793,22 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
             );
 
             opc.RemoveRange(7, 9);
+
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=7  NotifyCollectionChangingEventArgs
+Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=7  NotifyCollectionChangingEventArgs
+Remove  NewItems=0  OldItems=1  NewStartingIndex=-1 OldStartingIndex=7  NotifyCollectionChangingEventArgs
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting a eventing in order."
+            );
 
             actual = opc.ToString(out XElement _);
             actual.ToClipboardExpected();
