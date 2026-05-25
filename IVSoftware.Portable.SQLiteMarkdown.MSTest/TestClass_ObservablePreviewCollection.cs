@@ -593,6 +593,10 @@ Move    NewItems=1  OldItems=1  NewStartingIndex=1  OldStartingIndex=0  NotifyCo
         {
             builder.Add(e.ToStringEx());
         };
+        opc.AsInterface<INotifyCollectionChanging>()!.CollectionChanging += (sender, e) =>
+        {
+            builder.Add(e.ToStringEx());
+        };
         #endregion E V E N T S
 
         subtest_AddRange();
@@ -626,10 +630,17 @@ Move    NewItems=1  OldItems=1  NewStartingIndex=1  OldStartingIndex=0  NotifyCo
                 "Expecting implicit model to match."
             );
 
-
-            actual = string.Join(Environment.NewLine, builder);
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
             actual.ToClipboardExpected();
             { }
+            expected = @" 
+Add     NewItems=1  OldItems=0  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=1  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=2  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=3  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=4  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+            ;
             expected = @" 
 Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
