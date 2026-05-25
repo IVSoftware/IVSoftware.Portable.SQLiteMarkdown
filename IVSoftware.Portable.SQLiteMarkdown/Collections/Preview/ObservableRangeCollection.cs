@@ -193,26 +193,15 @@ namespace IVSoftware.Portable.Collections.Preview
         /// </summary>
         public void RemoveRange(int startingIndex, int endingIndex)
         {
-            if (startingIndex > endingIndex)
+            int
+                high = Math.Max(startingIndex, endingIndex),
+                low = Math.Min(startingIndex, endingIndex);
+
+            using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
-                this.ThrowHard<ArgumentException>(
-                    $"The {nameof(startingIndex)} cannot exceed the {nameof(endingIndex)}.");
-            }
-            else if (endingIndex >= Count)
-            {
-                this.ThrowHard<IndexOutOfRangeException>(
-                    $"The {nameof(endingIndex)} must be less than {nameof(Count)}.");
-            }
-            else
-            {
-                using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
+                for (int index = high; index >= low; index--)
                 {
-                    var count = (endingIndex - startingIndex) + 1;
-                    while (count > 0)
-                    {
-                        RemoveAt(startingIndex);
-                        count--;
-                    }
+                    RemoveAt(index);
                 }
             }
         }
