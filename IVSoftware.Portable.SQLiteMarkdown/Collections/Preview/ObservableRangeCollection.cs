@@ -25,6 +25,37 @@ namespace IVSoftware.Portable.Collections.Preview
             remove => NotifyCollectionChangingImpl.CollectionChanging -= value;
         }
 
+        public void AddRange(IEnumerable items)
+            => base
+            .AsInterface<IRangeable>()
+            !.AddRange(items);
+
+        public int AddRangeDistinct(IEnumerable items)
+            => base
+            .AsInterface<IRangeable>()
+            !.AddRangeDistinct(items);
+
+        public void InsertRange(int startingIndex, IEnumerable items)
+            => base
+            .AsInterface<IRangeable>()
+            !.InsertRange(startingIndex, items);
+
+        public int RemoveMultiple(IEnumerable items)
+            => base
+            .AsInterface<IRangeable>()
+            !.RemoveMultiple(items);
+
+        /// <summary>
+        /// Remove items from the starting index to the ending index, inclusive.
+        /// </summary>
+        public void RemoveRange(int startingIndex, int endingIndex) =>
+            base
+            .AsInterface<IRangeable>()
+            !.RemoveRange(startingIndex, endingIndex);
+    }
+
+
+#if false && REFERENCE_ONLY
         public void AddRange(IEnumerable items) => RangeableImpl.AddRange(items);
 
         public int AddRangeDistinct(IEnumerable items)
@@ -77,7 +108,6 @@ namespace IVSoftware.Portable.Collections.Preview
                 }
             }
         }
-
         public void InsertRange(int startingIndex, IEnumerable items)
         {
             using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
@@ -187,23 +217,5 @@ namespace IVSoftware.Portable.Collections.Preview
             }
             return removed;
         }
-
-        /// <summary>
-        /// Remove items from the starting index to the ending index, inclusive.
-        /// </summary>
-        public void RemoveRange(int startingIndex, int endingIndex)
-        {
-            int
-                high = Math.Max(startingIndex, endingIndex),
-                low = Math.Min(startingIndex, endingIndex);
-
-            using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
-            {
-                for (int index = high; index >= low; index--)
-                {
-                    RemoveAt(index);
-                }
-            }
-        }
-    }
+#endif
 }
