@@ -1043,9 +1043,9 @@ Add     NewItems=4  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                 range[2],
                 eph.AddDynamic("Distinct02"),
                 range[3],
-                range[3],
             };
 
+            // CODEX: The next line will throw
             opc.AddRangeDistinct(mixedRange);
 
             actual = opc.ToString(out XElement _);
