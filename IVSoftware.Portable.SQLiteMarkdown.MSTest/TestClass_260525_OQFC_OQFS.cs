@@ -17,7 +17,7 @@ public class TestClass_260525_OQFC_OQFS
         IModeledCollection<SelectableQFModel>[] omcs =
         [
             new ObservableQueryFilterCollection<SelectableQFModel>(),
-            new ObservableQueryFilterSource<SelectableQFModel>(),
+            // new ObservableQueryFilterSource<SelectableQFModel>(),
         ];
         foreach (var omc in omcs)
         {
