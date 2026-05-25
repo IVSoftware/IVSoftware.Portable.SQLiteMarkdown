@@ -10,6 +10,7 @@ using System.Collections.Specialized;
 using System.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.Common.Exceptions;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -938,6 +939,24 @@ Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCo
         string actual, expected;
         using var te = this.TestableEpoch();
         List<string> builder = new ();
+
+        #region T h r o w    H o o k
+        var builderThrow = new List<string>();
+        void localOnBeginThrowOrAdvise(object? sender, Throw e)
+        {
+            builderThrow.Add($"{e.Mode}: {e.Message}");
+            e.Handled = true;
+        }
+        using var local = this.WithOnDispose(
+            onInit: (sender, e) =>
+            {
+                Throw.BeginThrowOrAdvise += localOnBeginThrowOrAdvise;
+            },
+            onDispose: (sender, e) =>
+            {
+                Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
+            });
+        #endregion T h r o w    H o o k
         Random rando = new(5);
 
         #region I T E M    G E N
@@ -1011,12 +1030,13 @@ Add     NewItems=4  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting a single aggregate collection change."
+                "Expecting TBD."
             );
         }
 
         void subtest_AddRangeDistinct()
         {
+            builder.Clear();
             actual = opc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
@@ -1045,7 +1065,6 @@ Add     NewItems=4  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                 range[3],
             };
 
-            // CODEX: The next line will throw
             opc.AddRangeDistinct(mixedRange);
 
             actual = opc.ToString(out XElement _);
@@ -1056,17 +1075,31 @@ Add     NewItems=4  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
   <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""2"" />
-  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" index=""3"" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""4"" />
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Distinct01"" index=""5"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""4"" />
 </model>"
             ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting 4 items skipped and 2 items added.."
+                "Expecting TBD."
+            );
+
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Add     NewItems=1  OldItems=0  NewStartingIndex=4  OldStartingIndex=-1 NotifyCollectionChangingEventArgs CANCELLED
+Add     NewItems=1  OldItems=0  NewStartingIndex=4  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=5  OldStartingIndex=-1 NotifyCollectionChangingEventArgs CANCELLED
+Add     NewItems=1  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting TBD."
             );
         }
 
@@ -1080,10 +1113,8 @@ Add     NewItems=4  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
   <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""2"" />
-  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" index=""3"" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""4"" />
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Distinct01"" index=""5"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""4"" />
 </model>"
             ;
 
@@ -1109,23 +1140,37 @@ Add     NewItems=4  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
 <model mpath=""Id"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
-  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""Insert01  "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""2"" />
   <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Insert02  "" index=""3"" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Insert03  "" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""4"" />
   <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Insert04  "" index=""5"" />
   <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Insert05  "" index=""6"" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""7"" />
-  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" index=""8"" />
-  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""9"" />
-  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Distinct01"" index=""10"" />
-  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""11"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Distinct02"" index=""7"" />
 </model>"
             ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting 4 items skipped and 2 items added.."
+                "Expecting TBD."
+            );
+
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Add     NewItems=1  OldItems=0  NewStartingIndex=2  OldStartingIndex=-1 NotifyCollectionChangingEventArgs CANCELLED
+Add     NewItems=1  OldItems=0  NewStartingIndex=3  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=4  OldStartingIndex=-1 NotifyCollectionChangingEventArgs CANCELLED
+Add     NewItems=1  OldItems=0  NewStartingIndex=5  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=6  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting TBD."
             );
         }
 
