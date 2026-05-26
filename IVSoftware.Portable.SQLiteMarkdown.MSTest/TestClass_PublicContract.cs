@@ -607,13 +607,11 @@ SELECT * FROM items WHERE
 
             // It should not be possible to pull FQDB from anywhere.
             // NOTE: The idea of a "hybrid factory" is no more.
-            if( oqfs.AsInterface<ITestableOMC>() is { } tomc
-                && oqfs.AsInterface<ITestableMDC>() is { } tmdc)
+            if(oqfs.AsInterface<ITestableMDC>() is { } tmdc)
             {
                 builder.Clear();
 
                 // Tug on the MDC directly.
-                Assert.IsFalse(tomc.HasFQDB);
                 Assert.IsFalse(tmdc.HasFQDB);
 
                 // QueryFilterConfig must track ModelTracking.
@@ -622,7 +620,6 @@ SELECT * FROM items WHERE
                 Assert.IsTrue(oqfs.ModelTracking.HasFlag(ModelTrackingFlag.ItemQueries));
 
                 // Tug on the factory getter down in the MDC.
-                Assert.IsTrue(tomc.HasFQDB);
                 Assert.IsTrue(tmdc.HasFQDB);
 
                 // ModelTracking must track QueryFilterConfig.

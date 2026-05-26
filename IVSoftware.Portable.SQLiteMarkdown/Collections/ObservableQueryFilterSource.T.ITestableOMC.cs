@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Disposable;
 using SQLite;
 using System;
 
@@ -27,6 +28,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
             ObservableQueryFilterSource<T> @this;
             public bool HasFQDB => @this.FilterQueryDatabase is SQLiteConnection;
+
+            public IAuthorityEpochProvider ModelDataExchangeAuthorityProvider => 
+                @this
+                .CanonicalSupersetProtected
+                .AsInterface<ITestableOMC>()!
+                .ModelDataExchangeAuthorityProvider;
         }
 
         /// <summary>

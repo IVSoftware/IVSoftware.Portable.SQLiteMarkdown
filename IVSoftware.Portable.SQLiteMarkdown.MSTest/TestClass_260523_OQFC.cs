@@ -1,4 +1,5 @@
 using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Events;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
@@ -172,4 +173,90 @@ public class TestClass_260523_OQFC
         ];
         #endregion L o c a l F x
     }
+
+
+    [TestMethod, DoNotParallelize]
+    public void Test_Revert()
+    {
+        string actual, expected;
+        using var te = this.TestableEpoch();
+        ObservableQueryFilterCollection<SelectableQFModel> omc = new();
+        var mdeap = 
+            (ModelDataExchangeAuthorityProvider<SelectableQFModel>)
+            omc
+            .AsInterface<ITestableOMC>()!
+            .ModelDataExchangeAuthorityProvider;
+
+        int? countINCC = null;
+
+        #region L o c a l F x				
+        using var local = this.WithOnDispose(
+            onInit: (sender, e) =>
+            {
+                omc
+                .AsInterface<INotifyCollectionChanging>()!
+                .CollectionChanging += localOnCollectionChanged;
+            },
+            onDispose: (sender, e) =>
+            {
+                ((INotifyCollectionChanging)omc).CollectionChanging -= localOnCollectionChanged;
+            });
+
+        void localOnCollectionChanged(object? sender, NotifyCollectionChangingEventArgs e)
+        {
+            if (countINCC is not null)
+            {
+                countINCC++;
+                if (countINCC == 4)
+                {
+                    mdeap.CancelAuthorityEpoch();
+                }
+            }
+        }
+        #endregion L o c a l F x
+        omc.PopulateForDemo(5);
+
+        countINCC = 0;
+
+        actual = omc.ToString(FormattingOMC.ModelWithPreview);
+        actual.ToClipboardExpected();
+        { }
+        expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:5 qmatch:0 pmatch:0 live:5]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" live=""True"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" live=""True"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" live=""True"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" live=""True"" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" live=""True"" index=""4"" />
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting initial population as revert baseline."
+        );
+
+        omc
+            .AsInterface<IRangeable>()!
+            .AddRange(default(List<SelectableQFModel>).PopulateForDemo(10));
+
+        actual = omc.ToString(FormattingOMC.ModelWithPreview);
+        actual.ToClipboardExpected();
+        { }
+        expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:5 qmatch:0 pmatch:0 live:5]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" live=""True"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" live=""True"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" live=""True"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" live=""True"" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" live=""True"" index=""4"" />
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting initial population as revert baseline."
+        );
+    }
+    class TestException : Exception { }
 }
