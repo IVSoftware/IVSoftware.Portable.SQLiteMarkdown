@@ -4,6 +4,7 @@ using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.WinOS.MSTest.Extensions;
+using System.Collections;
 using System.Collections.Specialized;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
@@ -72,12 +73,19 @@ public class TestClass_260525_OQFC_OQFS
                 builderPost.Add(e.ToStringEx());
             }
             #endregion L o c a l F x
-            omc.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
 
-            actual = omc.ToString(FormattingOMC.ModelWithPreview);
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
+            subtest_CancelInINCC();
+            subtest_CancelDigest();
+
+            #region S U B T E S T S
+            void subtest_CancelInINCC()
+            {
+                omc.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
+
+                actual = omc.ToString(FormattingOMC.ModelWithPreview);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
 <model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:5 qmatch:0 pmatch:0 live:5]"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" live=""True"" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" live=""True"" index=""1"" />
@@ -86,58 +94,58 @@ public class TestClass_260525_OQFC_OQFS
   <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" live=""True"" index=""4"" />
 </model>";
 
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting initial population as revert baseline."
-            );
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting initial population as revert baseline."
+                );
 
-            actual = string.Join(Environment.NewLine, builderPre); builderPre.Clear();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
+                actual = string.Join(Environment.NewLine, builderPre); builderPre.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
 Reset   NewItems=0  OldItems=0  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
 Add     NewItems=1  OldItems=0  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
 Add     NewItems=1  OldItems=0  NewStartingIndex=1  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
 Add     NewItems=1  OldItems=0  NewStartingIndex=2  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
 Add     NewItems=1  OldItems=0  NewStartingIndex=3  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
 Add     NewItems=1  OldItems=0  NewStartingIndex=4  OldStartingIndex=-1 NotifyCollectionChangingEventArgs"
-            ;
+                ;
 
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting discrete ADD per CollectionChangingEventingPolicy."
-            );
-            Assert.AreEqual(CollectionChangingEventingPolicy.Discrete, inccPre.CollectionChangingEventingPolicy);
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting discrete ADD per CollectionChangingEventingPolicy."
+                );
+                Assert.AreEqual(CollectionChangingEventingPolicy.Discrete, inccPre.CollectionChangingEventingPolicy);
 
 
-            actual = string.Join(Environment.NewLine, builderPost); builderPost.Clear();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
+                actual = string.Join(Environment.NewLine, builderPost); builderPost.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
 Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
 Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
-            ;
+                ;
 
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting digest for ADD."
-            );
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting digest for ADD."
+                );
 
-            countINCC = 0;
-            omc
-                .AsInterface<IRangeable>()!
-                .AddRange(default(List<SelectableQFModel>).PopulateForDemo(10));
+                countINCC = 0;
+                omc
+                    .AsInterface<IRangeable>()!
+                    .AddRange(default(List<SelectableQFModel>).PopulateForDemo(10));
 
 
-            Assert.IsTrue(mdeap.IsCancelled);
+                Assert.IsTrue(mdeap.IsCancelled);
 
-            actual = omc.ToString(FormattingOMC.ModelWithPreview);
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
+                actual = omc.ToString(FormattingOMC.ModelWithPreview);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
 <model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:5 qmatch:0 pmatch:0 live:5]"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" live=""True"" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" live=""True"" index=""1"" />
@@ -146,11 +154,56 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
   <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" live=""True"" index=""4"" />
 </model>";
 
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting initial population as revert baseline."
-            );
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting initial population as revert baseline."
+                );
+            }
+
+            void subtest_CancelDigest()
+            {
+                ((IList)omc).Clear();
+                omc.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
+
+                actual = omc.ToString(FormattingOMC.ModelWithPreview);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:5 qmatch:0 pmatch:0 live:5]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" live=""True"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" live=""True"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" live=""True"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" live=""True"" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" live=""True"" index=""4"" />
+</model>";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting initial population as revert baseline."
+                );
+
+                actual = string.Join(Environment.NewLine, builderPre); builderPre.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+Reset   NewItems=0  OldItems=0  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=1  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=2  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=3  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=4  OldStartingIndex=-1 NotifyCollectionChangingEventArgs"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting discrete ADD per CollectionChangingEventingPolicy."
+                );
+                Assert.AreEqual(CollectionChangingEventingPolicy.Discrete, inccPre.CollectionChangingEventingPolicy);
+            }
         }
+        #endregion S U B T E S T S
     }
 }
