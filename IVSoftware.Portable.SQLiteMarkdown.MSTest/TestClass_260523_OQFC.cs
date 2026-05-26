@@ -216,7 +216,6 @@ public class TestClass_260523_OQFC
         #endregion L o c a l F x
         omc.PopulateForDemo(5);
 
-        countINCC = 0;
 
         actual = omc.ToString(FormattingOMC.ModelWithPreview);
         actual.ToClipboardExpected();
@@ -236,9 +235,12 @@ public class TestClass_260523_OQFC
             "Expecting initial population as revert baseline."
         );
 
+        countINCC = 0;
         omc
             .AsInterface<IRangeable>()!
             .AddRange(default(List<SelectableQFModel>).PopulateForDemo(10));
+
+        Assert.IsTrue(mdeap.IsCancelled);
 
         actual = omc.ToString(FormattingOMC.ModelWithPreview);
         actual.ToClipboardExpected();
