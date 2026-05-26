@@ -175,9 +175,9 @@ public class TestClass_260523_OQFC
         #endregion L o c a l F x
     }
 
-
-    [TestMethod, DoNotParallelize]
-    public async Task Test_Revert()
+#if false
+    [TestMethod, DoNotParallelize, Obsolete($"see matrix: {nameof(TestClass_260525_OQFC_OQFS.Test_Rollback)}")]
+    public async Task Test_Rollback()
     {
         string actual, expected;
         using var te = this.TestableEpoch();
@@ -306,6 +306,7 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
             "Expecting initial population as revert baseline."
         );
     }
+#endif
 
     class TestException : Exception { }
 }

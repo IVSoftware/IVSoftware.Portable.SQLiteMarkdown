@@ -12,7 +12,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 public class TestClass_260525_OQFC_OQFS
 {
     [TestMethod, DoNotParallelize]
-    public async Task Test_Revert()
+    public async Task Test_Rollback()
     {
         IModeledCollection<SelectableQFModel>[] omcs =
         [
@@ -21,10 +21,10 @@ public class TestClass_260525_OQFC_OQFS
         ];
         foreach (var omc in omcs)
         {
-            await Test_Revert(omc);
+            await localTestRollback(omc);
         }
 
-        async Task Test_Revert(IModeledCollection<SelectableQFModel> omc)
+        async Task localTestRollback(IModeledCollection<SelectableQFModel> omc)
         {
             string actual, expected;
             using var te = this.TestableEpoch();
