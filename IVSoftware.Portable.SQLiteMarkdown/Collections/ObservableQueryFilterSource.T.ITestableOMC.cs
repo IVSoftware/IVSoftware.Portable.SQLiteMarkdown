@@ -46,6 +46,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             typeof(TInterface) switch
             {
                 Type t when t == typeof(ITestableOMC) => (TInterface)TestableOMCImpl,
+                Type t when t == typeof(INotifyCollectionChanging) => (TInterface)CanonicalSupersetProtected.AsInterface<INotifyCollectionChanging>()!,
                 _ => base.AsInterface<TInterface>(),
             };
     }
