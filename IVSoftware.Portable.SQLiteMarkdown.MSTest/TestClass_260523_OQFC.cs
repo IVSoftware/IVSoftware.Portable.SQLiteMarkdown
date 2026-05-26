@@ -8,7 +8,7 @@ using IVSoftware.WinOS.MSTest.Extensions;
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
 [TestClass]
-public class TestClass_060523_OQFC
+public class TestClass_260523_OQFC
 {
     [TestMethod, DoNotParallelize]
     public void Test_IsFilteringEdgeTests()
