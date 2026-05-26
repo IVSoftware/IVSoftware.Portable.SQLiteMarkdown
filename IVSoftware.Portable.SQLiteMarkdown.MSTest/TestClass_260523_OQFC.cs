@@ -286,7 +286,6 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
             .AsInterface<IRangeable>()!
             .AddRange(default(List<SelectableQFModel>).PopulateForDemo(10));
 
-        var awaiter = await mdeap;
 
         Assert.IsTrue(mdeap.IsCancelled);
 
