@@ -155,11 +155,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
-        public string ToString(FormattingOMC modelWithPreview)
-        {
-            return ((IModeledCollection<T>)CanonicalSupersetProtected).ToString(modelWithPreview);
-        }
-
         public override int PredicateMatchCount =>
             Equals(RouteKey, StdRouteKey.CanonicalRoute)
             ? 0
