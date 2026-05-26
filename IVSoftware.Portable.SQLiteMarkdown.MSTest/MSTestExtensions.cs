@@ -132,7 +132,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 @this.Clear();
             }
 
-            if (options?.HasFlag(PopulateOptions.DetectIRangeable) is true && @this is IRangeable rangeable)
+            if (options?.HasFlag(PopulateOptions.DetectIRangeable) is true && @this.GetIRangeable() is { } rangeable)
             {
                 // Safe (not circular) because this object is not IRangeable.
                 IList<TItem> stagedForTest = new List<TItem>().PopulateForDemo(count);
@@ -169,6 +169,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 #endregion L o c a l F x
             }
             return @this;
+        }
+        private static IRangeable? GetIRangeable(this object @this)
+        {
+            if (@this is IRangeable rangeable)
+            {
+                return rangeable;
+            }
+            return (@this as IModeledCollection)?.AsInterface<IRangeable>();
         }
 
         public static T DequeueSingle<T>(this Queue<T> queue)

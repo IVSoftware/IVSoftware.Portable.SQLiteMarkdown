@@ -5,6 +5,7 @@ using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.WinOS.MSTest.Extensions;
+using System.Collections.Specialized;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -180,7 +181,12 @@ public class TestClass_260523_OQFC
     {
         string actual, expected;
         using var te = this.TestableEpoch();
+        List<string> 
+            builderPre = new (),
+            builderPost = new ();
+
         ObservableQueryFilterCollection<SelectableQFModel> omc = new();
+        INotifyCollectionChanging inccPre = omc.AsInterface<INotifyCollectionChanging>()!;
         var mdeap = 
             (ModelDataExchangeAuthorityProvider<SelectableQFModel>)
             omc
@@ -193,16 +199,16 @@ public class TestClass_260523_OQFC
         using var local = this.WithOnDispose(
             onInit: (sender, e) =>
             {
-                omc
-                .AsInterface<INotifyCollectionChanging>()!
-                .CollectionChanging += localOnCollectionChanged;
+                inccPre.CollectionChanging += localOnCollectionChanging;
+                omc.CollectionChanged += localOnCollectionChanged;
             },
             onDispose: (sender, e) =>
             {
-                ((INotifyCollectionChanging)omc).CollectionChanging -= localOnCollectionChanged;
+                inccPre.CollectionChanging -= localOnCollectionChanging;
+                omc.CollectionChanged -= localOnCollectionChanged;
             });
 
-        void localOnCollectionChanged(object? sender, NotifyCollectionChangingEventArgs e)
+        void localOnCollectionChanging(object? sender, NotifyCollectionChangingEventArgs e)
         {
             if (countINCC is not null)
             {
@@ -212,9 +218,15 @@ public class TestClass_260523_OQFC
                     mdeap.CancelAuthorityEpoch();
                 }
             }
+            builderPre.Add(e.ToStringEx());
+        }
+
+        void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            builderPost.Add(e.ToStringEx());
         }
         #endregion L o c a l F x
-        omc.PopulateForDemo(5);
+        omc.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
 
 
         actual = omc.ToString(FormattingOMC.ModelWithPreview);
@@ -233,6 +245,40 @@ public class TestClass_260523_OQFC
             expected.NormalizeResult(),
             actual.NormalizeResult(),
             "Expecting initial population as revert baseline."
+        );
+
+        actual = string.Join(Environment.NewLine, builderPre); builderPre.Clear();
+        actual.ToClipboardExpected();
+        { }
+        expected = @" 
+Reset   NewItems=0  OldItems=0  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=1  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=2  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=3  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
+Add     NewItems=1  OldItems=0  NewStartingIndex=4  OldStartingIndex=-1 NotifyCollectionChangingEventArgs"
+        ;
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting discrete ADD per CollectionChangingEventingPolicy."
+        );
+        Assert.AreEqual(CollectionChangingEventingPolicy.Discrete, omc.CollectionChangingEventingPolicy);
+
+
+        actual = string.Join(Environment.NewLine, builderPost); builderPost.Clear();
+        actual.ToClipboardExpected();
+        { }
+        expected = @" 
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+        ;
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting digest for ADD."
         );
 
         countINCC = 0;
@@ -260,5 +306,6 @@ public class TestClass_260523_OQFC
             "Expecting initial population as revert baseline."
         );
     }
+
     class TestException : Exception { }
 }
