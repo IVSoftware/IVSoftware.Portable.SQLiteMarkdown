@@ -228,7 +228,6 @@ public class TestClass_260523_OQFC
         #endregion L o c a l F x
         omc.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
 
-
         actual = omc.ToString(FormattingOMC.ModelWithPreview);
         actual.ToClipboardExpected();
         { }
