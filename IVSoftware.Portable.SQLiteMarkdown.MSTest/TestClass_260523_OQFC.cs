@@ -177,7 +177,7 @@ public class TestClass_260523_OQFC
 
 
     [TestMethod, DoNotParallelize]
-    public void Test_Revert()
+    public async Task Test_Revert()
     {
         string actual, expected;
         using var te = this.TestableEpoch();
@@ -285,6 +285,8 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
         omc
             .AsInterface<IRangeable>()!
             .AddRange(default(List<SelectableQFModel>).PopulateForDemo(10));
+
+        var awaiter = await mdeap;
 
         Assert.IsTrue(mdeap.IsCancelled);
 
