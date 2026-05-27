@@ -47,8 +47,6 @@ public class TestClass_260525_OQFC_OQFS
                 .AsInterface<ITestableOMC>()!
                 .ModelDataExchangeAuthorityProvider;
 
-            int? countINCC = null;
-
             #region L o c a l F x
             void localGetInterfaces(
                 ICollection<SelectableQFModel> icollection,
@@ -70,6 +68,8 @@ public class TestClass_260525_OQFC_OQFS
             #region S U B T E S T S
             void subtest_CancelInINCC()
             {
+                int? countINCC = null;
+                #region L o c a l F x
                 using var local = this.WithOnDispose(
                     onInit: (sender, e) =>
                     {
@@ -99,6 +99,8 @@ public class TestClass_260525_OQFC_OQFS
                 {
                     builderPost.Add(e.ToStringEx());
                 }
+                #endregion L o c a l F x
+
                 omc.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
 
                 actual = omc.ToString(FormattingOMC.ModelWithPreview);
@@ -154,6 +156,7 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                 );
 
                 countINCC = 0;
+                // Add range, but cancel part of the way through.
                 omc
                     .AsInterface<IRangeable>()!
                     .AddRange(default(List<SelectableQFModel>).PopulateForDemo(10));
@@ -185,12 +188,38 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
 
             void subtest_CancelDigest()
             {
+                #region L o c a l F x
+                using var local = this.WithOnDispose(
+                    onInit: (sender, e) =>
+                    {
+                        inccPre.CollectionChanging += localOnCollectionChanging;
+                        inccPost.CollectionChanged += localOnCollectionChanged;
+                    },
+                    onDispose: (sender, e) =>
+                    {
+                        inccPre.CollectionChanging -= localOnCollectionChanging;
+                        inccPost.CollectionChanged -= localOnCollectionChanged;
+                    });
+
+                void localOnCollectionChanging(object? sender, NotifyCollectionChangingEventArgs e)
+                {
+                    builderPre.Add(e.ToStringEx());
+                }
+
+                void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+                {
+                    builderPost.Add(e.ToStringEx());
+                }
+                #endregion L o c a l F x
+
                 ilist.Clear();
+                te.ResetEpoch();
                 omc.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
 
                 actual = omc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
+
                 expected = @" 
 <model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:5 qmatch:0 pmatch:0 live:5]"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" live=""True"" index=""0"" />
@@ -206,24 +235,10 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                     "Expecting initial population as revert baseline."
                 );
 
-                actual = string.Join(Environment.NewLine, builderPre); builderPre.Clear();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-Reset   NewItems=0  OldItems=0  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=1  OldItems=0  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=1  OldItems=0  NewStartingIndex=1  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=1  OldItems=0  NewStartingIndex=2  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=1  OldItems=0  NewStartingIndex=3  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=1  OldItems=0  NewStartingIndex=4  OldStartingIndex=-1 NotifyCollectionChangingEventArgs"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting discrete ADD per CollectionChangingEventingPolicy."
-                );
-                Assert.AreEqual(CollectionChangingEventingPolicy.Discrete, inccPre.CollectionChangingEventingPolicy);
+                // Add range, but cancel on the final digest.
+                omc
+                    .AsInterface<IRangeable>()!
+                    .AddRange(default(List<SelectableQFModel>).PopulateForDemo(10));
             }
             #endregion S U B T E S T S
         }

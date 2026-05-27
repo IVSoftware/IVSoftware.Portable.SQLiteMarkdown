@@ -87,12 +87,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 ? 0
                 : @this.Count;
         }
+
         protected override void OnMDEXFinalizing(FinalDisposeEventArgs eUnk)
         {
+#if DEBUG
             if(HasAuthority(StdModelAuthority.TerminalClear))
-            {
-                // #TNT
+            {   /* G T K */
             }
+#endif
             base.OnMDEXFinalizing(eUnk);
         }
         protected MarkdownContextProtected MarkdownContext
