@@ -252,8 +252,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             {
                 case FormattingOMC.StateReport:
                     return this.StateReport();
-                case FormattingEHM.Matches:
-                    return CanonicalSupersetProtected.ToString(FormattingEHM.Matches);
+                case FormattingEH.Matches:
+                    return CanonicalSupersetProtected.ToString(FormattingEH.Matches);
                 case FormattingOMC.ModelWithPreview:
                     if (args.FirstOrDefault() is int previewLength)
                     {

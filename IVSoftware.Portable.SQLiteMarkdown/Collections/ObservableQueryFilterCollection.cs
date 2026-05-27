@@ -218,7 +218,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         public FilteringState Clear(bool all)
         {
-            if (all && HasAuthority(StdModelAuthority.Revert))
+            if (all && HasAuthority(StdModelAuthority.Rollback))
             {
                 return MarkdownContext.Clear(all);
             }

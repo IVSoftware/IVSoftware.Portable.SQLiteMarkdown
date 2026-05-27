@@ -379,7 +379,7 @@ public class TestClass_260328_Model
         #region S U B T E S T S
         void subtest_ToStringHistoDefault()
         {
-            actual = oqfs.ToString(FormattingEHM.Matches);
+            actual = oqfs.ToString(FormattingEH.Matches);
             actual.ToClipboardExpected();
             { }
             expected = @" 
