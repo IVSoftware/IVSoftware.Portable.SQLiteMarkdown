@@ -17,12 +17,16 @@ namespace IVSoftware.Portable.Collections.Preview
     {
         public ObservableRangeCollection() { }
 
-        CollectionChangingEventingPolicy INotifyCollectionChanging.CollectionChangingEventingPolicy => CollectionChangingEventingPolicy;
-
         public event NotifyCollectionChangingEventHandler? CollectionChanging
         {
             add => NotifyCollectionChangingImpl.CollectionChanging += value;
             remove => NotifyCollectionChangingImpl.CollectionChanging -= value;
+        }
+
+        public new CollectionChangingEventingPolicy CollectionChangingEventingPolicy
+        {
+            get => base.CollectionChangingEventingPolicy;
+            set => base.CollectionChangingEventingPolicy = value;
         }
 
         public void AddRange(IEnumerable items)

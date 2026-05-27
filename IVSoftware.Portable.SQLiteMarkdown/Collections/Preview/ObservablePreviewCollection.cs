@@ -22,7 +22,7 @@ namespace IVSoftware.Portable.Xml.Linq.Collections
     {
         public ObservablePreviewCollection() { }
 
-        public CollectionChangingEventingPolicy CollectionChangingEventingPolicy
+        public new CollectionChangingEventingPolicy CollectionChangingEventingPolicy
         {
             get => base.CollectionChangingEventingPolicy;
             set => base.CollectionChangingEventingPolicy = value;

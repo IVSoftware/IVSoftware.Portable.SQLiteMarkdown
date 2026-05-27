@@ -73,6 +73,7 @@ public class TestClass_260525_OQFC_OQFS
                 using var local = this.WithOnDispose(
                     onInit: (sender, e) =>
                     {
+                        inccPre.CollectionChangingEventingPolicy = CollectionChangingEventingPolicy.Discrete;
                         inccPre.CollectionChanging += localOnCollectionChanging;
                         inccPost.CollectionChanged += localOnCollectionChanged;
                     },
@@ -158,7 +159,7 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                 // Add range, but cancel part of the way through.
                 omc
                     .AsInterface<IRangeable>()!
-                    .AddRange(default(List<SelectableQFModel>).PopulateForDemo(10));
+                    .AddRange(default(List<SelectableQFModel>).PopulateForDemo((10, ilist.Count)));
 
 
                 Assert.IsTrue(mdeap.IsCancelled);
@@ -191,11 +192,13 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                 using var local = this.WithOnDispose(
                     onInit: (sender, e) =>
                     {
+                        inccPre.CollectionChangingEventingPolicy = CollectionChangingEventingPolicy.Coalesce;
                         inccPre.CollectionChanging += localOnCollectionChanging;
                         inccPost.CollectionChanged += localOnCollectionChanged;
                     },
                     onDispose: (sender, e) =>
                     {
+                        inccPre.CollectionChangingEventingPolicy = CollectionChangingEventingPolicy.Discrete;
                         inccPre.CollectionChanging -= localOnCollectionChanging;
                         inccPost.CollectionChanged -= localOnCollectionChanged;
                     });
@@ -257,7 +260,7 @@ Add     NewItems=1  OldItems=0  NewStartingIndex=9  OldStartingIndex=-1 NotifyCo
                     actual.NormalizeResult(),
                     "Expecting discrete ADD per CollectionChangingEventingPolicy."
                 );
-                Assert.AreEqual(CollectionChangingEventingPolicy.Discrete, inccPre.CollectionChangingEventingPolicy);
+                Assert.AreEqual(CollectionChangingEventingPolicy.Coalesce, inccPre.CollectionChangingEventingPolicy);
 
                 actual = string.Join(Environment.NewLine, builderPost); builderPost.Clear();
                 actual.ToClipboardExpected();
