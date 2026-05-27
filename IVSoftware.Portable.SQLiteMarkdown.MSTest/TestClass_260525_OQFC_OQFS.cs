@@ -15,7 +15,7 @@ public class TestClass_260525_OQFC_OQFS
     [TestMethod, DoNotParallelize]
     public async Task Test_Rollback()
     {
-        ICollection<SelectableQFModel>[] collections =
+        IList<SelectableQFModel>[] collections =
         [
             new ObservableQueryFilterCollection<SelectableQFModel>(),
             // new ObservableQueryFilterSource<SelectableQFModel>(),
@@ -26,7 +26,7 @@ public class TestClass_260525_OQFC_OQFS
             await localTestRollback(collection);
         }
 
-        async Task localTestRollback(ICollection<SelectableQFModel> collection)
+        async Task localTestRollback(IList<SelectableQFModel> ilist)
         {
             string actual, expected;
             using var te = this.TestableEpoch();
@@ -35,56 +35,21 @@ public class TestClass_260525_OQFC_OQFS
                 builderPost = new();
 
             localGetInterfaces(
-                collection,
-                out IModeledCollection<SelectableQFModel> ilist,
+                ilist,
+                out IModeledCollection<SelectableQFModel> omc,
                 out IRoutedCollection<SelectableQFModel> irc,
                 out INotifyCollectionChanging inccPre,
                 out INotifyCollectionChanged inccPost);
 
             var mdeap =
                 (ModelDataExchangeAuthorityProvider<SelectableQFModel>)
-                ilist
+                omc
                 .AsInterface<ITestableOMC>()!
                 .ModelDataExchangeAuthorityProvider;
 
             int? countINCC = null;
 
-            #region L o c a l F x				
-            using var local = this.WithOnDispose(
-                onInit: (sender, e) =>
-                {
-                    inccPre.CollectionChanging += localOnCollectionChanging;
-                    inccPost.CollectionChanged += localOnCollectionChanged;
-                },
-                onDispose: (sender, e) =>
-                {
-                    inccPre.CollectionChanging -= localOnCollectionChanging;
-                    inccPost.CollectionChanged -= localOnCollectionChanged;
-                });
-
-            void localOnCollectionChanging(object? sender, NotifyCollectionChangingEventArgs e)
-            {
-#if DEBUG
-                int 
-                    cMe1 = irc.Items.Count,
-                    cMe2 = collection.Count;
-#endif
-                if (countINCC is not null)
-                {
-                    countINCC++;
-                    if (countINCC == 4)
-                    {
-                        mdeap.CancelAuthorityEpoch();
-                    }
-                }
-                builderPre.Add(e.ToStringEx());
-            }
-
-            void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-            {
-                builderPost.Add(e.ToStringEx());
-            }
-
+            #region L o c a l F x
             void localGetInterfaces(
                 ICollection<SelectableQFModel> icollection,
                 out IModeledCollection<SelectableQFModel> ilist,
@@ -105,9 +70,38 @@ public class TestClass_260525_OQFC_OQFS
             #region S U B T E S T S
             void subtest_CancelInINCC()
             {
-                ilist.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
+                using var local = this.WithOnDispose(
+                    onInit: (sender, e) =>
+                    {
+                        inccPre.CollectionChanging += localOnCollectionChanging;
+                        inccPost.CollectionChanged += localOnCollectionChanged;
+                    },
+                    onDispose: (sender, e) =>
+                    {
+                        inccPre.CollectionChanging -= localOnCollectionChanging;
+                        inccPost.CollectionChanged -= localOnCollectionChanged;
+                    });
 
-                actual = ilist.ToString(FormattingOMC.ModelWithPreview);
+                void localOnCollectionChanging(object? sender, NotifyCollectionChangingEventArgs e)
+                {
+                    if (countINCC is not null)
+                    {
+                        countINCC++;
+                        if (countINCC == 4)
+                        {
+                            mdeap.CancelAuthorityEpoch();
+                        }
+                    }
+                    builderPre.Add(e.ToStringEx());
+                }
+
+                void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+                {
+                    builderPost.Add(e.ToStringEx());
+                }
+                omc.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
+
+                actual = omc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -160,14 +154,14 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                 );
 
                 countINCC = 0;
-                ilist
+                omc
                     .AsInterface<IRangeable>()!
                     .AddRange(default(List<SelectableQFModel>).PopulateForDemo(10));
 
 
                 Assert.IsTrue(mdeap.IsCancelled);
 
-                actual = ilist.ToString(FormattingOMC.ModelWithPreview);
+                actual = omc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -184,15 +178,17 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                     actual.NormalizeResult(),
                     "Expecting initial population as revert baseline."
                 );
-                ((IList)collection).Clear();
+                Assert.HasCount(5, ilist);
+                Assert.HasCount(5, irc.Items);
+                Assert.AreEqual(5, omc.Histo[StdModelAttribute.model]);
             }
 
             void subtest_CancelDigest()
             {
-                ((IList)collection).Clear();
-                ilist.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
+                ilist.Clear();
+                omc.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
 
-                actual = ilist.ToString(FormattingOMC.ModelWithPreview);
+                actual = omc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 

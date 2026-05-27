@@ -218,17 +218,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         public FilteringState Clear(bool all)
         {
-            if (!HasAuthority(ModelDataExchangeAuthority.Collection))
+            if (all && HasAuthority(StdModelAuthority.Revert))
             {
-                IDisposable[] tokens =
-                    all
-                    ? [RequestAuthority(StdModelAuthority.TerminalClear), RequestAuthority(ModelDataExchangeAuthority.Collection)]
-                    : [RequestAuthority(ModelDataExchangeAuthority.Collection)];
-                using (new TokenDisposer(tokens))
+                return MarkdownContext.Clear(all);
+            }
+            else
+            {
+                if (!HasAuthority(ModelDataExchangeAuthority.Collection))
                 {
-                    if (!HasAuthority(ModelDataExchangeAuthority.Model))
+                    IDisposable[] tokens =
+                        all
+                        ? [RequestAuthority(StdModelAuthority.TerminalClear), RequestAuthority(ModelDataExchangeAuthority.Collection)]
+                        : [RequestAuthority(ModelDataExchangeAuthority.Collection)];
+                    using (new TokenDisposer(tokens))
                     {
-                        return MarkdownContext.Clear(all);
+                        if (!HasAuthority(ModelDataExchangeAuthority.Model))
+                        {
+                            return MarkdownContext.Clear(all);
+                        }
                     }
                 }
             }
