@@ -3,9 +3,11 @@ using IVSoftware.Portable.Collections.Events;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.Collections;
 using System.Collections.Specialized;
+using System.Runtime.CompilerServices;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -46,8 +48,26 @@ public class TestClass_260525_OQFC_OQFS
                 omc
                 .AsInterface<ITestableOMC>()!
                 .ModelDataExchangeAuthorityProvider;
+            var eh = omc.Model.To<EnumHistogrammer>();
+            var ehhc = RuntimeHelpers.GetHashCode(eh);
 
             #region L o c a l F x
+            void localAssertHashCodeMatchMDEAP()
+            {
+                var ehNow = omc.Model.To<EnumHistogrammer>();
+                Assert.AreEqual(
+                    ehhc,
+                    RuntimeHelpers.GetHashCode(ehNow),
+                    $"Expecting mdeap hash code does not change.");
+
+                var matchStringNow = ehNow.ToString(FormattingEH.Matches);
+                var xba = omc.Model.Attribute(StdModelAttribute.histo)!;
+                Assert.AreEqual(
+                    matchStringNow,
+                    xba.Value,
+                    $"Expecting mdeap hash code does not change.");
+            }
+
             void localGetInterfaces(
                 ICollection<SelectableQFModel> icollection,
                 out IModeledCollection<SelectableQFModel> ilist,
@@ -103,6 +123,7 @@ public class TestClass_260525_OQFC_OQFS
                 #endregion L o c a l F x
 
                 omc.PopulateForDemo(5, PopulateOptions.DetectIRangeable);
+                localAssertHashCodeMatchMDEAP();
 
                 actual = omc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
@@ -155,14 +176,18 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                     "Expecting digest for ADD."
                 );
 
+                var newRange = default(List<SelectableQFModel>).PopulateForDemo((10, ilist.Count));
+
                 countINCC = 0;
-                // Add range, but cancel part of the way through.
+
+                // ☆ Add range, but cancel part of the way through.
                 omc
                     .AsInterface<IRangeable>()!
-                    .AddRange(default(List<SelectableQFModel>).PopulateForDemo((10, ilist.Count)));
+                    .AddRange(newRange);
 
-
-                Assert.IsTrue(mdeap.IsCancelled);
+                Assert.IsTrue(
+                    mdeap.IsCancelled,
+                    $"Expecting cancellation, because countINCC *is not* null.");
 
                 actual = omc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
@@ -179,11 +204,56 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting initial population as revert baseline."
+                    "Expecting idempotent."
                 );
                 Assert.HasCount(5, ilist);
                 Assert.HasCount(5, irc.Items);
                 Assert.AreEqual(5, omc.Histo[StdModelAttribute.model]);
+                localAssertHashCodeMatchMDEAP();
+
+                countINCC = null; // This lets the transaction go through.
+
+                // ☆ Add range, and allow transaction to go through.
+                omc
+                    .AsInterface<IRangeable>()!
+                    .AddRange(newRange);
+
+                Assert.IsFalse(
+                    mdeap.IsCancelled,
+                    $"Expecting non-cancellation, because countINCC *is* null.");
+                localAssertHashCodeMatchMDEAP();
+
+                actual = omc.ToString(FormattingOMC.ModelWithPreview);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:15 qmatch:0 pmatch:0 live:15]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" live=""True"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" live=""True"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" live=""True"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" live=""True"" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" live=""True"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Item06    "" live=""True"" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Item07    "" live=""True"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""Item08    "" live=""True"" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Item09    "" live=""True"" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Item10    "" live=""True"" index=""9"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Item11    "" live=""True"" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Item12    "" live=""True"" index=""11"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Item13    "" live=""True"" index=""12"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000d"" model=""[SelectableQFModel]"" preview=""Item14    "" live=""True"" index=""13"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000e"" model=""[SelectableQFModel]"" preview=""Item15    "" live=""True"" index=""14"" />
+</model>"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 15 items."
+                );
+                Assert.HasCount(15, ilist);
+                Assert.HasCount(15, irc.Items);
+                Assert.AreEqual(15, omc.Histo[StdModelAttribute.model]);
             }
 
             void subtest_CancelDigest()
@@ -237,7 +307,7 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                     "Expecting initial population as revert baseline."
                 );
 
-                // Add range, but cancel on the final digest.
+                // ☆ Add range, but cancel on the final digest.
                 builderPre.Clear();
                 builderPost.Clear();
                 omc
