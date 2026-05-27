@@ -15,7 +15,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     /// POC as a separate-but-equal generic IList impl, but not a BC so far.
     /// </summary>
     [Canonical("CTor partial")]
-    public partial class ObservableQueryFilterSource
+    public abstract class ObservableQueryFilterSource
         : MarkdownContext<object>
         , IObservableQueryFilterSource<object>
         , IModeledCollection

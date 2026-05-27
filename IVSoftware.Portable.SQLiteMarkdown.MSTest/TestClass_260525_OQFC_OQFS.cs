@@ -159,6 +159,7 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                     actual.NormalizeResult(),
                     "Expecting initial population as revert baseline."
                 );
+                ((IList)omc).Clear();
             }
 
             void subtest_CancelDigest()
