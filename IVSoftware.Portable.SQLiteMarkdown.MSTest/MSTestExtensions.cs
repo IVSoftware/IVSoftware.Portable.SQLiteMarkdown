@@ -121,6 +121,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
         public static IList<TItem> PopulateForDemo<TItem>(this IList<TItem>? @this, int count, PopulateOptions? options = null)
             where TItem : new()
+            => @this.PopulateForDemo((count, 0), options);
+
+        [Canonical]
+        public static IList<TItem> PopulateForDemo<TItem>(this IList<TItem>? @this, (int count, int offset) countInfo, PopulateOptions? options = null)
+            where TItem : new()
         {
             Random rando = new(10);
             if (@this is null)
@@ -135,7 +140,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             if (options?.HasFlag(PopulateOptions.DetectIRangeable) is true && @this.GetIRangeable() is { } rangeable)
             {
                 // Safe (not circular) because this object is not IRangeable.
-                IList<TItem> stagedForTest = new List<TItem>().PopulateForDemo(count);
+                IList<TItem> stagedForTest = new List<TItem>().PopulateForDemo(countInfo.count);
 #if DEBUG
                 var cMe = JsonConvert.SerializeObject(stagedForTest, Formatting.Indented);
 #endif
@@ -144,10 +149,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             }
             else
             {
-                for (int i = 1; i <= count; i++)
+                for (int i = 1; i <= countInfo.count; i++)
                 {
                     Add(
-                        description: $"Item{i:d2}",
+                        description: $"Item{i + countInfo.offset:d2}",
                         tags: string.Empty,
                         isChecked: options?.HasFlag(PopulateOptions.RandomChecks) == true && rando.Next(2) == 1);
                 }

@@ -6,6 +6,7 @@ using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
 using System;
@@ -90,11 +91,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         protected override void OnMDEXFinalizing(FinalDisposeEventArgs eUnk)
         {
-#if DEBUG
-            if(HasAuthority(StdModelAuthority.TerminalClear))
-            {   /* G T K */
-            }
-#endif
+            switch (eUnk)
+            {
+                case MDEAPFinalDisposeEventArgs e:
+                    switch (e.Digest.Reason)
+                    {
+                        case NotifyCollectionChangeReason.Digest:
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+            }                
             base.OnMDEXFinalizing(eUnk);
         }
         protected MarkdownContextProtected MarkdownContext
