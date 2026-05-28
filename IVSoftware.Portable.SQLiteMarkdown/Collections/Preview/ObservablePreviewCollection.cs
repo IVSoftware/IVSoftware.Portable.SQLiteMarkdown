@@ -20,12 +20,10 @@ namespace IVSoftware.Portable.Xml.Linq.Collections
         : ObservableModeledCollection<T>
         , INotifyCollectionChanging
     {
-        public ObservablePreviewCollection() { }
-
-        public new CollectionChangingEventingPolicy CollectionChangingEventingPolicy
-        {
-            get => base.CollectionChangingEventingPolicy;
-            set => base.CollectionChangingEventingPolicy = value;
+        public CollectionChangingEventingPolicy CollectionChangingEventingPolicy
+        { 
+            get => NotifyCollectionChangingImpl.CollectionChangingEventingPolicy; 
+            set => NotifyCollectionChangingImpl.CollectionChangingEventingPolicy = value;
         }
 
         public event NotifyCollectionChangingEventHandler? CollectionChanging

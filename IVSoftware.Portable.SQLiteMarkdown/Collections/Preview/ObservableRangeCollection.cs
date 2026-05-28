@@ -22,11 +22,10 @@ namespace IVSoftware.Portable.Collections.Preview
             add => NotifyCollectionChangingImpl.CollectionChanging += value;
             remove => NotifyCollectionChangingImpl.CollectionChanging -= value;
         }
-
-        public new CollectionChangingEventingPolicy CollectionChangingEventingPolicy
+        public CollectionChangingEventingPolicy CollectionChangingEventingPolicy
         {
-            get => base.CollectionChangingEventingPolicy;
-            set => base.CollectionChangingEventingPolicy = value;
+            get => NotifyCollectionChangingImpl.CollectionChangingEventingPolicy;
+            set => NotifyCollectionChangingImpl.CollectionChangingEventingPolicy = value;
         }
 
         public void AddRange(IEnumerable items)
