@@ -312,17 +312,13 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                 builderPost.Clear();
                 omc
                     .AsInterface<IRangeable>()!
-                    .AddRange(default(List<SelectableQFModel>).PopulateForDemo((5,ilist.Count)));
+                    .AddRange(default(List<SelectableQFModel>).PopulateForDemo((5, ilist.Count)));
 
                 actual = string.Join(Environment.NewLine, builderPre); builderPre.Clear();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-Add     NewItems=1  OldItems=0  NewStartingIndex=5  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=1  OldItems=0  NewStartingIndex=6  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=1  OldItems=0  NewStartingIndex=7  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=1  OldItems=0  NewStartingIndex=8  OldStartingIndex=-1 NotifyCollectionChangingEventArgs
-Add     NewItems=1  OldItems=0  NewStartingIndex=9  OldStartingIndex=-1 NotifyCollectionChangingEventArgs"
+Add     NewItems=5  OldItems=0  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangingEventArgs NotifyCollectionChangeReason.Digest"
                 ;
 
                 Assert.AreEqual(
@@ -345,12 +341,10 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                     "Expecting digest for ADD."
                 );
 
-            }
-
-            actual = omc.ToString(FormattingOMC.ModelWithPreview);
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
+                actual = omc.ToString(FormattingOMC.ModelWithPreview);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
 <model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:10 qmatch:0 pmatch:0 live:10]"">
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" live=""True"" index=""0"" />
   <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" live=""True"" index=""1"" />
@@ -363,14 +357,73 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
   <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Item09    "" live=""True"" index=""8"" />
   <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Item10    "" live=""True"" index=""9"" />
 </model>"
-            ;
+                ;
 
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting TBD."
-            );
-            #endregion S U B T E S T S
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting TBD."
+                );
+
+                // ☆ Add range, but cancel on the final digest.
+                builderPre.Clear();
+                builderPost.Clear();
+                omc
+                    .AsInterface<IRangeable>()!
+                    .AddRange(default(List<SelectableQFModel>).PopulateForDemo((5, ilist.Count)));
+
+                actual = string.Join(Environment.NewLine, builderPre); builderPre.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+Add     NewItems=5  OldItems=0  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangingEventArgs NotifyCollectionChangeReason.Digest"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting discrete ADD per CollectionChangingEventingPolicy."
+                );
+                Assert.AreEqual(CollectionChangingEventingPolicy.Coalesce, inccPre.CollectionChangingEventingPolicy);
+
+                actual = string.Join(Environment.NewLine, builderPost); builderPost.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting digest for ADD."
+                );
+
+                actual = omc.ToString(FormattingOMC.ModelWithPreview);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:10 qmatch:0 pmatch:0 live:10]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" live=""True"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" live=""True"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" live=""True"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" live=""True"" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" live=""True"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Item06    "" live=""True"" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Item07    "" live=""True"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""Item08    "" live=""True"" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Item09    "" live=""True"" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Item10    "" live=""True"" index=""9"" />
+</model>"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting TBD."
+                );
+            }
+        #endregion S U B T E S T S
         }
     }
 }
