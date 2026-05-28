@@ -28,7 +28,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="coverlet.collector" Version="6.0.0" />
-		<PackageReference Include="IVSoftware.Portable.Threading" Version="2.0.0-beta" />
+		<PackageReference Include="IVSoftware.Portable.Threading" Version="2.0.0" />
 		<PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="*-*" />
 		<PackageReference Include="MSTest" Version="4.2.1" />
 		<PackageReference Include="sqlite-net-pcl" Version="*" />
@@ -44,7 +44,7 @@
 	<!-- Release mode -->
 	<ItemGroup Condition="'$(Configuration)' == 'Release'">
 		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="2.0.0-alpha31" />
-		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="*" />
+		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="2.1.0" />
 	</ItemGroup>
 
 	<!--
