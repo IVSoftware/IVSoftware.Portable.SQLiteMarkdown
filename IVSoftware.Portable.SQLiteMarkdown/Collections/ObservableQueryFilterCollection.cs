@@ -1,10 +1,8 @@
 ﻿using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Collections.Events;
 using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -13,11 +11,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -36,7 +31,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 StdModelAttribute.mdc,
                 "[MDC]");
 
-            Model.SortAttributes<StdModelAttribute>();
+           Model.SortAttributes<StdModelAttribute>();
         }
 
         private void MDCPropertyChangedForwarder(object sender, PropertyChangedEventArgs e)
