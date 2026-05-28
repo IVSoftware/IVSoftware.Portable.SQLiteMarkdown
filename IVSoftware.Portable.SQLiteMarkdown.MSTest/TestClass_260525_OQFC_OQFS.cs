@@ -276,7 +276,16 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                 void localOnCollectionChanging(object? sender, NotifyCollectionChangingEventArgs e)
                 {
                     builderPre.Add(e.ToStringEx());
-                    e.Cancel = true;
+                    if (omc.HasAuthority(StdModelAuthority.Rollback))
+                    {
+                    }
+                    else
+                    {
+                        if (e.Reason == NotifyCollectionChangeReason.Digest)
+                        {
+                            e.Cancel = true;
+                        }
+                    }
                 }
 
                 void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
