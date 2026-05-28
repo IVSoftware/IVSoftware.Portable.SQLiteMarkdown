@@ -16,7 +16,9 @@
 		<!--
 		<VersionPrefix>$(BaseVersion)-beta</VersionPrefix>
 		-->
-		<VersionPrefix>$(BaseVersion)-alpha31</VersionPrefix>
+		<VersionPrefix>$(BaseVersion)</VersionPrefix>
+		<VersionSuffix>alpha31</VersionSuffix>
+		<PackageIcon>ivs-nuget-logo.4.png</PackageIcon>
 		
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -139,6 +141,14 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.csproj" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<None Include="..\IVSoftware.Portable.SQLiteMarkdown\img\ivs-nuget-logo.4.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
 	</ItemGroup>
 
 </Project>
