@@ -6,6 +6,7 @@ using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -34,6 +35,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public ModelDataExchangeAuthority ModelDataExchangeAuthority => 
             ((IModeledCollection)CanonicalSupersetProtected).ModelDataExchangeAuthority;
+        DisposableHost IXObjectChangeEventSink.DisableXObjectChangeEvents
+            => ((IModeledCollection)CanonicalSupersetProtected).DisableXObjectChangeEvents;
 
         /// <summary>
         /// Histo is guaranteed not null in this subclass; null is forgiven.

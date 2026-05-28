@@ -2,6 +2,7 @@
 using IVSoftware.Portable.Collections.Events;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,6 +23,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         , IList
         , IList<object>
     {
+        DisposableHost IXObjectChangeEventSink.DisableXObjectChangeEvents => throw new NotImplementedException("ToDo");
         public object this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public XElement Model => throw new NotImplementedException();
