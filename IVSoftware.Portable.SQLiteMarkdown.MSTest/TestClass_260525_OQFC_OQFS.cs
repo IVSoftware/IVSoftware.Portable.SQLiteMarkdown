@@ -322,7 +322,8 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                     "Expecting initial population as revert baseline."
                 );
 
-                // ☆ Add range, but cancel on the final digest.
+                var newRange = default(List<SelectableQFModel>).PopulateForDemo((5, ilist.Count));
+
                 builderPre.Clear();
                 builderPost.Clear();
 
@@ -336,9 +337,10 @@ Add     NewItems=5  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCo
                         cancel = false;
                     }))
                 {
+                    // ☆ Add range, but cancel on the final digest.
                     omc
                         .AsInterface<IRangeable>()!
-                        .AddRange(default(List<SelectableQFModel>).PopulateForDemo((5, ilist.Count)));
+                        .AddRange(newRange);
                 }
 
                 actual = string.Join(Environment.NewLine, builderPre); builderPre.Clear();
@@ -385,12 +387,13 @@ Remove  NewItems=0  OldItems=5  NewStartingIndex=-1 OldStartingIndex=0  NotifyCo
                     "Expecting TBD."
                 );
 
-                // ☆ Add range, but *do not* cancel on the final digest.
                 builderPre.Clear();
                 builderPost.Clear();
+
+                // ☆ Add range, but *do not* cancel on the final digest.
                 omc
                     .AsInterface<IRangeable>()!
-                    .AddRange(default(List<SelectableQFModel>).PopulateForDemo((5, ilist.Count)));
+                    .AddRange(newRange);
 
                 actual = string.Join(Environment.NewLine, builderPre); builderPre.Clear();
                 actual.ToClipboardExpected();
