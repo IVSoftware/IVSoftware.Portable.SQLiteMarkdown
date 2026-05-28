@@ -147,6 +147,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
         }
 
         public IReadOnlyDictionary<string, Enum> ActiveFilters => throw new NotImplementedException();
+        
+#if true || MIGRATING
+        public object Model 
+        {
+            get => throw new NotImplementedException("ToDo");
+            internal set => throw new NotImplementedException("ToDo");
+        }
+#else
+#endif
 
         public event NotifyCollectionChangedEventHandler? ModelChanged;
 
