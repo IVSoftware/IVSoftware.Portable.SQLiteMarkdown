@@ -18,7 +18,7 @@ using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
-    class ObservableQueryFilterCollection<T>
+    public class ObservableQueryFilterCollection<T>
         : ObservableModeledCollection<T>
         , IObservableQueryFilterSource<T>
         , IModelAuthorityContext
