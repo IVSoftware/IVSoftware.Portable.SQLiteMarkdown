@@ -19,14 +19,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
         where T : new()
     {
 
-        [Careful("Don't draw inferences from changes in the collection itself.")]
-        TolerantDictionary<string, Enum> ActivePredicatesProtected
+        [Careful("Don't draw inferences from change events in the collection itself.")]
+        TolerantDictionaryInternal<string, Enum> ActivePredicatesProtected
         {
             get
             {
                 if (_activePredicatesProtected is null)
                 {
-                    _activePredicatesProtected = new TolerantDictionary<string, Enum>();
+                    _activePredicatesProtected = new TolerantDictionaryInternal<string, Enum>();
                     _activePredicatesProtected.CollectionChanging += (sender, e) =>
                     {
                         switch (e.Action)
@@ -73,7 +73,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
                 return _activePredicatesProtected;
             }
         }
-        TolerantDictionary<string, Enum>? _activePredicatesProtected = null;
+        TolerantDictionaryInternal<string, Enum>? _activePredicatesProtected = null;
 
         [Obsolete]
         public string[] Predicates
