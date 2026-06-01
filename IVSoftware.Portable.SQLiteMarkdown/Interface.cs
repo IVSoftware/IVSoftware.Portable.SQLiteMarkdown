@@ -180,6 +180,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// contract so their selection state can be coordinated with the active
     /// <see cref="SelectionMode"/>.
     /// </remarks>
+    [NotFlags]
     public enum SelectionMode
     {
         /// <summary>

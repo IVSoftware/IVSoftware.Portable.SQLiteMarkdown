@@ -1,3 +1,4 @@
+using IVSoftware.Portable.Common.Attributes;
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -5,6 +6,17 @@ using System.Runtime.CompilerServices;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
+    /// <summary>
+    /// Legacy selection helper retained to fulfill the SQLiteMarkdown v1 public contract.
+    /// </summary>
+    /// <remarks>
+    /// - Backed by the legacy <see cref="ObservableHashSet{T}"/> type identity, which now laterals to
+    ///   the canonical composed hash set in Xml.Linq.Collections.
+    /// - <see cref="ItemSelection"/> values intentionally remain compatible with
+    ///   Xml.Linq.Collections tracking state values.
+    /// - New modeled-collection work should prefer the TrackAttribute/ITrackContext tracking pipeline.
+    /// </remarks>
+    [PublishedContract("1.x")]
     public class ObservableSelectionHashSet<T> : ObservableHashSet<T>, INotifyPropertyChanged
     {
         public SelectionMode SelectionMode
