@@ -70,7 +70,7 @@
             gridInfo.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));   // Row 1: Main body
             gridInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 1F));    // Row 2: Horizontal line
             gridInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));   // Row 3: DSA
-            gridInfo.Size = new Size(500, 350);
+            gridInfo.Size = new Size(500, 400);
             gridInfo.TabIndex = 0;
             // 
             // iconInfo
@@ -176,10 +176,10 @@ Compare:
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(500, 350);
+            ClientSize = new Size(500, 400);
             Controls.Add(gridInfo);
             FormBorderStyle = FormBorderStyle.None;
-            MaximumSize = new Size(500, 350);
+            MaximumSize = new Size(500, 400);
             Name = "InfoContentForm";
             StartPosition = FormStartPosition.Manual;
             Text = "InfoContentForm";
