@@ -53,6 +53,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
 
                     View? view = null;
                     var row = Rows[e.RowIndex];
+                    EnsureTemplateCapacity();
                     var mod = e.RowIndex % _templateCount;
 
                     if (!_recycledViews.TryGetValue(mod, out view))
@@ -131,27 +132,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
         /// </remarks>
         private void Vacuum()
         {
-            if (ItemsSource is null)
+            if (ItemsSource is null || !TryGetVisibleRows(out int firstRow, out int visibleCount))
             {
-                foreach (var recycled in _recycledViews.Values)
-                {
-                    recycled.Visible = false;
-                }
+                HideRecycledViews();
                 return;
             }
 
-            int firstRow = FirstDisplayedScrollingRowIndex;
-            if (firstRow < 0)
-            {
-                foreach (var recycled in _recycledViews.Values)
-                {
-                    recycled.Visible = false;
-                }
-                return;
-            }
-
-            int visibleCount = Math.Max(DisplayedRowCount(true), 0);
-            int activeCount = Math.Min(Math.Min(visibleCount, _templateCount), ItemsSource.Count - firstRow);
+            int activeCount = Math.Max(0, Math.Min(Math.Min(visibleCount, _templateCount), ItemsSource.Count - firstRow));
             var activeMods = new HashSet<int>();
 
             for (int offset = 0; offset < activeCount; offset++)
@@ -249,6 +236,52 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                 }
 
 #endif
+            }
+        }
+
+        private void EnsureTemplateCapacity()
+        {
+            if (TryGetVisibleRows(out _, out int visibleCount))
+            {
+                // Every displayed row needs a distinct live template slot. Keep
+                // one spare for row-height changes that can occur while painting.
+                _templateCount = Math.Max(_templateCount, visibleCount + 1);
+            }
+        }
+
+        private bool TryGetVisibleRows(out int firstRow, out int visibleCount)
+        {
+            firstRow = -1;
+            visibleCount = 0;
+
+            if (!IsHandleCreated || RowCount == 0)
+            {
+                return false;
+            }
+
+            try
+            {
+                firstRow = FirstDisplayedScrollingRowIndex;
+                visibleCount = Math.Max(DisplayedRowCount(includePartialRow: true), 0);
+                EnsureTemplateCapacity(visibleCount);
+                return firstRow >= 0 && visibleCount > 0;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+        }
+
+        private void EnsureTemplateCapacity(int visibleCount)
+        {
+            _templateCount = Math.Max(_templateCount, visibleCount + 1);
+        }
+
+        private void HideRecycledViews()
+        {
+            foreach (var recycled in _recycledViews.Values)
+            {
+                recycled.Visible = false;
             }
         }
 
