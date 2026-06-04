@@ -43,6 +43,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                 if (!Equals(_infoText, value))
                 {
                     _infoText = value;
+                    _overlayContent.MessageText = value;
                 }
             }
         }
@@ -237,7 +238,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                 void localTrackFromMainWindow()
                 {
                     _overlay.Size = mainWindow.ClientSize;
-                    _overlayContent.Size = new Size(mainWindow.Width - 50, 400);
+                    _overlayContent.Size = _overlayContent.GetPreferredOverlaySize(mainWindow.ClientSize);
                     TopLevelControl.CenterChildInClientRectangle(_overlay);
                     _overlay.CenterChildInClientRectangle(_overlayContent);
                 }
@@ -246,7 +247,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
         }
 
         private readonly Form _overlay;
-        private readonly Form _overlayContent;
+        private readonly InfoContentForm _overlayContent;
 
         private TableLayoutPanel tableLayoutPanelOverlayMock;
         private InfoLayoutPanel gridInfo;

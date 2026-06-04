@@ -45,10 +45,10 @@
             // 
             gridInfo.BackColor = Color.FromArgb(178, 223, 219);
             gridInfo.ColumnCount = 4;
-            gridInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 11.9047623F));
-            gridInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 2F));
-            gridInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 75.10822F));
-            gridInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.7489157F)); 
+            gridInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 64F));
+            gridInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 1F));
+            gridInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            gridInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 44F)); 
             
             gridInfo.Controls.Add(labelWelcome, 2, 0);   // Welcome banner
             gridInfo.SetColumnSpan(labelWelcome, 2);     // Span columns 1, 2, and 3
@@ -66,18 +66,18 @@
             gridInfo.Location = new Point(0, 0);
             gridInfo.Name = "gridInfo";
             gridInfo.RowCount = 4;
-            gridInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));   // Row 0: Welcome
-            gridInfo.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));   // Row 1: Main body
+            gridInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));   // Row 0: Welcome
+            gridInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 275F));   // Row 1: Main body
             gridInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 1F));    // Row 2: Horizontal line
-            gridInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));   // Row 3: DSA
+            gridInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 0F));     // Row 3: DSA
             gridInfo.Size = new Size(500, 400);
             gridInfo.TabIndex = 0;
             // 
             // iconInfo
             // 
-            iconInfo.Anchor = AnchorStyles.None;
+            iconInfo.Anchor = AnchorStyles.Top;
             iconInfo.Location = new Point(8, 130);
-            iconInfo.Margin = new Padding(5, 0, 0, 0);
+            iconInfo.Margin = new Padding(5, 16, 0, 0);
             iconInfo.Name = "iconInfo";
             iconInfo.Size = new Size(48, 48);
             iconInfo.SizeMode = PictureBoxSizeMode.AutoSize;
@@ -100,10 +100,11 @@
             // labelInfo
             // 
             gridInfo.SetColumnSpan(labelInfo, 2);
+            labelInfo.AutoEllipsis = true;
             labelInfo.Dock = DockStyle.Fill;
             labelInfo.Font = new Font("Segoe UI", 8.5F);
             labelInfo.Location = new Point(71, 0);
-            labelInfo.Margin = new Padding(10, 3, 3, 0);
+            labelInfo.Margin = new Padding(10, 3, 12, 12);
             labelInfo.Name = "labelInfo";
             labelInfo.Size = new Size(426, 309);
             labelInfo.TabIndex = 2; 
@@ -125,9 +126,10 @@ Compare:
             // 
             // labelVR
             // 
-            labelVR.Anchor = AnchorStyles.Top|AnchorStyles.Bottom;
+            labelVR.Dock = DockStyle.Fill;
             labelVR.BackColor = Color.FromArgb(170, 170, 170);
             labelVR.Location = new Point(62, 154);
+            labelVR.Margin = new Padding(0, 16, 0, 16);
             labelVR.Name = "labelVR";
             labelVR.Size = new Size(1, 1);
             labelVR.TabIndex = 3;
@@ -179,7 +181,7 @@ Compare:
             ClientSize = new Size(500, 400);
             Controls.Add(gridInfo);
             FormBorderStyle = FormBorderStyle.None;
-            MaximumSize = new Size(500, 400);
+            MaximumSize = Size.Empty;
             Name = "InfoContentForm";
             StartPosition = FormStartPosition.Manual;
             Text = "InfoContentForm";
