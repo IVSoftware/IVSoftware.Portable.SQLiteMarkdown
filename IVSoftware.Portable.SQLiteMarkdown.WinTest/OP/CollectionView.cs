@@ -286,7 +286,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
             BackColor = BackgroundColor;
         }
 
-        public IReadOnlyList<object> SelectedItems => new ReadOnlyCollection<object>(_selectedItems);
+        public IReadOnlyList<object> SelectedItems => _selectedItems.ToArray();
 
         private readonly ObservableHashSet _selectedItems;
         public new SelectionMode SelectionMode
