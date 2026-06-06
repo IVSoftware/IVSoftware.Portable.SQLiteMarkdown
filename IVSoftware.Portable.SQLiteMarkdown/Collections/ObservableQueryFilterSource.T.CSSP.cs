@@ -93,11 +93,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             get
             {
-                if (_canonicalSuperset is null)
-                {
-                    _canonicalSuperset = new ReadOnlyCollection<T>(CanonicalSupersetProtected);
-                }
-                return _canonicalSuperset;
+                return _canonicalSuperset ??= new ReadOnlyCollection<T>(CanonicalSupersetProtected);
             }
         }
         IReadOnlyList<T>? _canonicalSuperset = null;
@@ -113,7 +109,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                 }
                 else
                 {
-                    if (!ReferenceEquals(_canonicalSuperset, value))
+                    if (!ReferenceEquals(_canonicalSupersetProtected, value))
                     {
                         #region P R E
                         if (_canonicalSupersetProtected is not null)
@@ -126,6 +122,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                         #endregion P R E
 
                         _canonicalSupersetProtected = value;
+                        _canonicalSuperset = null;
 
                         #region P O S T
                         if (_canonicalSupersetProtected is not null)
