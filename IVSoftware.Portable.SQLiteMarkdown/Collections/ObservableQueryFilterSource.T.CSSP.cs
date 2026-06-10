@@ -57,13 +57,48 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public IDisposable RequestAuthority(StdModelAuthority authority) 
             => CanonicalSupersetProtected.RequestAuthority(authority);
+
+        public void Move(int oldIndex, int newIndex)
+        {
+            switch (RouteKey)
+            {
+                case StdRouteKey.CanonicalRoute:
+                    ((IModeledCollection)CanonicalSupersetProtected).Move(oldIndex, newIndex);
+                    break;
+                default:
+                    throw new NotImplementedException("ToDo: Route mapping");
+            }
+        }
+
+        public bool TryAddDistinct(object item)
+        {
+            switch (RouteKey)
+            {
+                case StdRouteKey.CanonicalRoute:
+                    return ((IModeledCollection)CanonicalSupersetProtected).TryAddDistinct(item);
+                default:
+                    throw new NotImplementedException("ToDo: Route mapping");
+            }
+        }
+
+        public bool TryAddDistinct(object item, out int oldIndex, out int newIndex)
+        {
+            switch (RouteKey)
+            {
+                case StdRouteKey.CanonicalRoute:
+                    return ((IModeledCollection)CanonicalSupersetProtected).TryAddDistinct(item, out oldIndex, out newIndex);
+                default:
+                    throw new NotImplementedException("ToDo: Route mapping");
+            }
+        }
     }
 
     /// <summary>
     /// 2 of 4 interfaces in this file.
     /// </summary>
-    partial class ObservableQueryFilterSource<T> 
-        : INotifyPreviewCollection
+    partial class ObservableQueryFilterSource<T>
+        : INotifyCollectionChanging
+        , INotifyCollectionChanged
     {
         public NotifyCollectionChangeScope EventScope
         { 
