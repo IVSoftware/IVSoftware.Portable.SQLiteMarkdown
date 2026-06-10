@@ -140,5 +140,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Obsolete]
+        public ListOptimizationMode OptimizationMode { get; set; } = ListOptimizationMode.None;
     }
 }

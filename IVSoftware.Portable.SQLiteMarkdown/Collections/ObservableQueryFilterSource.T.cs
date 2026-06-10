@@ -354,5 +354,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
             #endregion L o c a l F x
         }
+
+        [Obsolete]
+        public ListOptimizationMode OptimizationMode { get; set; } = ListOptimizationMode.None;
     }
 }
