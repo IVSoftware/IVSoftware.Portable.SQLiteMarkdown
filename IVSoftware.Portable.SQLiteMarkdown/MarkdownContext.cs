@@ -1956,7 +1956,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        protected ObservableCollection<object> ActiveFilters
+        protected ObservableCollection<object> ActivePredicates
         {
             get
             {

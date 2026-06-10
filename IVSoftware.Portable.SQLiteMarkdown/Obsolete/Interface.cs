@@ -38,7 +38,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
         /// </remarks>
         IDisposable BeginPredicateAtom();
 
-        IReadOnlyDictionary<string, Enum> ActiveFilters { get; }
+        IReadOnlyDictionary<string, Enum> ActivePredicates { get; }
 
         void ActivatePredicates(Enum stdPredicate, params Enum[] more);
 

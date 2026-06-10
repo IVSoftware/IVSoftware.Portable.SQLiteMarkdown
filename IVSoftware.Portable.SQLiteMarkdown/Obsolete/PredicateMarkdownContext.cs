@@ -50,7 +50,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
 #if false
                                 IsFiltering = 
                                     MarkdownContext.FilteringState == FilteringState.Active 
-                                    || ActiveFilters.Count > 0;
+                                    || ActivePredicates.Count > 0;
 #endif
                                 if (IsFiltering)
                                 {
@@ -60,12 +60,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
                                 {   /* G T K */
                                 }
                                 Predicates =
-                                    ActiveFilters.Values
+                                    ActivePredicates.Values
                                     .Select(_ => _.GetCustomAttribute<WhereAttribute>()?.Expr)
                                     .Where(_ => !string.IsNullOrWhiteSpace(_))
                                     .Select(_ => $"({_})")
                                     .ToArray();// Add parentheses out of an abundance of paranoia.
-                                OnPropertyChanged(nameof(ActiveFilters));
+                                OnPropertyChanged(nameof(ActivePredicates));
                                 break;
                         }
                     };
@@ -91,7 +91,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
         }
         string[] _predicates = [];
 
-        public void ActivateFilters(Enum filter, params Enum[] moreFilters)
+        public void ActivatePredicates(Enum filter, params Enum[] moreFilters)
         {
             foreach (var member in new[] { filter }.Concat(moreFilters))
             {
@@ -101,7 +101,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
                 }
             }
         }
-        public void DeactivateFilters(Enum filter, params Enum[] moreFilters)
+        public void DeactivatePredicates(Enum filter, params Enum[] moreFilters)
         {
             string binding, predicate;
             if (filter.TryGetWhereAttribute(out binding, out predicate, @throw: true))
@@ -132,7 +132,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
             }
         }
 
-        public IDisposable BeginFilterAtom() => DHostAtomic.GetToken();
+        public IDisposable BeginPredicateAtom() => DHostAtomic.GetToken();
 
         protected DisposableHost DHostAtomic
         {
@@ -146,7 +146,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
             }
         }
 
-        public IReadOnlyDictionary<string, Enum> ActiveFilters => throw new NotImplementedException();
+        public IReadOnlyDictionary<string, Enum> ActivePredicates => throw new NotImplementedException();
         
 #if true || MIGRATING
         public object Model 
@@ -161,21 +161,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Obsolete
 
         private DisposableHost? _dhostAtomic = null;
 
-        public void ClearFilters(bool clearInputText = true)
+        public void ClearPredicates(bool clearInputText = true)
         {
             throw new NotImplementedException();
         }
-
-        public IDisposable BeginPredicateAtom() => DHostAtomic.GetToken();
-
-        public void ActivatePredicates(Enum stdPredicate, params Enum[] more)
-        {
-        }
-
-        public void DeactivatePredicates(Enum stdPredicate, params Enum[] more)
-        {
-        }
-
-        public void ClearPredicates(bool clearInputText = true) => ActivePredicatesProtected.Clear();
     }
 }
