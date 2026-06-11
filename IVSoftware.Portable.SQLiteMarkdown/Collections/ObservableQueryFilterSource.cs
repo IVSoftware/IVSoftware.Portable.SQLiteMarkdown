@@ -91,6 +91,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             throw new NotImplementedException();
         }
 
+        public void Move(int oldIndex, int newIndex)
+        {
+            throw new NotImplementedException();
+        }
+
         public int IndexOf(object value)
         {
             throw new NotImplementedException();
@@ -112,6 +117,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         public void RemoveAt(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryAddDistinct(object item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryAddDistinct(object item, out int oldIndex, out int newIndex)
         {
             throw new NotImplementedException();
         }

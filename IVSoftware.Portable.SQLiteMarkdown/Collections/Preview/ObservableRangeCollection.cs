@@ -13,7 +13,6 @@ namespace IVSoftware.Portable.Collections.Preview
     internal class ObservableRangeCollection<T>
         : ObservableModeledCollection<T>
         , IRangeable
-        , INotifyPreviewCollection
     {
         public ObservableRangeCollection() { }
 
