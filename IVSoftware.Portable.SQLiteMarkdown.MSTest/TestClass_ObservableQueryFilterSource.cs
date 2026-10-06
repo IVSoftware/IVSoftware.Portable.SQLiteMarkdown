@@ -3048,61 +3048,22 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%Tom ""safe inner"" Tester%')"
         }
 
         /// <summary>
-        /// PFAW!
+        /// Queries a JSON-backed property using SQLite's built-in function and the SQL helper.
         /// </summary>
         [TestMethod]
-        [Careful(@"
-Shows how to register a custom function. 
-But for JsonExtract don't do that!
-Use 'json_extract' as shown or wrap it with the string.JsonExtract helper.")]
         public void Test_CustomSQLiteFunction()
         {
             using (var cnx = InitializeInMemoryDatabase())
             {
-                SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlite3());
-                SQLitePCL.Batteries.Init();
-                SQLitePCL.Batteries_V2.Init();
-
-                SQLitePCL.raw.sqlite3_create_function(
-                    cnx.Handle,
-                    "JsonExtract",
-                    2,
-                    1,
-                    null,
-                    (ctx, user_data, args) =>
-                    {
-                        var json = SQLitePCL.raw.sqlite3_value_text(args[0]).utf8_to_string();
-                        var key = SQLitePCL.raw.sqlite3_value_text(args[1]).utf8_to_string();
-
-                        // O U T
-                        string? value = null;
-
-                        (JsonConvert.DeserializeObject<Dictionary<string, string>>(json) as IDictionary<string, string>)
-                        ?.TryGetValue(key, out value);
-
-                        SQLitePCL.raw.sqlite3_result_text(ctx, value ?? string.Empty);
-                    }
-                );
-
-                // Arg0: The Column (*is not* literal)
-                // Arg1: The 'Key'  (*is* literal)
-                IList recordset;
-                recordset = cnx.Query<SelectableQFModelLTOQO>($@"
-Select *
-From items 
-Where JsonExtract(Properties, 'Description') LIKE '%brown dog%'");
-
-                Assert.AreEqual(1, recordset.Count, "Expecting successful query using custom function.");
-
-
-                // BUT THIS IS HOW YOU DO IT!
                 // Arg0: The Column (*is not* literal)
                 // Arg1: The 'Key'  (*is* literal and the $. is the ROOT SELECTOR)
-                recordset = cnx.Query<SelectableQFModelLTOQO>($@"
+                var recordset = cnx.Query<SelectableQFModelLTOQO>(@"
 Select *
 From items 
 Where json_extract(Properties, '$.Description') LIKE '%brown dog%'");
                 Assert.AreEqual(1, recordset.Count, "Expecting successful query using json_extract.");
+                Assert.AreEqual("Brown Dog", recordset[0].Description);
+                var matchedId = recordset[0].Id;
 
                 // And this makes it readable.
                 recordset = cnx.Query<SelectableQFModelLTOQO>($@"
@@ -3110,6 +3071,13 @@ Select *
 From items 
 Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 Assert.AreEqual(1, recordset.Count, "Expecting successful query using JsonExtract helper extension.");
+                Assert.AreEqual(matchedId, recordset[0].Id, "Expecting both queries to return the same row.");
+
+                recordset = cnx.Query<SelectableQFModelLTOQO>($@"
+Select *
+From items
+Where {"Properties".JsonExtract("Description")} LIKE ?", "%no such description%");
+                Assert.AreEqual(0, recordset.Count, "Expecting unmatched JSON values to be excluded.");
             }
         }
 

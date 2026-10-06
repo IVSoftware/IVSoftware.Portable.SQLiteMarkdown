@@ -88,7 +88,7 @@ public class TestClass_ObservablePreviewCollection
     }
 
     /// <summary>
-    /// Instantiates an ObservablePreviewCollection{T} and exercises it without attaching MDC.
+    /// Instantiates an ObservableRangeCollection{T} and exercises it without attaching MDC.
     /// </summary>
     [TestMethod, DoNotParallelize]
     public void Test_PreviewOnly()
@@ -99,7 +99,7 @@ public class TestClass_ObservablePreviewCollection
         SelectableQFModel? currentItem;
 
         var builder = new List<string>();
-        var opc = new ObservablePreviewCollection<SelectableQFModel>();
+        var opc = new ObservableRangeCollection<SelectableQFModel>();
         DisposableHost dhostCancel = new();
         opc.CollectionChanging += (sender, e) =>
         {
