@@ -1744,7 +1744,7 @@ FilterTerm";
         /// By design, the ParseSQLiteMarkdown method employs inheritance to determine table identity for parsing.
         /// </summary>
         /// <remarks>
-        /// SQLite itself, when invoking CreateTable on subclass T, does *not* drill down for table inheritance
+        /// sqlite-net 1.11's .NET 8 mapping now honors inherited table attributes.
         /// This is the original test. There is also a newer streamlined version.
         /// #{B593ED5F-684A-4EF1-AA45-66E3766C7277}
         /// </remarks>
@@ -1784,8 +1784,6 @@ FilterTerm";
             #region S U B T E S T S
             void subtest_TableNameDefaultsToExplicitBC()
             {
-                // This is the "main gotcha" we're concerned about:
-
                 // POLICY: Base-class table fallback.
                 //
                 // When the concrete type does not declare its own [Table] attribute,
@@ -1793,20 +1791,20 @@ FilterTerm";
                 // closest ancestor that explicitly declares [Table].
                 using (var cnx = new SQLiteConnection(":memory:"))
                 {
-                    // Subclass "G" means "Gotcha!"
+                    // The current .NET 8 SQLite mapping agrees with the parser's inherited table policy.
                     cnx.CreateTable<SelectableQFModelSubclassG>();
                     tableNames = cnx.GetTableNames();
 
                     actual = JsonConvert.SerializeObject(tableNames, Newtonsoft.Json.Formatting.Indented);
                     expected = @" 
 [
-  ""SelectableQFModelSubclassG""
+  ""items""
 ]";
 
                     Assert.AreEqual(
                         expected.NormalizeResult(),
                         actual.NormalizeResult(),
-                        "Expecting that SQLite will create table named after the subclass when no [Table] is declared."
+                        "Expecting SQLite to create the table named by the inherited [Table] attribute."
                     );
 
                     // APPLY POLICY: Pick up the `[Table("items"]` from the BC.
@@ -1821,6 +1819,10 @@ SELECT * FROM items WHERE
                         actual.NormalizeResult(),
                         "Expecting 'items' table identity."
                     );
+                    cnx.Insert(new SelectableQFModelSubclassG { Description = "Animal" });
+                    var rows = cnx.Query<SelectableQFModelSubclassG>(actual);
+                    Assert.AreEqual(1, rows.Count, "Expecting generated SQL to query the inherited table.");
+                    Assert.AreEqual("Animal", rows[0].Description);
                 }
             }
 

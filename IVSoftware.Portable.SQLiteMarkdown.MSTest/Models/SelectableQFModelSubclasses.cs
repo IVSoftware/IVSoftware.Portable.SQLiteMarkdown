@@ -42,7 +42,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     /// </summary>
     /// <remarks>
     /// ACCORDING TO SQLITE NATIVE: 
-    /// The table name resolves to SelectableQFModelSubclassG.
+    /// sqlite-net 1.11 on .NET 8 resolves the inherited table name to "items".
     /// 
     /// BUT, ACCORDING TO SQLITE MARKDOWN PARSER: 
     /// Since SelectableQFModel offers an explicit table, always use that.

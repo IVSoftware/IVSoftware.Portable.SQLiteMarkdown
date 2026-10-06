@@ -298,7 +298,7 @@ INotifyPropertyChanged";
             },
             onDispose: (sender, e) =>
             {
-                Throw.BeginThrowOrAdvise += localOnEvent;
+                Throw.BeginThrowOrAdvise -= localOnEvent;
             });
 
         TableMapping mapping;
@@ -306,7 +306,7 @@ INotifyPropertyChanged";
 
         subtest_SelectableQFModel();
         subtest_ExplicitAttributeOnSubclass();
-        subtest_ImplicitGotcha();
+        subtest_InheritedTableAttribute();
 
         #region S U B T E S T S
         void subtest_SelectableQFModel()
@@ -325,16 +325,15 @@ INotifyPropertyChanged";
             Assert.AreEqual("Id", mapping.PK.PropertyName);
         }
 
-        void subtest_ImplicitGotcha()
+        void subtest_InheritedTableAttribute()
         {
-            // Illustrative, and problematic implicit mapping
+            // sqlite-net 1.11's .NET 8 implementation honors inherited [Table] attributes.
             mapping = cnx.GetMapping<SelectableQFModelSubclassG>();
 
-            // B O O
             Assert.AreEqual(
-                "SelectableQFModelSubclassG",
+                "items",
                 mapping.TableName,
-                @"Expecting inherited attribute goes unused.");
+                "Expecting the inherited table attribute to agree with SQLiteMarkdown's table policy.");
             Assert.AreEqual("Id", mapping.PK.PropertyName);
         }
         void subtest_Case4()

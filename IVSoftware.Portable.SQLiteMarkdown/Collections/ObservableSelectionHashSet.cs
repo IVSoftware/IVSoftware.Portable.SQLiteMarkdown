@@ -10,8 +10,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
     /// Legacy selection helper retained to fulfill the SQLiteMarkdown v1 public contract.
     /// </summary>
     /// <remarks>
-    /// - Backed by the legacy <see cref="ObservableHashSet{T}"/> type identity, which now laterals to
-    ///   the canonical composed hash set in Xml.Linq.Collections.
+    /// - Backed by the legacy indexed <see cref="ObservableHashSet{T}"/> contract.
     /// - <see cref="ItemSelection"/> values intentionally remain compatible with
     ///   Xml.Linq.Collections tracking state values.
     /// - New modeled-collection work should prefer the TrackAttribute/ITrackContext tracking pipeline.
@@ -54,29 +53,41 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     break;
             }
 
-            if (base.Add(item))
-            {
-                if (item is INotifyPropertyChanged inpc)
-                {
-                    inpc.PropertyChanged += OnItemPropertyChanged;
-                }
-                return true;
-            }
-            return false;
+            return base.Add(item);
         }
 
-        public new bool Remove(T item)
+        protected override void InsertItem(int index, T item)
         {
-            if (base.Remove(item))
+            if (index < 0 || index > Count) throw new ArgumentOutOfRangeException(nameof(index));
+            CheckReentrancy();
+            if (!Contains(item))
             {
-                Unsubscribe(item);
-                return true;
+                Subscribe(item);
+                base.InsertItem(index, item);
             }
-            return false;
         }
 
-        public new void Clear()
+        protected override void SetItem(int index, T item)
         {
+            var oldItem = this[index];
+            if (Equals(oldItem, item) || Contains(item)) return;
+            CheckReentrancy();
+            Unsubscribe(oldItem);
+            Subscribe(item);
+            base.SetItem(index, item);
+        }
+
+        protected override void RemoveItem(int index)
+        {
+            var item = this[index];
+            CheckReentrancy();
+            Unsubscribe(item);
+            base.RemoveItem(index);
+        }
+
+        protected override void ClearItems()
+        {
+            CheckReentrancy();
             foreach (var item in this.ToArray())
             {
                 Unsubscribe(item);
@@ -86,7 +97,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                     selectable.Selection = ItemSelection.None;
                 }
             }
-            base.Clear();
+            base.ClearItems();
         }
 
         private void OnItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -107,6 +118,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
         }
 
+        private void Subscribe(T item)
+        {
+            if (item is INotifyPropertyChanged inpc)
+            {
+                inpc.PropertyChanged += OnItemPropertyChanged;
+            }
+        }
+
         private void Unsubscribe(T item)
         {
             if (item is INotifyPropertyChanged inpc)
@@ -116,8 +135,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
 
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            base.OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public new event PropertyChangedEventHandler? PropertyChanged
+        {
+            add => base.PropertyChanged += value;
+            remove => base.PropertyChanged -= value;
+        }
     }
 }
