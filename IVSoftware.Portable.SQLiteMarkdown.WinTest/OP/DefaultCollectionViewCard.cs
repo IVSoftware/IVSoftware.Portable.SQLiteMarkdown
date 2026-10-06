@@ -53,6 +53,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                 {
                     ((INotifyPropertyChanged)_dataContext).PropertyChanged -= OnPropertyChanged;
                 }
+                // Simply capture the handle for unsubscribing purposes.
                 _dataContext = DataContext;
                 if (_dataContext is INotifyPropertyChanged)
                 {

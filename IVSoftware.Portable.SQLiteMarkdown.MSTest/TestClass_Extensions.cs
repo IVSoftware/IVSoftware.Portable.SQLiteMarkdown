@@ -1,10 +1,11 @@
+using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.LocalEnums;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.ComponentModel;
 using System.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
@@ -16,7 +17,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         {
             string actual, expected;
             Enum @enum;
-            XElement model = new(nameof(StdMarkdownElement.model));
+            XElement model = new(nameof(StdModelElement.model));
 
             int @int;
 
@@ -50,11 +51,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     }))
                 {
                     // No error for int?
-                    _ = model.GetAttributeValue<int?>(StdMarkdownAttribute.order);
+                    _ = model.GetStdAttributeValue<int?>(StdModelAttribute.index);
                     Assert.AreEqual(0, builderThrow.Count);
 
                     // Error expected for int (non-nullable)
-                    _ = model.GetAttributeValue<int>(StdMarkdownAttribute.text);
+                    _ = model.GetStdAttributeValue<int>(StdModelAttribute.text);
                     actual = string.Join(Environment.NewLine, builderThrow);
                     expected = @" 
 Non-nullable type(Int32) requires default";
@@ -67,15 +68,15 @@ Non-nullable type(Int32) requires default";
 
                     // Successfully uses default if not convertible
                     builderThrow.Clear();
-                    model.SetAttributeValue(nameof(StdMarkdownAttribute.text), "banana");
-                    @int = model.GetAttributeValue<int>(StdMarkdownAttribute.text, 9);
+                    model.SetAttributeValue(nameof(StdModelAttribute.text), "banana");
+                    @int = model.GetStdAttributeValue<int>(StdModelAttribute.text, 9);
 
                     // Conversion succeeds without complaining.
                     Assert.AreEqual(9, @int);
                     Assert.AreEqual(0, builderThrow.Count);
 
                     // Error: no default is provided.
-                    @int = model.GetAttributeValue<int>(StdMarkdownAttribute.text);
+                    @int = model.GetStdAttributeValue<int>(StdModelAttribute.text);
 
                     actual = string.Join(Environment.NewLine, builderThrow);
                     actual.ToClipboardExpected();
@@ -94,22 +95,22 @@ The string provided 'banana' is not numeric.";
             void subtest_ObjectUnconstrained()
             {
                 object? @object;
-                @object = model.GetAttributeValue<object?>(StdMarkdownAttribute.order);
+                @object = model.GetStdAttributeValue<object?>(StdModelAttribute.index);
                 Assert.IsNull(@object);
 
-                @object = model.GetAttributeValue<object?>(StdMarkdownAttribute.order, @default: 0);
+                @object = model.GetStdAttributeValue<object?>(StdModelAttribute.index, @default: 0);
                 Assert.AreEqual(0, @object);
             }
 
             void subtest_IntFromDefaultAttribute()
             {
-                @int = model.GetAttributeValue<int>(DefaultValuesForTest.Two);
+                @int = model.GetStdAttributeValue<int>(DefaultValuesForTest.Two);
                 Assert.AreEqual(2, @int);
             }
 
             void subtest_IntFromDefaultArg()
             {
-                @int = model.GetAttributeValue<int>(StdMarkdownAttribute.order, 7);
+                @int = model.GetStdAttributeValue<int>(StdModelAttribute.index, 7);
                 Assert.AreEqual(7, @int);
             }
 
@@ -124,17 +125,17 @@ The string provided 'banana' is not numeric.";
                 // Note that the declared value of DefaultValuesForTest.Two (0x10000002)
                 // is irrelevant here; only the DefaultValue attribute participates.
 
-                StdMarkdownAttribute
-                    expectedEnum = (StdMarkdownAttribute)2,
-                    stdActual = model.GetAttributeValue<StdMarkdownAttribute>(DefaultValuesForTest.Two);
+                StdModelAttribute
+                    expectedEnum = (StdModelAttribute)2,
+                    stdActual = model.GetStdAttributeValue<StdModelAttribute>(DefaultValuesForTest.Two);
                 // Strict equality not Equals.
                 Assert.IsTrue(expectedEnum == stdActual);
             }
 
             void subtest_AttributeSimplyPresent()
             {
-                model.SetAttributeValue(nameof(StdMarkdownAttribute.order), "42");
-                int value = model.GetAttributeValue<int>(StdMarkdownAttribute.order);
+                model.SetAttributeValue(nameof(StdModelAttribute.index), "42");
+                int value = model.GetStdAttributeValue<int>(StdModelAttribute.index);
                 Assert.AreEqual(42, value);
             }
             #endregion S U B T E S T S

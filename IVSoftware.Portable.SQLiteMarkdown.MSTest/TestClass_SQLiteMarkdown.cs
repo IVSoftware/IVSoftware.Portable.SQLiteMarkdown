@@ -1,8 +1,11 @@
+using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
@@ -10,7 +13,7 @@ using SQLite;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
-using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
+using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
@@ -364,7 +367,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                             {
                                 Description = split[1],
                                 Expr = split[0],
-                                Expected = split[0].ParseSqlMarkdown<SelfIndexedItem>(ref state),
+                                Expected = IVSoftware.Portable.SQLiteMarkdown.Extensions.ParseSqlMarkdown<SelfIndexedItem>(split[0], ref state),
                                 ExpectedValidationState = state,
                             };
                         }
@@ -397,16 +400,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             string actual, expected;
             var builder = new List<string>();
             var extQueryHandle = default(List<PrioritizedAffinityQFModel>);
-            int COUNT;
+            int COUNT;      // Uniform (but not really constant) input for populate methods and the clauses that test them.
+            int? dbCount;   // Readback from db?.Table().Count()
 
-            var mmdc = new ModeledMarkdownContext<PrioritizedAffinityQFModel>();
-            var histo = mmdc.Model.To<EnumHistogrammer<StdMarkdownAttribute>>();
+            var oqfc = new ObservableQueryFilterCollection<PrioritizedAffinityQFModel>
+            {
+                ModelTracking = ModelTrackingFlag.ItemQueries
+            };
+            var histo = oqfc.Model.To<EnumHistogrammer<StdModelAttribute>>();
 
-            actual = mmdc.StateReport();
+            actual = oqfc.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting MDC Defaults.");
 
@@ -427,12 +434,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             async Task subtestExtQueryNoResult()
             {
                 COUNT = 0;  // The 'query' has returned no matches.
-                mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
-                actual = mmdc.StateReport();
+                oqfc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteNoResults, FilteringState.Ineligible]";
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteNoResults, FilteringState.Ineligible]";
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -444,17 +451,16 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             async Task subtestExtQueryOneResult()
             {
                 COUNT = 1;
-                mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
+                oqfc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
 
-                actual = mmdc.Model.ToString();
+                actual = oqfc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
-                { } // <- FIRST TIME ONLY: Adjust the message.
-                actual.ToClipboardAssert($"Expecting model shows {COUNT} item.");
                 { }
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:1 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
-</model>";
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:1 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" index=""0"" />
+</model>"
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -462,11 +468,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     $"Expecting model shows {COUNT} item."
                 );
 
-                actual = histo.ToString(HistogrammerFormat.Default);
+                actual = histo.ToString();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[model:1 match:0 qmatch:0 pmatch:0]";
+[model:1 qmatch:0 pmatch:0 live:0]";
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -474,11 +480,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     "Expecting load canon pattern."
                 );
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 1, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 1, CC: 1, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
                 ;
 
                 Assert.AreEqual(
@@ -487,10 +493,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     "Expecting DOES NOT FILTER. There is only one item so FilteringState is Ineligible"
                 );
 
-                Assert.AreEqual(COUNT, mmdc.CanonicalCount);
-                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mmdc.SearchEntryState);
-                Assert.AreEqual(FilteringState.Ineligible, mmdc.FilteringState);
-                Assert.IsFalse(mmdc.IsFiltering);
+                Assert.AreEqual(COUNT, oqfc.CanonicalCount);
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, oqfc.SearchEntryState);
+                Assert.AreEqual(FilteringState.Ineligible, oqfc.FilteringState);
+                Assert.IsFalse(oqfc.IsFiltering);
             }
 
             async Task subtestExtQueryTwoResults()
@@ -502,17 +508,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 using var local = this.WithOnDispose(
                     onInit: (sender, e) =>
                     {
-                        mmdc.PropertyChanged += localMDC_PropertyChanged;
+                        oqfc.PropertyChanged += localMDC_PropertyChanged;
                     },
                     onDispose: (sender, e) =>
                     {
-                        mmdc.PropertyChanged -= localMDC_PropertyChanged;
+                        oqfc.PropertyChanged -= localMDC_PropertyChanged;
                     });
 
                 COUNT = 2;
                 builder.Clear();
 
-                mmdc.InputText = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                oqfc.InputText = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
                 // The point of this is that there should *not* be any need to settle!
                 // We're giving a window for Running to go true - which it *should not* do!
@@ -520,6 +526,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 await Task.Delay(250);
 
                 actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
                 expected = @" 
 SearchEntryState
 InputText"
@@ -531,19 +539,54 @@ InputText"
                     "Expecting *no* changes to Running."
                 );
 
-                Assert.AreEqual(SearchEntryState.QueryEN, mmdc.SearchEntryState, "Expecting mdc perceives a valid query.");
+                Assert.AreEqual(SearchEntryState.QueryEN, oqfc.SearchEntryState, "Expecting mdc perceives a valid query.");
+
+
+                dbCount = oqfc.FilterQueryDatabase?.Table<PrioritizedAffinityQFModel>().Count();
+                Assert.AreEqual(
+                    1, 
+                    dbCount,
+                    $"Expecting carry forward from prev test.");
 
                 // SIMULATE - Now perform the external QUERY.
-                mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
+                oqfc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
 
-                actual = mmdc.Model.ToString();
+                actual = string.Join(
+                    Environment.NewLine,
+                    oqfc.FilterQueryDatabase
+                    !.Table<PrioritizedAffinityQFModel>()
+                     .Select(_ => $"{_.Id} {_.Description} {_.FilterTerm}")); 
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:2 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" />
-</model>";
+312d1c21-0000-0000-0000-000000000001 Item01 item01
+312d1c21-0000-0000-0000-000000000002 Item02 item02"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting TWO items + Item1 holds the second ID of the epoch not the first.."
+                );
+
+                dbCount = oqfc.FilterQueryDatabase?.Table<PrioritizedAffinityQFModel>().Count();
+                Assert.AreEqual(
+                    2,
+                    dbCount,
+                    $"Expecting db tracking of Clear. " +
+                    $"∴ Contents entirely replaced by 2 items (not 3)."
+                );
+
+
+                actual = oqfc.ToString(FormattingOMC.ModelWithPreview);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:2 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" index=""1"" />
+</model>"
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -551,11 +594,11 @@ InputText"
                     $"Expecting model shows {COUNT} item."
                 );
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 62, IsFiltering: True], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 62, IsFiltering: True], [Net: 2, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(
                     expected.NormalizeResult(), 
@@ -563,22 +606,36 @@ InputText"
                     "PMC is 0 and THIS IS CORRECT because Filtering state is armed not active.");
 
                 // ROUTING - We should be projecting the full dataset.
-                Assert.IsTrue(
-                    mmdc.RouteToFullRecordset,
-                    "This should 'probably' be following FilteringState.Armed"
-                );
+                switch (oqfc.RouteKey)
+                {
+                    case StdRouteKey.CanonicalRoute:
+                        break;
+                    case StdRouteKey.QMatch:
+                    case StdRouteKey.PMatch:
+                    case StdRouteKey.AND:
+                    default:
+                        Assert.Fail(
+                            "Expecting FILTERED SUBSET."
+                        );
+                        break;
+                }
+
+                // 260521 ADDED
+                // - This is the FIRST filter attempt.
+                // ∴ Sanity check to ensure DB is set up and tracking.
+                Assert.IsTrue(oqfc.ModelTracking.HasFlag(ModelTrackingFlag.ItemQueries));
 
                 // SIMULATE - Now filter to one match.
-                mmdc.InputText = "Item01";
-                await mmdc;
+                oqfc.InputText = "Item01";
+                await oqfc;
 
-                actual = mmdc.Model.ToString();
+                actual = oqfc.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:2 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" />
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:2 qmatch:1 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" index=""0"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" index=""1"" />
 </model>"
                 ;
                 Assert.AreEqual(
@@ -588,16 +645,25 @@ InputText"
                 );
 
                 // ROUTING - We should be projecting the filtered dataset.
-                Assert.IsFalse(
-                    mmdc.RouteToFullRecordset,
-                    "Expecting FILTERED SUBSET."
-                );
+                switch (oqfc.RouteKey)
+                {
+                    case StdRouteKey.CanonicalRoute:
+                    case StdRouteKey.PMatch:
+                    case StdRouteKey.AND:
+                    default:
+                        Assert.Fail(
+                            "Expecting FILTERED SUBSET."
+                        );
+                        break;
+                    case StdRouteKey.QMatch:
+                        break;
+                }
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 6, IsFiltering: True], [Net: null, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 6, IsFiltering: True], [Net: 1, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                 ;
 
                 Assert.AreEqual(
@@ -607,12 +673,12 @@ InputText"
 
                 // This will clear the IME ONLY.
                 // IsFiltering=TRUE. Don't dip below SearchEntryState.QueryCompleteWithResults.
-                mmdc.Clear(false);
-                actual = mmdc.StateReport();
+                oqfc.Clear(false);
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 2, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
 
                 Assert.AreEqual(
@@ -621,144 +687,161 @@ InputText"
                     "Expecting IME CLEAR ONLY ∴ FilteringState.Active -> FilteringState.Armed");
 
                 // ROUTING - We should be projecting the full dataset.
-                Assert.IsTrue(
-                    mmdc.RouteToFullRecordset,
-                    "Expecting FULL RECORDSET."
-                );
+                switch (oqfc.RouteKey)
+                {
+                    case StdRouteKey.CanonicalRoute:
+                        break;
+                    case StdRouteKey.QMatch:
+                    case StdRouteKey.PMatch:
+                    case StdRouteKey.AND:
+                    default:
+                        Assert.Fail(
+                            "Expecting FILTERED SUBSET."
+                        );
+                        break;
+                }
 
                 // This will exit filter mode leaving list intact.
-                mmdc.Clear(false);
+                oqfc.Clear(false);
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 2, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
-                Assert.IsTrue(mmdc.CanonicalCount == 2);
+                Assert.IsTrue(oqfc.CanonicalCount == 2);
 
                 // This is (organically, i.e. still 'false') the terminal state and will clear the projection.
-                mmdc.Clear(false);
+                oqfc.Clear(false);
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                 ;
-                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting Clear has decomposed all the way to TERMINAL CLEAR.");
             }
             async Task subtestClearAwaiterOnly()
             {
-                mmdc.Clear(all: true);
-                await mmdc;
-                mmdc.Clear(all: true);
-                await mmdc;
+                oqfc.Clear(all: true);
+                await oqfc;
+                oqfc.Clear(all: true);
+                await oqfc;
             };
             async Task subtestQueryWithResultsClearSequence()
             {
-                mmdc.Clear(all: true);
-                mmdc.InputText = "valid query";
+                oqfc.Clear(all: true);
+                oqfc.InputText = "valid query";
 
-                Assert.AreEqual(SearchEntryState.QueryEN, mmdc.SearchEntryState, "Expecting initial state.");
-                Assert.AreEqual(FilteringState.Ineligible, mmdc.FilteringState, "Expecting initial state.");
+                Assert.AreEqual(SearchEntryState.QueryEN, oqfc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Ineligible, oqfc.FilteringState, "Expecting initial state.");
 
                 // Query occurs.
-                mmdc.LoadCanon(extQueryHandle.PopulateForDemo(2));
+                oqfc.LoadCanon(extQueryHandle.PopulateForDemo(2));
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 11, IsFiltering: True], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 11, IsFiltering: True], [Net: 2, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(
                     expected.NormalizeResult(), 
                     actual.NormalizeResult(), 
                     "Expecting PMC is empty until some filtering activity takes place..");
 
-                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mmdc.SearchEntryState, "Expecting initial state.");
-                Assert.AreEqual(FilteringState.Armed, mmdc.FilteringState, "Expecting initial state.");
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, oqfc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Armed, oqfc.FilteringState, "Expecting initial state.");
 
                 // #1 [X]
                 // User clears the input text, but *not* the recordset.
                 // FilteringState remains Armed because the transition is from non-empty input text to empty.
-                // IsFiltering
-                mmdc.Clear();
+                // [Careful]
+                // This was set to Clear() before from testing 1.x and that doesn't work for this anymore.
+                oqfc.Clear(all: false);
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 2, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
                 // #2 [X]
                 // User returns to Query without emptying the list.
-                mmdc.Clear();
-                actual = mmdc.StateReport();
+                // [Careful]
+                // This was set to Clear() before from testing 1.x and that doesn't work for this anymore.
+                oqfc.Clear(all: false);
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 2, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-                Assert.AreEqual(SearchEntryState.QueryEmpty, mmdc.SearchEntryState, "Expecting initial state.");
-                Assert.AreEqual(FilteringState.Ineligible, mmdc.FilteringState, "Expecting initial state.");
+                Assert.AreEqual(SearchEntryState.QueryEmpty, oqfc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Ineligible, oqfc.FilteringState, "Expecting initial state.");
 
                 // #3 [X]
-                // The MCD can clear its own state heuristically, rather than epistemically.
+                // The MCD through discovery can clear its own state.
                 // Even without knowledge of the list contents, these combined states are the signal:
                 // - FilteringState.Ineligible | SearchEntryState.QueryCompleteWithResults
                 // THIS IS THE ACTION THAT WAS FAILING IN PRODUCTION and REPLICATED before fixing.
-                mmdc.Clear();
-                actual = mmdc.StateReport();
+                // [Careful]
+                // This was set to Clear() before from testing 1.x and that doesn't work for this anymore.
+                oqfc.Clear(all: false);
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
             }
             async Task subtestQueryWithFilteredResultsClearSequence()
             {
-                mmdc.Clear(all: true);
-                await mmdc;
-                mmdc.InputText = "valid query";
+                oqfc.Clear(all: true);
+                await oqfc;
+                oqfc.InputText = "valid query";
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 11, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryEN, FilteringState.Ineligible]"
+[IME Len: 11, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryEN, FilteringState.Ineligible]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
                 // Query occurs.
-                mmdc.LoadCanon(extQueryHandle.PopulateForDemo(2));
+                oqfc.LoadCanon(extQueryHandle.PopulateForDemo(2));
 
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 11, IsFiltering: True], [Net: null, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 11, IsFiltering: True], [Net: 2, CC: 2, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
                 // Filtering occurs
-                mmdc.InputText = "item 2";
-                await mmdc;
+                oqfc.InputText = "item 2";
+                await oqfc;
 
-                actual = mmdc.Model.ToString();
+                actual = oqfc.Model.ToString();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:2 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[PrioritizedAffinityQFModel]"" preview=""Item01    "" order=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[PrioritizedAffinityQFModel]"" preview=""Item02    "" order=""1"" qmatch=""True"" match=""True"" />
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:2 qmatch:1 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[PrioritizedAffinityQFModel]"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[PrioritizedAffinityQFModel]"" index=""1"" qmatch=""True"" />
 </model>"
                 ;
 
@@ -767,40 +850,46 @@ InputText"
                     actual.NormalizeResult(),
                     "Expecting result to match."
                 );
-                actual = mmdc.StateReport();
+                actual = oqfc.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 6, IsFiltering: True], [Net: null, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 6, IsFiltering: True], [Net: 1, CC: 2, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                 ;
 
                 // #1 [X]
                 // User clears the input text.
                 // In this case FilteringState should remain Armed.
                 // because the transition is from non-empty input text to empty.
-                mmdc.Clear();
-                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, mmdc.SearchEntryState, "Expecting initial state.");
-                Assert.AreEqual(FilteringState.Armed, mmdc.FilteringState, "Expecting initial state.");
+                // [Careful]
+                // This was set to Clear() before from testing 1.x and that doesn't work for this anymore.
+                oqfc.Clear(all: false);
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, oqfc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Armed, oqfc.FilteringState, "Expecting initial state.");
 
                 // #2 [X]
                 // User returns to Query without emptying the list.
-                mmdc.Clear();
+                // [Careful]
+                // This was set to Clear() before from testing 1.x and that doesn't work for this anymore.
+                oqfc.Clear(all: false);
                 Assert.AreEqual(
                     SearchEntryState.QueryEmpty, // TOUCHED this limit on 260304 - QueryEmpty is the correct value
-                    mmdc.SearchEntryState, "Expecting initial state.");
+                    oqfc.SearchEntryState, "Expecting initial state.");
 
                 Assert.AreEqual(
                     FilteringState.Ineligible,
-                    mmdc.FilteringState, "Expecting initial state.");
+                    oqfc.FilteringState, "Expecting initial state.");
 
                 // #3 [X]
                 // The MCD can clear its own state heuristically, rather than epistemically.
                 // Even without knowledge of the list contents, these combined states are the signal:
                 // - FilteringState.Ineligible | SearchEntryState.QueryCompleteWithResults
                 // THIS IS THE ACTION THAT WAS FAILING IN PRODUCTION and REPLICATED before fixing.
-                mmdc.Clear();
-                Assert.AreEqual(SearchEntryState.Cleared, mmdc.SearchEntryState, "Expecting initial state.");
-                Assert.AreEqual(FilteringState.Ineligible, mmdc.FilteringState, "Expecting initial state.");
+                // [Careful]
+                // This was set to Clear() before from testing 1.x and that doesn't work for this anymore.
+                oqfc.Clear(all: false);
+                Assert.AreEqual(SearchEntryState.Cleared, oqfc.SearchEntryState, "Expecting initial state.");
+                Assert.AreEqual(FilteringState.Ineligible, oqfc.FilteringState, "Expecting initial state.");
             }
             #endregion S U B T E S T S
         }
@@ -813,98 +902,97 @@ InputText"
             const int COUNT = 2;
             var extQueryHandle = default(List<SelectableQFModel>);
 
-            var mmdc = new ModeledMarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Query };
-            actual = mmdc.StateReport();
+            var oqfs = new ObservableQueryFilterSource<SelectableQFModel> 
+            {
+                QueryFilterConfig = QueryFilterConfig.Query, 
+            };
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-            mmdc.InputText = "a";
-            actual = mmdc.StateReport();
+            oqfs.InputText = "a";
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 1, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+[IME Len: 1, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [Query: SearchEntryState.QueryENB, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
             // Backspace
-            mmdc.InputText = string.Empty;
-            actual = mmdc.StateReport();
+            oqfs.InputText = string.Empty;
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
-            Assert.AreEqual(SearchEntryState.Cleared, mmdc.SearchEntryState);
+            Assert.AreEqual(SearchEntryState.Cleared, oqfs.SearchEntryState);
 
-            mmdc.InputText = "a";
-            actual = mmdc.StateReport();
+            oqfs.InputText = "a";
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 1, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.QueryENB, FilteringState.Ineligible]"
-            ;
-            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
-
-            mmdc.InputText = "an";
-            actual = mmdc.StateReport();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-[IME Len: 2, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+[IME Len: 1, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [Query: SearchEntryState.QueryENB, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-            mmdc.InputText = "ani";
-            actual = mmdc.StateReport();
+            oqfs.InputText = "an";
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 3, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.QueryEN, FilteringState.Ineligible]"
+[IME Len: 2, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [Query: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+            ;
+            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+
+            oqfs.InputText = "ani";
+            actual = oqfs.StateReport();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+[IME Len: 3, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [Query: SearchEntryState.QueryEN, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
             // Commit and load the new recordset.
-            // [Remember] IsFilter is DISABLED.
-            mmdc.LoadCanon(extQueryHandle.PopulateForDemo(COUNT));
-            actual = mmdc.StateReport();
+            // [Remember] Config is Query only; IsFilter is DISABLED.
+            oqfs.ReplaceItems(extQueryHandle.PopulateForDemo(COUNT));
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
-            // [Remember]
-            // The *absence* of any ismatch attributes makes
-            // each and every node a perceived match.
-
             expected = @" 
-[IME Len: 3, IsFiltering: False], [Net: null, CC: 2, PMC: 0], [Query: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
+[IME Len: 3, IsFiltering: False], [Net: 2, CC: 2, PMC: 0], [Query: SearchEntryState.QueryCompleteWithResults, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting Filtering shows DISABLED.");
 
             // Clear the IME, *not* the recordset.
             // [Remember] Clear on MMDC resolves to Clear(bool).
-            mmdc.Clear();
-            actual = mmdc.StateReport();
+            oqfs.Clear(all: false);
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 2, PMC: 0], [Query: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 2, CC: 2, PMC: 0], [Query: SearchEntryState.QueryEmpty, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-            Assert.IsTrue(mmdc.RouteToFullRecordset, "ROUTE TO CANONICAL");
+            Assert.IsTrue(oqfs.RouteToFullRecordset, "ROUTE TO CANONICAL");
 
             // Empty IME + Regressive Clear = TerminalClear.
             // [Remember] Clear on MMDC resolves to Clear(bool).
-            mmdc.Clear();
-            actual = mmdc.StateReport();
+            oqfs.Clear();
+            actual = oqfs.StateReport();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [Query: SearchEntryState.Cleared, FilteringState.Ineligible]"
             ;
             Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
         }
@@ -927,8 +1015,7 @@ InputText"
 
             var extQueryHandle = default(List<SelectableQFModel>).PopulateForDemo(2);
 
-            ModeledMarkdownContext<SelectableQFModel> mdc;
-
+            ObservableQueryFilterSource<SelectableQFModel> oqfs;
             subtest_ConfigureThenLoad();
 
             subtest_LoadThenConfigure();
@@ -936,12 +1023,13 @@ InputText"
             #region S U B T E S T S
             void subtest_ConfigureThenLoad()
             {
-                mdc = new() { QueryFilterConfig = QueryFilterConfig.Filter };
-                actual = mdc.StateReport();
+                oqfs = new() { QueryFilterConfig = QueryFilterConfig.Filter };
+
+                actual = oqfs.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
                 ;
 
                 Assert.AreEqual(
@@ -953,12 +1041,12 @@ InputText"
 
             void subtest_LoadThenConfigure()
             {
-                mdc = new();
-                actual = mdc.StateReport();
+                oqfs = new();
+                actual = oqfs.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                 ;
 
                 Assert.AreEqual(
@@ -967,12 +1055,12 @@ InputText"
                     "Expecting QUERY AND FILTER."
                 );
 
-                mdc.QueryFilterConfig = QueryFilterConfig.Filter;
-                actual = mdc.StateReport();
+                oqfs.QueryFilterConfig = QueryFilterConfig.Filter;
+                actual = oqfs.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
                 ;
 
                 Assert.AreEqual(
@@ -997,7 +1085,7 @@ InputText"
                 var validationState = ValidationState.Empty;
 
                 // Parse the expression and update the validation state
-                var context = eut.Expr.ParseSqlMarkdown<SelfIndexedItem>(ref validationState);
+                var context = IVSoftware.Portable.SQLiteMarkdown.Extensions.ParseSqlMarkdown<SelfIndexedItem>(eut.Expr, ref validationState);
                 // Implicit cast to string
                 actual = context;
 
@@ -1486,6 +1574,7 @@ FilterTerm";
             );
         }
 
+
         [TestMethod]
         public void Test_NormalizeTags_True()
         {
@@ -1638,11 +1727,24 @@ FilterTerm";
             );
         }
 
+        private class TestableMarkdownContext<T> : MarkdownContext<T>
+        {
+            public new SQLiteConnection FilterQueryDatabase
+            {
+                get => base.FilterQueryDatabase;
+                set
+                {
+                    base.FilterQueryDatabase = value;
+                    base.FilterQueryDatabase?.CreateTable<T>();
+                }
+            }
+        }
+
         /// <summary>
         /// By design, the ParseSQLiteMarkdown method employs inheritance to determine table identity for parsing.
         /// </summary>
         /// <remarks>
-        /// SQLite itself, when invoking CreateTable on subclass T, does *not* drill down for table inheritance
+        /// sqlite-net 1.11's .NET 8 mapping now honors inherited table attributes.
         /// This is the original test. There is also a newer streamlined version.
         /// #{B593ED5F-684A-4EF1-AA45-66E3766C7277}
         /// </remarks>
@@ -1669,7 +1771,357 @@ FilterTerm";
 
             string actual, expected;
             string[] tableNames;
+            MarkdownContext mdc;
 
+            subtest_TableNameDefaultsToExplicitBC();
+            subtest_ExtensionsResolveEffectiveTable();
+            subtest_MemberFxResolveEffectiveTable();
+            subtest_SubOnSuperTableConflict();
+            subtest_SuperOnSubTableConflict();
+            subtest_EnforceSingleIsFalse();
+            subtest_EnforceSingleIsTrue();
+
+            #region S U B T E S T S
+            void subtest_TableNameDefaultsToExplicitBC()
+            {
+                // POLICY: Base-class table fallback.
+                //
+                // When the concrete type does not declare its own [Table] attribute,
+                // but one or more base classes do, resolve table identity using the
+                // closest ancestor that explicitly declares [Table].
+                using (var cnx = new SQLiteConnection(":memory:"))
+                {
+                    // The current .NET 8 SQLite mapping agrees with the parser's inherited table policy.
+                    cnx.CreateTable<SelectableQFModelSubclassG>();
+                    tableNames = cnx.GetTableNames();
+
+                    actual = JsonConvert.SerializeObject(tableNames, Newtonsoft.Json.Formatting.Indented);
+                    expected = @" 
+[
+  ""items""
+]";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting SQLite to create the table named by the inherited [Table] attribute."
+                    );
+
+                    // APPLY POLICY: Pick up the `[Table("items"]` from the BC.
+                    builderThrow.Clear();
+                    actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclassG>();
+                    expected = @" 
+SELECT * FROM items WHERE 
+(QueryTerm LIKE '%animal%')";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting 'items' table identity."
+                    );
+                    cnx.Insert(new SelectableQFModelSubclassG { Description = "Animal" });
+                    var rows = cnx.Query<SelectableQFModelSubclassG>(actual);
+                    Assert.AreEqual(1, rows.Count, "Expecting generated SQL to query the inherited table.");
+                    Assert.AreEqual("Animal", rows[0].Description);
+                }
+            }
+
+            /// <summary>
+            /// Verifies that parse-only string extension calls resolve SQL against the
+            /// effective table for the requested generic type.
+            /// </summary>
+            /// <remarks>
+            /// This is not an instance-level ContractType/ProxyType controversy test.
+            /// It only confirms that the extension surface honors the requested type's
+            /// effective mapping in generated SQL.
+            /// </remarks>
+            void subtest_ExtensionsResolveEffectiveTable()
+            {
+                actual = "hello".ParseSqlMarkdown<SelectableQFModel>();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+SELECT * FROM items WHERE
+(QueryTerm LIKE '%hello%')";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table."
+                );
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting that SQLite will create table named after the subclass when no [Table] is declared."
+                );
+
+                actual = "hello".ParseSqlMarkdown<SelectableQFModelSubclassA>();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+SELECT * FROM itemsA WHERE
+(QueryTerm LIKE '%hello%')";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'itemsA' table."
+                );
+            }
+
+            /// <summary>
+            /// Verifies that member-based parsing resolves SQL against the effective
+            /// contract table when the context owns an injected filter database.
+            /// </summary>
+            /// <remarks>
+            /// This covers the instance surface, where ContractType and ProxyType can
+            /// be reasoned about explicitly. The test setup treats the contract table
+            /// as the invariant and confirms that generated SQL remains aligned to it.
+            /// </remarks>
+            void subtest_MemberFxResolveEffectiveTable()
+            {
+                mdc = new TestableMarkdownContext<SelectableQFModel>
+                {
+                    FilterQueryDatabase = new (":memory:")
+                };
+                actual = mdc.ParseSqlMarkdown<SelectableQFModel>("hello");
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+SELECT * FROM items WHERE
+(QueryTerm LIKE '%hello%')";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table."
+                );
+
+                actual = JsonConvert.SerializeObject(mdc.GetTableNames(), Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  ""items""
+]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table creation is owned by subclass."
+                );
+
+
+                mdc = new TestableMarkdownContext<SelectableQFModelSubclassA>
+                {
+                    FilterQueryDatabase = new (":memory:")
+                };
+                actual = mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+SELECT * FROM itemsA WHERE
+(QueryTerm LIKE '%hello%')";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'itemsA' table."
+                );
+
+                actual = JsonConvert.SerializeObject(mdc.GetTableNames(), Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  ""itemsA""
+]"
+                ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'itemsA' table creation is owned by subclass."
+                );
+            }
+
+            void subtest_SubOnSuperTableConflict()
+            {
+                mdc = new TestableMarkdownContext<SelectableQFModel>
+                {
+                    FilterQueryDatabase = new(":memory:")
+                };
+                actual = mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
+                actual.ToClipboardExpected();
+                expected = @" 
+SELECT * FROM items WHERE
+(QueryTerm LIKE '%hello%')"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table under a VERY EXPLICIT POLICY #{69046F5E-879C-46E1-8E35-D7EC3B52150B}."
+                );
+
+                Assert.HasCount(0, builderThrow, "Expecting this not exceptional.");
+
+                actual = JsonConvert.SerializeObject(mdc.GetTableNames(), Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  ""items""
+]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table creation is owned by subclass."
+                );
+            }
+
+            [Probationary("NEED REVIEW OF LIMITS FOR TABLES AND EXCEPTIONS")]
+            void subtest_SuperOnSubTableConflict()
+            {
+                MarkdownContext mdc;
+
+                mdc = new TestableMarkdownContext<SelectableQFModelSubclassA>
+                {
+                    FilterQueryDatabase = new(":memory:")
+                };
+
+                Assert.HasCount(0, builderThrow, "Expecting empty exception queue.");
+                actual = mdc.ParseSqlMarkdown<SelectableQFModel>("hello");
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+SELECT * FROM itemsA WHERE
+(QueryTerm LIKE '%hello%')"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting two-way inheritance allows mapping to ContractType - even though it's a subclass of proxy."
+                );
+
+                Assert.HasCount(0, builderThrow, "Expecting this not exceptional.");
+
+                actual = JsonConvert.SerializeObject(mdc.GetTableNames(), Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  ""itemsA""
+]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table creation is owned by subclass."
+                );
+            }
+
+            void subtest_EnforceSingleIsFalse()
+            {
+                MarkdownContext mdc;
+
+                mdc = new TestableMarkdownContext<SelectableQFModel>
+                {
+                    FilterQueryDatabase = new(":memory:")
+                };
+
+                Assert.HasCount(0, builderThrow, "Expecting empty exception queue.");
+                actual = mdc.ParseSqlMarkdown<SxSProxy>("hello");
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+SELECT * FROM sxs WHERE
+(QueryTerm LIKE '%hello%')"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting a new dedicated table."
+                );
+
+                Assert.HasCount(0, builderThrow, "Expecting this not exceptional.");
+
+                actual = JsonConvert.SerializeObject(mdc.GetTableNames(), Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  ""items"",
+  ""sxs""
+]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting 'items' table creation is owned by subclass."
+                );
+            }
+            void subtest_EnforceSingleIsTrue()
+            {
+                MarkdownContext mdc;
+
+                mdc = new TestableMarkdownContext<SelectableQFModel>
+                {
+                    FilterQueryDatabase = new(":memory:")
+                };
+
+                Assert.HasCount(0, builderThrow, "Expecting empty exception queue.");
+                actual = mdc.ParseSqlMarkdown<EnforcedProxy>("hello");
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting proxy failure with empty return."
+                );
+
+
+                actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+Proxy type resolves to a different table 'sxs' and is not permitted to bypass the single-table contract for 'items'.";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting proxy error exception message."
+                );
+
+                actual = JsonConvert.SerializeObject(mdc.GetTableNames(), Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  ""items""
+]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting new sxs table is NOT ALLOWED."
+                );
+            }
+            #endregion S U B T E S T S
+
+#if false && LEGACY_TESTING
 
             // TERMINOLOGY: Sources of "controversy".
             // 1. Conflicting [Table] attributes in the inheritance chain.
@@ -1693,52 +2145,11 @@ FilterTerm";
             #endregion v2.0+
 
             #region S U B T E S T S
-            void subtest_TableNameDefaultsToExplicitBC()
-            {
-                // This is the "main gotcha" we're concerned about:
-
-                // POLICY: Base-class table fallback.
-                //
-                // When the concrete type does not declare its own [Table] attribute,
-                // but one or more base classes do, resolve table identity using the
-                // closest ancestor that explicitly declares [Table].
-                using (var cnx = new SQLiteConnection(":memory:"))
-                {
-                    // Subclass "G" means "Gotcha!"
-                    cnx.CreateTable<SelectableQFModelSubclassG>();
-                    tableNames = cnx.GetTableNames();
-
-                    actual = JsonConvert.SerializeObject(tableNames, Newtonsoft.Json.Formatting.Indented);
-                    expected = @" 
-[
-  ""SelectableQFModelSubclassG""
-]";
-
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting that SQLite will create table named after the subclass when no [Table] is declared."
-                    );
-
-                    // APPLY POLICY: Pick up the `[Table("items"]` from the BC.
-                    builderThrow.Clear();
-                    actual = "animal".ParseSqlMarkdown<SelectableQFModelSubclassG>();
-                    expected = @" 
-SELECT * FROM items WHERE 
-(QueryTerm LIKE '%animal%')";
-
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting 'items' table identity."
-                    );
-                }
-            }
 
             // Different classes, but the explicit [Table] attributes all agree.
             void subtest_UncontroversialExplicitTableAttribute()
             {
-                var mdc = new ModeledMarkdownContext<SelectableQFModel>();
+                var mdc = new MarkdownContext<SelectableQFModel>();
                 mdc.ParseSqlMarkdown<SelectableQFModelSubclass>("hello");
                 tableNames = mdc.GetTableNames();
                 "hello".ParseSqlMarkdown<SelectableQFModel>();
@@ -1762,7 +2173,7 @@ SELECT * FROM items WHERE
             // - Any explicit [Table] attributes in base classes are moot.
             void subtest_ProxySameAsContract()
             {
-                var mdc = new ModeledMarkdownContext<SelectableQFModelSubclassA>();
+                var mdc = new MarkdownContext<SelectableQFModelSubclassA>();
                 mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
                 tableNames = mdc.GetTableNames();
                 "hello".ParseSqlMarkdown<SelectableQFModel>();
@@ -1785,7 +2196,7 @@ SELECT * FROM items WHERE
 
             void subtest_ProxyCoherence1()
             {
-                var mdc = new ModeledMarkdownContext<SelectableQFModel>();
+                var mdc = new MarkdownContext<SelectableQFModel>();
                 mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
                 tableNames = mdc.GetTableNames();
                 "hello".ParseSqlMarkdown<SelectableQFModel>();
@@ -1808,7 +2219,7 @@ SELECT * FROM items WHERE
 
             void subtest_ProxyCoherence2()
             {
-                var mdc = new ModeledMarkdownContext<SelectableQFModelSubclassA>();
+                var mdc = new MarkdownContext<SelectableQFModelSubclassA>();
                 mdc.ParseSqlMarkdown<SelectableQFModelSubclassA>("hello");
 
                 tableNames = mdc.GetTableNames();
@@ -1832,7 +2243,7 @@ SELECT * FROM items WHERE
             void subtest_ParseInputTextInQueryMode()
             {
                 // Check parser where declared table identities resolve as same
-                var mdc = new ModeledMarkdownContext<SelectableQFModelSubclass>();
+                var mdc = new MarkdownContext<SelectableQFModelSubclass>();
                 mdc.InputText = "animal";
 
                 actual = mdc.ParseSqlMarkdown();
@@ -1849,6 +2260,7 @@ SELECT * FROM items WHERE
                 );
             }
             #endregion S U B T E S T S
+#endif
         }
 
         /// <summary>
@@ -1858,33 +2270,84 @@ SELECT * FROM items WHERE
         public async Task Test_Detect_QueryENB_or_QueryEN_when_IsFiltering()
         {
             string actual, expected;
-            var mdc = new ModeledMarkdownContext<SelectableQFModel> { QueryFilterConfig = QueryFilterConfig.Filter };
 
-            actual = mdc.StateReport();
-            expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
-            ;
-            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+            await subtest_OQFC();
+            await subtest_OQFS();
 
-            mdc.InputText = "a";
-            await mdc; // YBYA you need this in filter mode.
+            #region S U B T E S T S
+            async Task subtest_OQFS()
+            {
+                ObservableQueryFilterSource<SelectableQFModel> oqfs = new()
+                {
+                    QueryFilterConfig = QueryFilterConfig.Filter
+                };
 
-            actual = mdc.StateReport();
-            expected = @" 
-[IME Len: 1, IsFiltering: True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
-            ;
-            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "STILL ARMED due to NO ITEMS IN PROJECTION");
+                actual = oqfs.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-            // Reset to empty IME. Do not violate minimum SES.
-            mdc.Clear();
+                oqfs.InputText = "a";
+                await oqfs; // YBYA you need this in filter mode.
 
-            actual = mdc.StateReport();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
-            ;
-            Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+                actual = oqfs.StateReport();
+                expected = @" 
+[IME Len: 1, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "STILL ARMED due to NO ITEMS IN PROJECTION");
+
+                // Reset to empty IME. Do not violate minimum SES.
+                oqfs.Clear();
+
+                actual = oqfs.StateReport();
+                actual.ToClipboardExpected();
+                { }
+
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+            }
+            async Task subtest_OQFC()
+            {
+                ObservableQueryFilterCollection<SelectableQFModel> oqfc = new()
+                {
+                    QueryFilterConfig = QueryFilterConfig.Filter
+                };
+
+                actual = oqfc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+
+                oqfc.InputText = "a";
+                await oqfc; // YBYA you need this in filter mode.
+
+                actual = oqfc.StateReport();
+                expected = @" 
+[IME Len: 1, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "STILL ARMED due to NO ITEMS IN PROJECTION");
+
+                // Reset to empty IME. Do not violate minimum SES.
+                oqfc.Clear();
+
+                actual = oqfc.StateReport();
+                actual.ToClipboardExpected();
+                { }
+
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 0, CC: 0, PMC: 0], [Filter: SearchEntryState.QueryCompleteNoResults, FilteringState.Armed]"
+                ;
+                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
+            }
+            #endregion S U B T E S T S
         }
     }
 }

@@ -1,5 +1,7 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Collections.Preview;
+﻿using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using System;
@@ -7,43 +9,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Util
 {
-    /// <summary>
-    /// Listed in order of preference.
-    /// </summary>
-    public enum StdModelPath
-    {
-        /// <summary>
-        /// Detected a string property named FullPath.
-        /// </summary>
-        FullPath,
-
-        /// <summary>
-        /// A [PrimaryKey] property or a string property named Id.
-        /// </summary>
-        Id,
-
-        /// <summary>
-        /// A [PrimaryKey] property or a string property named Description.
-        /// </summary>
-        Description,
-
-        /// <summary>
-        /// A [PrimaryKey] property or a string property named Text.
-        /// </summary>
-        Text,
-
-        /// <summary>
-        /// Failed to find a suitable modeling property.
-        /// </summary>
-        NotFound,
-    }
     public class AdHocModelProvider<T>
     {
+#if false
         public AdHocModelProvider(IList<T> itemsSource) 
         {
             ItemsSource = itemsSource;
@@ -51,7 +23,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
         private IList<T> ItemsSource { get; }
         public XElement CreateModel()
         {
-            XElement model = new XElement(nameof(StdMarkdownElement.model));
+            XElement model = new XElement(nameof(StdModelElement.model));
             model.SetAttributeValue(ModelingCapability);
             int itemCount = 0;
             if (ModelingCapability != StdModelPath.NotFound)
@@ -71,12 +43,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
                             case PlacerResult.Exists:
                                 break;
                             case PlacerResult.Created:
-                                xel.Name = nameof(StdMarkdownElement.xitem);
+                                xel.Name = nameof(StdModelElement.item);
                                 xel.SetBoundAttributeValue(
                                     tag: item,
-                                    name: nameof(StdMarkdownAttribute.model));
+                                    name: nameof(StdModelAttribute.model));
 
-                                xel.SetAttributeValue(nameof(StdMarkdownAttribute.order), itemCount++);
+                                xel.SetAttributeValue(nameof(StdModelAttribute.order), itemCount++);
                                 break;
                             default:
                                 "ObservablePreviewCollection".ThrowFramework<NotSupportedException>(
@@ -179,5 +151,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Util
             }
         }
         GetFullPathDelegate<T>? _getFullPath;
+#endif
     }
 }

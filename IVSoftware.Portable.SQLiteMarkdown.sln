@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.SQLiteM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.SQLiteMarkdown.MSTest.V1", "IVSoftware.Portable.SQLiteMarkdown.MSTest.V1\IVSoftware.Portable.SQLiteMarkdown.MSTest.V1.csproj", "{848C0330-86D9-43CF-9F79-9E4FCE89809F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.Xml.Linq.Collections", "..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.csproj", "{7E6C1EF3-C30A-2264-4A0C-BCB02512F0EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.MSTest.Extensions", "..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.MSTest.Extensions\IVSoftware.MSTest.Extensions.csproj", "{A71806B4-EA89-2594-7FF7-0BDBFC05FEF6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{848C0330-86D9-43CF-9F79-9E4FCE89809F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{848C0330-86D9-43CF-9F79-9E4FCE89809F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{848C0330-86D9-43CF-9F79-9E4FCE89809F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E6C1EF3-C30A-2264-4A0C-BCB02512F0EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E6C1EF3-C30A-2264-4A0C-BCB02512F0EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E6C1EF3-C30A-2264-4A0C-BCB02512F0EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E6C1EF3-C30A-2264-4A0C-BCB02512F0EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A71806B4-EA89-2594-7FF7-0BDBFC05FEF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A71806B4-EA89-2594-7FF7-0BDBFC05FEF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A71806B4-EA89-2594-7FF7-0BDBFC05FEF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A71806B4-EA89-2594-7FF7-0BDBFC05FEF6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

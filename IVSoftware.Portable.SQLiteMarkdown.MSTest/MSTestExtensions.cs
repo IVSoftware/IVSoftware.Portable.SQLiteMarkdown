@@ -6,6 +6,8 @@ using Newtonsoft.Json;
 using SQLite;
 using System.CodeDom;
 using System.Collections;
+using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Obsolete;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
@@ -61,6 +63,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 @this.Clear();
             }
 
+            #region L o c a l F x
             void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
             {
                 var itemT = @this.AddDynamic<TItem>(description, tags, isChecked, keywords);
@@ -69,6 +72,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     isChecked = rando.Next(2) == 1;
                 }
             }
+            #endregion L o c a l F x
 
             Add("Brown Dog", "[canine][color]", false, new() { "loyal", "friend", "furry" });
             Add("Green Apple", "[fruit][color]", false, new() { "tart", "snack", "healthy" });
@@ -117,6 +121,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 
         public static IList<TItem> PopulateForDemo<TItem>(this IList<TItem>? @this, int count, PopulateOptions? options = null)
             where TItem : new()
+            => @this.PopulateForDemo((count, 0), options);
+
+        [Canonical]
+        public static IList<TItem> PopulateForDemo<TItem>(this IList<TItem>? @this, (int count, int offset) countInfo, PopulateOptions? options = null)
+            where TItem : new()
         {
             Random rando = new(10);
             if (@this is null)
@@ -128,10 +137,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 @this.Clear();
             }
 
-            if (options?.HasFlag(PopulateOptions.DetectIRangeable) is true && @this is IRangeable rangeable)
+            if (options?.HasFlag(PopulateOptions.DetectIRangeable) is true && @this.GetIRangeable() is { } rangeable)
             {
                 // Safe (not circular) because this object is not IRangeable.
-                IList<TItem> stagedForTest = new List<TItem>().PopulateForDemo(count);
+                IList<TItem> stagedForTest = new List<TItem>().PopulateForDemo(countInfo.count);
 #if DEBUG
                 var cMe = JsonConvert.SerializeObject(stagedForTest, Formatting.Indented);
 #endif
@@ -140,14 +149,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             }
             else
             {
-                for (int i = 1; i <= count; i++)
+                for (int i = 1; i <= countInfo.count; i++)
                 {
                     Add(
-                        description: $"Item{i:d2}",
+                        description: $"Item{i + countInfo.offset:d2}",
                         tags: string.Empty,
                         isChecked: options?.HasFlag(PopulateOptions.RandomChecks) == true && rando.Next(2) == 1);
                 }
 
+                #region L o c a l F x
                 void Add(string description, string tags, bool isChecked, List<string>? keywords = null)
                 {
                     var instance = new TItem();
@@ -161,8 +171,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                     }
                     @this.Add(instance);
                 }
+                #endregion L o c a l F x
             }
             return @this;
+        }
+        private static IRangeable? GetIRangeable(this object @this)
+        {
+            if (@this is IRangeable rangeable)
+            {
+                return rangeable;
+            }
+            return (@this as IModeledCollection)?.AsInterface<IRangeable>();
         }
 
         public static T DequeueSingle<T>(this Queue<T> queue)
@@ -172,29 +191,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
                 1 => queue.Dequeue(),
                 _ => throw new InvalidOperationException("Multiple items in queue."),
             };
-
-        public static string StateReport(this MarkdownContext @this)
-        {
-            var builder = new List<string>();
-            builder.Add($"[IME Len: {@this.InputText.Length}");
-            builder.Add($"IsFiltering: {@this.IsFiltering}]");
-            if (@this is IModeledMarkdownContext mmdc)
-            {
-                builder.Add($"[Net: {(mmdc.ObservableNetProjection is IList list ? list.Count : "null")}");
-            }
-            builder.Add($"CC: {@this.CanonicalCount}");
-            builder.Add($"PMC: {@this.PredicateMatchCount}]");
-            builder.Add($"[{@this.QueryFilterConfig}: {@this.SearchEntryState.ToFullKey()}");
-            builder.Add($"{@this.FilteringState.ToFullKey()}]");
-            return string.Join(", ", builder);
-        }
-
-        public static string TopologyReport(this IModeledMarkdownContext @this)
-        {
-            var builder = new List<string>();
-            builder.Add($"{@this.ProjectionTopology.ToFullKey()}");
-            builder.Add($"{@this.ReplaceItemsEventingOptions.ToFullKey()}");
-            return string.Join(", ", builder);
-        }
     }
 }

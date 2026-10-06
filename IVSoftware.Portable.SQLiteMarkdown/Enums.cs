@@ -1,10 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.StateRunner.Preview;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -32,6 +29,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Semicolon,
         Tilde,
     }
+
+    [NotFlags]
     public enum PersistenceMode
     {
         /// <summary>
@@ -86,11 +85,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// State machine whose specific behavior depends on QueryFilterConfig
     /// </summary>
+    [NotFlags]
     public enum FilteringState
     {
         /// <summary>
         /// One of:
-        /// - Filtering is either globally disabled.
+        /// - Filtering is globally disabled.
         /// - The minimum item count of 2 UNFILTERED items is not present.
         /// </summary>
         Ineligible,
@@ -101,7 +101,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <remarks>
         /// - Settled text changes now invoke internal filter queries.
         /// - This epoch cannot fall below Armed without a Clear.
-        /// - Specifically, empty IME alone does not make this happen.
+        /// - Specifically, empty IME alone does not make filter ineligible.
+        /// - Conditionally routes to full recordset in the absence of sql-based or property-based predicates.
         /// </remarks>
         Armed,
 
@@ -204,114 +205,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         WM_CONTEXTMENU = 0x007B,
     }
 
-    internal enum StdMarkdownElement
-    {
-        model,
-        xitem,
-    }
-
-    public enum StdMarkdownAttribute
-    {
-        /// <summary>
-        /// XBound histogrammer with bins based on XElement.Changed.
-        /// </summary>
-        histo,
-
-        /// <summary>
-        /// XBound active filters dictionary,
-        /// </summary>
-        filters,
-
-        /// <summary>
-        /// Path segment name. 
-        /// </summary>
-        /// <remarks>
-        /// - This is typically both a guid and also the PK.
-        /// - Not to be confused with Description.
-        /// </remarks>
-        text,
-
-        /// <summary>
-        /// A truncated reference version of Description.
-        /// </summary>
-        /// <remarks>
-        /// Not to be confused with text which is generally a guid.
-        /// </remarks>
-        preview,
-
-        /// <summary>
-        /// MarkdownContext
-        /// </summary>
-        mdc,
-
-        /// <summary>
-        /// The XBoundAttribute that holds this data model.
-        /// </summary>
-        /// <remarks>
-        /// Not to be confused with the XElement Model property.
-        /// </remarks>
-        [IFTTT("-> FilterQueryDatabase")]
-        model,
-
-        /// <summary>
-        /// Records the net effect of qmatch and pmatch
-        /// </summary>
-        [DefaultValue("True")]
-        [IFTTT("-> PredicateMatchSubset")]
-        match,
-
-        /// <summary>
-        /// This record matches all active predicates.
-        /// </summary>
-        [IFTTT("-> match")]
-        [DefaultValue("True")]
-        qmatch,
-
-        /// <summary>
-        /// This record matches all active predicates.
-        /// </summary>
-        [IFTTT("-> match")]
-        [DefaultValue("True")]
-        pmatch,
-
-        /// <summary>
-        /// Canonical record order.
-        /// </summary>
-        /// <remarks>
-        /// Serialized form of <c>Priority</c>.
-        /// Mental Model: "The canonical sequential order of the records."
-        /// </remarks>
-        order,
-
-        /// <summary>
-        /// Local sort override.
-        /// </summary>
-        /// <remarks>
-        /// Serialized form of <c>PriorityOverride</c>.
-        /// Mental Model: "The user clicked the column header and this is the temporary sort."
-        /// </remarks>
-        sort,
-
-        /// <summary>
-        /// Indicates the available modeling on {T}.
-        /// </summary>
-        modeling,
-
-        #region P R E D I C A T E S
-        /// <summary>
-        /// XBoundObject that holds a sorting predicate when present.
-        /// </summary>
-        comparer,
-
-        /// <summary>
-        /// XBoundObject that holds a filter predicates when present.
-        /// </summary>
-        predicates,
-
-        triage,
-        #endregion P R E D I C A T E S
-    }
-
     /// <summary>
     /// Laws of Gravity for the Markdown Context Domain
     /// </summary>
@@ -326,7 +219,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// - BCL Reset: When Reset epoch completes.
     /// - Replace with Reason: When Commit() epoch completes.
     /// - Replace with Reason: When Remodel(bool) epoch completes.
-    /// ReplaceItemsEventingOption
+    /// ReplaceItemsEventingPolicy
     /// - Replace with Reason is another way of saying Clear then Add.
     /// - Depending on this setting, replace actions produce 'any or all' of
     ///   1. BCL Reset event on the clear phase before the replace.
@@ -511,121 +404,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         UpdateStatesForEpoch = StdFSMState.UpdateStatesForEpoch,
 
         RaiseModelSettledEvent = StdFSMState.ModelSettled,
-    }
-
-    [NotFlags]
-    public enum NetProjectionTopology
-    {
-        /// <summary>
-        /// No event or synchronization targets exist.
-        /// </summary>
-        None,
-
-        /// <summary>
-        /// The runtime type is a subclass of MarkdownContext and implements INotifyCollectionChanged.
-        /// </summary>
-        Routed,
-
-        /// <summary>
-        /// A concrete ObservableNetProjection is available for observation only.
-        /// </summary>
-        ObservableOnly,
-
-        /// <summary>
-        /// A concrete ObservableNetProjection is available for both observation and for read-write.
-        /// </summary>
-        /// <remarks>
-        /// OPT-IN: 
-        /// - Enables MDC to puppeteer the projection when maintaining canonical state.
-        /// - This is a powerful opt-in granting MDC safe write authority over 
-        ///   the observable collection.
-        /// </remarks>
-        AllowDirectChanges,
-    }
-
-    [Flags]
-    public enum ReplaceItemsEventingOption
-    {
-        /// <summary>
-        /// Emit structural collection change events that reflect the specific mutation.
-        /// </summary>
-        /// <remarks>
-        /// The emitted INCC event corresponds to the structural transition classified
-        /// by <see cref="ReplaceItemsEventingTriage"/>:
-        /// - EmptyBefore  -> Add
-        /// - EmptyAfter   -> Remove
-        /// - NeverEmpty   -> Replace
-        ///
-        /// Each event may represent multiple items.
-        ///
-        /// MentalModel: "Observers reconcile the mutation structurally."
-        /// </remarks>
-        StructuralReplaceEvent = 0x1,
-
-        /// <summary>
-        /// Collapse any structural mutation into a single Reset event.
-        /// </summary>
-        /// <remarks>
-        /// Observers are instructed to discard their current view and
-        /// re-enumerate the collection regardless of the underlying mutation.
-        ///
-        /// MentalModel: "Something changed; refresh everything."
-        /// </remarks>
-        ResetOnAnyChange = 0x2,
-
-        /// <summary>
-        /// Emit both the structural mutation event and a Reset notification.
-        /// </summary>
-        /// <remarks>
-        /// The structural INCC event (Add, Remove, or Replace) is raised first
-        /// according to <see cref="ReplaceItemsEventingTriage"/>, followed by a
-        /// Reset event.
-        ///
-        /// This mode preserves structural information for observers that track
-        /// incremental mutations while also forcing views that rely on Reset
-        /// semantics to refresh.
-        ///
-        /// MentalModel: "Tell observers exactly what changed, then force a refresh."
-        /// </remarks>
-        All = ResetOnAnyChange | StructuralReplaceEvent,
-    }
-
-    [NotFlags]
-    internal enum ReplaceItemsEventingTriage
-    {
-        /// <summary>
-        /// Describes a noop "wash" invocation.
-        /// </summary>
-        /// <remarks>
-        /// Unconditionally suppress event invocation.
-        /// </remarks>
-        AlwaysEmpty,
-
-        /// <summary>
-        /// Describes a virtual replacement with Add semantics.
-        /// </summary>
-        /// <remarks>
-        /// StructuralReplaceEvent - generates a Add action for N new items.
-        /// ResetOnAnyChange - generates an Reset event.
-        /// </remarks>
-        EmptyBefore,
-
-        /// <summary>
-        /// Describes a virtual replacement with Clear semantics.
-        /// </summary>
-        /// <remarks>
-        /// StructuralReplaceEvent - generates a Remove action for N old items.
-        /// ResetOnAnyChange - generates an Reset event.
-        /// </remarks>
-        EmptyAfter,
-
-        /// <summary>
-        /// Describes a virtual replacement with Replace semantics.
-        /// </summary>
-        /// <remarks>
-        /// StructuralReplaceEvent - generates a Replace action for N old and N' new items.
-        /// ResetOnAnyChange - generates an Reset event.
-        /// </remarks>
-        NeverEmpty,
     }
 }

@@ -1,10 +1,11 @@
+using IVSoftware.Portable;
+using IVSoftware.Portable.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest;
 using IVSoftware.Portable.SQLiteMarkdown.WinTest.OP;
-using SQLite;
-using IVSoftware.Portable;
 using IVSoftware.WinForms;
+using SQLite;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
 {

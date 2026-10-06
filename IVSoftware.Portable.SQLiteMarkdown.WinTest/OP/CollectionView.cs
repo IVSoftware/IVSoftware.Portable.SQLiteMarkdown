@@ -1,8 +1,11 @@
 ﻿using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
+using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using View = System.Windows.Forms.Control;
@@ -50,6 +53,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
 
                     View? view = null;
                     var row = Rows[e.RowIndex];
+                    EnsureTemplateCapacity();
                     var mod = e.RowIndex % _templateCount;
 
                     if (!_recycledViews.TryGetValue(mod, out view))
@@ -104,7 +108,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
             Scroll += (sender, e) =>
             {
                 Vacuum();
-                WDTScroll.StartOrRestart(e);
             };
             Layout += (sender, e) =>
             {
@@ -120,6 +123,189 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
             };
         }
 
+        /// <summary>
+        /// Reclaims inactive views, compacting the current viewport presentation.
+        /// </summary>
+        /// <remarks>
+        /// Performs a mathematically efficient reconciliation between recycled
+        /// cards and their current data contexts for the visible row range.
+        /// </remarks>
+        private void Vacuum()
+        {
+            if (ItemsSource is null || !TryGetVisibleRows(out int firstRow, out int visibleCount))
+            {
+                HideRecycledViews();
+                return;
+            }
+
+            int activeCount = Math.Max(0, Math.Min(Math.Min(visibleCount, _templateCount), ItemsSource.Count - firstRow));
+            var activeMods = new HashSet<int>();
+
+            for (int offset = 0; offset < activeCount; offset++)
+            {
+                int rowIndex = firstRow + offset;
+                int mod = rowIndex % _templateCount;
+                object? model = ItemsSource[rowIndex];
+
+                activeMods.Add(mod);
+
+                if (!_recycledViews.TryGetValue(mod, out var view))
+                {
+                    view = (View)Activator.CreateInstance(DataTemplate.Type)!;
+                    _recycledViews[mod] = view;
+                    Controls.Add(view);
+                }
+
+                if (!ReferenceEquals(view.DataContext, model))
+                {
+                    view.DataContext = model;
+                    view.Invalidate();
+                }
+
+                view.Visible = true;
+            }
+
+            foreach (var kvp in _recycledViews)
+            {
+                if (!activeMods.Contains(kvp.Key))
+                {
+                    kvp.Value.Visible = false;
+                }
+            }
+
+#if DEBUG
+            string items, cards, actual1, actual2;
+            if (ItemsSource is IObservableQueryFilterSource<SelectableQFModel> oqfs)
+            {
+                switch (oqfs.InputText)
+                {
+                    case "color d":
+                        items =
+                            JsonConvert
+                            .SerializeObject(
+                                ItemsSource
+                                ?.OfType<SelectableQFModel>()
+                                 .Select(_ => _.Description), Formatting.Indented);
+                        { }
+                        actual1 = @"[
+  ""Brown Dog"",
+  ""Blue Bird"",
+  ""Red Cherry"",
+  ""Gray Wolf"",
+  ""Pink Flamingo"",
+  ""Golden Lion"",
+  ""Brown Bear"",
+  ""Red Strawberry"",
+  ""White Swan""
+]";
+                        cards = JsonConvert
+                        .SerializeObject(
+                            Controls
+                            ?.OfType<SelectableQFViewCard>()
+                             .Where(_ => _.Visible)
+                             .Select(_ => _.DataContext)
+                             .OfType<SelectableQFModel>()
+                              .Select(_ => _.Description), Formatting.Indented);
+                        { }
+                        actual2 = @"[
+  ""Brown Dog"",
+  ""Green Apple"",
+  ""Yellow Banana"",
+  ""Blue Bird"",
+  ""Red Cherry"",
+  ""Black Cat"",
+  ""Orange Fox"",
+  ""White Rabbit"",
+  ""Purple Grape""
+]";
+                        break;
+                }
+
+                // Ah! Here we go
+                int index = 0;
+                foreach (SelectableQFModel item in ItemsSource!)
+                {
+                    if (ReferenceEquals(item, ItemsSource[index]))
+                    {   /* G T K */
+                    }
+                    else
+                    {   /* B T K */
+                        Debug.Fail($@"AUDIT FAILURE.");
+                    }
+                    index++;
+                }
+
+#endif
+            }
+        }
+
+        private void EnsureTemplateCapacity()
+        {
+            if (TryGetVisibleRows(out _, out int visibleCount))
+            {
+                // Every displayed row needs a distinct live template slot. Keep
+                // one spare for row-height changes that can occur while painting.
+                _templateCount = Math.Max(_templateCount, visibleCount + 1);
+            }
+        }
+
+        private bool TryGetVisibleRows(out int firstRow, out int visibleCount)
+        {
+            firstRow = -1;
+            visibleCount = 0;
+
+            if (!IsHandleCreated || RowCount == 0)
+            {
+                return false;
+            }
+
+            try
+            {
+                firstRow = FirstDisplayedScrollingRowIndex;
+                visibleCount = Math.Max(DisplayedRowCount(includePartialRow: true), 0);
+                EnsureTemplateCapacity(visibleCount);
+                return firstRow >= 0 && visibleCount > 0;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+        }
+
+        private void EnsureTemplateCapacity(int visibleCount)
+        {
+            _templateCount = Math.Max(_templateCount, visibleCount + 1);
+        }
+
+        private void HideRecycledViews()
+        {
+            foreach (var recycled in _recycledViews.Values)
+            {
+                recycled.Visible = false;
+            }
+        }
+
+
+#if false
+        private void Vacuum()
+        {
+            int first = Math.Max(FirstDisplayedScrollingRowIndex, 0);
+            int last = first + DisplayedRowCount(true);
+            _templateCount = Math.Max(_templateCount, (last - first) + 1);
+            var visibleKeys = new HashSet<int>();
+            for (int i = first; i < last; i++)
+            {
+                visibleKeys.Add(i % _templateCount);
+            }
+            foreach (var kvp in _recycledViews)
+            {
+                if (!visibleKeys.Contains(kvp.Key))
+                {
+                    kvp.Value.Visible = false;
+                }
+            }
+        }
+#endif
 
         /// <summary>
         /// Ensures BackColor tracks BackgroundColor so that recycled templates which declare
@@ -133,7 +319,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
             BackColor = BackgroundColor;
         }
 
-        public IReadOnlyList<object> SelectedItems => new ReadOnlyCollection<object>(_selectedItems);
+        public IReadOnlyList<object> SelectedItems => _selectedItems.ToArray();
 
         private readonly ObservableHashSet _selectedItems;
         public new SelectionMode SelectionMode
@@ -301,6 +487,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
             {
                 if (_wdtScroll is null)
                 {
+                    // [Careful]Invalidate calls Vacuum indirectly
                     _wdtScroll = new WatchdogTimer(
                         defaultInitialAction: () =>
                         {
@@ -318,26 +505,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
             }
         }
         WatchdogTimer? _wdtScroll = null;
-        int _templateCount = 10;
 
-        private void Vacuum()
-        {
-            int first = Math.Max(FirstDisplayedScrollingRowIndex, 0);
-            int last = first + DisplayedRowCount(true);
-            _templateCount = Math.Max(_templateCount, (last - first) + 1);
-            var visibleKeys = new HashSet<int>();
-            for (int i = first; i < last; i++)
-            {
-                visibleKeys.Add(i % _templateCount);
-            }
-            foreach (var kvp in _recycledViews)
-            {
-                if (!visibleKeys.Contains(kvp.Key))
-                {
-                    kvp.Value.Visible = false;
-                }
-            }
-        }
+        int _templateCount = 10;
 
         [EditorBrowsable(EditorBrowsableState.Never), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public IList? ItemsSource
@@ -367,7 +536,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest.OP
                         ((INotifyCollectionChanged)_itemsSource).CollectionChanged += localOnCollectionChanged;
                     }
                     RowCount = ItemsSource?.Count ?? 0;
-                    Vacuum();
                     Invalidate();
                     OnPropertyChanged();
 

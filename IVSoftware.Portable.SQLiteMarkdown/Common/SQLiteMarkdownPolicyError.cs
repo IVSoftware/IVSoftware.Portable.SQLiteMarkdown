@@ -8,7 +8,7 @@ using System.Text;
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
 {
     [Policy(typeof(MarkdownContextException))]
-    public enum MarkdownContextPolicyViolation
+    public enum MarkdownContextPolicy
     {
         [Description($"{nameof(SQLiteOperationFailed)} Policy violation: The SQLite operation is expected to succeed.")]
         [PolicyEnforcement(ThrowOrAdvise.ThrowHard)]
@@ -58,9 +58,14 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         [PolicyEnforcement(ThrowOrAdvise.ThrowSoft)]
         ExplicitClearAdvisory,
 
-        [Description($"{nameof(ConfigurationModifiedByDatabaseAssignment)} Policy violation: It is illegal to toggle between boolean and non boolean values for the same XAttribute.")]
+        [Description($"{nameof(XAttributeBooleanToggle)} Policy violation: It is illegal to toggle between boolean and non boolean values for the same XAttribute.")]
         [PolicyEnforcement(ThrowOrAdvise.ThrowHard)]
         XAttributeBooleanToggle,
+
+
+        [Description($"{nameof(ImmutableContractType)} Policy advisory: Expecting ContractType is immutable in version >= 2.x")]
+        [PolicyEnforcement(ThrowOrAdvise.ThrowSoft)]
+        ImmutableContractType,
     }
 
     public class MarkdownContextException : Exception

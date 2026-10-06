@@ -1,15 +1,17 @@
-using IVSoftware.Portable.Collections.Preview;
+using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Events;
+using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.SQLiteMarkdown.Collections;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
+using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.DemoDB;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.DemoDB;
 using IVSoftware.Portable.SQLiteMarkdown.MSTest.Models.QFTemplates;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
@@ -21,7 +23,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Transactions;
 using System.Xml.Linq;
+using IgnoreAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
@@ -568,7 +572,7 @@ Properties     =""{
                 testLiteralQuery;
 
             #region P R O L O G U E 
-            var mdc = new ModeledMarkdownContext<SelectableQFModelLTOQO>();
+            var mdc = new MarkdownContext<SelectableQFModelLTOQO>();
             mdc.InputText = @"animal\""";
             await mdc;
             sql = mdc.ParseSqlMarkdown();
@@ -1308,11 +1312,10 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
         {
             string actual, expected, sql;
             var builder = new List<string>();
-            SenderEventPair sep;
             NotifyCollectionChangedEventArgs ecc;
             Queue<SenderEventPair> eventQueue = new();
             List<SelectableQFModelLTOQO> results;
-            var itemsSource = new ObservableQueryFilterSource<SelectableQFModelLTOQO>();
+            var oqfs = new ObservableQueryFilterSource<SelectableQFModelLTOQO>();
             using (var cnx = InitializeInMemoryDatabase())
             {
                 subtestBasicQueryAnimal();
@@ -1321,27 +1324,29 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 #region S U B T E S T S
                 void subtestBasicQueryAnimal()
                 {
+                    #region L o c a l F x
                     // This subtest only. For real do not hoist or generalize this.
                     using var local = this.WithOnDispose(
                         onInit: (sender, e) =>
                         {
-                            itemsSource.CollectionChanged += localOnCollectionChanged;
+                            oqfs.CollectionChanged += localOnCollectionChanged;
                         },
                         onDispose: (sender, e) =>
                         {
-                            itemsSource.CollectionChanged -= localOnCollectionChanged;
+                            oqfs.CollectionChanged -= localOnCollectionChanged;
                         });
                     void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
                     {
-                        builder.Add(e.ToString(ReferenceEquals(sender, itemsSource)));
+                        builder.Add(e.ToStringEx());
                     }
+                    #endregion L o c a l F x
 
                     // 260311.A RETROFIT - StateReport came online later. Let's see if it agrees.
-                    actual = itemsSource.StateReport();
+                    actual = oqfs.StateReport();
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1352,35 +1357,22 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     sql = "animal".ParseSqlMarkdown<SelectableQFModelLTOQO>();
                     results = cnx.Query<SelectableQFModelLTOQO>(sql);
 
-                    // NEW 260311
-                    actual = itemsSource.TopologyReport();
-                    actual.ToClipboardExpected();
-                    { }
-                    expected = @" 
-NetProjectionTopology.Routed, ReplaceItemsEventingOption.StructuralReplaceEvent"
-                    ;
-
-                    Assert.AreEqual(
-                        expected.NormalizeResult(),
-                        actual.NormalizeResult(),
-                        "Expecting topology disvcovery to match."
-                    );
-
-                    itemsSource.ReplaceItems(results);
+                    oqfs.ReplaceItems(results);
 
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
+Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=12 OldItems=* NewStartingIndex= 0 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
                     ;
 
                     // 260311.B RETROFIT - StateReport came online later. Let's see if it agrees.
-                    actual = itemsSource.StateReport();
+                    actual = oqfs.StateReport();
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1395,7 +1387,7 @@ NetProjection.Add     NewItems=12 ModelSettledEventArgs           "
                         "."
                     );
 
-                    actual = string.Join(Environment.NewLine, itemsSource.Select(_ => _.ToString()));
+                    actual = string.Join(Environment.NewLine, oqfs.Select(_ => _.ToString()));
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
@@ -1426,25 +1418,25 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     using var local = this.WithOnDispose(
                         onInit: (sender, e) =>
                         {
-                            itemsSource.CollectionChanged += localOnCollectionChanged;
+                            oqfs.CollectionChanged += localOnCollectionChanged;
                         },
                         onDispose: (sender, e) =>
                         {
-                            itemsSource.CollectionChanged -= localOnCollectionChanged;
+                            oqfs.CollectionChanged -= localOnCollectionChanged;
                         });
                     void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
                     {
                         eventQueue.Enqueue((sender, e));
-                        builder.Add(e.ToString(ReferenceEquals(sender, itemsSource)));
+                        builder.Add(e.ToStringEx());
                     }
                     #endregion L o c a l F x
 
                     // 260311.C RETROFIT - StateReport came online later. Let's see if it agrees.
-                    actual = itemsSource.StateReport();
+                    actual = oqfs.StateReport();
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1452,26 +1444,26 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                         "Expecting StateReport shows RESUME WITH CURRENT STATE."
                     );
 
-                    Assert.AreEqual(string.Empty, itemsSource.InputText, "Confirm before clear.");
+                    Assert.AreEqual(string.Empty, oqfs.InputText, "Confirm before clear.");
 
                     // Expecting "no surprises" here.
                     builder.Clear();
                     eventQueue.Clear();
-                    itemsSource.Clear();
+                    oqfs.Clear();
 
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
                     { }
-                    expected = @"     
-NetProjection.Reset   ModelSettledEventArgs           "
+                    expected = @" 
+Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
                     ;
 
                     // 260311.D RETROFIT - StateReport came online later. Let's see if it agrees.
-                    actual = itemsSource.StateReport();
+                    actual = oqfs.StateReport();
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1489,14 +1481,14 @@ NetProjection.Reset   ModelSettledEventArgs           "
                     sql = "animal".ParseSqlMarkdown<SelectableQFModelLTOQO>();
                     results = cnx.Query<SelectableQFModelLTOQO>(sql);
 
-                    itemsSource.ReplaceItems(results);
+                    oqfs.ReplaceItems(results);
 
                     actual = string.Join(Environment.NewLine, builder);
                     actual.ToClipboardExpected();
                     { }
                     expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems=12 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=12 OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
                     ;
                     Assert.AreEqual(
                         expected.NormalizeResult(),
@@ -1570,8 +1562,6 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
         [TestMethod, DoNotParallelize]
         public async Task Test_TrackProgressiveInputState()
         {
-            var id1 = Thread.CurrentThread.ManagedThreadId;
-
             using var te = this.TestableEpoch();
 
             var builder = new List<string>();
@@ -1591,8 +1581,15 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 @"\& \| \! \( \) \[ \] \' \"" \\".ParseSqlMarkdown<PetProfileN>();
                 Queue<SenderEventPair> eventQueue = new();
                 List<T> recordset;
-                var items = new ObservableQueryFilterSource<T>();
 
+                // Placeholder is composed from Title, so set it explicitly prior
+                // to asserting strings like "Search Items" and "Filter Items".
+                var oqfs = new ObservableQueryFilterSource<T>
+                {
+                    Title = "Items",
+                };
+
+#if false && USE_LEGACY_ONP
                 Assert.IsNull(
                     items.ObservableNetProjection,
                     "Expecting raw, portable list with no ONP.");
@@ -1600,11 +1597,12 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     NetProjectionTopology.Routed, 
                     items.ProjectionTopology,
                     "Expecting detection of INotifyCollectionChanged in CTor.");
+#endif
 
                 string caller = string.Empty;
 
 
-                items.InputTextSettled += async (sender, e) =>
+                oqfs.InputTextSettled += async (sender, e) =>
                 {
                     if (e is CancelEventArgs eCancel)
                     {
@@ -1620,18 +1618,26 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 };
 
                 // P R O P E R T Y   E V E N T    Q U E U E
-                items.PropertyChanged += (sender, e) =>
+                oqfs.PropertyChanged += (sender, eUnk) =>
                 {
-                    switch (e.PropertyName)
+                    switch (eUnk)
                     {
-                        case nameof(items.Busy):
+                        case EHPropertyChangedEventArgs:
+                            // Do not show
+                            return;
+                        default:
+                            break;
+                    }
+                    switch (eUnk.PropertyName)
+                    {
+                        case nameof(oqfs.Busy):
                             break;
                         case nameof(SearchEntryState):
                             if (caller == "subtestCommit")
                             {
 
                             }
-                            builder.Add($"{e.PropertyName}='{items.SearchEntryState}'");
+                            builder.Add($"{eUnk.PropertyName}='{oqfs.SearchEntryState}'");
                             break;
                         case nameof(FilteringState):
                             if (caller == "subtestCommit")
@@ -1639,16 +1645,20 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
 
                             }
                             break;
-                        case nameof(items.RouteToFullRecordset):
+                        case nameof(oqfs.RouteToFullRecordset):
                             if (caller == "subtestCommit")
                             {
 
                             }
                             break;
-                        case nameof(items.ProxyType):
+                        case nameof(oqfs.ProxyType):
                             break;
+
+                        case nameof(oqfs.Count):
+                        case "Items[]":
+                            throw new InvalidOperationException("Unexpected notifications; the PropertyChanged event is 'new'.");
                     }
-                    eventQueue.Enqueue((sender, e));
+                    eventQueue.Enqueue((sender!, eUnk));
                 };
 
                 using (var cnx = InitializeInMemoryDatabase())
@@ -1676,21 +1686,20 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
 
                     void subtestClearedToFirstChar()
                     {
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
-
                         Assert.AreEqual(
                             "Search Items",
-                            items.Placeholder);
+                            oqfs.Placeholder);
 
                         // "a"
-                        items.InputText += 'a';
+                        oqfs.InputText += 'a';
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1699,7 +1708,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
 
                         // Limits touched 260304
                         // First, make sure we're testing QueryAndFilter
-                        Assert.AreEqual(QueryFilterConfig.QueryAndFilter, items.QueryFilterConfig);
+                        Assert.AreEqual(QueryFilterConfig.QueryAndFilter, oqfs.QueryFilterConfig);
                         // Now, this *did* have a Running change showing up but we don't want that.
                         expected = @" 
 SearchEntryState
@@ -1716,33 +1725,33 @@ InputText"
                         eventQueue.Clear();
 
 
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 1, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+[IME Len: 1, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                     }
 
                     void subtestFirstCharToEmpty()
                     {
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 1, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
+[IME Len: 1, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryENB, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting starting state is ENB.");
 
                         // Backspace
-                        items.InputText = string.Empty;
+                        oqfs.InputText = string.Empty;
 
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
                         eventQueue.Clear();
@@ -1750,25 +1759,27 @@ InputText"
 
                     void subtestEmptyToFirstChar()
                     {
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting coming in at Cleared.");
 
                         Assert.AreEqual(
                             "Search Items",
-                            items.Placeholder);
+                            oqfs.Placeholder);
+
                         // "a"
-                        items.InputText += 'a';
+                        oqfs.InputText += 'a';
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
                             .OfType<PropertyChangedEventArgs>()
                             .Select(_ => _.PropertyName));
-
+                        actual.ToClipboardExpected();
+                        { }
                         expected = @"
 SearchEntryState
 InputText";
@@ -1780,7 +1791,7 @@ InputText";
                         );
                         Assert.AreEqual(
                             SearchEntryState.QueryENB,
-                            items.SearchEntryState,
+                            oqfs.SearchEntryState,
                             "Expecting ending state is ENB."
                         );
                         eventQueue.Clear();
@@ -1790,12 +1801,12 @@ InputText";
                     {
                         Assert.AreEqual(
                             SearchEntryState.QueryENB,
-                            items.SearchEntryState,
+                            oqfs.SearchEntryState,
                             "Expecting starting state is ENB."
                         );
 
                         // "an"
-                        items.InputText += 'n';
+                        oqfs.InputText += 'n';
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1812,7 +1823,7 @@ InputText";
                         );
                         Assert.AreEqual(
                             SearchEntryState.QueryENB,
-                            items.SearchEntryState,
+                            oqfs.SearchEntryState,
                             "Expecting ending state is 'still' ENB."
                         );
                         eventQueue.Clear();
@@ -1822,12 +1833,12 @@ InputText";
                     {
                         Assert.AreEqual(
                             SearchEntryState.QueryENB,
-                            items.SearchEntryState,
+                            oqfs.SearchEntryState,
                             "Expecting starting state is ENB."
                         );
 
                         // "ani"
-                        items.InputText += 'i';
+                        oqfs.InputText += 'i';
                         actual =
                             string
                             .Join(Environment.NewLine, eventQueue.Select(_ => _.e)
@@ -1847,7 +1858,7 @@ InputText";
 
                         Assert.AreEqual(
                             SearchEntryState.QueryEN,
-                            items.SearchEntryState,
+                            oqfs.SearchEntryState,
                             "Expecting specific state has now CHANGED."
                         );
                     }
@@ -1855,25 +1866,13 @@ InputText";
                     async Task subtestCommit()
                     {
                         // "animal"
-                        items.InputText += "mal";
+                        oqfs.InputText += "mal";
                         Assert.AreEqual(
                             SearchEntryState.QueryEN,
-                            items.SearchEntryState,
+                            oqfs.SearchEntryState,
                             "Expecting specific state UNCHANGED."
                         );
-                        Assert.IsFalse(items.IsFiltering, "Expecting NO NEED TO AWAIT HERE.");
-
-                        actual = items.TopologyReport();
-                        actual.ToClipboardExpected();
-                        { }
-                        expected = @" 
-NetProjectionTopology.Routed, ReplaceItemsEventingOption.StructuralReplaceEvent";
-
-                        Assert.AreEqual(
-                            expected.NormalizeResult(),
-                            actual.NormalizeResult(),
-                            "Expecting routed topology."
-                        );
+                        Assert.IsFalse(oqfs.IsFiltering, "Expecting NO NEED TO AWAIT HERE.");
 
                         #region C O M M I T
                         // This section wraps the RECORDSET REQUEST EVENT as a
@@ -1893,22 +1892,22 @@ SELECT * FROM items WHERE
                                 actual.NormalizeResult(),
                                 "Expecting propertly formed query on 'items'."
                             );
-                            e.CanonicalSuperset = cnx.Query<T>(e.SQL);
+                            e.Recordset = cnx.Query<T>(e.SQL);
                         }
                         #endregion L o c a l F x
-                        using (items.WithOnDispose(
+                        using (oqfs.WithOnDispose(
                             onInit: (sender, e) =>
                             {
-                                items.RecordsetRequest += localOnRecordsetRequestA;
+                                oqfs.RecordsetRequest += localOnRecordsetRequestA;
                             },
                             onDispose: (sender, e) =>
                             {
-                                items.RecordsetRequest -= localOnRecordsetRequestA;
+                                oqfs.RecordsetRequest -= localOnRecordsetRequestA;
                             }))
                         {
                             // ☆☆☆☆☆
                             // C O M M I T
-                            ((MarkdownContext)items).Commit();
+                            oqfs.Commit();
                             // ☆☆☆☆☆
                         }
                         #endregion C O M M I T
@@ -1926,12 +1925,13 @@ SELECT * FROM items WHERE
                         // ADDED: What we see now is a cradle-to-grave Commit epoch.
                         expected = @" 
 InputText
+Busy
 ProxyType
 TableName
-Busy
-SearchEntryState
+RouteKey
 FilteringState
 IsFiltering
+SearchEntryState
 Busy"
                         ;
 
@@ -1941,11 +1941,11 @@ Busy"
                             "Expecting specific property changes."
                         );
 
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 6, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 6, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
                         Assert.AreEqual(
                             expected.NormalizeResult(), 
@@ -1956,13 +1956,13 @@ Busy"
                         eventQueue.Clear();
 
                         // T E R M I N A L    C L E A R
-                        items.Clear();
+                        oqfs.Clear();
 
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
                         ;
                         Assert.AreEqual(
                             expected.NormalizeResult(), 
@@ -1992,18 +1992,18 @@ SearchEntryState";
                         eventQueue.Clear();
 
                         // I N J E C T    I N S T E A D
-                        Assert.AreEqual(string.Empty, items.InputText, "[Remember] - We did a terminal clear.");
+                        Assert.AreEqual(string.Empty, oqfs.InputText, "[Remember] - We did a terminal clear.");
                         sql = "animal".ParseSqlMarkdown<T>();
                         recordset = cnx.Query<T>(sql);
 
                         // DIFFERENT - Async version
-                        await items.ReplaceItemsAsync(recordset);
+                        await oqfs.ReplaceItemsAsync(recordset);
 
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
                         Assert.AreEqual(
                             expected.NormalizeResult(),
@@ -2017,20 +2017,20 @@ SearchEntryState";
                             .Select(_ => _.PropertyName));
                         actual.ToClipboardExpected();
                         { }
-                        expected = @" 
-SearchEntryState
+                        expected = @"
 FilteringState
-IsFiltering"
+IsFiltering 
+SearchEntryState"
                         ;
 
                         eventQueue.Clear();
 
-                        Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, items.SearchEntryState);
-                        Assert.AreEqual(FilteringState.Armed, items.FilteringState);
+                        Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, oqfs.SearchEntryState);
+                        Assert.AreEqual(FilteringState.Armed, oqfs.FilteringState);
                         Assert.AreNotEqual(0, recordset.Count);
-                        Assert.AreNotEqual(0, items.Count);
+                        Assert.AreNotEqual(0, oqfs.Count);
 
-                        actual = string.Join(Environment.NewLine, items.OfType<object>().Select(_ => _.ToString()));
+                        actual = string.Join(Environment.NewLine, oqfs.OfType<object>().Select(_ => _.ToString()));
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
@@ -2055,12 +2055,11 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                         );
 
                         // T E R M I N A L    C L E A R
-                        items.Clear();
+                        oqfs.Clear();
 
-                        Assert.IsNull(items.MemoryDatabase, "Expecting this hasn't been set up yet for this test.");
-                        items.MemoryDatabase = cnx;
-                        items.InputText = "animal";
-
+                        Assert.IsNull(oqfs.MemoryDatabase, "Expecting this hasn't been set up yet for this test.");
+                        oqfs.MemoryDatabase = cnx;
+                        oqfs.InputText = "animal";
 
 
                         #region L o c a l F x
@@ -2082,17 +2081,17 @@ SELECT * FROM items WHERE
                             // SKIP: e.CanonicalSuperset = cnx.Query<T>(e.SQL);
                         }
                         #endregion L o c a l F x
-                        using (items.WithOnDispose(
+                        using (oqfs.WithOnDispose(
                             onInit: (sender, e) =>
                             {
-                                items.RecordsetRequest += localOnRecordsetRequestB;
+                                oqfs.RecordsetRequest += localOnRecordsetRequestB;
                             },
                             onDispose: (sender, e) =>
                             {
-                                items.RecordsetRequest -= localOnRecordsetRequestB;
+                                oqfs.RecordsetRequest -= localOnRecordsetRequestB;
                             }))
                         {
-                            ((MarkdownContext)items).Commit();
+                            ((MarkdownContext)oqfs).Commit();
                         }
 
                         // Now clear
@@ -2106,13 +2105,13 @@ SELECT * FROM items WHERE
 
                         Assert.AreEqual(
                             FilteringState.Armed,
-                            items.Clear(all: false),     // <- EXECUTES THE CLEAR
+                            oqfs.Clear(all: false),     // <- EXECUTES THE CLEAR
                             "Expecting EMPTY input text WITHOUT regressing to Query. THIS MEANS ALL 12 ITEMS ARE SHOWN!"
                         );
 
                         Assert.AreEqual(
                             string.Empty,
-                            items.InputText,
+                            oqfs.InputText,
                             "Expecting empty input text."
                         );
 
@@ -2129,40 +2128,31 @@ SELECT * FROM items WHERE
 #endif
 
                         // Before
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
 
                         expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
-                        ;
-
-                        Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
-
-                        actual = items.TopologyReport();
-                        actual.ToClipboardExpected();
-                        { }
-                        expected = @" 
-NetProjectionTopology.Routed, ReplaceItemsEventingOption.StructuralReplaceEvent"
+[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                         ;
 
                         Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting StateReport to match.");
 
                         // PLEASE: Do not remove.
-                        Assert.IsTrue(items.ValidationPredicate("b"), "This was a BUGIRL for the test itself.");
+                        Assert.IsTrue(oqfs.ValidationPredicate("b"), "This was a BUGIRL for the test itself.");
 
                         // animal.b
                         // Expecting Filter mode and an internal query.
                         // See also: {24048258-8BE4-40C4-BF85-8863E98BED51}
-                        items.InputText += "b";
-                        await items;
+                        oqfs.InputText += "b";
+                        await oqfs;
 
                         // After
-                        actual = items.StateReport();
+                        actual = oqfs.StateReport();
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
-[IME Len: 1, IsFiltering: True], [Net: null, CC: 12, PMC: 5], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+[IME Len: 1, IsFiltering: True], [Net: 5, CC: 12, PMC: 5], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
                         ;
                         Assert.AreEqual(
                             expected.NormalizeResult(), 
@@ -2170,7 +2160,7 @@ NetProjectionTopology.Routed, ReplaceItemsEventingOption.StructuralReplaceEvent"
                             "Expecting the PMC is routed to the ONP. BOTH SHOULD SHOW 5.");
 
 
-                        actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
+                        actual = string.Join(Environment.NewLine, oqfs.Select(_ => _.ToString()));
                         actual.ToClipboardExpected();
                         { }
                         expected = @" 
@@ -2189,10 +2179,10 @@ Kangaroo ""bounce"",""outback"",""marsupial"" [animal]"
 
                         // [Careful("This polarity was wrong, and has been fixed.")]
                         // Limit touched 260301
-                        Assert.IsFalse(items.RouteToFullRecordset);
+                        Assert.IsFalse(oqfs.RouteToFullRecordset);
                         { }
                     }
-                    #endregion S U B T E S T S
+#endregion S U B T E S T S
                 }
             }
         }
@@ -3058,61 +3048,22 @@ SELECT * FROM items WHERE (QueryTerm LIKE '%Tom ""safe inner"" Tester%')"
         }
 
         /// <summary>
-        /// PFAW!
+        /// Queries a JSON-backed property using SQLite's built-in function and the SQL helper.
         /// </summary>
         [TestMethod]
-        [Careful(@"
-Shows how to register a custom function. 
-But for JsonExtract don't do that!
-Use 'json_extract' as shown or wrap it with the string.JsonExtract helper.")]
         public void Test_CustomSQLiteFunction()
         {
             using (var cnx = InitializeInMemoryDatabase())
             {
-                SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlite3());
-                SQLitePCL.Batteries.Init();
-                SQLitePCL.Batteries_V2.Init();
-
-                SQLitePCL.raw.sqlite3_create_function(
-                    cnx.Handle,
-                    "JsonExtract",
-                    2,
-                    1,
-                    null,
-                    (ctx, user_data, args) =>
-                    {
-                        var json = SQLitePCL.raw.sqlite3_value_text(args[0]).utf8_to_string();
-                        var key = SQLitePCL.raw.sqlite3_value_text(args[1]).utf8_to_string();
-
-                        // O U T
-                        string? value = null;
-
-                        (JsonConvert.DeserializeObject<Dictionary<string, string>>(json) as IDictionary<string, string>)
-                        ?.TryGetValue(key, out value);
-
-                        SQLitePCL.raw.sqlite3_result_text(ctx, value ?? string.Empty);
-                    }
-                );
-
-                // Arg0: The Column (*is not* literal)
-                // Arg1: The 'Key'  (*is* literal)
-                IList recordset;
-                recordset = cnx.Query<SelectableQFModelLTOQO>($@"
-Select *
-From items 
-Where JsonExtract(Properties, 'Description') LIKE '%brown dog%'");
-
-                Assert.AreEqual(1, recordset.Count, "Expecting successful query using custom function.");
-
-
-                // BUT THIS IS HOW YOU DO IT!
                 // Arg0: The Column (*is not* literal)
                 // Arg1: The 'Key'  (*is* literal and the $. is the ROOT SELECTOR)
-                recordset = cnx.Query<SelectableQFModelLTOQO>($@"
+                var recordset = cnx.Query<SelectableQFModelLTOQO>(@"
 Select *
 From items 
 Where json_extract(Properties, '$.Description') LIKE '%brown dog%'");
                 Assert.AreEqual(1, recordset.Count, "Expecting successful query using json_extract.");
+                Assert.AreEqual("Brown Dog", recordset[0].Description);
+                var matchedId = recordset[0].Id;
 
                 // And this makes it readable.
                 recordset = cnx.Query<SelectableQFModelLTOQO>($@"
@@ -3120,6 +3071,13 @@ Select *
 From items 
 Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                 Assert.AreEqual(1, recordset.Count, "Expecting successful query using JsonExtract helper extension.");
+                Assert.AreEqual(matchedId, recordset[0].Id, "Expecting both queries to return the same row.");
+
+                recordset = cnx.Query<SelectableQFModelLTOQO>($@"
+Select *
+From items
+Where {"Properties".JsonExtract("Description")} LIKE ?", "%no such description%");
+                Assert.AreEqual(0, recordset.Count, "Expecting unmatched JSON values to be excluded.");
             }
         }
 
@@ -3133,19 +3091,20 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
             Queue<SenderEventPair> eventQueue = new();
             var builder = new List<string>();
 
-            var items = new ObservableQueryFilterSource<SelectableQFModel>
+            var oqfs = new ObservableQueryFilterSource<SelectableQFModel>
             {
-                MemoryDatabase = InitializeInMemoryDatabase()
+                ModelTracking = ModelTrackingFlag.ItemQueries,
+                MemoryDatabase = InitializeInMemoryDatabase(),
             };
             NavSearchBar nsb = new NavSearchBar
             {
                 // NavSearchBar UI controls are designed
                 // to switch out sources many times.
-                ItemsSource = items,
+                ItemsSource = oqfs,
             };
-            items.InputTextSettled += async (sender, e) =>
+            oqfs.InputTextSettled += (sender, e) =>
             {
-                switch (items.FilteringState)
+                switch (oqfs.FilteringState)
                 {
                     case FilteringState.Ineligible:
                         break;
@@ -3157,14 +3116,10 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
                         break;
                 }
             };
-            items.CollectionChanged += (sender, e) =>
+            oqfs.CollectionChanged += (sender, e) =>
             {
-                if (ReferenceEquals(sender, items.CanonicalSuperset))
-                {
-                    Debug.Fail($@"ADVISORY - First Time.");
-                }
-                eventQueue.Enqueue((sender, e));
-                builder.Add(e.ToString(ReferenceEquals(sender, items)));
+                eventQueue.Enqueue((sender!, e));
+                builder.Add(e.ToStringEx());
 
                 // G T K
                 switch (e.Action)
@@ -3188,6 +3143,7 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
             await subtestQueryInitial();
             await subtest_Animals();
             await subtestAppendDatabaseAndRequery();
+            await subtest_BUGIRL_color_d();
 
             #region S U B T E S T S
             /// <summary>
@@ -3200,10 +3156,11 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
             /// </remarks>
             async Task subtestQueryInitial()
             {
-                actual = items.StateReport();
-                Assert.IsNull(items.ObservableNetProjection);
+                actual = oqfs.StateReport(includeRK: true);
+                actual.ToClipboardExpected();
+                { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]"
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible, StdRouteKey.CanonicalRoute]"
                 ;
                 Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting initial StateReport to match.");
 
@@ -3211,42 +3168,42 @@ Where {"Properties".JsonExtract("Description")} LIKE '%brown dog%'");
 
                 // Nothing requires await here.
                 nsb.InputText = "animal";   // Synchronous because IsFiltering is False.
-                items.Commit();             // Query on a synchronous memory connection => ReplaceItems() => LoadCanon().
+                oqfs.Commit();              // Query on a synchronous memory connection => ReplaceItems() => LoadCanon().
 
                 // #{4E778EBA-D838-48D0-89D6-3D1FC8229E23}
-                // Limit touched 260304
-                actual = string.Join(Environment.NewLine, builder);
+                // Limit touched 260404
+                actual = string.Join(Environment.NewLine, builder); builder.Clear();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems=12 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=12 OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
                 ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting the Commit method has an add component (first) and a reset component (last)."
+                    "Expecting the Commit method has a reset component (first) and an add component(last)."
                 );
 
-                actual = items.Model.ToString();
+                actual = oqfs.Model.ToString();
                 actual.ToClipboardExpected();
                 { }
                 // [Careful("What?")] No 'preview' attribute? THAT'S BECAUSE THIS IS SelectableQFModel and *not* IAffinityModel.
                 expected = @" 
-<model mdc=""[MDC]"" histo=""[model:12 match:0 qmatch:0 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" />
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" index=""9"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" index=""11"" />
 </model>"
                 ;
 
@@ -3259,7 +3216,6 @@ NetProjection.Add     NewItems=12 NewStartingIndex= 0 NotifyCollectionChangedEve
                 // As a product of the CollectionChangedEvent this
                 // is representative of what we'd see in the visible list.
                 actual = string.Join(Environment.NewLine, newItems.Cast<object>().Select(_ => _.ToString()));
-                actual.ToClipboardExpected();
                 actual.ToClipboardExpected();
                 { }
                 var newItemsPayload = @" 
@@ -3283,9 +3239,555 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                     "Expecting new items payload as reported."
                 );
 
-                items.InputText += " ca";
-                await items;
+                oqfs.InputText += " ca";
+                await oqfs;
                 { }
+
+                actual = oqfs.ToString(FormattingOMC.ModelWithPreview);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 qmatch:1 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Golden Lio"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Brown Bear"" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" preview=""Black Pant"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" preview=""Elephant  "" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" preview=""Giraffe   "" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" preview=""Kangaroo  "" index=""9"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" preview=""Turtle    "" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" preview=""Should NOT"" index=""11"" />
+</model>";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting a SINGLE match."
+                );
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+Remove  NewItems=*  OldItems=11 NewStartingIndex=-1 OldStartingIndex=0  NotifyCollectionChangedEventArgs "
+                ;
+
+                // Enumerator BUGIRLs
+                var array = oqfs.ToArray();
+                Assert.HasCount(1, oqfs);
+                Assert.HasCount(1, oqfs.ToArray());
+                Assert.HasCount(1, (IEnumerable)oqfs);
+                Assert.HasCount(1, (IEnumerable<object>)oqfs);
+                Assert.HasCount(1, (IEnumerable<SelectableQFModel>)oqfs);
+                Assert.AreEqual(1, oqfs.Count);
+                Assert.AreEqual(1, ((ICollection)oqfs).Count);
+                Assert.AreEqual(1, ((ICollection<SelectableQFModel>)oqfs).Count);
+                Assert.AreEqual(1, ((IList)oqfs).Count);
+                Assert.AreEqual(1, ((IList<SelectableQFModel>)oqfs).Count);
+                Assert.AreEqual(1, oqfs.PredicateMatchCount);
+                Assert.AreEqual(12, oqfs.CanonicalCount);
+                { }
+
+                actual = JsonConvert.SerializeObject(array, Formatting.Indented);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[
+  {
+    ""Id"": ""312d1c21-0000-0000-0000-000000000005"",
+    ""Description"": ""Black Cat"",
+    ""Keywords"": ""[]"",
+    ""KeywordsDisplay"": """",
+    ""Tags"": ""[animal] [color]"",
+    ""IsChecked"": false,
+    ""Selection"": 0,
+    ""IsEditing"": false,
+    ""PrimaryKey"": ""312d1c21-0000-0000-0000-000000000005"",
+    ""QueryTerm"": ""black~cat~[animal]~[color]"",
+    ""FilterTerm"": ""black~cat~[animal]~[color]"",
+    ""TagMatchTerm"": ""[animal] [color]"",
+    ""Properties"": ""{\r\n  \""Description\"": \""Black Cat\"",\r\n  \""Tags\"": \""[animal] [color]\""\r\n}""
+  }
+]";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting ONE array member."
+                );
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+Remove  NewItems=*  OldItems=11 NewStartingIndex=-1 OldStartingIndex=0  NotifyCollectionChangedEventArgs "
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting the Commit method has an add component (first) and a reset component (last)."
+                );
+            }
+
+            async Task subtest_Animals()
+            {
+                Assert.AreNotEqual(0, oqfs.CanonicalCount, "Expecting carry-over from previous subtest.");
+
+                // No surprises.
+                builder.Clear();
+                oqfs.Clear();
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting RESET event."
+                );
+
+                actual = oqfs.StateReport(includeRK: true);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible, StdRouteKey.CanonicalRoute]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting NO SURPRISES CLEAR."
+                );
+
+                Assert.AreEqual(
+                    false,
+                    oqfs.Settings[StdMarkdownContextSetting.AllowPluralize], 
+                    "Expecting object? that is a bool set to false.");
+
+                // IME
+                oqfs.InputText = "animals";
+                oqfs.Commit();
+
+                actual = oqfs.StateReport(includeRK: true);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 7, IsFiltering: False], [Net: 0, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteNoResults, FilteringState.Ineligible, StdRouteKey.CanonicalRoute]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting empty due to plural."
+                );
+
+                oqfs.Settings[StdMarkdownContextSetting.AllowPluralize] = true;
+                oqfs.Commit();
+
+                actual = oqfs.StateReport(includeRK: true);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 7, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed, StdRouteKey.CanonicalRoute]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting CC: 12 due to fuzzy query enabled by setting."
+                );
+
+                // IME
+                oqfs.InputText += " ";
+                await oqfs;
+
+                actual = oqfs.StateReport(includeRK:true);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 8, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed, StdRouteKey.CanonicalRoute]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting -> FilteringState.ARMED after APPEND SPACE CHARACTER because all items are still accounted for in filter."
+                );
+
+                // IME
+                oqfs.InputText += "c";
+                await oqfs;
+                Assert.AreEqual(
+                    StdRouteKey.QMatch,
+                    oqfs.RouteKey,
+                    $"Expecting settled collection routing is {StdRouteKey.QMatch.ToFullKey()}"
+                );
+
+                actual = oqfs.StateReport(includeRK: true);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 9, IsFiltering: True], [Net: 9, CC: 12, PMC: 9], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active, StdRouteKey.QMatch]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting -> FilteringState.ACTIVE after APPEND 'c'. " +
+                    "Expecting NINE matches. This only works if using FUZZY QUERY because of the 'animals' term -> 'animal'."
+                );
+
+                actual = oqfs.Model.CloneWithXBindings(10).ToString();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 qmatch:9 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""1"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""2"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""3"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Golden Lio"" index=""4"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Brown Bear"" index=""5"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" preview=""Black Pant"" index=""6"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" preview=""Elephant  "" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" preview=""Giraffe   "" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" preview=""Kangaroo  "" index=""9"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" preview=""Turtle    "" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" preview=""Should NOT"" index=""11"" qmatch=""True"" />
+</model>"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting that APPLY FILTER will have identified matches."
+                );
+
+                // IME
+                // Input text = animals ca
+                oqfs.InputText += "a";
+                await oqfs;
+
+                actual = oqfs.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 10, IsFiltering: True], [Net: 1, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting ONE match."
+                );
+                Assert.IsFalse(oqfs.RouteToFullRecordset);
+                Assert.HasCount(1, oqfs, $"This has to do with the enumerator properly switching.");
+
+                actual = oqfs.ToString(FormattingOMC.ModelWithPreview);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 qmatch:1 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Golden Lio"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Brown Bear"" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" preview=""Black Pant"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" preview=""Elephant  "" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" preview=""Giraffe   "" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" preview=""Kangaroo  "" index=""9"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" preview=""Turtle    "" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" preview=""Should NOT"" index=""11"" />
+</model>"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting that THE FIRST ITEM is a match. This is IMPORTANT to explain the result below."
+                );
+
+                // ☆☆☆☆☆
+                // Extension : Model the Model (with active filter) from the OUTSIDE LOOKING IN.
+                // ☆☆☆☆☆
+                actual = oqfs.ToString(out XElement _);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model mpath=""Id"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" />
+</model>"
+                ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting that EXTENSION USES THE ROUTED ITERATOR."
+                );
+
+                actual = oqfs.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 9, IsFiltering: True], [Net: 1, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+                ;
+
+                Assert.IsFalse(oqfs.RouteToFullRecordset);
+                Assert.AreEqual(
+                    1,
+                    oqfs.Count,
+                    "Expecting FILTERED.");
+
+                // IME
+                // And now, a BUGIRL.
+                // This is supposed to show all the items once again.
+                // ...
+                builder.Clear();
+                oqfs.Clear(false);
+
+                actual = oqfs.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+                ;
+
+                // ...
+                // The BUGIRL is that there was no Reset or Change event.
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+
+                // IN THE PROCESS OF FIXING THAT BUG, WE ACCIDENTALLY PROVED SOMETHING COOL
+                // - The expectation was for a Reset.
+                // - IT WILL ALMOST ALWAYS BE A RESET.
+                // - But just as a rando thing, IN THIS CORNER CASE the Diff turned out to be BCL compatible.
+                // - The reason: The single PM is at index ZERO.
+                // And the thing is, it worked exactly how we designed it.
+                expected = @" 
+Add     NewItems=11 OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting ADD." +
+                    "- This is because the PMC item is the first on the list." +
+                    " ∴ when we take a DIFF, the delta is contiguous IN THIS CASE."
+                );
+
+                actual = oqfs.Model.ToString();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" index=""9"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" index=""11"" />
+</model>"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting all items."
+                );
+
+                // ☆☆☆☆☆
+                // Extension : Model (with cleared filter) from the OUTSIDE LOOKING IN.
+                // ☆☆☆☆☆
+                actual = oqfs.ToString(out XElement _);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model mpath=""Id"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Golden Lio"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Brown Bear"" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" preview=""Black Pant"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" preview=""Elephant  "" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" preview=""Giraffe   "" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" preview=""Kangaroo  "" index=""9"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" preview=""Turtle    "" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" preview=""Should NOT"" index=""11"" />
+</model>"
+                ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting that EXTENSION USES THE ROUTED ITERATOR."
+                );
+
+                Assert.IsTrue(oqfs.RouteToFullRecordset);
+                Assert.AreEqual(12, oqfs.Count, "Expecting routing to track via the internal Read property.");
+
+                // Now force an change event that is not contiguous.
+                oqfs.InputText = "brown&bear";
+                await oqfs;
+
+                actual = oqfs.ToString(out XElement _);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model mpath=""Id"">
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" index=""0"" preview=""Brown Bear"" />
+</model>"
+                ;
+
+                actual = oqfs.ToString(FormattingOMC.ModelWithPreview);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 qmatch:1 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Golden Lio"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Brown Bear"" index=""5"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" preview=""Black Pant"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" preview=""Elephant  "" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" preview=""Giraffe   "" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" preview=""Kangaroo  "" index=""9"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" preview=""Turtle    "" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" preview=""Should NOT"" index=""11"" />
+</model>"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting ONE MATCH that is NOT THE FIRST ITEM."
+                );
+
+                actual = oqfs.ToString(FormattingOMC.StateReport);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 10, IsFiltering: True], [Net: 1, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting standard one-item result."
+                );
+
+                Assert.IsFalse(oqfs.RouteToFullRecordset);
+                Assert.AreEqual(
+                    1,
+                    oqfs.Count,
+                    "Expecting FILTERED.");
+
+                // So, back to that BUGIRL that was mentioned:
+                // - Check for event
+                // - Expect it to be discontiguous OR for it to arrive as a reset.
+                builder.Clear();
+                oqfs.Clear(false);
+
+                actual = oqfs.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 0, IsFiltering: True], [Net: 12, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting full list shown after IME CLEAR and all qmatches clear."
+                );
+
+                Assert.IsTrue(oqfs.RouteToFullRecordset);
+                Assert.AreEqual(
+                    12,
+                    oqfs.Count,
+                    "Expecting FULL.");
+
+                // Once again, the BUGIRL is that there was no Reset or Change event.
+                // - This time it *will* be a Reset for the CollectionChanged.
+                // - But we expect to see a playlist in the CollectionChanging.
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting RESET (because it's a mixed message)."
+                );
+
+                Assert.IsTrue(oqfs.RouteToFullRecordset);
+                Assert.AreEqual(
+                    12, 
+                    oqfs.Count,
+                    "Expecting FULL.");
+
+                oqfs.InputText = "rabbit|wolf";
+                await oqfs;
+
+                // Extension - outside looking in.
+                actual = oqfs.ToString(out XElement _);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model mpath=""Id"">
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""1"" />
+</model>"
+                ;
+
+
+                actual = oqfs.Model.ToString();
+                actual.ToClipboardExpected();
+                { } // <- FIRST TIME ONLY: Adjust the message.
+                actual.ToClipboardAssert("Expecting result to match.");
+                { }
+                expected = @" 
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:12 qmatch:2 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" index=""2"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" index=""3"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" index=""9"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" index=""11"" />
+</model>";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting TWO MATCHES ∴ RESET not STRUCTURAL event."
+                );
             }
 
             /// <summary>
@@ -3300,7 +3802,7 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
             /// </remarks>
             async Task subtestAppendDatabaseAndRequery()
             {
-                items.Clear(all: true);
+                oqfs.Clear(all: true);
                 // Live-demo specific.
                 localAddToDatabase("Appetizer Plate", "[dish]", false, new() { "starter", "appealing", "snack" });
                 localAddToDatabase("Errata", "[notes]", false, new() { "crunchy", "green", "appended" });
@@ -3310,30 +3812,33 @@ Should NOT match an expression with an ""animal"" tag.  [not animal]"
                 localAddToDatabase("App Store", "[app]", false, new() { "digital", "mobile", "software" });
 
                 nsb.InputText = "app gre";
-                items.Commit();
-                await items;
+                oqfs.Commit();
+                await oqfs;
 
-                actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
+                actual = string.Join(Environment.NewLine, oqfs.Select(_ => _.ToString()));
                 expected = @" 
 Green Apple ""tart"",""snack"",""healthy"" [fruit] [color]
 Errata ""crunchy"",""green"",""appended"" [notes]
 Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portable]"
                 ;
 
-                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, items.SearchEntryState);
+                Assert.AreEqual(SearchEntryState.QueryCompleteWithResults, oqfs.SearchEntryState);
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
                     "Expecting items to match"
                 );
 
-                actual = items.StateReport();
+                actual = oqfs.StateReport();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 7, IsFiltering: True], [Net: null, CC: 3, PMC: 3], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
+[IME Len: 7, IsFiltering: True], [Net: 3, CC: 3, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
-                Assert.AreEqual(expected.NormalizeResult(), actual.NormalizeResult(), "Expecting State Report to match.");
+                Assert.AreEqual(
+                    expected.NormalizeResult(), 
+                    actual.NormalizeResult(),
+                    "Expecting THREE ITEMS CANON after Commit + ARMED.");
 
                 // Perform a filter
                 nsb.InputText = "[app] gre";
@@ -3356,7 +3861,7 @@ Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portabl
                         Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
                     }))
                 {
-                    items.Commit();
+                    oqfs.Commit();
 
                     actual = string.Join(Environment.NewLine, builderThrow);
                     actual.ToClipboardExpected();
@@ -3370,9 +3875,9 @@ ThrowSoft: Commit cannot execute while IsFiltering is true. Caller must ensure f
                         "Expecting soft throw."
                     );
                 }
-                await items;
+                await oqfs;
 
-                actual = string.Join(Environment.NewLine, items.Select(_ => _.ToString()));
+                actual = string.Join(Environment.NewLine, oqfs.Select(_ => _.ToString()));
                 actual.ToClipboardExpected();
                 expected = @" 
 Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portable]"
@@ -3384,370 +3889,99 @@ Great example - Markdown Demo ""digital"",""mobile"",""software"" [app] [portabl
                 );
             }
 
-            async Task subtest_Animals()
+            /// <summary>
+            /// Debugging routine for WinDemo misalignment
+            /// </summary>
+            async Task subtest_BUGIRL_color_d()
             {
-                Assert.AreNotEqual(0, items.CanonicalCount, "Expecting carry-over from previous subtest.");
-                // No surprises.
-                builder.Clear();
-                items.Clear();
+                oqfs.Clear();
 
-                actual = string.Join(Environment.NewLine, builder);
+                actual = oqfs.Model.ToString();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           "
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:0 qmatch:0 pmatch:0 live:0]"" />";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting terminal clear."
+                );
+
+                oqfs.InputText = "color";
+                oqfs.Commit();
+
+                actual = oqfs.StateReport();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+[IME Len: 5, IsFiltering: True], [Net: 19, CC: 19, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
                 ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting RESET event."
+                    "Expecting result to match."
                 );
 
-                actual = items.StateReport();
+                oqfs.InputText += " d";
+                await oqfs;
+
+                actual = oqfs.ToString(FormattingOMC.ModelWithPreview);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-[IME Len: 0, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.Cleared, FilteringState.Ineligible]";
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting NO SURPRISES CLEAR."
-                );
-
-                Assert.AreEqual(
-                    false,
-                    items.Settings[StdMarkdownContextSetting.AllowPluralize], 
-                    "Expecting object? that is a bool set to false.");
-
-                items.InputText = "animals";
-                items.Commit();
-
-                actual = items.StateReport();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-[IME Len: 7, IsFiltering: False], [Net: null, CC: 0, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteNoResults, FilteringState.Ineligible]"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting empty due to plural."
-                );
-
-                items.Settings[StdMarkdownContextSetting.AllowPluralize] = true;
-                items.Commit();
-
-                actual = items.StateReport();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-[IME Len: 7, IsFiltering: True], [Net: null, CC: 12, PMC: 0], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting CC: 12 due to fuzzy query enabled by setting."
-                );
-
-                items.InputText += " ";
-                await items;
-
-                actual = items.StateReport();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-[IME Len: 8, IsFiltering: True], [Net: null, CC: 12, PMC: 12], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting -> FilteringState.ACTIVE after APPEND SPACE CHARACTER."
-                );
-
-                items.InputText += "c";
-                await items;
-
-                actual = items.Model.ToString();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-<model mdc=""[MDC]"" histo=""[model:12 match:9 qmatch:9 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" qmatch=""True"" match=""True"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" qmatch=""True"" match=""True"" />
-</model>"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting that APPLY FILTER will have identified matches."
-                );
-
-                actual = items.StateReport();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-[IME Len: 9, IsFiltering: True], [Net: null, CC: 12, PMC: 9], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting NINE matches. This only works if using FUZZY QUERY because of the 'animals' term -> 'animal'."
-                );
-
-                // Input text = animals ca
-                items.InputText += "a";
-                await items;
-
-                actual = items.ToString(ReportFormat.ModelWithPreview);
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-<model mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" qmatch=""True"" match=""True"" preview=""Black Cat "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" preview=""Orange Fox"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""White Rabb"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" preview=""Gray Wolf "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" preview=""Golden Lio"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" preview=""Brown Bear"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" preview=""Black Pant"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" preview=""Elephant  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" preview=""Giraffe   "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" preview=""Kangaroo  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" preview=""Turtle    "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" preview=""Should NOT"" />
-</model>"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting that THE FIRST ITEM is a match. This is IMPORTANT to explain the result below."
-                );
-
-                // ☆☆☆☆☆
-                // Extension : Model Model (with active filter) from the OUTSIDE LOOKING IN.
-                // ☆☆☆☆☆
-                actual = items.ToString(out XElement _);
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-<model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
+<model omc=""[OMC]"" mdc=""[MDC]"" histo=""[model:19 qmatch:9 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Brown Dog "" index=""0"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Green Appl"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Yellow Ban"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Blue Bird "" index=""3"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Red Cherry"" index=""4"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Black Cat "" index=""5"" />
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" preview=""Orange Fox"" index=""6"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" preview=""White Rabb"" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[SelectableQFModel]"" preview=""Purple Gra"" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" preview=""Gray Wolf "" index=""9"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Pink Flami"" index=""10"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Golden Lio"" index=""11"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Brown Bear"" index=""12"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000d"" model=""[SelectableQFModel]"" preview=""Green Pear"" index=""13"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000e"" model=""[SelectableQFModel]"" preview=""Red Strawb"" index=""14"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" preview=""Black Pant"" index=""15"" />
+  <item text=""312d1c21-0000-0000-0000-000000000010"" model=""[SelectableQFModel]"" preview=""Yellow Lem"" index=""16"" />
+  <item text=""312d1c21-0000-0000-0000-000000000011"" model=""[SelectableQFModel]"" preview=""White Swan"" index=""17"" qmatch=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000012"" model=""[SelectableQFModel]"" preview=""Purple Plu"" index=""18"" />
 </model>"
                 ;
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting that EXTENSION USES THE ROUTED ITERATOR."
+                    "Expecting accurate filtering."
                 );
 
-                actual = items.StateReport();
+                actual = JsonConvert.SerializeObject(oqfs.Select(_ => _.FilterTerm), Formatting.Indented);
                 actual.ToClipboardExpected();
+                { } // <- FIRST TIME ONLY: Adjust the message.
+                actual.ToClipboardAssert("Expecting json serialization to match.");
                 { }
                 expected = @" 
-[IME Len: 9, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
-                ;
-
-                Assert.IsFalse(items.RouteToFullRecordset);
-                Assert.AreEqual(
-                    1,
-                    items.Count,
-                    "Expecting FILTERED.");
-
-                // And now, a BUGIRL.
-                // This is supposed to show all the items once again.
-                builder.Clear();
-                items.Clear(false);
-
-                // The BUGIRL is that there was no Reset or Change event.
-                actual = string.Join(Environment.NewLine, builder);
-                actual.ToClipboardExpected();
-                { }
-
-                // IN THE PROCESS OF FIXING THAT BUG, WE ACCIDENTALLY PROVED SOMETHING COOL
-                // - The expectation was for a Reset.
-                // - IT WILL ALMOST ALWAYS BE A RESET.
-                // - But just as a rando thing, IN THIS CORNER CASE the Diff turned out to be BCL compatible.
-                // - The reason: The single PM is at index ZERO.
-                // And the thing is, it worked exactly how we designed it.
-                expected = @" 
-NetProjection.Add     NewItems=11 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
-                ;
-
-                // ☆☆☆☆☆
-                // Extension : Model (with cleared filter) from the OUTSIDE LOOKING IN.
-                // ☆☆☆☆☆
-                actual = items.ToString(out XElement _);
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-<model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" preview=""Orange Fox"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""White Rabb"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" preview=""Gray Wolf "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" preview=""Golden Lio"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" preview=""Brown Bear"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" preview=""Black Pant"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" preview=""Elephant  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" preview=""Giraffe   "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" preview=""Kangaroo  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" preview=""Turtle    "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" preview=""Should NOT"" />
-</model>"
-                ;
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting that EXTENSION USES THE ROUTED ITERATOR."
-                );
-
-                actual = items.StateReport();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
-                ;
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting full list shown after IME CLEAR but still PMC: 1 because there's no new apply filter."
-                );
-
-                Assert.IsTrue(items.RouteToFullRecordset);
-                Assert.AreEqual(12, items.Count, "Expecting routing to track via the internal Read property.");
+[
+  ""brown~dog~loyal~friend~furry~[canine]~[color]"",
+  ""blue~bird~sky~feathered~song~[bird]~[color]"",
+  ""red~cherry~sweet~summer~dessert~[fruit]~[color]"",
+  ""gray~wolf~pack~howl~wild~[animal]~[color]"",
+  ""pink~flamingo~[bird]~[color]"",
+  ""golden~lion~[animal]~[color]"",
+  ""brown~bear~strong~wild~forest~[animal]~[color]"",
+  ""red~strawberry~[fruit]~[color]"",
+  ""white~swan~[bird]~[color]""
+]";
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting ADD." +
-                    "- This is because the PMC item is the first on the list." +
-                    " ∴ when we take a DIFF, the delta is contiguous IN THIS CASE."
+                    "Expecting json serialization to match."
                 );
-
-                // Now force an change event that is not contiguous.
-                items.InputText = "brown&bear";
-                await items;
-
-
-                actual = items.ToString(ReportFormat.ModelWithPreview);
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-<model mdc=""[MDC]"" histo=""[model:12 match:1 qmatch:1 pmatch:0]"" filters=""[No Active Filters]"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" order=""0"" preview=""Black Cat "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000006"" model=""[SelectableQFModel]"" order=""1"" preview=""Orange Fox"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000007"" model=""[SelectableQFModel]"" order=""2"" preview=""White Rabb"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000009"" model=""[SelectableQFModel]"" order=""3"" preview=""Gray Wolf "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""4"" preview=""Golden Lio"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""5"" qmatch=""True"" match=""True"" preview=""Brown Bear"" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000f"" model=""[SelectableQFModel]"" order=""6"" preview=""Black Pant"" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000014"" model=""[SelectableQFModel]"" order=""7"" preview=""Elephant  "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000018"" model=""[SelectableQFModel]"" order=""8"" preview=""Giraffe   "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001a"" model=""[SelectableQFModel]"" order=""9"" preview=""Kangaroo  "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001c"" model=""[SelectableQFModel]"" order=""10"" preview=""Turtle    "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000001e"" model=""[SelectableQFModel]"" order=""11"" preview=""Should NOT"" />
-</model>"
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting ONE MATCH that is NOT THE FIRST ITEM."
-                );
-
-                actual = items.ToString(ReportFormat.StateReport);
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-[IME Len: 10, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Active]"
-                ;
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting standard one-item result."
-                );
-
-                Assert.IsFalse(items.RouteToFullRecordset);
-                Assert.AreEqual(
-                    1,
-                    items.Count,
-                    "Expecting FILTERED.");
-
-                // So, back to that BUGIRL that was mentioned:
-                // - Check for event
-                // - Expect it to be discontiguous OR for it to arrive as a reset.
-                builder.Clear();
-                items.Clear(false);
-
-                actual = items.StateReport();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
-                ;
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting full list shown after IME CLEAR but still PMC: 1 because there's no new apply filter."
-                );
-
-                Assert.IsTrue(items.RouteToFullRecordset);
-                Assert.AreEqual(
-                    12,
-                    items.Count,
-                    "Expecting FULL.");
-
-                // Once again, the BUGIRL is that there was no Reset or Change event.
-                // - This time it *will* be a Reset for the CollectionChanged.
-                // - But we expect to see a playlist in the CollectionChanging.
-                actual = string.Join(Environment.NewLine, builder);
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           "
-                ;
-
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting RESET (because it's a mixed message)."
-                );
-
-                actual = items.StateReport();
-                actual.ToClipboardExpected();
-                { }
-                expected = @" 
-[IME Len: 0, IsFiltering: True], [Net: null, CC: 12, PMC: 1], [QueryAndFilter: SearchEntryState.QueryCompleteWithResults, FilteringState.Armed]"
-                ;
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting full list shown after IME CLEAR but still PMC: 1 because there's no new apply filter."
-                );
-
-                Assert.IsTrue(items.RouteToFullRecordset);
-                Assert.AreEqual(
-                    12, 
-                    items.Count,
-                    "Expecting FULL.");
             }
             #endregion S U B T E S T S
 
@@ -3764,7 +3998,7 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                     var json = JsonConvert.SerializeObject(keywords);
                     type.GetProperty("Keywords")?.SetValue(instance, json);
                 }
-                items.MemoryDatabase.Insert(instance);
+                oqfs.MemoryDatabase.Insert(instance);
             }
             #endregion L o c a l F x
         }

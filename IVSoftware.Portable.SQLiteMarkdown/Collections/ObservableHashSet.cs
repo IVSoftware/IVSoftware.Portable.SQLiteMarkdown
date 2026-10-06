@@ -1,12 +1,16 @@
-﻿using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.Common.Attributes;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
+    /// <summary>Retains the indexed observable collection contract of SQLiteMarkdown v1.</summary>
+    [PublishedContract("1.x")]
 	public class ObservableHashSet : ObservableCollection<object>
 	{
 		private readonly HashSet<object> _hashSet = new HashSet<object>();
@@ -14,9 +18,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             lock (_lock)
             {
-                if (_hashSet.Add(item))
+                if (!_hashSet.Contains(item))
                 {
-                    base.InsertItem(Count, item);
+                    InsertItem(Count, item);
                     return true;
                 }
                 return false;
@@ -27,13 +31,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             lock (_lock)
             {
-                if (_hashSet.Add(item))
+                if (index < 0 || index > Count) throw new ArgumentOutOfRangeException(nameof(index));
+                if (!_hashSet.Contains(item))
                 {
-                    base.InsertItem(index, item);
+                    InsertItem(index, item);
                     return true;
                 }
                 return false;
             }
+        }
+
+        protected override void InsertItem(int index, object item)
+        {
+            if (index < 0 || index > Count) throw new ArgumentOutOfRangeException(nameof(index));
+            CheckReentrancy();
+            if (_hashSet.Add(item)) base.InsertItem(index, item);
         }
 
         protected override void SetItem(int index, object item)
@@ -43,6 +55,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
 			if (_hashSet.Contains(item)) return; // no dupes
 
+            CheckReentrancy();
 			_hashSet.Remove(oldItem);
 			_hashSet.Add(item);
 			base.SetItem(index, item);
@@ -51,6 +64,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 		protected override void RemoveItem(int index)
 		{
 			var item = this[index];
+            CheckReentrancy();
 			_hashSet.Remove(item);
 			base.RemoveItem(index);
 		}
@@ -60,12 +74,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             lock (_lock)
             {
-                var oldItems = _hashSet.ToList();
+                CheckReentrancy();
+                var oldItems = this.ToList();
                 _hashSet.Clear();
 
                 // Skip base.ClearItems to avoid double event
                 // Instead, manually remove items to avoid calling SetItem or similar
                 base.Items.Clear();
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
+                OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
 
                 // Custom event with old items
                 OnCollectionChanged(new NotifyCollectionResetEventArgs(oldItems));
@@ -77,6 +94,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         readonly object _lock = new object();
     }
+    /// <summary>Retains the indexed observable collection contract of SQLiteMarkdown v1.</summary>
+    [PublishedContract("1.x")]
     public class ObservableHashSet<T> : ObservableCollection<T>
     {
         private readonly HashSet<T> _hashSet = new HashSet<T>();
@@ -86,9 +105,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             lock (_lock)
             {
-                if (_hashSet.Add(item))
+                if (!_hashSet.Contains(item))
                 {
-                    base.InsertItem(Count, item);
+                    InsertItem(Count, item);
                     return true;
                 }
                 return false;
@@ -99,9 +118,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             lock (_lock)
             {
-                if (_hashSet.Add(item))
+                if (index < 0 || index > Count) throw new ArgumentOutOfRangeException(nameof(index));
+                if (!_hashSet.Contains(item))
                 {
-                    base.InsertItem(index, item);
+                    InsertItem(index, item);
                     return true;
                 }
                 return false;
@@ -110,6 +130,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
         public new bool Contains(T item) => _hashSet.Contains(item); // O(1) lookup
 
+        protected override void InsertItem(int index, T item)
+        {
+            if (index < 0 || index > Count) throw new ArgumentOutOfRangeException(nameof(index));
+            CheckReentrancy();
+            if (_hashSet.Add(item)) base.InsertItem(index, item);
+        }
+
         protected override void SetItem(int index, T item)
         {
             var oldItem = this[index];
@@ -117,6 +144,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 
             if (_hashSet.Contains(item)) return;
 
+            CheckReentrancy();
             _hashSet.Remove(oldItem);
             _hashSet.Add(item);
             base.SetItem(index, item);
@@ -125,6 +153,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         protected override void RemoveItem(int index)
         {
             var item = this[index];
+            CheckReentrancy();
             _hashSet.Remove(item);
             base.RemoveItem(index);
         }
@@ -133,12 +162,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         {
             lock (_lock)
             {
-                var oldItems = _hashSet.ToList();
+                CheckReentrancy();
+                var oldItems = this.ToList();
                 _hashSet.Clear();
 
                 // Skip base.ClearItems to avoid double event
                 // Instead, manually remove items to avoid calling SetItem or similar
                 base.Items.Clear();
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
+                OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
 
                 // Custom event with old items
                 OnCollectionChanged(new NotifyCollectionResetEventArgs(oldItems));

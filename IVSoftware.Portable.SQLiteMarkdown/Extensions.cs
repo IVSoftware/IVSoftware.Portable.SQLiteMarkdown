@@ -1,7 +1,10 @@
-﻿using IVSoftware.Portable.Collections.Preview;
-using IVSoftware.Portable.Common.Attributes;
+﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Events;
+using IVSoftware.Portable.Collections.Internal;
+using IVSoftware.Portable.Collections.Tracking;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using SQLite;
@@ -119,6 +122,28 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 proxyType: type,    // These are always the same thing for a string extension.
                 qfMode,             // Not to be confused with QueryFilterConfig. The MDC can parse as-though filtering regardless.
                 out xast);
+
+        [Obsolete("Use for backward test compatibility only.")]
+        public static MarkdownContextOR ParseSqlMarkdown<T>(
+            this string expr,
+            ref ValidationState validationState,
+            Predicate<string> validationPredicate = null!)
+            => ExtensionsOR.ParseSqlMarkdown<T>(expr, ref validationState, validationPredicate);
+
+        [Obsolete("Use for backward test compatibility only.")]
+        public static MarkdownContextOR ParseSqlMarkdown<T>(
+            this string expr,
+            ref SearchEntryState searchEntryState)
+            => ExtensionsOR.ParseSqlMarkdown<T>(expr, ref searchEntryState);
+
+        [Obsolete("Backward compatibility only.")]
+        public static string ParseSqlMarkdown(
+            this MarkdownContext @this,
+            string expr,
+            Type proxyType,
+            QueryFilterMode qfMode,
+            out XElement xast)
+            => @this.ParseSqlMarkdown(expr, proxyType, qfMode, out xast);
 
 
         /// <summary>
@@ -434,21 +459,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public static bool CanParseAsJson(this string @this)
             => Regex.IsMatch(@this, @"^\s*\[\s*(""(?:[^""\\]|\\.)*""\s*,\s*)*(""[^""\\]*""\s*)\]\s*$");
 
-        /// <summary>
-        /// Enumerates base classes of the specified subclass.
-        /// </summary>
-        public static IEnumerable<Type> BaseTypes(
-            this Type type,
-            bool includeSelf = false)
-        {
-            for (var current = includeSelf ? type : type.BaseType;
-                 current is not null;
-                 current = current.BaseType)
-            {
-                yield return current;
-            }
-        }
-
         internal static bool TryGetTableNameFromBaseClass(this Type @this, out string tableName, out Type baseClass)
         {
             foreach (var @base in @this.BaseTypes().Reverse())
@@ -500,32 +510,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 @this.Offset);
 
         /// <summary>
-        /// Gets the first custom attribute of the specified type
-        /// applied to an enum value or null in its absence.
-        /// </summary>
-        internal static TAttribute? GetCustomAttribute<TAttribute>(
-            this Enum value)
-            where TAttribute : Attribute
-        {
-            TAttribute? preview; 
-            var enumType = value.GetType();
-#if DEBUG || SAVE             
-            Debug.WriteLineIf(false, $"260403.A {value.ToFullKey()}");
-            if(value.ToFullKey() == "HistogrammerFormat.All")
-            {
-                // Symptomatic of a recursion taking place elsewhere.
-            }
-#endif
-            preview =
-                enumType
-               .GetFields()
-               .SingleOrDefault(_ => _.Name == Enum.GetName(enumType, value))
-               ?.GetCustomAttribute<TAttribute>();
-
-            return preview;
-        }
-
-        /// <summary>
         /// Produces the normalized semantic form of the input by trimming trailing
         /// whitespace and transient logical operators (!, |, &) unless they are
         /// explicitly escaped.
@@ -562,61 +546,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             => input.TrimEndTransients().Length == 0;
 
         /// <summary>
-        /// Normalizes and concatenates materialized path segments using '\' as the canonical separator.
-        /// </summary>
-        /// <remarks>
-        /// - Accepts null or mixed '/' and '\' input.
-        /// - Trims whitespace.
-        /// - Removes empty segments.
-        /// - Always emits a canonical '\' separated path.
-        /// - If root is null or empty, only segments are considered.
-        /// </remarks>
-        public static string LintCombinedSegments(this string? root, params string[] segments)
-        {
-            var concat = new List<string>();
-
-            void Append(string? value)
-            {
-                var linted = localLintSinglePath(value);
-                if (!string.IsNullOrEmpty(linted))
-                {
-                    concat.AddRange(linted.Split('\\'));
-                }
-            }
-
-            // Root may be null. In that case it contributes nothing.
-            if (!string.IsNullOrWhiteSpace(root))
-            {
-                Append(root);
-            }
-
-            if (segments != null)
-            {
-                foreach (var segment in segments)
-                {
-                    Append(segment);
-                }
-            }
-
-            return string.Join("\\", concat);
-
-            #region L o c a l F x
-            string localLintSinglePath(string? path)
-            {
-                if (string.IsNullOrWhiteSpace(path))
-                    return string.Empty;
-
-                var parts = path
-                    .Split(new[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(s => s.Trim())
-                    .Where(s => s.Length > 0);
-
-                return string.Join("\\", parts);
-            }
-            #endregion
-        }
-
-        /// <summary>
         /// Produces a compact diagnostic string describing a collection change event.
         /// </summary>
         /// <remarks>
@@ -628,9 +557,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// respective IList is non-null. Empty collections are reported with a
         /// count of zero; null lists are omitted entirely.
         /// </remarks>
-        public static string ToString(
+        public static string ToStringEx(
             this EventArgs e,
-            bool isProjection)
+            params object[] _)
         {
             var sb = new System.Text.StringBuilder();
             if (e.TryNormalizeTargets(
@@ -641,45 +570,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 out var OldItems,
                 out var OldStartingIndex))
             {
-
-                sb.Append($"{(isProjection ? "NetProjection" : "Other")}.{Action.ToString().PadRight(7)} ");
-
-                if (NewItems is { } newItems)
-                {
-                    sb.Append($"NewItems={newItems.Count.ToString().PadLeft(2)} ");
-                }
-
-                if (OldItems is { } oldItems)
-                {
-                    sb.Append($"OldItems={oldItems.Count.ToString().PadLeft(2)} ");
-                }
-
-                if (NewStartingIndex != -1)
-                {
-                    sb.Append($"NewStartingIndex={NewStartingIndex.ToString().PadLeft(2)} ");
-                }
-
-                if (OldStartingIndex != -1)
-                {
-                    sb.Append($"OldStartingIndex={OldStartingIndex.ToString().PadLeft(2)} ");
-                }
+                sb.Append(Action.ToString().PadRight(8));
+                sb.Append($"NewItems={(NewItems?.Count.ToString() ?? "*").PadRight(2)} ");
+                sb.Append($"OldItems={(OldItems?.Count.ToString() ?? "*").PadRight(2)} ");
+                sb.Append($"NewStartingIndex={NewStartingIndex.ToString().PadRight(2)} ");
+                sb.Append($"OldStartingIndex={OldStartingIndex.ToString().PadRight(2)} ");
+                sb.Append(e.GetType().Name.PadRight(33));
 
                 switch (e)
                 {
                     case NotifyCollectionChangingEventArgs ePre:
                         if (ePre.Reason != NotifyCollectionChangeReason.None)
                         {
-                            sb.Append(ePre.Reason.ToFullKey().PadRight(43));
+                            sb.Append($" {ePre.Reason.ToFullKey()}");
                         }
                         break;
-                    //case ModelSettledEventArgs ems:
-                    //    if(ems.Reason != NotifyCollectionChangeReason.None)
-                    //    {
-                    //        sb.Append(ems.Reason.ToFullKey().PadRight(43));
-                    //    }
-                    //    break;
                 }
-                sb.Append(e.GetType().Name.PadRight(43));
             }
             return sb.ToString();
         }

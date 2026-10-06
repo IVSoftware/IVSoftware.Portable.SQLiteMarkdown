@@ -1,15 +1,7 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.Xml.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using SQLite;
+﻿using SQLite;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Xml.Linq;
 using EphemeralAttribute = SQLite.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
@@ -19,7 +11,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         : PrioritizedAffinityQFModel
         , ITemporalAffinity
     {
-
         /// <summary>
         /// Authoritative duration commitment for the item.
         /// </summary>

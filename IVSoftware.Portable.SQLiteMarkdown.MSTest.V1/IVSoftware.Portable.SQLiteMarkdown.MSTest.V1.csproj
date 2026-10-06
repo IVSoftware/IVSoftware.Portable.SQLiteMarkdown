@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -11,16 +9,28 @@
 		<!-- Win32 and STA threading is now enabled for this test project -->
 	</PropertyGroup>
 
-  <ItemGroup>
-	  <!--Do not change version- this is the whole point.-->
-    <PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="1.0.1" />
-    <PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="1.0.8" />
-	  
-    <PackageReference Include="MSTest" Version="4.0.1" />
-  </ItemGroup>
+	<PropertyGroup>
+		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
+		<SignAssembly>true</SignAssembly>
+	</PropertyGroup>
+
+	<ItemGroup>		
+		<!--1.0.1 - Do not change version - this is the whole point.-->
+		<PackageReference Include="IVSoftware.Portable.SQLiteMarkdown" Version="1.0.1" />
+		<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+	</ItemGroup>
+
+	<ItemGroup>		
+		<PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="*-*" />
+		<PackageReference Include="IVSoftware.Portable.Common" Version="*-*" />
+		<PackageReference Include="MSTest" Version="4.2.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.MSTest.Extensions\IVSoftware.MSTest.Extensions.csproj" />
+	</ItemGroup>
 
   <ItemGroup>
-    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+		<Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
-
 </Project>

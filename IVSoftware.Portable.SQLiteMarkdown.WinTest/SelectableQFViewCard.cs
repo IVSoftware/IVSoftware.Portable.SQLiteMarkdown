@@ -101,7 +101,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown.WinTest
             => new Size(Size.Width, 80);
 
 
-
         private Label _labelDescription = new Label
         {
             Name = nameof(_labelDescription),

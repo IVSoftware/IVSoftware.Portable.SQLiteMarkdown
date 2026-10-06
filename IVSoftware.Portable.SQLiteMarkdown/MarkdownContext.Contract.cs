@@ -1,14 +1,11 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Transactions;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -42,10 +39,27 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// <summary>
         /// The canonical contract type that defines the authoritative table shape for this context.
         /// </summary>
-        public Type ContractType { get; }
+        public Type ContractType
+        {
+            get => _contractType;
+            [PublishedContract("1.x")]
+            set
+            {
+                if (!Equals(_contractType, value))
+                {
+                    this.ThrowPolicyException(
+                        MarkdownContextPolicy.ImmutableContractType);
+                    _contractType = value;
+                }
+            }
+        }
+        Type _contractType;
+
+
+        public TableMapping ContractTableMapping { get; }
 
         /// <summary>
-        /// The type whose attributes define the parsing behavior.
+        /// The type whose attributes define ad hoc parsing behavior.
         /// </summary>
         /// <remarks>
         /// Must be a non-interface type. Abstract types are permitted.
@@ -54,10 +68,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Multiple proxy types may target the same table schema, each providing a different
         /// attribute-driven interpretation for parsing and filtering.
         /// </remarks>
+        [PublishedContract("1.x")]
         public Type ProxyType
         {
             get => _proxyType;
-            set
+            protected set
             {
                 if (value is null)
                 {
@@ -193,6 +208,14 @@ Rationale     : The contract database must be held stable for this inheritance t
         private readonly object _warnLock = new();
 
         public ContractErrorLevel ContractErrorLevel { get; set; } = ContractErrorLevel.ThrowSoft;
+
+        [Obsolete("Version 2.0+ prefers InputTextSettlingTime/Interval terminology.")]
+        public TimeSpan InputTextSettleInterval
+        {
+            get => Interval;
+            set => Interval = value;
+        }
+
 
         protected sealed class SQLiteConnectionMapper
         {

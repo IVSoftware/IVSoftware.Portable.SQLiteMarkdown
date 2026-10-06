@@ -1,21 +1,20 @@
 ﻿using IVSoftware.Portable.SQLiteMarkdown.Common;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
-using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
+using IVSoftware.Portable.Collections;
 using IVSoftware.WinOS.MSTest.Extensions;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine;
 using Newtonsoft.Json;
+using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.Common;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
 {
     [TestClass]
     public class TestClass_260325_AffinityField
     {
-
         [TestMethod, DoNotParallelize]
         public void Test_AffinityQFModelBootstrap()
         {
             string actual, expected, loopback;
-            DateTimeOffset utcTest = AffinityTestableEpoch.UtcReset;
+            DateTimeOffset utcTest = TestableEpochExtensions.UtcReset;
 
             using var local = this.TestableEpoch();
 
@@ -24,7 +23,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             item = new();
 
             Assert.AreEqual(
-                AffinityTestableEpoch.GuidReset.ToString(), 
+                TestableEpochExtensions.GuidReset.ToString(), 
                 item.Id,
                 "Expecting id initialized to first.");
 

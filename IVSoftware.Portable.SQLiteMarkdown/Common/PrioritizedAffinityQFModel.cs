@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
 using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using Newtonsoft.Json;
 using SQLite;
@@ -8,9 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Xml.Linq;
-using System.Xml.Schema;
 using EphemeralAttribute = SQLite.IgnoreAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common
@@ -87,7 +86,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
             }
         }
 
-        XElement _model = new XElement(nameof(StdMarkdownElement.model));
+        XElement _model = new XElement(nameof(StdModelElement.model));
 
         protected virtual void TransferModelAuthority(XAttribute[] srce)
         {
@@ -196,13 +195,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         [Ephemeral, JsonIgnore]
         public string? Preview
         {
-            get => Model.GetAttributeValue<string>(StdMarkdownAttribute.preview);
+            get => Model.GetStdAttributeValue<string>(StdModelAttribute.preview);
             set
             {
                 if (!Equals(Preview, value))
                 {
                     Model.SetStdAttributeValue(
-                        StdMarkdownAttribute.preview,
+                        StdModelAttribute.preview,
                         value,
                         padToMaxLength: true,
                         maxLength: DefaultPreviewLength);
@@ -220,12 +219,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
         [Ephemeral]
         public long? PriorityOverride
         {
-            get => Model.GetAttributeValue<long?>(StdMarkdownAttribute.order);
+            get => Model.GetStdAttributeValue<long?>(StdModelAttribute.index);
             set
             {
                 if (!Equals(PriorityOverride, value))
                 {
-                    Model.SetStdAttributeValue(StdMarkdownAttribute.order, value);
+                    Model.SetStdAttributeValue(StdModelAttribute.index, value);
                     OnPropertyChanged();
                 }
             }

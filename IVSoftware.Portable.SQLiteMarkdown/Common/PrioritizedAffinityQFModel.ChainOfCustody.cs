@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
-using Ephemeral = SQLite.IgnoreAttribute;
+using EphemeralAttribute = SQLite.IgnoreAttribute;
 using Column = SQLite.ColumnAttribute;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Common

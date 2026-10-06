@@ -1,5 +1,7 @@
 ﻿using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
+using System;
+using System.Collections.Generic;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -19,5 +21,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// read-only view and does not need to enforce the type at runtime.
         /// </remarks>
         public MarkdownContext() : base(typeof(T)) { }
+
+        [PublishedContract("1.x")]
+        public new bool RouteToFullRecordset => base.RouteToFullRecordset;
+
+        /// <summary>
+        /// The type whose attributes define ad hoc parsing behavior.
+        /// </summary>
+        public new Type ProxyType => base.ProxyType;
+
+        /// <summary>
+        /// The assembled SQL expression.
+        /// </summary>
+        [PublishedContract("1.x")]
+        public new string Query => base.Query;
     }
 }

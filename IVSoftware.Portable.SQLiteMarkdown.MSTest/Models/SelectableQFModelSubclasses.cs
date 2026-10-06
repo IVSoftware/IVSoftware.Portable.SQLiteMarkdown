@@ -42,7 +42,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     /// </summary>
     /// <remarks>
     /// ACCORDING TO SQLITE NATIVE: 
-    /// The table name resolves to SelectableQFModelSubclassG.
+    /// sqlite-net 1.11 on .NET 8 resolves the inherited table name to "items".
     /// 
     /// BUT, ACCORDING TO SQLITE MARKDOWN PARSER: 
     /// Since SelectableQFModel offers an explicit table, always use that.
@@ -71,7 +71,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     /// <summary>
     /// 260309 NEW!
     /// </summary>
-    [Table("items"), ExtendMapping]
+    [Table("items"), EnforceSingleTable]
     class TrueProxyWithExtendSchema : SelfIndexed
     {
         public bool SchemaExtended { get; set; } = true;
@@ -82,6 +82,20 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest.Models
     /// </summary>
     [Table("containers")]
     class NonCoherentProxy : SelfIndexed
+    {
+        public bool SchemaExtended { get; set; } = true;
+    }
+
+    [Table("sxs")]
+    [EnforceSingleTable(true)] // This is the default
+    class EnforcedProxy : SelfIndexed
+    {
+        public bool SchemaExtended { get; set; } = true;
+    }
+
+    [Table("sxs")]
+    [EnforceSingleTable(false)] // This permits new table creation side by side
+    class SxSProxy : SelfIndexed
     {
         public bool SchemaExtended { get; set; } = true;
     }

@@ -1,21 +1,31 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Exceptions;
+using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Events;
 using IVSoftware.Portable.Threading;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
+using ItemPropertyChangedEventArgs = IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    partial class MarkdownContext : IMarkdownContext
+    partial class MarkdownContext
     {
         protected virtual void OnItemPropertyChanged(object item, PropertyChangedEventArgs e)
         {
             OnPropertyChanged(new ItemPropertyChangedEventArgs(e.PropertyName, item));
         }
 
+        [PublishedContract("1.x")]
+        protected virtual SQLiteConnection FilterQueryDatabase { get; set; } = null;
+#if false
         /// <summary>
         /// The ephemeral backing store for this collection's contract filtering.
         /// </summary>
@@ -26,26 +36,71 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         ///   provide an advisory stream should this be called upon to service more
         ///   than the implicit single table for the collection.
         /// </remarks>
-        protected SQLiteConnection FilterQueryDatabase
+        [PublishedContract("1.x")]
+        protected virtual SQLiteConnection FilterQueryDatabase
         {
             get
             {
-                if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                if (this is IModeledCollection omc)
                 {
-                    this.ThrowPolicyException(MarkdownContextPolicyViolation.FilterEngineUnavailable);
-                    // NOTE:
-                    // Handling the Throw creates a benign condition where a DB
-                    // that might not really be necessary is instantiated regardless.
+                    if (omc.ModelTracking.HasFlag(ModelTrackingFlag.ItemQueries))
+                    {
+                        var omcdb = omc.FilterQueryDatabase;
+                        if(ReferenceEquals(omcdb, _filterQueryDatabase))
+                        {
+                            this.OnAwaited(new()
+                            {
+                                { nameof(SQLiteConnection), $"get.{nameof(IModeledCollection)}.Exists" }
+                            });
+                        }
+                        else
+                        {
+                            _filterQueryDatabase = omcdb;
+                            this.OnAwaited(new()
+                            {
+                                { nameof(SQLiteConnection), $"get.{nameof(IModeledCollection)}.Assigned" }
+                            });
+                        }
+                        return _filterQueryDatabase!;
+                    }
+                    else
+                    {
+                        // Allowable and consistent with the IModeledCollection contract;
+                        this.OnAwaited(new() 
+                        { 
+                            { nameof(SQLiteConnection), $"get.{nameof(IModeledCollection)}.Null" } 
+                        });
+                        return null!;
+                    }
                 }
+                else
+                {
+                    if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                    {
+                        this.ThrowPolicyException(MarkdownContextPolicy.FilterEngineUnavailable);
+                        // Unreachable unless Throw is handled.
+                        // Opting to continue creates a benign condition where a DB
+                        // that might not really be necessary is instantiated regardless.
+                    }
 
-                // HYBRID - factory getter.
-                if (_filterQueryDatabase is null)
-                {
-                    _filterQueryDatabase = new SQLiteConnection(":memory:");
-                    // ContractType is set at construction and cannot be null.
-                    _filterQueryDatabase.CreateTable(ContractType);
+                    // HYBRID - factory getter.
+                    if (_filterQueryDatabase is null)
+                    {
+                        _filterQueryDatabase = new SQLiteQueryOnlyConnection(ContractType);
+                        this.OnAwaited(new()
+                        {
+                            { nameof(SQLiteConnection), $"get.{nameof(MarkdownContext)}.Created" }
+                        });
+                    }
+                    else
+                    {
+                        this.OnAwaited(new()
+                        {
+                            { nameof(SQLiteConnection), $"get.{nameof(MarkdownContext)}.Exists" }
+                        });
+                    }
+                    return _filterQueryDatabase;
                 }
-                return _filterQueryDatabase;
             }
             set
             {
@@ -54,7 +109,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     // The user must be given the benefit of the doubt if they are explicitly
                     // injecting a connection to be used for internal filter queries. This will
                     // silently upgrade the configuration unless escalated in the Throw handler.
-                    this.ThrowPolicyException(MarkdownContextPolicyViolation.ConfigurationModifiedByDatabaseAssignment);
+                    this.ThrowPolicyException(MarkdownContextPolicy.ConfigurationModifiedByDatabaseAssignment);
                     QueryFilterConfig |= QueryFilterConfig.Filter;
                 }
 
@@ -66,42 +121,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                         _filterQueryDatabase.CreateTable(ContractType);
                     }
                     OnPropertyChanged();
-                    this.OnAwaited();
+                    this.OnAwaited(caller: $"{nameof(FilterQueryDatabase)}.get.{nameof(IModeledCollection)}.Null");
                 }
             }
         }
         SQLiteConnection? _filterQueryDatabase = default;
-
-#if false
-        private bool TryCreateTableForContractType()
-        {
-            if( _filterQueryDatabase is not null 
-                && ContractType?.GetConstructor(Type.EmptyTypes) is not null)
-            {
-                ContractTypeTableMapping = _filterQueryDatabase.GetMapping(ContractType);
-                _filterQueryDatabase.CreateTable(ContractType);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        public TableMapping ContractTypeTableMapping
-        {
-            get => _contractTypeTableMapping;
-            set
-            {
-                if (!Equals(_contractTypeTableMapping, value))
-                {
-                    _contractTypeTableMapping = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        TableMapping _contractTypeTableMapping = default;
 #endif
-
 
 
         [Obsolete("Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount.")]
@@ -112,9 +137,58 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             protected set => this.ThrowHard<InvalidOperationException>(
                 @"[Obsolete(""Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount."")]");
         }
-        public virtual int CanonicalCount => Histo[StdMarkdownAttribute.model];
 
-        public virtual int PredicateMatchCount => Histo[StdMarkdownAttribute.match];
+        #region L E G A C Y    H O O K S
+        /// <summary>
+        /// Supports an inheritance model where the binding source *is a* MarkdownContext.
+        /// </summary>
+        /// <remarks>
+        /// - As a separation of concerns, these *don't really belong here* but 
+        ///   have already been published as part of MarkdownContext class.
+        /// - When this class *is not* inherited, these lack semantic meaning.
+        /// - When this class *is* inherited, their presence may imply that
+        ///   this class is maintaining the counts somehow. It isn't.
+        /// THIS WILL THROW unless handled. The rationale is that anything good
+        /// that comes from these will be value added by the subclass.
+        /// </remarks>
+        public virtual int CanonicalCount
+        {
+            get
+            {
+                int? count;
+                count = Histo?[StdModelAttribute.model];
+                if(count is not null)
+                {
+                    return count.Value;
+                }
+                else
+                {
+                    count = 
+                        ModelAuthorityContext
+                        ?.Model
+                         .Descendants()
+                         .Count(_=>_.Attribute(StdModelAttribute.model) is not null);
+                    if (count is not null)
+                    {
+                        return count.Value;
+                    }
+                    else
+                    {
+                        // Do not call this base class method.
+                        this.ThrowHard<ModelException>($"{nameof(CanonicalCount)} requires override in derived type.");
+
+                        // Reachable only if Throw is handled.
+                        return 0;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns count in the broad sense of qmatch & pmatch.
+        /// </summary>
+        public virtual int PredicateMatchCount => 0;
+        #endregion L E G A C Y    H O O K S
 
         /// <summary>
         /// Responsible for raising the InputTextSettled event.
@@ -159,10 +233,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             else
             {
-                var e = new RecordsetRequestEventArgs(sql: ParseSqlMarkdown());
                 using (BeginBusy())
                 {
-                    OnCommit(e);
+                    OnCommit(new RecordsetRequestEventArgs(sql: ParseSqlMarkdown()));
                 }
             }
         }

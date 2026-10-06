@@ -1,3 +1,4 @@
+using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
 using System.Collections;
@@ -26,12 +27,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             }
             void subtest_InheritMMDC_ObservableOnly()
             {
-                var oqf = new InheritModeledMarkdownContext.ObservableOnly.OBQFC<SelectableQFModel>();
+                var oqf = new InheritMarkdownContext.ObservableOnly.OBQFC<SelectableQFModel>();
             }
 
             void subtest_InheritMMDC_AllowDirectChanges()
             {
-                var oqf = new InheritModeledMarkdownContext.AllowDirectUpdates.OBQFC<SelectableQFModel>();
+                var oqf = new InheritMarkdownContext.AllowDirectUpdates.OBQFC<SelectableQFModel>();
             }
             
 
@@ -47,21 +48,19 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
         {
             public OBQFC()
             {
-                _mmdc.SetObservableNetProjection(this, NetProjectionTopology.AllowDirectChanges);
             }
             protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
             {
                 base.OnCollectionChanged(e);
             }
 
-            ModeledMarkdownContext<T> _mmdc = new ModeledMarkdownContext<T>();
         }
     }
 
-    namespace InheritModeledMarkdownContext.ObservableOnly
+    namespace InheritMarkdownContext.ObservableOnly
     {
         class OBQFC<T>
-            : ModeledMarkdownContext<T>
+            : MarkdownContext<T>
             , IEnumerable<T>
             , INotifyCollectionChanged
             where T : new()
@@ -70,18 +69,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             {
                 ProjectionTopology = NetProjectionTopology.AllowDirectChanges;
             }
+
+            public NetProjectionTopology ProjectionTopology { get; }
+
             public virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
             {
                 CollectionChanged?.Invoke(this, e);
             }
+
+            public IEnumerator<T> GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
             public event NotifyCollectionChangedEventHandler? CollectionChanged;
         }
     }
 
-    namespace InheritModeledMarkdownContext.AllowDirectUpdates
+    namespace InheritMarkdownContext.AllowDirectUpdates
     {
         class OBQFC<T>
-            : ModeledMarkdownContext<T>
+            : MarkdownContext<T>
             , INotifyCollectionChanged
             where T : new()
         {
@@ -89,6 +102,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown.MSTest
             {
                 ProjectionTopology = NetProjectionTopology.AllowDirectChanges;
             }
+            
+            public NetProjectionTopology ProjectionTopology { get; }
+
             public virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
             {
                 CollectionChanged?.Invoke(this, e);

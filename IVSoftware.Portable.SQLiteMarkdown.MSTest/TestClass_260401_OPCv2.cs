@@ -1,15 +1,12 @@
 ﻿using IVSoftware.Portable.Collections.Preview;
 using IVSoftware.Portable.Common.Attributes;
-using IVSoftware.Portable.Common.Exceptions;
-using IVSoftware.Portable.SQLiteMarkdown.Collections.Preview;
 using IVSoftware.Portable.SQLiteMarkdown.Common;
-using IVSoftware.Portable.SQLiteMarkdown.Internal;
-using IVSoftware.Portable.SQLiteMarkdown.Util;
-using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using IVSoftware.Portable.Collections;
 using IVSoftware.WinOS.MSTest.Extensions;
 using Newtonsoft.Json;
-using System.Collections.ObjectModel;
 using System.Xml.Linq;
+using System.Diagnostics;
+using IVSoftware.Portable.Disposable;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.MSTest;
 
@@ -18,26 +15,25 @@ public class TestClass_260401_OPCv2
 {
     [TestMethod, DoNotParallelize]
     [Claim("00000000-0000-0000-0000-000000000000")]
-    public void Test_Suppressible()
+    public void Test_ModeledObservableCollection()
     {
         string actual, expected;
         var builder = new List<string>();
         using var te = this.TestableEpoch();
 
         #region I T E M    G E N
-        IList<SelectableQFModel>? eph = null;
         // CREATE (no side effects)
-        var i1 = eph.AddDynamic("Item01");
-        var i2 = eph.AddDynamic("Item02");
-        var i3 = eph.AddDynamic("Item03");
+        var i1 = "Item01".MakeDynamic<SelectableQFModel>();
+        var i2 = "Item02".MakeDynamic<SelectableQFModel>();
+        var i3 = "Item03".MakeDynamic<SelectableQFModel>();
         #endregion I T E M    G E N
 
-        var itemsSource = new SuppressibleObservableCollection<SelectableQFModel>();
+        var omc = new ObservableModeledCollection<SelectableQFModel>();
 
         #region E V E N T S
-        itemsSource.CollectionChanged += (sender, e) =>
+        omc.CollectionChanged += (sender, e) =>
         {
-            builder.Add(e.ToString(ReferenceEquals(sender, itemsSource)));
+            builder.Add(e.ToStringEx());
         };
         #endregion E V E N T S
 
@@ -45,21 +41,25 @@ public class TestClass_260401_OPCv2
         subtest_Freeze();
         subtest_Preview();
 
+
         #region S U B T E S T S
 
         void subtest_None()
         {
-            itemsSource.Add(i1);
-            itemsSource.Add(i2);
-            itemsSource.Add(i3);
+            omc.Add(i1);
+
+            actual = omc.ToString(FormattingOMC.StateReport);
+            omc.Add(i2);
+            omc.Add(i3);
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Add     NewItems= 1 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewStartingIndex= 1 NotifyCollectionChangedEventArgs           
-NetProjection.Add     NewItems= 1 NewStartingIndex= 2 NotifyCollectionChangedEventArgs           ";
+Add     NewItems=1  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=1  OldItems=*  NewStartingIndex=1  OldStartingIndex=-1 NotifyCollectionChangedEventArgs 
+Add     NewItems=1  OldItems=*  NewStartingIndex=2  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -67,14 +67,39 @@ NetProjection.Add     NewItems= 1 NewStartingIndex= 2 NotifyCollectionChangedEve
                 "Expecting 3x Add events."
             );
 
+            actual = omc.ToString(FormattingOMC.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model omc=""[OMC]"" histo=""[model:3 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""2"" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting THREE items + OMC does not know about 'live'."
+            );
+
             builder.Clear();
-            itemsSource.RemoveAt(2);
+
+            // Remove last
+            omc.RemoveAt(2);
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting LAST item REMOVED."
+            );
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Remove  OldItems= 1 OldStartingIndex= 2 NotifyCollectionChangedEventArgs           "
+Remove  NewItems=*  OldItems=1  NewStartingIndex=-1 OldStartingIndex=2  NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -83,14 +108,30 @@ NetProjection.Remove  OldItems= 1 OldStartingIndex= 2 NotifyCollectionChangedEve
                 "Expecting 1x Remove events."
             );
 
+            actual = omc.ToString(FormattingOMC.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model omc=""[OMC]"" histo=""[model:2 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting LAST item REMOVED."
+            );
+
             builder.Clear();
-            itemsSource[1] = i3;
+            omc[1] = i3;
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Replace NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingIndex= 1 NotifyCollectionChangedEventArgs           "
+Replace NewItems=1  OldItems=1  NewStartingIndex=1  OldStartingIndex=1  NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -99,14 +140,31 @@ NetProjection.Replace NewItems= 1 OldItems= 1 NewStartingIndex= 1 OldStartingInd
                 "Expecting 1x Replace events."
             );
 
+            actual = omc.ToString(FormattingOMC.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model omc=""[OMC]"" histo=""[model:2 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""1"" />
+</model>"
+            ;
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
+
             builder.Clear();
-            itemsSource.Move(1, 0);
+
+            // Swap
+            omc.Move(1, 0);
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 0 OldStartingIndex= 1 NotifyCollectionChangedEventArgs           "
+Move    NewItems=1  OldItems=1  NewStartingIndex=0  OldStartingIndex=1  NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -115,7 +173,22 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 0 OldStartingInd
                 "Expecting 1x Move events."
             );
 
-            actual = JsonConvert.SerializeObject(itemsSource, Formatting.Indented);
+            actual = omc.ToString(FormattingOMC.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model omc=""[OMC]"" histo=""[model:2 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""1"" />
+</model>"
+            ;
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
+
+            actual = JsonConvert.SerializeObject(omc, Formatting.Indented);
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -158,15 +231,14 @@ NetProjection.Move    NewItems= 1 OldItems= 1 NewStartingIndex= 0 OldStartingInd
                 "Expecting list reflects all changes."
             );
 
-
             builder.Clear();
-            itemsSource.Clear();
+            omc.Clear();
 
             actual = string.Join(Environment.NewLine, builder);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           "
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -179,18 +251,18 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
         void subtest_Freeze()
         {
             te.ResetEpoch();
-            itemsSource.PopulateForDemo(5);
+            omc.PopulateForDemo(5);
 
-            actual = itemsSource.ToString(out XElement _);
+            actual = omc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" order=""1"" preview=""Item02    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""2"" preview=""Item03    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""3"" preview=""Item04    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""4"" preview=""Item05    "" />
+<model mpath=""Id"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""4"" />
 </model>"
             ;
 
@@ -200,23 +272,23 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 "Expecting result to match."
             );
 
-            using (itemsSource.BeginSuppress())
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
-                itemsSource.RemoveAt(1);
-                Assert.AreEqual(5, itemsSource.Count);
-                itemsSource.RemoveAt(2);
-                Assert.AreEqual(5, itemsSource.Count);
-                itemsSource.RemoveAt(1);
-                Assert.AreEqual(5, itemsSource.Count);
+                omc.RemoveAt(1);                // Remove Item02
+                Assert.AreEqual(5, omc.Count);
+                omc.RemoveAt(2);                // Remove Item04
+                Assert.AreEqual(5, omc.Count);
+                omc.RemoveAt(1);                // Remove Item03
+                Assert.AreEqual(5, omc.Count);
             }
 
-            actual = itemsSource.ToString(out XElement _);
+            actual = omc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""1"" preview=""Item05    "" />
+<model mpath=""Id"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""1"" />
 </model>"
             ;
 
@@ -226,24 +298,24 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
                 "Expecting result to match."
             );
             te.ResetEpoch();
-            itemsSource.PopulateForDemo(5);
+            omc.PopulateForDemo(5);
 
-            using (itemsSource.BeginSuppress())
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
-                itemsSource.RemoveAt(1);
-                Assert.AreEqual(5, itemsSource.Count);
-                itemsSource.RemoveAt(2);
-                Assert.AreEqual(5, itemsSource.Count);
+                omc.RemoveAt(1);
+                Assert.AreEqual(5, omc.Count);
+                omc.RemoveAt(2);
+                Assert.AreEqual(5, omc.Count);
             }
 
-            actual = itemsSource.ToString(out XElement _);
+            actual = omc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" order=""0"" preview=""Item01    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""1"" preview=""Item03    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" order=""2"" preview=""Item05    "" />
+<model mpath=""Id"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""2"" />
 </model>"
             ;
 
@@ -254,28 +326,28 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
             );
 
             te.ResetEpoch();
-            itemsSource.PopulateForDemo(5);
+            omc.PopulateForDemo(5);
 
-            int liveCount = itemsSource.Count;
-            using (itemsSource.BeginSuppress())
+            int liveCount = omc.Count;
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
-                itemsSource.RemoveAt(1);                        // Remove Item02 (middle)
+                omc.RemoveAt(1);                        // Remove Item02 (middle)
                 liveCount--;
-                Assert.AreEqual(5, itemsSource.Count);
-                itemsSource.RemoveAt(0);                        // Remove Item01 (front)
+                Assert.AreEqual(5, omc.Count);
+                omc.RemoveAt(0);                        // Remove Item01 (front)
                 liveCount--;
-                Assert.AreEqual(5, itemsSource.Count);
-                itemsSource.RemoveAt(liveCount - 1);            // Remove Item05 (tail)
-                Assert.AreEqual(5, itemsSource.Count);
+                Assert.AreEqual(5, omc.Count);
+                omc.RemoveAt(liveCount - 1);            // Remove Item05 (tail)
+                Assert.AreEqual(5, omc.Count);
             }
 
-            actual = itemsSource.ToString(out XElement _);
+            actual = omc.ToString(out XElement _);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" order=""0"" preview=""Item03    "" />
-  <xitem text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" order=""1"" preview=""Item04    "" />
+<model mpath=""Id"">
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[SelectableQFModel]"" preview=""Item04    "" index=""1"" />
 </model>"
             ;
 
@@ -287,15 +359,16 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           "
         }
 
         void subtest_Preview()
-        {            
+        {
             builder.Clear();
-            itemsSource.Clear();
+            omc.Clear();
+            localValidateClear();
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
-            actual.ToClipboardAssert("Expecting builder content to match.");
+            actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
+Reset   NewItems=* OldItems=* NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs ";
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -304,18 +377,19 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
             );
 
             // P R E V I E W
-            using (itemsSource.BeginSuppress())
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
-                itemsSource.Add(i1);
-                itemsSource.Add(i2);
-                itemsSource.Add(i3);
+                omc.Add(i1);
+                omc.Add(i2);
+                omc.Add(i3);
             }
+            localValidateCount();
 
             actual = string.Join(Environment.NewLine, builder); builder.Clear();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Add     NewItems= 3 NewStartingIndex= 0 NotifyCollectionChangedEventArgs           "
+Add     NewItems=3  OldItems=*  NewStartingIndex=0  OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
             ;
 
             Assert.AreEqual(
@@ -324,133 +398,39 @@ NetProjection.Add     NewItems= 3 NewStartingIndex= 0 NotifyCollectionChangedEve
                 "Expecting 1x Add Coalesce events."
             );
 
+            actual = omc.ToString(FormattingOMC.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model omc=""[OMC]"" histo=""[model:3 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""2"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
+
             // - This *looks* contiguous but it isn't.
             // ∴We should get a Reset not a BCL-compatible event
-            using (itemsSource.BeginSuppress())
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
             {
-                itemsSource.Remove(i1);         // Remove Item01 from index 0      
-                itemsSource.RemoveAt(1);        // Remove item03 from index 1
+                omc.Remove(i1);         // Remove Item01 from index 0      
+                omc.RemoveAt(1);        // Remove item03 from index 1
             }
+            localValidateCount();
 
-            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual = omc.ToString(FormattingOMC.ModelWithPreview);
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           "
+<model omc=""[OMC]"" histo=""[model:1 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""1"" />
+</model>"
             ;
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting 1x Remove events."
-            );
-
-            // It might not look like it, but Item02 
-            // is the (only) one that should remain
-            Assert.AreSame(itemsSource[0], i2);
-
-            using (itemsSource.BeginSuppress())
-            {
-                itemsSource.PopulateForDemo(5);
-            }
-
-            actual = string.Join(Environment.NewLine, builder); builder.Clear();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting 1x jagged Reset."
-            );
-
-            using (itemsSource.BeginSuppress())
-            {
-                // Replace index 1-4 with with Item01 (contiguous)
-                for (int i = 1; i < itemsSource.Count; i++)
-                {
-                    itemsSource[i] = i1;
-                }
-            }
-
-            actual = string.Join(Environment.NewLine, builder); builder.Clear();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-NetProjection.Replace NewItems= 4 OldItems= 4 NewStartingIndex= 0 OldStartingIndex= 0 NotifyCollectionChangedEventArgs           ";
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting 1x contiguous Replace."
-            );
-
-            // P R E V I E W
-            using (itemsSource.BeginSuppress())
-            {
-                itemsSource.Clear();
-                Assert.AreEqual(5, itemsSource.Count);  // Remember! We're projecting a different reality.
-                itemsSource.Add(i1);
-                itemsSource.Add(i2);
-                itemsSource.Add(i3);
-                Assert.AreEqual(5, itemsSource.Count);
-            }
-            Assert.AreEqual(3, itemsSource.Count);      // Now count is back to IRL.
-
-            actual = string.Join(Environment.NewLine, builder); builder.Clear();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting 1x jagged reset."
-            );
-
-            using (itemsSource.BeginSuppress())
-            {
-                itemsSource.PopulateForDemo(5);
-            }
-
-            actual = string.Join(Environment.NewLine, builder); builder.Clear();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting 1x jagged Reset."
-            );
-
-            using (itemsSource.BeginSuppress())
-            {
-                // C O N T I G U O U S !
-                // - Move is *not* a qualifying ranged operation.
-                // - However, the net result affects contiguous indexes.
-                // ∴ Produces contiguous Replace.
-                for (int srce=1, dest=0; srce < itemsSource.Count; srce++, dest++)
-                {
-                    itemsSource.Move(srce, dest);
-                }
-            }
-
-            actual = itemsSource.ToString(out XElement _);
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-<model modeling=""Id"">
-  <xitem text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" order=""0"" preview=""Item02    "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" order=""1"" preview=""Item03    "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000d"" model=""[SelectableQFModel]"" order=""2"" preview=""Item04    "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000e"" model=""[SelectableQFModel]"" order=""3"" preview=""Item05    "" />
-  <xitem text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" order=""4"" preview=""Item01    "" />
-</model>";
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -462,7 +442,160 @@ NetProjection.Reset   NotifyCollectionChangedEventArgs           ";
             actual.ToClipboardExpected();
             { }
             expected = @" 
-NetProjection.Replace NewItems= 5 OldItems= 5 NewStartingIndex= 0 OldStartingIndex= 0 NotifyCollectionChangedEventArgs           ";
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting 1x Remove events."
+            );
+
+            // It might not look like it, but Item02 
+            // is the (only) one that should remain
+            Assert.AreSame(omc[0], i2);
+
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
+            {
+                omc.PopulateForDemo(5);
+            }
+            localValidateCount();
+
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting 1x jagged Reset."
+            );
+
+            // WHAT HAPPENS IN MODEL WITH IDENTICAL KEYS ???
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
+            {
+                for (int i = 1; i < omc.Count; i++)
+                {
+                    omc[i] = i1;
+                }
+            }
+            localValidateCount();
+
+            actual = omc.ToString(FormattingOMC.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model omc=""[OMC]"" histo=""[model:5 qmatch:0 pmatch:0 live:0]"">
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""4"" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
+
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Replace NewItems=4  OldItems=4  NewStartingIndex=0  OldStartingIndex=0  NotifyCollectionChangedEventArgs "
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting 1x contiguous Replace."
+            );
+
+            // P R E V I E W
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
+            {
+                omc.Clear();
+                Assert.AreEqual(5, omc.Count);  // Remember! We're projecting a different reality.
+                omc.Add(i1);
+                omc.Add(i2);
+                omc.Add(i3);
+                Assert.AreEqual(5, omc.Count);
+            }
+            Assert.AreEqual(3, omc.Count);      // Now count is back to IRL.
+
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting 1x jagged reset."
+            );
+
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
+            {
+                omc.PopulateForDemo(5);
+            }
+
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Reset   NewItems=*  OldItems=*  NewStartingIndex=-1 OldStartingIndex=-1 NotifyCollectionChangedEventArgs "
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting 1x jagged Reset."
+            );
+
+            using (omc.RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
+            {
+                // C O N T I G U O U S !
+                // - Move is *not* a qualifying ranged operation.
+                // - However, the net result affects contiguous indexes.
+                // ∴ Produces contiguous Replace.
+                for (int srce=1, dest=0; srce < omc.Count; srce++, dest++)
+                {
+                    omc.Move(srce, dest);
+                }
+            }
+
+            actual = omc.ToString(out XElement _);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model mpath=""Id"">
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[SelectableQFModel]"" preview=""Item02    "" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[SelectableQFModel]"" preview=""Item03    "" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000d"" model=""[SelectableQFModel]"" preview=""Item04    "" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000e"" model=""[SelectableQFModel]"" preview=""Item05    "" index=""3"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[SelectableQFModel]"" preview=""Item01    "" index=""4"" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting result to match."
+            );
+
+            actual = string.Join(Environment.NewLine, builder); builder.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+Replace NewItems=5  OldItems=5  NewStartingIndex=0  OldStartingIndex=0  NotifyCollectionChangedEventArgs "
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -471,7 +604,29 @@ NetProjection.Replace NewItems= 5 OldItems= 5 NewStartingIndex= 0 OldStartingInd
             );
         }
         #endregion S U B T E S T S
+
+        #region L o c a l F x
+        void localValidateClear()
+        {
+            Assert.HasCount(0, omc);
+
+            actual = omc.ToString(FormattingOMC.ModelWithPreview);
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model omc=""[OMC]"" histo=""[model:0 qmatch:0 pmatch:0 live:0]"" />";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting canonical Clear profile."
+            );
+        }
+        void localValidateCount()
+        {
+            var modelTally = omc.Histo[StdModelAttribute.model];
+            Assert.AreEqual(omc.Count, modelTally);
+        }
+        #endregion L o c a l F x
     }
-
-
 }

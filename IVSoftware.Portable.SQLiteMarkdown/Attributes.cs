@@ -1,8 +1,6 @@
 ﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
@@ -125,145 +123,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         All = 0x7,
     }
 
-
-    public enum WherePredicate
-    {
-        [WherePredicate("<> 0")]
-        IsNotZero,
-
-        [WherePredicate("= 0")]
-        IsZero,
-
-        [WherePredicate("< 0")]
-        IsLessThanZero,
-
-        [WherePredicate("> 0")]
-        IsGreaterThanZero,
-
-        [WherePredicate("<= 0")]
-        IsLessThanOrEqualToZero,
-
-        [WherePredicate(">= 0")]
-        IsGreaterThanOrEqualToZero,
-
-        [WherePredicate("<> 0")]
-        IsTrue,
-
-        [WherePredicate("= 0")]
-        IsFalse,
-    }
-
     /// <summary>
-    /// Declares a string-based predicate associated with an enum member.
-    /// </summary>
-    /// <remarks>   
-    /// <see cref="WherePredicate"/>
-    /// </remarks>
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
-    public sealed class WherePredicateAttribute : Attribute
-    {
-        public WherePredicateAttribute(string predicate)
-        {
-            Predicate = predicate;
-        }
-        public string Predicate { get; }
-    }
-    /// <summary>
-    /// Declares a string-based predicate associated with an enum member.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
-    public sealed class WhereAttribute : Attribute
-    {
-        private WhereAttribute(Enum wherePredicate)
-        {
-            if (wherePredicate.GetCustomAttribute<WherePredicateAttribute>() is { } attr)
-            {
-                Predicate = attr.Predicate;
-            }
-            else
-            {
-                this.ThrowHard<ArgumentException>(
-                    "Missing [WherePredicate] on enum member.",
-                    nameof(wherePredicate));
-            }
-        }
-        private WhereAttribute(string expr)
-        {
-            if (string.IsNullOrWhiteSpace(expr))
-            {
-                this.ThrowHard<ArgumentException>(
-                    "Expr must be a non-empty string.",
-                    nameof(expr));
-            }
-            else
-            {
-                Predicate = expr;
-            }
-        }
-        public WhereAttribute(string binding, WherePredicate wherePredicate) : this(wherePredicate)
-        {
-            if (string.IsNullOrWhiteSpace(binding))
-            {
-                this.ThrowHard<ArgumentException>(
-                    "PropertyName must be a non-empty string.",
-                    nameof(binding));
-            }
-            else
-            {
-                Binding = binding;
-            }
-        }
-        public WhereAttribute(Enum stdPropertyName, WherePredicate wherePredicate) : this(wherePredicate)
-        {
-            Binding = stdPropertyName.ToString();
-        }
-        public WhereAttribute(string propertyName, string expr) : this(expr)
-        {
-            if (string.IsNullOrWhiteSpace(propertyName))
-            {
-                this.ThrowHard<ArgumentException>(
-                    "PropertyName must be a non-empty string.",
-                    nameof(propertyName));
-            }
-            else
-            {
-                Binding = propertyName;
-            }
-        }
-        public WhereAttribute(Enum stdPropertyName, string expr) : this(expr)
-        {
-            Binding = stdPropertyName.ToString();
-        }
-        public string Binding { get; } = null!;
-        public string Predicate { get; } = null!;
-        public string Expr => $"{Binding} {Predicate}";
-    }
-
-    /// <summary>
-    /// For a proxy types or subclasses, specifies whether to call CreateTable and possibly extend the schema.
+    /// For a proxy types or subclasses, specifies whether to call CreateTable.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-    public class ExtendMappingAttribute : Attribute
+    public class EnforceSingleTableAttribute : Attribute
     {
-        public bool Allow { get; set; } = true;
-    }
-
-    /// <summary>
-    /// Advisory for signatures that look like they need refactoring
-    /// but are part of a published contract. Basically, DON'T DO IT!
-    /// </summary>
-    [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
-    internal class PublishedContractAttribute : Attribute
-    {
-        // Do Not Change signature, return type, or argument names.
-        // Do Not Obsolete (if you can help it).
-        public PublishedContractAttribute(string? version = null, Type? type = null)
+        public EnforceSingleTableAttribute(bool enforce = true)
         {
-            Version = version;
-            Type = type;
+            Enforce = enforce;
         }
-        public string? Version { get; }
-        public Type? Type { get; }
+        public bool Enforce { get; } = true;  
     }
 
     /// <summary>
@@ -280,38 +150,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Authority = authority;
         }
         public CollectionChangeAuthority Authority { get; } = 0;
-    }
-
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
-    public class HistogrammerFormatAttribute : Attribute
-    {
-        public HistogrammerFormatAttribute(
-            StdMarkdownAttribute key,
-            params StdMarkdownAttribute[] moreKeys)
-        {
-            moreKeys ??= [];
-            Keys = new StdMarkdownAttribute[1 + moreKeys.Length];
-            Keys[0] = key;
-            Array.Copy(moreKeys, 0, Keys, 1, moreKeys.Length);
-        }
-        public StdMarkdownAttribute[] Keys { get; }
-    }
-
-    /// <summary>
-    /// Marks an attribute that requires prioritized onboarding when an XElement joins the model.
-    /// </summary>
-    /// <remarks>
-    /// - Applies to attributes whose effects must be established before normal change processing.
-    /// - Attribute change iteration order is not reliable during onboarding.
-    /// - Consumers should detect and process these attributes explicitly and in a controlled order.
-    /// </remarks>
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
-    public class IFTTTAttribute : Attribute
-    {
-        public IFTTTAttribute(string? description = null)
-        {
-            Description = description ?? string.Empty;
-        }
-        public string Description { get; }
     }
 }
