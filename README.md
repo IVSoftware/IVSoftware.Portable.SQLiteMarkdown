@@ -2,6 +2,8 @@
 
 This cross-platform library supports expression-based filtering and search for SQLite-backed collections. Input text is parsed into SQL using structured rules for substrings and tags with atomicity for "quoted phrases".
 
+Internal design reference: [Temporal affinity working specification](IVSoftware.Portable.SQLiteMarkdown/README/temporal-affinity.specification.md).
+
 ### Designed for a common shape
 
 This isn't a full SQL parser or a precision query engine — and it doesn't try to be. It won't replace hand-crafted queries when those are needed.

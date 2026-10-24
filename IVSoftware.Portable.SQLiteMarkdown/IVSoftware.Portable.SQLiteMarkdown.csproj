@@ -117,7 +117,7 @@
 		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="2.0.0-rc" />
 		<PackageReference Include="IVSoftware.Portable.Disposable" Version="2.0.0" />
 		<PackageReference Include="IVSoftware.Portable.Disposable.AuthorityEpochProvider" Version="1.1.0-rc" />
-		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="2.1.0" />
+		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="2.1.1-beta" />
 		<PackageReference Include="Newtonsoft.Json" Version="*" />
 		<PackageReference Include="sqlite-net-pcl" Version="*" />
 	</ItemGroup>
@@ -140,7 +140,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.csproj" />
+	  <ProjectReference Include="..\..\..\Xml.Linq\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

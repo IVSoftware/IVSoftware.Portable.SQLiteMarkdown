@@ -333,12 +333,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Begins daily at a specified UtcStart and ends Duration later.
         /// </summary>
         /// <remarks>
-        /// The containing AFFINITY FIELD can be:
-        /// - RUNNING where time compression shrinks both Duration and Remaining in
-        ///   the sense that "things are going according to plan" and "we will
-        ///   begin and end on time". Deadlines respected, promises kept.
-        /// - !RUNNING where Remaining shrinks while the Duration (i.e., the time 
-        ///   commitment) does not. Such items can fall into the red.
+        /// - Duration is the original commitment and does not shrink with clock passage.
+        /// - Running consumes Remaining only for eligible executing work.
+        /// - Paused work retains Remaining while Available can shrink toward a deadline.
+        /// - Available below Remaining is scarcity; preserve the unfinished balance.
+        /// - Pinned times have minute resolution; an optional Duration reserves a block.
         /// </remarks>
         FixedTime = 0x1,
 
@@ -360,18 +359,21 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// Conditional semantics that are mutually exclusive to FIXED.
     /// </summary>
     /// <remarks>
-    /// Child items *are not* required to be temporal, but if they *are* then thay are ASAP and never FIXED.
+    /// Child items need not be temporal; temporal children are ASAP and never fixed.
     /// </remarks>
     internal enum TemporalChildAffinity : sbyte
     {
         /// <summary>
-        /// Begins at a specified UtcStart and ends Remaining later.
+        /// Schedules ASAP work to complete before the fixed ancestor's start.
         /// </summary>
         Above = -1,
 
         /// <summary>
-        /// Begins as soon as possible relative to UtcNow and Position.
+        /// Schedules ASAP work forward from the fixed ancestor's start.
         /// </summary>
+        /// <remarks>
+        /// A fixed ancestor with Duration bounds this child epoch at its reserved end.
+        /// </remarks>
         Below = +1,
     }
 
@@ -425,14 +427,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// 
     /// - Items that are ChildAffinityMode.Below can feel the squeeze when AffinityParent has Duration.
     /// - When IsRunning (or "Play" in the UI) is active, it signals that everything is proceeding
-    ///   according to plan; the Remaining time will be consumed creating no deficits. Conversely,
-    ///   when !IsRunning (or "Pause" in the UI) this will categorically produce deficits as remaining 
-    ///   time inevitably shrinks.
+    ///   according to plan; eligible executing work consumes Remaining. While paused,
+    ///   Remaining holds but Available can shrink below it, exposing a deficit.
+    /// - Allocation policies do not erase unfinished work. Scarcity is a warning,
+    ///   not invalidity; work and subsequent scheduling can continue.
     /// </remarks>
     internal enum ScarceTimeMode
     {
         /// <summary>
-        /// Items at the head of the epoch are marked PastDue as remaining time shrinks.
+        /// Allocates availability loss at the epoch's head and marks affected work PastDue.
         /// </summary>
         /// <remarks>
         /// This is the default, and behaves the same as ChildAffinityMode.Above.
@@ -442,7 +445,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         LossOccursAtStart,
 
         /// <summary>
-        /// Items uniformly shrink as deadline approaches.
+        /// Distributes availability loss uniformly without reducing unfinished work.
         /// </summary>
         /// Mental Model: 
         /// - "We got started late, and will have to move at a faster pace generally."
@@ -450,7 +453,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         LossIsDistributed,
 
         /// <summary>
-        /// Items at the tail of the epoch are marked PastDue as remaining time shrinks.
+        /// Allocates availability loss at the epoch's tail and marks affected work PastDue.
         /// </summary>
         /// Mental Model: 
         /// - "Topics are progressive; A must be covered, even if we can't get to E."
@@ -465,6 +468,8 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// Mental Model: 
     /// - Here, the PastDue flag is interpreted more broadly: "This item, as it stands, is simply not going to get done."
     /// - Typically, a UI will make this item "go into the red" with an appropriate visual state.
+    /// - Unlike estimated-work scarcity, unresolved contradictory reservations block
+    ///   affected participation and dependent ASAP work within the constrained block.
     /// Remember: 
     /// - Most collections are populated by queries, and overlaps can occur when a well-meaning 
     ///   query fails to return the conflicting epoch. It falls to the user implementation, to
@@ -473,7 +478,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     internal enum OverlapTimeMode
     {
         /// <summary>
-        /// Displaced older items are marked PastDue as remaining time shrinks.
+        /// Marks displaced older work PastDue when overlap removes required availability.
         /// </summary>
         /// <remarks>
         /// Mental Model: 
@@ -482,7 +487,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         FutureDisplacesPast,
 
         /// <summary>
-        /// Displaced newer items are marked PastDue as remaining time shrinks.
+        /// Marks displaced newer work PastDue when overlap removes required availability.
         /// </summary>
         /// <remarks>
         /// Mental Model: 
@@ -552,6 +557,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// <summary>
     /// Represents a time slice snapshot using a captured UtcEpochNow that preempts race conditions.
     /// </summary>
+    /// <remarks>
+    /// See README/temporal-affinity.specification.md for reconciled placement,
+    /// blocking, spill-over, and presentation rules. This contract does not imply
+    /// that the current prototype implements every specified behavior.
+    /// </remarks>
     internal interface ITemporalAffinity : IPrioritizedAffinity
     {
         /// <summary>
@@ -617,13 +627,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         TimeSpan? AvailableTimeSpan { get; }
 
         /// <summary>
-        /// UtcStart + UtcRemaining.
+        /// Projected completion of this item's placement, including split-slot gaps.
         /// </summary>
         [Ephemeral]
         DateTimeOffset? UtcEnd { get; }
 
         /// <summary>
-        /// Partial epochs that float around fixed epochs.
+        /// Ephemeral placements sharing this real item's work and completion balance.
         /// </summary>
         IList<AffinitySlot> Slots { get; }
 
@@ -643,9 +653,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// Available < Remaining.
         /// </summary>
         /// <remarks>
-        /// Signals a pathological time scarcity where the available time has
-        /// fallen below the promised commitment. Typically this occurs when
-        /// the AffinityField is paused (i.e., not going according to plan).
+        /// Available below Remaining is scarcity; Remaining below Duration alone
+        /// can be ordinary progress. Scarcity is a hurry-up warning and does not
+        /// block work. Unresolved contradictory reservations are a separate conflict.
+        /// Independent ASAP delay alone is not scarcity or invalidity.
         /// </remarks>
         [Ephemeral]
         bool? IsPastDue { get; }

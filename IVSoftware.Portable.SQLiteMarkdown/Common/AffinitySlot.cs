@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -7,6 +7,10 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Common
     /// <summary>
     /// Partial epoch that is constrained by fixed time epochs in the collection.
     /// </summary>
+    /// <remarks>
+    /// Retained for existing consumers; new implementations use the portable Affinity type.
+    /// </remarks>
+    [Obsolete("Use IVSoftware.Portable.Affinity.AffinitySlot.", false)]
     public class AffinitySlot
     {
         /// <summary>
