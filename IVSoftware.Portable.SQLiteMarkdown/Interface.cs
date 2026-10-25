@@ -98,6 +98,9 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         , INotifyCollectionChanged
         , INotifyPropertyChanged
     {
+        /// <summary>
+        /// Indicates that search input filters the current working set, including an armed empty input.
+        /// </summary>
         bool IsFiltering { get; }
         string InputText { get; set; }
         SearchEntryState SearchEntryState { get; }

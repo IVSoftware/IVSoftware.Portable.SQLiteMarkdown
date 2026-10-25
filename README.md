@@ -23,6 +23,31 @@ It works well in situations where you want to support both *browsing* and *filte
 | **QUERY**         | Query a remote source (e.g., cloud database, REST API)                     |
 | **QUERY → FILTER**| Query a remote source, then refine results using SQLite-backed filtering   |
 
+### What `IsFiltering` tells the developer
+
+`IsFiltering` means that search input filters the current working set. Use it to
+choose the search bar's "Search" or "Filter" presentation. It does not report
+whether a text expression has been applied or whether fewer records are visible.
+
+| Configuration | `IsFiltering` |
+| --- | --- |
+| Query-only | False |
+| Filter-only | True, including empty input and an empty working set |
+| Query-then-filter | True while filtering is armed or active |
+
+An armed filter can show every record. A text expression can also match every
+record. Checked/selection predicates independently determine their part of the
+projection; they do not redefine this search-input posture.
+
+When using `ObservableQueryFilterCollection<T>` for text filtering, enable
+`source.ModelTracking |= ModelTrackingFlag.ItemQueries` before populating its
+working set. This opts into the SQLite filter mirror used by the text operation.
+Predicate-only tracking can operate independently of that mirror.
+
+For the modeled collection adapter, clear nonempty search text with `Clear()` to
+retain the working set. `Clear(all: true)` requests terminal collection clearing.
+The existing second-clear state machine still applies when input is already empty.
+
 ---
 # Demo App included in this Repo
 

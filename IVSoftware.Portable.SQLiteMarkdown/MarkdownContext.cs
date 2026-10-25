@@ -2096,10 +2096,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
-        /// Returns true when the canonical recordset contains 2 or more items.
+        /// Indicates that search input filters the current working set.
         /// </summary>
         /// <remarks>
-        /// Mental Model: "Choose placeholder text (and the icon, too) - 'Search' or 'Filter'"
+        /// - Query-only is false; filter-only is true even before any text is entered.
+        /// - Query-and-filter is true while filtering is armed or active.
+        /// - True does not imply a text restriction, fewer visible records, or any predicate match.
+        /// Use this posture to choose the search bar's "Search" or "Filter" presentation.
         /// </remarks>
         [PublishedContract("1.x")]
         public bool IsFiltering => _isFiltering;
@@ -2111,10 +2114,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected bool _isFiltering = false;
 
         /// <summary>
-        /// Proxy for IsFiltering, but with *immediate* response for empty text.
+        /// Indicates that the Markdown context selects its canonical text route.
         /// </summary>
         /// <remarks>
-        /// External predicate filters must still run even if IME doesn't contribute.
+        /// Independent of IsFiltering: an armed collection can show its full text working set.
+        /// Collection-owned predicates may still narrow the final projection without text input.
         /// Mental Model: "If the input text is empty, just swap the handle instead of recalculating."
         /// </remarks>
         [PublishedContract("1.x")]
