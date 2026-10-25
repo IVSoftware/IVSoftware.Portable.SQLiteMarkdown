@@ -2301,6 +2301,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public event EventHandler? InputTextSettled;
 
         // REF: 260409.B-remove-mdc-model-sematics
+        /// <summary>
+        /// Observes settled match cardinality before the model epoch publishes its projection.
+        /// </summary>
+        /// <remarks>
+        /// The collection adapter uses this distinction to retain a restrictive query
+        /// with zero matches. Histogram presence alone cannot represent that case.
+        /// </remarks>
+        protected virtual void OnFilterMatchesApplied(int canonicalCount, int queryMatchCount) { }
+
         protected virtual async Task ApplyFilter()
         {
             if (FilterQueryDatabase is null)
@@ -2397,6 +2406,8 @@ SELECT * FROM items WHERE
                                 }
                                 localOnUpdateRouting();
                             }
+
+                            OnFilterMatchesApplied(ccount, xqVisited.Count);
 
                             #region L o c a l F x
                             /// <summary>

@@ -15,12 +15,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.Xml.Lin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.MSTest.Extensions", "..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.MSTest.Extensions\IVSoftware.MSTest.Extensions.csproj", "{A71806B4-EA89-2594-7FF7-0BDBFC05FEF6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.SQLiteMarkdown.Nemesis.Tests", "IVSoftware.Portable.SQLiteMarkdown.Nemesis.Tests\IVSoftware.Portable.SQLiteMarkdown.Nemesis.Tests.csproj", "{0F9610D7-8E36-4F6E-A43C-6E9D3E866C10}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+        {0F9610D7-8E36-4F6E-A43C-6E9D3E866C10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {0F9610D7-8E36-4F6E-A43C-6E9D3E866C10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {0F9610D7-8E36-4F6E-A43C-6E9D3E866C10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {0F9610D7-8E36-4F6E-A43C-6E9D3E866C10}.Release|Any CPU.Build.0 = Release|Any CPU
 		{02C76299-0889-4032-B8FE-1BD788C363BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{02C76299-0889-4032-B8FE-1BD788C363BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02C76299-0889-4032-B8FE-1BD788C363BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
