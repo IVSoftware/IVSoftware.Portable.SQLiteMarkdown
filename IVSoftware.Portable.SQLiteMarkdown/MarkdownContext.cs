@@ -1,4 +1,4 @@
-﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
@@ -11,6 +11,7 @@ using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;
 using SQLite;
+using IPathPlaceable = IVSoftware.Portable.Collections.IPathPlaceable;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -2355,7 +2356,6 @@ SELECT * FROM items WHERE
                                         "PROBABLY *NOT* BUGIRL - SCREENING FOR A SPURIOUS FAIL");
                                         break;
                                     case "Item01":
-                                        var dbCount = FilterQueryDatabase.Table<PrioritizedAffinityQFModel>().Count();
                                         { }
                                         break;
                                 }
@@ -2404,10 +2404,6 @@ SELECT * FROM items WHERE
                                     xqmatch.SetAttributeValue(nameof(StdModelAttribute.qmatch), bool.TrueString);
                                 }
 
-                                if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
-                                {
-                                    await ApplyAffinities(qmatches);
-                                }
                                 localOnUpdateRouting();
                             }
 
@@ -2416,15 +2412,15 @@ SELECT * FROM items WHERE
                             #region L o c a l F x
                             /// <summary>
                             /// Resolves the path identifiers for the matched recordset. When the proxy
-                            /// implements <c>IPrioritizedAffinity</c>, paths are taken directly from
+                            /// implements <c>IPathPlaceable</c>, paths are taken directly from
                             /// <c>FullPath</c>; otherwise the value of the mapped SQLite primary key is
                             /// used. A missing primary key mapping is treated as a framework error.
                             /// </summary>
                             string[] localGetPaths()
                             {
-                                if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                                if (typeof(IPathPlaceable).IsAssignableFrom(ProxyType))
                                 {
-                                    return qmatches.Cast<IPrioritizedAffinity>().Select(_ => _.FullPath).ToArray();
+                                    return qmatches.Cast<IPathPlaceable>().Select(_ => _.FullPath).ToArray();
                                 }
                                 else
                                 {
@@ -2500,10 +2496,6 @@ SELECT * FROM items WHERE
         SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
 
 
-        /// <summary>
-        /// Apply priorities where temporality may be involved.
-        /// </summary>
-        protected virtual async Task ApplyAffinities(IList recordset) { }
 
         #endregion N A V    S E A R C H    S T A T E    M A C H I N E
 
