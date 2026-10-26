@@ -1,4 +1,4 @@
-﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Collections.Internal;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
@@ -11,6 +11,7 @@ using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;
 using SQLite;
+using IPathPlaceable = IVSoftware.Portable.Collections.IPathPlaceable;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -2096,10 +2097,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
 
         /// <summary>
-        /// Returns true when the canonical recordset contains 2 or more items.
+        /// Indicates that search input filters the current working set.
         /// </summary>
         /// <remarks>
-        /// Mental Model: "Choose placeholder text (and the icon, too) - 'Search' or 'Filter'"
+        /// - Query-only is false; filter-only is true even before any text is entered.
+        /// - Query-and-filter is true while filtering is armed or active.
+        /// - True does not imply a text restriction, fewer visible records, or any predicate match.
+        /// Use this posture to choose the search bar's "Search" or "Filter" presentation.
         /// </remarks>
         [PublishedContract("1.x")]
         public bool IsFiltering => _isFiltering;
@@ -2111,10 +2115,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         protected bool _isFiltering = false;
 
         /// <summary>
-        /// Proxy for IsFiltering, but with *immediate* response for empty text.
+        /// Indicates that the Markdown context selects its canonical text route.
         /// </summary>
         /// <remarks>
-        /// External predicate filters must still run even if IME doesn't contribute.
+        /// Independent of IsFiltering: an armed collection can show its full text working set.
+        /// Collection-owned predicates may still narrow the final projection without text input.
         /// Mental Model: "If the input text is empty, just swap the handle instead of recalculating."
         /// </remarks>
         [PublishedContract("1.x")]
@@ -2301,6 +2306,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public event EventHandler? InputTextSettled;
 
         // REF: 260409.B-remove-mdc-model-sematics
+        /// <summary>
+        /// Observes settled match cardinality before the model epoch publishes its projection.
+        /// </summary>
+        /// <remarks>
+        /// The collection adapter uses this distinction to retain a restrictive query
+        /// with zero matches. Histogram presence alone cannot represent that case.
+        /// </remarks>
+        protected virtual void OnFilterMatchesApplied(int canonicalCount, int queryMatchCount) { }
+
         protected virtual async Task ApplyFilter()
         {
             if (FilterQueryDatabase is null)
@@ -2342,7 +2356,6 @@ SELECT * FROM items WHERE
                                         "PROBABLY *NOT* BUGIRL - SCREENING FOR A SPURIOUS FAIL");
                                         break;
                                     case "Item01":
-                                        var dbCount = FilterQueryDatabase.Table<PrioritizedAffinityQFModel>().Count();
                                         { }
                                         break;
                                 }
@@ -2391,25 +2404,23 @@ SELECT * FROM items WHERE
                                     xqmatch.SetAttributeValue(nameof(StdModelAttribute.qmatch), bool.TrueString);
                                 }
 
-                                if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
-                                {
-                                    await ApplyAffinities(qmatches);
-                                }
                                 localOnUpdateRouting();
                             }
+
+                            OnFilterMatchesApplied(ccount, xqVisited.Count);
 
                             #region L o c a l F x
                             /// <summary>
                             /// Resolves the path identifiers for the matched recordset. When the proxy
-                            /// implements <c>IPrioritizedAffinity</c>, paths are taken directly from
+                            /// implements <c>IPathPlaceable</c>, paths are taken directly from
                             /// <c>FullPath</c>; otherwise the value of the mapped SQLite primary key is
                             /// used. A missing primary key mapping is treated as a framework error.
                             /// </summary>
                             string[] localGetPaths()
                             {
-                                if (typeof(IPrioritizedAffinity).IsAssignableFrom(ProxyType))
+                                if (typeof(IPathPlaceable).IsAssignableFrom(ProxyType))
                                 {
-                                    return qmatches.Cast<IPrioritizedAffinity>().Select(_ => _.FullPath).ToArray();
+                                    return qmatches.Cast<IPathPlaceable>().Select(_ => _.FullPath).ToArray();
                                 }
                                 else
                                 {
@@ -2485,10 +2496,6 @@ SELECT * FROM items WHERE
         SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
 
 
-        /// <summary>
-        /// Apply priorities where temporality may be involved.
-        /// </summary>
-        protected virtual async Task ApplyAffinities(IList recordset) { }
 
         #endregion N A V    S E A R C H    S T A T E    M A C H I N E
 

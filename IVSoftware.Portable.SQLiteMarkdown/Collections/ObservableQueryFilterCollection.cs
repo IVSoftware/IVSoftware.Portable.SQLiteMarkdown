@@ -18,7 +18,17 @@ using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
-    public class ObservableQueryFilterCollection<T>
+    /// <summary>
+    /// Composes query/filter behavior with the XML model's authoritative routed collection.
+    /// </summary>
+    /// <remarks>
+    /// The app initializes genuinely new records in sync with its active predicate,
+    /// before user editing and admission. Admission qualifies the supplied values;
+    /// it does not choose checked or selection defaults on the app's behalf.
+    /// Pmatch gates visibility without consuming live, so a predicate round trip can
+    /// reveal the same live record even when its edited text no longer matches.
+    /// </remarks>
+    public partial class ObservableQueryFilterCollection<T>
         : ObservableModeledCollection<T>
         , IObservableQueryFilterSource<T>
         , IModelAuthorityContext
@@ -48,7 +58,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// <summary>
         /// Protected class with public properties.
         /// </summary>
-        protected class MarkdownContextProtected : MarkdownContext<T>
+        protected partial class MarkdownContextProtected : MarkdownContext<T>
         {
             ObservableQueryFilterCollection<T> @this => (ObservableQueryFilterCollection<T>)ModelAuthorityContext!;
             /// <summary>
@@ -66,6 +76,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
             }
             protected override void OnClear(bool all)
             {
+                if (all) ResetLiveFilterState();
                 base.OnClear(all);
                 if(all)
                 {
@@ -197,6 +208,17 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         }
         string _title = string.Empty;
 
+        /// <summary>
+        /// Includes active text filtering when qualifying temporary visibility for an addition.
+        /// </summary>
+        /// <remarks>
+        /// IsFiltering describes the available posture and can be true before a filter
+        /// is applied. Ordinary initial AddRange must not grant every record immunity
+        /// from the predicate the developer subsequently requests.
+        /// </remarks>
+        protected override bool HasActiveVisibilityFilter =>
+            base.HasActiveVisibilityFilter || FilteringState == FilteringState.Active || MarkdownContext.HasAppliedTextFilter;
+
         public string SQL => MarkdownContext.Query;
 
         public SQLiteConnection MemoryDatabase 
@@ -296,6 +318,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         public TaskAwaiter<TaskStatus> GetAwaiter() => MarkdownContext.GetAwaiter();
         public new void LoadCanon(IList<T> items)
         {
+            MarkdownContext.ResetLiveFilterState();
             base.LoadCanon(items);
             MarkdownContext.SearchEntryState =
                 Count == 0
@@ -321,6 +344,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
         /// </summary>
         protected override void OnPropertyChanged(PropertyChangedEventArgs eUnk)
         {
+            if (eUnk is ItemPropertyChangedEventArgs edit) HandleRecordEdit(edit);
             base.OnPropertyChanged(eUnk);
             switch (eUnk)
             {
@@ -338,9 +362,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown.Collections
                                 if (!HasAuthority(StdModelAuthority.Canon))
                                 {
                                     // Canonical collection is being modified out-of-band.
-                                    if (Equals(e.PropertyName, nameof(HistogramEdge.Increment)))
+                                    if (Equals(e.PropertyName, nameof(HistogramEdge.Increment))
+                                        && HasActiveVisibilityFilter)
                                     {
-                                        // Designated out-of-band match until a new canonical recordset becomes available.
+                                        // Only an established filter makes this addition exceptional.
+                                        // Initial population uses ordinary canonical visibility instead.
                                         if (e.XOB is XBoundAttribute xba
                                             && xba.Name.LocalName == nameof(StdModelAttribute.model))
                                         {
