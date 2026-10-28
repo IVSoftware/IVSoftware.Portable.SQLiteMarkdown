@@ -1,0 +1,218 @@
+[
+  {
+    "path": "AssemblyInfo.cs",
+    "sha256": "a10fd91bbac945a9ab0716b27c4dc73e4d8ac00be79bdf840c2fbcf61df0ba2e"
+  },
+  {
+    "path": "AST.cs",
+    "sha256": "54f4b55e1745295e6a9dc24fac5a0464bb9f83248794bc83392042436438679e"
+  },
+  {
+    "path": "Attributes.cs",
+    "sha256": "4797a120794af0501ac3eeeaa447bd01c3021dc2e62656c275f9ce55cb83c607"
+  },
+  {
+    "path": "Enums.cs",
+    "sha256": "a1655cdfa06ab66f1c09bd39aea163403aeed209101ddc1502f91a3bdd1b937b"
+  },
+  {
+    "path": "Extensions.ChangeEvents.cs",
+    "sha256": "b5bf4cb1b24999d053b985463f94f57688cb6a5c3efc6f0e8f5e6b3804027a11"
+  },
+  {
+    "path": "Extensions.cs",
+    "sha256": "b39e7404527e296a411d03bf5a914b423ad178b3439b5d19c10c5b9fe9445b86"
+  },
+  {
+    "path": "ExtensionsOR.cs",
+    "sha256": "96c526e398dbfde6d686fdf79fe4ea3d96f438afa3f63c2616a9d1873073f65b"
+  },
+  {
+    "path": "Interface.cs",
+    "sha256": "06f4c8affb52f009b3f4b4c1176a444051ab325c8f278140c45d2999444fd899"
+  },
+  {
+    "path": "IVSoftware.Portable.SQLiteMarkdown.csproj",
+    "sha256": "b94708c99fe6500f09d90c047b2cc67f3b797033dcfdf551d3d8456dce572372"
+  },
+  {
+    "path": "MarkdownContext.Contract.cs",
+    "sha256": "711be7506b9395592af5c3ee36e2144c6daaa73cb69fc8a75f234bc379c01f66"
+  },
+  {
+    "path": "MarkdownContext.cs",
+    "sha256": "cc5e9567182a7fd9840ade6abd57c4cb07781f09c63b1ea2189e63dcb4eb9029"
+  },
+  {
+    "path": "MarkdownContext.DHost.cs",
+    "sha256": "f0e4309dceeac287c83dab3378049e327c86fef05c08c78697435d6e783f87f0"
+  },
+  {
+    "path": "MarkdownContext.Interface.cs",
+    "sha256": "d6c6356a397042efb368ce73e2ebd1d7a22de15c4ce52e4c2510f3bccb4fcdac"
+  },
+  {
+    "path": "MarkdownContext.ITestableMDC.cs",
+    "sha256": "110dcacf2b1263f6c7d68e53127c8dd75906ee63b821f063aaae7d4a1856337b"
+  },
+  {
+    "path": "MarkdownContext.T.cs",
+    "sha256": "ac5bad709f8f665abbcbf4e5e154b7f5f3fdaa4f67554eefedbfe732a663774d"
+  },
+  {
+    "path": "MarkdownContextOR.cs",
+    "sha256": "dfb77f86b73b742cd15f807205c50a2b7059e2c25968c0e8d177973be4f7ac7b"
+  },
+  {
+    "path": "MarkdownContextSettings.cs",
+    "sha256": "475a20945d9d6c3da81c19ea7771b3d25e927c137582cb1393556347ebd67533"
+  },
+  {
+    "path": "SelfIndexed.cs",
+    "sha256": "26b30816356be1008ea5735702647a37d20a35358e76eefc9b0c199d9c8a987d"
+  },
+  {
+    "path": "Static.cs",
+    "sha256": "3cdb6694ea22c858ed92f08990bf35adac5c6cd25cf4c67359a36dcccd0aa4d8"
+  },
+  {
+    "path": ".codexobj\\.NETStandard,Version=v2.0.AssemblyAttributes.cs",
+    "sha256": "024d53b28a9ade66887280d5dc398a1e1b10c3172df3573f01c67fda2d7b673b"
+  },
+  {
+    "path": ".codexobj\\IVSoftware.Portable.SQLiteMarkdown.AssemblyInfo.cs",
+    "sha256": "0d25b16fb27f9379a00f1a63c6199f78467831aa28656cbf077408a19257ae82"
+  },
+  {
+    "path": "Collections\\ObservableHashSet.cs",
+    "sha256": "505b63d8393f8cf1400f50ef25594372e4a20a1eb79e4ba093ace66d068f9a97"
+  },
+  {
+    "path": "Collections\\ObservableQueryFilterCollection.cs",
+    "sha256": "417dd1f4c2d12c054af92b82301b37c31830e7711d9004c65218121e866b3654"
+  },
+  {
+    "path": "Collections\\ObservableQueryFilterCollection.Live.cs",
+    "sha256": "6a6b4cead1e32c040288908959516be52854ea934f3525f8e580f674793641a0"
+  },
+  {
+    "path": "Collections\\ObservableQueryFilterSource.cs",
+    "sha256": "e164f61aad941ecaee0896a95c715defe9d346d69bfff96989fad34688e4aa0e"
+  },
+  {
+    "path": "Collections\\ObservableQueryFilterSource.T.cs",
+    "sha256": "eab855c5b589a87e04407382523f0740826727477ecd320c7b263890e4db3222"
+  },
+  {
+    "path": "Collections\\ObservableQueryFilterSource.T.CSSP.cs",
+    "sha256": "70883cbc2ecf1cdfb0a2afc741fa6685a9f915c1939b6bc331090c204dad6043"
+  },
+  {
+    "path": "Collections\\ObservableQueryFilterSource.T.IRangeable.cs",
+    "sha256": "877fc3ddad52ee44ae16c7bcef68ec09c691371b870f049a6d91b9d678a7c01c"
+  },
+  {
+    "path": "Collections\\ObservableQueryFilterSource.T.ITestableOMC.cs",
+    "sha256": "96191212ede5cd464b839560db40e02a9284e24e67160383904dea8d01ca18eb"
+  },
+  {
+    "path": "Collections\\ObservableSelectionHashSet.cs",
+    "sha256": "665e72a5a1280bd6375ce0f6ef1b0952df3124beb3b3070ad1d7e62d3d4000f0"
+  },
+  {
+    "path": "Common\\ChainOfCustody.cs",
+    "sha256": "3ffa81a1577df393eb468b0c09acf8d850f66e409d464e5716340686b1577cad"
+  },
+  {
+    "path": "Common\\SelectableQFModel.cs",
+    "sha256": "976d86ad515cd06ddcd1855641df83b39faa2463085857fb40f25b8fd300e70d"
+  },
+  {
+    "path": "Common\\SQLiteMarkdownPolicyError.cs",
+    "sha256": "0879128428e5079f4fea2772f4877522c1e4a75c0c863a58c27ae6cfdffe82b5"
+  },
+  {
+    "path": "Common\\StringWrapper.cs",
+    "sha256": "0f0ce5e4c5bbf31b50a632117144053c37122a94f55d5689f8e2bc78faab5b51"
+  },
+  {
+    "path": "Common\\TokenDisposer.cs",
+    "sha256": "29a5a10f9aea0e415924d5770577d8a5991940a27530db5da659a37731325954"
+  },
+  {
+    "path": "Events\\ItemPropertyChangedEventArgs.cs",
+    "sha256": "c4f22aba9d17ef1ac6e39f35bb74b57e23bc9c393ecc8e52c06379616ab5339e"
+  },
+  {
+    "path": "Events\\RecordsetRequestEventArgs.cs",
+    "sha256": "cf0fc7f5762dad9405c746f3052ae748e21c6771e366f0ddcfeb4cffd1034f61"
+  },
+  {
+    "path": "Events\\TableNameResolvingEventArgs.cs",
+    "sha256": "49c62839d3ad98e07aac1710a91e5b262fb7aca5cff6056e513bcb08c91ce54a"
+  },
+  {
+    "path": "Internal\\Extensions.Internal.cs",
+    "sha256": "a4ae3e1f95f155ce6e6f8679b6051d394224bd90c84e930813966872839edbf7"
+  },
+  {
+    "path": "Internal\\IMarkdownContext.cs",
+    "sha256": "65ccd3bf494ca03320d43fa5be9072b25317604cf2ba1cb2522af19ef0808551"
+  },
+  {
+    "path": "Internal\\SelfRemovingXBoundAttribute.cs",
+    "sha256": "6c4eeb17246d25856c941b05204b6c4762732d510b79ec6d96819c519a558287"
+  },
+  {
+    "path": "Obsolete\\Interface.cs",
+    "sha256": "d30eba34bf653a4f7f2c681f0854a55fda94d8f63d610aa335c59a95bd4a0adc"
+  },
+  {
+    "path": "Obsolete\\PredicateMarkdownContext.cs",
+    "sha256": "05b08fd3fd8b444382ec38a2c590b737860e6f24ec8c7025c341065ee26e3a3f"
+  },
+  {
+    "path": "Util\\AdHocModelProvider.cs",
+    "sha256": "9b63f19a44e011b7434f4f3348b234cecc5b0004436606379b6b218370ffa86b"
+  },
+  {
+    "path": "Util\\SemaphoreSlimWithTrace.cs",
+    "sha256": "3578b7bd085ba1961854bd7bba8079ef5cb08a27fda0c71f2dcd793205b548ef"
+  },
+  {
+    "path": "_namespace_\\IVSoftware.Xml.Linq..cs",
+    "sha256": "9410605b9d9443fc19e6ae596f2467ae90456e9e151441daf7707e855da04fb1"
+  },
+  {
+    "path": "Collections\\Preview\\ExtensionsInternal.cs",
+    "sha256": "1f3f0083418d9094b4687aa902658d19c6239d45a1dfe4c9d1a5bd38ac0501c2"
+  },
+  {
+    "path": "Collections\\Preview\\Interface.cs",
+    "sha256": "e3e5101ad242d5d5a9f493904c2483cbec1fbaf65e6c510f95556434441ff3f5"
+  },
+  {
+    "path": "Collections\\Preview\\ObservablePreviewRangeCollection.cs",
+    "sha256": "b6a13fbb761cd1ca313287966f069f873e09518e0cf93017b043136eaeb8fb87"
+  },
+  {
+    "path": "Collections\\Preview\\ObservableRangeCollection.cs",
+    "sha256": "292b1e556d62a4207af1e6d8308f47f192b5e0605f5740c6b07bc7749845eccc"
+  },
+  {
+    "path": "Events\\_namespace_\\IVSoftware.Portable.SQLiteMarkdown.Collections.cs",
+    "sha256": "f17d05d1508f9a63b613177d64ce16bdfd4ded7adcd4995a0098705acca3c947"
+  },
+  {
+    "path": "StateRunner\\Preview\\AuthorityEpochProvider.cs",
+    "sha256": "eb67c429fa187d8a2f5a859ea617b2530f8456914eef0f5a564d162be0f86042"
+  },
+  {
+    "path": "StateRunner\\Preview\\AuthorityEpochProvider.T.cs",
+    "sha256": "c0697ab5e6eeaf26d39d1b80ca8977b6e9854ef11950a5d3271645051ebe5e56"
+  },
+  {
+    "path": "StateRunner\\Preview\\Enums.cs",
+    "sha256": "284f3db098f2c334efd2e6b9980fbd059476e7627fd4e2510c73030701a419d5"
+  }
+]

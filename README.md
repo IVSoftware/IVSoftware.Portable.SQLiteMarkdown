@@ -1,8 +1,54 @@
 # Expression Parsing
 
-This cross-platform library supports expression-based filtering and search for SQLite-backed collections. Input text is parsed into SQL using structured rules for substrings and tags with atomicity for "quoted phrases".
+## 2.0.0-rc and connection lifetime
 
-Historical design reference (prototype retained only as test fixtures): [Temporal affinity working specification](IVSoftware.Portable.SQLiteMarkdown/README/temporal-affinity.specification.md).
+The release solution is [SQLiteMarkdown.RC.slnx](SQLiteMarkdown.RC.slnx).
+The agreed scope and ownership are recorded in [Essential IP](verification/rc/ESSENTIAL-IP.md).
+This RC retains the published query/filter provider and adds `SQLitePrismaConnection`.
+The experimental XML-modeled collection and temporal-affinity implementations are
+excluded from the package. Their historical sources and mixed tests remain preserved.
+
+Compose one `SQLitePrismaConnection` per database owner. It exposes `Query`, `Insert`,
+`InsertOrReplace`, `Update`, `Delete`, `Execute`, and `CreateTable`, with asynchronous
+counterparts. Sync calls contain their connections in a `using` scope. Async calls
+internally retain participation until completion, including when the UI leaves an
+update task unawaited. Clients never handle tokens or dispose the shared async connection.
+
+```csharp
+var store = new SQLitePrismaConnection(databasePath);
+await store.CreateTableAsync<MyRecord>();
+await store.InsertAsync(record);
+_ = store.UpdateAsync(record); // Completion and diagnostics remain owned.
+
+if (await store.ReleaseAsync())
+{
+    // The caller has already established domain eligibility and retired the DBPI.
+    File.Delete(databasePath);
+}
+```
+
+`KeepAlive` defaults to ten seconds and clamps assignments to one through ten seconds.
+WDT holds its own token and client activity restarts the settling window. Idle closure
+allows reopening; explicit `ReleaseAsync` stops admission, drains accepted work, bypasses
+keep-alive and closes the managed connection. Repeated release calls join the same task.
+A failed release returns false: retain the file. The façade never deletes files itself.
+Its release guarantee does not cover independently opened native connections or another
+owner sharing sqlite-net's pool for the same path/configuration.
+
+One execution boundary coordinates façade sync and async requests. Connections use
+FullMutex and a five-second SQLite busy timeout. External writers can still cause
+ordinary contention. Recoverable failures report through Common's Throw feed and return
+zero/false/empty results; these are not proof that a write committed. Applications own
+user-facing recovery and the warning/termination decision for genuine corruption danger.
+No model attachment, cloud synchronization, UI dispatch or DBPI implementation is added
+to this NuGet. DBPI attaches query results to their originating owner above this layer.
+
+The published provider retains `void Clear(bool all = false)`: a concrete no-argument
+call follows its stateful search-clear protocol. Use `Clear(all: true)` or a collection
+interface's `Clear()` for terminal clearing. `MarkdownContext(Type, bool)` and
+`CollectionSyncAuthority` remain available for beta consumers.
+
+This cross-platform library supports expression-based search and SQLite-backed filtering of collections. Input text is parsed into SQL using structured rules for substrings and tags with atomicity for "quoted phrases".
 
 ### Designed for a common shape
 
@@ -20,33 +66,8 @@ It works well in situations where you want to support both *browsing* and *filte
 | Mode            | Description                                                                 |
 |------------------|-----------------------------------------------------------------------------|
 | **FILTER**        | Filter an in-memory list (e.g., app settings, enums, cached results)       |
-| **QUERY**         | Query a remote source (e.g., cloud database, REST API)                     |
-| **QUERY → FILTER**| Query a remote source, then refine results using SQLite-backed filtering   |
-
-### What `IsFiltering` tells the developer
-
-`IsFiltering` means that search input filters the current working set. Use it to
-choose the search bar's "Search" or "Filter" presentation. It does not report
-whether a text expression has been applied or whether fewer records are visible.
-
-| Configuration | `IsFiltering` |
-| --- | --- |
-| Query-only | False |
-| Filter-only | True, including empty input and an empty working set |
-| Query-then-filter | True while filtering is armed or active |
-
-An armed filter can show every record. A text expression can also match every
-record. Checked/selection predicates independently determine their part of the
-projection; they do not redefine this search-input posture.
-
-When using `ObservableQueryFilterCollection<T>` for text filtering, enable
-`source.ModelTracking |= ModelTrackingFlag.ItemQueries` before populating its
-working set. This opts into the SQLite filter mirror used by the text operation.
-Predicate-only tracking can operate independently of that mirror.
-
-For the modeled collection adapter, clear nonempty search text with `Clear()` to
-retain the working set. `Clear(all: true)` requests terminal collection clearing.
-The existing second-clear state machine still applies when input is already empty.
+| **QUERY**         | Build a query; the caller retrieves results from its chosen data source |
+| **QUERY → FILTER**| Refine caller-supplied query results using SQLite-backed filtering       |
 
 ---
 # Demo App included in this Repo
@@ -122,6 +143,8 @@ The **OR** operation can be represented as:
 - `"Term1 | Term2"` is interpreted as `"Term1|Term2"`.
 - `"Term1||Term2"` is interpreted as `"Term1|Term2"`.
 
+During incremental input, `Term1 |` and `Term1|` are valid unfinished expressions. The input text is retained while evaluation uses the completed `Term1` prefix. Adding `Term2` completes the OR expression.
+
 ___
 
 ### NOT Operator
@@ -138,7 +161,7 @@ The **NOT** operation can be represented as:
 
 ### Linting Requirements
 
-Expressions must be formatted to avoid consecutive identical operators or conflicting operators, such as `&|`.
+Linting collapses consecutive identical operators, as shown above. Conflicting adjacent operators, such as `&|`, are not allowed.
 
 ___
 
@@ -158,7 +181,7 @@ ___
 
 ### Single Quotes
 
-Single quotes (`'`) are used to define atomic (exact match) terms.
+Single quotes (`'`) are used to define atomic phrase terms. The phrase stays together within a `LIKE` match; quoting does not require equality with the whole field.
 
 - Quotes must appear in **pairs** to be interpreted as atomic delimiters.
 - If an expression contains a **single** quote, it is treated as a **literal** and included in the search term.
@@ -216,11 +239,11 @@ Here are more examples:
 | `!cat`                 | `NOT (Name LIKE '%cat%' OR Species LIKE '%cat%')`                                                | Single NOT                          |
 | `\!cat`                | `(Name LIKE '%!cat%' OR Species LIKE '%!cat%')`                                                  | Escaped NOT — treated as literal    |
 | `!(cat | dog)`         | `NOT ((Name LIKE '%cat%' OR Species LIKE '%cat%') OR (Name LIKE '%dog%' OR Species LIKE '%dog%'))` | Negated group                     |
-| `'exact phrase'`       | `(Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')`                                  | Exact match using single quotes     |
-| `"exact phrase"`       | `(Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')`                                  | Exact match using double quotes     |
+| `'exact phrase'`       | `(Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')`                                  | Atomic phrase using single quotes   |
+| `"exact phrase"`       | `(Name LIKE '%exact phrase%' OR Species LIKE '%exact phrase%')`                                  | Atomic phrase using double quotes   |
 | `\"Hello\"`          | `(Name LIKE '%""Hello""%' OR Species LIKE '%""Hello""%')`                                          | Literal quotes via escaping         |
 
-> Matching is case-insensitive.
+> Matching follows SQLite's `LIKE` behavior.
 
 ---
 
@@ -254,13 +277,13 @@ This pattern lets you:
 
 One aspect to be aware of - and one that keeps the train on the tracks - is that the parser is table aware. To ground the discussion back to a simple idea - the output consists of a preamble:
 
-`"SELECT * FROM items`
+`SELECT * FROM items`
 
 combined with a declarative WHERE clause based on the attributes already described:
 
 `WHERE ...`
 
-Markdown parsing assumes that the table identity is unambiguously assigned for one, and only one, class in the inheritance tree e.g. `[Table("items")]`. In this example, the prologue is always "SELECT * FROM items WHERE ..." because the parser discovers the `[Table]` attribute assigned to the `SelectableQFModel` base class.
+Markdown parsing assumes one unambiguous table identity across the inheritance tree e.g. `[Table("items")]`. In this example, the prologue is always "SELECT * FROM items WHERE ..." because the parser discovers the `[Table]` attribute assigned to the `SelectableQFModel` base class.
 
 ```
 // Table will be 'items' because the [Table] attribute is defined on SelectableQFModel.
@@ -280,7 +303,7 @@ This ensures that both SQLite and the markdown parser attribute table identity c
 ---
 ## SelfIndexing Class
 
-The `SelfIndexing` class enables automatic generation of SQL search terms from property values using simple attribute annotations. It tracks changes in data, throttles processing intelligently, and maintains up-to-date searchable properties (`QueryTerm`, `FilterTerm`, `TagMatchTerm`) for fast, expression-based querying over markdown-bound SQLite objects.
+The `SelfIndexed` class enables automatic generation of SQL search terms from property values using simple attribute annotations. It tracks changes in data, throttles processing intelligently, and maintains up-to-date searchable properties (`QueryTerm`, `FilterTerm`, `TagMatchTerm`) for fast, expression-based querying over markdown-bound SQLite objects.
 
 One easy way to take advantage of this scheme is to inherit from the `SelfIndexed` base class, apply `[PrimaryKey]` to your ID property, and annotate other properties with e.g. `[SelfIndexed(IndexingMode.QueryOrFilter)]` to control how they contribute to indexing and persistence.
 
@@ -294,6 +317,6 @@ ___
 
 ## ObservableQueryFilterSource
 
-Drop-in replacement for ObservableCollection&lt;T&gt; with built-in support for both Query and Query-then-Filter workflows. It exposes a declarative interface for managing collection state while tracking query/filter intent via an internal FSM (QueryFilterStateTracker). Though UI-agnostic, the class anticipates integration with a navigation search bar, where queries are externally applied and subsequent in-memory filtering is handled via an embedded SQLite store. This enables persistent introspection of the original query, filtered/unfiltered results, and search metadata—all without any UI dependencies.
+A collection-compatible source with built-in support for Query, Filter, and Query-then-Filter workflows. It exposes a declarative interface for managing collection state while tracking query/filter intent via an internal FSM. Though UI-agnostic, the class anticipates integration with a navigation search bar, where queries are externally applied and subsequent in-memory filtering is handled via an embedded SQLite store. The caller owns external access and supplies the returned recordset; input settling and asynchronous work must complete before the workflow advances. Stateful search-bar clearing is distinct from terminal collection clearing. This enables persistent introspection of the original query, filtered/unfiltered results, and search metadata—all without any UI dependencies.
 
 [ObservableQueryFilterSource](https://github.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown/blob/master/IVSoftware.Portable.SQLiteMarkdown/README/observable-query-filter-source.md)

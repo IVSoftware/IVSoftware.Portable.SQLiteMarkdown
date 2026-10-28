@@ -1,4 +1,4 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq;
 using System;
 
@@ -136,19 +136,4 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         public bool Enforce { get; } = true;  
     }
 
-    /// <summary>
-    /// Declares the authority under which to run a named enum FSM.
-    /// </summary>
-    /// <remarks>
-    /// In the context of RunFSM, causes a token check out from DHostAuthorityEpoch.
-    /// </remarks>
-    [AttributeUsage(AttributeTargets.Enum, AllowMultiple = false, Inherited = false)]
-    public class CollectionChangeAuthorityAttribute : Attribute
-    {
-        public CollectionChangeAuthorityAttribute(CollectionChangeAuthority authority = 0)
-        {
-            Authority = authority;
-        }
-        public CollectionChangeAuthority Authority { get; } = 0;
-    }
 }

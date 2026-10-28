@@ -1,4 +1,4 @@
-﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using System;
 using System.Collections.Generic;

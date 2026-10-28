@@ -1,26 +1,20 @@
-using IVSoftware.Portable.Collections;
-using IVSoftware.Portable.Collections.Internal;
+using System.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.SQLiteMarkdown.Util;
 using IVSoftware.Portable.Threading;
-using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
-using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using Newtonsoft.Json;
 using SQLite;
-using IPathPlaceable = IVSoftware.Portable.Collections.IPathPlaceable;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -35,22 +29,15 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// clause by accumulating  parsing state, managing AST nodes, tracking substitutions,
     /// and guiding final SQL generation via attribute-aware hydration.
     /// </summary>
-    [DebuggerDisplay("ContractType={ContractType} ProxyType={ProxyType}")]
-    public partial class MarkdownContext
+    [DebuggerDisplay("ContractType={ContractType}")]
+    public partial class MarkdownContext 
         : WatchdogTimer
         , INotifyPropertyChanged
     {
-        [Careful("The ContractType type must be known and captured regardless of GF mode.")]
-        private MarkdownContext() =>
-            throw new NotSupportedException("The ContractType type must be known and captured regardless of GF mode.");
+        public MarkdownContext(Type type) : this(type, false) { }
 
-        /// <summary>
-        /// Creates a self-contained expression parsing environment, binding it
-        /// to an XML-based AST using the IVSoftware.Portable.XBoundObject NuGet.
-        /// </summary>
-        /// <remarks>
         [Canonical]
-        public MarkdownContext(Type type)
+        public MarkdownContext(Type type, bool disableQuerySemantics)
         {
             Interval = TimeSpan.FromSeconds(0.25);          // Default. Consumer can change.
             XAST = new
@@ -64,8 +51,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             _contractType = type;
 
             ContractTableMapping = ContractType.GetSQLiteMapping();
+            PrimaryKeyColumnName = ContractTableMapping.PK?.Name;
 
-            localValidateClearTopology();
+            // The published provider intentionally retains stateful Clear(bool).
+            if (GetType().GetMethod("Clear", new[] { typeof(bool) })?.ReturnType != typeof(void))
+                localValidateClearTopology();
 
             #region L o c a l F x
             void localValidateClearTopology()
@@ -131,69 +121,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             #endregion L o c a l F x
         }
 
-        [PublishedContract("2.x")]
-        public IModelAuthorityContext? ModelAuthorityContext
-        {
-            get =>
-                _modelAuthorityContext
-                ?? this as IModelAuthorityContext; // Default - rely on inheritance if available.
-            set
-            {
-                if (!Equals(_modelAuthorityContext, value))
-                {
-                    _modelAuthorityContext = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        IModelAuthorityContext? _modelAuthorityContext = default;
-
-        public IReadOnlyDictionary<StdModelAttribute, int>? Histo
-            => ModelAuthorityContext?.Model?.To<IReadOnlyDictionary<StdModelAttribute, int>>();
-
         public MarkdownContextSettings Settings { get; } = new()
         {
-            {StdMarkdownContextSetting.AllowPluralize, false },
-            {StdMarkdownContextSetting.UseAdaptiveShowAll, true },
+            { StdMarkdownContextSetting.AllowPluralize, false },
+            { StdMarkdownContextSetting.UseAdaptiveShowAll, true },
         };
-
-#if DEBUG
-        const bool SQLITE_STRICT = true;
-#else
-        const bool SQLITE_STRICT = false;
-#endif
-        [Canonical("The globally unique authority for binding items and their INPC events.")]
-        protected virtual void OnXBoundAttributeChanged(XBoundAttribute xba, XObjectChange action) { }
-
-        /// <summary>
-        /// Semantic clarity for Interval, which comes from inheriting WatchDogTimer.
-        /// </summary>
-        public TimeSpan InputTextSettlingTime
+        public TimeSpan InputTextSettlingTime { get => Interval; set => Interval = value; }
+        public HashSet<object> AllowedPrimaryKeys { get; } = new();
+        public HashSet<object> DisallowedPrimaryKeys { get; } = new();
+        public virtual int CanonicalCount => 0;
+        public virtual int PredicateMatchCount => 0;
+        public IDisposable BeginBusy() => DHostBusy.GetToken();
+        public void Commit()
         {
-            get => Interval;
-            set => Interval = value;
+            if (IsFiltering) return;
+            using (BeginBusy()) OnCommit(new Events.RecordsetRequestEventArgs(ParseSqlMarkdown()));
         }
-
-        /// <summary>
-        /// Adds minval to base.Interval.
-        /// </summary>
-        public new TimeSpan Interval
-        {
-            get => _interval;
-            set
-            {
-                if (value < TimeSpan.FromSeconds(0.1))
-                {
-                    base.Interval = TimeSpan.FromSeconds(0.1);
-                }
-                else
-                {
-                    base.Interval = value;
-                }
-            }
-        }
-        TimeSpan _interval = default;
-
+        protected virtual void OnCommit(Events.RecordsetRequestEventArgs e) => RecordsetRequest?.Invoke(this, e);
+        public event EventHandler<Events.RecordsetRequestEventArgs>? RecordsetRequest;
         private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
 
         public string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
@@ -255,49 +200,24 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // Set provisional table name.
             TableName = ContractTableMapping.TableName;
 
-            // Check for divergent table name
+            // The parser owns table identity; storage remains consumer-owned.
             if (ProxyType != ContractType)
             {
-                // [Careful]
-                // Use the @throw argument to validate by null pattern matching, not exception.
-                TableMapping tmProxy =
-                    ProxyType
-                    .GetSQLiteMapping(
-                        contractType: ContractType,
-                        @throw: false);
-
-                if (tmProxy?.TableName == ContractTableMapping.TableName
+                var mapping = ProxyType.GetSQLiteMapping(contractType: ContractType, @throw: false);
+                if (mapping?.TableName == ContractTableMapping.TableName
                     || ContractType.IsAssignableFrom(ProxyType)
                     || ProxyType.IsAssignableFrom(ContractType))
                 {
                     TableName = ContractTableMapping.TableName;
                 }
-                else
+                else if (ProxyType.GetCustomAttribute<EnforceSingleTableAttribute>()?.Enforce == false)
                 {
                     TableName = ProxyType.GetSQLiteMapping().TableName;
-                    if (_proxyType.GetCustomAttribute<EnforceSingleTableAttribute>()?.Enforce == false)
-                    {
-                        if (FilterQueryDatabase is SQLiteQueryOnlyConnection cnxprot)
-                        {
-                            using (cnxprot.RequestAuthority(SQLiteAuthority.FullControl))
-                            {
-                                FilterQueryDatabase.CreateTable(ProxyType);
-                            }
-                        }
-                        else
-                        {
-                            FilterQueryDatabase.CreateTable(ProxyType);
-                        }
-                    }
-                    else
-                    {
-                        this.ThrowHard<InvalidOperationException>(
-                            $"Proxy type resolves to a different table '{TableName}' and is " +
-                            $"not permitted to bypass the single-table contract for '{ContractTableMapping.TableName}'.");
-                        // Unreachable unless Throw pattern is handled.
-                        xast = null!;
-                        return string.Empty;
-                    }
+                    FilterQueryDatabase?.CreateTable(ProxyType);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Proxy type does not resolve to the contract table.");
                 }
             }
 
@@ -1288,11 +1208,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 var builder = new List<string> { Preamble };
                 if (!string.IsNullOrWhiteSpace(WherePredicate))
                 {
-                    builder.Add(WherePredicate!);
+                    builder.Add(CanExecutePrimaryKeyClause() ? "(" + WherePredicate + ")" : WherePredicate!);
                 }
                 if (CanExecutePrimaryKeyClause())
                 {
-                    builder.Add(PrimaryKeyClause());
+                    builder.Add((string.IsNullOrWhiteSpace(WherePredicate) ? "" : "AND ") + PrimaryKeyClause());
                 }
                 if (Limit > 0)
                 {
@@ -1518,18 +1438,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
             return formatted;
         }
-        public virtual string ToString(Enum formatting)
-        {
-            switch (formatting)
-            {
-                case FormattingOMC.StateReport:
-                    break;
-                default:
-                    break;
-            }
-            return ToString();
-        }
-
         #region C O N F I G
         public QueryFilterConfig QueryFilterConfig
         {
@@ -1539,74 +1447,63 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                 if (!Equals(_queryFilterConfig, value))
                 {
                     _queryFilterConfig = value;
-
-                    switch (_queryFilterConfig)
-                    {
-                        case QueryFilterConfig.Query:
-                            FilteringState = FilteringState.Ineligible;
-                            break;
-                        case QueryFilterConfig.Filter:
-                            // Advance to minimum states for Filter mode.
-                            if (FilteringState == FilteringState.Ineligible)
-                            {
-                                FilteringState = FilteringState.Armed;
-                                Debug.Assert(IsFiltering);
-                            }
-                            if (SearchEntryState == SearchEntryState.Cleared)
-                            {
-                                SearchEntryState = SearchEntryState.QueryCompleteNoResults;
-                            }
-                            break;
-                        default:
-                            // Reset FSM to first cause.
-                            Clear(all: true);
-                            break;
-                    }
-                    OnQueryFilterConfigChanged();
+                    // Seems odd, right? But this actually does something.
+                    // It forces a review of of its current state to make
+                    // sure that it's still legal with the new QFC.
+                    FilteringState = FilteringState;
                     OnPropertyChanged();
                 }
             }
         }
-
-        protected virtual void OnQueryFilterConfigChanged() { }
-
         QueryFilterConfig _queryFilterConfig = QueryFilterConfig.QueryAndFilter;
 
-        /// <summary>
-        /// Memory connection on-demand.
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// User may inject a persistent connection if:
-        /// <c>using(MemoryDatabase = new SQLiteConnection("UserPath")); </c>
-        /// </remarks>
+        public DisposableHost DHostSelfIndexing { get; } = new();
+
+        protected virtual SQLiteConnection? FilterQueryDatabase
+        {
+            get
+            {
+                if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)) return null;
+                if (_filterQueryDatabase is null)
+                {
+                    _filterQueryDatabase = new SQLiteConnection(":memory:");
+                    _filterQueryDatabase.CreateTable(ContractType);
+                }
+                return _filterQueryDatabase;
+            }
+            set => _filterQueryDatabase = value;
+        }
+        private SQLiteConnection? _filterQueryDatabase;
+
+        
         public SQLiteConnection MemoryDatabase
         {
-            get => _memoryDatabase!;    // For compatibility with interface contract, this property must be null checked.
+            get => _memoryDatabase;
             set
             {
                 if (!Equals(_memoryDatabase, value))
                 {
-                    if (_memoryDatabase != null)
+                    if(_memoryDatabase != null)
                     {
                         _memoryDatabase.Dispose();
                     }
                     _memoryDatabase = value;
                     OnPropertyChanged();
-                    this.OnAwaited();
                 }
             }
         }
+        // Nullable property, but we're not in
+        // a target framework that supports it.
         SQLiteConnection? _memoryDatabase = default;
 
         #endregion C O N F I G
 
         #region N A V    S E A R C H    S T A T E    M A C H I N E
-
-        protected FilteringState FilteringStatePrev { get; set; }
+        public virtual bool RouteToFullRecordset => true;
+        protected FilteringState FilteringStatePrev { get; set;  }
         public FilteringState FilteringState
         {
-            get => _filteringState;
+            get =>_filteringState;
             // {461B2298-3E0A-49F8-AE52-EB43F70699AD}
             // CONTROLLED ACCESS
             // To obtain set access to this property, make a subclass.
@@ -1627,54 +1524,32 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // not work if done in the library itself.
             protected set
             {
-                #region I T ' S    T H E    L A W
                 switch (QueryFilterConfig)
                 {
                     case QueryFilterConfig.Query:
-                        // [Gravity]
-                        if (value > FilteringState.Ineligible)
-                        {
-                            value = FilteringState.Ineligible;
-                        }
+                        // Query-only is always ineligible for filtering.
+                        value = FilteringState.Ineligible;
                         break;
                     case QueryFilterConfig.Filter:
-                        // [Gravity]
-                        if (value < FilteringState.Armed)
+                        // Filter-only is always either armed or active.
+                        if(value == FilteringState.Ineligible)
                         {
                             value = FilteringState.Armed;
                         }
                         break;
+                    case QueryFilterConfig.QueryAndFilter:
+                        break;
+                    default:
+                        break;
                 }
-                #endregion I T ' S    T H E    L A W
-
                 if (!Equals(_filteringState, value))
                 {
-                    if (value == FilteringState.Active)
-                    {
-                        if (_sslimAF.CurrentCount == 0)
-                        {   /* G T K */
-                        }
-                        else
-                        {
-                            this.ThrowFramework<InvalidOperationException>(
-                                $"{FilteringState.Active.ToFullKey()} must be set from {nameof(ApplyFilter)} only.");
-                        }
-                    }
-
                     FilteringStatePrev = _filteringState;
                     _filteringState = value;
-
-                    // This needs to be sequenced in a certain way.
-                    // {5B1BD636-9189-493C-83B6-F77EB0321925}
-                    bool isFilteringB4 = _isFiltering;
                     OnFilteringStateChanged();
                     OnPropertyChanged();
-
-                    if (_isFiltering != isFilteringB4)
-                    {
-                        OnIsFilteringChanged();
-                        OnPropertyChanged(nameof(IsFiltering));
-                    }
+                    OnPropertyChanged(nameof(RouteToFullRecordset));
+                    OnPropertyChanged(nameof(IsFiltering));
                 }
             }
         }
@@ -1692,7 +1567,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// use the protected setter instead. Alternatively, the throw may be handled to 
         /// enable controlled legacy behavior, but such usage should be limited to tests.
         /// </remarks>
-        [Obsolete("Make a subclass instead. This provides access to the protected setter for FilteringState.")]
+        [Obsolete("Use a subclass to gain access to the protected setter for FilteringState.")]
         public FilteringState FilteringStateForTest
         {
             get => FilteringState;
@@ -1707,299 +1582,96 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             }
         }
 
-        public void Sort(IComparer? comparer)
-        {
-            if (comparer is null)
-            {
-                throw new NotImplementedException("ToDo");
-            }
-            else
-            {
-                throw new NotImplementedException("ToDo");
-            }
-        }
-        protected bool IsEphemeralSort
-        {
-            get => _isEphemeralSort;
-            set
-            {
-                if (!Equals(_isEphemeralSort, value))
-                {
-                    _isEphemeralSort = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        bool _isEphemeralSort = false;
-
-
-        protected virtual void OnIsFilteringChanged() { }
-
         /// <summary>
-        /// Comprehensive system-level clear that includes InputText in its purview.
+        /// Indicates whether the collection is operating in latched filtering mode.
         /// </summary>
         /// <remarks>
-        /// Subclasses should implement both:
-        /// 1. The parameterless "no surprises" Clear().
-        /// 2. The UI-oriented [X] demoting clear state machine.
+        /// Filtering mode exhibits hysteresis behavior to preserve user intent.
+        /// 
+        /// After a successful query yielding sufficient results, filtering becomes
+        /// eligible and transitions to Active upon the next IME input.
+        /// 
+        /// Clearing the IME does not immediately revert to query mode. If filtering
+        /// was previously Active, the state remains latched until an explicit second
+        /// clear action signals intent to exit filtering.
+        /// 
+        /// This prevents oscillation between Query and Filter modes caused by
+        /// transient empty input and preserves refinement context.
         /// </remarks>
-        [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
+        public bool IsFiltering
+            => FilteringState == FilteringState.Ineligible
+                ? false
+                : FilteringState == FilteringState.Active
+                    ? true
+                    : FilteringStatePrev == FilteringState.Active;
+
+        // Canonical {5932CB31-B914-4DE8-9457-7A668CDB7D08}
         public FilteringState Clear(bool all = false)
         {
-            // Fastrack condition for all.
-            // Goes here, before the virtual method call.
-            if (FilteringState == FilteringState.Ineligible
-                && string.IsNullOrWhiteSpace(InputText))
+            if (all)
             {
-                all = true;
-            }
-            if (ModelAuthorityContext is null)
-            {
-                // 1.x contract
-                OnClear(all);
+                InputText = string.Empty;
+                FilteringState = FilteringState.Ineligible;
+                SearchEntryState = SearchEntryState.Cleared;
             }
             else
             {
-                if(all)
+                // UpgradeToFilter : FilteringState == FilteringState.Ineligible;
+                // DowngradeToQuery: FilteringState != FilteringState.Ineligible;
+                // DowngradeToClear: DowngradeToQuery + SearchEntryState is not showing a query result.
+                if (InputText.Length > 0)
                 {
-                    using(ModelAuthorityContext.RequestAuthority(StdModelAuthority.TerminalClear))
-                    using (ModelAuthorityContext.RequestAuthority(ModelDataExchangeAuthority.Model))
-                    OnClear(true);
+                    // Input text is non-empty.
+                    InputText = string.Empty;
+                    switch (FilteringState)
+                    {
+                        case FilteringState.Ineligible:
+                            break;
+                        case FilteringState.Armed:
+                            // Basically, if there is entry text but the filtering
+                            // is still only armed not active, that indicates that
+                            // what we're seeing in the list is the result of a full
+                            // db query that just occurred. So now, when we CLEAR that
+                            // text, it's assumed to be in the interest of filtering
+                            // that query result, so filtering stays Armed in this case.
+                            break;
+                        case FilteringState.Active:
+                            break;
+                        default:
+                            throw new NotImplementedException($"Bad case: {FilteringState}");
+                    }
                 }
                 else
                 {
-                    using (ModelAuthorityContext.RequestAuthority(ModelDataExchangeAuthority.Model))
+                    // Input text is empty.
+                    switch (FilteringState)
                     {
-                        OnClear(false);
+                        case FilteringState.Ineligible:
+                            // RELEASE 1.0.2 bug fixed by adding this clause.
+                            switch (SearchEntryState)
+                            {
+                                case SearchEntryState.QueryCompleteNoResults:
+                                case SearchEntryState.QueryCompleteWithResults:
+                                    SearchEntryState = SearchEntryState.Cleared;
+                                    break;
+                            }
+                            break;
+                        case FilteringState.Armed:
+                        case FilteringState.Active:
+                            // If the text is already empty and
+                            // you click again, it's a hard reset!
+                            FilteringState = FilteringState.Ineligible;
+                            break;
+                        default:
+                            throw new NotImplementedException($"Bad case: {FilteringState}");
                     }
                 }
             }
-
-            // Avoid leaking the object itself as the awaited sender.
-            nameof(MarkdownContext).OnAwaited(new AwaitedEventArgs(caller: nameof(Clear))
-            {
-                { nameof(all), all }, // Key='all' 
-            });
             // Fluent return;
             return FilteringState;
         }
-        protected virtual void OnClear(bool all)
-        {
-            if(ModelAuthorityContext is { } mac)
-            {
-                if (!mac.HasAuthority(ModelDataExchangeAuthority.Model))
-                {
-                    IDisposable[] tokens =
-                        all
-                        ? [mac.RequestAuthority(StdModelAuthority.TerminalClear), mac.RequestAuthority(ModelDataExchangeAuthority.Model)]
-                        : [mac.RequestAuthority(ModelDataExchangeAuthority.Model)];
-                    using (new TokenDisposer(tokens))
-                    {
-                        if (!mac.HasAuthority(ModelDataExchangeAuthority.Model))
-                        {
-                        }
-                    }
-                }
-                localOnClear();
-            }
-            else
-            {
-                // 1.x contract
-                localOnClear();
-            }
-            void localOnClear()
-            {
-                if (ModelAuthorityContext?.Model is { } model)
-                {
-                    model.RemoveDescendantAttributes(StdModelAttribute.qmatch);
-                    if (model.To<IRoutedCollection>() is { } route)
-                    {
-                        // This does not rely on the 'all' argument.
-                        route.RouteKey = StdRouteKey.CanonicalRoute;
-                    }
-                }
-                if (all)
-                {
-                    InputText = string.Empty;
-                    FilteringState = FilteringState.Ineligible;
-                    if (SearchEntryState == SearchEntryState.Cleared)
-                    {
-                        OnSearchEntryStateChanged();
-                        OnPropertyChanged(nameof(SearchEntryState));
-                    }
-                    else
-                    {
-                        SearchEntryState = SearchEntryState.Cleared;
-                    }
-                }
-                else
-                {
-                    if (InputText.Length == 0)
-                    {
-                        // EMPTY
-                        switch (FilteringState)
-                        {
-                            case FilteringState.Ineligible:
-                                // RELEASE 1.0.2 bug fixed by adding this clause.
-                                // RELEASE 2.0.0 fixes the nosocomial.
-                                switch (SearchEntryState)
-                                {
-                                    case SearchEntryState.QueryCompleteWithResults:
-                                        /* G T K - N O O P */
-                                        break;
-                                    // There were never any projected items to clear.
-                                    // No intermediate step is needed.
-                                    case SearchEntryState.QueryCompleteNoResults:
-                                    case SearchEntryState.QueryEmpty:
-                                        SearchEntryState = SearchEntryState.Cleared;
-                                        break;
-                                }
-                                break;
-                            case FilteringState.Armed:
-                            case FilteringState.Active:
-                                // Text is already empty and clear is invoked (clicked) again - this is a hard reset.
-                                FilteringState = FilteringState.Ineligible;
-                                if (SearchEntryState > SearchEntryState.QueryEmpty)
-                                {
-                                    SearchEntryState = SearchEntryState.QueryEmpty;
-                                }
-                                break;
-                            default:
-                                throw new NotImplementedException($"Bad case: {FilteringState}");
-                        }
-                    }
-                    else
-                    {
-                        // NOT EMPTY
-                        // UpgradeToFilter : FilteringState == FilteringState.Ineligible;
-                        // DowngradeToQuery: FilteringState != FilteringState.Ineligible;
-                        // DowngradeToClear: DowngradeToQuery + SearchEntryState is not showing a query result.
-                        InputText = string.Empty;
 
-                        // Not Here
-                        // SES is the purview of OnInputTextChanged as far as EMPTY is concerned.
-                        // RATIONALE: The IME can become empty in ways other than Clear().
-
-                        //switch (SearchEntryState)
-                        //{
-                        //    case SearchEntryState.QueryCompleteWithResults:
-                        //        // Text has become empty, but don't clear the list in this intermediate step.
-                        //        SearchEntryState = SearchEntryState.QueryEmpty;
-                        //        break;
-                        //    case SearchEntryState.QueryCompleteNoResults:   // Expected
-                        //    case SearchEntryState.QueryEmpty:               // Unexpected but benign.
-                        //        // Text has become empty, and there are no items to clear.
-                        //        SearchEntryState = SearchEntryState.Cleared;
-                        //        break;
-                        //}
-
-                        switch (FilteringState)
-                        {
-                            case FilteringState.Ineligible:
-                                break;
-                            case FilteringState.Armed:
-                                // Basically, if there is entry text but the filtering
-                                // is still only armed not active, that indicates that
-                                // what we're seeing in the list is the result of a full
-                                // db query that just occurred. So now, when we CLEAR that
-                                // text, it's assumed to be in the interest of filtering
-                                // that query result, so filtering stays Armed in this case.
-                                break;
-                            case FilteringState.Active:
-                                break;
-                            default:
-                                throw new NotImplementedException($"Bad case: {FilteringState}");
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Apply hysteresis to the Filtering, but only in QueryFilterConfig.QueryAndFilter mode.
-        /// </summary>
-        /// <remarks>
-        /// This is the only place that _isFiltering is allowed to change. 
-        /// INPC sequencing is delicate and so the backing store defers the notification.
-        /// </remarks>
-        protected virtual async void OnFilteringStateChanged()
-        {
-            switch (QueryFilterConfig)
-            {
-                case QueryFilterConfig.Query:
-                    _isFiltering = false;
-                    break;
-                case QueryFilterConfig.Filter:
-                    _isFiltering = true;
-                    break;
-                case QueryFilterConfig.QueryAndFilter:
-                    _isFiltering = FilteringState != FilteringState.Ineligible;
-                    break;
-                default:
-                    break;
-            }
-            switch (FilteringState)
-            {
-                case FilteringState.Ineligible:
-                case FilteringState.Armed:                    
-                    RouteKey = StdRouteKey.CanonicalRoute;
-#if DEBUG
-                    // Detect direction
-                    if (FilteringStatePrev == FilteringState.Active)
-                    { }
-#endif
-                    break;
-                case FilteringState.Active:
-                    break;
-                default:
-                    this.ThrowFramework<NotSupportedException>($"The {FilteringState.ToFullKey()} case is not supported.");
-                    break;
-            }
-        }
-
-        protected ObservableCollection<object> ActivePredicates
-        {
-            get
-            {
-                if (_activeFilters is null)
-                {
-                    _activeFilters = new ObservableCollection<object>();
-                }
-                return _activeFilters;
-            }
-        }
-        ObservableCollection<object>? _activeFilters = null;
-
-        /// <summary>
-        /// Available routing based on discoverable Histo.
-        /// </summary>
-        public StdRouteKey RouteKey
-        {
-            get => _routeKey;
-            set
-            {
-                if (!Equals(_routeKey, value))
-                {
-                    _routeKey = value;
-                    OnRouteKeyChanged();
-                    OnPropertyChanged();
-                }
-            }
-        }
-        StdRouteKey _routeKey = StdRouteKey.CanonicalRoute;
-
-        protected virtual void OnRouteKeyChanged()
-        {
-            switch (RouteKey)
-            {
-                case StdRouteKey.CanonicalRoute:
-                    RouteToFullRecordset = true;
-                    break;
-                default:
-                    RouteToFullRecordset = false;
-                    break;
-            }
-        }
+        protected virtual void OnFilteringStateChanged() { }
 
         public string InputText
         {
@@ -2012,159 +1684,11 @@ namespace IVSoftware.Portable.SQLiteMarkdown
                     _inputText = value;
                     OnInputTextChanged();
                     OnPropertyChanged();
+                    RestartIfSemanticInputChanged();
                 }
             }
         }
         string _inputText = string.Empty;
-
-        [Careful("Trimming or modifying the raw InputText is not allowed.")]
-        protected virtual void OnInputTextChanged()
-        {
-            if (IsFiltering)
-            {
-                localApplyFilterSemantics();
-            }
-            else
-            {
-                localApplyQuerySemantics();
-            }
-
-            #region L o c a l F x
-            void localApplyFilterSemantics()
-            {
-                // First cut: "There must be at least one item."
-                if (SearchEntryState == SearchEntryState.QueryCompleteWithResults)
-                {
-                    switch (FilteringState)
-                    {
-                        case FilteringState.Ineligible:
-                            {   /* G T K - N O O P */
-                                // Second cut: "In fact, there must be at least two items, and we've already checked."
-                            }
-                            break;
-                        case FilteringState.Armed:
-                            if (!InputText.IsSemanticallyEmpty())
-                            {
-                                // 260511 - do this as a settled concern instead.
-                                // FilteringState = FilteringState.Active;
-                            }
-                            break;
-                        case FilteringState.Active:
-                            if (InputText.IsSemanticallyEmpty())
-                            {
-                                // Downgrade but stay armed.
-                                FilteringState = FilteringState.Armed;
-                            }
-                            break;
-                        default:
-                            throw new NotImplementedException($"Bad case: {FilteringState}");
-                    }
-                }
-
-                // #{AC826718-2B0C-4846-9F85-B028BAD3CC10}
-                // Please *do not move* (as has been done many times before).
-                // HERE'S THE THING:
-                // In query mode, the ui *typically* awaits Commit, not Settle,
-                // and this is epistemic because the primary database "could be
-                // anything" and take a year to return a query for all we know.
-                // NEVERTHELESS:
-                // The awaiter, and the process of settling text, is a separate concern.
-                // MENTAL MODEL (CORRECTED):
-                // Check the filtering state in OnInputTextSettled instead, and
-                // gate the 'apply filter' there, not here.
-                RestartIfSemanticInputChanged();
-            }
-
-            void localApplyQuerySemantics()
-            {
-                if (InputText.IsSemanticallyEmpty())
-                {
-                    SearchEntryState =
-                        CanonicalCount == 0
-                        ? SearchEntryState.Cleared
-                        : SearchEntryState.QueryEmpty;
-                }
-                else if (InputText.TrimEndTransients().Length < 3)
-                {
-                    SearchEntryState = SearchEntryState.QueryENB;
-                }
-                else
-                {
-                    SearchEntryState = SearchEntryState.QueryEN;
-                }
-            }
-            #endregion L o c a l F x
-        }
-
-        /// <summary>
-        /// Indicates that search input filters the current working set.
-        /// </summary>
-        /// <remarks>
-        /// - Query-only is false; filter-only is true even before any text is entered.
-        /// - Query-and-filter is true while filtering is armed or active.
-        /// - True does not imply a text restriction, fewer visible records, or any predicate match.
-        /// Use this posture to choose the search bar's "Search" or "Filter" presentation.
-        /// </remarks>
-        [PublishedContract("1.x")]
-        public bool IsFiltering => _isFiltering;
-
-        // Different!
-        // Protected because it's in play inside OnFilteringStateChanged.
-        // This needs to be sequenced in a certain way.
-        // {5B1BD636-9189-493C-83B6-F77EB0321925}
-        protected bool _isFiltering = false;
-
-        /// <summary>
-        /// Indicates that the Markdown context selects its canonical text route.
-        /// </summary>
-        /// <remarks>
-        /// Independent of IsFiltering: an armed collection can show its full text working set.
-        /// Collection-owned predicates may still narrow the final projection without text input.
-        /// Mental Model: "If the input text is empty, just swap the handle instead of recalculating."
-        /// </remarks>
-        [PublishedContract("1.x")]
-        public bool RouteToFullRecordset
-        {
-            get => _routeToFullRecordset;
-            protected set
-            {
-                if (!Equals(_routeToFullRecordset, value))
-                {
-                    _routeToFullRecordset = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        bool _routeToFullRecordset = true;
-
-        /// <summary>
-        /// Returns true when the normalized semantic input contains no effective terms.
-        /// </summary>
-        protected virtual bool IsSemanticallyEmpty()
-        {
-            var nonTransientInputText = InputText.TrimEnd();
-            bool hasTrailingEscapedOperator = false;
-
-            if (nonTransientInputText.Length >= 2)
-            {
-                int len = nonTransientInputText.Length;
-                char c1 = nonTransientInputText[len - 2];
-                char c2 = nonTransientInputText[len - 1];
-
-                if (c1 == '\\' && (c2 == '\\' || c2 == '!' || c2 == '|' || c2 == '&'))
-                {
-                    hasTrailingEscapedOperator = true;
-                }
-            }
-
-            if (!hasTrailingEscapedOperator)
-            {
-                nonTransientInputText =
-                    nonTransientInputText.TrimEnd('!', '|', '&');
-            }
-
-            return nonTransientInputText.Length == 0;
-        }
 
         /// <summary>
         /// Normalizes trailing transient operators and restarts the debounce cycle
@@ -2189,20 +1713,72 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             {
                 nonTransientInputText = nonTransientInputText.TrimEnd(@"!|&".ToCharArray());
             }
-            if (_literalInputText != nonTransientInputText)
+            if( _nonTransientInputText != nonTransientInputText)
             {
-                _literalInputText = nonTransientInputText;
-                if (ValidationPredicate(_literalInputText))
-                {
-                    StartOrRestart();
-                }
-                else
-                {
-                    Cancel();
-                }
+                _nonTransientInputText = nonTransientInputText;
+                StartOrRestart();
             }
         }
-        string _literalInputText = string.Empty;
+        string _nonTransientInputText = string.Empty;
+
+
+        [Careful("Trimming or modifying the raw InputText is not allowed.")]
+        protected virtual void OnInputTextChanged()
+        {
+            var filteringStateB4 = FilteringState;
+            switch (FilteringState)
+            {
+                case FilteringState.Ineligible:
+                    if (InputText.Length == 0)
+                    {
+                        SearchEntryState = SearchEntryState.QueryEmpty;
+                    }
+                    else if (InputText.Length < 3)
+                    {
+                        SearchEntryState = SearchEntryState.QueryENB;
+                    }
+                    else
+                    {
+                        SearchEntryState = SearchEntryState.QueryEN;
+                    }
+                    break;
+                case FilteringState.Armed:
+                    if (InputText.Length != 0)
+                    {
+                        FilteringState = FilteringState.Active;
+                    }
+                    break;
+                case FilteringState.Active:
+                    if (InputText.Length == 0)
+                    {
+                        // Downgrade but stay armed.
+                        FilteringState = FilteringState.Armed;
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException($"Bad case: {FilteringState}");
+            }
+        }
+
+        /// <summary>
+        /// Returns the current synchronization authority between the
+        /// canonical collection and its projection.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model (typical):
+        /// - The filtered collection represents the current visible projection, and
+        ///   user-facing {add, edit, remove} operations occur against this projection.
+        /// - SyncAuthority anchors one side as authoritative during collection change
+        ///   propagation, suppressing re-entrant updates from the opposing side.
+        /// - When a refinement epoch is active, authority shifts to the canonical
+        ///   collection to prevent circular propagation while the projection settles.
+        /// - In the quiescent state, the projection is authoritative.
+        /// </remarks>
+        public CollectionSyncAuthority SyncAuthority =>
+            Running && (FilteringState != FilteringState.Ineligible)
+            ? CollectionSyncAuthority.Unfiltered
+            : CollectionSyncAuthority.Filtered;
+                
 
         public SearchEntryState SearchEntryState
         {
@@ -2211,17 +1787,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             // {461B2298-3E0A-49F8-AE52-EB43F70699AD}
             protected set
             {
-                #region I T ' S    T H E    L A W
-                switch (QueryFilterConfig)
-                {
-                    case QueryFilterConfig.Filter:
-                        if (value < SearchEntryState.QueryCompleteNoResults)
-                        {
-                            value = SearchEntryState.QueryCompleteNoResults;
-                        }
-                        break;
-                }
-                #endregion I T ' S    T H E    L A W
                 if (!Equals(_searchEntryState, value))
                 {
                     _searchEntryState = value;
@@ -2232,40 +1797,114 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         }
         SearchEntryState _searchEntryState = default;
 
-        protected virtual void OnSearchEntryStateChanged()
+        protected virtual void OnSearchEntryStateChanged() { }
+
+        protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
         {
-            switch (QueryFilterConfig)
+            await base.OnEpochFinalizingAsync(e);
+            if(!e.Cancel)
             {
-                case QueryFilterConfig.Query:
-                    FilteringState = FilteringState.Ineligible;
-                    RouteKey = StdRouteKey.CanonicalRoute;
-                    break;
-                case QueryFilterConfig.Filter:
-                    FilteringState = FilteringState.Armed;
-                    RouteKey = StdRouteKey.CanonicalRoute;
-                    break;
-                case QueryFilterConfig.QueryAndFilter:
-
-                    ICollection? omc =
-                        ModelAuthorityContext
-                        ?.Model
-                        ?.Attribute(StdModelAttribute.omc) is XBoundAttribute xba
-                        ? xba.Tag as ICollection
-                        : null;
-
-                    if(SearchEntryState == SearchEntryState.QueryCompleteWithResults)
-                    {
-                        FilteringState = 
-                            omc is null || omc.Count > 1
-                            ? FilteringState.Armed
-                            : FilteringState.Ineligible;
-                    }
-                    break;
-                default:
-                    this.ThrowFramework<NotSupportedException>($"The {QueryFilterConfig.ToFullKey()} case is not supported.");
-                    break;
+                OnInputTextSettled(new CancelEventArgs());
             }
         }
+#if false
+        protected WatchdogTimer WDTInputTextSettled
+        {
+            get
+            {
+                if (_wdtInputTextSettled is null)
+                {
+                    _wdtInputTextSettled =
+                        new WatchdogTimer(
+                            defaultInitialAction: () =>
+                            {
+                                // Do this.
+                                // Otherwise fail Test_TrackProgressiveInputState() {...}
+                                // See also: {24048258-8BE4-40C4-BF85-8863E98BED51}
+                                Debug.WriteLine($"210206.Z defaultInitialAction");
+                                _ready.Wait(0);
+                                _wdtEpochToken ??= DHostEpochReferenceCount.GetToken();
+                            },
+                            defaultCompleteAction: () =>
+                            {
+                                OnInputTextSettled(new CancelEventArgs());
+                                localSafeRelease();
+                            })
+                        {
+                            Interval = InputTextSettleInterval
+                        };
+                    _wdtInputTextSettled.Cancelled += (sender, e) =>
+                    {
+                        localSafeRelease();
+                    };
+                    void localSafeRelease()
+                    {
+                        _ready.Wait(0);
+                        _ready.Release();
+                        _wdtEpochToken?.Dispose();
+                        _wdtEpochToken = null;
+                    }
+                }
+                return _wdtInputTextSettled;
+            }
+        }
+
+        WatchdogTimer? _wdtInputTextSettled = null;
+        IDisposable? _wdtEpochToken = null;
+#endif
+
+        /// <summary>
+        /// Reference counter for Busy property.
+        /// </summary>
+        /// <remarks>
+        /// This does not hold the awaiter and should be used
+        /// for visual activity indicator only.
+        /// </remarks>
+        public DisposableHost DHostBusy
+        {
+            get
+            {
+                if (_dhostBusy is null)
+                {
+                    _dhostBusy = new DisposableHost();
+                    _dhostBusy.BeginUsing += (sender, e) =>
+                    {
+                        Busy = true;
+                        OnPropertyChanged(nameof(Busy));
+                    };
+                    _dhostBusy.FinalDispose += (sender, e) =>
+                    {
+                        Busy = false;
+                        OnPropertyChanged(nameof(Busy));
+                    };
+                }
+                return _dhostBusy;
+            }
+        }
+        DisposableHost? _dhostBusy = null;
+
+        public DisposableHost DHostEpochReferenceCount
+        {
+            get
+            {
+                if (_dhostEpochReferenceCount is null)
+                {
+                    _dhostEpochReferenceCount = new DisposableHost();
+                    _dhostEpochReferenceCount.BeginUsing += (sender, e) =>
+                    {
+                        
+                        _ready.Wait(0);
+                    };
+                    _dhostEpochReferenceCount.FinalDispose += (sender, e) =>
+                    {
+                        _ready.Wait(0);
+                        _ready.Release();
+                    };
+                }
+                return _dhostEpochReferenceCount;
+            }
+        }
+        DisposableHost? _dhostEpochReferenceCount = null;
 
 #if DEBUG
         protected SemaphoreSlimWithTrace _ready { get; } = new SemaphoreSlimWithTrace(1, 1);
@@ -2274,228 +1913,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
 #endif
         public bool Busy { get; private set; }
 
-        protected virtual async Task OnInputTextSettled(CancelEventArgs e)
+        protected virtual void OnInputTextSettled(CancelEventArgs e)
         {
-            // External response via handler.
             InputTextSettled?.Invoke(this, e);
-
-            // Internal response possible when FQDB is injected, including
-            // but not limited to IObservableQueryFilterSource implementations.
-            if (FilterQueryDatabase is not null)
-            {
-                if (!e.Cancel)
-                {
-                    // [Remember]
-                    // - The distinction of 'Ineligible' is that
-                    //   there aren't enough items to filter.
-                    // - It's got nothing to do with InputText length.
-                    if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
-                        && FilteringState != FilteringState.Ineligible)
-                    {
-                        if (InputText.IsSemanticallyEmpty())
-                        {   /* G T K - N O O P */
-                        }
-                        else
-                        {
-                            await ApplyFilter();
-                        }
-                    }
-                }
-            }
         }
+
         public event EventHandler? InputTextSettled;
-
-        // REF: 260409.B-remove-mdc-model-sematics
-        /// <summary>
-        /// Observes settled match cardinality before the model epoch publishes its projection.
-        /// </summary>
-        /// <remarks>
-        /// The collection adapter uses this distinction to retain a restrictive query
-        /// with zero matches. Histogram presence alone cannot represent that case.
-        /// </remarks>
-        protected virtual void OnFilterMatchesApplied(int canonicalCount, int queryMatchCount) { }
-
-        protected virtual async Task ApplyFilter()
-        {
-            if (FilterQueryDatabase is null)
-            {
-                this.ThrowHard<InvalidOperationException>(
-                    $"{nameof(ApplyFilter)} requires a non-null {nameof(FilterQueryDatabase)}. " +
-                    $"Compose the {nameof(MarkdownContext)} through a modeled collection or " +
-                    $"inject the database before calling this method.");
-            }
-            else
-            {
-                if (ModelAuthorityContext is { } mac)
-                {
-                    await _sslimAF.WaitAsync();
-                    try
-                    {
-                        using (DHostBusy.GetToken())
-                        using (mac.RequestAuthority(ModelDataExchangeAuthority.ModelDeferred))
-                        {
-                            string sql;
-                            IList qmatches = Array.Empty<object>();
-                            string[] matchPaths = [];
-                            int ccount = CanonicalCount;
-
-                            await Task.Run(() =>
-                            {
-                                // PredicateMatchSubsetProtected.Clear();
-                                mac.Model.RemoveDescendantAttributes(StdModelAttribute.qmatch);
-
-                                #region F I L T E R    Q U E R Y
-                                sql = ParseSqlMarkdown();
-#if DEBUG
-                                switch (InputText)
-                                {
-                                    case "b":
-                                        Debug.Assert(sql == @"
-SELECT * FROM items WHERE
-(FilterTerm LIKE '%b%')".TrimStart(),
-                                        "PROBABLY *NOT* BUGIRL - SCREENING FOR A SPURIOUS FAIL");
-                                        break;
-                                    case "Item01":
-                                        { }
-                                        break;
-                                }
-#endif
-                                // Execute the filter query against the proxy table. The returned rows are
-                                // lightweight proxy records used only to discover which canonical models
-                                // satisfy the predicate. These proxy instances are not inserted into the
-                                // projection; instead their paths are resolved back to the original model
-                                // objects bound in the AST.
-                                qmatches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
-
-                                if (qmatches.Count == 0 && Equals(Settings[StdMarkdownContextSetting.AllowPluralize], true))
-                                {
-                                    sql = sql.ToFuzzyQuery();
-                                    qmatches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
-                                }
-                                #endregion F I L T E R    Q U E R Y
-
-                                matchPaths = localGetPaths();
-                            });
-
-                            // Not ordered, and doesn't need to be.
-                            HashSet<XElement> xqVisited = new();
-                            foreach (var path in matchPaths)
-                            {
-                                switch (mac.Model.Place(path, out var qmatchX, PlacerMode.FindOrPartial))
-                                {
-                                    case PlacerResult.Exists:
-                                        xqVisited.Add(qmatchX);
-                                        break;
-                                    case PlacerResult.Created:
-                                        this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-                            if (xqVisited.Count == ccount)
-                            {   /* G T K - N O O P */
-                                // Detected 1:1 so route to canonical.
-                            }
-                            else
-                            {
-                                foreach (var xqmatch in xqVisited)
-                                {
-                                    xqmatch.SetAttributeValue(nameof(StdModelAttribute.qmatch), bool.TrueString);
-                                }
-
-                                localOnUpdateRouting();
-                            }
-
-                            OnFilterMatchesApplied(ccount, xqVisited.Count);
-
-                            #region L o c a l F x
-                            /// <summary>
-                            /// Resolves the path identifiers for the matched recordset. When the proxy
-                            /// implements <c>IPathPlaceable</c>, paths are taken directly from
-                            /// <c>FullPath</c>; otherwise the value of the mapped SQLite primary key is
-                            /// used. A missing primary key mapping is treated as a framework error.
-                            /// </summary>
-                            string[] localGetPaths()
-                            {
-                                if (typeof(IPathPlaceable).IsAssignableFrom(ProxyType))
-                                {
-                                    return qmatches.Cast<IPathPlaceable>().Select(_ => _.FullPath).ToArray();
-                                }
-                                else
-                                {
-                                    if (ProxyType.GetSQLiteMapping().PK?.PropertyInfo is PropertyInfo pi)
-                                    {
-                                        return qmatches.Cast<object>().Select(_ => (string)pi.GetValue(_)).ToArray();
-                                    }
-                                    // Error fall-through.
-                                    this.ThrowHard<InvalidOperationException>();
-                                    return [];
-                                }
-                            }
-
-                            void localOnUpdateRouting()
-                            {
-                                var pcount =
-                                    Histo?[StdModelAttribute.pmatch]
-                                    ??
-                                    ModelAuthorityContext
-                                    .Model
-                                    .Descendants()
-                                    .Count(_ =>
-                                        _
-                                        .Attribute(StdModelAttribute.pmatch)?.Value.GetSemanticContribution()
-                                        == SemanticContribution.ExplicitTrue);
-                                if (pcount == 0)
-                                {
-                                    switch (ccount)
-                                    {
-                                        case 0:
-                                            Debug.Fail($@"ADVISORY - Unexpected {nameof(ApplyFilter)} on empty list.");
-                                            FilteringState = FilteringState.Ineligible;
-                                            RouteKey = StdRouteKey.CanonicalRoute;    // Canonical enumerator for empty list.
-                                            break;
-                                        case 1:
-                                            FilteringState = FilteringState.Ineligible;
-                                            RouteKey = StdRouteKey.CanonicalRoute;    // Canonical enumerator for list with one item.
-                                            break;
-                                        default:
-                                            FilteringState = FilteringState.Active;
-                                            RouteKey = StdRouteKey.QMatch;
-                                            break;
-                                    }
-                                }
-                                else
-                                {
-                                    if (qmatches.Count < 2)
-                                    {
-                                    }
-                                    else
-                                    {
-                                        FilteringState = FilteringState.Armed;
-                                    }
-                                }
-                            }
-                            #endregion L o c a l F x
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        this.RethrowHard(ex);
-                    }
-                    finally
-                    {
-                        if (_sslimAF.CurrentCount == 0)
-                        {
-                            _sslimAF.Release();
-                        }
-                    }
-                }
-            }
-        }
-        SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
-
-
 
         #endregion N A V    S E A R C H    S T A T E    M A C H I N E
 
@@ -2505,28 +1928,9 @@ SELECT * FROM items WHERE
         public string TagMatchTerm => string.Join(" ", _parsedIndexTerms[IndexingMode.TagMatchTerm].Select(_ => $"[{_}]"));
 
         #endregion S E L F    I N D E X E D
-
-        /// <summary>
-        /// Produce a IN clause with positive polarity that applies the specified PKs.
-        /// </summary>
-        public HashSet<object> AllowedPrimaryKeys { get; } = new();
-
-        /// <summary>
-        /// Produce a IN clause with negative polarity that applies the specified PKs.
-        /// </summary>
-        public HashSet<object> DisallowedPrimaryKeys { get; } = new();
-
-        /// <summary>
-        /// Returns a 'hidden' interface implementation if available.
-        /// </summary>
-        /// <remarks>
-        /// Intended for a call site that employs pattern matching.
-        /// </remarks>
-        public TInterface? AsInterface<TInterface>() where TInterface : class =>
-            typeof(TInterface) switch
-            {
-                Type t when t == typeof(ITestableMDC) => (TInterface)TestableMDCImpl,
-                _ => default,
-            };
+    }
+    public class MarkdownContext<T> : MarkdownContext
+    {
+        public MarkdownContext() : base(typeof(T)) { }
     }
 }

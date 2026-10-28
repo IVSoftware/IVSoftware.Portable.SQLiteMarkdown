@@ -1,0 +1,2532 @@
+using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Internal;
+using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Util;
+using IVSoftware.Portable.Threading;
+using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
+using Newtonsoft.Json;
+using SQLite;
+using IPathPlaceable = IVSoftware.Portable.Collections.IPathPlaceable;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+
+namespace IVSoftware.Portable.SQLiteMarkdown
+{
+    /// <summary>
+    /// Represents the full parsing and transformation context for converting a user
+    /// expression  (in lightweight markdown syntax) into an executable SQL WHERE
+    /// clause by accumulating  parsing state, managing AST nodes, tracking substitutions,
+    /// and guiding final SQL generation via attribute-aware hydration.
+    /// </summary>
+    [DebuggerDisplay("ContractType={ContractType} ProxyType={ProxyType}")]
+    public partial class MarkdownContext
+        : WatchdogTimer
+        , INotifyPropertyChanged
+    {
+        [Careful("The ContractType type must be known and captured regardless of GF mode.")]
+        private MarkdownContext() =>
+            throw new NotSupportedException("The ContractType type must be known and captured regardless of GF mode.");
+
+        /// <summary>
+        /// Creates a self-contained expression parsing environment, binding it
+        /// to an XML-based AST using the IVSoftware.Portable.XBoundObject NuGet.
+        /// </summary>
+        /// <remarks>
+        [Canonical]
+        public MarkdownContext(Type type)
+        {
+            Interval = TimeSpan.FromSeconds(0.25);          // Default. Consumer can change.
+            XAST = new
+                XElement(nameof(StdAstNode.ast))
+                .WithBoundAttributeValue(this);
+
+            // [Careful]
+            // - In 2.x and greater, the ContractType property is immutable
+            //   and the ContractType.set is wired to throw.
+            // ∴ Use the backing store directly
+            _contractType = type;
+
+            ContractTableMapping = ContractType.GetSQLiteMapping();
+
+            localValidateClearTopology();
+
+            #region L o c a l F x
+            void localValidateClearTopology()
+            {
+                var runtimeType = GetType();
+
+                // Base MDC itself is not the target. This guard is for inherited
+                // types that choose to present a clearable collection surface.
+                if (runtimeType == typeof(MarkdownContext))
+                {
+                    return;
+                }
+
+                bool hasClearableSurface =
+                    this is ICollection ||
+                    runtimeType
+                        .GetInterfaces()
+                        .Any(_ => _.IsGenericType && _.GetGenericTypeDefinition() == typeof(ICollection<>));
+
+                if (!hasClearableSurface)
+                {
+                    return;
+                }
+
+                // Require both explicit meanings on the runtime type itself:
+                // 1. Clear() for terminal, no-surprises collection emptying.
+                // 2. Clear(bool) for intentional access to MDC's stateful regression.
+                var clearMethod = runtimeType.GetMethod(
+                    nameof(Clear),
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly,
+                    binder: null,
+                    types: Type.EmptyTypes,
+                    modifiers: null);
+
+                var clearBoolMethod = runtimeType.GetMethod(
+                    nameof(Clear),
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly,
+                    binder: null,
+                    types: new[] { typeof(bool) },
+                    modifiers: null);
+
+                bool hasExplicitDualClear =
+                    clearMethod is not null &&
+                    clearBoolMethod is not null &&
+                    clearBoolMethod.ReturnType == typeof(FilteringState);
+
+                if (hasExplicitDualClear)
+                {
+                    if (clearBoolMethod?.GetParameters() is { } parameters)
+                    {
+                        hasExplicitDualClear =
+                            parameters.Length == 1 &&
+                            parameters[0].ParameterType == typeof(bool) &&
+                            !parameters[0].IsOptional;
+                    }
+                }
+
+                if (!hasExplicitDualClear)
+                {
+                    this.ThrowPolicyException(MarkdownContextPolicy.ExplicitClearAdvisory);
+                }
+            }
+            #endregion L o c a l F x
+        }
+
+        [PublishedContract("2.x")]
+        public IModelAuthorityContext? ModelAuthorityContext
+        {
+            get =>
+                _modelAuthorityContext
+                ?? this as IModelAuthorityContext; // Default - rely on inheritance if available.
+            set
+            {
+                if (!Equals(_modelAuthorityContext, value))
+                {
+                    _modelAuthorityContext = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        IModelAuthorityContext? _modelAuthorityContext = default;
+
+        public IReadOnlyDictionary<StdModelAttribute, int>? Histo
+            => ModelAuthorityContext?.Model?.To<IReadOnlyDictionary<StdModelAttribute, int>>();
+
+        public MarkdownContextSettings Settings { get; } = new()
+        {
+            {StdMarkdownContextSetting.AllowPluralize, false },
+            {StdMarkdownContextSetting.UseAdaptiveShowAll, true },
+        };
+
+#if DEBUG
+        const bool SQLITE_STRICT = true;
+#else
+        const bool SQLITE_STRICT = false;
+#endif
+        [Canonical("The globally unique authority for binding items and their INPC events.")]
+        protected virtual void OnXBoundAttributeChanged(XBoundAttribute xba, XObjectChange action) { }
+
+        /// <summary>
+        /// Semantic clarity for Interval, which comes from inheriting WatchDogTimer.
+        /// </summary>
+        public TimeSpan InputTextSettlingTime
+        {
+            get => Interval;
+            set => Interval = value;
+        }
+
+        /// <summary>
+        /// Adds minval to base.Interval.
+        /// </summary>
+        public new TimeSpan Interval
+        {
+            get => _interval;
+            set
+            {
+                if (value < TimeSpan.FromSeconds(0.1))
+                {
+                    base.Interval = TimeSpan.FromSeconds(0.1);
+                }
+                else
+                {
+                    base.Interval = value;
+                }
+            }
+        }
+        TimeSpan _interval = default;
+
+        private Dictionary<string, object> _args { get; } = new Dictionary<string, object>();
+
+        public string ParseSqlMarkdown<T>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
+            => ParseSqlMarkdown(
+                expr, typeof(T),
+                qfMode,
+                out XElement _);
+
+        /// <summary>
+        /// Parse the current InputText expr and build it against ContractType.
+        /// </summary>
+        public string ParseSqlMarkdown()
+            => ParseSqlMarkdown(
+                InputText,
+                ContractType!,  // ThrowHard if null
+                IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query,
+                out XElement _);
+
+        /// <summary>
+        /// Run from internal values using a supplied ProxyType
+        /// </summary>
+        public string ParseSqlMarkdown<T>()
+            => ParseSqlMarkdown(
+                InputText,
+                typeof(T),
+                IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query,
+                out XElement _);
+
+        /// <summary>
+        /// Canonical entry point for parsing an expression against a specified proxy type and query/filter mode.
+        /// </summary>
+        /// <remarks>
+        /// Resolves the effective table identity for the pass, builds the AST, and produces the final SQL expression.
+        /// This overload is the semantic root used by all other ParseSqlMarkdown entry points.
+        /// 
+        /// The supplied proxyType must evaluate to the canonical contract table name. This is achieved by:
+        /// 1. Omitting a [Table] attribute so inheritance resolution applies, or
+        /// 2. Declaring an explicit [Table] attribute that agrees with the canonical base contract.
+        /// 
+        /// Conflicting table declarations are handled according to ContractErrorLevel.
+        /// </remarks>
+        [Canonical("ParseSqlMarkdown - All extensions and overloads come here.")]
+        public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
+        {
+            if (IsFiltering && expr.IsSemanticallyEmpty())
+            {
+                this.ThrowPolicyException(MarkdownContextPolicy.EmptyFilterString);
+                xast = null!; // We warned you.
+                return string.Empty;
+            }
+
+            if (proxyType is null)
+            {
+                this.ThrowHard<ArgumentNullException>(("Proxy type must be specified"));
+                xast = null!; // We warned you.
+                return string.Empty;
+            }
+            ProxyType = proxyType;
+            // Set provisional table name.
+            TableName = ContractTableMapping.TableName;
+
+            // Check for divergent table name
+            if (ProxyType != ContractType)
+            {
+                // [Careful]
+                // Use the @throw argument to validate by null pattern matching, not exception.
+                TableMapping tmProxy =
+                    ProxyType
+                    .GetSQLiteMapping(
+                        contractType: ContractType,
+                        @throw: false);
+
+                if (tmProxy?.TableName == ContractTableMapping.TableName
+                    || ContractType.IsAssignableFrom(ProxyType)
+                    || ProxyType.IsAssignableFrom(ContractType))
+                {
+                    TableName = ContractTableMapping.TableName;
+                }
+                else
+                {
+                    TableName = ProxyType.GetSQLiteMapping().TableName;
+                    if (_proxyType.GetCustomAttribute<EnforceSingleTableAttribute>()?.Enforce == false)
+                    {
+                        if (FilterQueryDatabase is SQLiteQueryOnlyConnection cnxprot)
+                        {
+                            using (cnxprot.RequestAuthority(SQLiteAuthority.FullControl))
+                            {
+                                FilterQueryDatabase.CreateTable(ProxyType);
+                            }
+                        }
+                        else
+                        {
+                            FilterQueryDatabase.CreateTable(ProxyType);
+                        }
+                    }
+                    else
+                    {
+                        this.ThrowHard<InvalidOperationException>(
+                            $"Proxy type resolves to a different table '{TableName}' and is " +
+                            $"not permitted to bypass the single-table contract for '{ContractTableMapping.TableName}'.");
+                        // Unreachable unless Throw pattern is handled.
+                        xast = null!;
+                        return string.Empty;
+                    }
+                }
+            }
+
+            // Always clear the previous pass.
+            XAST.RemoveNodes();
+            _activeQFMode = qfMode;
+            if (ValidationPredicate?.Invoke(expr) == false)
+            {
+                xast = XAST;
+                return string.Empty;
+            }
+
+            // Properties are valid for the current parse flow
+            // and are *not* bound to the ContractType.
+            Raw = expr;
+            Transform = Raw;
+            Preamble = $"SELECT * FROM {TableName} WHERE";
+
+            xast = XAST;
+            uint quoteId = 0xFEFE0000;
+            uint tagId = 0xFDFD0000;
+            _args.Clear();
+
+            var indexingMode = (IndexingMode)(DHostSelfIndexing[nameof(IndexingMode)] ?? 0);
+            if (indexingMode == 0)
+            {
+                localEscape();
+            }
+            localRunTagLinter();
+
+            if (indexingMode == 0)
+            {
+                localRunQuoteLinter('"');
+            }
+            localRunQuoteLinter('\'');
+            localLint();
+            localRemoveTransientTrailingOperator();
+            localBuildAST();
+            return localBuildExpression();
+
+            #region L o c a l F x
+            // Preemptive explicit escapes (query syntax)
+            void localEscape()
+            {
+                // Escape map — from raw escape sequence to literal character
+                var escapes = new Dictionary<string, string>
+                {
+                    [@"\&"] = "&",
+                    [@"\|"] = "|",
+                    [@"\!"] = "!",
+                    [@"\("] = "(",
+                    [@"\)"] = ")",
+                    [@"\["] = "[",
+                    [@"\]"] = "]",
+                    [@"\'"] = "'",
+                    [@"\"""] = "\"",
+                    [@"\\"] = "\\"
+                };
+
+                // Ensure these are defined in your class
+                // int quoteId = 0; — must be field, not local
+                // Dictionary<string, string> Atomics = new(); — must be field
+                // string Transform = some raw input — must be field or property
+
+                string hydrated = Transform;
+
+                foreach (var kvp in escapes)
+                {
+                    string escSeq = kvp.Key;
+                    string literalChar = kvp.Value;
+
+                    int index = hydrated.IndexOf(escSeq, StringComparison.Ordinal);
+                    while (index >= 0)
+                    {
+                        string key = $"${quoteId++:X8}$";
+                        hydrated = hydrated.Substring(0, index) + key + hydrated.Substring(index + escSeq.Length);
+
+                        Atomics[key] = literalChar;
+
+                        // Continue looking for next instance
+                        index = hydrated.IndexOf(escSeq, index + key.Length, StringComparison.Ordinal);
+                    }
+                }
+
+                Transform = hydrated;
+
+                lock (_lock)
+                {
+                    this.OnAwaited(new AwaitedEventArgs(caller: nameof(localEscape)));
+                }
+            }
+
+            void localRunTagLinter()
+            {
+                string
+                    exprLocal = Transform,
+                    exprOR = exprLocal,
+                    key;
+                lock (_lock)
+                {
+                    StringBuilder
+                        sbExpr = new StringBuilder(),
+                        sbTag = new StringBuilder();
+                    bool isTagOpen = false;
+
+                    for (int i = 0; i < exprLocal.Length; i++)
+                    {
+                        var c = exprLocal[i];
+                        switch (c)
+                        {
+                            case '[':
+                                sbTag.Append(c);
+                                isTagOpen = true; // And sure, it might already be open in which case '[' is a literal char inside the tag.
+                                break;
+                            case ']':
+                                if (isTagOpen)
+                                {
+                                    sbTag.Append(c);
+                                    isTagOpen = false;
+                                    key = $"${tagId++:X8}$";
+                                    sbExpr.Append(key);
+                                    Atomics[key] = sbTag.ToString();
+                                    sbTag.Clear();
+                                }
+                                else
+                                {
+                                    sbTag.Append(c);
+                                }
+                                break;
+                            default:
+                                if (isTagOpen)
+                                {
+                                    sbTag.Append(c);
+                                }
+                                else
+                                {
+                                    sbExpr.Append(c);
+                                }
+                                break;
+                        }
+                    }
+
+                    if (isTagOpen)
+                    {
+                        sbExpr.Append(sbTag);
+                        sbTag.Clear();
+                    }
+                    exprLocal = sbExpr.ToString();
+                    Transform = exprLocal;
+                }
+            }
+
+            void localRunQuoteLinter(char quoteChar)
+            {
+                string
+                    exprLocal = Transform,
+                    exprOR = exprLocal;
+                lock (_lock)
+                {
+                    StringBuilder
+                        sbExpr = new StringBuilder(),
+                        sbAtomic = new StringBuilder();
+                    string key;
+                    bool isQuoteOpen = false;
+
+                    for (int i = 0; i < exprLocal.Length; i++)
+                    {
+                        var c = exprLocal[i];
+                        if (c == quoteChar)
+                        {
+                            var run = localGetQuoteRun();
+                            // Toggle
+                            if (isQuoteOpen)
+                            {
+                                if (sbAtomic.Length != 0)
+                                {
+                                    key = $"${quoteId++:X8}$";
+
+                                    if (run > 0)
+                                    {
+                                        if (run % 2 == 0)
+                                        {
+                                            for (int j = 1; j < run; j++)
+                                            {
+                                                sbAtomic.Append(quoteChar);
+                                                i++;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            for (int j = 1; j < run; j++)
+                                            {
+                                                sbAtomic.Append(quoteChar);
+                                                i++;
+                                            }
+                                        }
+                                        Atomics[key] = sbAtomic.ToString();
+                                        sbAtomic.Clear();
+                                        sbExpr.Append(key);     // Placeholder
+                                    }
+                                    else
+                                    {
+                                        Atomics[key] = sbAtomic.ToString();
+                                        sbAtomic.Clear();
+                                        sbExpr.Append(key);
+                                    }
+                                }
+                                isQuoteOpen = false;
+                            }
+                            else
+                            {
+                                if (run > 0)
+                                {
+                                    if (run % 2 == 0)
+                                    {
+                                        for (int j = 1; j < run; j++)
+                                        {
+                                            sbExpr.Append(quoteChar);
+                                            i++;
+                                        }
+                                        isQuoteOpen = false;
+                                    }
+                                    else
+                                    {
+                                        for (int j = 1; j < run; j++)
+                                        {
+                                            sbAtomic.Append(quoteChar);
+                                            i++;
+                                        }
+                                        isQuoteOpen = true;
+                                    }
+                                }
+                            }
+
+                            int localGetQuoteRun()
+                            {
+                                int count = 0;
+                                int lookAhead = i;
+                                while (lookAhead < exprLocal.Length && exprLocal[lookAhead] == quoteChar)
+                                {
+                                    count++;
+                                    lookAhead++;
+                                }
+                                return count;
+                            }
+                        }
+                        else
+                        {
+                            if (isQuoteOpen)
+                            {
+                                sbAtomic.Append(c);
+                            }
+                            else
+                            {
+                                sbExpr.Append(c);
+                            }
+                        }
+                    }
+
+                    if (isQuoteOpen)
+                    {
+                        sbExpr.Append(quoteChar);   // We swallowed this, thinking it was the first of a pair.
+                        sbExpr.Append(sbAtomic);
+                        sbAtomic.Clear();
+                    }
+                    exprLocal = sbExpr.ToString();
+
+#if DEBUG && false && SAVE
+                    Debug.WriteLine($"250619.A");
+                    Debug.WriteLine($"{exprOR,-30} | {exprLocal,-30}");
+                    { }
+#endif
+                    Transform = exprLocal;
+                }
+            }
+
+            // Reduce to no-redundant, non-conflicting operations.
+            void localLint()
+            {
+#if DEBUG
+                var b4 = Transform;
+#endif
+                if (string.IsNullOrWhiteSpace(Transform))
+                {
+                    return;
+                }
+                else
+                {
+                    if (indexingMode == 0)
+                    {
+                        localLintQuerySyntaxEnabled();
+                    }
+                    else
+                    {
+                        localLintQuerySyntaxDisabled();
+                    }
+                }
+
+                void localLintQuerySyntaxEnabled()
+                {
+                    Transform = Transform.Trim();
+                    // Collapse multiple spaces to a single space
+                    Transform = Regex.Replace(Transform, @"\s+", " ");
+
+                    // Normalize operators with proper spacing
+                    Transform = Regex.Replace(Transform, @"\s*\|\s*", "|");
+                    Transform = Regex.Replace(Transform, @"\s*&\s*", "&");
+                    Transform = Regex.Replace(Transform, @"\s*!\s*", "!");
+
+                    // Normalize repeated operators
+                    Transform = Regex.Replace(Transform, @"[&]{2,}", "&");
+                    Transform = Regex.Replace(Transform, @"[|]{2,}", "|");
+                    Transform = Regex.Replace(Transform, @"[!]{2,}", "!");
+                    // Insert explicit AND before '!' if it's a negated group and not already spaced
+                    Transform = Regex.Replace(Transform, @"(?<!^)(?<![&|!(])!", "&!");
+
+                    // Convert remaining space between words into implicit AND
+                    Transform = Transform.Replace(' ', '&');
+
+
+                    // Throw if adjacent operators conflict
+                    if (Regex.IsMatch(Transform, @"(&\||\|&|!\||\|!|!&)"))
+                    {
+                        throw new InvalidOperationException("Conflicting adjacent logical operators are not allowed.");
+                    }
+
+                    lock (_lock)
+                    {
+                        this.OnAwaited(new AwaitedEventArgs(caller: nameof(localLint)));
+                    }
+#if false && DEBUG && SAVE
+                        if (b4 != Transform)
+                        {
+                            Debug.WriteLine($"250705 {b4} -> {Transform}");
+                        }
+#endif
+                }
+
+                void localLintQuerySyntaxDisabled()
+                {
+                    Transform = Transform.Trim();
+
+                    // Collapse all whitespace runs to a single space.
+                    Transform = Regex.Replace(Transform, @"\s+", " ");
+
+                    // In term mode, space means token boundary only.
+                    // No operator normalization. No conflict detection.
+                    // We are not parsing a language here.
+                    Transform = Transform.Replace(' ', '&');
+
+                    lock (_lock)
+                    {
+                        this.OnAwaited(new AwaitedEventArgs(caller: nameof(localLint)));
+                    }
+#if false && DEBUG && SAVE
+    if (b4 != Transform)
+    {
+        Debug.WriteLine($"250705 TERM {b4} -> {Transform}");
+    }
+#endif
+                }
+            }
+
+            // When query syntax is enabled, suppress trailing operators
+            // with the assumption that they're a transient of IME runtime.
+            void localRemoveTransientTrailingOperator()
+            {
+                if (indexingMode == 0 && !string.IsNullOrEmpty(Transform))
+                {
+                    var wk = Transform;
+
+                    while (wk.Length > 0)
+                    {
+                        char last = wk[wk.Length - 1];
+
+                        // Operators that require a right-hand operand.
+                        if (last == '&' || last == '|' || last == '!' || last == '\\')
+                        {
+                            wk = wk.Substring(0, wk.Length - 1);
+                            continue;
+                        }
+                        break;
+                    }
+                    Transform = wk;
+                }
+            }
+
+            // Support nested expressions
+            void localBuildAST()
+            {
+                char c;
+                char cp; // Character preview
+                int i, j;
+                var sb = new StringBuilder();
+                XElement
+                    xcurrent = XAST,
+                    xprev = xcurrent;
+                XElement
+                    xopen;
+
+                if (indexingMode == 0)
+                {
+                    localBuildQuerySyntaxEnabledAST();
+                }
+                else
+                {
+                    localBuildQuerySyntaxDisabledAST();     // Fails 12 tests
+                    // localBuildQuerySyntaxEnabledAST();   // Original: fails only one test
+                }
+
+                lock (_lock)
+                {
+                    this.OnAwaited(new AwaitedEventArgs(caller: nameof(localBuildAST)));
+                }
+
+                #region L o c a l F x
+
+                // Return true if loop can continue (i.e. end not detected).
+                bool localAppendChar(char newChar, char previewChar)
+                {
+                    bool isLastChar;
+                    if (indexingMode == 0)
+                    {
+                        isLastChar =
+                            previewChar == '\0'
+                            ? true
+                            : @"&|!()[]\".Contains(previewChar); // The '#' makes null not found.
+                    }
+                    else
+                    {
+                        isLastChar =
+                            previewChar == '\0'
+                            ? true
+                            : previewChar == '&';
+                    }
+
+
+                    if (sb.Length == 0)
+                    {
+                        xprev = xcurrent;
+                        xcurrent = new XElement(nameof(StdAstNode.term));
+                    }
+                    sb.Append(newChar);
+                    if (isLastChar)
+                    {
+                        xcurrent.SetAttributeValue(nameof(StdAstAttr.value), sb);
+                        if (DHostSelfIndexing[nameof(IndexingMode)] is IndexingMode selfIndexingMode)
+                        {
+                            Debug.Assert(!DHostSelfIndexing.IsZero(), "Expecting to 'not' have to check this!");
+                            #region S E L F    I N D E X I N G    S U P P O R T
+                            var rawTerm = sb.ToString();
+                            bool isTag = rawTerm.StartsWith("$FDFD") && rawTerm.Length == 10;
+                            bool indexingHandled = false;
+
+                            // Rehydration is still necessary for atomic particles that are 'not' tags!.
+                            string rehydrated = Rehydrate(rawTerm);
+                            if (isTag)
+                            {
+                                if (!rehydrated.Contains(','))
+                                {
+                                    switch (selfIndexingMode)
+                                    {
+                                        case IndexingMode.QueryLikeTerm:
+                                            _parsedIndexTerms[IndexingMode.QueryLikeTerm].Add(rehydrated);
+                                            break;
+                                        case IndexingMode.FilterLikeTerm:
+                                            _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(rehydrated);
+                                            break;
+                                        case IndexingMode.TagMatchTerm:
+                                            _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(rehydrated.Trim("[]".ToCharArray()));
+                                            break;
+                                    }
+                                    indexingHandled = true;
+                                }
+                            }
+                            if (!indexingHandled)
+                            {
+                                if (rehydrated.CanParseAsJson())
+                                {
+                                    var terms = JsonConvert.DeserializeObject<List<string>>(rehydrated);
+
+                                    foreach (var t in terms)
+                                    {
+                                        var atom = t.Trim();
+                                        if (string.IsNullOrWhiteSpace(atom)) continue;
+
+                                        switch (selfIndexingMode)
+                                        {
+                                            case IndexingMode.QueryLikeTerm:
+                                                _parsedIndexTerms[IndexingMode.QueryLikeTerm].Add(atom);
+                                                break;
+                                            case IndexingMode.FilterLikeTerm:
+                                                _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(atom);
+                                                break;
+                                            case IndexingMode.TagMatchTerm:
+                                                _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(atom.Trim("[]".ToCharArray()));
+                                                break;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    switch (selfIndexingMode)
+                                    {
+                                        case IndexingMode.QueryLikeTerm:
+                                            _parsedIndexTerms[IndexingMode.QueryLikeTerm].Add(rehydrated.ToLower());
+                                            break;
+                                        case IndexingMode.FilterLikeTerm:
+                                            _parsedIndexTerms[IndexingMode.FilterLikeTerm].Add(rehydrated.ToLower());
+                                            break;
+                                        case IndexingMode.TagMatchTerm:
+                                            _parsedIndexTerms[IndexingMode.TagMatchTerm].Add(rehydrated.Trim("[]".ToCharArray()).ToLower());
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                        #endregion S E L F    I N D E X I N G    S U P P O R T
+                        sb.Clear();
+                        return false;
+                    }
+                    else
+                    {
+                        return true; // Keep going
+                    }
+                }
+
+                void localBuildQuerySyntaxEnabledAST()
+                {
+                    for (i = 0, j = 1; i < Transform.Length; i++, j++)
+                    {
+                        c = Transform[i];
+                        cp =
+                            j == Transform.Length
+                            ? '\0'
+                            : Transform[j];
+
+                        switch (c)
+                        {
+                            case '&':
+                                xprev = xcurrent;
+                                xcurrent = new XElement(nameof(StdAstNode.and));
+                                break;
+                            case '|':
+                                xprev = xcurrent;
+                                xcurrent = new XElement(nameof(StdAstNode.or));
+                                break;
+                            case '!':
+                                xprev = xcurrent;
+                                xcurrent = new XElement(nameof(StdAstNode.not));
+                                break;
+                            case '(':
+                                xprev = xcurrent;
+                                xcurrent = new XElement(nameof(StdAstNode.sub), new XAttribute(nameof(StdAstAttr.ismatched), bool.FalseString));
+                                break;
+                            case ')':
+                                xopen = xcurrent.Ancestors().FirstOrDefault(_ => _.Name.LocalName == nameof(StdAstNode.sub));
+                                if (xopen is null)
+                                {
+                                    // Literal - add to character stream.
+                                    sb.Append(c);
+                                }
+                                else
+                                {
+                                    xopen.SetAttributeValue(nameof(StdAstAttr.ismatched), bool.TrueString);
+                                }
+                                continue;   // <- Different!
+                            default:
+                                if (localAppendChar(c, cp))
+                                {
+                                    continue;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                        }
+                        xprev.Add(xcurrent);
+
+                        // Detect unary 'not'
+                        if (xcurrent.Name.LocalName != nameof(StdAstNode.sub) &&
+                            xprev.Name.LocalName == nameof(StdAstNode.not) &&
+                            xprev.Parent != null)
+                        {
+                            xcurrent = xprev.Parent;
+                        }
+                    }
+                }
+                void localBuildQuerySyntaxDisabledAST()
+                {
+                    for (i = 0, j = 1; i < Transform.Length; i++, j++)
+                    {
+                        c = Transform[i];
+                        cp =
+                            j == Transform.Length
+                            ? '\0'
+                            : Transform[j];
+
+                        switch (c)
+                        {
+                            case '&':
+                                xprev = xcurrent;
+                                xcurrent = new XElement(nameof(StdAstNode.and));
+                                break;
+#if false
+                            case '|':
+                                xprev = xcurrent;
+                                xcurrent = new XElement(nameof(StdAstNode.or));
+                                break;
+                            case '!':
+                                xprev = xcurrent;
+                                xcurrent = new XElement(nameof(StdAstNode.not));
+                                break;
+                            case '(':
+                                xprev = xcurrent;
+                                xcurrent = new XElement(nameof(StdAstNode.sub), new XAttribute(nameof(StdAstAttr.ismatched), bool.FalseString));
+                                break;
+                            case ')':
+                                xopen = xcurrent.Ancestors().FirstOrDefault(_ => _.Name.LocalName == nameof(StdAstNode.sub));
+                                if (xopen is null)
+                                {
+                                    // Literal - add to character stream.
+                                    sb.Append(c);
+                                }
+                                else
+                                {
+                                    xopen.SetAttributeValue(nameof(StdAstAttr.ismatched), bool.TrueString);
+                                }
+                                continue;   // <- Different!
+#endif
+                            default:
+                                if (localAppendChar(c, cp))
+                                {
+                                    continue;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                        }
+                        xprev.Add(xcurrent);
+
+#if false
+                        // Detect unary 'not'
+                        if (xcurrent.Name.LocalName != nameof(StdAstNode.sub) &&
+                            xprev.Name.LocalName == nameof(StdAstNode.not) &&
+                            xprev.Parent != null)
+                        {
+                            xcurrent = xprev.Parent;
+                        }
+#endif
+                    }
+                }
+
+
+                #endregion L o c a l F x
+            }
+
+            // Interpret QueryLikeTerms or FilterLikeTerms
+            string localBuildExpression()
+            {
+                string childClauseE, childClauseN;
+                var nArgs =
+                    XAST
+                    .DescendantsAndSelf()
+                    .Count(n => n.Name.LocalName == "term") - 1;
+                foreach (var node in
+                    XAST
+                    .DescendantsAndSelf()
+                    .Reverse())
+                {
+                    // In the order added:
+                    var builderE = node.Elements().Select(_ =>
+                        _
+                        .Attribute(nameof(StdAstAttr.clauseE))?.Value)
+                        .OfType<string>()
+                        .ToList();
+                    childClauseE = string.Join(" ", builderE);
+
+                    var builderN = node.Elements().Select(_ =>
+                        _
+                        .Attribute(nameof(StdAstAttr.clauseN))?.Value)
+                        .OfType<string>()
+                        .ToList();
+                    childClauseN = string.Join(" ", builderN);
+
+                    if (Enum.TryParse(node.Name.LocalName, out StdAstNode nodetype))
+                    {
+                        switch (nodetype)
+                        {
+                            case StdAstNode.expr:
+                                break;
+                            case StdAstNode.ast:
+                                if (string.IsNullOrWhiteSpace(childClauseE))
+                                {
+                                    throw new InvalidOperationException("Expecting non-empty term.");
+                                }
+                                node.SetAttributeValue(
+                                    nameof(StdAstAttr.clauseE),
+                                    childClauseE);
+                                node.SetAttributeValue(
+                                    nameof(StdAstAttr.clauseN),
+                                    childClauseN);
+                                break;
+                            case StdAstNode.term:
+                                var likeTerms = proxyType
+                                    .GetProperties()
+                                    .Where(p =>
+                                        (qfMode == QueryFilterMode.Query && p.GetCustomAttribute<QueryLikeTermAttribute>() != null) ||
+                                        (qfMode == QueryFilterMode.Filter && p.GetCustomAttribute<FilterLikeTermAttribute>() != null))
+                                    .ToArray();
+                                var tagTerms = proxyType
+                                    .GetProperties()
+                                    .Where(p =>
+                                        (p.GetCustomAttribute<TagMatchTermAttribute>() != null))
+                                    .ToArray();
+                                var value = node.Attribute(nameof(StdAstAttr.value))?.Value ?? string.Empty;
+                                var substr = value.Substring(0, Math.Min(5, value.Length));
+                                bool isTag = substr == "$FDFD" && value.Length == 10;
+                                value = Rehydrate(value);
+                                var argId = $"@param{nArgs--:X4}";
+                                _args[argId] = value;
+                                value = value.Replace("'", "''"); // It's time to escape the squotes for SQL.
+
+                                if (likeTerms.Length == 0 && tagTerms.Length == 0)
+                                    throw new InvalidOperationException($"Parser requires at least one term for {qfMode}.");
+                                // Different - 
+                                // Enumerate fields and memoize them.
+                                List<string>
+                                    exprsN = new List<string>(),
+                                    exprsE = new List<string>();
+                                var visited = new HashSet<PropertyInfo>();
+                                foreach (var likeTerm in likeTerms)
+                                {
+                                    if (visited.Add(likeTerm))
+                                    {
+                                        exprsE.Add($"{likeTerm.Name} LIKE '%{value}%'");
+                                        exprsN.Add($"{likeTerm.Name} LIKE {argId}");
+                                    }
+                                }
+                                if (isTag)
+                                {
+                                    foreach (var tagTerm in tagTerms)
+                                    {
+                                        if (visited.Add(tagTerm))
+                                        {
+                                            exprsE.Add($"{tagTerm.Name} LIKE '%{value}%'");
+                                            exprsN.Add($"{tagTerm.Name} LIKE {argId}");
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    switch (_activeQFMode)
+                                    {
+                                        case QueryFilterMode.Query:
+                                            break;
+                                        case QueryFilterMode.Filter:
+                                            var openBracketCount = 0;
+                                            foreach (var c in value)
+                                            {
+                                                switch (c)
+                                                {
+                                                    case '[': openBracketCount++; break;
+                                                    case ']': openBracketCount--; break;
+                                                }
+                                            }
+
+                                            // Fuzzy tag filter.
+                                            if (openBracketCount != 0) // Could be pos or neg
+                                            {
+                                                foreach (var tagTerm in tagTerms)
+                                                {
+                                                    if (visited.Add(tagTerm))
+                                                    {
+                                                        exprsE.Add($"{tagTerm.Name} LIKE '%{value}%'");
+                                                        exprsN.Add($"{tagTerm.Name} LIKE {argId}");
+                                                    }
+                                                }
+                                            }
+                                            break;
+                                    }
+                                }
+                                var unionsE = string.Join(" OR ", exprsE);
+                                var unionsN = string.Join(" OR ", exprsN);
+
+                                node.SetAttributeValue(
+                                    nameof(StdAstAttr.clauseE),
+                                    string.IsNullOrWhiteSpace(childClauseE)
+                                    ? $"({unionsE})"
+                                    : $"({unionsE}) {childClauseE}");
+
+                                node.SetAttributeValue(
+                                    nameof(StdAstAttr.clauseN),
+                                    string.IsNullOrWhiteSpace(childClauseN)
+                                    ? $"({unionsN})"
+                                    : $"({unionsN}) {childClauseN}");
+
+#if false
+                                node.SetBoundAttributeValue(
+                                    tag: tmpls,
+                                    name: nameof(StdAstAttr.pos),
+                                    text: $"[KVPs]");
+#endif
+                                break;
+                            case StdAstNode.not:
+                                if (string.IsNullOrWhiteSpace(childClauseE))
+                                {
+                                    this.ThrowHard<InvalidOperationException>("Expecting non-empty term.");
+                                    break;
+                                }
+                                node.SetAttributeValue(
+                                    nameof(StdAstAttr.clauseE),
+                                    $"(NOT {childClauseE})");
+                                node.SetAttributeValue(
+                                    nameof(StdAstAttr.clauseN),
+                                    $"(NOT {childClauseN})");
+                                break;
+                            case StdAstNode.and:
+                                if (string.IsNullOrWhiteSpace(childClauseE))
+                                {
+                                    // KNOWN EDGE CASE
+                                    // e.g. sho|bla) [not animal]
+                                    var msg = "ADVISORY : KNOWN EDGE CASE - Expecting non-empty term.";
+                                    Debug.WriteLine(msg);
+                                    this.Advisory(msg);
+                                }
+                                node.SetAttributeValue(
+                                    nameof(StdAstAttr.clauseE),
+                                    $"AND {childClauseE}");
+                                node.SetAttributeValue(
+                                    nameof(StdAstAttr.clauseN),
+                                    $"AND {childClauseN}");
+                                break;
+                            case StdAstNode.or:
+                                if (string.IsNullOrWhiteSpace(childClauseE))
+                                {
+                                    this.ThrowHard<InvalidOperationException>("Expecting non-empty term.");
+                                    break;
+                                }
+                                node.SetAttributeValue(
+                                    nameof(StdAstAttr.clauseE),
+                                    $"OR {childClauseE}");
+                                node.SetAttributeValue(
+                                    nameof(StdAstAttr.clauseN),
+                                    $"OR {childClauseN}");
+                                break;
+                            case StdAstNode.sub:
+                                if (string.IsNullOrWhiteSpace(childClauseE))
+                                {
+                                    this.ThrowHard<InvalidOperationException>("Expecting non-empty term.");
+                                    break;
+                                }
+                                if (node.Attribute(nameof(StdAstAttr.ismatched))?.Value is string ismatched)
+                                {
+                                    if (bool.Parse(ismatched))
+                                    {
+                                        node.SetAttributeValue(
+                                           nameof(StdAstAttr.clauseE),
+                                           $"({childClauseE})");
+                                        node.SetAttributeValue(
+                                           nameof(StdAstAttr.clauseN),
+                                           $"({childClauseN})");
+                                    }
+                                    else
+                                    {
+                                        Debug.WriteLine("ADVISORY: ToDo - render this as a literal.");
+                                    }
+                                }
+                                else
+                                {
+                                    throw new InvalidOperationException("Sub node is required to have an 'ismatched' attribute.");
+                                }
+                                break;
+                            case StdAstNode.memo:
+                            default:
+                                throw new NotImplementedException($"Bad case: {node.Name.LocalName}");
+                        }
+                        switch (node.Name.LocalName)
+                        {
+                            default:
+                                break;
+                        }
+                    }
+                }
+                WherePredicate = XAST.Attribute(nameof(StdAstAttr.clauseE))?.Value ?? $"1";
+
+#if false && DEBUG && SAVE
+                Debug.WriteLine(string.Empty);
+                Debug.WriteLine("250702 - String-First");
+                Debug.WriteLine(Query);
+                Debug.WriteLine(string.Empty);
+                Debug.WriteLine("250702 - Named");
+                Debug.WriteLine(ToString());
+
+                string
+                    stringFirst = Query.Replace(Environment.NewLine, " ").Replace("  ", " "),
+                    toString = ToString().Replace(Environment.NewLine, " ").Replace("  ", " ");
+                Debug.Assert(stringFirst == toString);
+#endif
+
+                lock (_lock)
+                {
+                    this.OnAwaited(new AwaitedEventArgs(caller: nameof(localBuildExpression)));
+                }
+                return Query;
+            }
+            #endregion L o c a l F x   
+        }
+
+        /// <summary>
+        /// The raw unprocessed input string from the user.
+        /// </summary>
+        public string Raw { get; private set; } = string.Empty;
+
+        /// <summary>
+        /// Caches values from [SelfIndexed] properties grouped by IndexingMode.
+        /// Populated on ParseSqlMarkdown(...), used to generate QueryTerm, FilterTerm, and TagMatchTerm.
+        /// </summary>
+        private Dictionary<IndexingMode, HashSet<string>> _parsedIndexTerms
+            = new Dictionary<IndexingMode, HashSet<string>>
+            {
+                [IndexingMode.QueryLikeTerm] = new HashSet<string>(),
+                [IndexingMode.FilterLikeTerm] = new HashSet<string>(),
+                [IndexingMode.TagMatchTerm] = new HashSet<string>()
+            };
+
+        /// <summary>
+        /// A mutable working buffer that begins as <see cref="Raw"/> and evolves across parser passes.
+        /// 
+        /// This property captures the expression's transformation state at each stage of preprocessing,
+        /// including quote escaping, tag substitution, lint normalization, and spacing cleanup.
+        ///
+        /// It directly drives downstream processes like AST construction and transliteration,
+        /// and is observable during unit tests for step-by-step verification.
+        /// </summary>
+        public string Transform { get; internal set; } = string.Empty;
+
+#if false
+        /// <summary>
+        /// The intermediate SQL clause template generated from <see cref="Transform"/>. 
+        /// 
+        /// This string encodes logical structure using placeholders like <c>$FEFF_property$</c> 
+        /// to defer actual field targeting until the final hydration phase. It reflects the
+        /// parsed intent of the expression, before being expanded across annotated model fields.
+        ///
+        /// Use this as the basis for per-field LIKE clause generation or substitution.
+        /// </summary>
+        public string TermLogic { get; internal set; } = string.Empty;
+#endif
+
+        /// <summary>
+        /// The main AST node into which logical structures are injected.
+        /// </summary>
+        public XElement XAST { get; }
+
+        /// <summary>
+        /// A dictionary of atomically substituted tokens, used for safely round-tripping quotes and tags.
+        /// </summary>
+        public Dictionary<string, string> Atomics { get; } = new Dictionary<string, string>();
+
+        public string Rehydrate(string expr)
+        {
+            restart:
+            foreach (var kvp in Atomics)
+            {
+                var exprB4 = expr;
+                expr = expr.Replace(kvp.Key, kvp.Value);
+                if (expr != exprB4)
+                {
+                    goto restart;
+                }
+            }
+            return expr;
+        }
+
+        /// <summary>
+        /// The assembled SQL expression.
+        /// </summary>
+        public string Query
+        {
+            get
+            {
+                if (_queryCompatibilityOverride is { } compatibilityQuery)
+                {
+                    return compatibilityQuery;
+                }
+                var builder = new List<string> { Preamble };
+                if (!string.IsNullOrWhiteSpace(WherePredicate))
+                {
+                    builder.Add(WherePredicate!);
+                }
+                if (CanExecutePrimaryKeyClause())
+                {
+                    builder.Add(PrimaryKeyClause());
+                }
+                if (Limit > 0)
+                {
+                    builder.Add($"LIMIT {Limit}");
+                }
+                var preview = string.Join(Environment.NewLine, builder);
+                return preview;
+            }
+            protected set
+            {
+                if (_queryCompatibilityOverride != value)
+                {
+                    _queryCompatibilityOverride = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        string? _queryCompatibilityOverride = null;
+
+        /// <summary>
+        /// The SQL WHERE clause preamble, e.g. "SELECT * FROM tablename WHERE".
+        /// </summary>
+        public string Preamble { get; protected set; } = string.Empty;
+
+        public string? WherePredicate { get; protected set; }
+        public string? PrimaryKeyPredicate { get; protected set; } = string.Empty;
+
+        public bool CanExecutePrimaryKeyClause()
+        {
+            int total = AllowedPrimaryKeys.Count + DisallowedPrimaryKeys.Count;
+
+            return
+                total != 0
+                && total <= MaxPrimaryKeyTermCount
+                && FilteringState != FilteringState.Ineligible
+                && !string.IsNullOrWhiteSpace(PrimaryKeyColumnName);
+        }
+
+        /// <summary>
+        /// Builds a primary key predicate using IN and/or NOT IN clauses
+        /// based on AllowedPrimaryKeys and DisallowedPrimaryKeys.
+        /// Does not include leading AND; caller is responsible for composition.
+        /// Returns an empty string if no predicate can be constructed.
+        /// </summary>
+        public string PrimaryKeyClause()
+        {
+            if (!CanExecutePrimaryKeyClause())
+                return string.Empty;
+
+            var clauses = new List<string>();
+
+            if (AllowedPrimaryKeys.Count > 0)
+            {
+                string allowedList = string.Join(
+                    ", ",
+                    AllowedPrimaryKeys.Select(pk => localFormatPrimaryKeyLiteral(pk)));
+
+                clauses.Add($"{PrimaryKeyColumnName} IN ({allowedList})");
+            }
+
+            if (DisallowedPrimaryKeys.Count > 0)
+            {
+                string disallowedList = string.Join(
+                    ", ",
+                    DisallowedPrimaryKeys.Select(pk => localFormatPrimaryKeyLiteral(pk)));
+
+                clauses.Add($"{PrimaryKeyColumnName} NOT IN ({disallowedList})");
+            }
+
+            if (clauses.Count == 0)
+                return string.Empty;
+
+            return string.Join(" AND ", clauses);
+
+            static string localFormatPrimaryKeyLiteral(object pk)
+            {
+                return pk switch
+                {
+                    uint or int or long => pk.ToString()!,
+                    string s => $"'{s.Replace("'", "''")}'",
+                    _ => throw new InvalidOperationException("Unsupported primary key type.")
+                };
+            }
+        }
+
+        public string? PrimaryKeyColumnName { get; protected set; }
+
+
+        #region L I M I T S 
+        /// <summary>
+        /// The maximum count of included and excluded predicates.
+        /// </summary>
+        public uint MaxPrimaryKeyTermCount { get; set; } = 1024;
+
+        /// <summary>
+        /// To exclude this term from query, set to 0.
+        /// </summary>
+        public uint DefaultLimit { get; set; } = uint.MinValue;
+
+        public uint Limit =>
+            _dhostLimit.Tokens.LastOrDefault()?.Sender is uint limit
+            ? limit
+            : DefaultLimit;
+
+        private readonly DisposableHost _dhostLimit = new();
+
+        public IDisposable BeginLimit(uint limit) => _dhostLimit.GetToken(sender: limit);
+        private string LimitTerm => Limit == uint.MaxValue ? string.Empty : $"LIMIT {Limit}";
+        #endregion L I M I T S
+
+        #region N A M E D    S U P P O R T
+        /// <summary>
+        /// The query string using named parameters like '@param0001'.
+        /// </summary>
+        public string NamedQuery =>
+            $"{Preamble} {XAST.Attribute(nameof(StdAstAttr.clauseN))?.Value ?? "1"}";
+
+        /// <summary>
+        /// Ordered named parameters mapped to their wrapped values (e.g., '%value%').
+        /// Preserves insertion order for compatibility with cnx.CreateCommand(...).
+        /// </summary>
+        public Dictionary<string, object> NamedArgs =>
+            _args
+                .Select(_ => new KeyValuePair<string, object>(
+                    _.Key,
+                    $"%{_.Value}%"))
+                .OrderBy(kvp => kvp.Key)
+                .ToDictionary(_ => _.Key, kvp => kvp.Value);
+
+        #endregion N A M E D    S U P P O R T
+
+        #region P O S I T I O N A L    S U P P O R T
+        /// <summary>
+        /// The query string with positional placeholders ('?') instead of named parameters.
+        /// </summary>
+        public string PositionalQuery =>
+            Regex.Replace(NamedQuery, @"@param[0-9A-Fa-f]+", "?");
+
+        /// <summary>
+        /// Argument values in the exact order they appear in the positional query.
+        /// Suitable for use with cnx.CreateCommand(...).
+        /// </summary>
+        public object[] PositionalArgs =>
+            Regex
+                .Matches(NamedQuery, @"@param[0-9A-Fa-f]+")
+                .Cast<Match>()
+                .Select(_ => $"%{_args[_.Value]}%")
+                .ToArray();
+
+        /// <summary>
+        /// Gets or sets a pre-parse eligibility filter that determines whether
+        /// an input expression should proceed through the parsing pipeline.
+        /// </summary>
+        /// <remarks>
+        /// This predicate is evaluated at the start of <c>ParseSqlMarkdown</c>.
+        /// If it returns <c>false</c>, parsing is aborted and an empty result is returned.
+        ///
+        /// This is not a syntactic validator. Structural correctness is handled
+        /// later by the linter and AST builder. Instead, this property acts as a
+        /// lightweight gate to prevent unnecessary parsing and SQL generation.
+        ///
+        /// By default:
+        /// - In <see cref="QueryFilterMode.Query"/> mode, the expression must contain
+        ///   at least three contiguous alphanumeric characters.
+        /// - In <see cref="QueryFilterMode.Filter"/> mode, all input is considered eligible.
+        ///
+        /// Consumers may override this predicate to enforce domain-specific
+        /// eligibility rules such as minimum length, throttling heuristics,
+        /// or restricted character policies.
+        /// </remarks>
+        [PublishedContract("1.0", typeof(MarkdownContext))]
+        public Predicate<string> ValidationPredicate
+        {
+            get
+            {
+                return _validationPredicate ?? (expr =>
+                {
+                    if (IsFiltering)
+                    {
+                        return true;
+                    }
+                    // Default true, or (in Query mode) 3 minimum contiguous chars.
+                    switch (_activeQFMode)
+                    {
+                        case QueryFilterMode.Query:
+                            return Regex.IsMatch(expr.TrimEndTransients(), @"[a-zA-Z0-9]{3}");
+                        case QueryFilterMode.Filter:
+                        default:
+                            return true;
+                    }
+                });
+            }
+            set => _validationPredicate = value;
+        }
+
+        Predicate<string>? _validationPredicate = null;
+
+        private QueryFilterMode _activeQFMode = QueryFilterMode.Query;
+
+        #endregion P O S I T I O N A L    S U P P O R T
+
+        public object _lock = new object();
+        public override string ToString()
+        {
+            string formatted = NamedQuery;
+
+            foreach (var param in _args)
+            {
+                string value;
+                if (param.Value is string s)
+                {
+                    value = $"'%{s.Replace("'", "''")}%'";
+                }
+                else if (param.Value == null)
+                {
+                    value = "NULL";
+                }
+                else
+                {
+                    value = param.Value.ToString();
+                }
+                formatted = formatted.Replace(param.Key, value);
+            }
+            return formatted;
+        }
+        public virtual string ToString(Enum formatting)
+        {
+            switch (formatting)
+            {
+                case FormattingOMC.StateReport:
+                    break;
+                default:
+                    break;
+            }
+            return ToString();
+        }
+
+        #region C O N F I G
+        public QueryFilterConfig QueryFilterConfig
+        {
+            get => _queryFilterConfig;
+            set
+            {
+                if (!Equals(_queryFilterConfig, value))
+                {
+                    _queryFilterConfig = value;
+
+                    switch (_queryFilterConfig)
+                    {
+                        case QueryFilterConfig.Query:
+                            FilteringState = FilteringState.Ineligible;
+                            break;
+                        case QueryFilterConfig.Filter:
+                            // Advance to minimum states for Filter mode.
+                            if (FilteringState == FilteringState.Ineligible)
+                            {
+                                FilteringState = FilteringState.Armed;
+                                Debug.Assert(IsFiltering);
+                            }
+                            if (SearchEntryState == SearchEntryState.Cleared)
+                            {
+                                SearchEntryState = SearchEntryState.QueryCompleteNoResults;
+                            }
+                            break;
+                        default:
+                            // Reset FSM to first cause.
+                            Clear(all: true);
+                            break;
+                    }
+                    OnQueryFilterConfigChanged();
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        protected virtual void OnQueryFilterConfigChanged() { }
+
+        QueryFilterConfig _queryFilterConfig = QueryFilterConfig.QueryAndFilter;
+
+        /// <summary>
+        /// Memory connection on-demand.
+        /// </summary>
+        /// <remarks>
+        /// 
+        /// User may inject a persistent connection if:
+        /// <c>using(MemoryDatabase = new SQLiteConnection("UserPath")); </c>
+        /// </remarks>
+        public SQLiteConnection MemoryDatabase
+        {
+            get => _memoryDatabase!;    // For compatibility with interface contract, this property must be null checked.
+            set
+            {
+                if (!Equals(_memoryDatabase, value))
+                {
+                    if (_memoryDatabase != null)
+                    {
+                        _memoryDatabase.Dispose();
+                    }
+                    _memoryDatabase = value;
+                    OnPropertyChanged();
+                    this.OnAwaited();
+                }
+            }
+        }
+        SQLiteConnection? _memoryDatabase = default;
+
+        #endregion C O N F I G
+
+        #region N A V    S E A R C H    S T A T E    M A C H I N E
+
+        protected FilteringState FilteringStatePrev { get; set; }
+        public FilteringState FilteringState
+        {
+            get => _filteringState;
+            // {461B2298-3E0A-49F8-AE52-EB43F70699AD}
+            // CONTROLLED ACCESS
+            // To obtain set access to this property, make a subclass.
+            // It is not designed to be modified directly, e.g. by the consumer
+            // of a client collection that exposes MarkdownContext as a property.
+            // EXAMPLE - promote to internal
+            // public class InternalMarkdownContext<T> : MarkdownContext<T>
+            // {
+            //    public new FilteringState FilteringState
+            //    {
+            //        get => base.FilteringState;
+            //        internal set => base.FilteringState = value;
+            //    }
+            // }
+            // RATIONALE
+            // Promoting to internal is something that can be safely done
+            // in the assembly that holds the client collection, but would
+            // not work if done in the library itself.
+            protected set
+            {
+                #region I T ' S    T H E    L A W
+                switch (QueryFilterConfig)
+                {
+                    case QueryFilterConfig.Query:
+                        // [Gravity]
+                        if (value > FilteringState.Ineligible)
+                        {
+                            value = FilteringState.Ineligible;
+                        }
+                        break;
+                    case QueryFilterConfig.Filter:
+                        // [Gravity]
+                        if (value < FilteringState.Armed)
+                        {
+                            value = FilteringState.Armed;
+                        }
+                        break;
+                }
+                #endregion I T ' S    T H E    L A W
+
+                if (!Equals(_filteringState, value))
+                {
+                    if (value == FilteringState.Active)
+                    {
+                        if (_sslimAF.CurrentCount == 0)
+                        {   /* G T K */
+                        }
+                        else
+                        {
+                            this.ThrowFramework<InvalidOperationException>(
+                                $"{FilteringState.Active.ToFullKey()} must be set from {nameof(ApplyFilter)} only.");
+                        }
+                    }
+
+                    FilteringStatePrev = _filteringState;
+                    _filteringState = value;
+
+                    // This needs to be sequenced in a certain way.
+                    // {5B1BD636-9189-493C-83B6-F77EB0321925}
+                    bool isFilteringB4 = _isFiltering;
+                    OnFilteringStateChanged();
+                    OnPropertyChanged();
+
+                    if (_isFiltering != isFilteringB4)
+                    {
+                        OnIsFilteringChanged();
+                        OnPropertyChanged(nameof(IsFiltering));
+                    }
+                }
+            }
+        }
+        FilteringState _filteringState = FilteringState.Ineligible;
+
+        /// <summary>
+        /// Exposes <see cref="FilteringState"/> for test scenarios while preventing direct production mutation.
+        /// </summary>
+        /// <remarks>
+        /// This property exists solely to support legacy and test workflows that require
+        /// setting <see cref="FilteringState"/> externally. The setter intentionally invokes
+        /// <c>ThrowHard&lt;NotSupportedException&gt;</c> to discourage direct use.
+        /// 
+        /// Consumers who require write access should derive from the declaring type and
+        /// use the protected setter instead. Alternatively, the throw may be handled to 
+        /// enable controlled legacy behavior, but such usage should be limited to tests.
+        /// </remarks>
+        [Obsolete("Make a subclass instead. This provides access to the protected setter for FilteringState.")]
+        public FilteringState FilteringStateForTest
+        {
+            get => FilteringState;
+            set
+            {
+                // To enable legacy behavior, handle this Throw.
+                if (this.ThrowHard<NotSupportedException>(
+                   "Use a subclass to gain access to the protected setter for FilteringState.").Handled)
+                {
+                    FilteringState = value;
+                }
+            }
+        }
+
+        public void Sort(IComparer? comparer)
+        {
+            if (comparer is null)
+            {
+                throw new NotImplementedException("ToDo");
+            }
+            else
+            {
+                throw new NotImplementedException("ToDo");
+            }
+        }
+        protected bool IsEphemeralSort
+        {
+            get => _isEphemeralSort;
+            set
+            {
+                if (!Equals(_isEphemeralSort, value))
+                {
+                    _isEphemeralSort = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        bool _isEphemeralSort = false;
+
+
+        protected virtual void OnIsFilteringChanged() { }
+
+        /// <summary>
+        /// Comprehensive system-level clear that includes InputText in its purview.
+        /// </summary>
+        /// <remarks>
+        /// Subclasses should implement both:
+        /// 1. The parameterless "no surprises" Clear().
+        /// 2. The UI-oriented [X] demoting clear state machine.
+        /// </remarks>
+        [Canonical("#{5932CB31-B914-4DE8-9457-7A668CDB7D08}")]
+        public FilteringState Clear(bool all = false)
+        {
+            // Fastrack condition for all.
+            // Goes here, before the virtual method call.
+            if (FilteringState == FilteringState.Ineligible
+                && string.IsNullOrWhiteSpace(InputText))
+            {
+                all = true;
+            }
+            if (ModelAuthorityContext is null)
+            {
+                // 1.x contract
+                OnClear(all);
+            }
+            else
+            {
+                if(all)
+                {
+                    using(ModelAuthorityContext.RequestAuthority(StdModelAuthority.TerminalClear))
+                    using (ModelAuthorityContext.RequestAuthority(ModelDataExchangeAuthority.Model))
+                    OnClear(true);
+                }
+                else
+                {
+                    using (ModelAuthorityContext.RequestAuthority(ModelDataExchangeAuthority.Model))
+                    {
+                        OnClear(false);
+                    }
+                }
+            }
+
+            // Avoid leaking the object itself as the awaited sender.
+            nameof(MarkdownContext).OnAwaited(new AwaitedEventArgs(caller: nameof(Clear))
+            {
+                { nameof(all), all }, // Key='all' 
+            });
+            // Fluent return;
+            return FilteringState;
+        }
+        protected virtual void OnClear(bool all)
+        {
+            if(ModelAuthorityContext is { } mac)
+            {
+                if (!mac.HasAuthority(ModelDataExchangeAuthority.Model))
+                {
+                    IDisposable[] tokens =
+                        all
+                        ? [mac.RequestAuthority(StdModelAuthority.TerminalClear), mac.RequestAuthority(ModelDataExchangeAuthority.Model)]
+                        : [mac.RequestAuthority(ModelDataExchangeAuthority.Model)];
+                    using (new TokenDisposer(tokens))
+                    {
+                        if (!mac.HasAuthority(ModelDataExchangeAuthority.Model))
+                        {
+                        }
+                    }
+                }
+                localOnClear();
+            }
+            else
+            {
+                // 1.x contract
+                localOnClear();
+            }
+            void localOnClear()
+            {
+                if (ModelAuthorityContext?.Model is { } model)
+                {
+                    model.RemoveDescendantAttributes(StdModelAttribute.qmatch);
+                    if (model.To<IRoutedCollection>() is { } route)
+                    {
+                        // This does not rely on the 'all' argument.
+                        route.RouteKey = StdRouteKey.CanonicalRoute;
+                    }
+                }
+                if (all)
+                {
+                    InputText = string.Empty;
+                    FilteringState = FilteringState.Ineligible;
+                    if (SearchEntryState == SearchEntryState.Cleared)
+                    {
+                        OnSearchEntryStateChanged();
+                        OnPropertyChanged(nameof(SearchEntryState));
+                    }
+                    else
+                    {
+                        SearchEntryState = SearchEntryState.Cleared;
+                    }
+                }
+                else
+                {
+                    if (InputText.Length == 0)
+                    {
+                        // EMPTY
+                        switch (FilteringState)
+                        {
+                            case FilteringState.Ineligible:
+                                // RELEASE 1.0.2 bug fixed by adding this clause.
+                                // RELEASE 2.0.0 fixes the nosocomial.
+                                switch (SearchEntryState)
+                                {
+                                    case SearchEntryState.QueryCompleteWithResults:
+                                        /* G T K - N O O P */
+                                        break;
+                                    // There were never any projected items to clear.
+                                    // No intermediate step is needed.
+                                    case SearchEntryState.QueryCompleteNoResults:
+                                    case SearchEntryState.QueryEmpty:
+                                        SearchEntryState = SearchEntryState.Cleared;
+                                        break;
+                                }
+                                break;
+                            case FilteringState.Armed:
+                            case FilteringState.Active:
+                                // Text is already empty and clear is invoked (clicked) again - this is a hard reset.
+                                FilteringState = FilteringState.Ineligible;
+                                if (SearchEntryState > SearchEntryState.QueryEmpty)
+                                {
+                                    SearchEntryState = SearchEntryState.QueryEmpty;
+                                }
+                                break;
+                            default:
+                                throw new NotImplementedException($"Bad case: {FilteringState}");
+                        }
+                    }
+                    else
+                    {
+                        // NOT EMPTY
+                        // UpgradeToFilter : FilteringState == FilteringState.Ineligible;
+                        // DowngradeToQuery: FilteringState != FilteringState.Ineligible;
+                        // DowngradeToClear: DowngradeToQuery + SearchEntryState is not showing a query result.
+                        InputText = string.Empty;
+
+                        // Not Here
+                        // SES is the purview of OnInputTextChanged as far as EMPTY is concerned.
+                        // RATIONALE: The IME can become empty in ways other than Clear().
+
+                        //switch (SearchEntryState)
+                        //{
+                        //    case SearchEntryState.QueryCompleteWithResults:
+                        //        // Text has become empty, but don't clear the list in this intermediate step.
+                        //        SearchEntryState = SearchEntryState.QueryEmpty;
+                        //        break;
+                        //    case SearchEntryState.QueryCompleteNoResults:   // Expected
+                        //    case SearchEntryState.QueryEmpty:               // Unexpected but benign.
+                        //        // Text has become empty, and there are no items to clear.
+                        //        SearchEntryState = SearchEntryState.Cleared;
+                        //        break;
+                        //}
+
+                        switch (FilteringState)
+                        {
+                            case FilteringState.Ineligible:
+                                break;
+                            case FilteringState.Armed:
+                                // Basically, if there is entry text but the filtering
+                                // is still only armed not active, that indicates that
+                                // what we're seeing in the list is the result of a full
+                                // db query that just occurred. So now, when we CLEAR that
+                                // text, it's assumed to be in the interest of filtering
+                                // that query result, so filtering stays Armed in this case.
+                                break;
+                            case FilteringState.Active:
+                                break;
+                            default:
+                                throw new NotImplementedException($"Bad case: {FilteringState}");
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Apply hysteresis to the Filtering, but only in QueryFilterConfig.QueryAndFilter mode.
+        /// </summary>
+        /// <remarks>
+        /// This is the only place that _isFiltering is allowed to change. 
+        /// INPC sequencing is delicate and so the backing store defers the notification.
+        /// </remarks>
+        protected virtual async void OnFilteringStateChanged()
+        {
+            switch (QueryFilterConfig)
+            {
+                case QueryFilterConfig.Query:
+                    _isFiltering = false;
+                    break;
+                case QueryFilterConfig.Filter:
+                    _isFiltering = true;
+                    break;
+                case QueryFilterConfig.QueryAndFilter:
+                    _isFiltering = FilteringState != FilteringState.Ineligible;
+                    break;
+                default:
+                    break;
+            }
+            switch (FilteringState)
+            {
+                case FilteringState.Ineligible:
+                case FilteringState.Armed:                    
+                    RouteKey = StdRouteKey.CanonicalRoute;
+#if DEBUG
+                    // Detect direction
+                    if (FilteringStatePrev == FilteringState.Active)
+                    { }
+#endif
+                    break;
+                case FilteringState.Active:
+                    break;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {FilteringState.ToFullKey()} case is not supported.");
+                    break;
+            }
+        }
+
+        protected ObservableCollection<object> ActivePredicates
+        {
+            get
+            {
+                if (_activeFilters is null)
+                {
+                    _activeFilters = new ObservableCollection<object>();
+                }
+                return _activeFilters;
+            }
+        }
+        ObservableCollection<object>? _activeFilters = null;
+
+        /// <summary>
+        /// Available routing based on discoverable Histo.
+        /// </summary>
+        public StdRouteKey RouteKey
+        {
+            get => _routeKey;
+            set
+            {
+                if (!Equals(_routeKey, value))
+                {
+                    _routeKey = value;
+                    OnRouteKeyChanged();
+                    OnPropertyChanged();
+                }
+            }
+        }
+        StdRouteKey _routeKey = StdRouteKey.CanonicalRoute;
+
+        protected virtual void OnRouteKeyChanged()
+        {
+            switch (RouteKey)
+            {
+                case StdRouteKey.CanonicalRoute:
+                    RouteToFullRecordset = true;
+                    break;
+                default:
+                    RouteToFullRecordset = false;
+                    break;
+            }
+        }
+
+        public string InputText
+        {
+            get => _inputText;
+            set
+            {
+                value ??= string.Empty;
+                if (!Equals(_inputText, value))
+                {
+                    _inputText = value;
+                    OnInputTextChanged();
+                    OnPropertyChanged();
+                }
+            }
+        }
+        string _inputText = string.Empty;
+
+        [Careful("Trimming or modifying the raw InputText is not allowed.")]
+        protected virtual void OnInputTextChanged()
+        {
+            if (IsFiltering)
+            {
+                localApplyFilterSemantics();
+            }
+            else
+            {
+                localApplyQuerySemantics();
+            }
+
+            #region L o c a l F x
+            void localApplyFilterSemantics()
+            {
+                // First cut: "There must be at least one item."
+                if (SearchEntryState == SearchEntryState.QueryCompleteWithResults)
+                {
+                    switch (FilteringState)
+                    {
+                        case FilteringState.Ineligible:
+                            {   /* G T K - N O O P */
+                                // Second cut: "In fact, there must be at least two items, and we've already checked."
+                            }
+                            break;
+                        case FilteringState.Armed:
+                            if (!InputText.IsSemanticallyEmpty())
+                            {
+                                // 260511 - do this as a settled concern instead.
+                                // FilteringState = FilteringState.Active;
+                            }
+                            break;
+                        case FilteringState.Active:
+                            if (InputText.IsSemanticallyEmpty())
+                            {
+                                // Downgrade but stay armed.
+                                FilteringState = FilteringState.Armed;
+                            }
+                            break;
+                        default:
+                            throw new NotImplementedException($"Bad case: {FilteringState}");
+                    }
+                }
+
+                // #{AC826718-2B0C-4846-9F85-B028BAD3CC10}
+                // Please *do not move* (as has been done many times before).
+                // HERE'S THE THING:
+                // In query mode, the ui *typically* awaits Commit, not Settle,
+                // and this is epistemic because the primary database "could be
+                // anything" and take a year to return a query for all we know.
+                // NEVERTHELESS:
+                // The awaiter, and the process of settling text, is a separate concern.
+                // MENTAL MODEL (CORRECTED):
+                // Check the filtering state in OnInputTextSettled instead, and
+                // gate the 'apply filter' there, not here.
+                RestartIfSemanticInputChanged();
+            }
+
+            void localApplyQuerySemantics()
+            {
+                if (InputText.IsSemanticallyEmpty())
+                {
+                    SearchEntryState =
+                        CanonicalCount == 0
+                        ? SearchEntryState.Cleared
+                        : SearchEntryState.QueryEmpty;
+                }
+                else if (InputText.TrimEndTransients().Length < 3)
+                {
+                    SearchEntryState = SearchEntryState.QueryENB;
+                }
+                else
+                {
+                    SearchEntryState = SearchEntryState.QueryEN;
+                }
+            }
+            #endregion L o c a l F x
+        }
+
+        /// <summary>
+        /// Indicates that search input filters the current working set.
+        /// </summary>
+        /// <remarks>
+        /// - Query-only is false; filter-only is true even before any text is entered.
+        /// - Query-and-filter is true while filtering is armed or active.
+        /// - True does not imply a text restriction, fewer visible records, or any predicate match.
+        /// Use this posture to choose the search bar's "Search" or "Filter" presentation.
+        /// </remarks>
+        [PublishedContract("1.x")]
+        public bool IsFiltering => _isFiltering;
+
+        // Different!
+        // Protected because it's in play inside OnFilteringStateChanged.
+        // This needs to be sequenced in a certain way.
+        // {5B1BD636-9189-493C-83B6-F77EB0321925}
+        protected bool _isFiltering = false;
+
+        /// <summary>
+        /// Indicates that the Markdown context selects its canonical text route.
+        /// </summary>
+        /// <remarks>
+        /// Independent of IsFiltering: an armed collection can show its full text working set.
+        /// Collection-owned predicates may still narrow the final projection without text input.
+        /// Mental Model: "If the input text is empty, just swap the handle instead of recalculating."
+        /// </remarks>
+        [PublishedContract("1.x")]
+        public bool RouteToFullRecordset
+        {
+            get => _routeToFullRecordset;
+            protected set
+            {
+                if (!Equals(_routeToFullRecordset, value))
+                {
+                    _routeToFullRecordset = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        bool _routeToFullRecordset = true;
+
+        /// <summary>
+        /// Returns true when the normalized semantic input contains no effective terms.
+        /// </summary>
+        protected virtual bool IsSemanticallyEmpty()
+        {
+            var nonTransientInputText = InputText.TrimEnd();
+            bool hasTrailingEscapedOperator = false;
+
+            if (nonTransientInputText.Length >= 2)
+            {
+                int len = nonTransientInputText.Length;
+                char c1 = nonTransientInputText[len - 2];
+                char c2 = nonTransientInputText[len - 1];
+
+                if (c1 == '\\' && (c2 == '\\' || c2 == '!' || c2 == '|' || c2 == '&'))
+                {
+                    hasTrailingEscapedOperator = true;
+                }
+            }
+
+            if (!hasTrailingEscapedOperator)
+            {
+                nonTransientInputText =
+                    nonTransientInputText.TrimEnd('!', '|', '&');
+            }
+
+            return nonTransientInputText.Length == 0;
+        }
+
+        /// <summary>
+        /// Normalizes trailing transient operators and restarts the debounce cycle
+        /// only if the resulting semantic input differs from the previous value.
+        /// </summary>
+        protected virtual void RestartIfSemanticInputChanged()
+        {
+            var nonTransientInputText = InputText.TrimEnd();
+            bool hasTrailingEscapedOperator = false;
+            if (nonTransientInputText.Length >= 2)
+            {
+                int len = nonTransientInputText.Length;
+                char c1 = nonTransientInputText[len - 2];
+                char c2 = nonTransientInputText[len - 1];
+
+                if (c1 == '\\' && (c2 == '\\' || c2 == '!' || c2 == '|' || c2 == '&'))
+                {
+                    hasTrailingEscapedOperator = true;
+                }
+            }
+            if (!hasTrailingEscapedOperator)
+            {
+                nonTransientInputText = nonTransientInputText.TrimEnd(@"!|&".ToCharArray());
+            }
+            if (_literalInputText != nonTransientInputText)
+            {
+                _literalInputText = nonTransientInputText;
+                if (ValidationPredicate(_literalInputText))
+                {
+                    StartOrRestart();
+                }
+                else
+                {
+                    Cancel();
+                }
+            }
+        }
+        string _literalInputText = string.Empty;
+
+        public SearchEntryState SearchEntryState
+        {
+            get => _searchEntryState;
+            // See also: 
+            // {461B2298-3E0A-49F8-AE52-EB43F70699AD}
+            protected set
+            {
+                #region I T ' S    T H E    L A W
+                switch (QueryFilterConfig)
+                {
+                    case QueryFilterConfig.Filter:
+                        if (value < SearchEntryState.QueryCompleteNoResults)
+                        {
+                            value = SearchEntryState.QueryCompleteNoResults;
+                        }
+                        break;
+                }
+                #endregion I T ' S    T H E    L A W
+                if (!Equals(_searchEntryState, value))
+                {
+                    _searchEntryState = value;
+                    OnSearchEntryStateChanged();
+                    OnPropertyChanged();
+                }
+            }
+        }
+        SearchEntryState _searchEntryState = default;
+
+        protected virtual void OnSearchEntryStateChanged()
+        {
+            switch (QueryFilterConfig)
+            {
+                case QueryFilterConfig.Query:
+                    FilteringState = FilteringState.Ineligible;
+                    RouteKey = StdRouteKey.CanonicalRoute;
+                    break;
+                case QueryFilterConfig.Filter:
+                    FilteringState = FilteringState.Armed;
+                    RouteKey = StdRouteKey.CanonicalRoute;
+                    break;
+                case QueryFilterConfig.QueryAndFilter:
+
+                    ICollection? omc =
+                        ModelAuthorityContext
+                        ?.Model
+                        ?.Attribute(StdModelAttribute.omc) is XBoundAttribute xba
+                        ? xba.Tag as ICollection
+                        : null;
+
+                    if(SearchEntryState == SearchEntryState.QueryCompleteWithResults)
+                    {
+                        FilteringState = 
+                            omc is null || omc.Count > 1
+                            ? FilteringState.Armed
+                            : FilteringState.Ineligible;
+                    }
+                    break;
+                default:
+                    this.ThrowFramework<NotSupportedException>($"The {QueryFilterConfig.ToFullKey()} case is not supported.");
+                    break;
+            }
+        }
+
+#if DEBUG
+        protected SemaphoreSlimWithTrace _ready { get; } = new SemaphoreSlimWithTrace(1, 1);
+#else
+        protected SemaphoreSlim _ready { get; } = new SemaphoreSlim(1, 1);
+#endif
+        public bool Busy { get; private set; }
+
+        protected virtual async Task OnInputTextSettled(CancelEventArgs e)
+        {
+            // External response via handler.
+            InputTextSettled?.Invoke(this, e);
+
+            // Internal response possible when FQDB is injected, including
+            // but not limited to IObservableQueryFilterSource implementations.
+            if (FilterQueryDatabase is not null)
+            {
+                if (!e.Cancel)
+                {
+                    // [Remember]
+                    // - The distinction of 'Ineligible' is that
+                    //   there aren't enough items to filter.
+                    // - It's got nothing to do with InputText length.
+                    if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter)
+                        && FilteringState != FilteringState.Ineligible)
+                    {
+                        if (InputText.IsSemanticallyEmpty())
+                        {   /* G T K - N O O P */
+                        }
+                        else
+                        {
+                            await ApplyFilter();
+                        }
+                    }
+                }
+            }
+        }
+        public event EventHandler? InputTextSettled;
+
+        // REF: 260409.B-remove-mdc-model-sematics
+        /// <summary>
+        /// Observes settled match cardinality before the model epoch publishes its projection.
+        /// </summary>
+        /// <remarks>
+        /// The collection adapter uses this distinction to retain a restrictive query
+        /// with zero matches. Histogram presence alone cannot represent that case.
+        /// </remarks>
+        protected virtual void OnFilterMatchesApplied(int canonicalCount, int queryMatchCount) { }
+
+        protected virtual async Task ApplyFilter()
+        {
+            if (FilterQueryDatabase is null)
+            {
+                this.ThrowHard<InvalidOperationException>(
+                    $"{nameof(ApplyFilter)} requires a non-null {nameof(FilterQueryDatabase)}. " +
+                    $"Compose the {nameof(MarkdownContext)} through a modeled collection or " +
+                    $"inject the database before calling this method.");
+            }
+            else
+            {
+                if (ModelAuthorityContext is { } mac)
+                {
+                    await _sslimAF.WaitAsync();
+                    try
+                    {
+                        using (DHostBusy.GetToken())
+                        using (mac.RequestAuthority(ModelDataExchangeAuthority.ModelDeferred))
+                        {
+                            string sql;
+                            IList qmatches = Array.Empty<object>();
+                            string[] matchPaths = [];
+                            int ccount = CanonicalCount;
+
+                            await Task.Run(() =>
+                            {
+                                // PredicateMatchSubsetProtected.Clear();
+                                mac.Model.RemoveDescendantAttributes(StdModelAttribute.qmatch);
+
+                                #region F I L T E R    Q U E R Y
+                                sql = ParseSqlMarkdown();
+#if DEBUG
+                                switch (InputText)
+                                {
+                                    case "b":
+                                        Debug.Assert(sql == @"
+SELECT * FROM items WHERE
+(FilterTerm LIKE '%b%')".TrimStart(),
+                                        "PROBABLY *NOT* BUGIRL - SCREENING FOR A SPURIOUS FAIL");
+                                        break;
+                                    case "Item01":
+                                        { }
+                                        break;
+                                }
+#endif
+                                // Execute the filter query against the proxy table. The returned rows are
+                                // lightweight proxy records used only to discover which canonical models
+                                // satisfy the predicate. These proxy instances are not inserted into the
+                                // projection; instead their paths are resolved back to the original model
+                                // objects bound in the AST.
+                                qmatches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
+
+                                if (qmatches.Count == 0 && Equals(Settings[StdMarkdownContextSetting.AllowPluralize], true))
+                                {
+                                    sql = sql.ToFuzzyQuery();
+                                    qmatches = FilterQueryDatabase.Query(ProxyType.GetSQLiteMapping(), sql);
+                                }
+                                #endregion F I L T E R    Q U E R Y
+
+                                matchPaths = localGetPaths();
+                            });
+
+                            // Not ordered, and doesn't need to be.
+                            HashSet<XElement> xqVisited = new();
+                            foreach (var path in matchPaths)
+                            {
+                                switch (mac.Model.Place(path, out var qmatchX, PlacerMode.FindOrPartial))
+                                {
+                                    case PlacerResult.Exists:
+                                        xqVisited.Add(qmatchX);
+                                        break;
+                                    case PlacerResult.Created:
+                                        this.ThrowFramework<InvalidOperationException>($"Unexpected result for {PlacerMode.FindOrPartial.ToFullKey()}");
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                            if (xqVisited.Count == ccount)
+                            {   /* G T K - N O O P */
+                                // Detected 1:1 so route to canonical.
+                            }
+                            else
+                            {
+                                foreach (var xqmatch in xqVisited)
+                                {
+                                    xqmatch.SetAttributeValue(nameof(StdModelAttribute.qmatch), bool.TrueString);
+                                }
+
+                                localOnUpdateRouting();
+                            }
+
+                            OnFilterMatchesApplied(ccount, xqVisited.Count);
+
+                            #region L o c a l F x
+                            /// <summary>
+                            /// Resolves the path identifiers for the matched recordset. When the proxy
+                            /// implements <c>IPathPlaceable</c>, paths are taken directly from
+                            /// <c>FullPath</c>; otherwise the value of the mapped SQLite primary key is
+                            /// used. A missing primary key mapping is treated as a framework error.
+                            /// </summary>
+                            string[] localGetPaths()
+                            {
+                                if (typeof(IPathPlaceable).IsAssignableFrom(ProxyType))
+                                {
+                                    return qmatches.Cast<IPathPlaceable>().Select(_ => _.FullPath).ToArray();
+                                }
+                                else
+                                {
+                                    if (ProxyType.GetSQLiteMapping().PK?.PropertyInfo is PropertyInfo pi)
+                                    {
+                                        return qmatches.Cast<object>().Select(_ => (string)pi.GetValue(_)).ToArray();
+                                    }
+                                    // Error fall-through.
+                                    this.ThrowHard<InvalidOperationException>();
+                                    return [];
+                                }
+                            }
+
+                            void localOnUpdateRouting()
+                            {
+                                var pcount =
+                                    Histo?[StdModelAttribute.pmatch]
+                                    ??
+                                    ModelAuthorityContext
+                                    .Model
+                                    .Descendants()
+                                    .Count(_ =>
+                                        _
+                                        .Attribute(StdModelAttribute.pmatch)?.Value.GetSemanticContribution()
+                                        == SemanticContribution.ExplicitTrue);
+                                if (pcount == 0)
+                                {
+                                    switch (ccount)
+                                    {
+                                        case 0:
+                                            Debug.Fail($@"ADVISORY - Unexpected {nameof(ApplyFilter)} on empty list.");
+                                            FilteringState = FilteringState.Ineligible;
+                                            RouteKey = StdRouteKey.CanonicalRoute;    // Canonical enumerator for empty list.
+                                            break;
+                                        case 1:
+                                            FilteringState = FilteringState.Ineligible;
+                                            RouteKey = StdRouteKey.CanonicalRoute;    // Canonical enumerator for list with one item.
+                                            break;
+                                        default:
+                                            FilteringState = FilteringState.Active;
+                                            RouteKey = StdRouteKey.QMatch;
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    if (qmatches.Count < 2)
+                                    {
+                                    }
+                                    else
+                                    {
+                                        FilteringState = FilteringState.Armed;
+                                    }
+                                }
+                            }
+                            #endregion L o c a l F x
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        this.RethrowHard(ex);
+                    }
+                    finally
+                    {
+                        if (_sslimAF.CurrentCount == 0)
+                        {
+                            _sslimAF.Release();
+                        }
+                    }
+                }
+            }
+        }
+        SemaphoreSlim _sslimAF = new SemaphoreSlim(1, 1);
+
+
+
+        #endregion N A V    S E A R C H    S T A T E    M A C H I N E
+
+        #region S E L F    I N D E X E D
+        public string QueryTerm => string.Join("~", _parsedIndexTerms[IndexingMode.QueryLikeTerm]);
+        public string FilterTerm => string.Join("~", _parsedIndexTerms[IndexingMode.FilterLikeTerm]);
+        public string TagMatchTerm => string.Join(" ", _parsedIndexTerms[IndexingMode.TagMatchTerm].Select(_ => $"[{_}]"));
+
+        #endregion S E L F    I N D E X E D
+
+        /// <summary>
+        /// Produce a IN clause with positive polarity that applies the specified PKs.
+        /// </summary>
+        public HashSet<object> AllowedPrimaryKeys { get; } = new();
+
+        /// <summary>
+        /// Produce a IN clause with negative polarity that applies the specified PKs.
+        /// </summary>
+        public HashSet<object> DisallowedPrimaryKeys { get; } = new();
+
+        /// <summary>
+        /// Returns a 'hidden' interface implementation if available.
+        /// </summary>
+        /// <remarks>
+        /// Intended for a call site that employs pattern matching.
+        /// </remarks>
+        public TInterface? AsInterface<TInterface>() where TInterface : class =>
+            typeof(TInterface) switch
+            {
+                Type t when t == typeof(ITestableMDC) => (TInterface)TestableMDCImpl,
+                _ => default,
+            };
+    }
+}

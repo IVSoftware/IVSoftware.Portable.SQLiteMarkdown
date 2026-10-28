@@ -1,4 +1,4 @@
-﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Attributes;
 using Newtonsoft.Json;
 using SQLite;
 using System;

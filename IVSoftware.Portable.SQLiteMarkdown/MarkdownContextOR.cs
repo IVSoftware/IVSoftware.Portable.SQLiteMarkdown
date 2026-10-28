@@ -1,4 +1,4 @@
-﻿using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.Disposable;
 using System;
 using System.Collections.Generic;
 using System.Linq;

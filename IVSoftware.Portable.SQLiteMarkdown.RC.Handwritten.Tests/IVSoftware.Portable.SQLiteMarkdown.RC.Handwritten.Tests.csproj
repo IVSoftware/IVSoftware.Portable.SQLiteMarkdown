@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <OutputType>Exe</OutputType>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <UseVSTest>false</UseVSTest>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MSTest" Version="4.2.1" />
+    <PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="2.0.0-rc" />
+    <ProjectReference Include="..\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown.csproj" />
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    <Compile Include="../IVSoftware.Portable.SQLiteMarkdown.MSTest\TestClass_ASTXBO.cs" Link="TestClass_ASTXBO.cs" />
+    <Compile Include="../IVSoftware.Portable.SQLiteMarkdown.MSTest\TestClass_PropertiesForQueryTemplateAndFilterTemplate.cs" Link="TestClass_PropertiesForQueryTemplateAndFilterTemplate.cs" />
+    <Compile Include="../IVSoftware.Portable.SQLiteMarkdown.MSTest\TestClass_LegacyHashSet.cs" Link="TestClass_LegacyHashSet.cs" />
+    <Compile Include="../IVSoftware.Portable.SQLiteMarkdown.MSTest\ValidationPredicateTests.cs" Link="ValidationPredicateTests.cs" />
+    <Compile Include="../IVSoftware.Portable.SQLiteMarkdown.MSTest\Models\QFTemplates\PetProfile.cs" Link="Models\QFTemplates\PetProfile.cs" />
+    <Compile Include="../IVSoftware.Portable.SQLiteMarkdown.MSTest\Models\QFTemplates\PetProfiles.SplitContract..cs" Link="Models\QFTemplates\PetProfiles.SplitContract..cs" />
+    <Compile Include="../IVSoftware.Portable.SQLiteMarkdown.MSTest\Models\SelfIndexedItem.cs" Link="Models\SelfIndexedItem.cs" />
+    <Compile Include="../IVSoftware.Portable.SQLiteMarkdown.MSTest\Util\TestClipboardExtensions.cs" Link="Util\TestClipboardExtensions.cs" />
+  </ItemGroup>
+</Project>
