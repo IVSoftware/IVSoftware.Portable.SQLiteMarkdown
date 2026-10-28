@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <OutputType>Exe</OutputType>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <UseVSTest>false</UseVSTest>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <SQLiteMarkdownVerificationSubject Condition="'$(SQLiteMarkdownVerificationSubject)' == ''">../IVSoftware.Portable.SQLiteMarkdown/IVSoftware.Portable.SQLiteMarkdown.csproj</SQLiteMarkdownVerificationSubject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MSTest" Version="4.2.1" />
+    <PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="2.0.0-rc" />
+    <ProjectReference Include="$(SQLiteMarkdownVerificationSubject)" />
+    <ProjectReference Include="../../../Xml.Linq/IVSoftware.Portable.Xml.Linq.Collections/IVSoftware.MSTest.Extensions/IVSoftware.MSTest.Extensions.csproj" />
+    <Compile Include="../verification/handwritten-partition/Shared/*.cs" Link="Shared/%(Filename)%(Extension)" />
+    <Compile Include="../IVSoftware.Portable.SQLiteMarkdown.MSTest/Models/**/*.cs" Exclude="../IVSoftware.Portable.SQLiteMarkdown.MSTest/Models/AffinityPrototype/**/*.cs" Link="OriginalFixtures/Models/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../IVSoftware.Portable.SQLiteMarkdown.MSTest/Enums.cs" Link="OriginalFixtures/Enums.cs" />
+    <Compile Include="../IVSoftware.Portable.SQLiteMarkdown.MSTest/Util/TestClipboardExtensions.cs" Link="OriginalFixtures/TestClipboardExtensions.cs" />
+    <EmbeddedResource Include="../IVSoftware.Portable.SQLiteMarkdown.MSTest/Contracts/Version=1.0.1.xml" LogicalName="IVSoftware.Portable.SQLiteMarkdown.MSTest.Contracts.Version=1.0.1.xml" />
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+</Project>

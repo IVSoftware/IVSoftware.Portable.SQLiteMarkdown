@@ -1,0 +1,308 @@
+[
+  {
+    "Source": "TestClass_PublicContract.cs",
+    "Class": "TestClass_SQLiteMarkdown",
+    "Method": "Test_PolicyException",
+    "SourceFileSHA256": "BCE7122AF824E16E6B75D31EC5737B1ADF13BB59F11C170E00A6062DC1B4C0B6",
+    "MethodSHA256": "6FF603EC3BB7D70C0F273E7F21D37338C7617837692378B0F53A76D49B0990EB",
+    "Destination": "Historical affinity-fixture policy; owner review",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_PublicContract.cs",
+    "Class": "TestClass_SQLiteMarkdown",
+    "Method": "Test_GetBreakingChanges",
+    "SourceFileSHA256": "BCE7122AF824E16E6B75D31EC5737B1ADF13BB59F11C170E00A6062DC1B4C0B6",
+    "MethodSHA256": "868CF2FA2399257F7E64B14126FA2306BF8B835F973665DB4C980E69FA1F30D1",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_PublicContract.cs",
+    "Class": "TestClass_SQLiteMarkdown",
+    "Method": "Test_ContractT",
+    "SourceFileSHA256": "BCE7122AF824E16E6B75D31EC5737B1ADF13BB59F11C170E00A6062DC1B4C0B6",
+    "MethodSHA256": "EDA2AFD99D6C15A48F66C3A8BA2936D218C407A4310B4BF51340F06FA2C47F3A",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_PublicContract.cs",
+    "Class": "TestClass_SQLiteMarkdown",
+    "Method": "Test_StreamlinedTableAttributeInheritance",
+    "SourceFileSHA256": "BCE7122AF824E16E6B75D31EC5737B1ADF13BB59F11C170E00A6062DC1B4C0B6",
+    "MethodSHA256": "97A6B7786DA843447D3F7D9BE1F388EFB52425B82F1F98367E2D27E3182853BC",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_PublicContract.cs",
+    "Class": "TestClass_SQLiteMarkdown",
+    "Method": "Test_SelfIndexingIllegalChars",
+    "SourceFileSHA256": "BCE7122AF824E16E6B75D31EC5737B1ADF13BB59F11C170E00A6062DC1B4C0B6",
+    "MethodSHA256": "ECC271A9C8FD0FD23925D31772D4FDEA2CAFD9E405CC35238B9D485796FF19F4",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_PublicContract.cs",
+    "Class": "TestClass_SQLiteMarkdown",
+    "Method": "Test_TrailingOperator",
+    "SourceFileSHA256": "BCE7122AF824E16E6B75D31EC5737B1ADF13BB59F11C170E00A6062DC1B4C0B6",
+    "MethodSHA256": "5581F1724133709558D2C86F6B7D7DABC14BAA6B7443DE203111FEA7925F57E7",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_PublicContract.cs",
+    "Class": "TestClass_SQLiteMarkdown",
+    "Method": "Test_NoSpuriousFilterQueryDatabaseInstantiation",
+    "SourceFileSHA256": "BCE7122AF824E16E6B75D31EC5737B1ADF13BB59F11C170E00A6062DC1B4C0B6",
+    "MethodSHA256": "84C548955DE145BE7E921CF6809ADAADB604BF5D2B8AC4EC53B60C86FF0749A8",
+    "Destination": "XML Nemesis replacement plus SQLite core coverage",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_PublicContract.cs",
+    "Class": "TestClass_SQLiteMarkdown",
+    "Method": "Test_BUGIRL_ProxyInheritance",
+    "SourceFileSHA256": "BCE7122AF824E16E6B75D31EC5737B1ADF13BB59F11C170E00A6062DC1B4C0B6",
+    "MethodSHA256": "29D23B173960883095667B7C659F3C5A71381A497A1F4A1F6E71D442233CAECE",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_SQLiteMarkdown.cs",
+    "Class": "TestClass_TestClass_SQLiteMarkdown",
+    "Method": "Test_QueryFilterFSMs",
+    "SourceFileSHA256": "5DEBD4AB015D7AE07B09764A5829A71643D529E8F5E475D09CDF4D5B285F5841",
+    "MethodSHA256": "95252C4FEDDDA4F8D6C3AFA72794F2453EE9C464AA644796EE2E1337A41FE4DB",
+    "Destination": "Preserved integration reference; migration pending",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_SQLiteMarkdown.cs",
+    "Class": "TestClass_TestClass_SQLiteMarkdown",
+    "Method": "Test_QueryOnlyFSMs",
+    "SourceFileSHA256": "5DEBD4AB015D7AE07B09764A5829A71643D529E8F5E475D09CDF4D5B285F5841",
+    "MethodSHA256": "ECA036D245FFBF635A9AD4B34D46CE345E29983651E967A9454F7C9808AAAA4D",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_SQLiteMarkdown.cs",
+    "Class": "TestClass_TestClass_SQLiteMarkdown",
+    "Method": "Test_FilterOnlyFSMs",
+    "SourceFileSHA256": "5DEBD4AB015D7AE07B09764A5829A71643D529E8F5E475D09CDF4D5B285F5841",
+    "MethodSHA256": "9F319E7C5F2F444159904DCA45C6C3DD96A41EA9139856E33BFEEDBDDBE40A05",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_SQLiteMarkdown.cs",
+    "Class": "TestClass_TestClass_SQLiteMarkdown",
+    "Method": "Test_Expression_Table",
+    "SourceFileSHA256": "5DEBD4AB015D7AE07B09764A5829A71643D529E8F5E475D09CDF4D5B285F5841",
+    "MethodSHA256": "CCF8AD7868555F17C55EFB046BD128C510F53CDA4237F98FFA3DB222BAB540D8",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_SQLiteMarkdown.cs",
+    "Class": "TestClass_TestClass_SQLiteMarkdown",
+    "Method": "Test_UserIndexedModel",
+    "SourceFileSHA256": "5DEBD4AB015D7AE07B09764A5829A71643D529E8F5E475D09CDF4D5B285F5841",
+    "MethodSHA256": "288A7E57E7FD6CE5ED2D31C942130055004AAF450D4625600F5736CFD714F6E8",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_SQLiteMarkdown.cs",
+    "Class": "TestClass_TestClass_SQLiteMarkdown",
+    "Method": "Test_ReflectFieldsOR",
+    "SourceFileSHA256": "5DEBD4AB015D7AE07B09764A5829A71643D529E8F5E475D09CDF4D5B285F5841",
+    "MethodSHA256": "BC4A914083A0B5CF06376A88267E069CF22D0B0B66E72E367904A07E9BF07298",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_SQLiteMarkdown.cs",
+    "Class": "TestClass_TestClass_SQLiteMarkdown",
+    "Method": "Test_NormalizeTags_False",
+    "SourceFileSHA256": "5DEBD4AB015D7AE07B09764A5829A71643D529E8F5E475D09CDF4D5B285F5841",
+    "MethodSHA256": "DAF94B490CB52FD6E2BF6B54B0609B49C68BBE4AC9AE0172A206296D08A544B0",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_SQLiteMarkdown.cs",
+    "Class": "TestClass_TestClass_SQLiteMarkdown",
+    "Method": "Test_NormalizeTags_True",
+    "SourceFileSHA256": "5DEBD4AB015D7AE07B09764A5829A71643D529E8F5E475D09CDF4D5B285F5841",
+    "MethodSHA256": "37F36A41EBE99E2A3465043E64161492563162E3E2DEEB2E5E5345B775445756",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_SQLiteMarkdown.cs",
+    "Class": "TestClass_TestClass_SQLiteMarkdown",
+    "Method": "Test_TableAttributeInheritance",
+    "SourceFileSHA256": "5DEBD4AB015D7AE07B09764A5829A71643D529E8F5E475D09CDF4D5B285F5841",
+    "MethodSHA256": "A75EFA6060536091B03F0FD9462BB0C11DBC102F0041DF60456AC2D15B34556E",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_SQLiteMarkdown.cs",
+    "Class": "TestClass_TestClass_SQLiteMarkdown",
+    "Method": "Test_Detect_QueryENB_or_QueryEN_when_IsFiltering",
+    "SourceFileSHA256": "5DEBD4AB015D7AE07B09764A5829A71643D529E8F5E475D09CDF4D5B285F5841",
+    "MethodSHA256": "A816BF5C5090DCB747A2A82B9A84C52EC3E69ADBA191D13022ECA9C8A73EE9AB",
+    "Destination": "XML handwritten integration; executable unchanged",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_ObservableQueryFilterSource.cs",
+    "Class": "TestClass_ObservableQueryFilterSource",
+    "Method": "Test_ViewDatabase",
+    "SourceFileSHA256": "A4B14A73FD215B640EA5A5D603402BFC488C6EF9649D59FB36C88F3FEFE86B8D",
+    "MethodSHA256": "C8C0576EFFA176CD0D76973E4D1750C69BD790678780D16DEE0E34F122E4A18B",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_ObservableQueryFilterSource.cs",
+    "Class": "TestClass_ObservableQueryFilterSource",
+    "Method": "Test_ApplyExprManuallySingle",
+    "SourceFileSHA256": "A4B14A73FD215B640EA5A5D603402BFC488C6EF9649D59FB36C88F3FEFE86B8D",
+    "MethodSHA256": "1B1A236C04BD94208CF23E4DBF10530429C43A0B9E0343824A23382BFBB6C943",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_ObservableQueryFilterSource.cs",
+    "Class": "TestClass_ObservableQueryFilterSource",
+    "Method": "Test_ApplyExprManually",
+    "SourceFileSHA256": "A4B14A73FD215B640EA5A5D603402BFC488C6EF9649D59FB36C88F3FEFE86B8D",
+    "MethodSHA256": "78F740E41DAC2029D340772CA6A5EF78469E073C21A40708649C81427FC0509D",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_ObservableQueryFilterSource.cs",
+    "Class": "TestClass_ObservableQueryFilterSource",
+    "Method": "Test_DefaultExpressions",
+    "SourceFileSHA256": "A4B14A73FD215B640EA5A5D603402BFC488C6EF9649D59FB36C88F3FEFE86B8D",
+    "MethodSHA256": "8C57B021F31D6D6EA3C5B3958297DB8AACA2C92061507CB00C4EAF4055E6BCA1",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_ObservableQueryFilterSource.cs",
+    "Class": "TestClass_ObservableQueryFilterSource",
+    "Method": "Test_ObservableQueryFilterSource",
+    "SourceFileSHA256": "A4B14A73FD215B640EA5A5D603402BFC488C6EF9649D59FB36C88F3FEFE86B8D",
+    "MethodSHA256": "C7935062A34827EE695388B59D082672A9843117C3E0D90DA41E1E11C1AD7018",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_ObservableQueryFilterSource.cs",
+    "Class": "TestClass_ObservableQueryFilterSource",
+    "Method": "Test_TrackProgressiveInputState",
+    "SourceFileSHA256": "A4B14A73FD215B640EA5A5D603402BFC488C6EF9649D59FB36C88F3FEFE86B8D",
+    "MethodSHA256": "11A56F662B06B70F58661FBAE4A4945E716392E1D9BBEB94BF7A7940831EEDD8",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_ObservableQueryFilterSource.cs",
+    "Class": "TestClass_ObservableQueryFilterSource",
+    "Method": "Test_FuzzyPlural",
+    "SourceFileSHA256": "A4B14A73FD215B640EA5A5D603402BFC488C6EF9649D59FB36C88F3FEFE86B8D",
+    "MethodSHA256": "3FF9890914CA31636D443366AD47A8E6F7BB4146C725A7A7C1A735433912CD6E",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_ObservableQueryFilterSource.cs",
+    "Class": "TestClass_ObservableQueryFilterSource",
+    "Method": "Test_PositionalOR",
+    "SourceFileSHA256": "A4B14A73FD215B640EA5A5D603402BFC488C6EF9649D59FB36C88F3FEFE86B8D",
+    "MethodSHA256": "F012E2A35CF34AAB1B713F4F58BC05D4752A77159FECAE299DF8DB57F3055AFF",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_ObservableQueryFilterSource.cs",
+    "Class": "TestClass_ObservableQueryFilterSource",
+    "Method": "Test_PositionalExtraction",
+    "SourceFileSHA256": "A4B14A73FD215B640EA5A5D603402BFC488C6EF9649D59FB36C88F3FEFE86B8D",
+    "MethodSHA256": "D5327E668C848016DC8D2A061BF1C7F1A7AD11859AE0A390101679983292BEBA",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_ObservableQueryFilterSource.cs",
+    "Class": "TestClass_ObservableQueryFilterSource",
+    "Method": "Test_PositionalV1",
+    "SourceFileSHA256": "A4B14A73FD215B640EA5A5D603402BFC488C6EF9649D59FB36C88F3FEFE86B8D",
+    "MethodSHA256": "66D814C09CE6678A2D2AD1E81E6755B26956FB39322EC9A04C6159822A44EB52",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_ObservableQueryFilterSource.cs",
+    "Class": "TestClass_ObservableQueryFilterSource",
+    "Method": "Test_ShortExpr",
+    "SourceFileSHA256": "A4B14A73FD215B640EA5A5D603402BFC488C6EF9649D59FB36C88F3FEFE86B8D",
+    "MethodSHA256": "BDBF56565EE28591AB30D13BE314570F8D117961BBD06B434514FF5DD55ADC7D",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_ObservableQueryFilterSource.cs",
+    "Class": "TestClass_ObservableQueryFilterSource",
+    "Method": "Test_StrictTagExpr",
+    "SourceFileSHA256": "A4B14A73FD215B640EA5A5D603402BFC488C6EF9649D59FB36C88F3FEFE86B8D",
+    "MethodSHA256": "568DC0CA590102D8BCF58EBA93A6007FA58AF5BBA83D1A4C05A9F22969AEDCA9",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_ObservableQueryFilterSource.cs",
+    "Class": "TestClass_ObservableQueryFilterSource",
+    "Method": "Test_AtomicDQuotes",
+    "SourceFileSHA256": "A4B14A73FD215B640EA5A5D603402BFC488C6EF9649D59FB36C88F3FEFE86B8D",
+    "MethodSHA256": "20C62900212303A57AD3249307CD6C2CC13ADA0BABECE45865C7BDD41AB9196B",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_ObservableQueryFilterSource.cs",
+    "Class": "TestClass_ObservableQueryFilterSource",
+    "Method": "Test_AtomicSQuotes",
+    "SourceFileSHA256": "A4B14A73FD215B640EA5A5D603402BFC488C6EF9649D59FB36C88F3FEFE86B8D",
+    "MethodSHA256": "6E1C753B40839662940E8B5D84101DA7583144782947158DA11513E630B147CA",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_ObservableQueryFilterSource.cs",
+    "Class": "TestClass_ObservableQueryFilterSource",
+    "Method": "Test_CustomSQLiteFunction",
+    "SourceFileSHA256": "A4B14A73FD215B640EA5A5D603402BFC488C6EF9649D59FB36C88F3FEFE86B8D",
+    "MethodSHA256": "807F427994EE32EC72C53A80D5109BF7023E2E2B8EF78F75EA7E0D14A70FB0A0",
+    "Destination": "SQLiteMarkdown core",
+    "HandwrittenMethodChanged": false
+  },
+  {
+    "Source": "TestClass_ObservableQueryFilterSource.cs",
+    "Class": "TestClass_ObservableQueryFilterSource",
+    "Method": "Test_DemoFlow",
+    "SourceFileSHA256": "A4B14A73FD215B640EA5A5D603402BFC488C6EF9649D59FB36C88F3FEFE86B8D",
+    "MethodSHA256": "28CBE75E4A16FCEB516F383C66934A44DE7E3B496B4A25BB867CA4C85538DAE7",
+    "Destination": "Preserved integration reference; migration pending",
+    "HandwrittenMethodChanged": false
+  }
+]
