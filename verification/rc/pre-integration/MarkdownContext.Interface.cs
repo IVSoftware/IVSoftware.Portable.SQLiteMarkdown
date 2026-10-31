@@ -1,0 +1,253 @@
+﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections.Exceptions;
+using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
+using IVSoftware.Portable.Threading;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using SQLite;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
+using ItemPropertyChangedEventArgs = IVSoftware.Portable.SQLiteMarkdown.Events.ItemPropertyChangedEventArgs;
+
+namespace IVSoftware.Portable.SQLiteMarkdown
+{
+    partial class MarkdownContext
+    {
+        protected virtual void OnItemPropertyChanged(object item, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(new ItemPropertyChangedEventArgs(e.PropertyName, item));
+        }
+
+        [PublishedContract("1.x")]
+        protected virtual SQLiteConnection FilterQueryDatabase { get; set; } = null;
+#if false
+        /// <summary>
+        /// The ephemeral backing store for this collection's contract filtering.
+        /// </summary>
+        /// <remarks>
+        /// - Like any other SQLite database this can be configured with N tables.
+        ///   However, the semantic constraints on contract parsing (where ContractType 
+        ///   is assumed to be the item type of the collection that subclasses it) will
+        ///   provide an advisory stream should this be called upon to service more
+        ///   than the implicit single table for the collection.
+        /// </remarks>
+        [PublishedContract("1.x")]
+        protected virtual SQLiteConnection FilterQueryDatabase
+        {
+            get
+            {
+                if (this is IModeledCollection omc)
+                {
+                    if (omc.ModelTracking.HasFlag(ModelTrackingFlag.ItemQueries))
+                    {
+                        var omcdb = omc.FilterQueryDatabase;
+                        if(ReferenceEquals(omcdb, _filterQueryDatabase))
+                        {
+                            this.OnAwaited(new()
+                            {
+                                { nameof(SQLiteConnection), $"get.{nameof(IModeledCollection)}.Exists" }
+                            });
+                        }
+                        else
+                        {
+                            _filterQueryDatabase = omcdb;
+                            this.OnAwaited(new()
+                            {
+                                { nameof(SQLiteConnection), $"get.{nameof(IModeledCollection)}.Assigned" }
+                            });
+                        }
+                        return _filterQueryDatabase!;
+                    }
+                    else
+                    {
+                        // Allowable and consistent with the IModeledCollection contract;
+                        this.OnAwaited(new() 
+                        { 
+                            { nameof(SQLiteConnection), $"get.{nameof(IModeledCollection)}.Null" } 
+                        });
+                        return null!;
+                    }
+                }
+                else
+                {
+                    if (!QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                    {
+                        this.ThrowPolicyException(MarkdownContextPolicy.FilterEngineUnavailable);
+                        // Unreachable unless Throw is handled.
+                        // Opting to continue creates a benign condition where a DB
+                        // that might not really be necessary is instantiated regardless.
+                    }
+
+                    // HYBRID - factory getter.
+                    if (_filterQueryDatabase is null)
+                    {
+                        _filterQueryDatabase = new SQLiteQueryOnlyConnection(ContractType);
+                        this.OnAwaited(new()
+                        {
+                            { nameof(SQLiteConnection), $"get.{nameof(MarkdownContext)}.Created" }
+                        });
+                    }
+                    else
+                    {
+                        this.OnAwaited(new()
+                        {
+                            { nameof(SQLiteConnection), $"get.{nameof(MarkdownContext)}.Exists" }
+                        });
+                    }
+                    return _filterQueryDatabase;
+                }
+            }
+            set
+            {
+                if (value is not null && !QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
+                {
+                    // The user must be given the benefit of the doubt if they are explicitly
+                    // injecting a connection to be used for internal filter queries. This will
+                    // silently upgrade the configuration unless escalated in the Throw handler.
+                    this.ThrowPolicyException(MarkdownContextPolicy.ConfigurationModifiedByDatabaseAssignment);
+                    QueryFilterConfig |= QueryFilterConfig.Filter;
+                }
+
+                if (!Equals(_filterQueryDatabase, value))
+                {
+                    _filterQueryDatabase = value;
+                    if(_filterQueryDatabase is not null)
+                    {
+                        _filterQueryDatabase.CreateTable(ContractType);
+                    }
+                    OnPropertyChanged();
+                    this.OnAwaited(caller: $"{nameof(FilterQueryDatabase)}.get.{nameof(IModeledCollection)}.Null");
+                }
+            }
+        }
+        SQLiteConnection? _filterQueryDatabase = default;
+#endif
+
+
+        [Obsolete("Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount.")]
+        [PublishedContract("1.0")] // Required for backward compatibility. Do not remove this property.
+        public int UnfilteredCount
+        {
+            get => CanonicalCount;
+            protected set => this.ThrowHard<InvalidOperationException>(
+                @"[Obsolete(""Version 2.0+ uses clearer semantics: CanonicalCount and PredicateMatchCount."")]");
+        }
+
+        #region L E G A C Y    H O O K S
+        /// <summary>
+        /// Supports an inheritance model where the binding source *is a* MarkdownContext.
+        /// </summary>
+        /// <remarks>
+        /// - As a separation of concerns, these *don't really belong here* but 
+        ///   have already been published as part of MarkdownContext class.
+        /// - When this class *is not* inherited, these lack semantic meaning.
+        /// - When this class *is* inherited, their presence may imply that
+        ///   this class is maintaining the counts somehow. It isn't.
+        /// THIS WILL THROW unless handled. The rationale is that anything good
+        /// that comes from these will be value added by the subclass.
+        /// </remarks>
+        public virtual int CanonicalCount
+        {
+            get
+            {
+                int? count;
+                count = Histo?[StdModelAttribute.model];
+                if(count is not null)
+                {
+                    return count.Value;
+                }
+                else
+                {
+                    count = 
+                        ModelAuthorityContext
+                        ?.Model
+                         .Descendants()
+                         .Count(_=>_.Attribute(StdModelAttribute.model) is not null);
+                    if (count is not null)
+                    {
+                        return count.Value;
+                    }
+                    else
+                    {
+                        // Do not call this base class method.
+                        this.ThrowHard<ModelException>($"{nameof(CanonicalCount)} requires override in derived type.");
+
+                        // Reachable only if Throw is handled.
+                        return 0;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns count in the broad sense of qmatch & pmatch.
+        /// </summary>
+        public virtual int PredicateMatchCount => 0;
+        #endregion L E G A C Y    H O O K S
+
+        /// <summary>
+        /// Responsible for raising the InputTextSettled event.
+        /// </summary>
+        /// <remarks>
+        /// The override in ModeledMarkdownContest adds 
+        /// authority, but should still make the call to base.
+        /// </remarks>
+        protected override async Task OnEpochFinalizingAsync(EpochFinalizingAsyncEventArgs e)
+        {
+            await base.OnEpochFinalizingAsync(e);
+            if (!e.Cancel)
+            {
+                await OnInputTextSettled(new CancelEventArgs());
+            }
+        }
+
+        public string[] GetTableNames() => FilterQueryDatabase.GetTableNames();
+
+        public IDisposable BeginBusy() => DHostBusy.GetToken();
+
+        /// <summary>
+        /// Parses the current <see cref="InputText"/> and raises the <see cref="RecordsetRequest"/> event.
+        /// </summary>
+        /// <remarks>
+        /// Represents the transition point between input parsing and recordset acquisition.
+        /// Subscribers may use the current SQL expression to supply a recordset, but are not required to do so.
+        ///
+        /// This method defines the execution boundary for Query mode. Unlike Filter mode, which
+        /// applies changes after a debounced settling interval, Query mode does not impose a
+        /// settling timeout on input changes and instead requires an explicit commit.
+        /// </remarks>
+        public void Commit()
+        {
+            if (IsFiltering)
+            {
+                nameof(MarkdownContext).ThrowSoft<InvalidOperationException>(
+                    $"{nameof(Commit)} cannot execute while {nameof(IsFiltering)} is true. " +
+                    $"Caller must ensure filtering is not active before invoking {nameof(Commit)}."
+                );
+                return;
+            }
+            else
+            {
+                using (BeginBusy())
+                {
+                    OnCommit(new RecordsetRequestEventArgs(sql: ParseSqlMarkdown()));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="RecordsetRequest"/> event for the current commit.
+        /// </summary>
+        protected virtual void OnCommit(RecordsetRequestEventArgs e)
+        {
+            RecordsetRequest?.Invoke(this, e);
+        }
+
+        public event EventHandler<RecordsetRequestEventArgs>? RecordsetRequest;
+    }
+}

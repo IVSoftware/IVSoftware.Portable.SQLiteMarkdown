@@ -1,0 +1,153 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Title>IVSoftware.Portable.SQLiteMarkdown</Title>
+		<PackageId>IVSoftware.Portable.SQLiteMarkdown</PackageId>
+		<Description>Lightweight, cross-platform expression-to-SQL parser with intuitive syntax. Supports query-then-filter workflows where external data can come from any source, with in-memory filtering powered by SQLite. Features atomic quoted phrases and tag-based terms.</Description>
+		<PackageTags>portable;cross-platform;sqlite;markdown;search;filtering;query;expression-parser;tags;quoted-phrases;navigation-ui;netstandard</PackageTags>
+		<RepositoryUrl>https://github.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown.git</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/IVSoftware/IVSoftware.Portable.SQLiteMarkdown.git</PackageProjectUrl>
+		<RootNamespace>IVSoftware.Portable.SQLiteMarkdown</RootNamespace>
+		
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>preview</LangVersion>
+		
+		<BaseVersion>2.0.0</BaseVersion>
+		<!--
+		<VersionPrefix>$(BaseVersion)-beta</VersionPrefix>
+		-->
+		<VersionPrefix>$(BaseVersion)</VersionPrefix>
+		<VersionSuffix>alpha31</VersionSuffix>
+		<PackageIcon>ivs-nuget-logo.8.png</PackageIcon>
+		
+		<Nullable>enable</Nullable>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Author>Thomas C. Gregor</Author>
+		<Owner>IVSoftware LLC</Owner>
+		<Copyright>Copyright © 2023-2025 IVSoftware LLC</Copyright>
+		<FileVersion>$(AssemblyVersion)</FileVersion>
+		<Version>$(AssemblyVersion)</Version>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		
+		<PackageReleaseNotes>
+			Initial 1.0.0 stable release.
+			- Deprecated APIs (marked [Obsolete] or suffixed with OR) are excluded from future guarantees.
+			- Fully tested against standard workflows, including query-then-filter.
+			- Query-only and filter-only modes are functional; test coverage will continue to expand.
+			- See the repo for a functional demo (WinForms) that will run out of the box.
+
+			Release 1.0.1
+
+			- StringWrapper promoted to a general-purpose item-binding model.
+			Now raises PropertyChanged when Value changes, making it suitable for MVVM-style UIs.
+
+			- SelectableQFModel formalized as a fully attributed, self-indexing query/filter model.
+			Provides a schema-ready SQLite row type with integrated tag, keyword, and description indexing,
+			plus built-in selection semantics.
+
+			- FSM behavior verified by expanded unit tests:
+			1. After query completes (term visible), FilteringState = Armed.
+			2. After first clear (term blank), FilteringState remains Armed.
+			3. From there:
+			- Clear again resets for new query, or
+			- Typing promotes FilteringState to Active.
+
+			Release 1.0.2-rc
+
+			- Added NormalizeTags() extension.
+			- SelectableQFModel refinements:
+			1. Tags setter now lints via NormalizeTags().
+			2. Removed redundant JSON surface via [Obsolete, JsonIgnore] TagsDisplay.
+			3. Marked IsEditing as [Ignore] (non-persistent).
+
+			- Added inheritance edge-case test: Test_TablePropertyInheritance().
+			- SearchEntryState now returns to Cleared when:
+			1. FilteringState = Ineligible
+			2. MarkdownContext.Clear() is invoked.
+
+			Release 2.0.0
+
+			Introduces an awaitable epoch model, allowing the context to await asynchronous work (e.g., database queries) before resuming state transitions.
+
+			- MarkdownContext now derives from WatchdogTimer v2.0.0 and is intrinsically awaitable.
+			- WatchdogTimer v2.0.0 includes an awaitable async settlement queue completed before GetAwaiter() returns.
+
+			Primary key filtering is now native:
+			- AllowPrimaryKey and DisallowPrimaryKey hash sets.
+			- Integrated PrimaryKeyPredicateTerm in composed queries.
+
+			Query composition modularized to allow subclasses to participate in query construction without overriding the full expression.
+			Query =&gt; $"{Preamble} {WherePredicate} {PrimaryKeyPredicateTerm} {LimitTerm}"
+
+			- WherePredicate is now { get; protected set; }.
+			- Preamble includes the WHERE keyword.
+			- WherePredicate derives from QueryTerm, FilterTerm, and TagTerm based on state.
+
+			SelfIndexed improvements:
+			- Indexed values may contain operators.
+			- Escaped characters are preserved.
+			- Escaped input terms produce expected matches (e.g., trailing '!').
+
+			Performance:
+			- Eliminated unconditional SQLite in-memory database creation during string-based ParseSqlMarkdown calls.
+			FilterQueryDatabase now instantiates only when filtering is explicitly engaged.
+
+			Diagnostics:
+			- Advisory stream subscribable via IVSoftware.Portable.Common.Exceptions.BeginThrowOrAdvise.
+		</PackageReleaseNotes>
+		<DebugType>embedded</DebugType>
+	</PropertyGroup>
+	
+	<PropertyGroup>
+		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
+		<SignAssembly>True</SignAssembly>
+	</PropertyGroup>
+	
+	<ItemGroup>
+	  <Compile Remove="Collections\Modeled\**" />
+	  <EmbeddedResource Remove="Collections\Modeled\**" />
+	  <None Remove="Collections\Modeled\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="IVSoftware.Portable.Common" Version="1.1.2-rc" />
+		<PackageReference Include="IVSoftware.Portable.Threading" Version="2.0.0" />
+		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="2.0.0-rc" />
+		<PackageReference Include="IVSoftware.Portable.Disposable" Version="2.0.0" />
+		<PackageReference Include="IVSoftware.Portable.Disposable.AuthorityEpochProvider" Version="1.1.0-rc" />
+		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="2.1.1-beta" />
+		<PackageReference Include="Newtonsoft.Json" Version="*" />
+		<PackageReference Include="sqlite-net-pcl" Version="*" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Configuration)' == 'Release'">
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="README\img\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\Xml.Linq\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\IVSoftware.Portable.SQLiteMarkdown\img\ivs-nuget-logo.8.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+</Project>

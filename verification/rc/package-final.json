@@ -1,0 +1,62 @@
+{
+  "package": "D:\\Codex\\IVSoftware\\SQLite\\IVSoftware.Portable.SQLiteMarkdown\\IVSoftware.Portable.SQLiteMarkdown\\bin\\Release\\IVSoftware.Portable.SQLiteMarkdown.2.0.0-rc.nupkg",
+  "sha256": "27b7cce518d59097b5849d87d432a34f8c60e8c078b7e66ece87052bf081994b",
+  "entries": [
+    "_rels/.rels",
+    "IVSoftware.Portable.SQLiteMarkdown.nuspec",
+    "README.md",
+    "ivs-nuget-logo.8.png",
+    "lib/netstandard2.0/IVSoftware.Portable.SQLiteMarkdown.dll",
+    "[Content_Types].xml",
+    "package/services/metadata/core-properties/nuget.psmdcp"
+  ],
+  "dependencies": [
+    {
+      "id": "IVSoftware.Portable.Common",
+      "version": "1.1.2-rc",
+      "exclude": "Build,Analyzers"
+    },
+    {
+      "id": "IVSoftware.Portable.Disposable",
+      "version": "2.0.0",
+      "exclude": "Build,Analyzers"
+    },
+    {
+      "id": "IVSoftware.Portable.Disposable.AuthorityEpochProvider",
+      "version": "1.1.0-rc",
+      "exclude": "Build,Analyzers"
+    },
+    {
+      "id": "IVSoftware.Portable.Threading",
+      "version": "2.0.0",
+      "exclude": "Build,Analyzers"
+    },
+    {
+      "id": "IVSoftware.Portable.WatchdogTimer",
+      "version": "2.0.0-rc",
+      "exclude": "Build,Analyzers"
+    },
+    {
+      "id": "IVSoftware.Portable.Xml.Linq.XBoundObject",
+      "version": "2.1.1-beta",
+      "exclude": "Build,Analyzers"
+    },
+    {
+      "id": "Newtonsoft.Json",
+      "version": "13.0.4",
+      "exclude": "Build,Analyzers"
+    },
+    {
+      "id": "sqlite-net-pcl",
+      "version": "1.11.285",
+      "exclude": "Build,Analyzers"
+    }
+  ],
+  "preserved_source_files": 54,
+  "no_signing_keys": true,
+  "contains_connection_facade": true,
+  "no_modeled_collection_or_temporal_implementation": true,
+  "package_matches_release_assembly": true,
+  "publication": false,
+  "assembly_signing": false
+}

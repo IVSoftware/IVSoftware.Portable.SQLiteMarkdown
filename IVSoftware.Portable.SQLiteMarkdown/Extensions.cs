@@ -1,10 +1,6 @@
-﻿using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq;
-using IVSoftware.Portable.Collections;
-using IVSoftware.Portable.Collections.Events;
-using IVSoftware.Portable.Collections.Internal;
-using IVSoftware.Portable.Collections.Tracking;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using SQLite;
@@ -389,73 +385,50 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             if (word.EndsWith("oes", StringComparison.OrdinalIgnoreCase))
                 return word.Substring(0, word.Length - 2);
 
-            if (word.EndsWith("es", StringComparison.OrdinalIgnoreCase) && !word.EndsWith("ss", StringComparison.OrdinalIgnoreCase))
+            if (word.EndsWith("ches", StringComparison.OrdinalIgnoreCase)
+                || word.EndsWith("shes", StringComparison.OrdinalIgnoreCase)
+                || word.EndsWith("sses", StringComparison.OrdinalIgnoreCase)
+                || word.EndsWith("xes", StringComparison.OrdinalIgnoreCase)
+                || word.EndsWith("zes", StringComparison.OrdinalIgnoreCase))
                 return word.Substring(0, word.Length - 2);
 
-            if (word.EndsWith("s", StringComparison.OrdinalIgnoreCase) && word.Length > 1)
+            if (word.EndsWith("s", StringComparison.OrdinalIgnoreCase) && word.Length > 1
+                && !word.EndsWith("ss", StringComparison.OrdinalIgnoreCase))
                 return word.Substring(0, word.Length - 1);
 
             return word;
         }
 
         /// <summary>
-        /// Forms a fuzzy query expression by checking and replacing terms enclosed in '%' characters 
-        /// within the provided SQL string with their singular forms. If no terms can be singularized, 
-        /// the original list is returned unchanged.
+        /// Preserves the published helper for singularizing LIKE terms in generated SQL.
         /// </summary>
-        /// <typeparam name="T">The type of the proxy used for sql gen.</typeparam>
-        /// <param name="smart">The list of model instances to return if no modifications occur.</param>
-        /// <param name="sql">The SQL query string containing candidate terms for singularization.</param>
-        /// <returns>A list of model instances, either modified based on singularization or unchanged.</returns>
-
         public static string ToFuzzyQuery(this string sql)
         {
-            if (string.IsNullOrEmpty(sql))
-                return sql;
-
-            var terms = new List<string>();
+            if (string.IsNullOrEmpty(sql)) return sql;
             var fuzzySql = sql;
-
             foreach (var term in sql.Split(new[] { '%' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 var trimmed = term.Trim();
-                if (string.IsNullOrEmpty(trimmed))
-                    continue;
-
-                var lengthBefore = trimmed.Length;
+                if (string.IsNullOrEmpty(trimmed)) continue;
                 var core = trimmed.Trim('[', ']');
-                var isBracketed = lengthBefore - core.Length == 2;
-
+                var bracketed = trimmed.Length - core.Length == 2;
                 var singular = core.Singularize();
                 if (singular != core)
-                {
-                    terms.Add(singular);
-                    var original = $"%{(isBracketed ? "[" + core + "]" : core)}%";
-                    var replacement = $"%{(isBracketed ? "[" + singular + "]" : singular)}%";
-                    fuzzySql = fuzzySql.Replace(original, replacement);
-                }
+                    fuzzySql = fuzzySql.Replace($"%{(bracketed ? "[" + core + "]" : core)}%",
+                        $"%{(bracketed ? "[" + singular + "]" : singular)}%");
             }
-
             return fuzzySql;
         }
 
-        public static string ToStringFromEventType(this SenderEventPair @this)
-            => @this.e is null
-            ? "null"
-            : @this.e is PropertyChangedEventArgs epc
-                ? epc.PropertyName
-                : @this.e is NotifyCollectionChangedEventArgs ecc
-                ? ecc.Action.ToString()
-                : @this.e.ToString();
-
         /// <summary>
-        /// Returns true if the input starts with '[' and is a valid JSON array of strings.
-        /// Returns false if input is null, doesn't start with '[', or fails validation.
+        /// Preserves the published XBoundObject event-formatting helper without a collection-engine dependency.
         /// </summary>
-        /// <remarks>
-        /// Constructs like "[canine] [color]" and "brown&dog" are valid
-        /// in SQLiteMarkdown but will choke the JSON parser, so prequalify.
-        /// </remarks>
+        public static string ToStringFromEventType(this IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SenderEventPair @this)
+            => @this.e is null ? "null"
+                : @this.e is PropertyChangedEventArgs property ? property.PropertyName!
+                : @this.e is System.Collections.Specialized.NotifyCollectionChangedEventArgs collection ? collection.Action.ToString()
+                : @this.e.ToString()!;
+
         public static bool CanParseAsJson(this string @this)
             => Regex.IsMatch(@this, @"^\s*\[\s*(""(?:[^""\\]|\\.)*""\s*,\s*)*(""[^""\\]*""\s*)\]\s*$");
 
@@ -546,51 +519,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             => input.TrimEndTransients().Length == 0;
 
         /// <summary>
-        /// Produces a compact diagnostic string describing a collection change event.
-        /// </summary>
-        /// <remarks>
-        /// Formats the source (projection vs other), action, and item counts for
-        /// quick inspection during debugging and tracing.
-        ///
-        /// Reports <see cref="NotifyCollectionChangedEventArgs.NewItems"/> and
-        /// <see cref="NotifyCollectionChangedEventArgs.OldItems"/> only when the
-        /// respective IList is non-null. Empty collections are reported with a
-        /// count of zero; null lists are omitted entirely.
-        /// </remarks>
-        public static string ToStringEx(
-            this EventArgs e,
-            params object[] _)
-        {
-            var sb = new System.Text.StringBuilder();
-            if (e.TryNormalizeTargets(
-                out var Action,
-                out var Reason,
-                out var NewItems,
-                out var NewStartingIndex,
-                out var OldItems,
-                out var OldStartingIndex))
-            {
-                sb.Append(Action.ToString().PadRight(8));
-                sb.Append($"NewItems={(NewItems?.Count.ToString() ?? "*").PadRight(2)} ");
-                sb.Append($"OldItems={(OldItems?.Count.ToString() ?? "*").PadRight(2)} ");
-                sb.Append($"NewStartingIndex={NewStartingIndex.ToString().PadRight(2)} ");
-                sb.Append($"OldStartingIndex={OldStartingIndex.ToString().PadRight(2)} ");
-                sb.Append(e.GetType().Name.PadRight(33));
-
-                switch (e)
-                {
-                    case NotifyCollectionChangingEventArgs ePre:
-                        if (ePre.Reason != NotifyCollectionChangeReason.None)
-                        {
-                            sb.Append($" {ePre.Reason.ToFullKey()}");
-                        }
-                        break;
-                }
-            }
-            return sb.ToString();
-        }
-
-        /// <summary>
         /// Formats an InternalsVisibleTo attribute for the assembly that defines this instance.
         /// </summary>
         /// <remarks>
@@ -642,58 +570,5 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             return @this;
         }
 
-        /// <summary>
-        /// Removes the specified attribute from all descendant elements,
-        /// optionally including the current element.
-        /// </summary>
-        public static XElement RemoveDescendantAttributes(this XElement @this, Enum[] stdEnums, bool includeSelf = false)
-        {
-            var names = stdEnums.Select(e => e.ToString()).ToArray();
-
-            var query = (includeSelf
-                ? @this.DescendantsAndSelf()
-                : @this.Descendants())
-                .SelectMany(x => names.SelectMany(name => x.Attributes(name)))
-                .ToArray();
-
-            foreach (var attr in query)
-            {
-                if (attr.Parent is null)
-                {   /* G T K */
-                }
-                else
-                {
-                    attr.Remove();
-                }
-            }
-            return @this;
-        }
-
-        public static string[] GetTableNames(this SQLiteConnection @this)
-        {
-            var query = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%';";
-            var preview = @this.QueryScalars<string>(query).ToArray();
-            return preview;
-        }
-
-        public static bool TryGetWhereAttribute(this Enum @this, out string binding, out string expr, bool @throw = false)
-        {
-            if (@this.GetCustomAttribute<WhereAttribute>() is { } attr)
-            {
-                binding = attr.Binding;
-                expr = attr.Expr;
-                return true;
-            }
-            else
-            {
-                if (@throw)
-                {
-                    @this.ThrowSoft<InvalidOperationException>(
-                        $"Advisory failed {nameof(TryGetWhereAttribute)}", @throw: @throw);
-                }
-                binding = expr = string.Empty;
-                return false;
-            }
-        }
     }
 }

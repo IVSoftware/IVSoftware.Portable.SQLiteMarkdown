@@ -1,19 +1,13 @@
-﻿using IVSoftware.Portable.Common.Attributes;
+﻿using System.ComponentModel;
 
 namespace IVSoftware.Portable.SQLiteMarkdown.Events
 {
-    /// <summary>
-    /// Compatibility shim retaining the legacy SQLiteMarkdown type identity.
-    /// </summary>
-    /// <remarks>
-    /// - Implementation has been pushed down to shared Collections dependency.
-    /// - This wrapper preserves the historical namespace for compatibility checks and existing callers.
-    /// </remarks>
-    [PublishedContract("1.x")]
-    public class ItemPropertyChangedEventArgs :
-        IVSoftware.Portable.Collections.Events.ItemPropertyChangedEventArgs
+    public class ItemPropertyChangedEventArgs : PropertyChangedEventArgs
     {
-        public ItemPropertyChangedEventArgs(string propertyName, object? item)
-            : base(propertyName, item) { }
+        public ItemPropertyChangedEventArgs(string propertyName, object item) : base(propertyName)
+        {
+            Item = item;
+        }
+        public object Item { get; }
     }
 }

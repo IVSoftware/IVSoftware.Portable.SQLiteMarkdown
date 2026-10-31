@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="IVSoftware.Portable.SQLiteMarkdown/IVSoftware.Portable.SQLiteMarkdown.csproj" />
+  <Project Path="IVSoftware.Portable.SQLiteMarkdown.RC.Handwritten.Tests/IVSoftware.Portable.SQLiteMarkdown.RC.Handwritten.Tests.csproj" />
+  <Project Path="IVSoftware.Portable.SQLiteMarkdown.RC.Nemesis.Tests/IVSoftware.Portable.SQLiteMarkdown.RC.Nemesis.Tests.csproj" />
+</Solution>

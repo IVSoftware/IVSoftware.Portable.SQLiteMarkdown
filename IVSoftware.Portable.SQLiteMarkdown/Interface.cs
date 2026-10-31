@@ -1,36 +1,17 @@
-using IVSoftware.Portable.Collections;
-using IVSoftware.Portable.Collections.Events;
-using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown.Common;
+using IVSoftware.Portable.SQLiteMarkdown.Collections;
+using IVSoftware.Portable.SQLiteMarkdown.Events;
 using SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace IVSoftware.Portable.SQLiteMarkdown
 {
-    public interface IModelAuthorityContext
-    {
-        XElement Model { get; }
-        IDisposable RequestAuthority(ModelDataExchangeAuthority authority);
-        IDisposable RequestAuthority(StdModelAuthority authority);
-
-        /// <summary>
-        /// Dedicated primary authority.
-        /// </summary>
-        /// <remarks>
-        /// Unlike StdModelAuthority which is always checked with HasAuthority.
-        /// </remarks>
-        ModelDataExchangeAuthority ModelDataExchangeAuthority { get; }
-
-        bool HasAuthority(Enum authority);
-    }
-
     /// <summary>
     /// Defines a self-indexing class that updates special, reserved property names within a database 
     /// or other keyed collection. This interface provides mechanisms for in-memory filtering, 
@@ -53,7 +34,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         /// - An aggregated indexed term for retrievals in the Query state. 
         /// - Use the [SelfIndexed] attribute to route a property to this index.
         /// - Properties can be [SQLite.Ignore] and still participate in this
-        ///   index which is persisted in the database as a JSON blob.
+        ///   index which is persisted inthe database as a JSON blob.
         /// </summary>
         string QueryTerm { get; set; }
 
@@ -72,34 +53,22 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         string TagMatchTerm { get; set; }
 
         /// <summary>
-        /// Engine-managed JSON persistence envelope.
+        /// Persisted JSON representation of the Values dictionary, stored for efficient access.
         /// </summary>
-        /// <remarks>
-        /// Serialized projection of properties decorated with [SelfIndexed]
-        /// where PersistenceMode includes Json. This column exists to support
-        /// indexing and search (e.g. json_extract) and is not a general-purpose
-        /// user metadata store.
-        /// </remarks>
         string Properties
         {
+            // When IsSerializationRequired is true due to changes in the dictionary, 
+            // a private accessor re-serializes the dictionary to JSON to avoid circular references.
             get;
             set;
         }
     }
 
-    /// <summary>
-    /// Represents a bindable collection governed by Markdown-based query and filter semantics.
-    /// </summary>
-    [PublishedContract("1.x", typeof(IObservableQueryFilterSource))]
-    [Careful("Must *never* implement IMarkdownContext (newer) - Breaks the contract - Shouldn't be public anyway.")]
     public interface IObservableQueryFilterSource
         : IList
         , INotifyCollectionChanged
         , INotifyPropertyChanged
     {
-        /// <summary>
-        /// Indicates that search input filters the current working set, including an armed empty input.
-        /// </summary>
         bool IsFiltering { get; }
         string InputText { get; set; }
         SearchEntryState SearchEntryState { get; }
@@ -109,26 +78,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         QueryFilterConfig QueryFilterConfig { get; set; }
         string Title { get; set; }
         string SQL { get; }
-
-        /// <summary>
-        /// Canonical persistent data set (when available).
-        /// </summary>
-        /// <remarks>
-        /// EXAMPLE: Searchable settings.
-        /// </remarks>
         SQLiteConnection MemoryDatabase { get; set; }
-
         FilteringState Clear(bool all = false);
         void Commit();
-
         event EventHandler? InputTextSettled;
+
         event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
     }
-
-    /// <summary>
-    /// Strongly typed variant of IObservableQueryFilterSource.
-    /// </summary>
-    [PublishedContract("1.x")]
     public interface IObservableQueryFilterSource<T>
         : IObservableQueryFilterSource
     {
@@ -136,13 +92,12 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         void ReplaceItems(IEnumerable<T> items);
         Task ReplaceItemsAsync(IEnumerable<T> items);
         DisposableHost DHostBusy { get; }
-    }
 
-    /// <summary>
-    /// Legacy marker interface preserved for v1 contract compatibility.
-    /// </summary>
-    [Obsolete("Backward compatibility only.")]
-    public interface IEditableQueryFilterItem { }
+#if false
+        new IList<T> SelectedItems { get; }
+        event EventHandler SelectionChanged;
+#endif
+    }
 
     /// <summary>
     /// Specifies the selection state of an item in a CollectionView. 
@@ -173,16 +128,6 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Primary = 0x6,
     }
 
-    /// <summary>
-    /// Describes how a collection or host control governs item selection behavior.
-    /// </summary>
-    /// <remarks>
-    /// This enumeration defines the allowed interaction model for selection at the
-    /// collection level. Individual items typically expose a <see cref="ISelectable"/>
-    /// contract so their selection state can be coordinated with the active
-    /// <see cref="SelectionMode"/>.
-    /// </remarks>
-    [NotFlags]
     public enum SelectionMode
     {
         /// <summary>
@@ -206,62 +151,13 @@ namespace IVSoftware.Portable.SQLiteMarkdown
         Multiple
     }
 
-    /// <summary>
-    /// Defines item-level selection and editing semantics for participation in
-    /// a host-controlled selection model.
-    /// </summary>
-    /// <remarks>
-    /// <see cref="Selection"/> reflects the current selection state of the item
-    /// as coordinated by the hosting collection and its active <see cref="SelectionMode"/>.
-    /// 
-    /// <see cref="IsEditing"/> acts as a semantic switch indicating that the item
-    /// is currently in edit mode. This flag is intended for UI coordination
-    /// (for example, toggling templates or enabling inline editors) and does not
-    /// imply persistence, validation, or commit behavior.
-    /// </remarks>
     public interface ISelectable
     {
         ItemSelection Selection { get; set; }
         bool IsEditing { get; set; }
     }
 
-    /// <summary>
-    /// Identifies an item that records its moment of origin.
-    /// </summary>
-    /// <remarks>
-    /// <see cref="Created"/> represents the timestamp at which the item
-    /// was first created. It is intended to remain stable and may be used
-    /// for ordering or basic lifecycle analysis.
-    /// 
-    /// This contract establishes temporal origin only. Authorship,
-    /// permissions, or external identity semantics (for example,
-    /// Google Drive–style ownership models) are separate concerns.
-    /// </remarks>
-
-
-    /// <summary>
-    /// Defines ledger-style custody tracking for local edits and remote receipts.
-    /// </summary>
-    /// <remarks>
-    /// This contract models a lightweight chain-of-custody system in which
-    /// edits and receipts are recorded as temporal events. It enables detection
-    /// of overlapping or divergent epochs (for example, during synchronization)
-    /// without enforcing a specific merge policy.
-    /// 
-    /// <see cref="CommitLocalEdit"/> records a locally authored modification
-    /// and returns the timestamp assigned to that event.
-    /// 
-    /// <see cref="CommitRemoteReceipt"/> records acknowledgement or ingestion
-    /// of a remotely authored change and returns a token describing the
-    /// resulting custody state.
-    /// 
-    /// Conflict detection is supported, but conflict resolution is intentionally
-    /// left to the consumer.
-    /// </remarks>
-    internal interface IChainOfCustody
+    public interface IEditableQueryFilterItem
     {
-        DateTimeOffset Created { get; }
-        Task<DateTimeOffset> CommitLocalEdit(string identity);
-        Task<ChainOfCustodyToken> CommitRemoteReceipt(string identity, DateTimeOffset remoteTimeStamp);
     }
 }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<Title>IVSoftware.Portable.SQLiteMarkdown</Title>
@@ -13,20 +13,18 @@
 		<LangVersion>preview</LangVersion>
 		
 		<BaseVersion>2.0.0</BaseVersion>
-		<!--
-		<VersionPrefix>$(BaseVersion)-beta</VersionPrefix>
-		-->
 		<VersionPrefix>$(BaseVersion)</VersionPrefix>
-		<VersionSuffix>alpha31</VersionSuffix>
+		<VersionSuffix>rc</VersionSuffix>
 		<PackageIcon>ivs-nuget-logo.8.png</PackageIcon>
 		
 		<Nullable>enable</Nullable>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Author>Thomas C. Gregor</Author>
 		<Owner>IVSoftware LLC</Owner>
 		<Copyright>Copyright © 2023-2025 IVSoftware LLC</Copyright>
 		<FileVersion>$(AssemblyVersion)</FileVersion>
-		<Version>$(AssemblyVersion)</Version>
+		
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
@@ -67,7 +65,14 @@
 			1. FilteringState = Ineligible
 			2. MarkdownContext.Clear() is invoked.
 
-			Release 2.0.0
+			Release 2.0.0-rc
+
+            SQLitePrismaConnection provides one composed sync/async CRUD surface.
+            - Async participation and WDT keep-alive are internal; clients do not manage tokens.
+            - Keep-alive defaults to ten seconds and is clamped to one through ten seconds.
+            - ReleaseAsync stops admission, awaits accepted work and closes managed connections before caller-owned exclusive file operations.
+            - Proposed XML-modeled collection and temporal-affinity implementations are excluded; the published provider remains compatible.
+            - Lightweight singularization preserves ordinary terminal e and sibilant plural suffixes without a dictionary dependency.
 
 			Introduces an awaitable epoch model, allowing the context to await asynchronous work (e.g., database queries) before resuming state transitions.
 
@@ -75,11 +80,11 @@
 			- WatchdogTimer v2.0.0 includes an awaitable async settlement queue completed before GetAwaiter() returns.
 
 			Primary key filtering is now native:
-			- AllowPrimaryKey and DisallowPrimaryKey hash sets.
-			- Integrated PrimaryKeyPredicateTerm in composed queries.
+			- AllowedPrimaryKeys and DisallowedPrimaryKeys hash sets.
+			- PrimaryKeyClause() contributes eligible primary key predicates to composed queries.
 
 			Query composition modularized to allow subclasses to participate in query construction without overriding the full expression.
-			Query =&gt; $"{Preamble} {WherePredicate} {PrimaryKeyPredicateTerm} {LimitTerm}"
+			Query combines Preamble, WherePredicate, eligible primary key predicates, and an optional LIMIT clause.
 
 			- WherePredicate is now { get; protected set; }.
 			- Preamble includes the WHERE keyword.
@@ -118,8 +123,8 @@
 		<PackageReference Include="IVSoftware.Portable.Disposable" Version="2.0.0" />
 		<PackageReference Include="IVSoftware.Portable.Disposable.AuthorityEpochProvider" Version="1.1.0-rc" />
 		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="2.1.1-beta" />
-		<PackageReference Include="Newtonsoft.Json" Version="*" />
-		<PackageReference Include="sqlite-net-pcl" Version="*" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+		<PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(Configuration)' == 'Release'">
@@ -140,14 +145,37 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\..\Xml.Linq\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<None Include="..\IVSoftware.Portable.SQLiteMarkdown\img\ivs-nuget-logo.8.png">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
 	</ItemGroup>
 
+<ItemGroup>
+    <Compile Include="AST.cs" />
+    <Compile Include="Attributes.cs" />
+    <Compile Include="Collections/NotifyQueryFilterCollectionChangedEventArgs.cs" />
+    <Compile Include="Collections/ObservableHashSet.cs" />
+    <Compile Include="Collections/ObservableQueryFilterSource.NonGeneric.cs" />
+    <Compile Include="Collections/ObservableQueryFilterSource.cs" />
+    <Compile Include="Collections/ObservableSelectionHashSet.cs" />
+    <Compile Include="Common/SQLiteMarkdownPolicyError.cs" />
+    <Compile Include="Common/SelectableQFModel.cs" />
+    <Compile Include="Common/StringWrapper.cs" />
+    <Compile Include="Enums.cs" />
+    <Compile Include="Events/ItemPropertyChangedEventArgs.cs" />
+    <Compile Include="Events/RecordsetRequestEventArgs.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="ExtensionsOR.cs" />
+    <Compile Include="Interface.cs" />
+    <Compile Include="MarkdownContext.Contract.cs" />
+    <Compile Include="MarkdownContext.cs" />
+    <Compile Include="MarkdownContextOR.cs" />
+    <Compile Include="MarkdownContextSettings.cs" />
+    <Compile Include="SQLiteContractMapping.cs" />
+    <Compile Include="SelfIndexed.cs" />
+    <Compile Include="Static.cs" />
+    <Compile Include="Util/SemaphoreSlimWithTrace.cs" />
+    <Compile Include="Connections/**/*.cs" />
+</ItemGroup>
 </Project>
