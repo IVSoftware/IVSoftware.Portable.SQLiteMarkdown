@@ -3,6 +3,11 @@
 October 28, 2026. Source and local package preparation are complete for the focused
 release solution, SQLiteMarkdown.RC.slnx. This is not a published or signed release.
 
+**Current decision, October 31:** keep SQLiteMarkdown project-linked for a bounded
+SasQuatch MAUI OG and Prisma adoption increment. The acceptance bar is **ready to
+adopt**. The developer accepted deferring NuGet RC publication; see the
+[adoption review](#october-31-ready-to-adopt-review) below.
+
 | Check | Debug | Release |
 | --- | --- | --- |
 | Focused solution build | Passed | Passed |
@@ -89,3 +94,95 @@ Suggested Gabriel.Reference commit (only this increment's two documents):
 Primary evidence: build-8.log, build-9-release.log, handwritten-final.log,
 peer-final.log, handwritten-release.log, peer-release.log,
 beta-api-comparison.json and package-final.json.
+
+## October 31 ready-to-adopt review
+
+Gabriel reviewed the candidate against the ecosystem North Star, the upcoming
+ESP client cutover, OG's DBPI/connection paths, and Prisma's registry and record
+stores. The developer accepted keeping the active consumers project-linked while
+one bounded adoption increment earns the connection contract. No implementation,
+test, snapshot, package version, README prose, or release-note change was made by
+this review. No package was published.
+
+### Fresh evidence
+
+| Check | Debug | Release |
+| --- | --- | --- |
+| Focused RC solution | Passed; 29 warnings, 0 errors | Passed; 29 warnings, 0 errors |
+| Preserved handwritten subset | 14 passed, 0 failed/skipped | 14 passed, 0 failed/skipped |
+| Nemesis peer suite | 20 passed, 0 failed/skipped | 20 passed, 0 failed/skipped |
+
+Both suites used their direct executable MSTest runners and locally restored
+dependencies. Release verification disabled assembly signing on the command line;
+it does not establish a signed publication artifact. All execution was on Windows.
+The earlier Android consumer BOK establishes compilation, not an Android or iOS
+runtime witness for the new connection lifetime contract.
+
+The preservation verifier also passed: all three authoritative handwritten files
+and all 30 executable copied methods still match their recorded hashes.
+
+The broader 29-method Core.Handwritten.Tests partition was separately restored and
+built. It currently fails compilation with 11 errors involving retired
+SQLiteMarkdown.Internal/Obsolete and Collections Events/Internal/IModeledCollection/
+IRangeable test-host dependencies. Its tests were not executed or counted in the
+34-test result. This is a verification-host migration gap; the build failure alone
+does not demonstrate a parser defect. Frozen witnesses were preserved.
+
+### Adoption findings and next proof
+
+- **Transaction-scoped work is the main API adoption gap.** SQLitePrismaConnection
+  exposes individual CRUD/Execute operations, and each synchronous call opens its
+  own using-scoped connection. Prisma's QuickStore/CustodyJournal saves record,
+  Content, and custody changes in one transaction; category operations also retain
+  atomic work. Replacing those paths with separate facade calls would lose that
+  boundary. Agree a reusable owned transaction execution contract and demonstrate
+  successful commit plus rollback of the complete unit before migrating those
+  paths. Domain records, custody policy, and move eligibility stay above SQLite.
+- **Release must be proved at the consuming owner.** OG still uses raw and pooled
+  native connections. Prisma's facade adoption currently covers its registry;
+  QuickStore and LocalCategoryArray still use independent native connections.
+  Prove one active connection owner for each participating database, drain accepted
+  work, and preserve data during immutable-offering or retirement handoff. The
+  package's isolated release result cannot certify independently owned handles.
+  Explicit ReleaseAsync is terminal for that instance; ordinary repeated uploads
+  need a deliberate snapshot/resume boundary that permits subsequent local edits.
+- **Carry forward the relevant broader regression intentions.** The focused suite
+  gives useful lifetime, failure-reporting, parser, identity, and Clear witnesses.
+  Reconcile the relevant preserved query/filter/indexing scenarios with live
+  verification during adoption; explicitly retain or disposition the mixed model
+  and affinity fixtures. Do not replace frozen assertions just to obtain green.
+
+The bounded adoption proof should cover the actual OG DBPI and Prisma ownership
+seams with synthetic stores: atomic record/Content/custody preservation, accepted
+work during handoff, rejection after retirement, distinct database scopes, and
+recoverable failure without false durability or cloud receipts. SQLite owns its
+database operation/lifetime mechanism; the clients own application of records and
+ESP owns admitted-store synchronization. This gate does not establish live cloud
+synchronization or authorize a broad storage rewrite.
+
+### Release notes and README
+
+The csproj's 2.0.0-rc notes already describe the facade, internal participation,
+keep-alive, terminal release, excluded prototypes, and bounded singularization.
+The README already covers the substantive new capability and the preserved Clear
+contract. Its packaged text matches the repository copy exactly. Preserve the
+polished expression/query/filter material; no substantive addition is needed now.
+
+Before publication, qualify the release-note diagnostic event as
+`IVSoftware.Portable.Common.Exceptions.Throw.BeginThrowOrAdvise`. Also verify the
+two new repository-relative README links to SQLiteMarkdown.RC.slnx and Essential
+IP in the NuGet presentation, using publication-safe absolute links if needed.
+Neither referenced file is embedded in the nupkg. NuGet's
+[README preview guidance](https://learn.microsoft.com/en-us/nuget/nuget-org/package-readme-on-nuget-org#preview-your-readme)
+applies when the separate publication workflow is authorized. An eventual larger
+adoption guide should be a small end section or a linked sub-read, preserving the
+existing README body.
+
+Fresh review evidence is under
+`D:/Codex/IVSoftware/Quatch/artifacts/sqlitemarkdown-rc-review-20261031/`:
+focused-debug-build.log, focused-release-build.log, handwritten-debug.log,
+peer-debug.log, handwritten-release.log, peer-release.log,
+broader-handwritten-build.log, package-document-review.json, and review-result.json.
+
+Suggested documentation commit:
+`Record SQLiteMarkdown adoption review and defer RC pending client proof`
