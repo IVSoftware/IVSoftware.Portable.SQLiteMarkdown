@@ -15,7 +15,7 @@ namespace IVSoftware.Portable.SQLiteMarkdown
     /// </summary>
     /// <remarks>
     /// - Compose one owner per database path; do not share its underlying pooled connection externally.
-    /// - Async callers await operations, never dispose connections or manage participation tokens.
+    /// - Async callers may await or fire-and-forget operations; the owner retains their participation tokens.
     /// - Synchronous calls use their own using scope and never join DisposableHost.
     /// - ReleaseAsync retires this owner; its caller owns file deletion and domain eligibility.
     /// </remarks>
