@@ -12,9 +12,9 @@
         "type": "Direct",
         "requested": "[2.0.0, )",
         "resolved": "2.0.0",
-        "contentHash": "5s9dTUYyXlVe85WsehFMJiuhwihRN/APRyrDZfV2SRmJM54jTHGjsiHgL14Dyf7dTru7cG3dj6TLcEd9KxCh5g==",
+        "contentHash": "2QKPaEwZggsFVV9/1O2lxda7ngRiurhy+Lgr6E13OqG64fifnOnI/PACq7MFKaLo9lCb4xvScHxvCYOWyVPOPw==",
         "dependencies": {
-          "IVSoftware.Portable.Threading": "1.3.1"
+          "IVSoftware.Portable.Threading": "2.0.0-beta"
         }
       },
       "IVSoftware.Portable.Disposable.AuthorityEpochProvider": {
