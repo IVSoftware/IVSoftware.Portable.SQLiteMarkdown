@@ -178,4 +178,6 @@
     <Compile Include="Util/SemaphoreSlimWithTrace.cs" />
     <Compile Include="Connections/**/*.cs" />
 </ItemGroup>
+  <!-- Honor an explicitly supplied ESP solution restore contract; standalone builds keep their own settings. -->
+  <Import Project="$(SolutionDir)verification/esp-solution-restore.props" Condition="'$(SolutionDir)' != '' and Exists('$(SolutionDir)verification/esp-solution-restore.props')" />
 </Project>
