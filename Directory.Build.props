@@ -1,0 +1,10 @@
+<Project>
+  <!-- SDK imports this before selecting NuGet's generated project files. -->
+  <PropertyGroup>
+    <_SourceConsumerParentProps>$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))</_SourceConsumerParentProps>
+  </PropertyGroup>
+  <Import Project="$(_SourceConsumerParentProps)" Condition="'$(_SourceConsumerParentProps)' != ''" />
+  <!-- A consuming solution opts in explicitly; standalone builds keep their defaults. -->
+  <Import Project="$(SolutionDir)verification/source-consumer.props"
+          Condition="'$(SourceConsumerRoot)' == '' and '$(SolutionDir)' != '' and Exists('$(SolutionDir)verification/source-consumer.props')" />
+</Project>
