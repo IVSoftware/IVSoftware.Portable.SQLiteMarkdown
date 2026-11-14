@@ -262,6 +262,18 @@ namespace IVSoftware.Portable.SQLiteMarkdown
             Run(cnx => cnx.Query<T>(sql, arguments), new List<T>());
 
         /// <summary>
+        /// Reads a scalar value within a synchronous scope; null means the operation did not complete.
+        /// </summary>
+        public T? ExecuteScalar<T>(string sql, params object[] arguments) where T : struct =>
+            Run<T?>(cnx => cnx.ExecuteScalar<T>(sql, arguments), null);
+
+        /// <summary>
+        /// Reads a scalar value as tracked asynchronous work; null means the operation did not complete.
+        /// </summary>
+        public Task<T?> ExecuteScalarAsync<T>(string sql, params object[] arguments) where T : struct =>
+            RunAsync<T?>(async cnx => await cnx.ExecuteScalarAsync<T>(sql, arguments).ConfigureAwait(false), null);
+
+        /// <summary>
         /// Creates a table as tracked asynchronous work.
         /// </summary>
         public Task<bool> CreateTableAsync<T>() where T : new() =>
