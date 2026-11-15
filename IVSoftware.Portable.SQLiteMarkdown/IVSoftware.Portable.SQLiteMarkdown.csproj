@@ -156,6 +156,8 @@
     <Compile Include="Attributes.cs" />
     <Compile Include="Collections/NotifyQueryFilterCollectionChangedEventArgs.cs" />
     <Compile Include="Collections/ObservableHashSet.cs" />
+    <Compile Include="Collections/ObservableQueryFilterCollection.cs" />
+    <Compile Include="Collections/ObservableQueryFilterCollection.Live.cs" />
     <Compile Include="Collections/ObservableQueryFilterSource.NonGeneric.cs" />
     <Compile Include="Collections/ObservableQueryFilterSource.cs" />
     <Compile Include="Collections/ObservableSelectionHashSet.cs" />
@@ -180,4 +182,7 @@
 </ItemGroup>
   <!-- Honor an explicitly supplied ESP solution restore contract; standalone builds keep their own settings. -->
   <Import Project="$(SolutionDir)verification/esp-solution-restore.props" Condition="'$(SolutionDir)' != '' and Exists('$(SolutionDir)verification/esp-solution-restore.props')" />
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Xml.Linq\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.csproj" />
+  </ItemGroup>
 </Project>

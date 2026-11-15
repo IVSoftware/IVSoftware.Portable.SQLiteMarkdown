@@ -1,15 +1,13 @@
-﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Collections.Events;
-using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Disposable;
-using IVSoftware.Portable.SQLiteMarkdown.Common;
 using IVSoftware.Portable.Xml.Linq;
-using IVSoftware.Portable.Xml.Linq.Collections;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -19,391 +17,427 @@ using System.Xml.Linq;
 namespace IVSoftware.Portable.SQLiteMarkdown.Collections
 {
     /// <summary>
-    /// Composes query/filter behavior with the XML model's authoritative routed collection.
+    /// Carries the actual matches accepted by one completed query publication.
+    /// </summary>
+    public sealed class QueryAcceptedEventArgs<T> : EventArgs
+    {
+        public QueryAcceptedEventArgs(IReadOnlyList<T> matches) => Matches = matches;
+        public IReadOnlyList<T> Matches { get; }
+    }
+
+    /// <summary>
+    /// Composes SQLiteMarkdown's state machine with one authoritative XML-modeled collection.
     /// </summary>
     /// <remarks>
-    /// The app initializes genuinely new records in sync with its active predicate,
-    /// before user editing and admission. Admission qualifies the supplied values;
-    /// it does not choose checked or selection defaults on the app's behalf.
-    /// Pmatch gates visibility without consuming live, so a predicate round trip can
-    /// reveal the same live record even when its edited text no longer matches.
+    /// - The concrete collection owns input settlement, match routing and regressive clear.
+    /// - QueryProvider supplies application records; the collection owns their accepted publication.
+    /// - Publish selects the owner's execution context. It must execute each accepted action once.
+    /// - First text clear does not invalidate an unchanged list or alter its selection.
+    /// - Stored records and new-record defaults remain the application's responsibility.
     /// </remarks>
-    public partial class ObservableQueryFilterCollection<T>
-        : ObservableModeledCollection<T>
-        , IObservableQueryFilterSource<T>
-        , IModelAuthorityContext
+    public partial class ObservableQueryFilterCollection<T> : ObservableModeledCollection<T>, IList, ICollection<T>
     {
-        [Canonical("The parameterless CTor is the only CTor.")]
         public ObservableQueryFilterCollection()
         {
-            Model.SetBoundAttributeValue(
-                MarkdownContext,
-                StdModelAttribute.mdc,
-                "[MDC]");
-
-           Model.SortAttributes<StdModelAttribute>();
+            context = new MarkdownContextProtected(this);
+            context.PropertyChanged += OnContextChanged;
+            ModelTracking |= ModelTrackingFlag.ItemQueries;
+            Routes[StdRouteKey.CanonicalRoute] = () => ReadModeledItems(ModelNodesForRoute(StdRouteKey.CanonicalRoute));
+            RouteKey = StdRouteKey.CanonicalRoute;
+            Model.SetBoundAttributeValue(context, StdModelAttribute.mdc, "[MDC]");
         }
 
-        private void MDCPropertyChangedForwarder(object sender, PropertyChangedEventArgs e)
+        private readonly MarkdownContextProtected context;
+        private long revision;
+        private bool replacingCanon, committing, hasAppliedTextFilter, restrictiveTextFilter, refreshingRows;
+        private int observedCanonicalCount;
+        private Task settlement = Task.CompletedTask;
+        private TaskCompletionSource<bool>? queryRetirement;
+        private string lastError = string.Empty;
+        private Action<Action> publish = action => action();
+
+        /// <summary>
+        /// Supplies the application's existing query operation without assigning it interaction policy.
+        /// </summary>
+        public Func<string, Task<IReadOnlyList<T>>>? QueryProvider { get; set; }
+
+        /// <summary>
+        /// Publishes model changes on the retained presentation's owning execution context.
+        /// </summary>
+        public Action<Action> Publish
+        {
+            get => publish;
+            set => publish = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        public void SetPublicationContext(Action<Action> publication) => Publish = publication;
+        public string InputText
+        {
+            get => context.InputText;
+            set
+            {
+                value = value ?? string.Empty;
+                if (value == context.InputText) return;
+                SupersedePendingQuery();
+                long current = revision;
+                context.InputText = value;
+                settlement = SettleAsync(current, inputChanged: true);
+            }
+        }
+
+        public bool IsFiltering => context.IsFiltering;
+        public FilteringState FilteringState => context.FilteringState;
+        public SearchEntryState SearchEntryState => context.SearchEntryState;
+        public bool Busy => committing || context.Busy;
+        public bool CanSubmitQuery => !Busy && !IsFiltering && !InputText.IsSemanticallyEmpty()
+            && context.ValidationPredicate(InputText);
+        public string LastError => lastError;
+        public QueryFilterConfig QueryFilterConfig { get => context.QueryFilterConfig; set => context.QueryFilterConfig = value; }
+        public TimeSpan InputTextSettlingTime { get => context.InputTextSettlingTime; set => context.InputTextSettlingTime = value; }
+        public uint DefaultLimit { get => context.DefaultLimit; set => context.DefaultLimit = value; }
+        public Type ContractType => context.ContractType;
+        public Type ProxyType => context.ProxyType;
+        public string SQL => context.Query;
+        public SQLiteConnection MemoryDatabase { get => context.MemoryDatabase; set => context.MemoryDatabase = value; }
+        public DisposableHost DHostBusy => context.DHostBusy;
+        public int CanonicalCount => Items.Count;
+        public int PredicateMatchCount => context.PredicateMatchCount;
+        public string Title { get; set; } = string.Empty;
+        public string Placeholder => (IsFiltering ? "Filter " : "Search ") + Title;
+
+        public event EventHandler? QueryStarting;
+        public event EventHandler<QueryAcceptedEventArgs<T>>? QueryAccepted;
+
+        /// <summary>
+        /// Reports settled parser input after its model application has entered the publication context.
+        /// </summary>
+        /// <remarks>
+        /// Await WaitForSettlementAsync when the model application itself must be complete.
+        /// </remarks>
+        public event EventHandler? InputTextSettled;
+
+        /// <summary>
+        /// Retires an older query after an accepted application operation supersedes its working set.
+        /// </summary>
+        public void SupersedePendingQuery()
+        {
+            ++revision;
+            var retiring = queryRetirement;
+            if (retiring is null) return;
+            queryRetirement = null;
+            committing = false;
+            retiring.TrySetResult(true);
+            NotifySearchState();
+        }
+
+        public Task WaitForSettlementAsync() => settlement;
+        public new TaskAwaiter GetAwaiter() => WaitForSettlementAsync().GetAwaiter();
+
+        /// <summary>
+        /// Runs one valid external query or waits for the source's existing filter operation.
+        /// </summary>
+        public async Task CommitAsync()
+        {
+            if (committing) return;
+            await WaitForSettlementAsync();
+            if (committing || IsFiltering || !CanSubmitQuery) return;
+            string expression = InputText;
+            long current = ++revision;
+            var retirement = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            queryRetirement = retirement;
+            committing = true;
+            SetError(string.Empty);
+            NotifySearchState();
+            try
+            {
+                var starting = PublishAsync(() =>
+                {
+                    if (current == revision) QueryStarting?.Invoke(this, EventArgs.Empty);
+                });
+                if (!await FinishOrRetireAsync(starting, retirement.Task) || current != revision) return;
+                Task<IReadOnlyList<T>> acquisition;
+                if (QueryProvider is { } provider) acquisition = provider(expression);
+                else
+                {
+                    if (MemoryDatabase is null) throw new InvalidOperationException("Supply QueryProvider or MemoryDatabase before submitting a query.");
+                    string sql = ParseSqlMarkdown<T>(expression, QueryFilterMode.Query);
+                    IReadOnlyList<T> records = MemoryDatabase.Query(MemoryDatabase.GetMapping(typeof(T)), sql).Cast<T>().ToArray();
+                    acquisition = Task.FromResult(records);
+                }
+                if (!await FinishOrRetireAsync(acquisition, retirement.Task) || current != revision) return;
+                var accepted = (await acquisition).ToArray();
+                var publication = PublishAsync(() =>
+                {
+                    if (current != revision) return;
+                    LoadCanonCore(accepted);
+                    QueryAccepted?.Invoke(this, new QueryAcceptedEventArgs<T>(accepted));
+                });
+                await FinishOrRetireAsync(publication, retirement.Task);
+            }
+            catch (Exception error)
+            {
+                if (current == revision)
+                {
+                    var publication = PublishAsync(() => { if (current == revision) SetError(error.Message); });
+                    await FinishOrRetireAsync(publication, retirement.Task);
+                }
+            }
+            finally
+            {
+                if (ReferenceEquals(queryRetirement, retirement))
+                {
+                    queryRetirement = null;
+                    committing = false;
+                    NotifySearchState();
+                }
+            }
+        }
+
+        private static async Task<bool> FinishOrRetireAsync(Task work, Task retired)
+        {
+            if (!ReferenceEquals(await Task.WhenAny(work, retired), work))
+            {
+                _ = ObserveRetiredAsync(work);
+                return false;
+            }
+            await work;
+            return true;
+        }
+
+        private static async Task ObserveRetiredAsync(Task work)
+        {
+            try { await work; }
+            catch (Exception error)
+            {
+                // An obsolete provider failure must be observed, but cannot replace
+                // the current query's state or surface an error in a later operation.
+                System.Diagnostics.Trace.WriteLine("Retired query completed with " + error.GetType().Name);
+            }
+        }
+
+        public void Commit() => _ = CommitAsync();
+
+        /// <summary>
+        /// Clears source-owned input first, or explicitly empties the working set without persistence writes.
+        /// </summary>
+        public FilteringState Clear(bool all = false)
+        {
+            SupersedePendingQuery();
+            var previous = context.FilteringState;
+            var state = context.Clear(all);
+            bool terminal = all || context.SearchEntryState == SearchEntryState.Cleared
+                || previous != FilteringState.Ineligible && state == FilteringState.Ineligible;
+            if (terminal)
+            {
+                ResetPendingRows();
+                hasAppliedTextFilter = restrictiveTextFilter = false;
+                // An empty source has no native collection transition to publish.
+                if (Items.Count != 0)
+                    using (RequestAuthority(ModelDataExchangeAuthority.ModelDeferred))
+                    {
+                        base.Clear();
+                        RouteKey = MatchRoute;
+                    }
+                context.AcceptClear();
+            }
+            else if (hasAppliedTextFilter)
+            {
+                using (RequestAuthority(ModelDataExchangeAuthority.ModelDeferred)) ClearTextMatches(retireLive: true);
+            }
+            // Retire obsolete parser publication; clearing text alone is not a list operation.
+            settlement = Task.CompletedTask;
+            SetError(string.Empty);
+            NotifySearchState();
+            return context.FilteringState;
+        }
+
+        void IList.Clear() => Clear(all: true);
+        void ICollection<T>.Clear() => Clear(all: true);
+
+        /// <summary>
+        /// Admits externally materialized records without replacing canonical object identity.
+        /// </summary>
+        public new void LoadCanon(IList<T> records)
+        {
+            SupersedePendingQuery();
+            LoadCanonCore(records);
+        }
+
+        private void LoadCanonCore(IList<T> records)
+        {
+            ResetPendingRows();
+            hasAppliedTextFilter = restrictiveTextFilter = false;
+            replacingCanon = true;
+            try
+            {
+                using (RequestAuthority(ModelDataExchangeAuthority.CollectionDeferred))
+                {
+                    base.LoadCanon(records);
+                    context.AcceptQuery(Items.Count);
+                    RouteKey = MatchRoute;
+                }
+            }
+            finally { replacingCanon = false; observedCanonicalCount = Items.Count; }
+            NotifySearchState();
+        }
+
+        public new Task LoadCanonAsync(IList<T> records)
+        {
+            LoadCanon(records);
+            return Task.CompletedTask;
+        }
+
+        public void ReplaceItems(IEnumerable<T> records) => LoadCanon(records.ToList());
+        public Task ReplaceItemsAsync(IEnumerable<T> records) => LoadCanonAsync(records.ToList());
+        public void InitializeFilterOnlyMode(IEnumerable<T> records)
+        {
+            QueryFilterConfig = QueryFilterConfig.Filter;
+            LoadCanon(records.ToList());
+        }
+
+        public IDisposable BeginBusy() => context.BeginBusy();
+        public string ParseSqlMarkdown() => ParseSqlMarkdown<T>(InputText, IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query);
+        public string ParseSqlMarkdown<TRecord>() => ParseSqlMarkdown<TRecord>(InputText, IsFiltering ? QueryFilterMode.Filter : QueryFilterMode.Query);
+        public string ParseSqlMarkdown<TRecord>(string expression, QueryFilterMode mode = QueryFilterMode.Query)
+        {
+            using (FilterQueryDatabase?.RequestAuthority(SQLiteAuthority.FullControl))
+                return context.ParseSqlMarkdown<TRecord>(expression, mode);
+        }
+        public string ParseSqlMarkdown(string expression, Type proxyType, QueryFilterMode mode, out XElement ast)
+        {
+            using (FilterQueryDatabase?.RequestAuthority(SQLiteAuthority.FullControl))
+                return context.ParseSqlMarkdown(expression, proxyType, mode, out ast);
+        }
+
+        private async Task SettleAsync(long current, bool inputChanged)
+        {
+            try
+            {
+                await context;
+                if (current != revision) return;
+                var publication = PublishAsync(() =>
+                {
+                    if (current != revision) return;
+                    bool refreshedRows = RefreshPendingRows();
+                    if (!inputChanged && !refreshedRows) return;
+                    if (IsFiltering && !InputText.IsSemanticallyEmpty()) ApplyTextFilter();
+                    else if (hasAppliedTextFilter)
+                        using (RequestAuthority(ModelDataExchangeAuthority.ModelDeferred)) ClearTextMatches(retireLive: inputChanged);
+                });
+                if (inputChanged) InputTextSettled?.Invoke(this, EventArgs.Empty);
+                await publication;
+            }
+            catch (Exception error)
+            {
+                await PublishAsync(() => { if (current == revision) SetError(error.Message); });
+            }
+        }
+
+        private Task PublishAsync(Action action)
+        {
+            var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            try
+            {
+                Publish(() =>
+                {
+                    try { action(); completion.TrySetResult(true); }
+                    catch (Exception error) { completion.TrySetException(error); }
+                });
+            }
+            catch (Exception error) { completion.TrySetException(error); }
+            return completion.Task;
+        }
+
+        private void OnContextChanged(object? sender, PropertyChangedEventArgs e)
         {
             OnPropertyChanged(e);
+            if (e.PropertyName is nameof(InputText) or nameof(IsFiltering) or nameof(Busy) or nameof(SearchEntryState) or nameof(FilteringState))
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(CanSubmitQuery)));
+        }
+
+        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            if (context is not null && !HasAuthority(StdModelAuthority.Rollback)) ReconcileMembership();
+            base.OnCollectionChanged(e);
+        }
+
+        private void ReconcileMembership()
+        {
+            int previous = observedCanonicalCount;
+            observedCanonicalCount = Items.Count;
+            if (replacingCanon || previous == observedCanonicalCount) return;
+            SupersedePendingQuery();
+            if (observedCanonicalCount == 0) context.AcceptClear();
+            else context.AcceptMembership(observedCanonicalCount);
+            // Membership can retire filtering without changing the retained input.
+            // Settle its route before the collection publishes the resulting view.
+            if (!IsFiltering && hasAppliedTextFilter)
+                using (RequestAuthority(ModelDataExchangeAuthority.ModelDeferred)) ClearTextMatches(retireLive: true);
+            NotifySearchState();
+        }
+
+        private void SetError(string error)
+        {
+            if (lastError == error) return;
+            lastError = error;
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(LastError)));
+        }
+
+        private void NotifySearchState()
+        {
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(Busy)));
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(CanSubmitQuery)));
+        }
+
+        protected sealed class MarkdownContextProtected : MarkdownContext<T>
+        {
+            internal MarkdownContextProtected(ObservableQueryFilterCollection<T> owner)
+            {
+                this.owner = owner;
+                base.FilterQueryDatabase = owner.FilterQueryDatabase;
+            }
+            private readonly ObservableQueryFilterCollection<T> owner;
+            public override int CanonicalCount => owner.Items.Count;
+            public override int PredicateMatchCount => owner.RouteKey is StdRouteKey.PMatch or StdRouteKey.AND ? owner.Count : 0;
+            internal void AcceptQuery(int count)
+            {
+                Cancel();
+                FilteringState = count > 1 ? FilteringState.Armed : FilteringState.Ineligible;
+                SearchEntryState = count == 0 ? SearchEntryState.QueryCompleteNoResults : SearchEntryState.QueryCompleteWithResults;
+            }
+            internal void AcceptClear()
+            {
+                Clear(all: true);
+            }
+            internal void AcceptMembership(int count)
+            {
+                if (count <= 1 && FilteringState != FilteringState.Ineligible)
+                {
+                    Cancel();
+                    FilteringState = FilteringState.Ineligible;
+                }
+                SearchEntryState = SearchEntryState.QueryCompleteWithResults;
+            }
+            internal void LinkQueryMirror() => base.FilterQueryDatabase = owner.FilterQueryDatabase;
+
+            protected override void OnInputTextChanged()
+            {
+                var previous = SearchEntryState;
+                base.OnInputTextChanged();
+                // The scalar parser has no retained population of its own. This
+                // concrete source retains that completion posture when only its
+                // input is emptied, so the next Clear follows the existing FSM.
+                if (InputText.Length == 0 && FilteringState == FilteringState.Ineligible
+                    && (owner.Items.Count != 0 || previous == SearchEntryState.QueryCompleteNoResults))
+                    SearchEntryState = owner.Items.Count == 0
+                        ? SearchEntryState.QueryCompleteNoResults : SearchEntryState.QueryCompleteWithResults;
+            }
         }
 
         protected override void OnModelTrackingChanged()
         {
             base.OnModelTrackingChanged();
-            MarkdownContext.FilterQueryDatabase = FilterQueryDatabase!;
-        }
-
-        /// <summary>
-        /// Protected class with public properties.
-        /// </summary>
-        protected partial class MarkdownContextProtected : MarkdownContext<T>
-        {
-            ObservableQueryFilterCollection<T> @this => (ObservableQueryFilterCollection<T>)ModelAuthorityContext!;
-            /// <summary>
-            /// Used by LoadCanon to attribute recordset count.
-            /// </summary>
-            public new SearchEntryState SearchEntryState
-            {
-                get => base.SearchEntryState;
-                set => base.SearchEntryState = value;
-            }
-            public new FilteringState FilteringState
-            {
-                get => base.FilteringState;
-                set => base.FilteringState = value;
-            }
-            protected override void OnClear(bool all)
-            {
-                if (all) ResetLiveFilterState();
-                base.OnClear(all);
-                if(all)
-                {
-                    // The one-and-only clear authority,
-                    @this.ClearItems();
-                }
-            }
-            public new SQLiteConnection FilterQueryDatabase
-            {
-                get => base.FilterQueryDatabase;
-                set => base.FilterQueryDatabase = value;
-            }
-            public override int PredicateMatchCount =>
-                Equals(RouteKey, StdRouteKey.CanonicalRoute)
-                ? 0
-                : @this.Count;
-        }
-
-        protected override void OnMDEXFinalizing(FinalDisposeEventArgs eUnk)
-        {
-            switch (eUnk)
-            {
-                case MDEAPFinalDisposeEventArgs e:
-                    switch (e.Digest.Reason)
-                    {
-                        case NotifyCollectionChangeReason.Digest:
-                            break;
-                        default:
-                            break;
-                    }
-                    break;
-            }                
-            base.OnMDEXFinalizing(eUnk);
-        }
-        protected MarkdownContextProtected MarkdownContext
-        {
-            get
-            {
-                if (_markdownContext is null)
-                {
-                    _markdownContext = new()
-                    {
-                        ModelAuthorityContext = this
-                    };
-                    // Property changed forwarder
-                    MarkdownContext.PropertyChanged += MDCPropertyChangedForwarder;
-                }
-                return _markdownContext;
-            }
-        }
-        MarkdownContextProtected? _markdownContext = null;
-
-        public Type ContractType
-            => MarkdownContext.ContractType;
-
-        public Type ProxyType 
-            => MarkdownContext.ProxyType;
-
-        public string InputText 
-        { 
-            get => MarkdownContext.InputText;
-            set => MarkdownContext.InputText = value;
-        }
-
-        public bool IsFiltering 
-            => MarkdownContext.IsFiltering;
-
-        public FilteringState FilteringState
-            => MarkdownContext.FilteringState;
-
-        public SearchEntryState SearchEntryState
-            => MarkdownContext.SearchEntryState;
-
-        public QueryFilterConfig QueryFilterConfig
-        { 
-            get => MarkdownContext.QueryFilterConfig;
-            set => MarkdownContext.QueryFilterConfig = value;
-        }
-        public uint DefaultLimit
-        {
-            get => MarkdownContext.DefaultLimit; 
-            set => MarkdownContext.DefaultLimit = value; 
-        }
-
-        public TimeSpan InputTextSettlingTime
-        {
-            get => MarkdownContext.InputTextSettlingTime; 
-            set => MarkdownContext.InputTextSettlingTime = value;
-        }
-
-        public bool Busy => MarkdownContext.Busy;
-
-        public int CanonicalCount => MarkdownContext.CanonicalCount;
-
-        public int PredicateMatchCount =>
-            Equals(RouteKey, StdRouteKey.CanonicalRoute)
-            ? 0
-            : Count;
-
-        public IModelAuthorityContext? ModelAuthorityContext => MarkdownContext.ModelAuthorityContext;
-
-        public DisposableHost DHostBusy => MarkdownContext.DHostBusy;
-
-        public string Placeholder
-        {
-            get => _placeholder;
-            set
-            {
-                if (!Equals(_placeholder, value))
-                {
-                    _placeholder = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        string _placeholder = string.Empty;
-
-        public string Title
-        {
-            get => _title;
-            set
-            {
-                if (!Equals(_title, value))
-                {
-                    _title = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        string _title = string.Empty;
-
-        /// <summary>
-        /// Includes active text filtering when qualifying temporary visibility for an addition.
-        /// </summary>
-        /// <remarks>
-        /// IsFiltering describes the available posture and can be true before a filter
-        /// is applied. Ordinary initial AddRange must not grant every record immunity
-        /// from the predicate the developer subsequently requests.
-        /// </remarks>
-        protected override bool HasActiveVisibilityFilter =>
-            base.HasActiveVisibilityFilter || FilteringState == FilteringState.Active || MarkdownContext.HasAppliedTextFilter;
-
-        public string SQL => MarkdownContext.Query;
-
-        public SQLiteConnection MemoryDatabase 
-        { 
-            get => MarkdownContext.MemoryDatabase;
-            set => MarkdownContext.MemoryDatabase = value; 
-        }
-
-        public event EventHandler? InputTextSettled
-        {
-            add => MarkdownContext.InputTextSettled += value;
-            remove => MarkdownContext.InputTextSettled -= value;
-        }
-
-        public event EventHandler<ItemPropertyChangedEventArgs>? ItemPropertyChanged;
-
-        /// <summary>
-        /// No Surprises IList.Clear
-        /// </summary>
-        public new void Clear() => Clear(true);
-
-        /// <summary>
-        /// This is *not* where the au
-        /// </summary>
-        public FilteringState Clear(bool all)
-        {
-            if (all && HasAuthority(StdModelAuthority.Rollback))
-            {
-                return MarkdownContext.Clear(all);
-            }
-            else
-            {
-                if (!HasAuthority(ModelDataExchangeAuthority.Collection))
-                {
-                    IDisposable[] tokens =
-                        all
-                        ? [RequestAuthority(StdModelAuthority.TerminalClear), RequestAuthority(ModelDataExchangeAuthority.Collection)]
-                        : [RequestAuthority(ModelDataExchangeAuthority.Collection)];
-                    using (new TokenDisposer(tokens))
-                    {
-                        if (!HasAuthority(ModelDataExchangeAuthority.Model))
-                        {
-                            return MarkdownContext.Clear(all);
-                        }
-                    }
-                }
-            }
-            return FilteringState;
-        }
-        void IList.Clear() => Clear();
-
-        public string ParseSqlMarkdown()
-        {
-            return MarkdownContext.ParseSqlMarkdown();
-        }
-
-        public string ParseSqlMarkdown(string expr, Type proxyType, QueryFilterMode qfMode, out XElement xast)
-        {
-            return MarkdownContext.ParseSqlMarkdown(expr, proxyType, qfMode, out xast);
-        }
-
-        public string ParseSqlMarkdown<T1>()
-        {
-            return MarkdownContext.ParseSqlMarkdown<T1>();
-        }
-
-        public string ParseSqlMarkdown<T1>(string expr, QueryFilterMode qfMode = QueryFilterMode.Query)
-        {
-            return MarkdownContext.ParseSqlMarkdown<T1>(expr, qfMode);
-        }
-
-        public void Commit()
-        {
-            MarkdownContext.Commit();
-        }
-
-        public IDisposable BeginBusy()
-        {
-            return MarkdownContext.BeginBusy();
-        }
-
-        public string[] GetTableNames()
-        {
-            return MarkdownContext.GetTableNames();
-        }
-
-        public void InitializeFilterOnlyMode(IEnumerable<T> items)
-        {
-            QueryFilterConfig = QueryFilterConfig.Filter;
-            LoadCanon(items.ToList());
-        }
-
-        public void ReplaceItems(IEnumerable<T> items) => LoadCanon(items.ToList());
-
-        public Task ReplaceItemsAsync(IEnumerable<T> items) => LoadCanonAsync(items.ToList());
-
-        public TaskAwaiter<TaskStatus> GetAwaiter() => MarkdownContext.GetAwaiter();
-        public new void LoadCanon(IList<T> items)
-        {
-            MarkdownContext.ResetLiveFilterState();
-            base.LoadCanon(items);
-            MarkdownContext.SearchEntryState =
-                Count == 0
-                ? SearchEntryState.QueryCompleteNoResults
-                : SearchEntryState.QueryCompleteWithResults;
-        }
-
-        public new async Task LoadCanonAsync(IList<T> items)
-        {
-            await base.LoadCanonAsync(items);
-            MarkdownContext.SearchEntryState =
-                Count == 0
-                ? SearchEntryState.QueryCompleteNoResults
-                : SearchEntryState.QueryCompleteWithResults;
-        }
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
-                OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
-
-
-        /// <summary>
-        /// Capture MDC semantics based on EH changes.
-        /// </summary>
-        protected override void OnPropertyChanged(PropertyChangedEventArgs eUnk)
-        {
-            if (eUnk is ItemPropertyChangedEventArgs edit) HandleRecordEdit(edit);
-            base.OnPropertyChanged(eUnk);
-            switch (eUnk)
-            {
-                case EHPropertyChangedEventArgs e:
-                    switch (e.Key)
-                    {
-                        case StdModelAttribute.model:
-                            if (QueryFilterConfig.HasFlag(QueryFilterConfig.Filter))
-                            {
-                                // Look for a combination of:
-                                // model
-                                // + Filter flag
-                                // + Increment
-                                // + !Canon
-                                if (!HasAuthority(StdModelAuthority.Canon))
-                                {
-                                    // Canonical collection is being modified out-of-band.
-                                    if (Equals(e.PropertyName, nameof(HistogramEdge.Increment))
-                                        && HasActiveVisibilityFilter)
-                                    {
-                                        // Only an established filter makes this addition exceptional.
-                                        // Initial population uses ordinary canonical visibility instead.
-                                        if (e.XOB is XBoundAttribute xba
-                                            && xba.Name.LocalName == nameof(StdModelAttribute.model))
-                                        {
-                                            xba.Parent?.SetStdAttributeValue(StdModelAttribute.live, bool.TrueString);
-                                        }
-                                    }
-                                    int itemCount = Histo[StdModelAttribute.model];
-                                    switch (itemCount)
-                                    {
-                                        case 0:
-                                            MarkdownContext.SearchEntryState = SearchEntryState.QueryCompleteNoResults;
-                                            MarkdownContext.FilteringState = FilteringState.Ineligible;
-                                            break;
-                                        case 1:
-                                        default:
-                                            MarkdownContext.SearchEntryState = SearchEntryState.QueryCompleteWithResults;
-                                            if(itemCount == 1)
-                                            {
-                                                MarkdownContext.FilteringState = FilteringState.Ineligible;
-                                            }
-                                            else
-                                            {
-                                                // [Probationary]
-                                                // Does this need to sync up with IME state?
-                                                MarkdownContext.FilteringState = FilteringState.Armed;
-                                            }
-                                            break;
-                                    }
-                                }
-                            }
-                            break;
-                        case StdModelAttribute.live:
-                            /* G T K */
-                            break;
-                    }
-                    break;
-            }
+            if (context is not null) context.LinkQueryMirror();
         }
     }
 }
